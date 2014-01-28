@@ -1118,7 +1118,16 @@ mwmh_process_motif_wm_hints(Client *c)
 				c->has.but.max = False;
 		}
 		if ((hints[0] & MWM_HINTS_INPUT_MODE) && n >= 4 &&
-		    !((hint = hints[3]) & MWM_INPUT_MODELESS)) {
+				(hint = hints[3])) {
+			if (hint & MWM_INPUT_MODELESS)
+				c->is.modal = ModalModeless;
+			else if (hint & MWM_INPUT_APPLICATION_MODAL)
+				c->is.modal = ModalPrimary;
+			else if (hint & MWM_INPUT_SYSTEM_MODAL)
+				c->is.modal = ModalSystem;
+			else if (hint & MWM_INPUT_FULL_APPLICATION_MODAL)
+				c->is.modal = ModalGroup;
+
 		}
 		if ((hints[0] & MWM_HINTS_STATUS) && n >= 5) {
 		}
@@ -1128,9 +1137,39 @@ mwmh_process_motif_wm_hints(Client *c)
 		XFree(hints);
 }
 
+#define DTWM_HINTS_FUNCTIONS	    (1<<0)
+#define DTWM_HINTS_BEHAVIORS	    (1<<1)
+#define DTWM_HINTS_ATTACH_WINDOW    (1<<2)
+
+#define DTWM_FUNCTION_ALL	    (1<<0)
+#define DTWM_FUNCTION_OCCUPY_WS	    (1<<1)
+
+#define DTWM_BEHAVIOR_PANEL	    (1<<1)
+#define DTWM_BEHAVIOR_SUBPANEL	    (1<<2)
+#define DTWM_BEHAVIOR_SUB_RESTORED  (1<<3)
+
 void
 mwmh_process_dt_wm_hints(Client *c)
 {
+	long hint, *hints = NULL;
+	unsigned long n = 0;
+
+	hints = getcard(c->win, _XA_DT_WM_HINTS, &n);
+	if (n > 1) {
+		if ((hints[0] & DTWM_HINTS_FUNCTIONS) && n >= 2 &&
+				!((hint = hints[1]) && DTWM_FUNCTION_ALL)) {
+			if (!(hint & DTWM_FUNCTION_OCCUPY_WS))
+				c->can.tag = False;
+		}
+		if ((hints[0] & DTWM_HINTS_BEHAVIORS) && n >= 3) {
+			/* TODO treat subpanel stuff like a dock app */
+		}
+		if ((hints[0] & DTWM_HINTS_ATTACH_WINDOW) && n >= 4) {
+			/* TODO treat subpanel stuff like a dock app */
+		}
+	}
+	if (hints)
+		XFree(hints);
 }
 
 void
@@ -1191,42 +1230,38 @@ ewmh_update_net_window_actions(Client *c) {
 	int actions = 0;
 
 	DPRINTF("Updating _NET_WM_ALLOWED_ACTIONS for 0x%lx\n", c->win);
-	action[actions++] = _XA_NET_WM_ACTION_ABOVE;
-	action[actions++] = _XA_NET_WM_ACTION_BELOW;
-	if (!c->is.bastard) {
+	if (c->can.above)
+		action[actions++] = _XA_NET_WM_ACTION_ABOVE;
+	if (c->can.below)
+		action[actions++] = _XA_NET_WM_ACTION_BELOW;
+	if (c->can.tag)
 		action[actions++] = _XA_NET_WM_ACTION_CHANGE_DESKTOP;
-	}
-	action[actions++] = _XA_NET_WM_ACTION_CLOSE;
-	if (!c->is.bastard) {
-		if (c->is.floating || MFEATURES(clientmonitor(c), OVERLAP)) {
-			action[actions++] = _XA_NET_WM_ACTION_FULLSCREEN;
-			action[actions++] = _XA_NET_WM_ACTION_MAXIMIZE_HORZ;
-			action[actions++] = _XA_NET_WM_ACTION_MAXIMIZE_VERT;
-		}
+	if (c->can.close)
+		action[actions++] = _XA_NET_WM_ACTION_CLOSE;
+	if (c->can.min)
 		action[actions++] = _XA_NET_WM_ACTION_MINIMIZE;
-		if (c->is.fixed || c->is.floating || MFEATURES(clientmonitor(c), OVERLAP)) {
-			action[actions++] = _XA_NET_WM_ACTION_MOVE;
-			if (!c->is.fixed)
-				action[actions++] = _XA_NET_WM_ACTION_RESIZE;
-		} else {
-			if (!c->is.fixed) {
-				DPRINTF("Cannot moveresize 0x%lx: %s\n", c->win, "not fixed");
-			}
-			if (!c->is.floating) {
-				DPRINTF("Cannot moveresize 0x%lx: %s\n", c->win, "not floating");
-			}
-			if (!MFEATURES(clientmonitor(c), OVERLAP)) {
-				DPRINTF("Cannot moveresize 0x%lx: %s\n", c->win, "not in overlap mode");
-			}
-		}
-		action[actions++] = _XA_NET_WM_ACTION_STICK;
-		action[actions++] = _XA_NET_WM_ACTION_FLOAT;
-		if (c->is.floating || MFEATURES(clientmonitor(c), OVERLAP)) {
-			if (c->title)
-				action[actions++] = _XA_NET_WM_ACTION_SHADE;
+	if (c->skip.arrange || MFEATURES(clientmonitor(c), OVERLAP)) {
+		if (c->can.fs)
+			action[actions++] = _XA_NET_WM_ACTION_FULLSCREEN;
+		if (c->can.maxh || c->can.max)
+			action[actions++] = _XA_NET_WM_ACTION_MAXIMIZE_HORZ;
+		if (c->can.maxv || c->can.max)
+			action[actions++] = _XA_NET_WM_ACTION_MAXIMIZE_VERT;
+		if (c->title && c->can.shade)
+			action[actions++] = _XA_NET_WM_ACTION_SHADE;
+		if (c->can.fill)
 			action[actions++] = _XA_NET_WM_ACTION_FILL;
-		}
 	}
+	if (c->is.floater || c->skip.arrange || MFEATURES(clientmonitor(c), OVERLAP)) {
+		if (c->can.move)
+			action[actions++] = _XA_NET_WM_ACTION_MOVE;
+		if (c->can.size)
+			action[actions++] = _XA_NET_WM_ACTION_RESIZE;
+	}
+	if (c->can.stick)
+		action[actions++] = _XA_NET_WM_ACTION_STICK;
+	if (c->can.floats)
+		action[actions++] = _XA_NET_WM_ACTION_FLOAT;
 
 	XChangeProperty(dpy, c->win, _XA_NET_WM_ALLOWED_ACTIONS, XA_ATOM, 32,
 		PropModeReplace, (unsigned char *) action, actions);
@@ -1273,7 +1308,7 @@ ewmh_update_net_window_state(Client *c) {
 		state |= WIN_STATE_HID_TRANSIENT;
 	if (c->is.hidden)
 		state |= WIN_STATE_HIDDEN;
-	if (c->is.fixed)
+	if (!c->can.move)
 		state |= WIN_STATE_FIXED_POSITION;
 	for (m = monitors; m && isvisible(c, m); m = m->next) ;
 	if (!m)
@@ -1288,9 +1323,9 @@ ewmh_update_net_window_state(Client *c) {
 		winstate[states++] = _XA_NET_WM_STATE_DEMANDS_ATTENTION;
 	if (c == sel)
 		winstate[states++] = _XA_NET_WM_STATE_FOCUSED;
-	if (c->is.fixed)
+	if (!c->can.move)
 		winstate[states++] = _XA_NET_WM_STATE_FIXED;
-	if (c->is.floating) {
+	if (c->skip.arrange) {
 		winstate[states++] = _XA_NET_WM_STATE_FLOATING;
 		state |= WIN_STATE_ARRANGE_IGNORE;
 	}
@@ -1318,24 +1353,12 @@ wmh_process_state_mask(Client *c, unsigned int mask, unsigned int change)
 {
 	if (mask & WIN_STATE_STICKY)
 		if (((change & WIN_STATE_STICKY) && !c->is.sticky) ||
-		    (!(change & WIN_STATE_STICKY) && c->is.sticky)) {
-			if ((c->is.sticky = !c->is.sticky))
-				tag(c, -1);
-			else
-				tag(c, curmontag);
-		}
+		    (!(change & WIN_STATE_STICKY) && c->is.sticky))
+			togglesticky(c);
 	if (mask & WIN_STATE_MINIMIZED)
 		if (((change & WIN_STATE_MINIMIZED) && !c->is.icon) ||
-		    (!(change & WIN_STATE_MINIMIZED) && c->is.icon)) {
-			if (c->is.icon) {
-				c->is.icon = False;
-				c->is.hidden = False;
-				focus(c);
-				arrange(clientmonitor(c));
-			} else {
-				iconify(c);
-			}
-		}
+		    (!(change & WIN_STATE_MINIMIZED) && c->is.icon))
+			togglemin(c);
 	if (mask & WIN_STATE_MAXIMIZED_VERT)
 		if (((change & WIN_STATE_MAXIMIZED_VERT) && !c->is.maxv) ||
 		    (!(change & WIN_STATE_MAXIMIZED_VERT) && c->is.maxv))
@@ -1349,8 +1372,8 @@ wmh_process_state_mask(Client *c, unsigned int mask, unsigned int change)
 		    (!(change & WIN_STATE_HIDDEN) && c->is.hidden))
 			togglehidden(c);
 	if (mask & WIN_STATE_SHADED)
-		if (((change & WIN_STATE_SHADED) && !c->is.shade) ||
-		    (!(change & WIN_STATE_SHADED) && c->is.shade))
+		if (((change & WIN_STATE_SHADED) && !c->is.shaded) ||
+		    (!(change & WIN_STATE_SHADED) && c->is.shaded))
 			toggleshade(c);
 	if (mask & WIN_STATE_HID_WORKSPACE) {
 		/* read-only */
@@ -1359,14 +1382,14 @@ wmh_process_state_mask(Client *c, unsigned int mask, unsigned int change)
 		/* read-only */
 	}
 	if (mask & WIN_STATE_FIXED_POSITION)
-		if (((change & WIN_STATE_FIXED_POSITION) && !c->is.fixed) ||
-		    (!(change & WIN_STATE_FIXED_POSITION) && c->is.fixed)) {
-			c->is.fixed = !c->is.fixed;
+		if (((change & WIN_STATE_FIXED_POSITION) && !c->can.move) ||
+		    (!(change & WIN_STATE_FIXED_POSITION) && c->can.move)) {
+			c->can.move = !c->can.move;
 			arrange(NULL);
 		}
 	if (mask & WIN_STATE_ARRANGE_IGNORE)
-		if (((change & WIN_STATE_ARRANGE_IGNORE) && !c->is.floating) ||
-		    (!(change & WIN_STATE_ARRANGE_IGNORE) && c->is.floating))
+		if (((change & WIN_STATE_ARRANGE_IGNORE) && !c->skip.arrange) ||
+		    (!(change & WIN_STATE_ARRANGE_IGNORE) && c->skip.arrange))
 			togglefloating(c);
 }
 
@@ -1374,23 +1397,19 @@ void
 ewmh_process_state_atom(Client *c, Atom state, int set) {
 	if (0) {
 	} else if (state == _XA_NET_WM_STATE_MODAL) {
+		/* _NET_WM_STATE_MODAL indicates that this is a modal dialog box.  If the
+		   WM_TRANSIENT_FOR hint is set to another toplevel window, the dialog is
+		   modal for that window; if WM_TRANSIENT_FOR is not set or set to the
+		   root window the dialog is modal for its window group */
 		if ((set == _NET_WM_STATE_ADD && !c->is.modal) ||
 		    (set == _NET_WM_STATE_REMOVE && c->is.modal) ||
-		    (set == _NET_WM_STATE_TOGGLE)) {
-			c->is.modal = !c->is.modal;
-			if (c->is.modal)
-				focus(c);
-		}
+		    (set == _NET_WM_STATE_TOGGLE))
+			togglemodal(c);
 	} else if (state == _XA_NET_WM_STATE_STICKY) {
 		if ((set == _NET_WM_STATE_ADD && !c->is.sticky) ||
 		    (set == _NET_WM_STATE_REMOVE && c->is.sticky) ||
-		    (set == _NET_WM_STATE_TOGGLE)) {
-			c->is.sticky = !c->is.sticky;
-			if (c->is.sticky)
-				tag(c, -1);
-			else
-				tag(c, curmontag);
-		}
+		    (set == _NET_WM_STATE_TOGGLE))
+			togglesticky(c);
 	} else if (state == _XA_NET_WM_STATE_MAXIMIZED_VERT) {
 		if ((set == _NET_WM_STATE_ADD && !c->is.maxv) ||
 		    (set == _NET_WM_STATE_REMOVE && c->is.maxv) ||
@@ -1402,22 +1421,20 @@ ewmh_process_state_atom(Client *c, Atom state, int set) {
 		    (set == _NET_WM_STATE_TOGGLE))
 			togglemaxh(c);
 	} else if (state == _XA_NET_WM_STATE_SHADED) {
-		if ((set == _NET_WM_STATE_ADD && !c->is.shade) ||
-		    (set == _NET_WM_STATE_REMOVE && c->is.shade) ||
+		if ((set == _NET_WM_STATE_ADD && !c->is.shaded) ||
+		    (set == _NET_WM_STATE_REMOVE && c->is.shaded) ||
 		    (set == _NET_WM_STATE_TOGGLE))
 			toggleshade(c);
 	} else if (state == _XA_NET_WM_STATE_SKIP_TASKBAR) {
 		if ((set == _NET_WM_STATE_ADD && !c->skip.taskbar) ||
 		    (set == _NET_WM_STATE_REMOVE && c->skip.taskbar) ||
-		    (set == _NET_WM_STATE_TOGGLE)) {
-			c->skip.taskbar = !c->skip.taskbar;
-		}
+		    (set == _NET_WM_STATE_TOGGLE))
+			toggletaskbar(c);
 	} else if (state == _XA_NET_WM_STATE_SKIP_PAGER) {
 		if ((set == _NET_WM_STATE_ADD && !c->skip.pager) ||
 		    (set == _NET_WM_STATE_REMOVE && c->skip.pager) ||
-		    (set == _NET_WM_STATE_TOGGLE)) {
-			c->skip.pager = !c->skip.pager;
-		}
+		    (set == _NET_WM_STATE_TOGGLE))
+			togglepager(c);
 	} else if (state == _XA_NET_WM_STATE_HIDDEN) {
 		/* Implementation note: if an Application asks to toggle
 		   _NET_WM_STATE_HIDDEN the Window Manager should probably just ignore
@@ -1429,16 +1446,17 @@ ewmh_process_state_atom(Client *c, Atom state, int set) {
 		    (set == _NET_WM_STATE_TOGGLE))
 			togglehidden(c);
 	} else if (state == _XA_NET_WM_STATE_FULLSCREEN) {
+		/* FIXME: this needs to be fullscreen not maximize */
 		if ((set == _NET_WM_STATE_ADD || set == _NET_WM_STATE_TOGGLE)
-				&& !c->is.max) {
-			c->is.floater = c->is.floating;
-			if (!c->is.floating)
+		    && !c->is.max) {
+			c->wasfloating = c->skip.arrange;
+			if (!c->skip.arrange)
 				togglefloating(c);
 			togglemax(c);
 		} else if ((set == _NET_WM_STATE_REMOVE ||
-				set == _NET_WM_STATE_TOGGLE) && c->is.max) {
+			    set == _NET_WM_STATE_TOGGLE) && c->is.max) {
 			togglemax(c);
-			if (!c->is.floater)
+			if (!c->wasfloating)
 				togglefloating(c);
 		}
 		DPRINT;
@@ -1447,17 +1465,13 @@ ewmh_process_state_atom(Client *c, Atom state, int set) {
 	} else if (state == _XA_NET_WM_STATE_ABOVE) {
 		if ((set == _NET_WM_STATE_ADD && !c->is.above) ||
 		    (set == _NET_WM_STATE_REMOVE && c->is.above) ||
-		    (set == _NET_WM_STATE_TOGGLE)) {
-			c->is.above = !c->is.above;
-			restack();
-		}
+		    (set == _NET_WM_STATE_TOGGLE))
+			togglebelow(c);
 	} else if (state == _XA_NET_WM_STATE_BELOW) {
 		if ((set == _NET_WM_STATE_ADD && !c->is.below) ||
 		    (set == _NET_WM_STATE_REMOVE && c->is.below) ||
-		    (set == _NET_WM_STATE_TOGGLE)) {
-			c->is.below = !c->is.below;
-			restack();
-		}
+		    (set == _NET_WM_STATE_TOGGLE))
+			togglebelow(c);
 	} else if (state == _XA_NET_WM_STATE_DEMANDS_ATTENTION) {
 		if ((set == _NET_WM_STATE_ADD && !c->is.attn) ||
 		    (set == _NET_WM_STATE_REMOVE && c->is.attn) ||
@@ -1472,8 +1486,8 @@ ewmh_process_state_atom(Client *c, Atom state, int set) {
 	} else if (state == _XA_NET_WM_STATE_FIXED) {
 		/* _NET_WM_STATE_FIXED is a read-only state. */
 	} else if (state == _XA_NET_WM_STATE_FLOATING) {
-		if ((set == _NET_WM_STATE_ADD && !c->is.floating) ||
-		    (set == _NET_WM_STATE_REMOVE && c->is.floating) ||
+		if ((set == _NET_WM_STATE_ADD && !c->skip.arrange) ||
+		    (set == _NET_WM_STATE_REMOVE && c->skip.arrange) ||
 		    (set == _NET_WM_STATE_TOGGLE)) {
 			togglefloating(c);
 		}
@@ -1632,13 +1646,13 @@ push_client_time(Client *c, Time time)
 {
 	if (!time)
 		return;
-	if (c->has.time) {
+	if (c->with.time) {
 		if ((c->user_time != CurrentTime) &&
 		    (int) ((int) time - (int) c->user_time) > 0)
 			c->user_time = time;
 	} else {
 		c->user_time = time;
-		c->has.time = True;
+		c->with.time = True;
 	}
 	if ((user_time == CurrentTime) ||
 	    ((int) ((int) time - (int) user_time) > 0))
@@ -1702,7 +1716,7 @@ ewmh_process_net_window_user_time(Client *c) {
 
 	time = getcard(win, _XA_NET_WM_USER_TIME, &n);
 	if (n > 0) {
-		c->has.time = True;
+		c->with.time = True;
 		c->user_time = time[0];
 		if (user_time == CurrentTime) {
 			user_time = c->user_time;
@@ -1712,7 +1726,7 @@ ewmh_process_net_window_user_time(Client *c) {
 		}
 		XFree(time);
 	} else {
-		c->has.time = False;
+		c->with.time = False;
 		c->user_time = CurrentTime;
 	}
 }
@@ -1806,7 +1820,8 @@ wmh_process_layer(Client * c, unsigned int layer)
 		break;
 	case 1:
 	case WIN_LAYER_BELOW:
-		c->is.below = True;
+		if (!c->is.below)
+			togglebelow(c);
 		break;
 	case 3:
 	case WIN_LAYER_NORMAL:
@@ -1814,7 +1829,8 @@ wmh_process_layer(Client * c, unsigned int layer)
 		break;
 	case 5:
 	case WIN_LAYER_ONTOP:
-		c->is.above = True;
+		if (!c->is.above)
+			toggleabove(c);
 		break;
 	case 7:
 	case WIN_LAYER_DOCK:
@@ -1823,7 +1839,8 @@ wmh_process_layer(Client * c, unsigned int layer)
 	case 9:
 	case WIN_LAYER_ABOVE_DOCK:
 		c->wintype |= WTFLAG(WindowTypeDock);
-		c->is.above = True;
+		if (!c->is.above)
+			toggleabove(c);
 		break;
 	case 11:
 	case WIN_LAYER_MENU:
@@ -1949,8 +1966,10 @@ ewmh_process_kde_net_window_type_override(Client *c) {
 	if (status == Success && real != None) {
 		/* no decorations or functionality */
 		c->is.bastard = True;
-		c->is.floating = True;
-		c->is.fixed = True;
+		c->is.floater = True;
+		c->skip.skip = -1U; /* skip everything */
+		c->can.can = 0; /* no functionality */
+		c->has.has = 0; /* no decorations */
 	}
 	if (data)
 		XFree(data);
@@ -2063,15 +2082,15 @@ clientmessage(XEvent *e) {
 			unsigned gravity = flags & 0xff;
 			int x, y, w, h;
 
-			if (!(c->is.fixed || c->is.floating || MFEATURES(clientmonitor(c), OVERLAP)))
+			if (!(c->is.floater || c->skip.arrange || MFEATURES(clientmonitor(c), OVERLAP)))
 				return;
 			if (source != 0 && source != 2)
 				return;
 
-			x = (flags & (1 << 8)) ? ev->data.l[1] : c->x;
-			y = (flags & (1 << 9)) ? ev->data.l[2] : c->y;
-			w = (flags & (1 << 10)) ? ev->data.l[3] : c->w;
-			h = (flags & (1 << 11)) ? ev->data.l[4] : c->h;
+			x = ((flags & (1 << 8)) && c->can.move) ? ev->data.l[1] : c->x;
+			y = ((flags & (1 << 9)) && c->can.move) ? ev->data.l[2] : c->y;
+			w = ((flags & (1 << 10)) && c->can.sizeh) ? ev->data.l[3] : c->w;
+			h = ((flags & (1 << 11)) && c->can.sizev) ? ev->data.l[4] : c->h;
 			if (gravity == 0)
 				gravity = c->gravity;
 			applygravity(c, &x, &y, &w, &h, c->border, gravity);
@@ -2339,6 +2358,41 @@ getwintype(Window win) {
 	if (layer)
 		XFree(layer);
 	return ret;
+}
+
+void
+ewmh_process_net_window_type(Client *c)
+{
+	c->wintype = getwintype(c->win);
+	if (!WTCHECK(c, WindowTypeNormal)) {
+		if (WTCHECK(c, WindowTypeDesk) ||
+		    WTCHECK(c, WindowTypeDock) ||
+		    WTCHECK(c, WindowTypeSplash) ||
+		    WTCHECK(c, WindowTypeDrop) ||
+		    WTCHECK(c, WindowTypePopup) ||
+		    WTCHECK(c, WindowTypeTooltip) ||
+		    WTCHECK(c, WindowTypeNotify) ||
+		    WTCHECK(c, WindowTypeCombo) ||
+		    WTCHECK(c, WindowTypeDnd)) {
+			c->is.bastard = True;
+			c->skip.skip = -1U; /* skip everything */
+			c->can.can = 0; /* no functionality */
+			c->has.has = 0; /* no decorations */
+			c->is.floater = True;
+		}
+		if (WTCHECK(c, WindowTypeDialog) ||
+		    WTCHECK(c, WindowTypeMenu)) {
+			c->skip.arrange = True;
+			c->is.floater = True;
+			c->can.arrange = False;
+			c->can.size = False;
+			// c->can.move = False;
+		}
+		if (WTCHECK(c, WindowTypeToolbar) ||
+		    WTCHECK(c, WindowTypeUtil)) {
+			c->skip.arrange = True;
+		}
+	}
 }
 
 Bool

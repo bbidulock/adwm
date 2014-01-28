@@ -227,6 +227,7 @@ typedef enum { CauseDestroyed, CauseUnmapped, CauseReparented,
 	       CauseQuitting, CauseSwitching, CauseRestarting } WithdrawCause;
 typedef enum { ColSmartPlacement, RowSmartPlacement, MinOverlapPlacement,
 	       UnderMousePlacement, CascadePlacement, RandomPlacement } WindowPlacement;
+typedef enum { ModalModeless, ModalPrimary, ModalSystem, ModalGroup } Modality;
 
 typedef struct {
 	int x, y, w, h, b;
@@ -279,8 +280,9 @@ struct Client {
 	int ignoreunmap;
 	long flags;
 	int wintype;
-	Bool nopager;
+	Bool wasfloating;
 	Bool *tags;
+	int nofocus;
 	union {
 		struct {
 			unsigned int taskbar:1;
@@ -288,6 +290,7 @@ struct Client {
 			unsigned int winlist:1;
 			unsigned int cycle:1;
 			unsigned int focus:1;
+			unsigned int arrange:1;
 		};
 		unsigned int skip;
 	} skip;
@@ -295,26 +298,24 @@ struct Client {
 		struct {
 			unsigned int banned:1;
 			unsigned int max:1;
-			unsigned int floating:1;
 			unsigned int floater:1;
 			unsigned int maxv:1;
 			unsigned int maxh:1;
-			unsigned int shade:1;
+			unsigned int shaded:1;
 			unsigned int icon:1;
 			unsigned int fill:1;
-			unsigned int modal:1;
+			unsigned int modal:2;
 			unsigned int above:1;
 			unsigned int below:1;
 			unsigned int attn:1;
 			unsigned int sticky:1;
 			unsigned int hidden:1;
-			unsigned int fixed:1;
 			unsigned int bastard:1;
-			unsigned int focusable:1;
+			unsigned int fs:1;
 			unsigned int managed:1;
 		};
 		unsigned int is;
-	} is;
+	} is, was;
 	union {
 		struct {
 			unsigned int border:1;
@@ -331,17 +332,26 @@ struct Client {
 				unsigned int fill:1;
 				unsigned int floats:1;
 			} but __attribute__((packed));
-			unsigned int struts:1;
-			unsigned int time:1;
 		};
 		unsigned int has;
 	} has;
 	union {
 		struct {
+			unsigned int struts:1;
+			unsigned int time:1;
+		};
+		unsigned int with;
+	} with;
+	union {
+		struct {
 			unsigned int move:1;
 			unsigned int size:1;
+			unsigned int sizev:1;
+			unsigned int sizeh:1;
 			unsigned int min:1;
 			unsigned int max:1;
+			unsigned int maxv:1;
+			unsigned int maxh:1;
 			unsigned int close:1;
 			unsigned int shade:1;
 			unsigned int stick:1;
@@ -349,9 +359,13 @@ struct Client {
 			unsigned int above:1;
 			unsigned int below:1;
 			unsigned int fill:1;
+			unsigned int fillh:1;
+			unsigned int fillv:1;
 			unsigned int floats:1;
 			unsigned int hide:1;
 			unsigned int tag:1;
+			unsigned int arrange:1;
+			unsigned int focus:1;
 		};
 		unsigned int can;
 	} can;
@@ -378,6 +392,7 @@ typedef struct Group Group;
 struct Group {
 	Window *members;
 	unsigned int count;
+	int modal_transients;
 };
 
 typedef struct View {
@@ -469,6 +484,7 @@ void mwm_process_atom(Client * c);
 Bool ewmh_process_net_window_desktop(Client *);
 Bool ewmh_process_net_window_desktop_mask(Client *);
 
+void ewmh_process_net_window_type(Client *);
 void ewmh_process_kde_net_window_type_override(Client *);
 void ewmh_process_net_startup_id(Client *);
 void ewmh_process_net_window_state(Client *c);
@@ -527,6 +543,13 @@ void togglemax(Client *c);
 void togglemaxv(Client *c);
 void togglemaxh(Client *c);
 void toggleshade(Client *c);
+void togglesticky(Client *c);
+void togglemin(Client *c);
+void toggleabove(Client *c);
+void togglebelow(Client *c);
+void togglepager(Client *c);
+void toggletaskbar(Client *c);
+void togglemodal(Client *c);
 void togglemonitor(const char *arg);
 void toggletag(Client *c, int index);
 void toggleview(int index);
@@ -576,7 +599,7 @@ void initstyle();
 #define DPRINTF(format, ...)
 #endif
 #define DPRINTCLIENT(c) DPRINTF("%s: x: %d y: %d w: %d h: %d th: %d f: %d b: %d m: %d\n", \
-				    c->name, c->x, c->y, c->w, c->h, c->th, c->is.floating, c->is.bastard, c->is.max)
+				    c->name, c->x, c->y, c->w, c->h, c->th, c->skip.arrange, c->is.bastard, c->is.max)
 
 #define OPAQUE			0xffffffff
 #define RESNAME		       "echinus"

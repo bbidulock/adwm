@@ -107,6 +107,7 @@ void *erealloc(void *ptr, size_t size);
 void enternotify(XEvent * e);
 void eprint(const char *errstr, ...);
 void expose(XEvent * e);
+Group *getleader(Window leader, int group);
 Bool handle_event(XEvent *ev);
 void iconify(Client *c);
 void incnmaster(const char *arg);
@@ -123,6 +124,8 @@ Monitor *getmonitor(int x, int y);
 Monitor *curmonitor();
 Monitor *clientmonitor(Client * c);
 Bool isvisible(Client * c, Monitor * m);
+void incmodal(Client *c, Group *g);
+void decmodal(Client *c, Group *g);
 void initmonitors(XEvent * e);
 void freemonitors(void);
 void updatemonitors(XEvent *e, int n, Bool size, Bool full);
@@ -184,7 +187,7 @@ void unmapnotify(XEvent * e);
 void updatesizehints(Client * c);
 void updateframe(Client * c);
 void updatetitle(Client * c);
-void updategroup(Client * c, Window leader, int group);
+void updategroup(Client * c, Window leader, int group, int *nofocus);
 Window *getgroup(Client *c, Window leader, int group, unsigned int *count);
 void removegroup(Client *c, Window leader, int group);
 void updateiconname(Client * c);
@@ -230,7 +233,7 @@ Client *clients;
 Client *sel;
 Client *stack;
 Client *clist;
-Group window_stack = { NULL, 0 };
+Group window_stack = { NULL, 0, 0 };
 XContext context[PartLast];
 Cursor cursor[CurLast];
 int ebase[BaseLast];
@@ -251,7 +254,7 @@ unsigned int modkey;
 unsigned int numlockmask;
 Bool showing_desktop = False;
 Time user_time = CurrentTime;
-Group systray = { NULL, 0 };
+Group systray = { NULL, 0, 0 };
 /* configuration, allows nested code to access above variables */
 #include "config.h"
 
@@ -333,7 +336,7 @@ applyrules(Client * c) {
 	buf[LENGTH(buf)-1] = 0;
 	for (i = 0; i < nrules; i++)
 		if (rules[i]->propregex && !regexec(rules[i]->propregex, buf, 1, &tmp, 0)) {
-			c->is.floating = rules[i]->isfloating;
+			c->skip.arrange = rules[i]->isfloating;
 			c->title = rules[i]->hastitle;
 			for (j = 0; rules[i]->tagregex && j < ntags; j++) {
 				if (!regexec(rules[i]->tagregex, tags[j], 1, &tmp, 0)) {
@@ -355,7 +358,7 @@ arrangefloats(Monitor * m) {
 	Client *c;
 
 	for (c = stack; c; c = c->snext)
-		if (isvisible(c, m) && !c->is.bastard)
+		if (isvisible(c, m) && !c->is.bastard) /* XXX: can.move? can.tag? */
 			updatefloat(c, m);
 }
 
@@ -531,18 +534,18 @@ buttonpress(XEvent * e) {
 			return;
 		}
 		if (ev->button == Button1) {
-			if (!FEATURES(curlayout, OVERLAP) && !c->is.floating)
+			if (!FEATURES(curlayout, OVERLAP) && !c->skip.arrange)
 				togglefloating(c);
 			mousemove(c, ev->button, ev->x_root, ev->y_root);
 		} else if (ev->button == Button2) {
-			if (!FEATURES(curlayout, OVERLAP) && c->is.floating)
+			if (!FEATURES(curlayout, OVERLAP) && c->skip.arrange)
 				togglefloating(c);
 			else
 				zoom(c);
 			/* passive grab */
 			XUngrabPointer(dpy, CurrentTime); // ev->time ??
 		} else if (ev->button == Button3) {
-			if (!FEATURES(curlayout, OVERLAP) && !c->is.floating)
+			if (!FEATURES(curlayout, OVERLAP) && !c->skip.arrange)
 				togglefloating(c);
 			mouseresize(c, ev->button, ev->x_root, ev->y_root);
 		}
@@ -858,11 +861,11 @@ configurerequest(XEvent * e) {
 		if (!(cm = findcurmonitor(c)))
 			if (!(cm = curmonitor()))
 				cm = monitors;
-		if (c->is.fixed || (!c->is.max && (c->is.floating || MFEATURES(cm, OVERLAP)))) {
-			int x = (ev->value_mask & CWX) ? ev->x : c->x;
-			int y = (ev->value_mask & CWY) ? ev->y : c->y;
-			int w = (ev->value_mask & CWWidth) ? ev->width : c->w;
-			int h = (ev->value_mask & CWHeight) ? ev->height : c->h - c->th;
+		if (c->is.floater || (!c->is.max && (c->skip.arrange || MFEATURES(cm, OVERLAP)))) {
+			int x = ((ev->value_mask & CWX) && c->can.move) ? ev->x : c->x;
+			int y = ((ev->value_mask & CWY) && c->can.move) ? ev->y : c->y;
+			int w = ((ev->value_mask & CWWidth) && c->can.sizeh) ? ev->width : c->w;
+			int h = ((ev->value_mask & CWHeight) && c->can.sizev) ? ev->height : c->h - c->th;
 			int b = (ev->value_mask & CWBorderWidth) ? ev->border_width : c->border;
 
 			applygravity(c, &x, &y, &w, &h, b, c->gravity);
@@ -981,7 +984,7 @@ enternotify(XEvent * e) {
 	if (!curmonitor())
 		return;
 	if ((c = getclient(ev->window, ClientFrame))) {
-		if (c->is.bastard)
+		if (c->is.bastard) /* XXX: funny: bastards do not have frames */
 			return;
 		/* focus when switching monitors */
 		if (!isvisible(sel, curmonitor()))
@@ -990,7 +993,7 @@ enternotify(XEvent * e) {
 		case Clk2Focus:
 			break;
 		case SloppyFloat:
-			if (FEATURES(curlayout, OVERLAP) || c->is.floating)
+			if (FEATURES(curlayout, OVERLAP) || c->skip.arrange)
 				focus(c);
 			break;
 		case AllSloppy:
@@ -1080,7 +1083,9 @@ void
 focus(Client * c) {
 	Client *o;
 
-	o = sel;
+	if ((o = sel) && o->is.modal == ModalSystem)
+		return;
+	/* XXX: should check be for can.focus instead of bastards? */
 	if ((!c && selscreen) || (c && (c->is.bastard || !isvisible(c, curmonitor()))))
 		for (c = stack;
 		    c && (c->is.bastard || (c->is.icon || c->is.hidden) || !isvisible(c, curmonitor())); c = c->snext);
@@ -1094,7 +1099,7 @@ focus(Client * c) {
 		if (c->is.attn)
 			c->is.attn = False;
 		setclientstate(c, NormalState);
-		if (c->is.focusable && !c->skip.focus) {
+		if (c->can.focus && !c->skip.focus) {
 			XSetInputFocus(dpy, c->win, RevertToPointerRoot, CurrentTime);
 			givefocus(c);
 		}
@@ -1111,10 +1116,13 @@ focus(Client * c) {
 }
 
 void
-focusicon(const char *arg) {
+focusicon(const char *arg)
+{
 	Client *c;
 
-	for (c = clients; c && (!c->is.icon || !isvisible(c, curmonitor())); c = c->next);
+	for (c = clients;
+	     c && (c->nofocus || c->skip.focus || !c->is.icon
+		   || !isvisible(c, curmonitor())); c = c->next) ;
 	if (!c)
 		return;
 	if (c->is.icon) {
@@ -1123,7 +1131,8 @@ focusicon(const char *arg) {
 		ewmh_update_net_window_state(c);
 	}
 	focus(c);
-	arrange(curmonitor());
+	if (c->is.managed)
+		arrange(curmonitor());
 }
 
 void
@@ -1131,11 +1140,12 @@ focusnext(Client *c) {
 	if (!c)
 		return;
 	for (c = c->next;
-	    c && (c->is.bastard || (c->is.icon || c->is.hidden) || !isvisible(c, curmonitor())); c = c->next);
+	     c && (c->nofocus || c->skip.focus || (c->is.icon || c->is.hidden)
+		   || !isvisible(c, curmonitor())); c = c->next) ;
 	if (!c)
 		for (c = clients;
-		    c && (c->is.bastard || (c->is.icon || c->is.hidden)
-			|| !isvisible(c, curmonitor())); c = c->next);
+		     c && (c->nofocus || c->skip.focus || (c->is.icon || c->is.hidden)
+			   || !isvisible(c, curmonitor())); c = c->next) ;
 	if (c) {
 		focus(c);
 		raiseclient(c);
@@ -1147,11 +1157,12 @@ focusprev(Client *c) {
 	if (!c)
 		return;
 	for (c = c->prev;
-	    c && (c->is.bastard || (c->is.icon || c->is.hidden) || !isvisible(c, curmonitor())); c = c->prev);
+	    c && (c->nofocus || c->skip.focus || (c->is.icon || c->is.hidden)
+		    || !isvisible(c, curmonitor())); c = c->prev);
 	if (!c) {
 		for (c = clients; c && c->next; c = c->next);
 		for (;
-		    c && (c->is.bastard || (c->is.icon || c->is.hidden)
+		    c && (c->nofocus || c->skip.focus || (c->is.icon || c->is.hidden)
 			|| !isvisible(c, curmonitor())); c = c->prev);
 	}
 	if (c) {
@@ -1189,7 +1200,7 @@ iconify(Client *c) {
 
 static void
 _hide(Client *c) {
-	if (c->is.hidden || c->is.bastard || WTCHECK(c, WindowTypeDock)
+	if (c->is.hidden || !c->can.hide || WTCHECK(c, WindowTypeDock)
 			|| WTCHECK(c, WindowTypeDesk))
 		return;
 	if (c == sel)
@@ -1526,45 +1537,23 @@ manage(Window w, XWindowAttributes * wa) {
 
 	c = emallocz(sizeof(Client));
 	c->win = w;
-	c->is.managed = False;
 	c->name = ecalloc(1, 1);
 	c->icon_name = ecalloc(1, 1);
 	XSaveContext(dpy, c->win, context[ClientWindow], (XPointer)c);
 	XSaveContext(dpy, c->win, context[ClientAny],    (XPointer)c);
-	c->wintype = getwintype(c->win);
-	if (!WTCHECK(c, WindowTypeNormal)) {
-		if (WTCHECK(c, WindowTypeDesk) ||
-		    WTCHECK(c, WindowTypeDock) ||
-		    WTCHECK(c, WindowTypeSplash) ||
-		    WTCHECK(c, WindowTypeDrop) ||
-		    WTCHECK(c, WindowTypePopup) ||
-		    WTCHECK(c, WindowTypeTooltip) ||
-		    WTCHECK(c, WindowTypeNotify) ||
-		    WTCHECK(c, WindowTypeCombo) ||
-		    WTCHECK(c, WindowTypeDnd)) {
-			c->is.bastard = True;
-			c->is.floating = True;
-			c->is.fixed = True;
-		}
-		if (WTCHECK(c, WindowTypeDialog) ||
-		    WTCHECK(c, WindowTypeMenu)) {
-			c->is.floating = True;
-			c->is.fixed = True;
-		}
-		if (WTCHECK(c, WindowTypeToolbar) ||
-		    WTCHECK(c, WindowTypeUtil)) {
-			c->is.floating = True;
-		}
-	}
+	// c->skip.skip = 0;
+	// c->is.is = 0;
+	// c->with.with = 0;
+	c->has.has = -1U;
+	c->can.can = -1U;
+	ewmh_process_net_window_type(c);
 	ewmh_process_kde_net_window_type_override(c);
 
 	c->is.icon = False;
 	c->is.hidden = False;
-	c->title = c->is.bastard ? None : 1;
+	c->title = c->is.bastard ? None : 1; /* XXX: has.title? */
 	c->tags = ecalloc(ntags, sizeof(*c->tags));
-	c->is.focusable = c->is.bastard ? False : True;
-	c->skip.focus = c->is.bastard ? True : False;
-	c->rb = c->border = c->is.bastard ? 0 : style.border;
+	c->rb = c->border = c->is.bastard ? 0 : style.border; /* XXX: has.border? */
 	/*  XReparentWindow() unmaps *mapped* windows */
 	c->ignoreunmap = wa->map_state == IsViewable ? 1 : 0;
 	mwm_process_atom(c);
@@ -1578,7 +1567,7 @@ manage(Window w, XWindowAttributes * wa) {
 	ewmh_process_net_window_user_time_window(c);
 	ewmh_process_net_startup_id(c);
 
-	if ((c->has.time) &&
+	if ((c->with.time) &&
 	    (c->user_time == CurrentTime ||
 	     (int)((int)c->user_time - (int)user_time) < 0))
 		focusnew = False;
@@ -1586,25 +1575,25 @@ manage(Window w, XWindowAttributes * wa) {
 	c->th = c->title ? style.titleheight : 0;
 
 	if ((wmh = XGetWMHints(dpy, c->win))) {
-		c->is.focusable = !(wmh->flags & InputHint) || wmh->input;
+		if ((wmh->flags & InputHint) && !wmh->input) {
+			c->can.focus = False;
+			c->skip.focus = True;
+		}
 		c->is.attn = (wmh->flags & XUrgencyHint) ? True : False;
 		if ((wmh->flags & WindowGroupHint) &&
 		    (c->leader = wmh->window_group) != None) {
-			updategroup(c, c->leader, ClientGroup);
+			updategroup(c, c->leader, ClientGroup, &c->nofocus);
 		}
 		XFree(wmh);
 	}
 
-	if (c->is.attn)
-		focusnew = True;
-	if (!c->is.focusable || c->skip.focus)
-		focusnew = False;
-
 	if (XGetTransientForHint(dpy, w, &trans)) {
-		if (trans == None || trans == root)
+		if (trans == None)
+			trans = root;
+		if ((c->transfor = trans) == root)
 			trans = c->leader;
-		if ((c->transfor = trans) != None) {
-			updategroup(c, c->transfor, ClientTransFor);
+		if (trans != None) {
+			updategroup(c, trans, ClientTransFor, &c->nofocus);
 			if (!(t = getclient(trans, ClientWindow)) && trans == c->leader) {
 				Window *group;
 				unsigned int i, m = 0;
@@ -1620,13 +1609,18 @@ manage(Window w, XWindowAttributes * wa) {
 			if (t)
 				memcpy(c->tags, t->tags, ntags * sizeof(*c->tags));
 		}
-		c->is.floating = True;
+		c->is.floater = True;
 	}
 
-	if (!c->is.floating)
-		c->is.floating = c->is.fixed;
+	if (c->is.attn)
+		focusnew = True;
+	if (!c->can.focus || c->skip.focus)
+		focusnew = False;
+	if (focusnew && c->nofocus)
+		focusnew = False;
 
-	c->is.floater = c->is.floating;
+	if (!c->is.floater)
+		c->is.floater = (!c->can.sizeh || !c->can.sizev);
 
 	c->x = c->rx = wa->x;
 	c->y = c->ry = wa->y;
@@ -1639,12 +1633,12 @@ manage(Window w, XWindowAttributes * wa) {
 	c->sh = wa->height;
 	c->sb = wa->border_width;
 
-	if (!wa->x && !wa->y && !c->is.bastard)
+	if (!wa->x && !wa->y && c->can.move)
 		place(c, CascadePlacement);
 
-	c->has.struts = getstruts(c);
+	c->with.struts = getstruts(c);
 
-	if (c->is.bastard) {
+	if (c->is.bastard) { /* XXX: why just bastards? */
 		Monitor *cm;
 
 		/* TODO: refit with startup notification SCREEN= */
@@ -1653,22 +1647,6 @@ manage(Window w, XWindowAttributes * wa) {
 				cm = monitors;
 		memcpy(c->tags, cm->seltags, ntags * sizeof(*c->tags));
 	}
-
-#if 0
-	if (c->w == cm->sw && c->h == cm->sh) {
-		c->x = 0;
-		c->y = 0;
-	} else if (!c->is.bastard) {
-		if (c->x + c->w > cm->wax + cm->waw)
-			c->x = cm->waw - c->w;
-		if (c->y + c->h > cm->way + cm->wah)
-			c->y = cm->wah - c->h;
-		if (c->x < cm->wax)
-			c->x = cm->wax;
-		if (c->y < cm->way)
-			c->y = cm->way;
-	}
-#endif
 
 	XGrabButton(dpy, AnyButton, AnyModifier, c->win, True,
 			ButtonPressMask, GrabModeSync, GrabModeAsync, None, None);
@@ -1736,7 +1714,7 @@ manage(Window w, XWindowAttributes * wa) {
 	ewmh_update_net_window_desktop(c);
 	updateframe(c);
 
-	if (c->has.struts) {
+	if (c->with.struts) {
 		ewmh_update_net_work_area();
 		updategeom(NULL);
 	}
@@ -1798,7 +1776,23 @@ monocle(Monitor * m) {
 
 void
 moveresizekb(Client * c, int dx, int dy, int dw, int dh) {
-	if (!c || !c->is.floating || !(dx || dy || dw || dh))
+	Monitor *m;
+
+	if (!c)
+		return;
+	if (!c->can.move) {
+		dx = 0;
+		dy = 0;
+	}
+	if (!c->can.sizeh)
+		dw = 0;
+	if (!c->can.sizev)
+		dh = 0;
+	if (!(dx || dy || dw || dh))
+		return;
+	if (!(m = clientmonitor(c)))
+		return;
+	if (!c->is.floater && (!c->skip.arrange || !MFEATURES(m, OVERLAP)))
 		return;
 	if (dw || dh) {
 		int w, h;
@@ -1981,12 +1975,12 @@ static Bool wind_overlap(int min1, int max1, int min2, int max2);
 void
 mousemove(Client * c, unsigned int button, int x_root, int y_root) {
 	int ocx, ocy, nx, ny, nx2, ny2;
-	int wasmax, wasmaxv, wasmaxh, wasfill, wasshade, moved = 0;
+	int moved = 0;
 	unsigned int i;
 	XEvent ev;
 	Monitor *m, *nm;
 
-	if (c->is.bastard) {
+	if (!c->can.move) {
 		XUngrabPointer(dpy, CurrentTime);
 		return;
 	}
@@ -2000,16 +1994,17 @@ mousemove(Client * c, unsigned int button, int x_root, int y_root) {
 		// XRaiseWindow(dpy, c->frame);
 		// XMapWindow(dpy, m->veil);
 	}
-	if ((wasmax = c->is.max))
+	c->was.is = 0;
+	if ((c->was.max = c->is.max))
 		c->is.max = False;
-	if ((wasmaxv = c->is.maxv))
+	if ((c->was.maxv = c->is.maxv))
 		c->is.maxv = False;
-	if ((wasmaxh = c->is.maxh))
+	if ((c->was.maxh = c->is.maxh))
 		c->is.maxh = False;
-	if ((wasfill = c->is.fill))
+	if ((c->was.fill = c->is.fill))
 		c->is.fill = False;
-	if ((wasshade = c->is.shade))
-		c->is.shade = False;
+	if ((c->was.shaded = c->is.shaded))
+		c->is.shaded = False;
 	/* If the cursor is not over the window move the window under the curor
 	 * instead of warping the pointer. */
 	if (x_root < c->rx || c->rx + c->rw < x_root) {
@@ -2020,7 +2015,7 @@ mousemove(Client * c, unsigned int button, int x_root, int y_root) {
 		c->ry = y_root - c->rh/2 - c->rb;
 		moved = 1;
 	}
-	if (wasmax || wasmaxv || wasmaxh || wasfill || wasshade || moved)
+	if (c->was.is || moved)
 		updatefloat(c, m);
 	ocx = c->x;
 	ocy = c->y;
@@ -2131,17 +2126,17 @@ mousemove(Client * c, unsigned int button, int x_root, int y_root) {
 	}
 	if (m)
 		XUnmapWindow(dpy, m->veil);
-	if (wasmax || wasmaxv || wasmaxh || wasfill || wasshade) {
-		if (wasmax)
+	if (c->was.is) {
+		if (c->was.max)
 			c->is.max = True;
-		if (wasmaxv)
+		if (c->was.maxv)
 			c->is.maxv = True;
-		if (wasmaxh)
+		if (c->was.maxh)
 			c->is.maxh = True;
-		if (wasfill)
+		if (c->was.fill)
 			c->is.fill = True;
-		if (wasshade)
-			c->is.shade = True;
+		if (c->was.shaded)
+			c->is.shaded = True;
 		updatefloat(c, m);
 	}
 	ewmh_update_net_window_state(c);
@@ -2175,7 +2170,6 @@ void
 mouseresize_from(Client * c, int from, unsigned int button, int x_root, int y_root)
 {
 	int ocx, ocy, ocw, och, dx, dy, nx, ny, nw, nh;
-	int wasmax, wasmaxv, wasmaxh, wasshade, wasfill;
 	XEvent ev;
 	Monitor *m, *nm;
 	int waiting = 0;
@@ -2184,7 +2178,14 @@ mouseresize_from(Client * c, int from, unsigned int button, int x_root, int y_ro
 	XSyncValue val;
 	XSyncAlarmAttributes aa;
 	XSyncAlarm alarm = None;
-
+#endif
+	if (!c->can.size ||
+	    ((from == CurResizeTop || from == CurResizeBottom) && !c->can.sizev) ||
+	    ((from == CurResizeLeft || from == CurResizeRight) && !c->can.sizeh)) {
+		XUngrabPointer(dpy, CurrentTime);
+		return;
+	}
+#ifdef SYNC
 	if (c->sync) {
 		XSyncIntToValue(&val, 0);
 
@@ -2201,11 +2202,6 @@ mouseresize_from(Client * c, int from, unsigned int button, int x_root, int y_ro
 				XSyncCATestType | XSyncCADelta | XSyncCAEvents, &aa);
 	}
 #endif
-
-	if (c->is.bastard || c->is.fixed) {
-		XUngrabPointer(dpy, CurrentTime);
-		return;
-	}
 	if (!(m = getmonitor(x_root, y_root)))
 		m = curmonitor();
 
@@ -2223,17 +2219,18 @@ mouseresize_from(Client * c, int from, unsigned int button, int x_root, int y_ro
 	if (XGrabPointer(dpy, root, False, MOUSEMASK, GrabModeAsync,
 			 GrabModeAsync, None, cursor[from], CurrentTime) != GrabSuccess)
 		return;
-	if ((wasmax = c->is.max))
+	c->was.is = 0;
+	if ((c->was.max = c->is.max))
 		c->is.max = False;
-	if ((wasmaxv = c->is.maxv))
+	if ((c->was.maxv = c->is.maxv))
 		c->is.maxv = False;
-	if ((wasmaxh = c->is.maxh))
+	if ((c->was.maxh = c->is.maxh))
 		c->is.maxh = False;
-	if ((wasfill = c->is.fill))
+	if ((c->was.fill = c->is.fill))
 		c->is.fill = False;
-	if ((wasshade = c->is.shade))
-		c->is.shade = False;
-	if (wasmax || wasmaxv || wasmaxh || wasfill || wasshade)
+	if ((c->was.shaded = c->is.shaded))
+		c->is.shaded = False;
+	if (c->was.is)
 		updatefloat(c, m);
 	for (;;) {
 		int wx, wy, ww, wh, rx, ry, nx2, ny2;
@@ -2448,17 +2445,22 @@ mouseresize_from(Client * c, int from, unsigned int button, int x_root, int y_ro
 	}
 	if (m)
 		XUnmapWindow(dpy, m->veil);
-	if (wasshade) {
-		c->is.shade = True;
+	if (c->was.shaded) {
+		c->is.shaded = True;
 		updatefloat(c, m);
 	}
 	ewmh_update_net_window_state(c);
 }
 
 void
-mouseresize(Client * c, unsigned int button, int x_root, int y_root)
+mouseresize(Client *c, unsigned int button, int x_root, int y_root)
 {
 	int cx, cy, dx, dy, from;
+
+	if (!c->can.size || (!c->can.sizeh && !c->can.sizev)) {
+		XUngrabPointer(dpy, CurrentTime);
+		return;
+	}
 
 	cx = c->x + c->w / 2;
 	cy = c->y + c->h / 2;
@@ -2469,42 +2471,66 @@ mouseresize(Client * c, unsigned int button, int x_root, int y_root)
 		/* top */
 		if (x_root < cx) {
 			/* top-left */
-			if (dx < dy / 2) {
-				from = CurResizeTop;
-			} else if (dy < dx / 2) {
+			if (!c->can.sizev)
 				from = CurResizeLeft;
-			} else {
-				from = CurResizeTopLeft;
+			else if (!c->can.sizeh)
+				from = CurResizeTop;
+			else {
+				if (dx < dy / 2) {
+					from = CurResizeTop;
+				} else if (dy < dx / 2) {
+					from = CurResizeLeft;
+				} else {
+					from = CurResizeTopLeft;
+				}
 			}
 		} else {
 			/* top-right */
-			if (dx < dy / 2) {
-				from = CurResizeTop;
-			} else if (dy < dx / 2) {
+			if (!c->can.sizev)
 				from = CurResizeRight;
-			} else {
-				from = CurResizeTopRight;
+			else if (!c->can.sizeh)
+				from = CurResizeTop;
+			else {
+				if (dx < dy / 2) {
+					from = CurResizeTop;
+				} else if (dy < dx / 2) {
+					from = CurResizeRight;
+				} else {
+					from = CurResizeTopRight;
+				}
 			}
 		}
 	} else {
 		/* bottom */
 		if (x_root < cx) {
 			/* bottom-left */
-			if (dx < dy / 2) {
-				from = CurResizeBottom;
-			} else if (dy < dx / 2) {
+			if (!c->can.sizev)
 				from = CurResizeLeft;
-			} else {
-				from = CurResizeBottomLeft;
+			else if (!c->can.sizeh)
+				from = CurResizeBottom;
+			else {
+				if (dx < dy / 2) {
+					from = CurResizeBottom;
+				} else if (dy < dx / 2) {
+					from = CurResizeLeft;
+				} else {
+					from = CurResizeBottomLeft;
+				}
 			}
 		} else {
 			/* bottom-right */
-			if (dx < dy / 2) {
-				from = CurResizeBottom;
-			} else if (dy < dx / 2) {
+			if (!c->can.sizev)
 				from = CurResizeRight;
-			} else {
-				from = CurResizeBottomRight;
+			else if (!c->can.sizeh)
+				from = CurResizeBottom;
+			else {
+				if (dx < dy / 2) {
+					from = CurResizeBottom;
+				} else if (dy < dx / 2) {
+					from = CurResizeRight;
+				} else {
+					from = CurResizeBottomRight;
+				}
 			}
 		}
 	}
@@ -2512,16 +2538,16 @@ mouseresize(Client * c, unsigned int button, int x_root, int y_root)
 }
 
 Client *
-nexttiled(Client * c, Monitor * m) {
-	for (; c && (c->is.floating || !isvisible(c, m) || c->is.bastard
-		|| (c->is.icon || c->is.hidden)); c = c->next);
+nexttiled(Client *c, Monitor *m) {
+	for (; c && (c->is.floater || c->skip.arrange || !isvisible(c, m) || c->is.bastard
+		     || (c->is.icon || c->is.hidden)); c = c->next) ;
 	return c;
 }
 
 Client *
-prevtiled(Client * c, Monitor * m) {
-	for (; c && (c->is.floating || !isvisible(c, m) || c->is.bastard
-		|| (c->is.icon || c->is.hidden)); c = c->prev);
+prevtiled(Client *c, Monitor *m) {
+	for (; c && (c->is.floater || c->skip.arrange || !isvisible(c, m) || c->is.bastard
+		     || (c->is.icon || c->is.hidden)); c = c->prev) ;
 	return c;
 }
 
@@ -2571,7 +2597,7 @@ total_overlap(Client *c, Monitor *m, Geometry *g) {
 	a = 0;
 
 	for (o = clients; o; o = o->next)
-		if (o != c && !o->is.bastard && (o->is.floating || MFEATURES(m, OVERLAP)) && isvisible(o, m))
+		if (o != c && !o->is.bastard && (o->skip.arrange || MFEATURES(m, OVERLAP)) && isvisible(o, m))
 			a += area_overlap(x1, y1, x2, y2,
 					  o->x, o->y,
 					  o->x + o->w + 2 * o->border,
@@ -2783,7 +2809,7 @@ propertynotify(XEvent * e) {
 
 	if ((c = getclient(ev->window, ClientWindow))) {
 		if (ev->atom == _XA_NET_WM_STRUT_PARTIAL || ev->atom == _XA_NET_WM_STRUT) {
-			c->has.struts = getstruts(c);
+			c->with.struts = getstruts(c);
 			updatestruts();
 		}
 		if (ev->state == PropertyDelete) 
@@ -2794,8 +2820,8 @@ propertynotify(XEvent * e) {
 				if (XGetTransientForHint(dpy, c->win, &trans) &&
 				    trans == None)
 					trans = root;
-				if (!c->is.floating &&
-				    (c->is.floating = (trans != None))) {
+				if (!c->is.floater &&
+				    (c->is.floater = (trans != None))) {
 					arrange(NULL);
 					ewmh_update_net_window_state(c);
 				}
@@ -2987,7 +3013,7 @@ resize(Client * c, int x, int y, int w, int h, int b) {
 		wc.height = h;
 		mask |= CWHeight;
 	}
-	if (c->th && c->is.shade) {
+	if (c->th && c->is.shaded) {
 		wc.height = c->th;
 		mask2 |= CWHeight;
 	}
@@ -3205,7 +3231,7 @@ restack()
 	for (i = 0; i < n; i++) {
 		if (!(c = cl[i]))
 			continue;
-		if (!c->is.bastard && c->is.floating && !c->is.below && !WTCHECK(c, WindowTypeDesk)) {
+		if (!c->is.bastard && c->skip.arrange && !c->is.below && !WTCHECK(c, WindowTypeDesk)) {
 			cl[i] = NULL; wl[j] = c->frame; sl[j] = c; j++;
 		}
 	}
@@ -3219,7 +3245,7 @@ restack()
 	for (i = 0; i < n; i++) {
 		if (!(c = cl[i]))
 			continue;
-		if (!c->is.bastard && !c->is.floating && !c->is.below && !WTCHECK(c, WindowTypeDesk)) {
+		if (!c->is.bastard && !c->skip.arrange && !c->is.below && !WTCHECK(c, WindowTypeDesk)) {
 			cl[i] = NULL; wl[j] = c->frame; sl[j] = c; j++;
 		}
 	}
@@ -3439,7 +3465,7 @@ calc_fill(Client *c, Monitor *m, Workarea *wa, Geometry *g) {
 			continue;
 		if (o->is.bastard)
 			continue;
-		if (!(overlap || o->is.floating))
+		if (!(overlap || o->skip.arrange))
 			continue;
 		if (o->y + o->h > g->y && o->y < g->y + g->h) {
 			if (o->x < g->x)
@@ -3496,7 +3522,7 @@ get_th(Client *c)
 		if (c->tags[i])
 			f += FEATURES(views[i].layout, OVERLAP);
 
-	return (!c->is.max && (c->is.floating || options.dectiled || f) ?
+	return (!c->is.max && (c->skip.arrange || options.dectiled || f) ?
 				style.titleheight : 0);
 }
 
@@ -3508,7 +3534,7 @@ updatefloat(Client *c, Monitor *m) {
 
 	if (!(m) && !(m = findmonitor(c)) && !(m = curmonitor(c)))
 		m = monitors;
-	if (!(c->is.floating || MFEATURES(m, OVERLAP))) {
+	if (!(c->is.floater || c->skip.arrange || MFEATURES(m, OVERLAP))) {
 		updateframe(c);
 		return;
 	}
@@ -4688,100 +4714,223 @@ togglestruts(const char *arg) {
 	arrange(curmonitor());
 }
 
-Monitor *
-cantile(Client *c) {
-	Monitor *m;
-
-	if (!c || c->is.floater)
-		return NULL;
-	if (!(m = findmonitor(c)))
-		if (!(m = curmonitor()))
-			m = monitors;
-	if (MFEATURES(m, OVERLAP))
-		return NULL;
-	return m;
-}
-
 void
 togglefloating(Client *c) {
 	Monitor *m;
 
-	if (!(m = cantile(c)))
+	if (!c || c->is.floater)
 		return;
-
-	c->is.floating = !c->is.floating;
-	ewmh_update_net_window_state(c);
-	updatefloat(c, m);
-	arrange(m);
-}
-
-Monitor *
-canresize(Client *c) {
-	Monitor *m;
-
-	if (!c || c->is.fixed)
-		return NULL;
 	if (!(m = findmonitor(c)))
 		if (!(m = curmonitor()))
 			m = monitors;
-	return m;
+	if (MFEATURES(m, OVERLAP)) /* XXX: why? */
+		return;
+
+	c->skip.arrange = !c->skip.arrange;
+	if (c->is.managed) {
+		ewmh_update_net_window_state(c);
+		updatefloat(c, m);
+		arrange(m);
+	}
 }
 
 void
 togglefill(Client * c) {
 	Monitor *m;
 
-	if (!(m = canresize(c)))
+	if (!c || (!c->can.fill && c->is.managed))
 		return;
+	if (!(m = findmonitor(c)))
+		if (!(m = curmonitor()))
+			m = monitors;
 
 	c->is.fill = !c->is.fill;
-	ewmh_update_net_window_state(c);
-	updatefloat(c, m);
+	if (c->is.managed) {
+		ewmh_update_net_window_state(c);
+		updatefloat(c, m);
+	}
+
 }
 
 void
 togglemax(Client * c) {
 	Monitor *m;
 
-	if (!(m = canresize(c)))
+	if (!c || (!c->can.max && c->is.managed))
 		return;
+	if (!(m = findmonitor(c)))
+		if (!(m = curmonitor()))
+			m = monitors;
 
 	c->is.max = !c->is.max;
-	ewmh_update_net_window_state(c);
-	updatefloat(c, m);
-	restack();
+	if (c->is.managed) {
+		ewmh_update_net_window_state(c);
+		updatefloat(c, m);
+		restack();
+	}
 }
 
 void
 togglemaxv(Client * c) {
 	Monitor *m;
 
-	if (!(m = canresize(c)))
+	if (!c || (!c->can.maxv && c->is.managed))
 		return;
+	if (!(m = findmonitor(c)))
+		if (!(m = curmonitor()))
+			m = monitors;
 
 	c->is.maxv = !c->is.maxv;
-	ewmh_update_net_window_state(c);
-	updatefloat(c, m);
+	if (c->is.managed) {
+		ewmh_update_net_window_state(c);
+		updatefloat(c, m);
+	}
 }
 
 void
 toggleshade(Client * c) {
 	Monitor *m;
 
-	if (!c->title || !(m = canresize(c)))
+	if (!c || !c->title || (!c->can.shade && c->is.managed))
+		return;
+	if (!(m = findmonitor(c)))
+		if (!(m = curmonitor()))
+			m = monitors;
+
+	c->is.shaded = !c->is.shaded;
+	if (c->is.managed) {
+		ewmh_update_net_window_state(c);
+		updatefloat(c, m);
+	}
+}
+
+void
+togglesticky(Client *c) {
+	if (!c || (!c->can.stick && c->is.managed))
 		return;
 
-	c->is.shade = !c->is.shade;
+	c->is.sticky = !c->is.sticky;
+	if (c->is.managed) {
+		if (c->is.sticky)
+			tag(c, -1);
+		else
+			tag(c, curmontag);
+		ewmh_update_net_window_state(c);
+	}
+}
+
+void
+togglemin(Client *c) {
+	if (!c || (!c->can.min && c->is.managed))
+		return;
+	if (c->is.icon) {
+		c->is.icon = False;
+		c->is.hidden = False;
+		if (c->is.managed) {
+			focus(c);
+			arrange(clientmonitor(c));
+		}
+	} else {
+		if (c->is.managed)
+			iconify(c);
+	}
+}
+
+void
+toggleabove(Client *c) {
+	if (!c || (!c->can.above && c->is.managed))
+		return;
+	c->is.above = !c->is.above;
+	if (c->is.managed) {
+		restack();
+		ewmh_update_net_window_state(c);
+	}
+}
+
+void
+togglebelow(Client *c) {
+	if (!c || (!c->can.below && c->is.managed))
+		return;
+	c->is.below = !c->is.below;
+	if (c->is.managed) {
+		restack();
+		ewmh_update_net_window_state(c);
+	}
+}
+
+void
+togglepager(Client *c) {
+	if (!c || c->is.bastard)
+		return;
+	c->skip.pager = !c->skip.pager;
 	ewmh_update_net_window_state(c);
-	updatefloat(c, m);
+}
+
+void
+toggletaskbar(Client *c) {
+	if (!c || c->is.bastard)
+		return;
+	c->skip.taskbar = !c->skip.taskbar;
+	ewmh_update_net_window_state(c);
+}
+
+void
+togglemodal(Client *c) {
+	Window transfor;
+	Group *g;
+
+	if (!c)
+		return;
+	switch ((Modality) c->is.modal) {
+	case ModalModeless:
+		if (c->transfor == None || c->transfor == root) {
+			if (c->leader) {
+				c->is.modal = ModalGroup;
+				if ((g = getleader(c->leader, ClientLeader)))
+					incmodal(c, g);
+			} else {
+				c->is.modal = ModalSystem;
+				incmodal(c, &window_stack);
+			}
+		} else {
+			c->is.modal = ModalPrimary;
+			if ((g = getleader(c->transfor, ClientTransFor)))
+				incmodal(c, g);
+		}
+		if (c->is.managed)
+			focus(c);
+		break;
+	case ModalGroup:
+		if ((g = getleader(c->leader, ClientLeader)))
+			decmodal(c, g);
+		c->is.modal = ModalModeless;
+		break;
+	case ModalSystem:
+		decmodal(c, &window_stack);
+		c->is.modal = ModalModeless;
+		break;
+	case ModalPrimary:
+		if ((transfor = c->transfor))
+			if (transfor == root)
+				transfor = c->leader;
+		if ((g = getleader(transfor, ClientTransFor)))
+			decmodal(c, g);
+		c->is.modal = ModalModeless;
+		break;
+	}
+	if (c->is.managed)
+		ewmh_update_net_window_state(c);
 }
 
 void
 togglemaxh(Client *c) {
 	Monitor *m;
 
-	if (!(m = canresize(c)))
+	if (!c || (!c->can.maxh && c->is.managed))
 		return;
+	if (!(m = findmonitor(c)))
+		if (!(m = curmonitor()))
+			m = monitors;
 
 	c->is.maxh = !c->is.maxh;
 	ewmh_update_net_window_state(c);
@@ -4861,7 +5010,7 @@ focusview(int index) {
 	if (!curseltags[i])
 		return;
 	for (c = stack; c; c = c->snext) {
-		if (c->tags[i] && !c->is.bastard) {
+		if (c->tags[i] && !c->is.bastard) { /* XXX: c->can.focus? */
 			focus(c);
 			break;
 		}
@@ -4889,16 +5038,19 @@ unmanage(Client * c, WithdrawCause cause) {
 	Bool doarrange, dostruts;
 	Window trans = None;
 
-	doarrange = !(c->is.floating || c->is.fixed ||
+	doarrange = !(c->skip.arrange || c->is.floater ||
 		(cause != CauseDestroyed &&
 		 XGetTransientForHint(dpy, c->win, &trans))) ||
 		c->is.bastard;
-	dostruts = c->has.struts;
+	dostruts = c->with.struts;
 	/* The server grab construct avoids race conditions. */
 	XGrabServer(dpy);
 	XSelectInput(dpy, c->frame, NoEventMask);
 	XUnmapWindow(dpy, c->frame);
 	XSetErrorHandler(xerrordummy);
+	c->is.managed = False;
+	if (c->is.modal)
+		togglemodal(c);
 	if (c->title) {
 		XftDrawDestroy(c->xftdraw);
 		XFreePixmap(dpy, c->drawable);
@@ -4948,7 +5100,7 @@ unmanage(Client * c, WithdrawCause cause) {
 	XDeleteContext(dpy, c->win, context[ClientDead]);
 	ewmh_release_user_time_window(c);
 	removegroup(c, c->leader, ClientGroup);
-	removegroup(c, c->transfor, ClientTransFor);
+	removegroup(c, c->transfor == root ? c->leader : c->transfor, ClientTransFor);
 #ifdef STARTUP_NOTIFICATION
 	if (c->seq)
 		sn_startup_sequence_unref(c->seq);
@@ -5007,7 +5159,7 @@ updatestruts() {
 			= m->struts[TopStrut]
 			= m->struts[BotStrut] = 0;
 	for (c = clients; c; c = c->next)
-		if (c->has.struts)
+		if (c->with.struts)
 			getstruts(c);
 	ewmh_update_net_work_area();
 	updategeom(NULL);
@@ -5084,8 +5236,22 @@ updatesizehints(Client * c) {
 		c->gravity = size.win_gravity;
 	else
 		c->gravity = NorthWestGravity;
-	c->is.fixed = (c->maxw && c->minw && c->maxh && c->minh
-	    && c->maxw == c->minw && c->maxh == c->minh);
+	if (c->maxw && c->minw && c->maxw == c->minw) {
+		c->can.sizeh = False;
+		c->can.maxh = False;
+		c->can.fillh = False;
+	}
+	if (c->maxh && c->minh && c->maxh == c->minh) {
+		c->can.sizev = False;
+		c->can.maxv = False;
+		c->can.fillv = False;
+	}
+	if (!c->can.sizeh && !c->can.sizev)
+		c->can.size = False;
+	if (!c->can.maxh && !c->can.maxv)
+		c->can.max = False;
+	if (!c->can.fillh && !c->can.fillv)
+		c->can.fill = False;
 }
 
 void
@@ -5102,14 +5268,22 @@ updateiconname(Client *c) {
 	ewmh_update_net_window_visible_icon_name(c);
 }
 
-void
-updategroup(Client *c, Window leader, int group) {
+Group *
+getleader(Window leader, int group) {
 	Group *g = NULL;
+
+	if (leader)
+		XFindContext(dpy, leader, context[group], (XPointer *) &g);
+	return g;
+}
+
+void
+updategroup(Client *c, Window leader, int group, int *nofocus) {
+	Group *g;
 
 	if (leader == None || leader == c->win)
 		return;
-	XFindContext(dpy, leader, context[group], (XPointer *)&g);
-	if (!g) {
+	if (!(g = getleader(leader, group))) {
 		g = emallocz(sizeof(*g));
 		g->members = ecalloc(8, sizeof(g->members[0]));
 		g->count = 0;
@@ -5118,18 +5292,18 @@ updategroup(Client *c, Window leader, int group) {
 		g->members = erealloc(g->members, (g->count + 1) * sizeof(g->members[0]));
 	g->members[g->count] = c->win;
 	g->count++;
+	*nofocus += g->modal_transients;
 }
 
 Window *
 getgroup(Client *c, Window leader, int group, unsigned int *count) {
-	Group *g = NULL;
+	Group *g;
 
 	if (leader == None) {
 		*count = 0;
 		return NULL;
 	}
-	XFindContext(dpy, leader, context[group], (XPointer *)&g);
-	if (!g) {
+	if (!(g = getleader(leader, group))) {
 		*count = 0;
 		return NULL;
 	}
@@ -5139,12 +5313,11 @@ getgroup(Client *c, Window leader, int group, unsigned int *count) {
 
 void
 removegroup(Client *c, Window leader, int group) {
-	Group *g = NULL;
+	Group *g;
 
 	if (leader == None || leader == c->win)
 		return;
-	XFindContext(dpy, leader, context[group], (XPointer *)&g);
-	if (g) {
+	if ((g = getleader(leader, group))) {
 		Window *list;
 		unsigned int i, j;
 
@@ -5163,6 +5336,33 @@ removegroup(Client *c, Window leader, int group) {
 			g->count = j;
 		}
 	}
+}
+
+void
+incmodal(Client *c, Group *g)
+{
+	Client *t;
+	int i;
+
+	g->modal_transients++;
+	for (i = 0; i < g->count; i++)
+		if ((t = getclient(g->members[i], ClientWindow)) && t != c)
+			t->nofocus++;
+}
+
+void
+decmodal(Client *c, Group *g)
+{
+	Client *t;
+	int i;
+
+	--g->modal_transients;
+	assert(g->modal_transients >= 0);
+	for (i = 0; i < g->count; i++)
+		if ((t = getclient(g->members[i], ClientWindow)) && t != c) {
+			t->nofocus--;
+			assert(t->nofocus >= 0);
+		}
 }
 
 /* There's no way to check accesses to destroyed windows, thus those cases are
@@ -5289,7 +5489,7 @@ viewrighttag(const char *arg) {
 
 void
 zoom(Client *c) {
-	if (!c || !FEATURES(curlayout, ZOOM) || c->is.floating)
+	if (!c || !FEATURES(curlayout, ZOOM) || c->skip.arrange)
 		return;
 	if (c == nexttiled(clients, curmonitor()))
 		if (!(c = nexttiled(c->next, curmonitor())))

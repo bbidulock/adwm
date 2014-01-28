@@ -337,7 +337,7 @@ applyrules(Client * c) {
 	for (i = 0; i < nrules; i++)
 		if (rules[i]->propregex && !regexec(rules[i]->propregex, buf, 1, &tmp, 0)) {
 			c->skip.arrange = rules[i]->isfloating;
-			c->title = rules[i]->hastitle;
+			c->has.title = rules[i]->hastitle;
 			for (j = 0; rules[i]->tagregex && j < ntags; j++) {
 				if (!regexec(rules[i]->tagregex, tags[j], 1, &tmp, 0)) {
 					matched = True;
@@ -994,14 +994,18 @@ enternotify(XEvent * e) {
 			break;
 		case SloppyFloat:
 			if (FEATURES(curlayout, OVERLAP) || c->skip.arrange)
-				focus(c);
+				if (!c->skip.sloppy)
+					focus(c);
 			break;
 		case AllSloppy:
-			focus(c);
+			if (!c->skip.sloppy)
+				focus(c);
 			break;
 		case SloppyRaise:
-			focus(c);
-			restack();
+			if (!c->skip.sloppy) {
+				focus(c);
+				restack();
+			}
 			break;
 		}
 	} else if (ev->window == root) {
@@ -1191,7 +1195,8 @@ iconify(Client *c) {
 
 	if (!c)
 		return;
-	if ((g = getgroup(c, c->win, ClientTransFor, &m)))
+	if ((c->is.grptrans && (g = getgroup(c, c->win, ClientTransForGroup, &m))) ||
+	    (c->is.transient && (g = getgroup(c, c->win, ClientTransFor, &m))))
 		for (i = 0; i < m; i++)
 			if ((t = getclient(g[i], ClientWindow)) && t != c)
 				_iconify(t);
@@ -1217,7 +1222,8 @@ hide(Client *c) {
 
 	if (!c)
 		return;
-	if ((g = getgroup(c, c->win, ClientTransFor, &m)))
+	if ((c->is.grptrans && (g = getgroup(c, c->win, ClientTransForGroup, &m))) ||
+	    (c->is.transient && (g = getgroup(c, c->win, ClientTransFor, &m))))
 		for (i = 0; i < m; i++)
 			if ((t = getclient(g[i], ClientWindow)) && t != c)
 				_hide(t);
@@ -1243,7 +1249,8 @@ show(Client *c) {
 
 	if (!c)
 		return;
-	if ((g = getgroup(c, c->win, ClientTransFor, &m)))
+	if ((c->is.grptrans && (g = getgroup(c, c->win, ClientTransForGroup, &m))) ||
+	    (c->is.transient && (g = getgroup(c, c->win, ClientTransFor, &m))))
 		for (i = 0; i < m; i++)
 			if ((t = getclient(g[i], ClientWindow)) && t != c)
 				_show(t);
@@ -1528,7 +1535,7 @@ leavenotify(XEvent * e) {
 void
 manage(Window w, XWindowAttributes * wa) {
 	Client *c, *t = NULL;
-	Window trans;
+	Window trans = None;
 	XWindowChanges wc;
 	XSetWindowAttributes twa;
 	XWMHints *wmh;
@@ -1551,12 +1558,11 @@ manage(Window w, XWindowAttributes * wa) {
 
 	c->is.icon = False;
 	c->is.hidden = False;
-	c->title = c->is.bastard ? None : 1; /* XXX: has.title? */
 	c->tags = ecalloc(ntags, sizeof(*c->tags));
 	c->rb = c->border = c->is.bastard ? 0 : style.border; /* XXX: has.border? */
 	/*  XReparentWindow() unmaps *mapped* windows */
 	c->ignoreunmap = wa->map_state == IsViewable ? 1 : 0;
-	mwm_process_atom(c);
+	mwmh_process_motif_wm_hints(c);
 	updatesizehints(c);
 
 	updatetitle(c);
@@ -1572,8 +1578,6 @@ manage(Window w, XWindowAttributes * wa) {
 	     (int)((int)c->user_time - (int)user_time) < 0))
 		focusnew = False;
 
-	c->th = c->title ? style.titleheight : 0;
-
 	if ((wmh = XGetWMHints(dpy, c->win))) {
 		if ((wmh->flags & InputHint) && !wmh->input) {
 			c->can.focus = False;
@@ -1587,13 +1591,21 @@ manage(Window w, XWindowAttributes * wa) {
 		XFree(wmh);
 	}
 
-	if (XGetTransientForHint(dpy, w, &trans)) {
-		if (trans == None)
-			trans = root;
-		if ((c->transfor = trans) == root)
+	/* do this before transients */
+	wmh_process_win_window_hints(c);
+
+	if (XGetTransientForHint(dpy, w, &trans) || c->is.grptrans) {
+		if (trans == None || trans == root) {
 			trans = c->leader;
-		if (trans != None) {
-			updategroup(c, trans, ClientTransFor, &c->nofocus);
+			c->is.grptrans = True;
+			if (!trans)
+				trans = root;
+		}
+		if ((c->transfor = trans) != None) {
+			if (c->is.grptrans)
+				updategroup(c, trans, ClientTransForGroup, &c->nofocus);
+			else
+				updategroup(c, trans, ClientTransFor, &c->nofocus);
 			if (!(t = getclient(trans, ClientWindow)) && trans == c->leader) {
 				Window *group;
 				unsigned int i, m = 0;
@@ -1609,8 +1621,10 @@ manage(Window w, XWindowAttributes * wa) {
 			if (t)
 				memcpy(c->tags, t->tags, ntags * sizeof(*c->tags));
 		}
+		c->is.transient = True;
 		c->is.floater = True;
-	}
+	} else
+		c->is.transient = False;
 
 	if (c->is.attn)
 		focusnew = True;
@@ -1621,6 +1635,11 @@ manage(Window w, XWindowAttributes * wa) {
 
 	if (!c->is.floater)
 		c->is.floater = (!c->can.sizeh || !c->can.sizev);
+
+	if (c->has.title)
+		c->th = style.titleheight;
+	else
+		c->can.shade = False;
 
 	c->x = c->rx = wa->x;
 	c->y = c->ry = wa->y;
@@ -1674,7 +1693,7 @@ manage(Window w, XWindowAttributes * wa) {
 
 	twa.event_mask = ExposureMask | MOUSEMASK;
 	/* we create title as root's child as a workaround for 32bit visuals */
-	if (c->title) {
+	if (c->has.title) {
 		c->title = XCreateWindow(dpy, root, 0, 0, c->w, c->th,
 		    0, DefaultDepth(dpy, screen), CopyFromParent,
 		    DefaultVisual(dpy, screen), CWEventMask, &twa);
@@ -1685,8 +1704,6 @@ manage(Window w, XWindowAttributes * wa) {
 		    DefaultColormap(dpy, screen));
 		XSaveContext(dpy, c->title, context[ClientTitle], (XPointer) c);
 		XSaveContext(dpy, c->title, context[ClientAny], (XPointer) c);
-	} else {
-		c->title = None;
 	}
 
 	attach(c, options.attachaside);
@@ -1700,7 +1717,8 @@ manage(Window w, XWindowAttributes * wa) {
 	XSelectInput(dpy, c->win, CLIENTMASK);
 
 	XReparentWindow(dpy, c->win, c->frame, 0, c->th);
-	XReparentWindow(dpy, c->title, c->frame, 0, 0);
+	if (c->title)
+		XReparentWindow(dpy, c->title, c->frame, 0, 0);
 	XAddToSaveSet(dpy, c->win);
 	XMapWindow(dpy, c->win);
 	wc.border_width = 0;
@@ -2986,6 +3004,7 @@ resize(Client * c, int x, int y, int w, int h, int b) {
 	if (y > DisplayHeight(dpy, screen))
 		y = DisplayHeight(dpy, screen) - h - 2 * b;
 	if (w != c->w && c->th) {
+		assert(c->title != None);
 		XMoveResizeWindow(dpy, c->title, 0, 0, w, c->th);
 		XFreePixmap(dpy, c->drawable);
 		c->drawable = XCreatePixmap(dpy, root, w, c->th, DefaultDepth(dpy, screen));
@@ -3515,7 +3534,7 @@ get_th(Client *c)
 {
 	int i, f = 0;
 
-	if (!c->title)
+	if (!c->has.title)
 		return 0;
 
 	for (i = 0; i < ntags; i++)
@@ -4371,7 +4390,8 @@ tag(Client *c, int index) {
 
 	if (!c)
 		return;
-	if ((g = getgroup(c, c->win, ClientTransFor, &m)))
+	if ((c->is.grptrans && (g = getgroup(c, c->win, ClientTransForGroup, &m))) ||
+	    (c->is.transient && (g = getgroup(c, c->win, ClientTransFor, &m))))
 		for (i = 0; i < m; i++)
 			if ((t = getclient(g[i], ClientWindow)) && t != c)
 				_tag(t, index);
@@ -4791,7 +4811,7 @@ void
 toggleshade(Client * c) {
 	Monitor *m;
 
-	if (!c || !c->title || (!c->can.shade && c->is.managed))
+	if (!c || (!c->can.shade && c->is.managed))
 		return;
 	if (!(m = findmonitor(c)))
 		if (!(m = curmonitor()))
@@ -4875,15 +4895,15 @@ toggletaskbar(Client *c) {
 }
 
 void
-togglemodal(Client *c) {
-	Window transfor;
+togglemodal(Client *c)
+{
 	Group *g;
 
 	if (!c)
 		return;
 	switch ((Modality) c->is.modal) {
 	case ModalModeless:
-		if (c->transfor == None || c->transfor == root) {
+		if (c->is.grptrans) {
 			if (c->leader) {
 				c->is.modal = ModalGroup;
 				if ((g = getleader(c->leader, ClientLeader)))
@@ -4892,7 +4912,7 @@ togglemodal(Client *c) {
 				c->is.modal = ModalSystem;
 				incmodal(c, &window_stack);
 			}
-		} else {
+		} else if (c->is.transient) {
 			c->is.modal = ModalPrimary;
 			if ((g = getleader(c->transfor, ClientTransFor)))
 				incmodal(c, g);
@@ -4910,10 +4930,7 @@ togglemodal(Client *c) {
 		c->is.modal = ModalModeless;
 		break;
 	case ModalPrimary:
-		if ((transfor = c->transfor))
-			if (transfor == root)
-				transfor = c->leader;
-		if ((g = getleader(transfor, ClientTransFor)))
+		if ((g = getleader(c->transfor, ClientTransFor)))
 			decmodal(c, g);
 		c->is.modal = ModalModeless;
 		break;
@@ -5100,7 +5117,10 @@ unmanage(Client * c, WithdrawCause cause) {
 	XDeleteContext(dpy, c->win, context[ClientDead]);
 	ewmh_release_user_time_window(c);
 	removegroup(c, c->leader, ClientGroup);
-	removegroup(c, c->transfor == root ? c->leader : c->transfor, ClientTransFor);
+	if (c->is.grptrans)
+		removegroup(c, c->transfor, ClientTransForGroup);
+	else if (c->is.transient)
+		removegroup(c, c->transfor, ClientTransFor);
 #ifdef STARTUP_NOTIFICATION
 	if (c->seq)
 		sn_startup_sequence_unref(c->seq);
@@ -5181,13 +5201,12 @@ unmapnotify(XEvent * e) {
 
 void
 updateframe(Client * c) {
-	if (!c->title)
-		return;
-
-	if (!(c->th = get_th(c)))
-		XUnmapWindow(dpy, c->title);
-	else
-		XMapRaised(dpy, c->title);
+	if (c->title) {
+		if (!(c->th = get_th(c)))
+			XUnmapWindow(dpy, c->title);
+		else
+			XMapRaised(dpy, c->title);
+	}
 	ewmh_update_net_window_extents(c);
 }
 

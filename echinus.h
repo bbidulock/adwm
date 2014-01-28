@@ -220,8 +220,8 @@ enum {
 enum { LeftStrut, RightStrut, TopStrut, BotStrut, LastStrut }; /* ewmh struts */
 enum { ColFG, ColBG, ColBorder, ColButton, ColLast };	/* colors */
 enum { ClientWindow, ClientTitle, ClientFrame, ClientTimeWindow, ClientGroup,
-       ClientTransFor, ClientLeader, ClientAny, SysTrayWindows, ClientPing,
-       ClientDead, PartLast };	/* client parts */
+       ClientTransFor, ClientTransForGroup, ClientLeader, ClientAny, SysTrayWindows,
+       ClientPing, ClientDead, PartLast };	/* client parts */
 enum { Iconify, Maximize, Close, LastBtn }; /* window buttons */
 typedef enum { CauseDestroyed, CauseUnmapped, CauseReparented,
 	       CauseQuitting, CauseSwitching, CauseRestarting } WithdrawCause;
@@ -291,11 +291,14 @@ struct Client {
 			unsigned int cycle:1;
 			unsigned int focus:1;
 			unsigned int arrange:1;
+			unsigned int sloppy:1;
 		};
 		unsigned int skip;
 	} skip;
 	union {
 		struct {
+			unsigned int transient:1;
+			unsigned int grptrans:1;
 			unsigned int banned:1;
 			unsigned int max:1;
 			unsigned int floater:1;
@@ -479,7 +482,8 @@ void ewmh_update_net_number_of_desktops(void);
 void ewmh_update_net_showing_desktop(void);
 void ewmh_update_net_virtual_roots(void);
 void ewmh_update_net_work_area(void);
-void mwm_process_atom(Client * c);
+
+void mwmh_process_motif_wm_hints(Client *);
 
 Bool ewmh_process_net_window_desktop(Client *);
 Bool ewmh_process_net_window_desktop_mask(Client *);
@@ -498,6 +502,7 @@ void ewmh_update_net_window_state(Client *);
 void ewmh_update_net_window_visible_icon_name(Client *);
 void ewmh_update_net_window_visible_name(Client *);
 void wmh_process_win_window_hints(Client *);
+void wmh_process_win_layer(Client *);
 
 /* main */
 void inittag(unsigned int i);

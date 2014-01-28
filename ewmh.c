@@ -1119,17 +1119,24 @@ mwmh_process_motif_wm_hints(Client *c)
 		}
 		if ((hints[0] & MWM_HINTS_INPUT_MODE) && n >= 4 &&
 				(hint = hints[3])) {
-			if (hint & MWM_INPUT_MODELESS)
-				c->is.modal = ModalModeless;
-			else if (hint & MWM_INPUT_APPLICATION_MODAL)
-				c->is.modal = ModalPrimary;
-			else if (hint & MWM_INPUT_SYSTEM_MODAL)
-				c->is.modal = ModalSystem;
-			else if (hint & MWM_INPUT_FULL_APPLICATION_MODAL)
-				c->is.modal = ModalGroup;
+			/* handled by ICCCM 2.0 */
+			if (hint & MWM_INPUT_MODELESS) {
+				// c->is.modal = ModalModeless;
+			} else if (hint & MWM_INPUT_APPLICATION_MODAL) {
+				// c->is.modal = ModalPrimary;
+			} else if (hint & MWM_INPUT_SYSTEM_MODAL) {
+				// c->is.modal = ModalSystem;
+			} else if (hint & MWM_INPUT_FULL_APPLICATION_MODAL) {
+				// c->is.modal = ModalGroup;
+				c->is.grptrans = True;
+			}
 
 		}
-		if ((hints[0] & MWM_HINTS_STATUS) && n >= 5) {
+		if ((hints[0] & MWM_HINTS_STATUS) && n >= 5 &&
+				(hint = hints[4])) {
+			if (hint & MWM_TEAROFF_WINDOW) {
+				/* TODO: set window type */
+			}
 		}
 
 	}
@@ -1187,11 +1194,6 @@ getmwmhints(Window win, Window *title, int *border) {
 	}
 }
 
-void
-mwm_process_atom(Client *c) {
-	getmwmhints(c->win, &c->title, &c->border);
-}
-
 #define WIN_LAYER_DESKTOP      0
 #define WIN_LAYER_BELOW        2
 #define WIN_LAYER_NORMAL       4
@@ -1247,7 +1249,7 @@ ewmh_update_net_window_actions(Client *c) {
 			action[actions++] = _XA_NET_WM_ACTION_MAXIMIZE_HORZ;
 		if (c->can.maxv || c->can.max)
 			action[actions++] = _XA_NET_WM_ACTION_MAXIMIZE_VERT;
-		if (c->title && c->can.shade)
+		if (c->can.shade)
 			action[actions++] = _XA_NET_WM_ACTION_SHADE;
 		if (c->can.fill)
 			action[actions++] = _XA_NET_WM_ACTION_FILL;
@@ -1794,25 +1796,16 @@ wmh_process_win_window_hints(Client * c) {
 
 	state = getcard(c->win, _XA_WIN_HINTS, &n);
 	if (n > 0) {
-		c->skip.focus = (state[0] & WIN_HINTS_SKIP_FOCUS) ? False : True;
-		c->skip.winlist = (state[0] & WIN_HINTS_SKIP_WINLIST) ? True : False;
-		c->skip.taskbar = (state[0] & WIN_HINTS_SKIP_TASKBAR) ? True : False;
-#if 0
-		/* Handled by ICCCM 2.0 by setting WM_TRANSIENT_FOR hint to None or root */
-		if (state[0] & WIN_HINTS_GROUP_TRANSIENT) {
-		} else {
-		}
-#endif
-		if (state[0] & WIN_HINTS_FOCUS_ON_CLICK) {
-			/* TODO */
-		} else {
-			/* TODO */
-		}
+		c->skip.focus = (state[0] & WIN_HINTS_SKIP_FOCUS) ? True : c->skip.focus;
+		c->skip.winlist = (state[0] & WIN_HINTS_SKIP_WINLIST) ? True : c->skip.winlist;
+		c->skip.taskbar = (state[0] & WIN_HINTS_SKIP_TASKBAR) ? True : c->skip.taskbar;
+		c->skip.sloppy = (state[0] & WIN_HINTS_FOCUS_ON_CLICK) ? True : c->skip.sloppy;
+		c->is.grptrans = (state[0] & WIN_HINTS_GROUP_TRANSIENT) ? True : c->is.grptrans;
 	}
 }
 
 void
-wmh_process_layer(Client * c, unsigned int layer)
+wmh_process_layer(Client *c, unsigned int layer)
 {
 	switch (layer) {
 	case WIN_LAYER_DESKTOP:
@@ -1881,7 +1874,7 @@ wmh_process_win_state(Client *c) {
 void
 wmh_process_win_window_state(Client *c)
 {
-	wmh_process_win_window_hints(c);
+	// wmh_process_win_window_hints(c);
 	wmh_process_win_layer(c);
 	wmh_process_win_state(c);
 }

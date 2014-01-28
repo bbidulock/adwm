@@ -247,3 +247,38 @@ _WIN_FOCUS				supported
 
 ------------------------------------------------------------------------
 
+OSF/Motif CDE MWM/DTWM Compliance
+
+1. MWM window manager properties:
+
+WM_DESKTOP				supported
+_MOTIF_WM_INFO				supported
+
+2. MWM client properties:
+
+WM_DESKTOP				supported
+_MOTIF_WM_HINTS				supported
+_MOTIF_WM_MENU				NOT supported
+_MOTIF_WM_OFFSET			NOT supported
+_MOTIF_WM_MESSAGES			NOT supported
+_MOTIF_BINDINGS				NOT supported (n/a)
+_MOTIF_DEFAULT_BINDINGS			NOT supported (n/a)
+
+3. DTWM window manager properties:
+
+_DT_WORKSPACE_LIST			supported
+_DT_WORKSPACE_CURRENT			supported
+_DT_WORKSPACE_INFO			NOT supported
+_DT_WORKSPACE_INFO_<name>		NOT supported
+
+4. DTWM client properties:
+
+_DT_WORKSPACE_HINTS			supported
+_DT_WORKSPACE_PRESENCE			supported
+
+_DT_WM_HINTS				NOT supported
+_DT_WM_REQUEST				NOT supported
+_DT_WORKSPACE_EMBEDDED_CLIENTS		NOT supported
+_DT_WMSAVE_HINT				NOT supported
+
+------------------------------------------------------------------------

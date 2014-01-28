@@ -7,9 +7,12 @@
 
 enum {
 	Manager, Utf8String, WMProto, WMDelete, WMState, WMChangeState,
-	WMTakeFocus, MWMHints, ELayout, ESelTags,
-	WMRestart, WMShutdown,
-	DeskLayout,
+	WMTakeFocus,
+	ELayout, ESelTags, WMRestart, WMShutdown, DeskLayout,
+	/* MWM/DTWM properties follow */
+	WMDesktop, MWMBindings, MWMDefaultBindings, MWMMessages, MWMOffset, MWMHints, MWMMenu,
+	MWMInfo, DTWorkspaceHints, DTWorkspacePresence, DTWorkspaceList, DTWorkspaceCurrent,
+	DTWorkspaceInfo, DTWMHints, DTWMRequest, DTWMEmbedded, DTWMSaveHint,
 	/* _WIN_PROTOCOLS following */
 	WinAppState, WinAreaCount, WinArea, WinClientList, WinClientMoving,
 	WinButtonProxy, WinExpandedSize, WinFocus, WinHints, WinIcons, WinLayer, WinMaxGeom,
@@ -57,12 +60,29 @@ enum {
 #define _XA_WM_STATE				atom[WMState]
 #define _XA_WM_CHANGE_STATE			atom[WMChangeState]
 #define _XA_WM_TAKE_FOCUS			atom[WMTakeFocus]
-#define _XA_MOTIF_WM_HINTS			atom[MWMHints]
 #define _XA_ECHINUS_LAYOUT			atom[ELayout]
 #define _XA_ECHINUS_SELTAGS			atom[ESelTags]
 #define _XA_NET_RESTART				atom[WMRestart]
 #define _XA_NET_SHUTDOWN			atom[WMShutdown]
 #define _XA_NET_DESKTOP_LAYOUT			atom[DeskLayout]
+/* MWM/DTWM properties follow */
+#define _XA_WM_DESKTOP				atom[WMDesktop]
+#define _XA_MOTIF_BINDINGS			atom[MWMBindings]
+#define _XA_MOTIF_DEFAULT_BINDINGS		atom[MWMDefaultBindings]
+#define _XA_MOTIF_WM_MESSAGES			atom[MWMMessages]
+#define _XA_MOTIF_WM_OFFSET			atom[MWMOffset]
+#define _XA_MOTIF_WM_HINTS			atom[MWMHints]
+#define _XA_MOTIF_WM_MENU			atom[MWMMenu]
+#define _XA_MOTIF_WM_INFO			atom[MWMInfo]
+#define _XA_DT_WORKSPACE_HINTS			atom[DTWorkspaceHints]
+#define _XA_DT_WORKSPACE_PRESENCE		atom[DTWorkspacePresence]
+#define _XA_DT_WORKSPACE_LIST			atom[DTWorkspaceList]
+#define _XA_DT_WORKSPACE_CURRENT		atom[DTWorkspaceCurrent]
+#define _XA_DT_WORKSPACE_INFO			atom[DTWorkspaceInfo]
+#define _XA_DT_WM_HINTS				atom[DTWMHints]
+#define _XA_DT_WM_REQUEST			atom[DTWMRequest]
+#define _XA_DT_WORKSPACE_EMBEDDED_CLIENTS	atom[DTWMEmbedded]
+#define _XA_DT_WMSAVE_HINT			atom[DTWMSaveHint]
 /* _WIN_PROTOCOLS following */
 #define _XA_WIN_APP_STATE			atom[WinAppState]
 #define _XA_WIN_AREA_COUNT			atom[WinAreaCount]
@@ -259,11 +279,82 @@ struct Client {
 	int ignoreunmap;
 	long flags;
 	int wintype;
-	Bool isbanned, ismax, isfloating, wasfloating, ismaxv, ismaxh, isshade;
-	Bool isicon, isfill, ismodal, isabove, isbelow, isattn, issticky, ishidden;
-	Bool isfixed, isbastard, isfocusable, hasstruts, hastime;
-	Bool notaskbar, nopager, ismanaged;
+	Bool nopager;
 	Bool *tags;
+	union {
+		struct {
+			unsigned int taskbar:1;
+			unsigned int pager:1;
+			unsigned int winlist:1;
+			unsigned int cycle:1;
+			unsigned int focus:1;
+		};
+		unsigned int skip;
+	} skip;
+	union {
+		struct {
+			unsigned int banned:1;
+			unsigned int max:1;
+			unsigned int floating:1;
+			unsigned int floater:1;
+			unsigned int maxv:1;
+			unsigned int maxh:1;
+			unsigned int shade:1;
+			unsigned int icon:1;
+			unsigned int fill:1;
+			unsigned int modal:1;
+			unsigned int above:1;
+			unsigned int below:1;
+			unsigned int attn:1;
+			unsigned int sticky:1;
+			unsigned int hidden:1;
+			unsigned int fixed:1;
+			unsigned int bastard:1;
+			unsigned int focusable:1;
+			unsigned int managed:1;
+		};
+		unsigned int is;
+	} is;
+	union {
+		struct {
+			unsigned int border:1;
+			unsigned int handles:1;
+			unsigned int title:1;
+			struct {
+				unsigned int menu:1;
+				unsigned int min:1;
+				unsigned int max:1;
+				unsigned int close:1;
+				unsigned int size:1;
+				unsigned int shade:1;
+				unsigned int stick:1;
+				unsigned int fill:1;
+				unsigned int floats:1;
+			} but __attribute__((packed));
+			unsigned int struts:1;
+			unsigned int time:1;
+		};
+		unsigned int has;
+	} has;
+	union {
+		struct {
+			unsigned int move:1;
+			unsigned int size:1;
+			unsigned int min:1;
+			unsigned int max:1;
+			unsigned int close:1;
+			unsigned int shade:1;
+			unsigned int stick:1;
+			unsigned int fs:1;
+			unsigned int above:1;
+			unsigned int below:1;
+			unsigned int fill:1;
+			unsigned int floats:1;
+			unsigned int hide:1;
+			unsigned int tag:1;
+		};
+		unsigned int can;
+	} can;
 	Client *next;
 	Client *prev;
 	Client *snext;
@@ -485,7 +576,7 @@ void initstyle();
 #define DPRINTF(format, ...)
 #endif
 #define DPRINTCLIENT(c) DPRINTF("%s: x: %d y: %d w: %d h: %d th: %d f: %d b: %d m: %d\n", \
-				    c->name, c->x, c->y, c->w, c->h, c->th, c->isfloating, c->isbastard, c->ismax)
+				    c->name, c->x, c->y, c->w, c->h, c->th, c->is.floating, c->is.bastard, c->is.max)
 
 #define OPAQUE			0xffffffff
 #define RESNAME		       "echinus"
@@ -499,6 +590,7 @@ void initstyle();
 extern Atom atom[NATOMS];
 extern Display *dpy;
 extern Window root;
+extern Window selwin;
 extern Client *clients;
 extern Monitor *monitors;
 extern Client *sel;
@@ -512,6 +604,7 @@ extern int screen;
 extern Style style;
 extern Button button[LastBtn];
 extern char **tags;
+extern Atom *dt_tags;
 extern Key **keys;
 extern Rule **rules;
 extern Layout layouts[];

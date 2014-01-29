@@ -141,6 +141,7 @@ void mousemove(Client *c, unsigned int button, int x_root, int y_root);
 void mouseresize_from(Client *c, int from, unsigned int button, int x_root, int y_root);
 void mouseresize(Client * c, unsigned int button, int x_root, int y_root);
 void moveresizekb(Client *c, int dx, int dy, int dw, int dh);
+Monitor *nearmonitor(void);
 Client *nexttiled(Client * c, Monitor * m);
 Client *prevtiled(Client * c, Monitor * m);
 void place(Client *c, WindowPlacement p);
@@ -231,6 +232,7 @@ Bool selscreen = True;
 Monitor *monitors;
 Client *clients;
 Client *sel;
+Client *foc;
 Client *stack;
 Client *clist;
 Group window_stack = { NULL, 0, 0 };
@@ -1030,8 +1032,8 @@ focusin(XEvent * e) {
 	Client *c;
 
 	c = getclient(ev->window, ClientWindow);
-	if (sel && c != sel)
-		XSetInputFocus(dpy, sel->win, RevertToPointerRoot, CurrentTime);
+	if (foc && c != foc)
+		XSetInputFocus(dpy, foc->win, RevertToPointerRoot, CurrentTime);
 	else if (!c)
 		fprintf(stderr, "Caught FOCUSIN for unknown window 0x%lx\n", ev->window);
 }
@@ -1085,10 +1087,10 @@ lowerclient(Client *c) {
 
 void
 focus(Client * c) {
-	Client *o;
+	Client *o, *f;
 
-	if ((o = sel) && o->is.modal == ModalSystem)
-		return;
+	f = foc;
+	o = sel;
 	/* XXX: should check be for can.focus instead of bastards? */
 	if ((!c && selscreen) || (c && (c->is.bastard || !isvisible(c, curmonitor()))))
 		for (c = stack;
@@ -1097,13 +1099,15 @@ focus(Client * c) {
 		XSetWindowBorder(dpy, sel->frame, style.color.norm[ColBorder]);
 	}
 	sel = c;
+	ewmh_update_net_active_window();
 	if (!selscreen)
 		return;
 	if (c) {
 		if (c->is.attn)
 			c->is.attn = False;
 		setclientstate(c, NormalState);
-		if (c->can.focus && !c->skip.focus) {
+		if (c->can.focus && !c->nofocus && !c->skip.focus) {
+			foc = c;
 			XSetInputFocus(dpy, c->win, RevertToPointerRoot, CurrentTime);
 			givefocus(c);
 		}
@@ -1111,12 +1115,16 @@ focus(Client * c) {
 		drawclient(c);
 		ewmh_update_net_window_state(c);
 	} else {
+		foc = NULL;
 		XSetInputFocus(dpy, root, RevertToPointerRoot, CurrentTime);
 	}
-	if (o)
+	if (o && o != sel) {
 		drawclient(o);
-	ewmh_update_net_active_window();
-	ewmh_update_net_current_desktop();
+		ewmh_update_net_window_state(o);
+	}
+	if (f && f != foc) {
+		ewmh_update_net_window_state(f);
+	}
 }
 
 void
@@ -1125,7 +1133,7 @@ focusicon(const char *arg)
 	Client *c;
 
 	for (c = clients;
-	     c && (c->nofocus || c->skip.focus || !c->is.icon
+	     c && (c->nofocus || c->skip.focus || !c->is.icon || !c->can.min
 		   || !isvisible(c, curmonitor())); c = c->next) ;
 	if (!c)
 		return;
@@ -1176,7 +1184,24 @@ focusprev(Client *c) {
 }
 
 static void
-_iconify(Client *c) {
+with_transients(Client *c, void (*each)(Client *, int), int data) {
+	Client *t;
+	Window *m;
+	unsigned int i, g, n = 0;
+	int ctx[2] = { ClientTransFor, ClientTransForGroup };
+
+	if (!c)
+		return;
+	for (g = 0; g < 2; g++)
+		if ((m = getgroup(c, c->win, ctx[g], &n)))
+			for (i = 0; i < n; i++)
+				if ((t = getclient(m[i], ClientWindow)) && t != c)
+					each(t, data);
+	each(c, data);
+}
+
+static void
+_iconify(Client *c, int dummy) {
 	if (c == sel)
 		focusnext(c);
 	ban(c);
@@ -1189,22 +1214,13 @@ _iconify(Client *c) {
 
 void
 iconify(Client *c) {
-	Client *t;
-	Window *g;
-	unsigned int i, m = 0;
-
-	if (!c)
+	if (!c || !c->can.min)
 		return;
-	if ((c->is.grptrans && (g = getgroup(c, c->win, ClientTransForGroup, &m))) ||
-	    (c->is.transient && (g = getgroup(c, c->win, ClientTransFor, &m))))
-		for (i = 0; i < m; i++)
-			if ((t = getclient(g[i], ClientWindow)) && t != c)
-				_iconify(t);
-	_iconify(c);
+	return with_transients(c, &_iconify, 0);
 }
 
 static void
-_hide(Client *c) {
+_hide(Client *c, int dummy) {
 	if (c->is.hidden || !c->can.hide || WTCHECK(c, WindowTypeDock)
 			|| WTCHECK(c, WindowTypeDesk))
 		return;
@@ -1216,23 +1232,14 @@ _hide(Client *c) {
 
 void
 hide(Client *c) {
-	Client *t;
-	Window *g;
-	unsigned int i, m = 0;
-
-	if (!c)
+	if (!c || !c->can.hide)
 		return;
-	if ((c->is.grptrans && (g = getgroup(c, c->win, ClientTransForGroup, &m))) ||
-	    (c->is.transient && (g = getgroup(c, c->win, ClientTransFor, &m))))
-		for (i = 0; i < m; i++)
-			if ((t = getclient(g[i], ClientWindow)) && t != c)
-				_hide(t);
-	_hide(c);
+	return with_transients(c, &_hide, 0);
 }
 
 
 static void
-_show(Client *c) {
+_show(Client *c, int dummy) {
 	if (!c->is.hidden)
 		return;
 	c->is.hidden = False;
@@ -1243,22 +1250,15 @@ _show(Client *c) {
 
 void
 show(Client *c) {
-	Client *t;
-	Window *g;
-	unsigned int i, m = 0;
-
-	if (!c)
+	if (!c || !c->can.hide)
 		return;
-	if ((c->is.grptrans && (g = getgroup(c, c->win, ClientTransForGroup, &m))) ||
-	    (c->is.transient && (g = getgroup(c, c->win, ClientTransFor, &m))))
-		for (i = 0; i < m; i++)
-			if ((t = getclient(g[i], ClientWindow)) && t != c)
-				_show(t);
-	_show(c);
+	return with_transients(c, &_show, 0);
 }
 
 void
 togglehidden(Client *c) {
+	if (!c || !c->can.hide)
+		return;
 	if (c->is.hidden)
 		show(c);
 	else
@@ -1271,7 +1271,7 @@ hideall() {
 	Client *c;
 
 	for (c = clients; c; c = c->next)
-		_hide(c);
+		_hide(c, 0);
 	arrange(NULL);
 }
 
@@ -1280,7 +1280,7 @@ showall() {
 	Client *c;
 
 	for (c = clients; c; c = c->next)
-		_show(c);
+		_show(c, 0);
 	arrange(NULL);
 }
 
@@ -1533,7 +1533,8 @@ leavenotify(XEvent * e) {
 }
 
 void
-manage(Window w, XWindowAttributes * wa) {
+manage(Window w, XWindowAttributes * wa)
+{
 	Client *c, *t = NULL;
 	Window trans = None;
 	XWindowChanges wc;
@@ -1541,13 +1542,14 @@ manage(Window w, XWindowAttributes * wa) {
 	XWMHints *wmh;
 	unsigned long mask = 0;
 	Bool focusnew = True;
+	Monitor *cm;
 
 	c = emallocz(sizeof(Client));
 	c->win = w;
 	c->name = ecalloc(1, 1);
 	c->icon_name = ecalloc(1, 1);
-	XSaveContext(dpy, c->win, context[ClientWindow], (XPointer)c);
-	XSaveContext(dpy, c->win, context[ClientAny],    (XPointer)c);
+	XSaveContext(dpy, c->win, context[ClientWindow], (XPointer) c);
+	XSaveContext(dpy, c->win, context[ClientAny], (XPointer) c);
 	// c->skip.skip = 0;
 	// c->is.is = 0;
 	// c->with.with = 0;
@@ -1559,8 +1561,8 @@ manage(Window w, XWindowAttributes * wa) {
 	c->is.icon = False;
 	c->is.hidden = False;
 	c->tags = ecalloc(ntags, sizeof(*c->tags));
-	c->rb = c->border = c->is.bastard ? 0 : style.border; /* XXX: has.border? */
-	/*  XReparentWindow() unmaps *mapped* windows */
+	c->rb = c->border = c->is.bastard ? 0 : style.border;	/* XXX: has.border? */
+	/* XReparentWindow() unmaps *mapped* windows */
 	c->ignoreunmap = wa->map_state == IsViewable ? 1 : 0;
 	mwmh_process_motif_wm_hints(c);
 	updatesizehints(c);
@@ -1575,7 +1577,7 @@ manage(Window w, XWindowAttributes * wa) {
 
 	if ((c->with.time) &&
 	    (c->user_time == CurrentTime ||
-	     (int)((int)c->user_time - (int)user_time) < 0))
+	     (int) ((int) c->user_time - (int) user_time) < 0))
 		focusnew = False;
 
 	if ((wmh = XGetWMHints(dpy, c->win))) {
@@ -1617,6 +1619,16 @@ manage(Window w, XWindowAttributes * wa) {
 							break;
 					}
 				}
+			} else if (t) {
+				/* Transients are not allowed to perform some actions
+				   when window for which they are are transient for is
+				   also managed.  ICCCM 2.0 says such applications should 
+				   act on the non-transient managed client and let the
+				   window manager decide what to do about the transients. 
+				 */
+				c->can.min = False;	/* can't (de)iconify */
+				c->can.hide = False;	/* can't hide or show */
+				c->can.tag = False;	/* can't change desktops */
 			}
 			if (t)
 				memcpy(c->tags, t->tags, ntags * sizeof(*c->tags));
@@ -1628,7 +1640,7 @@ manage(Window w, XWindowAttributes * wa) {
 
 	if (c->is.attn)
 		focusnew = True;
-	if (!c->can.focus || c->skip.focus)
+	if (!c->can.focus || c->skip.focus || c->nofocus)
 		focusnew = False;
 	if (focusnew && c->nofocus)
 		focusnew = False;
@@ -1652,23 +1664,26 @@ manage(Window w, XWindowAttributes * wa) {
 	c->sh = wa->height;
 	c->sb = wa->border_width;
 
-	if (!wa->x && !wa->y && c->can.move)
+	if (!wa->x && !wa->y && c->can.move) {
+		/* put it on the monitor startup notification requested if not already
+		   placed with its group */
+		if (c->monitor && !clientmonitor(c))
+			memcpy(c->tags, monitors[c->monitor - 1].seltags,
+			       ntags * sizeof(*c->tags));
 		place(c, CascadePlacement);
+	}
 
 	c->with.struts = getstruts(c);
 
-	if (c->is.bastard) { /* XXX: why just bastards? */
-		Monitor *cm;
-
-		/* TODO: refit with startup notification SCREEN= */
+	if (!c->can.move) {
 		if (!(cm = getmonitor(wa->x, wa->y)))
 			if (!(cm = curmonitor()))
-				cm = monitors;
+				cm = nearmonitor();
 		memcpy(c->tags, cm->seltags, ntags * sizeof(*c->tags));
 	}
 
 	XGrabButton(dpy, AnyButton, AnyModifier, c->win, True,
-			ButtonPressMask, GrabModeSync, GrabModeAsync, None, None);
+		    ButtonPressMask, GrabModeSync, GrabModeAsync, None, None);
 	twa.override_redirect = True;
 	twa.event_mask = FRAMEMASK;
 	mask = CWOverrideRedirect | CWEventMask;
@@ -1680,11 +1695,13 @@ manage(Window w, XWindowAttributes * wa) {
 	}
 	c->frame =
 	    XCreateWindow(dpy, root, c->x, c->y, c->w,
-	    c->h, c->border, wa->depth == 32 ? 32 : DefaultDepth(dpy, screen),
-	    InputOutput, wa->depth == 32 ? wa->visual : DefaultVisual(dpy,
-		screen), mask, &twa);
-	XSaveContext(dpy, c->frame, context[ClientFrame], (XPointer)c);
-	XSaveContext(dpy, c->frame, context[ClientAny],   (XPointer)c);
+			  c->h, c->border, wa->depth == 32 ? 32 : DefaultDepth(dpy,
+									       screen),
+			  InputOutput, wa->depth == 32 ? wa->visual : DefaultVisual(dpy,
+										    screen),
+			  mask, &twa);
+	XSaveContext(dpy, c->frame, context[ClientFrame], (XPointer) c);
+	XSaveContext(dpy, c->frame, context[ClientAny], (XPointer) c);
 
 	wc.border_width = c->border;
 	XConfigureWindow(dpy, c->frame, CWBorderWidth, &wc);
@@ -1695,13 +1712,13 @@ manage(Window w, XWindowAttributes * wa) {
 	/* we create title as root's child as a workaround for 32bit visuals */
 	if (c->has.title) {
 		c->title = XCreateWindow(dpy, root, 0, 0, c->w, c->th,
-		    0, DefaultDepth(dpy, screen), CopyFromParent,
-		    DefaultVisual(dpy, screen), CWEventMask, &twa);
+					 0, DefaultDepth(dpy, screen), CopyFromParent,
+					 DefaultVisual(dpy, screen), CWEventMask, &twa);
 		c->drawable =
 		    XCreatePixmap(dpy, root, c->w, c->th, DefaultDepth(dpy, screen));
 		c->xftdraw =
 		    XftDrawCreate(dpy, c->drawable, DefaultVisual(dpy, screen),
-		    DefaultColormap(dpy, screen));
+				  DefaultColormap(dpy, screen));
 		XSaveContext(dpy, c->title, context[ClientTitle], (XPointer) c);
 		XSaveContext(dpy, c->title, context[ClientAny], (XPointer) c);
 	}
@@ -1713,7 +1730,7 @@ manage(Window w, XWindowAttributes * wa) {
 
 	twa.event_mask = CLIENTMASK;
 	twa.do_not_propagate_mask = CLIENTNOPROPAGATEMASK;
-	XChangeWindowAttributes(dpy, c->win, CWEventMask|CWDontPropagate, &twa);
+	XChangeWindowAttributes(dpy, c->win, CWEventMask | CWDontPropagate, &twa);
 	XSelectInput(dpy, c->win, CLIENTMASK);
 
 	XReparentWindow(dpy, c->win, c->frame, 0, c->th);
@@ -2791,7 +2808,8 @@ place(Client * c, WindowPlacement p)
 	getplace(c, &g);
 
 	if (!(m = clientmonitor(c)))
-		m = nearmonitor();
+		if (!(m = curmonitor()))
+			m = nearmonitor();
 	g.x += m->sx;
 	g.y += m->sy;
 
@@ -3201,8 +3219,6 @@ restack()
 	Window *wl;
 	int i, j, n;
 
-	if (!sel)
-		return;
 	for (n = 0, c = stack; c; c = c->snext, n++) ;
 	if (!n) {
 		ewmh_update_net_client_list();
@@ -4386,18 +4402,9 @@ _tag(Client *c, int index) {
 
 void
 tag(Client *c, int index) {
-	Client *t;
-	Window *g;
-	unsigned int i, m = 0;
-
-	if (!c)
+	if (!c || !c->can.tag)
 		return;
-	if ((c->is.grptrans && (g = getgroup(c, c->win, ClientTransForGroup, &m))) ||
-	    (c->is.transient && (g = getgroup(c, c->win, ClientTransFor, &m))))
-		for (i = 0; i < m; i++)
-			if ((t = getclient(g[i], ClientWindow)) && t != c)
-				_tag(t, index);
-	_tag(c, index);
+	return with_transients(c, &_tag, index);
 }
 
 void

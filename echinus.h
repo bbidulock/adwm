@@ -271,6 +271,7 @@ struct Client {
 	char *name;
 	char *icon_name;
 	char *startup_id;
+	int monitor; /* initial monitor */
 	int x, y, w, h, border;
 	int rx, ry, rw, rh, rb;	/* restore geometry */
 	int sx, sy, sw, sh, sb; /* static geometry */
@@ -622,8 +623,10 @@ extern Window selwin;
 extern Client *clients;
 extern Monitor *monitors;
 extern Client *sel;
+extern Client *foc;
 extern Client *stack;
 extern Client *clist;
+extern unsigned int nmons;
 extern unsigned int ntags;
 extern unsigned int nkeys;
 extern unsigned int nrules;

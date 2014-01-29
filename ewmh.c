@@ -1232,36 +1232,33 @@ ewmh_update_net_window_actions(Client *c) {
 	int actions = 0;
 
 	DPRINTF("Updating _NET_WM_ALLOWED_ACTIONS for 0x%lx\n", c->win);
-	if (c->can.above)
-		action[actions++] = _XA_NET_WM_ACTION_ABOVE;
-	if (c->can.below)
-		action[actions++] = _XA_NET_WM_ACTION_BELOW;
+	if (c->can.move)
+		action[actions++] = _XA_NET_WM_ACTION_MOVE;
+	if (c->can.size)
+		action[actions++] = _XA_NET_WM_ACTION_RESIZE;
+	if (c->can.min)
+		action[actions++] = _XA_NET_WM_ACTION_MINIMIZE;
+	if (c->can.shade)
+		action[actions++] = _XA_NET_WM_ACTION_SHADE;
+	if (c->can.stick)
+		action[actions++] = _XA_NET_WM_ACTION_STICK;
+	if (c->can.maxh || c->can.max)
+		action[actions++] = _XA_NET_WM_ACTION_MAXIMIZE_HORZ;
+	if (c->can.maxv || c->can.max)
+		action[actions++] = _XA_NET_WM_ACTION_MAXIMIZE_VERT;
+	if (c->can.fs)
+		action[actions++] = _XA_NET_WM_ACTION_FULLSCREEN;
 	if (c->can.tag)
 		action[actions++] = _XA_NET_WM_ACTION_CHANGE_DESKTOP;
 	if (c->can.close)
 		action[actions++] = _XA_NET_WM_ACTION_CLOSE;
-	if (c->can.min)
-		action[actions++] = _XA_NET_WM_ACTION_MINIMIZE;
-	if (c->skip.arrange || MFEATURES(clientmonitor(c), OVERLAP)) {
-		if (c->can.fs)
-			action[actions++] = _XA_NET_WM_ACTION_FULLSCREEN;
-		if (c->can.maxh || c->can.max)
-			action[actions++] = _XA_NET_WM_ACTION_MAXIMIZE_HORZ;
-		if (c->can.maxv || c->can.max)
-			action[actions++] = _XA_NET_WM_ACTION_MAXIMIZE_VERT;
-		if (c->can.shade)
-			action[actions++] = _XA_NET_WM_ACTION_SHADE;
-		if (c->can.fill)
-			action[actions++] = _XA_NET_WM_ACTION_FILL;
-	}
-	if (c->is.floater || c->skip.arrange || MFEATURES(clientmonitor(c), OVERLAP)) {
-		if (c->can.move)
-			action[actions++] = _XA_NET_WM_ACTION_MOVE;
-		if (c->can.size)
-			action[actions++] = _XA_NET_WM_ACTION_RESIZE;
-	}
-	if (c->can.stick)
-		action[actions++] = _XA_NET_WM_ACTION_STICK;
+	if (c->can.above)
+		action[actions++] = _XA_NET_WM_ACTION_ABOVE;
+	if (c->can.below)
+		action[actions++] = _XA_NET_WM_ACTION_BELOW;
+	/* following two are non-standard */
+	if (c->can.fill)
+		action[actions++] = _XA_NET_WM_ACTION_FILL;
 	if (c->can.floats)
 		action[actions++] = _XA_NET_WM_ACTION_FLOAT;
 
@@ -1281,11 +1278,11 @@ ewmh_update_net_window_actions(Client *c) {
 #define WIN_STATE_ARRANGE_IGNORE  (1<<9) /* ignore for auto arranging */
 
 void
-ewmh_update_net_window_state(Client *c) {
+ewmh_update_net_window_state(Client *c)
+{
 	long winstate[16];
 	int states = 0;
 	unsigned long state = 0;
-	Monitor *m;
 
 	/* do not update until we have finished reading it */
 	if (!c->is.managed)
@@ -1294,27 +1291,21 @@ ewmh_update_net_window_state(Client *c) {
 	DPRINTF("Updating _NET_WM_STATE for 0x%lx\n", c->win);
 	if (c->is.modal)
 		winstate[states++] = _XA_NET_WM_STATE_MODAL;
-	if (c->is.sticky) {
+	if (c->is.sticky)
 		winstate[states++] = _XA_NET_WM_STATE_STICKY;
-		state |= WIN_STATE_STICKY;
-	}
+	if (c->is.maxv)
+		winstate[states++] = _XA_NET_WM_STATE_MAXIMIZED_VERT;
+	if (c->is.maxh)
+		winstate[states++] = _XA_NET_WM_STATE_MAXIMIZED_HORZ;
+	if (c->is.shaded)
+		winstate[states++] = _XA_NET_WM_STATE_SHADED;
 	if (c->skip.taskbar)
 		winstate[states++] = _XA_NET_WM_STATE_SKIP_TASKBAR;
 	if (c->skip.pager)
 		winstate[states++] = _XA_NET_WM_STATE_SKIP_PAGER;
 	if (c->is.icon || c->is.hidden)
 		winstate[states++] = _XA_NET_WM_STATE_HIDDEN;
-	if (c->is.icon)
-		state |= WIN_STATE_MINIMIZED;
-	if (c->is.icon && c->transfor)
-		state |= WIN_STATE_HID_TRANSIENT;
-	if (c->is.hidden)
-		state |= WIN_STATE_HIDDEN;
-	if (!c->can.move)
-		state |= WIN_STATE_FIXED_POSITION;
-	for (m = monitors; m && isvisible(c, m); m = m->next) ;
-	if (!m)
-		state |= WIN_STATE_HID_WORKSPACE;
+	/* FIXME: should be is.fs not is.max */
 	if (c->is.max)
 		winstate[states++] = _XA_NET_WM_STATE_FULLSCREEN;
 	if (c->is.above)
@@ -1323,27 +1314,42 @@ ewmh_update_net_window_state(Client *c) {
 		winstate[states++] = _XA_NET_WM_STATE_BELOW;
 	if (c->is.attn)
 		winstate[states++] = _XA_NET_WM_STATE_DEMANDS_ATTENTION;
-	if (c == sel)
+	if (c == foc)
 		winstate[states++] = _XA_NET_WM_STATE_FOCUSED;
+
+	/* following are non-standard */
 	if (!c->can.move)
 		winstate[states++] = _XA_NET_WM_STATE_FIXED;
-	if (c->skip.arrange) {
+	if (c->skip.arrange)
 		winstate[states++] = _XA_NET_WM_STATE_FLOATING;
-		state |= WIN_STATE_ARRANGE_IGNORE;
-	}
 	if (c->is.fill)
 		winstate[states++] = _XA_NET_WM_STATE_FILLED;
-	if (c->is.maxv) {
-		winstate[states++] = _XA_NET_WM_STATE_MAXIMIZED_VERT;
-		state |= WIN_STATE_MAXIMIZED_VERT;
-	}
-	if (c->is.maxh) {
-		winstate[states++] = _XA_NET_WM_STATE_MAXIMIZED_HORZ;
-		state |= WIN_STATE_MAXIMIZED_HORIZ;
-	}
 
 	XChangeProperty(dpy, c->win, _XA_NET_WM_STATE, XA_ATOM, 32,
-		PropModeReplace, (unsigned char *) winstate, states);
+			PropModeReplace, (unsigned char *) winstate, states);
+
+	DPRINTF("Updating _WIN_STATE for 0x%lx\n", c->win);
+	if (c->is.sticky)
+		state |= WIN_STATE_STICKY;
+	if (c->is.icon)
+		state |= WIN_STATE_MINIMIZED;
+	if (c->is.maxv)
+		state |= WIN_STATE_MAXIMIZED_VERT;
+	if (c->is.maxh)
+		state |= WIN_STATE_MAXIMIZED_HORIZ;
+	if (c->skip.taskbar || c->is.hidden)	/* not sure which */
+		state |= WIN_STATE_HIDDEN;
+	if (c->is.shaded)
+		state |= WIN_STATE_SHADED;
+	if (c->is.banned)
+		state |= WIN_STATE_HID_WORKSPACE;
+	if (c->is.icon && c->transfor)
+		state |= WIN_STATE_HID_TRANSIENT;
+	if (!c->can.move)
+		state |= WIN_STATE_FIXED_POSITION;
+	if (c->skip.arrange)
+		state |= WIN_STATE_ARRANGE_IGNORE;
+
 	XChangeProperty(dpy, c->win, _XA_WIN_STATE, XA_CARDINAL, 32,
 			PropModeReplace, (unsigned char *) &state, 1);
 	wmh_update_win_layer(c);
@@ -1662,7 +1668,8 @@ push_client_time(Client *c, Time time)
 }
 
 void
-ewmh_process_net_startup_id(Client * c) {
+ewmh_process_net_startup_id(Client *c)
+{
 #ifdef STARTUP_NOTIFICATION
 	SnStartupSequence *seq;
 #endif
@@ -1672,16 +1679,53 @@ ewmh_process_net_startup_id(Client * c) {
 		if (c->leader != None && c->leader != c->win)
 			gettextprop(c->leader, _XA_NET_STARTUP_ID, &c->startup_id);
 	if (c->startup_id) {
-		char *pos;
+		char *p, *q, *copy;
+		char *launcher, *launchee;
+		long pid, sequence, timestamp = 0;
 
-		if ((pos = strstr(c->startup_id, "_TIME")))
-			push_client_time(c, atol(pos + 5));
-		/*
-		 * TODO: there are three other things to get from the ID:
-		 *   launcher: argv[0] of launcher
-		 *   launchee: argv[0] of launchee
-		 *   pid:      pid of launchee
-		 */
+		do {
+			p = q = copy = strdup(c->startup_id);
+			if (!(p = strchr(q, '/')))
+				break;
+			*p++ = '\0';
+			launcher = q;
+			q = p;
+			if (!(p = strchr(q, '/')))
+				break;
+			*p++ = '\0';
+			launchee = q;
+			q = p;
+			if (!(p = strchr(q, '-')))
+				break;
+			*p++ = '\0';
+			pid = atol(q);
+			q = p;
+			if (!(p = strchr(q, '_')))
+				break;
+			*p++ = '\0';
+			sequence = atol(q);
+			q = p;
+			if (!(p = strstr(q, "TIME")) || p != q)
+				break;
+			q = p + 4;
+			timestamp = atol(q);
+
+			/* Note: when xdg-launch is the launcher, the startup id is:
+			   %s/%s/%d-%d_TIME%lu, launcher, launchee, pid, sequence, ts
+			   where the sequence is in fact the monitor number. */
+
+			if (strstr(launcher, "xdg-launch") &&
+			    0 <= sequence && sequence < nmons)
+				c->monitor = sequence + 1;
+
+			(void) launchee;
+			(void) pid;
+		} while (0);
+		free(copy);
+
+		if (!timestamp && (p = strstr(c->startup_id, "_TIME")))
+			timestamp = atol(p + 5);
+		push_client_time(c, timestamp);
 	}
 #ifdef STARTUP_NOTIFICATION
 	if ((seq = find_startup_seq(c))) {
@@ -1692,7 +1736,7 @@ ewmh_process_net_startup_id(Client * c) {
 			XChangeProperty(dpy, c->win, _XA_NET_STARTUP_ID,
 					_XA_UTF8_STRING, 8, PropModeReplace,
 					(unsigned char *) c->startup_id,
-					strlen(c->startup_id)+1);
+					strlen(c->startup_id) + 1);
 		}
 		push_client_time(c, sn_startup_sequence_get_timestamp(seq));
 		/* NOTE: should not override _NET_WM_DESKTOP */

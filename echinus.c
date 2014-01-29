@@ -1788,8 +1788,10 @@ monocle(Monitor * m) {
 	int wx, wy, ww, wh;
 
 	getworkarea(m, &wx, &wy, &ww, &wh);
-	for (c = nexttiled(clients, m); c; c = nexttiled(c->next, m))
+	for (c = nexttiled(clients, m); c; c = nexttiled(c->next, m)) {
+		c->th = (options.dectiled && c->has.title) ? style.titleheight : 0;
 		resize(c, wx, wy, ww - 2 * c->border, wh - 2 * c->border, c->border);
+	}
 }
 
 void
@@ -4409,8 +4411,7 @@ bstack(Monitor * m) {
 
 	getworkarea(m, &wx, &wy, &ww, &wh);
 
-	for (n = 0, c = nexttiled(clients, m); c; c = nexttiled(c->next, m))
-		n++;
+	for (n = 0, c = nexttiled(clients, m); c; c = nexttiled(c->next, m), n++) ;
 
 	/* window geoms */
 
@@ -4475,6 +4476,7 @@ bstack(Monitor * m) {
 		}
 		nw -= 2 * c->border;
 		nh -= 2 * c->border;
+		c->th = (options.dectiled && c->has.title) ? style.titleheight : 0;
 		resize(c, nx + gap, ny + gap, nw - 2 * gap, nh - 2 * gap, c->border);
 	}
 }
@@ -4490,8 +4492,7 @@ tstack(Monitor * m) {
 
 	getworkarea(m, &wx, &wy, &ww, &wh);
 
-	for (n = 0, c = nexttiled(clients, m); c; c = nexttiled(c->next, m))
-		n++;
+	for (n = 0, c = nexttiled(clients, m); c; c = nexttiled(c->next, m), n++) ;
 
 	/* window geoms */
 
@@ -4556,6 +4557,7 @@ tstack(Monitor * m) {
 		}
 		nw -= 2 * c->border;
 		nh -= 2 * c->border;
+		c->th = (options.dectiled && c->has.title) ? style.titleheight : 0;
 		resize(c, nx + gap, ny + gap, nw - 2 * gap, nh - 2 * gap, c->border);
 	}
 }
@@ -4573,8 +4575,7 @@ rtile(Monitor * m) {
 
 	getworkarea(m, &wx, &wy, &ww, &wh);
 
-	for (n = 0, c = nexttiled(clients, m); c; c = nexttiled(c->next, m))
-		n++;
+	for (n = 0, c = nexttiled(clients, m); c; c = nexttiled(c->next, m), n++) ;
 
 	/* window geoms */
 
@@ -4639,6 +4640,7 @@ rtile(Monitor * m) {
 		}
 		nw -= 2 * c->border;
 		nh -= 2 * c->border;
+		c->th = (options.dectiled && c->has.title) ? style.titleheight : 0;
 		resize(c, nx + gap, ny + gap, nw - 2 * gap, nh - 2 * gap, c->border);
 	}
 }
@@ -4656,8 +4658,7 @@ ltile(Monitor * m) {
 
 	getworkarea(m, &wx, &wy, &ww, &wh);
 
-	for (n = 0, c = nexttiled(clients, m); c; c = nexttiled(c->next, m))
-		n++;
+	for (n = 0, c = nexttiled(clients, m); c; c = nexttiled(c->next, m), n++) ;
 
 	/* window geoms */
 
@@ -4722,6 +4723,7 @@ ltile(Monitor * m) {
 		}
 		nw -= 2 * c->border;
 		nh -= 2 * c->border;
+		c->th = (options.dectiled && c->has.title) ? style.titleheight : 0;
 		resize(c, nx + gap, ny + gap, nw - 2 * gap, nh - 2 * gap, c->border);
 	}
 }

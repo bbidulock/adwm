@@ -20,5 +20,6 @@
 #define COMMAND			"xterm"
 #define DEFMWFACT		0.6	/* master width factor [0.1 .. 0.9] */
 #define DEFNMASTER		1	/* number of windows in master area */
+#define DEFNCOLUMNS		3	/* number of columsn in grid layout */
 #define SNAP			5	/* snap pixel */
 #define DECORATETILED		0	/* set to 1 to draw titles in tiled layouts */

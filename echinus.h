@@ -255,11 +255,12 @@ typedef struct {
 	void (*arrange) (Monitor * m);
 	char symbol;
 	int features;
-#define BIT(_i)	(1 << (_i))
-#define MWFACT	BIT(0)
-#define NMASTER	BIT(1)
-#define	ZOOM	BIT(2)
-#define	OVERLAP	BIT(3)
+#define BIT(_i)		(1 << (_i))
+#define MWFACT		BIT(0)
+#define NMASTER		BIT(1)
+#define	ZOOM		BIT(2)
+#define	OVERLAP		BIT(3)
+#define NCOLUMNS	BIT(4)
 } Layout;
 
 #define FEATURES(_layout, _which) (!(!((_layout)->features & (_which))))
@@ -402,6 +403,7 @@ struct Group {
 typedef struct View {
 	int barpos;
 	int nmaster;
+	int ncolumns;
 	double mwfact;
 	Layout *layout;
 } View; /* per-tag settings */

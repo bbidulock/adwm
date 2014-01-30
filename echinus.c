@@ -133,6 +133,7 @@ void keypress(XEvent * e);
 void killclient(Client *c);
 void leavenotify(XEvent * e);
 void focusin(XEvent * e);
+void grid(Monitor *m);
 void manage(Window w, XWindowAttributes * wa);
 void mappingnotify(XEvent * e);
 void monocle(Monitor * m);
@@ -278,6 +279,7 @@ Layout layouts[] = {
 	{  ltile,	'l',	MWFACT | NMASTER | ZOOM },
 	{  monocle,	'm',	0 },
 	{  NULL,	'f',	OVERLAP },
+	{  grid,	'g',	NCOLUMNS },
 	{  NULL,	'\0',	0 },
 };
 
@@ -1027,9 +1029,43 @@ eprint(const char *errstr, ...) {
 }
 
 void
-focusin(XEvent * e) {
+focusin(XEvent *e) {
 	XFocusChangeEvent *ev = &e->xfocus;
 	Client *c;
+
+	/* FIXME: this is not quite correct: under some focus models we should allow one
+	   window in group to move keyboard focus to another of its windows. */
+
+	/*
+	 * No Input
+	 *	    - The client never expects keyboard input.  An example would be xload or
+	 *	      another output-only client.
+	 *
+	 * Passive Input
+	 *	    - The client expects keyboard input but never explicitly sets the input
+	 *	      focus.  An example would be a simply client with no subwindows, which
+	 *	      will accept input in PointerRoot mode or when the window manager sets
+	 *	      the input focus to is top-level window (in click-to-type mode).
+	 *
+	 * Locally Active
+	 *	    - The client expects keyboard input and explicitly sets the input focus,
+	 *	      but it only does so when one of its windows alreay has the focus.  An
+	 *	      example would be a client with subwindows defining various data entry
+	 *	      fields that uses Next and Prev keys to move the input focus between
+	 *	      the fields.  It does so when its top-level window has acquired the
+	 *	      focus in PoitnerRoot mode or when the window manager sets the input
+	 *	      focus to its top-level window (in click-to-type mode).
+	 *
+	 * Globally Active Input
+	 *	    - The client expects keyboard input and explicitly sets the input focus,
+	 *	      even when it is in windows the client does not own.  An example would
+	 *	      be a client with a scroll bar that wants to allow users to scroll the
+	 *	      window without disturbing the input focus even if it is in some other
+	 *	      window.  It wants to acquire the input focus when the user clicks in
+	 *	      the scrolled region but not when the user clicks in the scroll bar
+	 *	      itself.  Thus, it wants to prevent the window manager from setting the
+	 *	      input focus to any of its windows.
+	 */
 
 	c = getclient(ev->window, ClientWindow);
 	if (foc && c != foc)
@@ -1214,10 +1250,28 @@ _iconify(Client *c, int dummy) {
 
 void
 iconify(Client *c) {
-	if (!c || !c->can.min)
+	if (!c || (!c->can.min && c->is.managed))
 		return;
 	return with_transients(c, &_iconify, 0);
 }
+
+static void
+_deiconify(Client *c, int dummy) {
+	if (!c->is.icon)
+		return;
+	c->is.icon = False;
+	c->is.hidden = False;
+	if (c->is.managed)
+		arrange(NULL);
+}
+
+void
+deiconify(Client *c) {
+	if (!c || (!c->can.min && c->is.managed))
+		return;
+	return with_transients(c, &_deiconify, 0);
+}
+
 
 static void
 _hide(Client *c, int dummy) {
@@ -1232,7 +1286,7 @@ _hide(Client *c, int dummy) {
 
 void
 hide(Client *c) {
-	if (!c || !c->can.hide)
+	if (!c || (!c->can.hide && c->is.managed))
 		return;
 	return with_transients(c, &_hide, 0);
 }
@@ -1250,7 +1304,7 @@ _show(Client *c, int dummy) {
 
 void
 show(Client *c) {
-	if (!c || !c->can.hide)
+	if (!c || (!c->can.hide && c->is.managed))
 		return;
 	return with_transients(c, &_show, 0);
 }
@@ -1296,17 +1350,31 @@ toggleshowing() {
 void
 incnmaster(const char *arg) {
 	unsigned int i;
+	View *view = views + curmontag;
+	Layout *layout = view->layout;
 
-	if (!FEATURES(curlayout, NMASTER))
+	if (!FEATURES(layout, NMASTER) && !FEATURES(layout, NCOLUMNS))
 		return;
-	if (!arg) {
-		views[curmontag].nmaster = DEFNMASTER;
-	} else {
-		i = atoi(arg);
-		if ((views[curmontag].nmaster + i) < 1
-		    || curwah / (views[curmontag].nmaster + i) <= 2 * style.border)
-			return;
-		views[curmontag].nmaster += i;
+	if (FEATURES(layout, NMASTER)) {
+		if (!arg)
+			view->nmaster = DEFNMASTER;
+		else {
+			i = atoi(arg);
+			if ((view->nmaster + i) < 1 ||
+			    curwah / (view->nmaster + i) <= 2 * style.border)
+				return;
+			view->nmaster += i;
+		}
+	} else if (FEATURES(layout, NCOLUMNS)) {
+		if (!arg)
+			view->ncolumns = DEFNCOLUMNS;
+		else {
+			i = atoi(arg);
+			if ((view->ncolumns + i) < 1 ||
+			    curwaw / (view->ncolumns + i) < 100)
+				return;
+			view->ncolumns += i;
+		}
 	}
 	if (sel)
 		arrange(curmonitor());
@@ -1809,6 +1877,70 @@ monocle(Monitor * m) {
 		c->th = (options.dectiled && c->has.title) ? style.titleheight : 0;
 		resize(c, wx, wy, ww - 2 * c->border, wh - 2 * c->border, c->border);
 	}
+}
+
+void
+grid(Monitor *m) {
+	Client *c;
+	int wx, wy, ww, wh;
+	int rows, cols, n, i, *rc, *rh, col, row;
+	int cw, cl, *rl;
+	int x, y, w, h, gap;
+
+	if (!(c = nexttiled(clients, m)))
+		return;
+
+	getworkarea(m, &wx, &wy, &ww, &wh);
+
+	for (n = 0, c = nexttiled(clients, m); c; c = nexttiled(c->next, m), n++) ;
+
+	for (cols = 1; cols < n && cols < views[m->curtag].ncolumns; cols++) ;
+
+	for (rows = 1; (rows * cols) < n; rows++) ;
+
+	/* number of rows per column */
+	rc = ecalloc(cols, sizeof(*rc));
+	for (col = 0, i = 0; i < n; rc[col]++, i++, col = i % cols) ;
+
+	/* average height per client in column */
+	rh = ecalloc(cols, sizeof(*rh));
+	for (col = 0; col < cols; rh[col] = wh / rc[col], col++) ;
+
+	/* height of last client in column */
+	rl = ecalloc(cols, sizeof(*rl));
+	for (col = 0; col < cols; rl[col] = wh - (rc[col] - 1) * rh[col], col++) ;
+
+	/* average width of column */
+	cw = ww / cols;
+
+	/* width of last column */
+	cl = ww - (cols - 1) * cw;
+
+	gap = style.margin > style.border ? style.margin - style.border : 0;
+
+	for (i = 0, col = 0, row = 0, c = nexttiled(clients, m); c && i < n;
+	     c = nexttiled(c->next, m), i++, col = i % cols, row = i / cols) {
+
+		x = wx + (col * cw);
+		y = wy + (row * rh[col]);
+		w = (col == cols - 1) ? cl : cw;
+		h = (row == rows - 1) ? rl[col] : rh[col];
+		if (col > 0) {
+			w += style.border;
+			x -= style.border;
+		}
+		if (row > 0) {
+			h += style.border;
+			y -= style.border;
+		}
+		w -= 2 * style.border;
+		h -= 2 * style.border;
+		c->th = (options.dectiled && c->has.title) ? style.titleheight : 0;
+		resize(c, x + gap, y + gap, w - 2 * gap, h - 2 * gap, style.border);
+	}
+	free(rc);
+	free(rh);
+	free(rl);
 }
 
 void
@@ -3780,7 +3912,7 @@ setmwfact(const char *arg) {
 }
 
 void
-initview(unsigned int i, float mwfact, int nmaster, const char *deflayout) {
+initview(unsigned int i, float mwfact, int nmaster, int ncolumns, const char *deflayout) {
 	unsigned int j;
 	char conf[32], ltname;
 
@@ -3795,38 +3927,45 @@ initview(unsigned int i, float mwfact, int nmaster, const char *deflayout) {
 	}
 	views[i].mwfact = mwfact;
 	views[i].nmaster = nmaster;
+	views[i].ncolumns = ncolumns;
 	views[i].barpos = StrutsOn;
 }
 
 void
 newview(unsigned int i) {
 	float mwfact;
-	int nmaster;
+	int nmaster, ncolumns;
 	const char *deflayout;
 
 	mwfact = atof(getresource("mwfact", STR(DEFMWFACT)));
 	nmaster = atoi(getresource("nmaster", STR(DEFNMASTER)));
+	ncolumns = atoi(getresource("ncolumns", STR(DEFNCOLUMNS)));
 	deflayout = getresource("deflayout", "i");
-	if (!nmaster)
+	if (nmaster < 1)
 		nmaster = 1;
-	initview(i, mwfact, nmaster, deflayout);
+	if (ncolumns < 1)
+		ncolumns = 1;
+	initview(i, mwfact, nmaster, ncolumns, deflayout);
 }
 
 void
 initlayouts() {
 	unsigned int i;
 	float mwfact;
-	int nmaster;
+	int nmaster, ncolumns;
 	const char *deflayout;
 
 	/* init layouts */
 	mwfact = atof(getresource("mwfact", STR(DEFMWFACT)));
 	nmaster = atoi(getresource("nmaster", STR(DEFNMASTER)));
+	ncolumns = atoi(getresource("ncolumns", STR(DEFNCOLUMNS)));
 	deflayout = getresource("deflayout", "i");
-	if (!nmaster)
+	if (nmaster < 1)
 		nmaster = 1;
+	if (ncolumns < 1)
+		ncolumns = 1;
 	for (i = 0; i < ntags; i++)
-		initview(i, mwfact, nmaster, deflayout);
+		initview(i, mwfact, nmaster, ncolumns, deflayout);
 	ewmh_update_net_desktop_modes();
 }
 
@@ -4402,7 +4541,7 @@ _tag(Client *c, int index) {
 
 void
 tag(Client *c, int index) {
-	if (!c || !c->can.tag)
+	if (!c || (!c->can.tag && c->is.managed))
 		return;
 	return with_transients(c, &_tag, index);
 }
@@ -4415,6 +4554,9 @@ bstack(Monitor * m) {
 	unsigned int i, n;
 	Client *c, *mc;
 	int wx, wy, ww, wh;
+
+	if (!(c = nexttiled(clients, m)))
+		return;
 
 	getworkarea(m, &wx, &wy, &ww, &wh);
 
@@ -4496,6 +4638,9 @@ tstack(Monitor * m) {
 	unsigned int i, n;
 	Client *c, *mc;
 	int wx, wy, ww, wh;
+
+	if (!(c = nexttiled(clients, m)))
+		return;
 
 	getworkarea(m, &wx, &wy, &ww, &wh);
 
@@ -4580,6 +4725,9 @@ rtile(Monitor * m) {
 	Client *c, *mc;
 	int wx, wy, ww, wh;
 
+	if (!(c = nexttiled(clients, m)))
+		return;
+
 	getworkarea(m, &wx, &wy, &ww, &wh);
 
 	for (n = 0, c = nexttiled(clients, m); c; c = nexttiled(c->next, m), n++) ;
@@ -4662,6 +4810,9 @@ ltile(Monitor * m) {
 	unsigned int i, n;
 	Client *c, *mc;
 	int wx, wy, ww, wh;
+
+	if (!(c = nexttiled(clients, m)))
+		return;
 
 	getworkarea(m, &wx, &wy, &ww, &wh);
 
@@ -4967,7 +5118,7 @@ void
 toggletag(Client *c, int index) {
 	unsigned int i, j;
 
-	if (!c)
+	if (!c || (!c->can.tag && c->is.managed))
 		return;
 	i = (index == -1) ? 0 : index;
 	c->tags[i] = !c->tags[i];

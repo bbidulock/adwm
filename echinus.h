@@ -234,6 +234,7 @@ typedef enum { NoInputModel, PassiveInputModel, GloballyActiveModel, LocallyActi
 #define GIVE_FOCUS (1<<0)
 #define TAKE_FOCUS (1<<1)
 
+/* typedefs */
 typedef struct {
 	int x, y, w, h, b;
 } Geometry;
@@ -242,7 +243,6 @@ typedef struct {
 	int x, y, w, h;
 } Workarea;
 
-/* typedefs */
 typedef struct Monitor Monitor;
 struct Monitor {
 	int sx, sy, sw, sh, wax, way, waw, wah;
@@ -269,7 +269,7 @@ typedef struct {
 } Layout;
 
 #define FEATURES(_layout, _which) (!(!((_layout)->features & (_which))))
-#define M2LT(_mon) (views[(_mon)->curtag].layout)
+#define M2LT(_mon) (scr->views[(_mon)->curtag].layout)
 #define MFEATURES(_monitor, _which) ((_monitor) && FEATURES(M2LT(_monitor), (_which)))
 
 typedef struct Client Client;
@@ -412,6 +412,25 @@ typedef struct View {
 	double mwfact;
 	Layout *layout;
 } View; /* per-tag settings */
+
+typedef struct EScreen EScreen;
+struct EScreen {
+	Bool managed;
+	Window root;
+	Window selwin;
+	Client *clients;
+	Monitor *monitors;
+	Client *stack;
+	Client *clist;
+	unsigned int nmons;
+	unsigned int ntags;
+	Bool showing_desktop;
+	int screen;
+	char **tags;
+	Atom *dt_tags;
+	View *views;
+
+};
 
 typedef struct {
 	Pixmap pm;
@@ -602,7 +621,7 @@ void initstyle();
 #define curwah curmonitor()->wah
 #define curmontag curmonitor()->curtag
 #define curstruts curmonitor()->struts
-#define curlayout views[curmontag].layout
+#define curlayout scr->views[curmontag].layout
 
 #define LENGTH(x)		(sizeof(x) / sizeof x[0])
 #ifdef DEBUG
@@ -626,30 +645,31 @@ void initstyle();
 /* globals */
 extern Atom atom[NATOMS];
 extern Display *dpy;
-extern Window root;
-extern Window selwin;
-extern Client *clients;
-extern Monitor *monitors;
+extern EScreen *scr;
+// extern Window root;
+// extern Window selwin;
+// extern Client *clients;
+// extern Monitor *monitors;
 extern Client *sel;
 extern Client *give;	/* gave focus last */
 extern Client *take;	/* take focus last */
-extern Client *stack;
-extern Client *clist;
-extern unsigned int nmons;
-extern unsigned int ntags;
+// extern Client *stack;
+// extern Client *clist;
+// extern unsigned int nmons;
+// extern unsigned int ntags;
 extern unsigned int nkeys;
 extern unsigned int nrules;
-extern Bool showing_desktop;
-extern int screen;
+// extern Bool showing_desktop;
+// extern int screen;
 extern Style style;
 extern Button button[LastBtn];
-extern char **tags;
-extern Atom *dt_tags;
+// extern char **tags;
+// extern Atom *dt_tags;
 extern Key **keys;
 extern Rule **rules;
 extern Layout layouts[];
 extern unsigned int modkey;
-extern View *views;
+// extern View *views;
 extern XContext context[];
 extern Time user_time;
 #ifdef STARTUP_NOTIFICATION

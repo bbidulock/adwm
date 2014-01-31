@@ -124,8 +124,8 @@ idxoftag(const char *tag) {
 
 	if (tag == NULL)
 		return -1;
-	for (i = 0; (i < ntags) && strcmp(tag, tags[i]); i++);
-	return (i < ntags) ? i : 0;
+	for (i = 0; (i < scr->ntags) && strcmp(tag, scr->tags[i]); i++);
+	return (i < scr->ntags) ? i : 0;
 }
 
 static void
@@ -255,7 +255,7 @@ initkeys() {
 	}
 	/* per tag functions */
 	for (j = 0; j < LENGTH(KeyItemsByTag); j++) {
-		for (i = 0; i < ntags; i++) {
+		for (i = 0; i < scr->ntags; i++) {
 			snprintf(t, sizeof(t), "%s%d", KeyItemsByTag[j].name, i);
 			tmp = getresource(t, NULL);
 			if (!tmp)
@@ -263,7 +263,7 @@ initkeys() {
 			keys = realloc(keys, sizeof(Key *) * (nkeys + 1));
 			keys[nkeys] = malloc(sizeof(Key));
 			keys[nkeys]->func = KeyItemsByTag[j].action;
-			keys[nkeys]->arg = tags[i];
+			keys[nkeys]->arg = scr->tags[i];
 			parsekey(tmp, keys[nkeys]);
 			nkeys++;
 		}

@@ -98,9 +98,9 @@ drawelement(char which, int x, int position, Client *c) {
 	switch (which) {
 	case 'T':
 		w = 0;
-		for (j = 0; j < ntags; j++) {
+		for (j = 0; j < scr->ntags; j++) {
 			if (c->tags[j])
-				w += drawtext(tags[j], c->drawable, c->xftdraw,
+				w += drawtext(scr->tags[j], c->drawable, c->xftdraw,
 				    color, dc.x, dc.y, dc.w);
 		}
 		break;
@@ -149,9 +149,9 @@ elementw(char which, Client *c) {
 		return textw(c->name);
 	case 'T':
 		w = 0;
-		for (j = 0; j < ntags; j++) {
+		for (j = 0; j < scr->ntags; j++) {
 			if (c->tags[j])
-				w += textw(tags[j]);
+				w += textw(scr->tags[j]);
 		}
 		return w;
 	case '|':
@@ -227,15 +227,15 @@ static unsigned long
 getcolor(const char *colstr) {
 	XColor color;
 
-	if (!XAllocNamedColor(dpy, DefaultColormap(dpy, screen), colstr, &color, &color))
+	if (!XAllocNamedColor(dpy, DefaultColormap(dpy, scr->screen), colstr, &color, &color))
 		eprint("error, cannot allocate color '%s'\n", colstr);
 	return color.pixel;
 }
 
 static int
 initpixmap(const char *file, Button *b) {
-	b->pm = XCreatePixmap(dpy, root, style.titleheight, style.titleheight, 1);
-	if (BitmapSuccess == XReadBitmapFile(dpy, root, file, &b->pw, &b->ph,
+	b->pm = XCreatePixmap(dpy, scr->root, style.titleheight, style.titleheight, 1);
+	if (BitmapSuccess == XReadBitmapFile(dpy, scr->root, file, &b->pw, &b->ph,
 		&b->pm, &b->px, &b->py)) {
 		if (b->px == -1 || b->py == -1)
 			b->px = b->py = 0;
@@ -279,9 +279,9 @@ initbuttons() {
 static void
 initfont(const char *fontstr) {
 	style.font = NULL;
-	style.font = XftFontOpenXlfd(dpy, screen, fontstr);
+	style.font = XftFontOpenXlfd(dpy, scr->screen, fontstr);
 	if (!style.font)
-		style.font = XftFontOpenName(dpy, screen, fontstr);
+		style.font = XftFontOpenName(dpy, scr->screen, fontstr);
 	if (!style.font)
 		eprint("error, cannot load font: '%s'\n", fontstr);
 	dc.font.extents = emallocz(sizeof(XGlyphInfo));
@@ -306,10 +306,10 @@ initstyle() {
 
 	style.color.font[Selected] = emallocz(sizeof(XftColor));
 	style.color.font[Normal] = emallocz(sizeof(XftColor));
-	XftColorAllocName(dpy, DefaultVisual(dpy, screen), DefaultColormap(dpy,
-				screen), getresource("selected.fg", SELFGCOLOR), style.color.font[Selected]);
-	XftColorAllocName(dpy, DefaultVisual(dpy, screen), DefaultColormap(dpy,
-				screen), getresource("normal.fg", NORMFGCOLOR), style.color.font[Normal]);
+	XftColorAllocName(dpy, DefaultVisual(dpy, scr->screen), DefaultColormap(dpy,
+				scr->screen), getresource("selected.fg", SELFGCOLOR), style.color.font[Selected]);
+	XftColorAllocName(dpy, DefaultVisual(dpy, scr->screen), DefaultColormap(dpy,
+				scr->screen), getresource("normal.fg", NORMFGCOLOR), style.color.font[Normal]);
 	if (!style.color.font[Normal] || !style.color.font[Normal])
 		eprint("error, cannot allocate colors\n");
 	initfont(getresource("font", FONT));
@@ -323,17 +323,17 @@ initstyle() {
 	style.titleheight = atoi(getresource("title", STR(TITLEHEIGHT)));
 	if (!style.titleheight)
 		style.titleheight = dc.font.height + 2;
-	dc.gc = XCreateGC(dpy, root, 0, 0);
+	dc.gc = XCreateGC(dpy, scr->root, 0, 0);
 	initbuttons();
 }
 
 void
 deinitstyle() {	
 	/* XXX: more to do */
-	XftColorFree(dpy, DefaultVisual(dpy, screen), DefaultColormap(dpy,
-		screen), style.color.font[Normal]);
-	XftColorFree(dpy, DefaultVisual(dpy, screen), DefaultColormap(dpy,
-		screen), style.color.font[Selected]);
+	XftColorFree(dpy, DefaultVisual(dpy, scr->screen), DefaultColormap(dpy,
+		scr->screen), style.color.font[Normal]);
+	XftColorFree(dpy, DefaultVisual(dpy, scr->screen), DefaultColormap(dpy,
+		scr->screen), style.color.font[Selected]);
 	XftFontClose(dpy, style.font);
 	free(dc.font.extents);
 	XFreeGC(dpy, dc.gc);

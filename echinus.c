@@ -1392,7 +1392,7 @@ focus(Client * c) {
 		for (c = scr->stack;
 		    c && (c->is.bastard || (c->is.icon || c->is.hidden) || !isvisible(c, curmonitor())); c = c->snext);
 	if (sel && sel != c) {
-		XSetWindowBorder(dpy, sel->frame, style.color.norm[ColBorder]);
+		XSetWindowBorder(dpy, sel->frame, scr->color.norm[ColBorder]);
 	}
 	sel = c;
 	if (!scr->managed)
@@ -1406,7 +1406,7 @@ focus(Client * c) {
 			givefocus(c);
 			takefocus(c);
 		}
-		XSetWindowBorder(dpy, sel->frame, style.color.sel[ColBorder]);
+		XSetWindowBorder(dpy, sel->frame, scr->color.sel[ColBorder]);
 		drawclient(c);
 		ewmh_update_net_window_state(c);
 	} else {
@@ -2111,7 +2111,7 @@ manage(Window w, XWindowAttributes *wa)
 	wc.border_width = c->border;
 	XConfigureWindow(dpy, c->frame, CWBorderWidth, &wc);
 	configure(c, None);
-	XSetWindowBorder(dpy, c->frame, style.color.norm[ColBorder]);
+	XSetWindowBorder(dpy, c->frame, scr->color.norm[ColBorder]);
 
 	twa.event_mask = ExposureMask | MOUSEMASK;
 	/* we create title as root's child as a workaround for 32bit visuals */
@@ -4909,18 +4909,30 @@ setup(char *conf) {
 }
 
 void
-spawn(const char *arg) {
+spawn(const char *arg)
+{
 	static char shell[] = "/bin/sh";
 
 	if (!arg)
 		return;
-	/* The double-fork construct avoids zombie processes and keeps the code
-	 * clean from stupid signal handlers. */
+	/* The double-fork construct avoids zombie processes and keeps the code clean
+	   from stupid signal handlers. */
 	if (fork() == 0) {
 		if (fork() == 0) {
+			char *d, *p;
+
 			if (dpy)
 				close(ConnectionNumber(dpy));
 			setsid();
+			d = strdup(getenv("DISPLAY"));
+			if (!(p = strrchr(d, '.')) || !strlen(p + 1)
+			    || strspn(p + 1, "0123456789") != strlen(p + 1)) {
+				size_t len = strlen(d) + 12;
+				char *s = calloc(len, sizeof(*s));
+
+				snprintf(s, len, "%s.%d", d, scr->screen);
+				setenv("DISPLAY", s, 1);
+			}
 			execl(shell, shell, "-c", arg, (char *) NULL);
 			fprintf(stderr, "echinus: execl '%s -c %s'", shell, arg);
 			perror(" failed");

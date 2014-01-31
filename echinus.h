@@ -441,11 +441,6 @@ typedef struct {
 	unsigned int titleheight;
 	unsigned int opacity;
 	char titlelayout[32];
-	struct {
-		unsigned long norm[ColLast];
-		unsigned long sel[ColLast];
-		XftColor *font[2];
-	} color;
 	XftFont *font;
 } Style;
 
@@ -476,6 +471,11 @@ struct EScreen {
 	unsigned int nkeys;
 	DC dc;
 	Button button[LastBtn];
+	struct {
+		unsigned long norm[ColLast];
+		unsigned long sel[ColLast];
+		XftColor *font[2];
+	} color;
 };
 
 typedef struct {

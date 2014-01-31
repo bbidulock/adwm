@@ -57,7 +57,7 @@ drawtext(const char *text, Drawable drawable, XftDraw *xftdrawable,
 	XFillRectangle(dpy, drawable, scr->dc.gc, x - scr->dc.font.height / 2, 0,
 	    w + scr->dc.font.height, h);
 	XftDrawStringUtf8(xftdrawable,
-	    (col == style.color.norm) ? style.color.font[Normal] : style.color.font[Selected],
+	    (col == scr->color.norm) ? scr->color.font[Normal] : scr->color.font[Selected],
 	    style.font, x, y, (unsigned char *) buf, len);
 	return w + scr->dc.font.height;
 }
@@ -79,7 +79,7 @@ static int
 drawelement(char which, int x, int position, Client *c) {
 	int w;
 	unsigned int j;
-	unsigned long *color = c == sel ? style.color.sel : style.color.norm;
+	unsigned long *color = c == sel ? scr->color.sel : scr->color.norm;
 
 	switch (which) {
 	case 'T':
@@ -161,16 +161,16 @@ drawclient(Client *c) {
 	scr->dc.w = c->w;
 	scr->dc.h = style.titleheight;
 	XftDrawChange(c->xftdraw, c->drawable);
-	XSetForeground(dpy, scr->dc.gc, c == sel ? style.color.sel[ColBG] : style.color.norm[ColBG]);
+	XSetForeground(dpy, scr->dc.gc, c == sel ? scr->color.sel[ColBG] : scr->color.norm[ColBG]);
 	XSetLineAttributes(dpy, scr->dc.gc, style.border, LineSolid, CapNotLast, JoinMiter);
 	XFillRectangle(dpy, c->drawable, scr->dc.gc, scr->dc.x, scr->dc.y, scr->dc.w, scr->dc.h);
 	if (scr->dc.w < textw(c->name)) {
 		scr->dc.w -= scr->dc.h;
 		scr->button[Close].x = scr->dc.w;
 		drawtext(c->name, c->drawable, c->xftdraw,
-		    c == sel ? style.color.sel : style.color.norm, scr->dc.x, scr->dc.y, scr->dc.w);
+		    c == sel ? scr->color.sel : scr->color.norm, scr->dc.x, scr->dc.y, scr->dc.w);
 		drawbutton(c->drawable, scr->button[Close],
-		    c == sel ? style.color.sel : style.color.norm, scr->dc.w,
+		    c == sel ? scr->color.sel : scr->color.norm, scr->dc.w,
 		    scr->dc.h / 2 - scr->button[Close].ph / 2);
 		goto end;
 	}
@@ -203,7 +203,7 @@ drawclient(Client *c) {
       end:
 	if (style.outline) {
 		XSetForeground(dpy, scr->dc.gc,
-		    c == sel ? style.color.sel[ColBorder] : style.color.norm[ColBorder]);
+		    c == sel ? scr->color.sel[ColBorder] : scr->color.norm[ColBorder]);
 		XDrawLine(dpy, c->drawable, scr->dc.gc, 0, scr->dc.h - 1, scr->dc.w, scr->dc.h - 1);
 	}
 	XCopyArea(dpy, c->drawable, c->title, scr->dc.gc, 0, 0, c->w, scr->dc.h, 0, 0);
@@ -211,9 +211,9 @@ drawclient(Client *c) {
 
 static unsigned long
 getcolor(const char *colstr) {
-	XColor color;
+	XColor color, exact;
 
-	if (!XAllocNamedColor(dpy, DefaultColormap(dpy, scr->screen), colstr, &color, &color))
+	if (!XAllocNamedColor(dpy, DefaultColormap(dpy, scr->screen), colstr, &color, &exact))
 		eprint("error, cannot allocate color '%s'\n", colstr);
 	return color.pixel;
 }
@@ -249,8 +249,8 @@ initbuttons() {
 	scr->button[Maximize].action = _togglemax;
 	scr->button[Close].action = _killclient;
 	scr->button[Iconify].x = scr->button[Close].x = scr->button[Maximize].x = -1;
-	XSetForeground(dpy, scr->dc.gc, style.color.norm[ColButton]);
-	XSetBackground(dpy, scr->dc.gc, style.color.norm[ColBG]);
+	XSetForeground(dpy, scr->dc.gc, scr->color.norm[ColButton]);
+	XSetBackground(dpy, scr->dc.gc, scr->color.norm[ColBG]);
 	if (initpixmap(getresource("button.iconify.pixmap", ICONPIXMAP),
 	    &scr->button[Iconify]))
 		scr->button[Iconify].action = NULL;
@@ -280,23 +280,23 @@ initfont(const char *fontstr) {
 
 void
 initstyle() {
-	style.color.norm[ColBorder] = getcolor(getresource("normal.border", NORMBORDERCOLOR));
-	style.color.norm[ColBG] = getcolor(getresource("normal.bg", NORMBGCOLOR));
-	style.color.norm[ColFG] = getcolor(getresource("normal.fg", NORMFGCOLOR));
-	style.color.norm[ColButton] = getcolor(getresource("normal.button", NORMBUTTONCOLOR));
+	scr->color.norm[ColBorder] = getcolor(getresource("normal.border", NORMBORDERCOLOR));
+	scr->color.norm[ColBG] = getcolor(getresource("normal.bg", NORMBGCOLOR));
+	scr->color.norm[ColFG] = getcolor(getresource("normal.fg", NORMFGCOLOR));
+	scr->color.norm[ColButton] = getcolor(getresource("normal.button", NORMBUTTONCOLOR));
 
-	style.color.sel[ColBorder] = getcolor(getresource("selected.border", SELBORDERCOLOR));
-	style.color.sel[ColBG] = getcolor(getresource("selected.bg", SELBGCOLOR));
-	style.color.sel[ColFG] = getcolor(getresource("selected.fg", SELFGCOLOR));
-	style.color.sel[ColButton] = getcolor(getresource("selected.button", SELBUTTONCOLOR));
+	scr->color.sel[ColBorder] = getcolor(getresource("selected.border", SELBORDERCOLOR));
+	scr->color.sel[ColBG] = getcolor(getresource("selected.bg", SELBGCOLOR));
+	scr->color.sel[ColFG] = getcolor(getresource("selected.fg", SELFGCOLOR));
+	scr->color.sel[ColButton] = getcolor(getresource("selected.button", SELBUTTONCOLOR));
 
-	style.color.font[Selected] = emallocz(sizeof(XftColor));
-	style.color.font[Normal] = emallocz(sizeof(XftColor));
+	scr->color.font[Selected] = emallocz(sizeof(XftColor));
+	scr->color.font[Normal] = emallocz(sizeof(XftColor));
 	XftColorAllocName(dpy, DefaultVisual(dpy, scr->screen), DefaultColormap(dpy,
-				scr->screen), getresource("selected.fg", SELFGCOLOR), style.color.font[Selected]);
+				scr->screen), getresource("selected.fg", SELFGCOLOR), scr->color.font[Selected]);
 	XftColorAllocName(dpy, DefaultVisual(dpy, scr->screen), DefaultColormap(dpy,
-				scr->screen), getresource("normal.fg", NORMFGCOLOR), style.color.font[Normal]);
-	if (!style.color.font[Normal] || !style.color.font[Normal])
+				scr->screen), getresource("normal.fg", NORMFGCOLOR), scr->color.font[Normal]);
+	if (!scr->color.font[Normal] || !scr->color.font[Normal])
 		eprint("error, cannot allocate colors\n");
 	initfont(getresource("font", FONT));
 	style.border = atoi(getresource("border", STR(BORDERPX)));
@@ -317,9 +317,9 @@ void
 deinitstyle() {	
 	/* XXX: more to do */
 	XftColorFree(dpy, DefaultVisual(dpy, scr->screen), DefaultColormap(dpy,
-		scr->screen), style.color.font[Normal]);
+		scr->screen), scr->color.font[Normal]);
 	XftColorFree(dpy, DefaultVisual(dpy, scr->screen), DefaultColormap(dpy,
-		scr->screen), style.color.font[Selected]);
+		scr->screen), scr->color.font[Selected]);
 	XftFontClose(dpy, style.font);
 	free(scr->dc.font.extents);
 	XFreeGC(dpy, scr->dc.gc);

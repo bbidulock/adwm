@@ -92,6 +92,7 @@ void ban(Client * c);
 void buttonpress(XEvent * e);
 void bstack(Monitor * m);
 void tstack(Monitor * m);
+Bool canfocus(Client *c);
 void checkotherwm(void);
 void cleanup(WithdrawCause cause);
 void compileregs(void);
@@ -113,6 +114,8 @@ void iconify(Client *c);
 void incnmaster(const char *arg);
 Monitor *findcurmonitor(Client *c);
 void focus(Client * c);
+Client *focusforw(Client *c);
+Client *focusback(Client *c);
 void focusnext(Client *c);
 void focusprev(Client *c);
 Client *getclient(Window w, int part);
@@ -130,9 +133,12 @@ void initmonitors(XEvent * e);
 void freemonitors(void);
 void updatemonitors(XEvent *e, int n, Bool size, Bool full);
 void keypress(XEvent * e);
+void keyrelease(XEvent * e);
 void killclient(Client *c);
 void leavenotify(XEvent * e);
 void focusin(XEvent * e);
+void focusout(XEvent *e);
+void gavefocus(Client *c);
 void grid(Monitor *m);
 void manage(Window w, XWindowAttributes * wa);
 void mappingnotify(XEvent * e);
@@ -168,6 +174,7 @@ void spawn(const char *arg);
 void tag(Client *c, int index);
 void rtile(Monitor * m);
 void ltile(Monitor * m);
+void takefocus(Client *c);
 void togglestruts(const char *arg);
 void togglefloating(Client *c);
 void togglemax(Client *c);
@@ -189,7 +196,7 @@ void unmapnotify(XEvent * e);
 void updatesizehints(Client * c);
 void updateframe(Client * c);
 void updatetitle(Client * c);
-void updategroup(Client * c, Window leader, int group, int *nofocus);
+void updategroup(Client * c, Window leader, int group, int *nonmodal);
 Window *getgroup(Client *c, Window leader, int group, unsigned int *count);
 void removegroup(Client *c, Window leader, int group);
 void updateiconname(Client * c);
@@ -233,7 +240,8 @@ Bool selscreen = True;
 Monitor *monitors;
 Client *clients;
 Client *sel;
-Client *foc;
+Client *give;	/* gave focus last */
+Client *take;	/* take focus last */
 Client *stack;
 Client *clist;
 Group window_stack = { NULL, 0, 0 };
@@ -256,7 +264,9 @@ unsigned int nrules;
 unsigned int modkey;
 unsigned int numlockmask;
 Bool showing_desktop = False;
-Time user_time = CurrentTime;
+Time user_time;
+Time give_time;
+Time take_time;
 Group systray = { NULL, 0, 0 };
 /* configuration, allows nested code to access above variables */
 #include "config.h"
@@ -292,8 +302,10 @@ void (*handler[LASTEvent+(EXTRANGE*BaseLast)]) (XEvent *) = {
 	[EnterNotify] = enternotify,
 	[LeaveNotify] = leavenotify,
 	[FocusIn] = focusin,
+	[FocusOut] = focusout,
 	[Expose] = expose,
 	[KeyPress] = keypress,
+	[KeyRelease] = keyrelease,
 	[MappingNotify] = mappingnotify,
 	[MapRequest] = maprequest,
 	[PropertyNotify] = propertynotify,
@@ -459,12 +471,25 @@ ban(Client * c) {
 	c->is.banned = True;
 }
 
+Bool
+isfloating(Client *c, Monitor *m)
+{
+	if (c->is.floater || c->skip.arrange)
+		return True;
+	if (m && MFEATURES(m, OVERLAP))
+		return True;
+	return False;
+}
+
 void
 buttonpress(XEvent * e) {
 	Client *c;
 	int i;
 	XButtonPressedEvent *ev = &e->xbutton;
 	static int button_states[Button5+1] = { 0, };
+
+	if ((int)ev->time - (int)user_time > 0)
+		user_time = ev->time;
 
 	if (ev->window == root) {
 		/* _WIN_DESKTOP_BUTTON_PROXY */
@@ -538,18 +563,18 @@ buttonpress(XEvent * e) {
 			return;
 		}
 		if (ev->button == Button1) {
-			if (!FEATURES(curlayout, OVERLAP) && !c->skip.arrange)
+			if (!isfloating(c, curmonitor()))
 				togglefloating(c);
 			mousemove(c, ev->button, ev->x_root, ev->y_root);
 		} else if (ev->button == Button2) {
-			if (!FEATURES(curlayout, OVERLAP) && c->skip.arrange)
+			if (isfloating(c, curmonitor()))
 				togglefloating(c);
 			else
 				zoom(c);
 			/* passive grab */
 			XUngrabPointer(dpy, CurrentTime); // ev->time ??
 		} else if (ev->button == Button3) {
-			if (!FEATURES(curlayout, OVERLAP) && !c->skip.arrange)
+			if (!isfloating(c, curmonitor()))
 				togglefloating(c);
 			mouseresize(c, ev->button, ev->x_root, ev->y_root);
 		}
@@ -865,7 +890,7 @@ configurerequest(XEvent * e) {
 		if (!(cm = findcurmonitor(c)))
 			if (!(cm = curmonitor()))
 				cm = monitors;
-		if (c->is.floater || (!c->is.max && (c->skip.arrange || MFEATURES(cm, OVERLAP)))) {
+		if (!c->is.max && isfloating(c, cm)) {
 			int x = ((ev->value_mask & CWX) && c->can.move) ? ev->x : c->x;
 			int y = ((ev->value_mask & CWY) && c->can.move) ? ev->y : c->y;
 			int w = ((ev->value_mask & CWWidth) && c->can.sizeh) ? ev->width : c->w;
@@ -997,9 +1022,8 @@ enternotify(XEvent * e) {
 		case Clk2Focus:
 			break;
 		case SloppyFloat:
-			if (FEATURES(curlayout, OVERLAP) || c->skip.arrange)
-				if (!c->skip.sloppy)
-					focus(c);
+			if (!c->skip.sloppy && isfloating(c, curmonitor()))
+				focus(c);
 			break;
 		case AllSloppy:
 			if (!c->skip.sloppy)
@@ -1030,7 +1054,7 @@ eprint(const char *errstr, ...) {
 
 void
 focusin(XEvent *e) {
-	XFocusChangeEvent *ev = &e->xfocus;
+	XFocusInEvent *ev = &e->xfocus;
 	Client *c;
 
 	/* FIXME: this is not quite correct: under some focus models we should allow one
@@ -1068,10 +1092,176 @@ focusin(XEvent *e) {
 	 */
 
 	c = getclient(ev->window, ClientWindow);
-	if (foc && c != foc)
-		XSetInputFocus(dpy, foc->win, RevertToPointerRoot, CurrentTime);
-	else if (!c)
+	switch (ev->mode) {
+	case NotifyWhileGrabbed:
+	case NotifyGrab:
+		return;
+	case NotifyNormal:
+		/* Events generated by SetInputFocus when the keyboard is not grabbed have mode
+		 * NotifyNormal */
+		break;
+	case NotifyUngrab:
+		/* Event generated when a keyboard grab deactivates have mode NotifyUngrab. */
+		/* When a keyboard grab deactivates (but after generating any actual KeyRelease
+		 * event that deactivates the grab), G is the grab-window for the grab, and F is
+		 * the current focus, FocusIn and FocusOut events with mode Ungrab are generated (as
+		 * for Normal below) as if the focus were to change from G to F. */
+		/* Expect a FocusIn NonlinearVirtual for F.  If F is not the frame of the selected
+		 * window, set the focus to the selected window. */
+		break;
+	default:
+		return;
+	}
+	switch (ev->detail) {
+	case NotifyAncestor: /* not between top-levels */
+	case NotifyVirtual: /* not between top-levels */
+	case NotifyInferior: /* not between top-levels */
+	case NotifyNonlinear: /* not between frames */
+		return;
+	case NotifyNonlinearVirtual: /* can happen between toplevels (on client frame) */
+		if (c && ev->window == c->frame) {
+			/* When the focus moves from window A to window B, window C is their
+			 * least common ancestor, and the pointer is in window P: FocusIn
+			 * with detail NonlinearVirtual is generated on each window between C
+			 * and B exclusive (in order). */
+		}
+		if ((c && ev->window == c->frame) || ev->window == root) {
+			/* When the focus moves from window A to window B on different
+			 * screens and the pointer is in window P: if A is not a root window,
+			 * FocusIn with detail NonlinearVirtual is generated on each window
+			 * from B's root down to but not including B (in order). */
+			/* When the focus moves from PointerRoot (or None) to window A and
+			 * the pointer is in window P: if A is not a root window, FocusIn
+			 * with detail NonlinearVirtual is generated on each window from A's
+			 * root down to but not including A (in order). */
+		}
+		break;
+	case NotifyPointer:
+		if ((c && ev->window == c->frame) || ev->window == root) {
+			/* When the focus moves from PointerRoot (or None) to window A and
+			 * the pointer is in window P: if the new focus is in PointerRoot,
+			 * FocusIn with detail Pointer is generated on each window from P's
+			 * root down to and including P (in order). */
+			/* When the focus moves from window A to PointerRoot (or None) and
+			 * the pointer is in window P: if the new focus is PointerRoot,
+			 * FocusIn with detail Pointer is generated on each window from P's
+			 * root down to and including P (in order). */
+		}
+		break;
+	case NotifyPointerRoot:
+	case NotifyDetailNone:
+		if (ev->window == root) {
+			/* When the focus moves from PointerRoot (or None) to window A and
+			 * the pointer is in window P: FocusIn with detail None (or
+			 * PointerRoot) is generated on all root windows. */
+		}
+		break;
+	default:
+		return;
+	}
+	if (c && ev->window == c->frame) {
+		if (c == give)
+			return; /* yes, we gave you the focus */
+		if (c == take) {
+			takefocus(NULL);
+			gavefocus(c);
+			return; /* yes, we asked you to take the focus */
+		}
+		if (take) {
+			if (take->can.focus & GIVE_FOCUS) {
+				DPRINTF("Client %s stole focus\n", c->name);
+				DPRINTF("Giving back to %s\n", take->name);
+				focus(take); /* you weren't to give it away */
+			} else {
+				gavefocus(c); /* yes, we asked you to assign focus */
+			}
+		} else if (give) {
+			DPRINTF("Client %s stole focus\n", c->name);
+			DPRINTF("Giving back to %s\n", give->name);
+			focus(give); /* you stole the focus */
+		} else {
+			if (canfocus(c))
+				gavefocus(c); /* you can have the focus */
+			else {
+				DPRINTF("Client %s stole focus\n", c->name);
+				DPRINTF("Giving back to %s\n", "root");
+				focus(NULL); /* you can't have the focus */
+			}
+		}
+	} else if (!c)
 		fprintf(stderr, "Caught FOCUSIN for unknown window 0x%lx\n", ev->window);
+}
+
+void
+focusout(XEvent *e) {
+	XFocusOutEvent *ev = &e->xfocus;
+	Client *c;
+
+	c = getclient(ev->window, ClientWindow);
+	switch (ev->mode) {
+	case NotifyWhileGrabbed:
+	case NotifyGrab:
+		return;
+	case NotifyNormal:
+		/* Events generated by SetInputFocus when the keyboard is not grabbed have mode
+		 * NotifyNormal */
+		break;
+	case NotifyUngrab:
+		/* Event generated when a keyboard grab deactivates have mode NotifyUngrab. */
+		/* When a keyboard grab deactivates (but after generating any actual KeyRelease
+		 * event that deactivates the grab), G is the grab-window for the grab, and F is
+		 * the current focus, FocusIn and FocusOut events with mode Ungrab are generated (as
+		 * for Normal below) as if the focus were to change from G to F. */
+		break;
+	default:
+		return;
+	}
+	switch (ev->detail) {
+	case NotifyAncestor: /* not between top-levels */
+	case NotifyVirtual: /* not between top-levels */
+	case NotifyInferior: /* not between top-levels */
+	case NotifyNonlinear: /* not between frames */
+		return;
+	case NotifyNonlinearVirtual: /* can happen between toplevels (on client frame) */
+		if (c && ev->window == c->frame) {
+			/* When the focus moves from window A to window B, window C is their
+			 * least common ancestor, and the pointer is in window P: FocusOut
+			 * with detail NonlinearVirtual is generated on each window between
+			 * A and C exclusive (in order). */
+		}
+		if ((c && ev->window == c->frame) || ev->window == root) {
+			/* When the focus moves from window A to window B on different
+			 * screens and the pointer is in window P: if A is not a root
+			 * window, FocusOut with detail NonlinearVirtual is generated on
+			 * each window above A up to and including its root (in order). */
+			/* When the focus moves from window A to PointerRoot (or None) and
+			 * the pointer is in window P: if A is not a root window, FocusOut
+			 * with detail NonlinearVirtual is generated on each window above A
+			 * up to and including its root (in order). */
+		}
+		break;
+	case NotifyPointer:
+		if ((c && ev->window == c->frame) || ev->window == root) {
+			/* When the focus moves from PointerRoot (or None) to window A and
+			 * the pointer is in window P: if the old focus is PointerRoot,
+			 * FocusOut with detail Pointer is generated on each window from P
+			 * up to and including P's root (in order). */
+		}
+		break;
+	case NotifyPointerRoot:
+	case NotifyDetailNone:
+		if (ev->window == root) {
+			/* When the focus moves from window A to PointerRoot (or None) and
+			 * the pointer is in window P: FocusOut with detail PointerRoot (or
+			 * None) is generated on all root windows. */
+			/* When the focus moves from PointerRoot (or None) to window A and
+			 * the pointer is in window P: FocusOut with detail PointerRoot (or
+			 * None) is generated on all root windows. */
+		}
+		break;
+	default:
+		return;
+	}
 }
 
 void
@@ -1086,20 +1276,57 @@ expose(XEvent * e) {
 }
 
 void
-givefocus(Client * c) {
-	XEvent ce;
-	if (checkatom(c->win, _XA_WM_PROTOCOLS, _XA_WM_TAKE_FOCUS)) {
-		ce.xclient.type = ClientMessage;
-		ce.xclient.message_type = _XA_WM_PROTOCOLS;
-		ce.xclient.display = dpy;
-		ce.xclient.window = c->win;
-		ce.xclient.format = 32;
-		ce.xclient.data.l[0] = _XA_WM_TAKE_FOCUS;
-		ce.xclient.data.l[1] = CurrentTime;	/* incorrect */
-		ce.xclient.data.l[2] = 0l;
-		ce.xclient.data.l[3] = 0l;
-		ce.xclient.data.l[4] = 0l;
-		XSendEvent(dpy, c->win, False, NoEventMask, &ce);
+gavefocus(Client *c)
+{
+	Client *g;
+
+	if ((g = give) != c) {
+		give = (c && (c->can.focus & GIVE_FOCUS)) ? c : NULL;
+		if (g)
+			ewmh_update_net_window_state(g);
+		if (c)
+			ewmh_update_net_window_state(c);
+	}
+}
+
+void
+givefocus(Client *c)
+{
+	Client *g;
+
+	if ((g = give) != c) {
+		if ((give = (c && (c->can.focus & GIVE_FOCUS)) ? c : NULL)) {
+			XSetInputFocus(dpy, c->win, RevertToPointerRoot, user_time);
+			give_time = user_time;
+		}
+		if (g)
+			ewmh_update_net_window_state(g);
+	}
+}
+
+void
+takefocus(Client *c) {
+	Client *t;
+
+	if ((t = take) != c) {
+		if ((take = c && (c->can.focus & TAKE_FOCUS) ? c : NULL)) {
+			XEvent ce;
+
+			ce.xclient.type = ClientMessage;
+			ce.xclient.message_type = _XA_WM_PROTOCOLS;
+			ce.xclient.display = dpy;
+			ce.xclient.window = c->win;
+			ce.xclient.format = 32;
+			ce.xclient.data.l[0] = _XA_WM_TAKE_FOCUS;
+			ce.xclient.data.l[1] = user_time;
+			ce.xclient.data.l[2] = 0l;
+			ce.xclient.data.l[3] = 0l;
+			ce.xclient.data.l[4] = 0l;
+			XSendEvent(dpy, c->win, False, NoEventMask, &ce);
+			take_time = user_time;
+		}
+		if (t)
+			ewmh_update_net_window_state(t);
 	}
 }
 
@@ -1121,11 +1348,18 @@ lowerclient(Client *c) {
 	restack();
 }
 
+Bool
+canfocus(Client *c)
+{
+	if (c->can.focus && !c->nonmodal)
+		return True;
+	return False;
+}
+
 void
 focus(Client * c) {
-	Client *o, *f;
+	Client *o;
 
-	f = foc;
 	o = sel;
 	/* XXX: should check be for can.focus instead of bastards? */
 	if ((!c && selscreen) || (c && (c->is.bastard || !isvisible(c, curmonitor()))))
@@ -1142,24 +1376,21 @@ focus(Client * c) {
 		if (c->is.attn)
 			c->is.attn = False;
 		setclientstate(c, NormalState);
-		if (c->can.focus && !c->nofocus && !c->skip.focus) {
-			foc = c;
-			XSetInputFocus(dpy, c->win, RevertToPointerRoot, CurrentTime);
+		if (canfocus(c)) {
 			givefocus(c);
+			takefocus(c);
 		}
 		XSetWindowBorder(dpy, sel->frame, style.color.sel[ColBorder]);
 		drawclient(c);
 		ewmh_update_net_window_state(c);
 	} else {
-		foc = NULL;
+		givefocus(NULL);
+		takefocus(NULL);
 		XSetInputFocus(dpy, root, RevertToPointerRoot, CurrentTime);
 	}
 	if (o && o != sel) {
 		drawclient(o);
 		ewmh_update_net_window_state(o);
-	}
-	if (f && f != foc) {
-		ewmh_update_net_window_state(f);
 	}
 }
 
@@ -1169,7 +1400,7 @@ focusicon(const char *arg)
 	Client *c;
 
 	for (c = clients;
-	     c && (c->nofocus || c->skip.focus || !c->is.icon || !c->can.min
+	     c && (!canfocus(c) || c->skip.focus || !c->is.icon || !c->can.min
 		   || !isvisible(c, curmonitor())); c = c->next) ;
 	if (!c)
 		return;
@@ -1183,40 +1414,50 @@ focusicon(const char *arg)
 		arrange(curmonitor());
 }
 
-void
-focusnext(Client *c) {
+Client *
+focusforw(Client *c) {
 	if (!c)
-		return;
+		return (c);
 	for (c = c->next;
-	     c && (c->nofocus || c->skip.focus || (c->is.icon || c->is.hidden)
+	     c && (!canfocus(c) || c->skip.focus || (c->is.icon || c->is.hidden)
 		   || !isvisible(c, curmonitor())); c = c->next) ;
 	if (!c)
 		for (c = clients;
-		     c && (c->nofocus || c->skip.focus || (c->is.icon || c->is.hidden)
+		     c && (!canfocus(c) || c->skip.focus || (c->is.icon || c->is.hidden)
 			   || !isvisible(c, curmonitor())); c = c->next) ;
-	if (c) {
+	if (c)
 		focus(c);
-		raiseclient(c);
-	}
+	return (c);
 }
 
-void
-focusprev(Client *c) {
+Client *
+focusback(Client *c) {
 	if (!c)
-		return;
+		return (c);
 	for (c = c->prev;
-	    c && (c->nofocus || c->skip.focus || (c->is.icon || c->is.hidden)
+	    c && (!canfocus(c) || c->skip.focus || (c->is.icon || c->is.hidden)
 		    || !isvisible(c, curmonitor())); c = c->prev);
 	if (!c) {
 		for (c = clients; c && c->next; c = c->next);
 		for (;
-		    c && (c->nofocus || c->skip.focus || (c->is.icon || c->is.hidden)
+		    c && (!canfocus(c) || c->skip.focus || (c->is.icon || c->is.hidden)
 			|| !isvisible(c, curmonitor())); c = c->prev);
 	}
-	if (c) {
+	if (c)
 		focus(c);
+	return (c);
+}
+
+void
+focusnext(Client *c) {
+	if ((c = focusforw(c)))
 		raiseclient(c);
-	}
+}
+
+void
+focusprev(Client *c) {
+	if ((c = focusback(c)))
+		raiseclient(c);
 }
 
 static void
@@ -1491,6 +1732,15 @@ grabkeys(void) {
 }
 
 void
+keyrelease(XEvent *e) {
+	XKeyEvent *ev;
+
+	ev = &e->xkey;
+	if ((int)ev->time - (int)user_time > 0)
+		user_time = ev->time;
+}
+
+void
 keypress(XEvent * e) {
 	unsigned int i;
 	KeySym keysym;
@@ -1508,6 +1758,8 @@ keypress(XEvent * e) {
 				keys[i]->func(keys[i]->arg);
 				key_event = NULL;
 			}
+			if ((int)ev->time - (int)user_time > 0)
+				user_time = ev->time;
 			XUngrabKeyboard(dpy, CurrentTime);
 		}
 }
@@ -1611,6 +1863,7 @@ manage(Window w, XWindowAttributes * wa)
 	unsigned long mask = 0;
 	Bool focusnew = True;
 	Monitor *cm;
+	int take_focus;
 
 	c = emallocz(sizeof(Client));
 	c->win = w;
@@ -1648,15 +1901,16 @@ manage(Window w, XWindowAttributes * wa)
 	     (int) ((int) c->user_time - (int) user_time) < 0))
 		focusnew = False;
 
+	take_focus = checkatom(c->win, _XA_WM_PROTOCOLS, _XA_WM_TAKE_FOCUS) ? TAKE_FOCUS : 0;
+	c->can.focus = take_focus | GIVE_FOCUS;
+
 	if ((wmh = XGetWMHints(dpy, c->win))) {
-		if ((wmh->flags & InputHint) && !wmh->input) {
-			c->can.focus = False;
-			c->skip.focus = True;
-		}
+		if (wmh->flags & InputHint)
+			c->can.focus = take_focus | (wmh->input ? GIVE_FOCUS : 0);
 		c->is.attn = (wmh->flags & XUrgencyHint) ? True : False;
 		if ((wmh->flags & WindowGroupHint) &&
 		    (c->leader = wmh->window_group) != None) {
-			updategroup(c, c->leader, ClientGroup, &c->nofocus);
+			updategroup(c, c->leader, ClientGroup, &c->nonmodal);
 		}
 		XFree(wmh);
 	}
@@ -1673,9 +1927,9 @@ manage(Window w, XWindowAttributes * wa)
 		}
 		if ((c->transfor = trans) != None) {
 			if (c->is.grptrans)
-				updategroup(c, trans, ClientTransForGroup, &c->nofocus);
+				updategroup(c, trans, ClientTransForGroup, &c->nonmodal);
 			else
-				updategroup(c, trans, ClientTransFor, &c->nofocus);
+				updategroup(c, trans, ClientTransFor, &c->nonmodal);
 			if (!(t = getclient(trans, ClientWindow)) && trans == c->leader) {
 				Window *group;
 				unsigned int i, m = 0;
@@ -1708,9 +1962,7 @@ manage(Window w, XWindowAttributes * wa)
 
 	if (c->is.attn)
 		focusnew = True;
-	if (!c->can.focus || c->skip.focus || c->nofocus)
-		focusnew = False;
-	if (focusnew && c->nofocus)
+	if (!canfocus(c))
 		focusnew = False;
 
 	if (!c->is.floater)
@@ -1961,7 +2213,7 @@ moveresizekb(Client * c, int dx, int dy, int dw, int dh) {
 		return;
 	if (!(m = clientmonitor(c)))
 		return;
-	if (!c->is.floater && (!c->skip.arrange || !MFEATURES(m, OVERLAP)))
+	if (!isfloating(c, m))
 		return;
 	if (dw || dh) {
 		int w, h;
@@ -2766,7 +3018,7 @@ total_overlap(Client *c, Monitor *m, Geometry *g) {
 	a = 0;
 
 	for (o = clients; o; o = o->next)
-		if (o != c && !o->is.bastard && (o->skip.arrange || MFEATURES(m, OVERLAP)) && isvisible(o, m))
+		if (o != c && !o->is.bastard && isfloating(o, m) && isvisible(o, m))
 			a += area_overlap(x1, y1, x2, y2,
 					  o->x, o->y,
 					  o->x + o->w + 2 * o->border,
@@ -3617,15 +3869,12 @@ calc_max(Client *c, Monitor *m, Geometry *g) {
 void
 calc_fill(Client *c, Monitor *m, Workarea *wa, Geometry *g) {
 	int x1, x2, y1, y2, w, h;
-	int overlap;
 	Client *o;
 
 	x1 = wa->x;
 	x2 = wa->x + wa->w;
 	y1 = wa->y;
 	y2 = wa->y + wa->h;
-
-	overlap = MFEATURES(m, OVERLAP);
 
 	for (o = clients; o; o = o->next) {
 		if (!(isvisible(o, m)))
@@ -3634,7 +3883,7 @@ calc_fill(Client *c, Monitor *m, Workarea *wa, Geometry *g) {
 			continue;
 		if (o->is.bastard)
 			continue;
-		if (!(overlap || o->skip.arrange))
+		if (!isfloating(o, m))
 			continue;
 		if (o->y + o->h > g->y && o->y < g->y + g->h) {
 			if (o->x < g->x)
@@ -3703,7 +3952,7 @@ updatefloat(Client *c, Monitor *m) {
 
 	if (!(m) && !(m = findmonitor(c)) && !(m = curmonitor(c)))
 		m = monitors;
-	if (!(c->is.floater || c->skip.arrange || MFEATURES(m, OVERLAP))) {
+	if (!isfloating(c, m)) {
 		updateframe(c);
 		return;
 	}
@@ -5220,6 +5469,12 @@ unmanage(Client * c, WithdrawCause cause) {
 		 XGetTransientForHint(dpy, c->win, &trans))) ||
 		c->is.bastard;
 	dostruts = c->with.struts;
+	if (give == c)
+		givefocus(NULL);
+	if (take == c)
+		takefocus(NULL);
+	if (sel == c)
+		focusback(c);
 	/* The server grab construct avoids race conditions. */
 	XGrabServer(dpy);
 	XSelectInput(dpy, c->frame, NoEventMask);
@@ -5457,7 +5712,7 @@ getleader(Window leader, int group) {
 }
 
 void
-updategroup(Client *c, Window leader, int group, int *nofocus) {
+updategroup(Client *c, Window leader, int group, int *nonmodal) {
 	Group *g;
 
 	if (leader == None || leader == c->win)
@@ -5471,7 +5726,7 @@ updategroup(Client *c, Window leader, int group, int *nofocus) {
 		g->members = erealloc(g->members, (g->count + 1) * sizeof(g->members[0]));
 	g->members[g->count] = c->win;
 	g->count++;
-	*nofocus += g->modal_transients;
+	*nonmodal += g->modal_transients;
 }
 
 Window *
@@ -5526,7 +5781,7 @@ incmodal(Client *c, Group *g)
 	g->modal_transients++;
 	for (i = 0; i < g->count; i++)
 		if ((t = getclient(g->members[i], ClientWindow)) && t != c)
-			t->nofocus++;
+			t->nonmodal++;
 }
 
 void
@@ -5539,8 +5794,8 @@ decmodal(Client *c, Group *g)
 	assert(g->modal_transients >= 0);
 	for (i = 0; i < g->count; i++)
 		if ((t = getclient(g->members[i], ClientWindow)) && t != c) {
-			t->nofocus--;
-			assert(t->nofocus >= 0);
+			t->nonmodal--;
+			assert(t->nonmodal >= 0);
 		}
 }
 

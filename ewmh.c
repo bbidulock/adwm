@@ -36,6 +36,7 @@ char *atomnames[NATOMS] = {
 	"UTF8_STRING",
 	"WM_PROTOCOLS",
 	"WM_DELETE_WINDOW",
+	"WM_SAVE_YOURSELF",
 	"WM_STATE",
 	"WM_CHANGE_STATE",
 	"WM_TAKE_FOCUS",
@@ -1314,7 +1315,7 @@ ewmh_update_net_window_state(Client *c)
 		winstate[states++] = _XA_NET_WM_STATE_BELOW;
 	if (c->is.attn)
 		winstate[states++] = _XA_NET_WM_STATE_DEMANDS_ATTENTION;
-	if (c == foc)
+	if (c == give)
 		winstate[states++] = _XA_NET_WM_STATE_FOCUSED;
 
 	/* following are non-standard */
@@ -2119,7 +2120,7 @@ clientmessage(XEvent *e) {
 			unsigned gravity = flags & 0xff;
 			int x, y, w, h;
 
-			if (!(c->is.floater || c->skip.arrange || MFEATURES(clientmonitor(c), OVERLAP)))
+			if (!isfloating(c, NULL))
 				return;
 			if (source != 0 && source != 2)
 				return;

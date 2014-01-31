@@ -6,7 +6,7 @@
 #endif
 
 enum {
-	Manager, Utf8String, WMProto, WMDelete, WMState, WMChangeState,
+	Manager, Utf8String, WMProto, WMDelete, WMSaveYourself, WMState, WMChangeState,
 	WMTakeFocus,
 	ELayout, ESelTags, WMRestart, WMShutdown, DeskLayout,
 	/* MWM/DTWM properties follow */
@@ -57,6 +57,7 @@ enum {
 #define _XA_UTF8_STRING				atom[Utf8String]
 #define _XA_WM_PROTOCOLS			atom[WMProto]
 #define _XA_WM_DELETE_WINDOW			atom[WMDelete]
+#define _XA_WM_SAVE_YOURSELF			atom[WMSaveYourself]
 #define _XA_WM_STATE				atom[WMState]
 #define _XA_WM_CHANGE_STATE			atom[WMChangeState]
 #define _XA_WM_TAKE_FOCUS			atom[WMTakeFocus]
@@ -228,6 +229,10 @@ typedef enum { CauseDestroyed, CauseUnmapped, CauseReparented,
 typedef enum { ColSmartPlacement, RowSmartPlacement, MinOverlapPlacement,
 	       UnderMousePlacement, CascadePlacement, RandomPlacement } WindowPlacement;
 typedef enum { ModalModeless, ModalPrimary, ModalSystem, ModalGroup } Modality;
+typedef enum { NoInputModel, PassiveInputModel, GloballyActiveModel, LocallyActiveModel } InputModel;
+
+#define GIVE_FOCUS (1<<0)
+#define TAKE_FOCUS (1<<1)
 
 typedef struct {
 	int x, y, w, h, b;
@@ -284,7 +289,7 @@ struct Client {
 	int wintype;
 	Bool wasfloating;
 	Bool *tags;
-	int nofocus;
+	int nonmodal;
 	union {
 		struct {
 			unsigned int taskbar:1;
@@ -370,7 +375,7 @@ struct Client {
 			unsigned int hide:1;
 			unsigned int tag:1;
 			unsigned int arrange:1;
-			unsigned int focus:1;
+			unsigned int focus:2;
 		};
 		unsigned int can;
 	} can;
@@ -522,7 +527,8 @@ Monitor *getmonitor(int x, int y);
 Bool gettextprop(Window w, Atom atom, char **text);
 void iconify(Client *c);
 void incnmaster(const char *arg);
-Bool isvisible(Client * c, Monitor * m);
+Bool isfloating(Client *c, Monitor *m);
+Bool isvisible(Client *c, Monitor *m);
 Monitor *findmonbynum(int num);
 void focus(Client * c);
 void focusicon(const char *arg);
@@ -625,7 +631,8 @@ extern Window selwin;
 extern Client *clients;
 extern Monitor *monitors;
 extern Client *sel;
-extern Client *foc;
+extern Client *give;	/* gave focus last */
+extern Client *take;	/* take focus last */
 extern Client *stack;
 extern Client *clist;
 extern unsigned int nmons;

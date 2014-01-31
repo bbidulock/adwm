@@ -254,7 +254,7 @@ XContext context[PartLast];
 Cursor cursor[CurLast];
 int ebase[BaseLast];
 Bool haveext[BaseLast];
-Style style;
+// Style style;
 // Button button[LastBtn];
 // View *views;
 // Key **keys;
@@ -534,8 +534,8 @@ buttonpress(XEvent * e) {
 			if (scr->button[i].action == NULL)
 				continue;
 			if ((ev->x > scr->button[i].x)
-			    && ((int)ev->x < (int)(scr->button[i].x + style.titleheight))
-			    && (scr->button[i].x != -1) && (int)ev->y < style.titleheight) {
+			    && ((int)ev->x < (int)(scr->button[i].x + scr->style.titleheight))
+			    && (scr->button[i].x != -1) && (int)ev->y < scr->style.titleheight) {
 				if (ev->type == ButtonPress) {
 					DPRINTF("BUTTON %d PRESSED\n", i);
 					scr->button[i].pressed = 1;
@@ -1392,7 +1392,7 @@ focus(Client * c) {
 		for (c = scr->stack;
 		    c && (c->is.bastard || (c->is.icon || c->is.hidden) || !isvisible(c, curmonitor())); c = c->snext);
 	if (sel && sel != c) {
-		XSetWindowBorder(dpy, sel->frame, scr->color.norm[ColBorder]);
+		XSetWindowBorder(dpy, sel->frame, scr->style.color.norm[ColBorder]);
 	}
 	sel = c;
 	if (!scr->managed)
@@ -1406,7 +1406,7 @@ focus(Client * c) {
 			givefocus(c);
 			takefocus(c);
 		}
-		XSetWindowBorder(dpy, sel->frame, scr->color.sel[ColBorder]);
+		XSetWindowBorder(dpy, sel->frame, scr->style.color.sel[ColBorder]);
 		drawclient(c);
 		ewmh_update_net_window_state(c);
 	} else {
@@ -1629,7 +1629,7 @@ incnmaster(const char *arg) {
 		else {
 			i = atoi(arg);
 			if ((view->nmaster + i) < 1 ||
-			    curwah / (view->nmaster + i) <= 2 * style.border)
+			    curwah / (view->nmaster + i) <= 2 * scr->style.border)
 				return;
 			view->nmaster += i;
 		}
@@ -1966,7 +1966,7 @@ manage(Window w, XWindowAttributes *wa)
 	c->is.icon = False;
 	c->is.hidden = False;
 	c->tags = ecalloc(scr->ntags, sizeof(*c->tags));
-	c->rb = c->border = c->is.bastard ? 0 : style.border;	/* XXX: has.border? */
+	c->rb = c->border = c->is.bastard ? 0 : scr->style.border;	/* XXX: has.border? */
 	/* XReparentWindow() unmaps *mapped* windows */
 	c->ignoreunmap = wa->map_state == IsViewable ? 1 : 0;
 	mwmh_process_motif_wm_hints(c);
@@ -2054,7 +2054,7 @@ manage(Window w, XWindowAttributes *wa)
 		c->is.floater = (!c->can.sizeh || !c->can.sizev);
 
 	if (c->has.title)
-		c->th = style.titleheight;
+		c->th = scr->style.titleheight;
 	else
 		c->can.shade = False;
 
@@ -2111,7 +2111,7 @@ manage(Window w, XWindowAttributes *wa)
 	wc.border_width = c->border;
 	XConfigureWindow(dpy, c->frame, CWBorderWidth, &wc);
 	configure(c, None);
-	XSetWindowBorder(dpy, c->frame, scr->color.norm[ColBorder]);
+	XSetWindowBorder(dpy, c->frame, scr->style.color.norm[ColBorder]);
 
 	twa.event_mask = ExposureMask | MOUSEMASK;
 	/* we create title as root's child as a workaround for 32bit visuals */
@@ -2215,7 +2215,7 @@ monocle(Monitor * m) {
 
 	getworkarea(m, &wx, &wy, &ww, &wh);
 	for (c = nexttiled(scr->clients, m); c; c = nexttiled(c->next, m)) {
-		c->th = (options.dectiled && c->has.title) ? style.titleheight : 0;
+		c->th = (options.dectiled && c->has.title) ? scr->style.titleheight : 0;
 		resize(c, wx, wy, ww - 2 * c->border, wh - 2 * c->border, c->border);
 	}
 }
@@ -2257,7 +2257,7 @@ grid(Monitor *m) {
 	/* width of last column */
 	cl = ww - (cols - 1) * cw;
 
-	gap = style.margin > style.border ? style.margin - style.border : 0;
+	gap = scr->style.margin > scr->style.border ? scr->style.margin - scr->style.border : 0;
 
 	for (i = 0, col = 0, row = 0, c = nexttiled(scr->clients, m); c && i < n;
 	     c = nexttiled(c->next, m), i++, col = i % cols, row = i / cols) {
@@ -2267,17 +2267,17 @@ grid(Monitor *m) {
 		w = (col == cols - 1) ? cl : cw;
 		h = (row == rows - 1) ? rl[col] : rh[col];
 		if (col > 0) {
-			w += style.border;
-			x -= style.border;
+			w += scr->style.border;
+			x -= scr->style.border;
 		}
 		if (row > 0) {
-			h += style.border;
-			y -= style.border;
+			h += scr->style.border;
+			y -= scr->style.border;
 		}
-		w -= 2 * style.border;
-		h -= 2 * style.border;
-		c->th = (options.dectiled && c->has.title) ? style.titleheight : 0;
-		resize(c, x + gap, y + gap, w - 2 * gap, h - 2 * gap, style.border);
+		w -= 2 * scr->style.border;
+		h -= 2 * scr->style.border;
+		c->th = (options.dectiled && c->has.title) ? scr->style.titleheight : 0;
+		resize(c, x + gap, y + gap, w - 2 * gap, h - 2 * gap, scr->style.border);
 	}
 	free(rc);
 	free(rh);
@@ -3132,7 +3132,7 @@ place_smart(Client *c, WindowPlacement p, Geometry *g, Monitor *m, Workarea *w)
 {
 	int t_b, l_r, xl, xr, yt, yb, x_beg, x_end, xd, y_beg, y_end, yd;
 	int best_x, best_y, best_a;
-	int d = style.titleheight;
+	int d = scr->style.titleheight;
 
 	/* XXX: this algorithm (borrowed from fluxbox) calculates an insane number of
 	   calculations: it basically tests every possible fully on screen position
@@ -3265,7 +3265,7 @@ void
 place_random(Client *c, WindowPlacement p, Geometry *g, Monitor *m, Workarea *w)
 {
 	int x_min, x_max, y_min, y_max, x_off, y_off;
-	int d = style.titleheight;
+	int d = scr->style.titleheight;
 
 	x_min = w->x;
 	x_max = w->x + w->w - (g->x + g->w + 2 * g->b);
@@ -4026,15 +4026,15 @@ calc_fill(Client *c, Monitor *m, Workarea *wa, Geometry *g) {
 			continue;
 		if (o->y + o->h > g->y && o->y < g->y + g->h) {
 			if (o->x < g->x)
-				x1 = max(x1, o->x + o->w + style.border);
+				x1 = max(x1, o->x + o->w + scr->style.border);
 			else
-				x2 = min(x2, o->x - style.border);
+				x2 = min(x2, o->x - scr->style.border);
 		}
 		if (o->x + o->w > g->x && o->x < g->x + g->w) {
 			if (o->y < g->y)
-				y1 = max(y1, o->y + o->h + style.border);
+				y1 = max(y1, o->y + o->h + scr->style.border);
 			else
-				y2 = max(y2, o->y - style.border);
+				y2 = max(y2, o->y - scr->style.border);
 		}
 		DPRINTF("x1 = %d x2 = %d y1 = %d y2 = %d\n", x1, x2, y1, y2);
 	}
@@ -4044,12 +4044,12 @@ calc_fill(Client *c, Monitor *m, Workarea *wa, Geometry *g) {
 	if (w > g->w) {
 		g->x = x1;
 		g->w = w;
-		g->b = style.border;
+		g->b = scr->style.border;
 	}
 	if (h > g->h) {
 		g->y = y1;
 		g->h = h;
-		g->b = style.border;
+		g->b = scr->style.border;
 	}
 }
 
@@ -4057,14 +4057,14 @@ void
 calc_maxv(Client *c, Workarea *wa, Geometry *g) {
 	g->y = wa->y;
 	g->h = wa->h;
-	g->b = style.border;
+	g->b = scr->style.border;
 }
 
 void
 calc_maxh(Client *c, Workarea *wa, Geometry *g) {
 	g->x = wa->x;
 	g->w = wa->w;
-	g->b = style.border;
+	g->b = scr->style.border;
 }
 
 int
@@ -4080,7 +4080,7 @@ get_th(Client *c)
 			f += FEATURES(scr->views[i].layout, OVERLAP);
 
 	return (!c->is.max && (c->skip.arrange || options.dectiled || f) ?
-				style.titleheight : 0);
+				scr->style.titleheight : 0);
 }
 
 void
@@ -4100,7 +4100,7 @@ updatefloat(Client *c, Monitor *m) {
 	g.y = c->ry;
 	g.h = c->rh;
 	g.w = c->rw;
-	g.b = style.border;
+	g.b = scr->style.border;
 	if (c->is.max)
 		calc_max(c, m, &g);
 	else if (c->is.fill)
@@ -4990,7 +4990,7 @@ bstack(Monitor * m) {
 	/* master & tile height */
 	mh = (tn > 0) ? scr->views[m->curtag].mwfact * wh : wh;
 	th = (tn > 0) ? wh - mh : 0;
-	if (tn > 0 && th < style.titleheight)
+	if (tn > 0 && th < scr->style.titleheight)
 		th = wh;
 
 	/* top left corner of master area */
@@ -5005,8 +5005,8 @@ bstack(Monitor * m) {
 	nb = 0;
 
 	for (i = 0, c = mc = nexttiled(scr->clients, m); c && i < n; c = nexttiled(c->next, m), i++) {
-		int gap = style.margin > c->border ? style.margin - c->border : 0;
-		// int gap = style.margin ? style.margin + c->border : 0;
+		int gap = scr->style.margin > c->border ? scr->style.margin - c->border : 0;
+		// int gap = scr->style.margin ? scr->style.margin + c->border : 0;
 
 		if (c->is.max) {
 			c->is.max = False;
@@ -5042,7 +5042,7 @@ bstack(Monitor * m) {
 		}
 		nw -= 2 * c->border;
 		nh -= 2 * c->border;
-		c->th = (options.dectiled && c->has.title) ? style.titleheight : 0;
+		c->th = (options.dectiled && c->has.title) ? scr->style.titleheight : 0;
 		resize(c, nx + gap, ny + gap, nw - 2 * gap, nh - 2 * gap, c->border);
 	}
 }
@@ -5074,7 +5074,7 @@ tstack(Monitor * m) {
 	/* master & tile height */
 	mh = (tn > 0) ? scr->views[m->curtag].mwfact * wh : wh;
 	th = (tn > 0) ? wh - mh : 0;
-	if (tn > 0 && th < style.titleheight)
+	if (tn > 0 && th < scr->style.titleheight)
 		th = wh;
 
 	/* top left corner of master area */
@@ -5089,8 +5089,8 @@ tstack(Monitor * m) {
 	nb = 0;
 
 	for (i = 0, c = mc = nexttiled(scr->clients, m); c && i < n; c = nexttiled(c->next, m), i++) {
-		int gap = style.margin > c->border ? style.margin - c->border : 0;
-		// int gap = style.margin ? style.margin + c->border : 0;
+		int gap = scr->style.margin > c->border ? scr->style.margin - c->border : 0;
+		// int gap = scr->style.margin ? scr->style.margin + c->border : 0;
 
 		if (c->is.max) {
 			c->is.max = False;
@@ -5126,7 +5126,7 @@ tstack(Monitor * m) {
 		}
 		nw -= 2 * c->border;
 		nh -= 2 * c->border;
-		c->th = (options.dectiled && c->has.title) ? style.titleheight : 0;
+		c->th = (options.dectiled && c->has.title) ? scr->style.titleheight : 0;
 		resize(c, nx + gap, ny + gap, nw - 2 * gap, nh - 2 * gap, c->border);
 	}
 }
@@ -5157,7 +5157,7 @@ rtile(Monitor * m) {
 	/* master & tile height */
 	mh = (mn > 0) ? wh / mn : wh;
 	th = (tn > 0) ? wh / tn : 0;
-	if (tn > 0 && th < style.titleheight)
+	if (tn > 0 && th < scr->style.titleheight)
 		th = wh;
 	/* master & tile width */
 	mw = (tn > 0) ? scr->views[m->curtag].mwfact * ww : ww;
@@ -5175,8 +5175,8 @@ rtile(Monitor * m) {
 	nb = 0;
 
 	for (i = 0, c = mc = nexttiled(scr->clients, m); c && i < n; c = nexttiled(c->next, m), i++) {
-		int gap = style.margin > c->border ? style.margin - c->border : 0;
-		// int gap = style.margin ? style.margin + c->border : 0;
+		int gap = scr->style.margin > c->border ? scr->style.margin - c->border : 0;
+		// int gap = scr->style.margin ? scr->style.margin + c->border : 0;
 
 		if (c->is.max) {
 			c->is.max = False;
@@ -5212,7 +5212,7 @@ rtile(Monitor * m) {
 		}
 		nw -= 2 * c->border;
 		nh -= 2 * c->border;
-		c->th = (options.dectiled && c->has.title) ? style.titleheight : 0;
+		c->th = (options.dectiled && c->has.title) ? scr->style.titleheight : 0;
 		resize(c, nx + gap, ny + gap, nw - 2 * gap, nh - 2 * gap, c->border);
 	}
 }
@@ -5243,7 +5243,7 @@ ltile(Monitor * m) {
 	/* master & tile height */
 	mh = (mn > 0) ? wh / mn : wh;
 	th = (tn > 0) ? wh / tn : 0;
-	if (tn > 0 && th < style.titleheight)
+	if (tn > 0 && th < scr->style.titleheight)
 		th = wh;
 	/* master & tile width */
 	mw = (tn > 0) ? scr->views[m->curtag].mwfact * ww : ww;
@@ -5261,8 +5261,8 @@ ltile(Monitor * m) {
 	nb = 0;
 
 	for (i = 0, c = mc = nexttiled(scr->clients, m); c && i < n; c = nexttiled(c->next, m), i++) {
-		int gap = style.margin > c->border ? style.margin - c->border : 0;
-		// int gap = style.margin ? style.margin + c->border : 0;
+		int gap = scr->style.margin > c->border ? scr->style.margin - c->border : 0;
+		// int gap = scr->style.margin ? scr->style.margin + c->border : 0;
 
 		if (c->is.max) {
 			c->is.max = False;
@@ -5298,7 +5298,7 @@ ltile(Monitor * m) {
 		}
 		nw -= 2 * c->border;
 		nh -= 2 * c->border;
-		c->th = (options.dectiled && c->has.title) ? style.titleheight : 0;
+		c->th = (options.dectiled && c->has.title) ? scr->style.titleheight : 0;
 		resize(c, nx + gap, ny + gap, nw - 2 * gap, nh - 2 * gap, c->border);
 	}
 }

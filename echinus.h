@@ -442,6 +442,11 @@ typedef struct {
 	unsigned int opacity;
 	char titlelayout[32];
 	XftFont *font;
+	struct {
+		unsigned long norm[ColLast];
+		unsigned long sel[ColLast];
+		XftColor *font[2];
+	} color;
 } Style;
 
 typedef struct {
@@ -471,11 +476,7 @@ struct EScreen {
 	unsigned int nkeys;
 	DC dc;
 	Button button[LastBtn];
-	struct {
-		unsigned long norm[ColLast];
-		unsigned long sel[ColLast];
-		XftColor *font[2];
-	} color;
+	Style style;
 };
 
 typedef struct {
@@ -679,7 +680,7 @@ extern unsigned int nscr;
 extern unsigned int nrules;
 // extern Bool showing_desktop;
 // extern int screen;
-extern Style style;
+// extern Style style;
 // extern Button button[LastBtn];
 // extern char **tags;
 // extern Atom *dt_tags;

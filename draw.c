@@ -34,8 +34,8 @@ drawtext(const char *text, Drawable drawable, XftDraw *xftdrawable,
 		len = sizeof buf - 1;
 	memcpy(buf, text, len);
 	buf[len] = 0;
-	h = style.titleheight;
-	y = scr->dc.h / 2 + scr->dc.font.ascent / 2 - 1 - style.outline;
+	h = scr->style.titleheight;
+	y = scr->dc.h / 2 + scr->dc.font.ascent / 2 - 1 - scr->style.outline;
 	x += scr->dc.font.height / 2;
 	/* shorten text if necessary */
 	while (len && (w = textnw(buf, len)) > mw) {
@@ -57,8 +57,8 @@ drawtext(const char *text, Drawable drawable, XftDraw *xftdrawable,
 	XFillRectangle(dpy, drawable, scr->dc.gc, x - scr->dc.font.height / 2, 0,
 	    w + scr->dc.font.height, h);
 	XftDrawStringUtf8(xftdrawable,
-	    (col == scr->color.norm) ? scr->color.font[Normal] : scr->color.font[Selected],
-	    style.font, x, y, (unsigned char *) buf, len);
+	    (col == scr->style.color.norm) ? scr->style.color.font[Normal] : scr->style.color.font[Selected],
+	    scr->style.font, x, y, (unsigned char *) buf, len);
 	return w + scr->dc.font.height;
 }
 
@@ -79,7 +79,7 @@ static int
 drawelement(char which, int x, int position, Client *c) {
 	int w;
 	unsigned int j;
-	unsigned long *color = c == sel ? scr->color.sel : scr->color.norm;
+	unsigned long *color = c == sel ? scr->style.color.sel : scr->style.color.norm;
 
 	switch (which) {
 	case 'T':
@@ -150,8 +150,8 @@ void
 drawclient(Client *c) {
 	size_t i;
 
-	if (style.opacity) {
-		setopacity(c, c == sel ? OPAQUE : style.opacity);
+	if (scr->style.opacity) {
+		setopacity(c, c == sel ? OPAQUE : scr->style.opacity);
 	}
 	if (!isvisible(c, NULL))
 		return;
@@ -159,51 +159,51 @@ drawclient(Client *c) {
 		return;
 	scr->dc.x = scr->dc.y = 0;
 	scr->dc.w = c->w;
-	scr->dc.h = style.titleheight;
+	scr->dc.h = scr->style.titleheight;
 	XftDrawChange(c->xftdraw, c->drawable);
-	XSetForeground(dpy, scr->dc.gc, c == sel ? scr->color.sel[ColBG] : scr->color.norm[ColBG]);
-	XSetLineAttributes(dpy, scr->dc.gc, style.border, LineSolid, CapNotLast, JoinMiter);
+	XSetForeground(dpy, scr->dc.gc, c == sel ? scr->style.color.sel[ColBG] : scr->style.color.norm[ColBG]);
+	XSetLineAttributes(dpy, scr->dc.gc, scr->style.border, LineSolid, CapNotLast, JoinMiter);
 	XFillRectangle(dpy, c->drawable, scr->dc.gc, scr->dc.x, scr->dc.y, scr->dc.w, scr->dc.h);
 	if (scr->dc.w < textw(c->name)) {
 		scr->dc.w -= scr->dc.h;
 		scr->button[Close].x = scr->dc.w;
 		drawtext(c->name, c->drawable, c->xftdraw,
-		    c == sel ? scr->color.sel : scr->color.norm, scr->dc.x, scr->dc.y, scr->dc.w);
+		    c == sel ? scr->style.color.sel : scr->style.color.norm, scr->dc.x, scr->dc.y, scr->dc.w);
 		drawbutton(c->drawable, scr->button[Close],
-		    c == sel ? scr->color.sel : scr->color.norm, scr->dc.w,
+		    c == sel ? scr->style.color.sel : scr->style.color.norm, scr->dc.w,
 		    scr->dc.h / 2 - scr->button[Close].ph / 2);
 		goto end;
 	}
 	/* Left */
-	for (i = 0; i < strlen(style.titlelayout); i++) {
-		if (style.titlelayout[i] == ' ' || style.titlelayout[i] == '-')
+	for (i = 0; i < strlen(scr->style.titlelayout); i++) {
+		if (scr->style.titlelayout[i] == ' ' || scr->style.titlelayout[i] == '-')
 			break;
-		scr->dc.x += drawelement(style.titlelayout[i], scr->dc.x, AlignLeft, c);
+		scr->dc.x += drawelement(scr->style.titlelayout[i], scr->dc.x, AlignLeft, c);
 	}
-	if (i == strlen(style.titlelayout) || scr->dc.x >= scr->dc.w)
+	if (i == strlen(scr->style.titlelayout) || scr->dc.x >= scr->dc.w)
 		goto end;
 	/* Center */
 	scr->dc.x = scr->dc.w / 2;
-	for (i++; i < strlen(style.titlelayout); i++) {
-		if (style.titlelayout[i] == ' ' || style.titlelayout[i] == '-')
+	for (i++; i < strlen(scr->style.titlelayout); i++) {
+		if (scr->style.titlelayout[i] == ' ' || scr->style.titlelayout[i] == '-')
 			break;
-		scr->dc.x -= elementw(style.titlelayout[i], c) / 2;
-		scr->dc.x += drawelement(style.titlelayout[i], 0, AlignCenter, c);
+		scr->dc.x -= elementw(scr->style.titlelayout[i], c) / 2;
+		scr->dc.x += drawelement(scr->style.titlelayout[i], 0, AlignCenter, c);
 	}
-	if (i == strlen(style.titlelayout) || scr->dc.x >= scr->dc.w)
+	if (i == strlen(scr->style.titlelayout) || scr->dc.x >= scr->dc.w)
 		goto end;
 	/* Right */
 	scr->dc.x = scr->dc.w;
-	for (i = strlen(style.titlelayout); i-- ; ) {
-		if (style.titlelayout[i] == ' ' || style.titlelayout[i] == '-')
+	for (i = strlen(scr->style.titlelayout); i-- ; ) {
+		if (scr->style.titlelayout[i] == ' ' || scr->style.titlelayout[i] == '-')
 			break;
-		scr->dc.x -= elementw(style.titlelayout[i], c);
-		drawelement(style.titlelayout[i], 0, AlignRight, c);
+		scr->dc.x -= elementw(scr->style.titlelayout[i], c);
+		drawelement(scr->style.titlelayout[i], 0, AlignRight, c);
 	}
       end:
-	if (style.outline) {
+	if (scr->style.outline) {
 		XSetForeground(dpy, scr->dc.gc,
-		    c == sel ? scr->color.sel[ColBorder] : scr->color.norm[ColBorder]);
+		    c == sel ? scr->style.color.sel[ColBorder] : scr->style.color.norm[ColBorder]);
 		XDrawLine(dpy, c->drawable, scr->dc.gc, 0, scr->dc.h - 1, scr->dc.w, scr->dc.h - 1);
 	}
 	XCopyArea(dpy, c->drawable, c->title, scr->dc.gc, 0, 0, c->w, scr->dc.h, 0, 0);
@@ -220,7 +220,7 @@ getcolor(const char *colstr) {
 
 static int
 initpixmap(const char *file, Button *b) {
-	b->pm = XCreatePixmap(dpy, scr->root, style.titleheight, style.titleheight, 1);
+	b->pm = XCreatePixmap(dpy, scr->root, scr->style.titleheight, scr->style.titleheight, 1);
 	if (BitmapSuccess == XReadBitmapFile(dpy, scr->root, file, &b->pw, &b->ph,
 		&b->pm, &b->px, &b->py)) {
 		if (b->px == -1 || b->py == -1)
@@ -249,8 +249,8 @@ initbuttons() {
 	scr->button[Maximize].action = _togglemax;
 	scr->button[Close].action = _killclient;
 	scr->button[Iconify].x = scr->button[Close].x = scr->button[Maximize].x = -1;
-	XSetForeground(dpy, scr->dc.gc, scr->color.norm[ColButton]);
-	XSetBackground(dpy, scr->dc.gc, scr->color.norm[ColBG]);
+	XSetForeground(dpy, scr->dc.gc, scr->style.color.norm[ColButton]);
+	XSetBackground(dpy, scr->dc.gc, scr->style.color.norm[ColBG]);
 	if (initpixmap(getresource("button.iconify.pixmap", ICONPIXMAP),
 	    &scr->button[Iconify]))
 		scr->button[Iconify].action = NULL;
@@ -264,51 +264,51 @@ initbuttons() {
 
 static void
 initfont(const char *fontstr) {
-	style.font = NULL;
-	style.font = XftFontOpenXlfd(dpy, scr->screen, fontstr);
-	if (!style.font)
-		style.font = XftFontOpenName(dpy, scr->screen, fontstr);
-	if (!style.font)
+	scr->style.font = NULL;
+	scr->style.font = XftFontOpenXlfd(dpy, scr->screen, fontstr);
+	if (!scr->style.font)
+		scr->style.font = XftFontOpenName(dpy, scr->screen, fontstr);
+	if (!scr->style.font)
 		eprint("error, cannot load font: '%s'\n", fontstr);
 	scr->dc.font.extents = emallocz(sizeof(XGlyphInfo));
-	XftTextExtentsUtf8(dpy, style.font,
+	XftTextExtentsUtf8(dpy, scr->style.font,
 	    (const unsigned char *) fontstr, strlen(fontstr), scr->dc.font.extents);
-	scr->dc.font.height = style.font->ascent + style.font->descent + 1;
-	scr->dc.font.ascent = style.font->ascent;
-	scr->dc.font.descent = style.font->descent;
+	scr->dc.font.height = scr->style.font->ascent + scr->style.font->descent + 1;
+	scr->dc.font.ascent = scr->style.font->ascent;
+	scr->dc.font.descent = scr->style.font->descent;
 }
 
 void
 initstyle() {
-	scr->color.norm[ColBorder] = getcolor(getresource("normal.border", NORMBORDERCOLOR));
-	scr->color.norm[ColBG] = getcolor(getresource("normal.bg", NORMBGCOLOR));
-	scr->color.norm[ColFG] = getcolor(getresource("normal.fg", NORMFGCOLOR));
-	scr->color.norm[ColButton] = getcolor(getresource("normal.button", NORMBUTTONCOLOR));
+	scr->style.color.norm[ColBorder] = getcolor(getresource("normal.border", NORMBORDERCOLOR));
+	scr->style.color.norm[ColBG] = getcolor(getresource("normal.bg", NORMBGCOLOR));
+	scr->style.color.norm[ColFG] = getcolor(getresource("normal.fg", NORMFGCOLOR));
+	scr->style.color.norm[ColButton] = getcolor(getresource("normal.button", NORMBUTTONCOLOR));
 
-	scr->color.sel[ColBorder] = getcolor(getresource("selected.border", SELBORDERCOLOR));
-	scr->color.sel[ColBG] = getcolor(getresource("selected.bg", SELBGCOLOR));
-	scr->color.sel[ColFG] = getcolor(getresource("selected.fg", SELFGCOLOR));
-	scr->color.sel[ColButton] = getcolor(getresource("selected.button", SELBUTTONCOLOR));
+	scr->style.color.sel[ColBorder] = getcolor(getresource("selected.border", SELBORDERCOLOR));
+	scr->style.color.sel[ColBG] = getcolor(getresource("selected.bg", SELBGCOLOR));
+	scr->style.color.sel[ColFG] = getcolor(getresource("selected.fg", SELFGCOLOR));
+	scr->style.color.sel[ColButton] = getcolor(getresource("selected.button", SELBUTTONCOLOR));
 
-	scr->color.font[Selected] = emallocz(sizeof(XftColor));
-	scr->color.font[Normal] = emallocz(sizeof(XftColor));
+	scr->style.color.font[Selected] = emallocz(sizeof(XftColor));
+	scr->style.color.font[Normal] = emallocz(sizeof(XftColor));
 	XftColorAllocName(dpy, DefaultVisual(dpy, scr->screen), DefaultColormap(dpy,
-				scr->screen), getresource("selected.fg", SELFGCOLOR), scr->color.font[Selected]);
+				scr->screen), getresource("selected.fg", SELFGCOLOR), scr->style.color.font[Selected]);
 	XftColorAllocName(dpy, DefaultVisual(dpy, scr->screen), DefaultColormap(dpy,
-				scr->screen), getresource("normal.fg", NORMFGCOLOR), scr->color.font[Normal]);
-	if (!scr->color.font[Normal] || !scr->color.font[Normal])
+				scr->screen), getresource("normal.fg", NORMFGCOLOR), scr->style.color.font[Normal]);
+	if (!scr->style.color.font[Normal] || !scr->style.color.font[Normal])
 		eprint("error, cannot allocate colors\n");
 	initfont(getresource("font", FONT));
-	style.border = atoi(getresource("border", STR(BORDERPX)));
-	style.margin = atoi(getresource("margin", STR(MARGINPX)));
-	style.opacity = OPAQUE * atof(getresource("opacity", STR(NF_OPACITY)));
-	style.outline = atoi(getresource("outline", "0"));
-	strncpy(style.titlelayout, getresource("titlelayout", "N  IMC"),
-	    LENGTH(style.titlelayout));
-	style.titlelayout[LENGTH(style.titlelayout) - 1] = '\0';
-	style.titleheight = atoi(getresource("title", STR(TITLEHEIGHT)));
-	if (!style.titleheight)
-		style.titleheight = scr->dc.font.height + 2;
+	scr->style.border = atoi(getresource("border", STR(BORDERPX)));
+	scr->style.margin = atoi(getresource("margin", STR(MARGINPX)));
+	scr->style.opacity = OPAQUE * atof(getresource("opacity", STR(NF_OPACITY)));
+	scr->style.outline = atoi(getresource("outline", "0"));
+	strncpy(scr->style.titlelayout, getresource("titlelayout", "N  IMC"),
+	    LENGTH(scr->style.titlelayout));
+	scr->style.titlelayout[LENGTH(scr->style.titlelayout) - 1] = '\0';
+	scr->style.titleheight = atoi(getresource("title", STR(TITLEHEIGHT)));
+	if (!scr->style.titleheight)
+		scr->style.titleheight = scr->dc.font.height + 2;
 	scr->dc.gc = XCreateGC(dpy, scr->root, 0, 0);
 	initbuttons();
 }
@@ -317,17 +317,17 @@ void
 deinitstyle() {	
 	/* XXX: more to do */
 	XftColorFree(dpy, DefaultVisual(dpy, scr->screen), DefaultColormap(dpy,
-		scr->screen), scr->color.font[Normal]);
+		scr->screen), scr->style.color.font[Normal]);
 	XftColorFree(dpy, DefaultVisual(dpy, scr->screen), DefaultColormap(dpy,
-		scr->screen), scr->color.font[Selected]);
-	XftFontClose(dpy, style.font);
+		scr->screen), scr->style.color.font[Selected]);
+	XftFontClose(dpy, scr->style.font);
 	free(scr->dc.font.extents);
 	XFreeGC(dpy, scr->dc.gc);
 }
 
 static unsigned int
 textnw(const char *text, unsigned int len) {
-	XftTextExtentsUtf8(dpy, style.font,
+	XftTextExtentsUtf8(dpy, scr->style.font,
 	    (const unsigned char *) text, len, scr->dc.font.extents);
 	return scr->dc.font.extents->xOff;
 }

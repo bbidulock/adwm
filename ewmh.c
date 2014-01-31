@@ -1192,7 +1192,7 @@ getmwmhints(Window win, Window *title, int *border) {
 	hints = getcard(win, _XA_MOTIF_WM_HINTS, &n);
 	if (n > 0) {
 		if ((hints[0] & MWM_HINTS_DECORATIONS) && n > 1) {
-			*border = (hints[1] & (MWM_DECOR_ALL|MWM_DECOR_BORDER)) ? style.border : 0;
+			*border = (hints[1] & (MWM_DECOR_ALL|MWM_DECOR_BORDER)) ? scr->style.border : 0;
 			*title = (hints[1] & (MWM_DECOR_ALL|MWM_DECOR_TITLE)) ? 1 : None;
 		}
 		XFree(hints);
@@ -2237,7 +2237,7 @@ clientmessage(XEvent *e) {
 			Window win = ev->window;
 			unsigned int wintype;
 			Window title = 1;
-			int th, border = style.border;
+			int th, border = scr->style.border;
 			long data[4];
 
 			if (win == None)
@@ -2256,7 +2256,7 @@ clientmessage(XEvent *e) {
 					border = 0;
 				}
 			getmwmhints(win, &title, &border);
-			th = title ? style.titleheight : 0;
+			th = title ? scr->style.titleheight : 0;
 			data[0] = border;
 			data[1] = border;
 			data[2] = border + th;

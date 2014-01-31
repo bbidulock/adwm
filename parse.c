@@ -241,17 +241,17 @@ initkeys() {
 	char t[64];
 
 	initmodkey();
-	keys = malloc(sizeof(Key *) * LENGTH(KeyItems));
+	scr->keys = malloc(sizeof(Key *) * LENGTH(KeyItems));
 	/* global functions */
 	for (i = 0; i < LENGTH(KeyItems); i++) {
 		tmp = getresource(KeyItems[i].name, NULL);
 		if (!tmp)
 			continue;
-		keys[nkeys] = malloc(sizeof(Key));
-		keys[nkeys]->func = KeyItems[i].action;
-		keys[nkeys]->arg = NULL;
-		parsekey(tmp, keys[nkeys]);
-		nkeys++;
+		scr->keys[scr->nkeys] = malloc(sizeof(Key));
+		scr->keys[scr->nkeys]->func = KeyItems[i].action;
+		scr->keys[scr->nkeys]->arg = NULL;
+		parsekey(tmp, scr->keys[scr->nkeys]);
+		scr->nkeys++;
 	}
 	/* per tag functions */
 	for (j = 0; j < LENGTH(KeyItemsByTag); j++) {
@@ -260,12 +260,12 @@ initkeys() {
 			tmp = getresource(t, NULL);
 			if (!tmp)
 				continue;
-			keys = realloc(keys, sizeof(Key *) * (nkeys + 1));
-			keys[nkeys] = malloc(sizeof(Key));
-			keys[nkeys]->func = KeyItemsByTag[j].action;
-			keys[nkeys]->arg = scr->tags[i];
-			parsekey(tmp, keys[nkeys]);
-			nkeys++;
+			scr->keys = realloc(scr->keys, sizeof(Key *) * (scr->nkeys + 1));
+			scr->keys[scr->nkeys] = malloc(sizeof(Key));
+			scr->keys[scr->nkeys]->func = KeyItemsByTag[j].action;
+			scr->keys[scr->nkeys]->arg = scr->tags[i];
+			parsekey(tmp, scr->keys[scr->nkeys]);
+			scr->nkeys++;
 		}
 	}
 	/* layout setting */
@@ -274,12 +274,12 @@ initkeys() {
 		tmp = getresource(t, NULL);
 		if (!tmp)
 			continue;
-		keys = realloc(keys, sizeof(Key *) * (nkeys + 1));
-		keys[nkeys] = malloc(sizeof(Key));
-		keys[nkeys]->func = setlayout;
-		keys[nkeys]->arg = &layouts[i].symbol;
-		parsekey(tmp, keys[nkeys]);
-		nkeys++;
+		scr->keys = realloc(scr->keys, sizeof(Key *) * (scr->nkeys + 1));
+		scr->keys[scr->nkeys] = malloc(sizeof(Key));
+		scr->keys[scr->nkeys]->func = setlayout;
+		scr->keys[scr->nkeys]->arg = &layouts[i].symbol;
+		parsekey(tmp, scr->keys[scr->nkeys]);
+		scr->nkeys++;
 	}
 	/* spawn */
 	for (i = 0; i < 64; i++) {
@@ -287,12 +287,12 @@ initkeys() {
 		tmp = getresource(t, NULL);
 		if (!tmp)
 			continue;
-		keys = realloc(keys, sizeof(Key *) * (nkeys + 1));
-		keys[nkeys] = malloc(sizeof(Key));
-		keys[nkeys]->func = spawn;
-		keys[nkeys]->arg = NULL;
-		parsekey(tmp, keys[nkeys]);
-		nkeys++;
+		scr->keys = realloc(scr->keys, sizeof(Key *) * (scr->nkeys + 1));
+		scr->keys[scr->nkeys] = malloc(sizeof(Key));
+		scr->keys[scr->nkeys]->func = spawn;
+		scr->keys[scr->nkeys]->arg = NULL;
+		parsekey(tmp, scr->keys[scr->nkeys]);
+		scr->nkeys++;
 	}
 	return 0;
 }

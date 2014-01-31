@@ -24,6 +24,8 @@
 -ss
 -hnl
 -nbc
+-TXWindowAttributes
+-TEScreen
 -TXEvent
 -TDisplay
 -TAtom

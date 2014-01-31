@@ -25,6 +25,7 @@
 #include <sys/select.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <sys/poll.h>
 #include <assert.h>
 #include <ctype.h>
 #include <stdlib.h>
@@ -138,6 +139,7 @@ void killclient(Client *c);
 void leavenotify(XEvent * e);
 void focusin(XEvent * e);
 void focusout(XEvent *e);
+EScreen *geteventscr(XEvent *ev);
 void gavefocus(Client *c);
 void grid(Monitor *m);
 void manage(Window w, XWindowAttributes * wa);
@@ -226,6 +228,9 @@ int cargc;
 char **cargv;
 Display *dpy;
 EScreen *scr;
+EScreen *event_scr;
+EScreen *screens;
+unsigned int nscr;
 #ifdef STARTUP_NOTIFICATION
 SnDisplay *sn_dpy;
 SnMonitorContext *sn_ctx;
@@ -237,7 +242,6 @@ Notify *notifies;
 XrmDatabase xrdb;
 Bool otherwm;
 Bool running = True;
-Bool selscreen = True;
 // Monitor *monitors;
 // Client *clients;
 Client *sel;
@@ -251,16 +255,16 @@ Cursor cursor[CurLast];
 int ebase[BaseLast];
 Bool haveext[BaseLast];
 Style style;
-Button button[LastBtn];
+// Button button[LastBtn];
 // View *views;
-Key **keys;
+// Key **keys;
 XKeyEvent *key_event;
 Rule **rules;
 // char **tags;
 // Atom *dt_tags;
 // unsigned int nmons;
 // unsigned int ntags;
-unsigned int nkeys;
+// unsigned int nkeys;
 unsigned int nrules;
 unsigned int modkey;
 unsigned int numlockmask;
@@ -527,25 +531,25 @@ buttonpress(XEvent * e) {
 		focus(c);
 		raiseclient(c);
 		for (i = 0; i < LastBtn; i++) {
-			if (button[i].action == NULL)
+			if (scr->button[i].action == NULL)
 				continue;
-			if ((ev->x > button[i].x)
-			    && ((int)ev->x < (int)(button[i].x + style.titleheight))
-			    && (button[i].x != -1) && (int)ev->y < style.titleheight) {
+			if ((ev->x > scr->button[i].x)
+			    && ((int)ev->x < (int)(scr->button[i].x + style.titleheight))
+			    && (scr->button[i].x != -1) && (int)ev->y < style.titleheight) {
 				if (ev->type == ButtonPress) {
 					DPRINTF("BUTTON %d PRESSED\n", i);
-					button[i].pressed = 1;
+					scr->button[i].pressed = 1;
 				} else {
 					DPRINTF("BUTTON %d RELEASED\n", i);
-					button[i].pressed = 0;
-					button[i].action(NULL);
+					scr->button[i].pressed = 0;
+					scr->button[i].action(NULL);
 				}
 				drawclient(c);
 				return;
 			}
 		}
 		for (i = 0; i < LastBtn; i++)
-			button[i].pressed = 0;
+			scr->button[i].pressed = 0;
 		drawclient(c);
 		if (ev->type == ButtonRelease)
 			return;
@@ -603,6 +607,11 @@ selectionclear(XEvent * e) {
 		quit(NULL);
 	if (name)
 		XFree(name);
+}
+
+void
+prepare_display(void)
+{
 }
 
 void
@@ -701,28 +710,42 @@ checkotherwm(void) {
 	/* this causes an error if some other window manager is running */
 	XSelectInput(dpy, scr->root, SubstructureRedirectMask);
 	XSync(dpy, False);
-	if (otherwm)
-		eprint("echinus: another window manager is already running\n");
+	if (otherwm) {
+		XDestroyWindow(dpy, scr->selwin);
+		scr->selwin = None;
+		scr->managed = False;
+	}
 	XSync(dpy, False);
 	XSetErrorHandler(NULL);
 	xerrorxlib = XSetErrorHandler(xerror);
 	XSync(dpy, False);
-	scr->managed = True;
 }
 
 void
 cleanup(WithdrawCause cause) {
-	while (scr->stack) {
-		unban(scr->stack);
-		unmanage(scr->stack, cause);
+
+	for (scr = screens; scr < screens + nscr; scr++) {
+		while (scr->stack) {
+			unban(scr->stack);
+			unmanage(scr->stack, cause);
+		}
 	}
-	free(scr->tags);
-	free(keys);
-	freemonitors();
+
+	for (scr = screens; scr < screens + nscr; scr++) {
+		free(scr->tags);
+		scr->tags = NULL;
+		free(scr->keys);
+		scr->keys = NULL;
+		freemonitors();
+	}
+
 	/* free resource database */
 	XrmDestroyDatabase(xrdb);
-	deinitstyle();
-	XUngrabKey(dpy, AnyKey, AnyModifier, scr->root);
+
+	for (scr = screens; scr < screens + nscr; scr++) {
+		deinitstyle();
+		XUngrabKey(dpy, AnyKey, AnyModifier, scr->root);
+	}
 
 	XFreeCursor(dpy, cursor[CurResizeTopLeft]);
 	XFreeCursor(dpy, cursor[CurResizeTop]);
@@ -948,6 +971,7 @@ destroynotify(XEvent * e) {
 		XDeleteContext(dpy, ev->window, context[SysTrayWindows]);
 		delsystray(ev->window);
 	}
+	XDeleteContext(dpy, ev->window, context[ScreenContext]);
 }
 
 void
@@ -1039,8 +1063,8 @@ enternotify(XEvent * e) {
 			break;
 		}
 	} else if (ev->window == scr->root) {
-		selscreen = True;
-		focus(NULL);
+		if (scr->managed)
+			focus(NULL);
 	}
 }
 
@@ -1364,16 +1388,16 @@ focus(Client * c) {
 
 	o = sel;
 	/* XXX: should check be for can.focus instead of bastards? */
-	if ((!c && selscreen) || (c && (c->is.bastard || !isvisible(c, curmonitor()))))
+	if ((!c && scr->managed) || (c && (c->is.bastard || !isvisible(c, curmonitor()))))
 		for (c = scr->stack;
 		    c && (c->is.bastard || (c->is.icon || c->is.hidden) || !isvisible(c, curmonitor())); c = c->snext);
 	if (sel && sel != c) {
 		XSetWindowBorder(dpy, sel->frame, style.color.norm[ColBorder]);
 	}
 	sel = c;
-	ewmh_update_net_active_window();
-	if (!selscreen)
+	if (!scr->managed)
 		return;
+	ewmh_update_net_active_window();
 	if (c) {
 		if (c->is.attn)
 			c->is.attn = False;
@@ -1394,6 +1418,7 @@ focus(Client * c) {
 		drawclient(o);
 		ewmh_update_net_window_state(o);
 	}
+	XSync(dpy, False);
 }
 
 void
@@ -1724,10 +1749,10 @@ grabkeys(void) {
 	unsigned int i, j;
 	KeyCode code;
 	XUngrabKey(dpy, AnyKey, AnyModifier, scr->root);
-	for (i = 0; i < nkeys; i++) {
-		if ((code = XKeysymToKeycode(dpy, keys[i]->keysym))) {
+	for (i = 0; i < scr->nkeys; i++) {
+		if ((code = XKeysymToKeycode(dpy, scr->keys[i]->keysym))) {
 			for (j = 0; j < LENGTH(modifiers); j++)
-				XGrabKey(dpy, code, keys[i]->mod | modifiers[j], scr->root,
+				XGrabKey(dpy, code, scr->keys[i]->mod | modifiers[j], scr->root,
 					 True, GrabModeAsync, GrabModeAsync);
 		}
     }
@@ -1752,12 +1777,12 @@ keypress(XEvent * e) {
 		return;
 	ev = &e->xkey;
 	keysym = XkbKeycodeToKeysym(dpy, (KeyCode) ev->keycode, 0, 0);
-	for (i = 0; i < nkeys; i++)
-		if (keysym == keys[i]->keysym
-		    && CLEANMASK(keys[i]->mod) == CLEANMASK(ev->state)) {
-			if (keys[i]->func) {
+	for (i = 0; i < scr->nkeys; i++)
+		if (keysym == scr->keys[i]->keysym
+		    && CLEANMASK(scr->keys[i]->mod) == CLEANMASK(ev->state)) {
+			if (scr->keys[i]->func) {
 				key_event = ev;
-				keys[i]->func(keys[i]->arg);
+				scr->keys[i]->func(scr->keys[i]->arg);
 				key_event = NULL;
 			}
 			if ((int)ev->time - (int)user_time > 0)
@@ -1848,14 +1873,69 @@ void
 leavenotify(XEvent * e) {
 	XCrossingEvent *ev = &e->xcrossing;
 
-	if ((ev->window == scr->root) && !ev->same_screen) {
-		selscreen = False;
-		focus(NULL);
+	if (!ev->same_screen) {
+		XFindContext(dpy, ev->window, context[ScreenContext], (XPointer *)&scr);
+		if (!scr->managed)
+			focus(NULL);
 	}
 }
 
 void
-manage(Window w, XWindowAttributes * wa)
+reparentclient(Client *c, EScreen *new_scr, int x, int y)
+{
+	if (new_scr == scr)
+		return;
+	if (new_scr->managed) {
+		Monitor *m;
+
+		/* screens must have the same default depth, visuals and colormaps */
+
+		/* some of what unmanage() does */
+		detach(c);
+		detachclist(c);
+		detachstack(c);
+		ewmh_del_client(c, CauseReparented);
+		XDeleteContext(dpy, c->title, context[ScreenContext]);
+		XDeleteContext(dpy, c->frame, context[ScreenContext]);
+		XDeleteContext(dpy, c->win, context[ScreenContext]);
+		XUnmapWindow(dpy, c->frame);
+		c->is.managed = False;
+		scr = new_scr;
+		/* some of what manage() does */
+		XSaveContext(dpy, c->title, context[ScreenContext], (XPointer) scr);
+		XSaveContext(dpy, c->frame, context[ScreenContext], (XPointer) scr);
+		XSaveContext(dpy, c->win, context[ScreenContext], (XPointer) scr);
+		if (!(m = getmonitor(x, y)))
+			if (!(m = curmonitor()))
+				m = nearmonitor();
+		c->tags = erealloc(c->tags, scr->ntags * sizeof(*c->tags));
+		memcpy(c->tags, m->seltags, scr->ntags * sizeof(*c->tags));
+		attach(c, options.attachaside);
+		attachclist(c);
+		attachstack(c);
+		ewmh_update_net_client_list();
+		XReparentWindow(dpy, c->frame, scr->root, x, y);
+		XMoveWindow(dpy, c->frame, x, y);
+		XMapWindow(dpy, c->frame);
+		c->is.managed = True;
+		ewmh_update_net_window_desktop(c);
+		updateframe(c);
+		if (c->with.struts) {
+			ewmh_update_net_work_area();
+			updategeom(NULL);
+		}
+		/* caller must resize client */
+	} else {
+		Window win = c->win;
+
+		unmanage(c, CauseReparented);
+		XReparentWindow(dpy, win, new_scr->root, x, y);
+		XMapWindow(dpy, win);
+	}
+}
+
+void
+manage(Window w, XWindowAttributes *wa)
 {
 	Client *c, *t = NULL;
 	Window trans = None;
@@ -1867,12 +1947,14 @@ manage(Window w, XWindowAttributes * wa)
 	Monitor *cm;
 	int take_focus;
 
+	DPRINTF("managing window 0x%lx\n", w);
 	c = emallocz(sizeof(Client));
 	c->win = w;
 	c->name = ecalloc(1, 1);
 	c->icon_name = ecalloc(1, 1);
 	XSaveContext(dpy, c->win, context[ClientWindow], (XPointer) c);
 	XSaveContext(dpy, c->win, context[ClientAny], (XPointer) c);
+	XSaveContext(dpy, c->win, context[ScreenContext], (XPointer) scr);
 	// c->skip.skip = 0;
 	// c->is.is = 0;
 	// c->with.with = 0;
@@ -1903,7 +1985,8 @@ manage(Window w, XWindowAttributes * wa)
 	     (int) ((int) c->user_time - (int) user_time) < 0))
 		focusnew = False;
 
-	take_focus = checkatom(c->win, _XA_WM_PROTOCOLS, _XA_WM_TAKE_FOCUS) ? TAKE_FOCUS : 0;
+	take_focus =
+	    checkatom(c->win, _XA_WM_PROTOCOLS, _XA_WM_TAKE_FOCUS) ? TAKE_FOCUS : 0;
 	c->can.focus = take_focus | GIVE_FOCUS;
 
 	if ((wmh = XGetWMHints(dpy, c->win))) {
@@ -2017,13 +2100,13 @@ manage(Window w, XWindowAttributes * wa)
 	}
 	c->frame =
 	    XCreateWindow(dpy, scr->root, c->x, c->y, c->w,
-			  c->h, c->border, wa->depth == 32 ? 32 : DefaultDepth(dpy,
-									       scr->screen),
-			  InputOutput, wa->depth == 32 ? wa->visual : DefaultVisual(dpy,
-										    scr->screen),
-			  mask, &twa);
+			  c->h, c->border, wa->depth == 32 ? 32 :
+			  DefaultDepth(dpy, scr->screen),
+			  InputOutput, wa->depth == 32 ? wa->visual :
+			  DefaultVisual(dpy, scr->screen), mask, &twa);
 	XSaveContext(dpy, c->frame, context[ClientFrame], (XPointer) c);
 	XSaveContext(dpy, c->frame, context[ClientAny], (XPointer) c);
+	XSaveContext(dpy, c->frame, context[ScreenContext], (XPointer) scr);
 
 	wc.border_width = c->border;
 	XConfigureWindow(dpy, c->frame, CWBorderWidth, &wc);
@@ -2034,15 +2117,18 @@ manage(Window w, XWindowAttributes * wa)
 	/* we create title as root's child as a workaround for 32bit visuals */
 	if (c->has.title) {
 		c->title = XCreateWindow(dpy, scr->root, 0, 0, c->w, c->th,
-					 0, DefaultDepth(dpy, scr->screen), CopyFromParent,
-					 DefaultVisual(dpy, scr->screen), CWEventMask, &twa);
+					 0, DefaultDepth(dpy, scr->screen),
+					 CopyFromParent, DefaultVisual(dpy, scr->screen),
+					 CWEventMask, &twa);
 		c->drawable =
-		    XCreatePixmap(dpy, scr->root, c->w, c->th, DefaultDepth(dpy, scr->screen));
+		    XCreatePixmap(dpy, scr->root, c->w, c->th,
+				  DefaultDepth(dpy, scr->screen));
 		c->xftdraw =
 		    XftDrawCreate(dpy, c->drawable, DefaultVisual(dpy, scr->screen),
 				  DefaultColormap(dpy, scr->screen));
 		XSaveContext(dpy, c->title, context[ClientTitle], (XPointer) c);
 		XSaveContext(dpy, c->title, context[ClientAny], (XPointer) c);
+		XSaveContext(dpy, c->title, context[ScreenContext], (XPointer) scr);
 	}
 
 	attach(c, options.attachaside);
@@ -2075,6 +2161,7 @@ manage(Window w, XWindowAttributes * wa)
 		ewmh_update_net_work_area();
 		updategeom(NULL);
 	}
+	XSync(dpy, False);
 	arrange(NULL);
 	if (!WTCHECK(c, WindowTypeDesk) && focusnew) {
 		focus(c);
@@ -2451,6 +2538,7 @@ mousemove(Client * c, unsigned int button, int x_root, int y_root) {
 		XMaskEvent(dpy,
 			   MOUSEMASK | ExposureMask | SubstructureNotifyMask |
 			   SubstructureRedirectMask, &ev);
+		geteventscr(&ev);
 		switch (ev.type) {
 		case ButtonRelease:
 			break;
@@ -2464,11 +2552,13 @@ mousemove(Client * c, unsigned int button, int x_root, int y_root) {
 				}
 				continue;
 			}
+			scr = event_scr;
 			handle_event(&ev);
 			continue;
 		case ConfigureRequest:
 		case Expose:
 		case MapRequest:
+			scr = event_scr;
 			handle_event(&ev);
 			continue;
 		case MotionNotify:
@@ -2487,7 +2577,7 @@ mousemove(Client * c, unsigned int button, int x_root, int y_root) {
 				else if (abs(nx2 - (wx + ww)) < snap)
 					nx += (wx + ww) - nx2;
 				else
-					for (s = scr->stack; s; s = s->snext) {
+					for (s = event_scr->stack; s; s = s->snext) {
 						ox = s->x; oy = s->y;
 						ox2 = s->x + s->w + 2 * s->border;
 						oy2 = s->y + s->h + 2 * s->border;
@@ -2506,7 +2596,7 @@ mousemove(Client * c, unsigned int button, int x_root, int y_root) {
 				else if (abs(ny2 - (wy + wh)) < snap)
 					ny += (wy + wh) - ny2;
 				else
-					for (s = scr->stack; s; s = s->snext) {
+					for (s = event_scr->stack; s; s = s->snext) {
 						ox = s->x; oy = s->y;
 						ox2 = s->x + s->w + 2 * s->border;
 						oy2 = s->y + s->h + 2 * s->border;
@@ -2521,6 +2611,8 @@ mousemove(Client * c, unsigned int button, int x_root, int y_root) {
 						}
 					}
 			}
+			if (event_scr != scr)
+				reparentclient(c, event_scr, nx, ny);
 			resize(c, nx, ny, c->w, c->h, c->border);
 			save(c);
 			if (m != nm) {
@@ -2540,6 +2632,7 @@ mousemove(Client * c, unsigned int button, int x_root, int y_root) {
 			}
 			continue;
 		default:
+			scr = event_scr;
 			handle_event(&ev);
 			continue;
 		}
@@ -2664,6 +2757,7 @@ mouseresize_from(Client * c, int from, unsigned int button, int x_root, int y_ro
 		XMaskEvent(dpy,
 			   MOUSEMASK | ExposureMask | SubstructureNotifyMask |
 			   SubstructureRedirectMask, &ev);
+		geteventscr(&ev);
 #ifdef SYNC
 		if (ev.type == XSyncAlarmNotify + ebase[XsyncBase]) {
 			XSyncAlarmNotifyEvent *ae = (typeof(ae)) &ev;
@@ -2696,14 +2790,18 @@ mouseresize_from(Client * c, int from, unsigned int button, int x_root, int y_ro
 				}
 				continue;
 			}
+			scr = event_scr;
 			handle_event(&ev);
 			continue;
 		case ConfigureRequest:
 		case Expose:
 		case MapRequest:
+			scr = event_scr;
 			handle_event(&ev);
 			continue;
 		case MotionNotify:
+			if (event_scr != scr)
+				continue;
 			XSync(dpy, False);
 			dx = (x_root - ev.xmotion.x_root);
 			dy = (y_root - ev.xmotion.y_root);
@@ -2854,6 +2952,7 @@ mouseresize_from(Client * c, int from, unsigned int button, int x_root, int y_ro
 			}
 			continue;
 		default:
+			scr = event_scr;
 			handle_event(&ev);
 			continue;
 		}
@@ -3717,6 +3816,32 @@ restack()
 		free(wl);
 }
 
+EScreen *
+getscreen(Window win)
+{
+	Window *wins, wroot, parent;
+	unsigned int num;
+	EScreen *s = NULL;
+
+	if (!win)
+		return (s);
+	if (!XFindContext(dpy, win, context[ScreenContext], (XPointer *) &s))
+		return (s);
+	if (!XQueryTree(dpy, win, &wroot, &parent, &wins, &num))
+		return (s);
+	if (!XFindContext(dpy, wroot, context[ScreenContext], (XPointer *) &s))
+		return (s);
+	if (wins)
+		XFree(wins);
+	return (s);
+}
+
+EScreen *
+geteventscr(XEvent *ev)
+{
+	return (event_scr = getscreen(ev->xany.window) ? : scr);
+}
+
 Bool
 handle_event(XEvent *ev)
 {
@@ -3780,22 +3905,22 @@ sn_handler(SnMonitorEvent *event, void *dummy) {
 #endif
 
 void
-run(void) {
-	fd_set rd;
+run(void)
+{
 	int xfd, dummy;
 	XEvent ev;
 
 #ifdef XRANDR
 	haveext[XrandrBase]
-		= XRRQueryExtension(dpy, &ebase[XrandrBase], &dummy);
+	    = XRRQueryExtension(dpy, &ebase[XrandrBase], &dummy);
 #endif
 #ifdef XINERAMA
 	haveext[XineramaBase]
-		= XineramaQueryExtension(dpy, &ebase[XineramaBase], &dummy);
+	    = XineramaQueryExtension(dpy, &ebase[XineramaBase], &dummy);
 #endif
 #ifdef SYNC
 	haveext[XsyncBase]
-		= XSyncQueryExtension(dpy, &ebase[XsyncBase], &dummy);
+	    = XSyncQueryExtension(dpy, &ebase[XsyncBase], &dummy);
 #endif
 #ifdef STARTUP_NOTIFICATION
 	sn_dpy = sn_display_new(dpy, NULL, NULL);
@@ -3806,16 +3931,28 @@ run(void) {
 	XSync(dpy, False);
 	xfd = ConnectionNumber(dpy);
 	while (running) {
-		FD_ZERO(&rd);
-		FD_SET(xfd, &rd);
-		if (select(xfd + 1, &rd, NULL, NULL, NULL) == -1) {
-			if (errno == EINTR)
+		struct pollfd pfd = { xfd, POLLIN | POLLERR | POLLHUP, 0 };
+
+		switch (poll(&pfd, 1, -1)) {
+		case -1:
+			if (errno == EAGAIN || errno == EINTR || errno == ERESTART)
 				continue;
-			eprint("select failed\n");
-		}
-		while (XPending(dpy)) {
-			XNextEvent(dpy, &ev);
-			handle_event(&ev);
+			cleanup(CauseRestarting);
+			eprint("poll failed: %s\n", strerror(errno));
+			exit(EXIT_FAILURE);
+		case 1:
+			if (pfd.revents & (POLLNVAL | POLLHUP | POLLERR)) {
+				cleanup(CauseRestarting);
+				eprint("poll error\n");
+				exit(EXIT_FAILURE);
+			}
+			if (pfd.revents & POLLIN) {
+				while (XPending(dpy)) {
+					XNextEvent(dpy, &ev);
+					scr = geteventscr(&ev);
+					handle_event(&ev);
+				}
+			}
 		}
 	}
 }
@@ -4051,6 +4188,7 @@ issystray(Window win) {
 		if (i == systray.count) {
 			XSelectInput(dpy, win, StructureNotifyMask);
 			XSaveContext(dpy, win, context[SysTrayWindows], (XPointer)&systray);
+			XSaveContext(dpy, win, context[ScreenContext], (XPointer) scr);
 
 			systray.members =
 			    erealloc(systray.members, (i + 1) * sizeof(Window));
@@ -4078,6 +4216,7 @@ scan(void) {
 	wins = NULL;
 	if (XQueryTree(dpy, scr->root, &d1, &d2, &wins, &num)) {
 		for (i = 0; i < num; i++) {
+			DPRINTF("scan checking window 0x%lx\n", wins[i]);
 			if (!XGetWindowAttributes(dpy, wins[i], &wa) ||
 			    wa.override_redirect || issystray(wins[i] ||
 			    isdockapp(wins[i]))
@@ -4086,17 +4225,20 @@ scan(void) {
 			     (wmh->flags & WindowGroupHint) &&
 			     (wmh->window_group != wins[i])))
 				continue;
+			DPRINTF("scan checking non-transient window 0x%lx\n", wins[i]);
 			if (wa.map_state == IsViewable
 			    || getstate(wins[i]) == IconicState
 			    || getstate(wins[i]) == NormalState)
 				manage(wins[i], &wa);
 		}
 		for (i = 0; i < num; i++) {
+			DPRINTF("scan checking window 0x%lx\n", wins[i]);
 			/* now the transients and group members */
 			if (!XGetWindowAttributes(dpy, wins[i], &wa) ||
 			    wa.override_redirect || issystray(wins[i]) ||
 			    isdockapp(wins[i]))
 				continue;
+			DPRINTF("scan checking transient window 0x%lx\n", wins[i]);
 			if ((XGetTransientForHint(dpy, wins[i], &d1) ||
 			     ((wmh = XGetWMHints(dpy, wins[i])) &&
 			      (wmh->flags & WindowGroupHint) &&
@@ -4109,6 +4251,8 @@ scan(void) {
 	}
 	if (wins)
 		XFree(wins);
+	DPRINTF("done scanning screen %d\n", scr->screen);
+	ewmh_update_kde_splash_progress();
 }
 
 void
@@ -4638,7 +4782,7 @@ setup(char *conf) {
 	int d;
 	int i, j;
 	unsigned int mask;
-	Window w;
+	Window w, proot;
 	Monitor *m;
 	XModifierKeymap *modmap;
 	XSetWindowAttributes wa;
@@ -4679,8 +4823,10 @@ setup(char *conf) {
 	    | EnterWindowMask | LeaveWindowMask | StructureNotifyMask |
 	    ButtonPressMask | ButtonReleaseMask;
 	wa.cursor = cursor[CurNormal];
-	XChangeWindowAttributes(dpy, scr->root, CWEventMask | CWCursor, &wa);
-	XSelectInput(dpy, scr->root, wa.event_mask);
+	for (scr = screens; scr < screens + nscr; scr++) {
+		XChangeWindowAttributes(dpy, scr->root, CWEventMask | CWCursor, &wa);
+		XSelectInput(dpy, scr->root, wa.event_mask);
+	}
 
 	/* init resource database */
 	XrmInitialize();
@@ -4709,27 +4855,9 @@ setup(char *conf) {
 	if (!xrdb)
 		fprintf(stderr, "echinus: no configuration file found, using defaults\n");
 
-	/* init EWMH atom */
-	initewmh(scr->selwin);
-
-	/* init tags */
-	inittags();
-	/* init geometry */
-	initmonitors(NULL);
-
-	/* init modkey */
 	initrules();
-	initkeys();
-	initlayouts();
-
-	ewmh_update_net_number_of_desktops();
-	ewmh_update_net_current_desktop();
-	ewmh_update_net_virtual_roots();
-
-	grabkeys();
 
 	/* init appearance */
-	initstyle();
 	options.attachaside = atoi(getresource("attachaside", "1"));
 	strncpy(options.command, getresource("command", COMMAND), LENGTH(options.command));
 	options.command[LENGTH(options.command) - 1] = '\0';
@@ -4738,20 +4866,46 @@ setup(char *conf) {
 	options.focus = atoi(getresource("sloppy", "0"));
 	options.snap = atoi(getresource("snap", STR(SNAP)));
 
-	for (m = scr->monitors; m; m = m->next) {
-		m->struts[RightStrut] = m->struts[LeftStrut] =
-		    m->struts[TopStrut] = m->struts[BotStrut] = 0;
-		updategeom(m);
+	for (scr = screens; scr < screens + nscr; scr++) {
+		if (!scr->managed)
+			continue;
+		/* init EWMH atom */
+		initewmh(scr->selwin);
+
+		/* init tags */
+		inittags();
+		/* init geometry */
+		initmonitors(NULL);
+
+		/* init modkey */
+		initkeys();
+		initlayouts();
+
+		ewmh_update_net_number_of_desktops();
+		ewmh_update_net_current_desktop();
+		ewmh_update_net_virtual_roots();
+
+		grabkeys();
+
+		/* init appearance */
+		initstyle();
+
+		for (m = scr->monitors; m; m = m->next) {
+			m->struts[RightStrut] = m->struts[LeftStrut] =
+			    m->struts[TopStrut] = m->struts[BotStrut] = 0;
+			updategeom(m);
+		}
+		ewmh_update_net_work_area();
+		ewmh_process_net_showing_desktop();
+		ewmh_update_net_showing_desktop();
 	}
-	ewmh_update_net_work_area();
-	ewmh_process_net_showing_desktop();
-	ewmh_update_net_showing_desktop();
 
 	if (chdir(oldcwd) != 0)
 		fprintf(stderr, "echinus: cannot change directory\n");
 
 	/* multihead support */
-	selscreen = XQueryPointer(dpy, scr->root, &w, &w, &d, &d, &d, &d, &mask);
+	XQueryPointer(dpy, scr->root, &proot, &w, &d, &d, &d, &d, &mask);
+	XFindContext(dpy, proot, context[ScreenContext], (XPointer *) &scr);
 }
 
 void
@@ -5491,6 +5645,7 @@ unmanage(Client * c, WithdrawCause cause) {
 		XDestroyWindow(dpy, c->title);
 		XDeleteContext(dpy, c->title, context[ClientTitle]);
 		XDeleteContext(dpy, c->title, context[ClientAny]);
+		XDeleteContext(dpy, c->title, context[ScreenContext]);
 		c->title = None;
 	}
 	if (cause != CauseDestroyed) {
@@ -5528,10 +5683,12 @@ unmanage(Client * c, WithdrawCause cause) {
 	XDestroyWindow(dpy, c->frame);
 	XDeleteContext(dpy, c->frame, context[ClientFrame]);
 	XDeleteContext(dpy, c->frame, context[ClientAny]);
+	XDeleteContext(dpy, c->frame, context[ScreenContext]);
 	XDeleteContext(dpy, c->win, context[ClientWindow]);
 	XDeleteContext(dpy, c->win, context[ClientAny]);
 	XDeleteContext(dpy, c->win, context[ClientPing]);
 	XDeleteContext(dpy, c->win, context[ClientDead]);
+	XDeleteContext(dpy, c->win, context[ScreenContext]);
 	ewmh_release_user_time_window(c);
 	removegroup(c, c->leader, ClientGroup);
 	if (c->is.grptrans)
@@ -5937,8 +6094,9 @@ zoom(Client *c) {
 }
 
 int
-main(int argc, char *argv[]) {
-	char conf[256] = "";
+main(int argc, char *argv[])
+{
+	char conf[256] = "", *p;
 	int i;
 
 	if (argc == 3 && !strcmp("-f", argv[1]))
@@ -5956,15 +6114,39 @@ main(int argc, char *argv[]) {
 	signal(SIGQUIT, sighandler);
 	cargc = argc;
 	cargv = argv;
-	scr = calloc(1, sizeof(*scr));
-	scr->screen = DefaultScreen(dpy);
-	scr->root = RootWindow(dpy, scr->screen);
 	for (i = 0; i < PartLast; i++)
 		context[i] = XUniqueContext();
-	checkotherwm();
+	nscr = ScreenCount(dpy);
+	DPRINTF("there are %u screens\n", nscr);
+	screens = calloc(nscr, sizeof(*screens));
+	for (i = 0, scr = screens; i < nscr; i++, scr++) {
+		scr->screen = i;
+		scr->root = RootWindow(dpy, i);
+		XSaveContext(dpy, scr->root, context[ScreenContext], (XPointer) scr);
+		DPRINTF("screen %d has root 0x%lx\n", scr->screen, scr->root);
+	}
+	if ((p = getenv("DISPLAY")) && (p = strrchr(p, '.')) && strlen(p + 1)
+	    && strspn(p + 1, "0123456789") == strlen(p + 1) && (i = atoi(p + 1)) < nscr) {
+		DPRINTF("managing one screen: %d\n", i);
+		screens[i].managed = True;
+	} else
+		for (scr = screens; scr < screens + nscr; scr++)
+			scr->managed = True;
+	for (scr = screens; scr < screens + nscr; scr++)
+		if (scr->managed) {
+			DPRINTF("checking screen %d\n", scr->screen);
+			checkotherwm();
+		}
+	for (scr = screens; scr < screens + nscr && !scr->managed; scr++) ;
+	if (scr == screens + nscr)
+		eprint("echinus: another window manager is already running on each screen\n");
 	setup(conf);
-	ewmh_update_kde_splash_progress();
-	scan();
+	for (scr = screens; scr < screens + nscr; scr++)
+		if (scr->managed) {
+			DPRINTF("scanning screen %d\n", scr->screen);
+			scan();
+		}
+	DPRINTF("%s", "entering main event loop\n");
 	run();
 	cleanup(CauseQuitting);
 

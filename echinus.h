@@ -222,7 +222,7 @@ enum { LeftStrut, RightStrut, TopStrut, BotStrut, LastStrut }; /* ewmh struts */
 enum { ColFG, ColBG, ColBorder, ColButton, ColLast };	/* colors */
 enum { ClientWindow, ClientTitle, ClientFrame, ClientTimeWindow, ClientGroup,
        ClientTransFor, ClientTransForGroup, ClientLeader, ClientAny, SysTrayWindows,
-       ClientPing, ClientDead, PartLast };	/* client parts */
+       ClientPing, ClientDead, ScreenContext, PartLast };	/* client parts */
 enum { Iconify, Maximize, Close, LastBtn }; /* window buttons */
 typedef enum { CauseDestroyed, CauseUnmapped, CauseReparented,
 	       CauseQuitting, CauseSwitching, CauseRestarting } WithdrawCause;
@@ -413,24 +413,17 @@ typedef struct View {
 	Layout *layout;
 } View; /* per-tag settings */
 
-typedef struct EScreen EScreen;
-struct EScreen {
-	Bool managed;
-	Window root;
-	Window selwin;
-	Client *clients;
-	Monitor *monitors;
-	Client *stack;
-	Client *clist;
-	unsigned int nmons;
-	unsigned int ntags;
-	Bool showing_desktop;
-	int screen;
-	char **tags;
-	Atom *dt_tags;
-	View *views;
-
-};
+typedef struct {
+	unsigned int x, y, w, h;
+	struct {
+		XGlyphInfo *extents;
+		int ascent;
+		int descent;
+		int height;
+		int width;
+	} font;
+	GC gc;
+} DC;				/* draw context */
 
 typedef struct {
 	Pixmap pm;
@@ -462,6 +455,28 @@ typedef struct {
 	void (*func) (const char *arg);
 	const char *arg;
 } Key; /* keyboard shortcuts */
+
+typedef struct EScreen EScreen;
+struct EScreen {
+	Bool managed;
+	Window root;
+	Window selwin;
+	Client *clients;
+	Monitor *monitors;
+	unsigned int nmons;
+	Client *stack;
+	Client *clist;
+	Bool showing_desktop;
+	int screen;
+	char **tags;
+	unsigned int ntags;
+	Atom *dt_tags;
+	View *views;
+	Key **keys;
+	unsigned int nkeys;
+	DC dc;
+	Button button[LastBtn];
+};
 
 typedef struct {
 	char *prop;
@@ -646,6 +661,8 @@ void initstyle();
 extern Atom atom[NATOMS];
 extern Display *dpy;
 extern EScreen *scr;
+extern EScreen *screens;
+extern EScreen *event_scr;
 // extern Window root;
 // extern Window selwin;
 // extern Client *clients;
@@ -657,15 +674,16 @@ extern Client *take;	/* take focus last */
 // extern Client *clist;
 // extern unsigned int nmons;
 // extern unsigned int ntags;
-extern unsigned int nkeys;
+extern unsigned int nscr;
+// extern unsigned int nkeys;
 extern unsigned int nrules;
 // extern Bool showing_desktop;
 // extern int screen;
 extern Style style;
-extern Button button[LastBtn];
+// extern Button button[LastBtn];
 // extern char **tags;
 // extern Atom *dt_tags;
-extern Key **keys;
+// extern Key **keys;
 extern Rule **rules;
 extern Layout layouts[];
 extern unsigned int modkey;

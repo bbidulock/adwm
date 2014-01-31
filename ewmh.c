@@ -210,8 +210,12 @@ initewmh(Window win)
 {
 	char name[] = "echinus";
 	long data[2];
+	static Bool atoms_interned = False;
 
-	XInternAtoms(dpy, atomnames, NATOMS, False, atom);
+	if (!atoms_interned) {
+		XInternAtoms(dpy, atomnames, NATOMS, False, atom);
+		atoms_interned = True;
+	}
 	XChangeProperty(dpy, scr->root, _XA_NET_SUPPORTED, XA_ATOM, 32,
 			PropModeReplace, (unsigned char *) &_XA_NET_CLIENT_LIST,
 			NATOMS - ClientList);

@@ -599,10 +599,10 @@ ewmh_update_net_monitor_geometry(Client *c) {
 	for (n = 0, m = scr->monitors; m; m = m->next, n++) ;
 	data = ecalloc(4 * n, sizeof(*data));
 	for (i = 0, m = scr->monitors; m; m = m->next) {
-		data[i++] = m->sx;
-		data[i++] = m->sy;
-		data[i++] = m->sw;
-		data[i++] = m->sh;
+		data[i++] = m->sc.x;
+		data[i++] = m->sc.y;
+		data[i++] = m->sc.w;
+		data[i++] = m->sc.h;
 	}
 	XChangeProperty(dpy, scr->root, _XA_NET_MONITOR_GEOMETRY, XA_CARDINAL, 32,
 			PropModeReplace, (unsigned char *)data, i);
@@ -1474,7 +1474,7 @@ ewmh_process_state_atom(Client *c, Atom state, int set) {
 		}
 		DPRINT;
 		arrange(curmonitor());
-		DPRINTF("%s: x%d y%d w%d h%d\n", c->name, c->x, c->y, c->w, c->h);
+		DPRINTF("%s: x%d y%d w%d h%d\n", c->name, c->c.x, c->c.y, c->c.w, c->c.h);
 	} else if (state == _XA_NET_WM_STATE_ABOVE) {
 		if ((set == _NET_WM_STATE_ADD && !c->is.above) ||
 		    (set == _NET_WM_STATE_REMOVE && c->is.above) ||
@@ -1516,10 +1516,10 @@ ewmh_process_state_atom(Client *c, Atom state, int set) {
 void
 ewmh_update_net_window_extents(Client *c) {
 	long data[4] = {
-		c->border, /* left */
-		c->border, /* right */
-		c->border + c->th, /* top */
-		c->border, /* bottom */
+		c->c.b, /* left */
+		c->c.b, /* right */
+		c->c.b + c->th, /* top */
+		c->c.b, /* bottom */
 	};
 
 	DPRINTF("Updating _NET_WM_FRAME_EXTENTS for 0x%lx\n", c->win);
@@ -1533,7 +1533,7 @@ ewmh_update_net_window_extents(Client *c) {
 void
 wmh_update_win_maximized_geometry(Client *c)
 {
-	long data[4] = { c->x, c->y, c->w, c->h };
+	long data[4] = { c->c.x, c->c.y, c->c.w, c->c.h };
 
 	XChangeProperty(dpy, c->win, _XA_WIN_MAXIMIZED_GEOMETRY, XA_CARDINAL, 32,
 			PropModeReplace, (unsigned char *) data, 4L);
@@ -1975,19 +1975,19 @@ ewmh_update_net_window_fs_monitors(Client *c) {
 
 	if (!c->is.max)
 		return;
-	for (m = scr->monitors; m && c->y != m->sy; m = m->next) ;
+	for (m = scr->monitors; m && c->c.y != m->sc.y; m = m->next) ;
 	if (!m)
 		return;
 	mons[0] = m->num;
-	for (m = scr->monitors; m && c->y + c->h != m->sy + m->sh; m = m->next) ;
+	for (m = scr->monitors; m && c->c.y + c->c.h != m->sc.y + m->sc.h; m = m->next) ;
 	if (!m)
 		return;
 	mons[1] = m->num;
-	for (m = scr->monitors; m && c->x != m->sx; m = m->next) ;
+	for (m = scr->monitors; m && c->c.x != m->sc.x; m = m->next) ;
 	if (!m)
 		return;
 	mons[2] = m->num;
-	for (m = scr->monitors; m && c->x + c->w != m->sx + m->sw; m = m->next) ;
+	for (m = scr->monitors; m && c->c.x + c->c.w != m->sc.x + m->sc.w; m = m->next) ;
 	if (!m)
 		return;
 	mons[3] = m->num;
@@ -2106,10 +2106,10 @@ clientmessage(XEvent *e) {
 					ewmh_update_net_window_fs_monitors(c);
 					return;
 				}
-				t = mt->sy;
-				b = mb->sy + mb->sh;
-				l = ml->sx;
-				r = mr->sx + mr->sw;
+				t = mt->sc.y;
+				b = mb->sc.y + mb->sc.h;
+				l = ml->sc.x;
+				r = mr->sc.x + mr->sc.w;
 				if (t >= b || r >= l) {
 					ewmh_update_net_window_fs_monitors(c);
 					return;
@@ -2129,16 +2129,16 @@ clientmessage(XEvent *e) {
 			if (source != 0 && source != 2)
 				return;
 
-			x = ((flags & (1 << 8)) && c->can.move) ? ev->data.l[1] : c->x;
-			y = ((flags & (1 << 9)) && c->can.move) ? ev->data.l[2] : c->y;
-			w = ((flags & (1 << 10)) && c->can.sizeh) ? ev->data.l[3] : c->w;
-			h = ((flags & (1 << 11)) && c->can.sizev) ? ev->data.l[4] : c->h;
+			x = ((flags & (1 << 8)) && c->can.move) ? ev->data.l[1] : c->c.x;
+			y = ((flags & (1 << 9)) && c->can.move) ? ev->data.l[2] : c->c.y;
+			w = ((flags & (1 << 10)) && c->can.sizeh) ? ev->data.l[3] : c->c.w;
+			h = ((flags & (1 << 11)) && c->can.sizev) ? ev->data.l[4] : c->c.h;
 			if (gravity == 0)
 				gravity = c->gravity;
-			applygravity(c, &x, &y, &w, &h, c->border, gravity);
+			applygravity(c, &x, &y, &w, &h, c->c.b, gravity);
 			/* FIXME: this just resizes and moves the window, it does
 			 * handle changing monitors */
-			resize(c, x, y, w, h, c->border);
+			resize(c, x, y, w, h, c->c.b);
 		} else if (message_type == _XA_NET_WM_MOVERESIZE) {
 			int x_root = (int) ev->data.l[0];
 			int y_root = (int) ev->data.l[1];
@@ -2503,17 +2503,17 @@ getstrut(Client * c, Atom atom) {
 	XFree(prop);
 
 	for (m = scr->monitors; m; m = m->next) {
-		if ((strut = s.l - m->sx) > 0)
-			if (strut_overlap(m->sy, m->sy + m->sh, s.ly1, s.ly2))
+		if ((strut = s.l - m->sc.x) > 0)
+			if (strut_overlap(m->sc.y, m->sc.y + m->sc.h, s.ly1, s.ly2))
 				m->struts[LeftStrut] = max(strut, m->struts[LeftStrut]);
-		if ((strut = m->sx + m->sw - dw + s.r) > 0)
-			if (strut_overlap(m->sy, m->sy + m->sh, s.ry1, s.ry2))
+		if ((strut = m->sc.x + m->sc.w - dw + s.r) > 0)
+			if (strut_overlap(m->sc.y, m->sc.y + m->sc.h, s.ry1, s.ry2))
 				m->struts[RightStrut] = max(strut, m->struts[RightStrut]);
-		if ((strut = s.t - m->sy) > 0)
-			if (strut_overlap(m->sx, m->sx + m->sw, s.tx1, s.tx2))
+		if ((strut = s.t - m->sc.y) > 0)
+			if (strut_overlap(m->sc.x, m->sc.x + m->sc.w, s.tx1, s.tx2))
 				m->struts[TopStrut] = max(strut, m->struts[TopStrut]);
-		if ((strut = m->sy + m->sh - dh + s.b) > 0)
-			if (strut_overlap(m->sx, m->sx + m->sw, s.bx1, s.bx2))
+		if ((strut = m->sc.y + m->sc.h - dh + s.b) > 0)
+			if (strut_overlap(m->sc.x, m->sc.x + m->sc.w, s.bx1, s.bx2))
 				m->struts[BotStrut] = max(strut, m->struts[BotStrut]);
 	}
 	return n;

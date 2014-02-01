@@ -230,11 +230,17 @@ typedef enum { ColSmartPlacement, RowSmartPlacement, MinOverlapPlacement,
 	       UnderMousePlacement, CascadePlacement, RandomPlacement } WindowPlacement;
 typedef enum { ModalModeless, ModalPrimary, ModalSystem, ModalGroup } Modality;
 typedef enum { NoInputModel, PassiveInputModel, GloballyActiveModel, LocallyActiveModel } InputModel;
+typedef enum { OrientNone, OrientLeft, OrientTop, OrientRight, OrientBottom } LayoutOrientation;
+typedef enum { StrutsOn, StrutsOff, StrutsHide } StrutsPosition;
 
 #define GIVE_FOCUS (1<<0)
 #define TAKE_FOCUS (1<<1)
 
 /* typedefs */
+typedef struct {
+	int x, y, w, h, b, n;
+} LayoutArgs;
+
 typedef struct {
 	int x, y, w, h, b;
 } Geometry;
@@ -245,7 +251,7 @@ typedef struct {
 
 typedef struct Monitor Monitor;
 struct Monitor {
-	int sx, sy, sw, sh, wax, way, waw, wah;
+	Workarea sc, wa;
 	unsigned long struts[LastStrut];
 	Bool *seltags;
 	Bool *prevtags;
@@ -257,15 +263,18 @@ struct Monitor {
 };
 
 typedef struct {
-	void (*arrange) (Monitor * m);
+	void (*arrange) (Monitor *m);
 	char symbol;
-	int features;
 #define BIT(_i)		(1 << (_i))
 #define MWFACT		BIT(0)
 #define NMASTER		BIT(1)
 #define	ZOOM		BIT(2)
 #define	OVERLAP		BIT(3)
 #define NCOLUMNS	BIT(4)
+	int features;
+	LayoutOrientation major;	/* overall orientation */
+	LayoutOrientation minor;	/* master area orientation */
+	WindowPlacement placement;	/* float placement policy */
 } Layout;
 
 #define FEATURES(_layout, _which) (!(!((_layout)->features & (_which))))
@@ -278,9 +287,7 @@ struct Client {
 	char *icon_name;
 	char *startup_id;
 	int monitor; /* initial monitor */
-	int x, y, w, h, border;
-	int rx, ry, rw, rh, rb;	/* restore geometry */
-	int sx, sy, sw, sh, sb; /* static geometry */
+	Geometry c, r, s; /* current, restore, static */
 	int th;			/* title height */
 	int basew, baseh, incw, inch, maxw, maxh, minw, minh;
 	int minax, maxax, minay, maxay, gravity;
@@ -406,10 +413,14 @@ struct Group {
 };
 
 typedef struct View {
-	int barpos;
+	StrutsPosition barpos;
 	int nmaster;
 	int ncolumns;
-	double mwfact;
+	double mwfact;			/* master width factor */
+	double mhfact;			/* master height factor */
+	LayoutOrientation major;	/* overall orientation */
+	LayoutOrientation minor;	/* master area orientation */
+	WindowPlacement placement;	/* float placement policy */
 	Layout *layout;
 } View; /* per-tag settings */
 
@@ -628,14 +639,14 @@ void initstyle();
 /* XXX: this block of defines must die */
 #define curseltags curmonitor()->seltags
 #define curprevtags curmonitor()->prevtags
-#define cursx curmonitor()->sx
-#define cursy curmonitor()->sy
-#define cursh curmonitor()->sh
-#define cursw curmonitor()->sw
-#define curwax curmonitor()->wax
-#define curway curmonitor()->way
-#define curwaw curmonitor()->waw
-#define curwah curmonitor()->wah
+#define cursx curmonitor()->sc.x
+#define cursy curmonitor()->sc.y
+#define cursh curmonitor()->sc.h
+#define cursw curmonitor()->sc.w
+#define curwax curmonitor()->wa.x
+#define curway curmonitor()->wa.y
+#define curwaw curmonitor()->wa.w
+#define curwah curmonitor()->wa.h
 #define curmontag curmonitor()->curtag
 #define curstruts curmonitor()->struts
 #define curlayout scr->views[curmontag].layout

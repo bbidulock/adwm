@@ -164,7 +164,7 @@ drawclient(Client *c) {
 	if (!c->title)
 		return;
 	ds->dc.x = ds->dc.y = 0;
-	ds->dc.w = c->w;
+	ds->dc.w = c->c.w;
 	ds->dc.h = ds->style.titleheight;
 	XftDrawChange(c->xftdraw, c->drawable);
 	XSetForeground(dpy, ds->dc.gc, c == sel ? ds->style.color.sel[ColBG] : ds->style.color.norm[ColBG]);
@@ -212,7 +212,7 @@ drawclient(Client *c) {
 		    c == sel ? ds->style.color.sel[ColBorder] : ds->style.color.norm[ColBorder]);
 		XDrawLine(dpy, c->drawable, ds->dc.gc, 0, ds->dc.h - 1, ds->dc.w, ds->dc.h - 1);
 	}
-	XCopyArea(dpy, c->drawable, c->title, ds->dc.gc, 0, 0, c->w, ds->dc.h, 0, 0);
+	XCopyArea(dpy, c->drawable, c->title, ds->dc.gc, 0, 0, c->c.w, ds->dc.h, 0, 0);
 }
 
 static unsigned long

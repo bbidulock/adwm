@@ -77,6 +77,26 @@ _moveresizekb(const char *arg) {
 	}
 }
 
+static void
+_rotateview(const char *arg) {
+	rotateview(sel);
+}
+
+static void
+_unrotateview(const char *arg) {
+	unrotateview(sel);
+}
+
+static void
+_rotatezone(const char *arg) {
+	rotatezone(sel);
+}
+
+static void
+_unrotatezone(const char *arg) {
+	unrotatezone(sel);
+}
+
 typedef struct {
 	const char *name;
 	void (*action) (const char *arg);
@@ -116,6 +136,10 @@ static KeyItem KeyItems[] = {
 	{ "togglehidden", 	_togglehidden	},
 	{ "appendtag",		appendtag	},
 	{ "rmlasttag",		rmlasttag	},
+	{ "rotateview",		_rotateview	},
+	{ "unrotateview",	_unrotateview	},
+	{ "rotatezone",		_rotatezone	},
+	{ "unrotatezone",	_unrotatezone	},
 };
 
 static int

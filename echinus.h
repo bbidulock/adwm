@@ -230,7 +230,7 @@ typedef enum { ColSmartPlacement, RowSmartPlacement, MinOverlapPlacement,
 	       UnderMousePlacement, CascadePlacement, RandomPlacement } WindowPlacement;
 typedef enum { ModalModeless, ModalPrimary, ModalSystem, ModalGroup } Modality;
 typedef enum { NoInputModel, PassiveInputModel, GloballyActiveModel, LocallyActiveModel } InputModel;
-typedef enum { OrientLeft, OrientTop, OrientRight, OrientBottom } LayoutOrientation;
+typedef enum { OrientLeft, OrientTop, OrientRight, OrientBottom, OrientLast } LayoutOrientation;
 typedef enum { StrutsOn, StrutsOff, StrutsHide } StrutsPosition;
 
 #define GIVE_FOCUS (1<<0)
@@ -265,12 +265,12 @@ struct Monitor {
 typedef struct {
 	void (*arrange) (Monitor *m);
 	char symbol;
-#define BIT(_i)		(1 << (_i))
-#define MWFACT		BIT(0)
-#define NMASTER		BIT(1)
-#define	ZOOM		BIT(2)
-#define	OVERLAP		BIT(3)
-#define NCOLUMNS	BIT(4)
+#define MWFACT		(1<<0)	/* adjust master factor */
+#define NMASTER		(1<<1)	/* adjust number of masters */
+#define	ZOOM		(1<<2)	/* adjust zoom */
+#define	OVERLAP		(1<<3)	/* floating layout */
+#define NCOLUMNS	(1<<4)	/* adjust number of columns */
+#define ROTL		(1<<5)	/* adjust rotation */
 	int features;
 	LayoutOrientation major;	/* overall orientation */
 	LayoutOrientation minor;	/* master area orientation */
@@ -593,6 +593,10 @@ void mousemove(Client *c, unsigned int button, int x_root, int y_root);
 void mouseresize_from(Client *c, int from, unsigned int button, int x_root, int y_root);
 void quit(const char *arg);
 void restart(const char *arg);
+void rotateview(Client *c);
+void unrotateview(Client *c);
+void rotatezone(Client *c);
+void unrotatezone(Client *c);
 void setmwfact(const char *arg);
 void setlayout(const char *arg);
 void spawn(const char *arg);

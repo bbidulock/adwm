@@ -285,13 +285,13 @@ Layout layouts[] = {
 	/* *INDENT-OFF* */
 	/* function	symbol	features			major		minor		placement		*/
 	{  NULL,	'i',	OVERLAP,			0,		0,		ColSmartPlacement	},
-	{  tile,	't',	MWFACT | NMASTER | ZOOM,	OrientLeft,	OrientBottom,	ColSmartPlacement	},
-	{  tile,	'b',	MWFACT | NMASTER | ZOOM,	OrientBottom,	OrientLeft,	ColSmartPlacement	},
-	{  tile,	'u',	MWFACT | NMASTER | ZOOM,	OrientTop,	OrientRight,	ColSmartPlacement	},
-	{  tile,	'l',	MWFACT | NMASTER | ZOOM,	OrientRight,	OrientTop,	ColSmartPlacement	},
+	{  tile,	't',	MWFACT | NMASTER | ZOOM | ROTL,	OrientLeft,	OrientBottom,	ColSmartPlacement	},
+	{  tile,	'b',	MWFACT | NMASTER | ZOOM | ROTL,	OrientBottom,	OrientLeft,	ColSmartPlacement	},
+	{  tile,	'u',	MWFACT | NMASTER | ZOOM | ROTL,	OrientTop,	OrientRight,	ColSmartPlacement	},
+	{  tile,	'l',	MWFACT | NMASTER | ZOOM | ROTL,	OrientRight,	OrientTop,	ColSmartPlacement	},
 	{  monocle,	'm',	0,				0,		0,		ColSmartPlacement	},
 	{  NULL,	'f',	OVERLAP,			0,		0,		ColSmartPlacement	},
-	{  grid,	'g',	NCOLUMNS,			OrientLeft,	OrientTop,	ColSmartPlacement	},
+	{  grid,	'g',	NCOLUMNS | ROTL,		OrientLeft,	OrientTop,	ColSmartPlacement	},
 	{  NULL,	'\0',	0,				0,		0,		0			}
 	/* *INDENT-ON* */
 };
@@ -5470,6 +5470,77 @@ togglemaxh(Client *c) {
 	c->is.maxh = !c->is.maxh;
 	ewmh_update_net_window_state(c);
 	updatefloat(c, m);
+}
+
+void
+rotateview(Client *c) {
+	Monitor *m = NULL;
+	View *v;
+
+	m = curmonitor();
+	if (c)
+		m = findmonitor(c);
+	if (!m)
+		if (!(m = curmonitor()))
+			m = nearmonitor();
+	if (!MFEATURES(m, ROTL))
+		return;
+	v = &scr->views[m->curtag];
+	v->major = (v->major + 1) % OrientLast;
+	v->minor = (v->minor + 1) % OrientLast;
+	arrange(m);
+}
+
+void
+unrotateview(Client *c) {
+	Monitor *m = NULL;
+	View *v;
+
+	if (c)
+		m = findmonitor(c);
+	if (!m)
+		if (!(m = curmonitor()))
+			m = nearmonitor();
+	if (!MFEATURES(m, ROTL))
+		return;
+	v = &scr->views[m->curtag];
+	v->major = (v->major + OrientLast - 1) % OrientLast;
+	v->minor = (v->minor + OrientLast - 1) % OrientLast;
+	arrange(m);
+}
+
+void
+rotatezone(Client *c) {
+	Monitor *m = NULL;
+	View *v;
+
+	if (c)
+		m = findmonitor(c);
+	if (!m)
+		if (!(m = curmonitor()))
+			m = nearmonitor();
+	if (!MFEATURES(m, ROTL) || !MFEATURES(m, NMASTER))
+		return;
+	v = &scr->views[m->curtag];
+	v->minor = (v->minor + 1) % OrientLast;
+	arrange(m);
+}
+
+void
+unrotatezone(Client *c) {
+	Monitor *m = NULL;
+	View *v;
+
+	if (c)
+		m = findmonitor(c);
+	if (!m)
+		if (!(m = curmonitor()))
+			m = nearmonitor();
+	if (!MFEATURES(m, ROTL) || !MFEATURES(m, NMASTER))
+		return;
+	v = &scr->views[m->curtag];
+	v->minor = (v->minor + OrientLast - 1) % OrientLast;
+	arrange(m);
 }
 
 void

@@ -5019,47 +5019,45 @@ tile_any(Monitor *m)
 #endif
 
 void
-tile_b(Monitor * m) {
-	int nx, ny, nw, nh, nb;
-	int mx, my, mw, mh, mb, mn;
-	int tx, ty, tw, th, tb, tn;
-	unsigned int i, n;
+tile_b(Monitor *cm) {
+	LayoutArgs n, m, t;
 	Client *c, *mc;
 	Workarea w;
+	int i;
 
-	if (!(c = nexttiled(scr->clients, m)))
+	if (!(c = nexttiled(scr->clients, cm)))
 		return;
 
-	getworkarea(m, &w);
+	getworkarea(cm, &w);
 
-	for (n = 0, c = nexttiled(scr->clients, m); c; c = nexttiled(c->next, m), n++) ;
+	for (n.n = 0, c = nexttiled(scr->clients, cm); c; c = nexttiled(c->next, cm), n.n++) ;
 
 	/* window geoms */
 
 	/* master & tile number */
-	mn = (n > scr->views[m->curtag].nmaster) ? scr->views[m->curtag].nmaster : n;
-	tn = (mn < n) ? n - mn : 0;
+	m.n = (n.n > scr->views[cm->curtag].nmaster) ? scr->views[cm->curtag].nmaster : n.n;
+	t.n = (m.n < n.n) ? n.n - m.n : 0;
 	/* master & tile width */
-	mw = (mn > 0) ? w.w / mn : w.w;
-	tw = (tn > 0) ? w.w / tn : 0;
+	m.w = (m.n > 0) ? w.w / m.n : w.w;
+	t.w = (t.n > 0) ? w.w / t.n : 0;
 	/* master & tile height */
-	mh = (tn > 0) ? scr->views[m->curtag].mwfact * w.h : w.h;
-	th = (tn > 0) ? w.h - mh : 0;
-	if (tn > 0 && th < scr->style.titleheight)
-		th = w.h;
+	m.h = (t.n > 0) ? scr->views[cm->curtag].mwfact * w.h : w.h;
+	t.h = (t.n > 0) ? w.h - m.h : 0;
+	if (t.n > 0 && t.h < scr->style.titleheight)
+		t.h = w.h;
 
 	/* top left corner of master area */
-	mx = w.x;
-	my = w.y;
+	m.x = w.x;
+	m.y = w.y;
 
 	/* top left corner of tiled area */
-	tx = w.x;
-	ty = w.y + mh;
+	t.x = w.x;
+	t.y = w.y + m.h;
 
-	mb = w.h;
-	nb = 0;
+	m.b = w.h;
+	n.b = 0;
 
-	for (i = 0, c = mc = nexttiled(scr->clients, m); c && i < n; c = nexttiled(c->next, m), i++) {
+	for (i = 0, c = mc = nexttiled(scr->clients, cm); c && i < n.n; c = nexttiled(c->next, cm), i++) {
 		int gap = scr->style.margin > c->c.b ? scr->style.margin - c->c.b : 0;
 		// int gap = scr->style.margin ? scr->style.margin + c->border : 0;
 
@@ -5067,83 +5065,81 @@ tile_b(Monitor * m) {
 			c->is.max = False;
 			ewmh_update_net_window_state(c);
 		}
-		nb = min(nb, c->c.b);
-		if (i < mn) {
+		n.b = min(n.b, c->c.b);
+		if (i < m.n) {
 			/* master */
-			nx = mx - nb;
-			ny = my;
-			nw = mw + nb;
-			nh = mh;
-			if (i == (mn - 1)) {
-				nw = w.w - nx + w.x;
-				nb = 0;
+			n.x = m.x - n.b;
+			n.y = m.y;
+			n.w = m.w + n.b;
+			n.h = m.h;
+			if (i == (m.n - 1)) {
+				n.w = w.w - n.x + w.x;
+				n.b = 0;
 			} else
-				nb = c->c.b;
-			mx = nx + nw;
-			mb = min(mb, c->c.b);
+				n.b = c->c.b;
+			m.x = n.x + n.w;
+			m.b = min(m.b, c->c.b);
 		} else {
 			/* tile */
-			tb = min(mb, c->c.b);
-			nx = tx - nb;
-			ny = ty - tb;
-			nw = tw + nb;
-			nh = th + tb;
-			if (i == (n - 1)) {
-				nw = w.w - nx + w.x;
-				nb = 0;
+			t.b = min(m.b, c->c.b);
+			n.x = t.x - n.b;
+			n.y = t.y - t.b;
+			n.w = t.w + n.b;
+			n.h = t.h + t.b;
+			if (i == (n.n - 1)) {
+				n.w = w.w - n.x + w.x;
+				n.b = 0;
 			} else
-				nb = c->c.b;
-			tx = nx + nw;
+				n.b = c->c.b;
+			t.x = n.x + n.w;
 		}
-		nw -= 2 * c->c.b;
-		nh -= 2 * c->c.b;
+		n.w -= 2 * c->c.b;
+		n.h -= 2 * c->c.b;
 		c->th = (options.dectiled && c->has.title) ? scr->style.titleheight : 0;
-		resize(c, nx + gap, ny + gap, nw - 2 * gap, nh - 2 * gap, c->c.b);
+		resize(c, n.x + gap, n.y + gap, n.w - 2 * gap, n.h - 2 * gap, c->c.b);
 	}
 }
 
 void
-tile_t(Monitor * m) {
-	int nx, ny, nw, nh, nb;
-	int mx, my, mw, mh, mb, mn;
-	int tx, ty, tw, th, tb, tn;
-	unsigned int i, n;
+tile_t(Monitor *cm) {
+	LayoutArgs n, m, t;
 	Client *c, *mc;
 	Workarea w;
+	int i;
 
-	if (!(c = nexttiled(scr->clients, m)))
+	if (!(c = nexttiled(scr->clients, cm)))
 		return;
 
-	getworkarea(m, &w);
+	getworkarea(cm, &w);
 
-	for (n = 0, c = nexttiled(scr->clients, m); c; c = nexttiled(c->next, m), n++) ;
+	for (n.n = 0, c = nexttiled(scr->clients, cm); c; c = nexttiled(c->next, cm), n.n++) ;
 
 	/* window geoms */
 
 	/* master & tile number */
-	mn = (n > scr->views[m->curtag].nmaster) ? scr->views[m->curtag].nmaster : n;
-	tn = (mn < n) ? n - mn : 0;
+	m.n = (n.n > scr->views[cm->curtag].nmaster) ? scr->views[cm->curtag].nmaster : n.n;
+	t.n = (m.n < n.n) ? n.n - m.n : 0;
 	/* master & tile width */
-	mw = (mn > 0) ? w.w / mn : w.w;
-	tw = (tn > 0) ? w.w / tn : 0;
+	m.w = (m.n > 0) ? w.w / m.n : w.w;
+	t.w = (t.n > 0) ? w.w / t.n : 0;
 	/* master & tile height */
-	mh = (tn > 0) ? scr->views[m->curtag].mwfact * w.h : w.h;
-	th = (tn > 0) ? w.h - mh : 0;
-	if (tn > 0 && th < scr->style.titleheight)
-		th = w.h;
+	m.h = (t.n > 0) ? scr->views[cm->curtag].mwfact * w.h : w.h;
+	t.h = (t.n > 0) ? w.h - m.h : 0;
+	if (t.n > 0 && t.h < scr->style.titleheight)
+		t.h = w.h;
 
 	/* top left corner of master area */
-	mx = w.x;
-	my = w.y + w.h - mh;
+	m.x = w.x;
+	m.y = w.y + w.h - m.h;
 
 	/* top left corner of tiled area */
-	tx = w.x;
-	ty = w.y;
+	t.x = w.x;
+	t.y = w.y;
 
-	mb = w.h;
-	nb = 0;
+	m.b = w.h;
+	n.b = 0;
 
-	for (i = 0, c = mc = nexttiled(scr->clients, m); c && i < n; c = nexttiled(c->next, m), i++) {
+	for (i = 0, c = mc = nexttiled(scr->clients, cm); c && i < n.n; c = nexttiled(c->next, cm), i++) {
 		int gap = scr->style.margin > c->c.b ? scr->style.margin - c->c.b : 0;
 		// int gap = scr->style.margin ? scr->style.margin + c->border : 0;
 
@@ -5151,85 +5147,86 @@ tile_t(Monitor * m) {
 			c->is.max = False;
 			ewmh_update_net_window_state(c);
 		}
-		nb = min(nb, c->c.b);
-		if (i < mn) {
+		n.b = min(n.b, c->c.b);
+		if (i < m.n) {
 			/* master */
-			nx = mx - nb;
-			ny = my;
-			nw = mw + nb;
-			nh = mh;
-			if (i == (mn - 1)) {
-				nw = w.w - nx + w.x;
-				nb = 0;
+			n.x = m.x - n.b;
+			n.y = m.y;
+			n.w = m.w + n.b;
+			n.h = m.h;
+			if (i == (m.n - 1)) {
+				n.w = w.w - n.x + w.x;
+				n.b = 0;
 			} else
-				nb = c->c.b;
-			mx = nx + nw;
-			mb = min(mb, c->c.b);
+				n.b = c->c.b;
+			m.x = n.x + n.w;
+			m.b = min(m.b, c->c.b);
 		} else {
 			/* tile */
-			tb = min(mb, c->c.b);
-			nx = tx - nb;
-			ny = ty;
-			nw = tw + nb;
-			nh = th + tb;
-			if (i == (n - 1)) {
-				nw = w.w - nx + w.x;
-				nb = 0;
+			t.b = min(m.b, c->c.b);
+			n.x = t.x - n.b;
+			n.y = t.y;
+			n.w = t.w + n.b;
+			n.h = t.h + t.b;
+			if (i == (n.n - 1)) {
+				n.w = w.w - n.x + w.x;
+				n.b = 0;
 			} else
-				nb = c->c.b;
-			tx = nx + nw;
+				n.b = c->c.b;
+			t.x = n.x + n.w;
 		}
-		nw -= 2 * c->c.b;
-		nh -= 2 * c->c.b;
+		n.w -= 2 * c->c.b;
+		n.h -= 2 * c->c.b;
 		c->th = (options.dectiled && c->has.title) ? scr->style.titleheight : 0;
-		resize(c, nx + gap, ny + gap, nw - 2 * gap, nh - 2 * gap, c->c.b);
+		resize(c, n.x + gap, n.y + gap, n.w - 2 * gap, n.h - 2 * gap, c->c.b);
 	}
 }
 
 /* tiles to right, master to left, variable number of masters */
 
 void
-tile_r(Monitor * m) {
-	int nx, ny, nw, nh, nb;
-	int mx, my, mw, mh, mb, mn;
-	int tx, ty, tw, th, tb, tn;
-	unsigned int i, n;
+tile_r(Monitor *cm) {
+	LayoutArgs n, m, t;
 	Client *c, *mc;
 	Workarea w;
+	View *v;
+	int i;
 
-	if (!(c = nexttiled(scr->clients, m)))
+	if (!(c = nexttiled(scr->clients, cm)))
 		return;
 
-	getworkarea(m, &w);
+	getworkarea(cm, &w);
 
-	for (n = 0, c = nexttiled(scr->clients, m); c; c = nexttiled(c->next, m), n++) ;
+	for (n.n = 0, c = nexttiled(scr->clients, cm); c; c = nexttiled(c->next, cm), n.n++) ;
 
 	/* window geoms */
 
+	v = &scr->views[cm->curtag];
+
 	/* master & tile number */
-	mn = (n > scr->views[m->curtag].nmaster) ? scr->views[m->curtag].nmaster : n;
-	tn = (mn < n) ? n - mn : 0;
+	m.n = (n.n > v->nmaster) ? v->nmaster : n.n;
+	t.n = (m.n < n.n) ? n.n - m.n : 0;
 	/* master & tile height */
-	mh = (mn > 0) ? w.h / mn : w.h;
-	th = (tn > 0) ? w.h / tn : 0;
-	if (tn > 0 && th < scr->style.titleheight)
-		th = w.h;
+	m.h = (m.n > 0) ? w.h / m.n : w.h;
+	t.h = (t.n > 0) ? w.h / t.n : 0;
+	if (t.n > 0 && t.h < scr->style.titleheight)
+		t.h = w.h;
 	/* master & tile width */
-	mw = (tn > 0) ? scr->views[m->curtag].mwfact * w.w : w.w;
-	tw = (tn > 0) ? w.w - mw : 0;
+	m.w = (t.n > 0) ? v->mwfact * w.w : w.w;
+	t.w = (t.n > 0) ? w.w - m.w : 0;
 
 	/* top left corner of master area */
-	mx = w.x;
-	my = w.y;
+	m.x = w.x;
+	m.y = w.y;
 
 	/* top left corner of tiled area */
-	tx = w.x + w.w - tw;
-	ty = w.y;
+	t.x = w.x + w.w - t.w;
+	t.y = w.y;
 
-	mb = w.w;
-	nb = 0;
+	m.b = w.w;
+	n.b = 0;
 
-	for (i = 0, c = mc = nexttiled(scr->clients, m); c && i < n; c = nexttiled(c->next, m), i++) {
+	for (i = 0, c = mc = nexttiled(scr->clients, cm); c && i < n.n; c = nexttiled(c->next, cm), i++) {
 		int gap = scr->style.margin > c->c.b ? scr->style.margin - c->c.b : 0;
 		// int gap = scr->style.margin ? scr->style.margin + c->c.b : 0;
 
@@ -5237,85 +5234,86 @@ tile_r(Monitor * m) {
 			c->is.max = False;
 			ewmh_update_net_window_state(c);
 		}
-		nb = min(nb, c->c.b);
-		if (i < mn) {
+		n.b = min(n.b, c->c.b);
+		if (i < m.n) {
 			/* master */
-			nx = mx;
-			ny = my - nb;
-			nw = mw;
-			nh = mh + nb;
-			if (i == (mn - 1)) {
-				nh = w.h - ny + w.y;
-				nb = 0;
+			n.x = m.x;
+			n.y = m.y - n.b;
+			n.w = m.w;
+			n.h = m.h + n.b;
+			if (i == (m.n - 1)) {
+				n.h = w.h - n.y + w.y;
+				n.b = 0;
 			} else
-				nb = c->c.b;
-			my = ny + nh;
-			mb = min(mb, c->c.b);
+				n.b = c->c.b;
+			m.y = n.y + n.h;
+			m.b = min(m.b, c->c.b);
 		} else {
 			/* tile window */
-			tb = min(mb, c->c.b);
-			nx = tx - tb;
-			ny = ty - nb;
-			nw = tw + tb;
-			nh = th + nb;
-			if (i == (n - 1)) {
-				nh = w.h - ny + w.y;
-				nb = 0;
+			t.b = min(m.b, c->c.b);
+			n.x = t.x - t.b;
+			n.y = t.y - n.b;
+			n.w = t.w + t.b;
+			n.h = t.h + n.b;
+			if (i == (n.n - 1)) {
+				n.h = w.h - n.y + w.y;
+				n.b = 0;
 			} else
-				nb = c->c.b;
-			ty = ny + nh;
+				n.b = c->c.b;
+			t.y = n.y + n.h;
 		}
-		nw -= 2 * c->c.b;
-		nh -= 2 * c->c.b;
+		n.w -= 2 * c->c.b;
+		n.h -= 2 * c->c.b;
 		c->th = (options.dectiled && c->has.title) ? scr->style.titleheight : 0;
-		resize(c, nx + gap, ny + gap, nw - 2 * gap, nh - 2 * gap, c->c.b);
+		resize(c, n.x + gap, n.y + gap, n.w - 2 * gap, n.h - 2 * gap, c->c.b);
 	}
 }
 
 /* tiles to left, master to right, variable number of masters */
 
 void
-tile_l(Monitor * m) {
-	int nx, ny, nw, nh, nb;
-	int mx, my, mw, mh, mb, mn;
-	int tx, ty, tw, th, tb, tn;
-	unsigned int i, n;
+tile_l(Monitor *cm) {
+	LayoutArgs n, m, t;
 	Client *c, *mc;
 	Workarea w;
+	View *v;
+	int i;
 
-	if (!(c = nexttiled(scr->clients, m)))
+	if (!(c = nexttiled(scr->clients, cm)))
 		return;
 
-	getworkarea(m, &w);
+	getworkarea(cm, &w);
 
-	for (n = 0, c = nexttiled(scr->clients, m); c; c = nexttiled(c->next, m), n++) ;
+	for (n.n = 0, c = nexttiled(scr->clients, cm); c; c = nexttiled(c->next, cm), n.n++) ;
 
 	/* window geoms */
 
+	v = &scr->views[cm->curtag];
+
 	/* master & tile number */
-	mn = (n > scr->views[m->curtag].nmaster) ? scr->views[m->curtag].nmaster : n;
-	tn = (mn < n) ? n - mn : 0;
+	m.n = (n.n > v->nmaster) ? v->nmaster : n.n;
+	t.n = (m.n < n.n) ? n.n - m.n : 0;
 	/* master & tile height */
-	mh = (mn > 0) ? w.h / mn : w.h;
-	th = (tn > 0) ? w.h / tn : 0;
-	if (tn > 0 && th < scr->style.titleheight)
-		th = w.h;
+	m.h = (m.n > 0) ? w.h / m.n : w.h;
+	t.h = (t.n > 0) ? w.h / t.n : 0;
+	if (t.n > 0 && t.h < scr->style.titleheight)
+		t.h = w.h;
 	/* master & tile width */
-	mw = (tn > 0) ? scr->views[m->curtag].mwfact * w.w : w.w;
-	tw = (tn > 0) ? w.w - mw : 0;
+	m.w = (t.n > 0) ? v->mwfact * w.w : w.w;
+	t.w = (t.n > 0) ? w.w - m.w : 0;
 
 	/* top left corner of master area */
-	mx = w.x + w.w - mw;
-	my = w.y;
+	m.x = w.x + w.w - m.w;
+	m.y = w.y;
 
 	/* top left corner of tiled area */
-	tx = w.x;
-	ty = w.y;
+	t.x = w.x;
+	t.y = w.y;
 
-	mb = w.w;
-	nb = 0;
+	m.b = w.w;
+	n.b = 0;
 
-	for (i = 0, c = mc = nexttiled(scr->clients, m); c && i < n; c = nexttiled(c->next, m), i++) {
+	for (i = 0, c = mc = nexttiled(scr->clients, cm); c && i < n.n; c = nexttiled(c->next, cm), i++) {
 		int gap = scr->style.margin > c->c.b ? scr->style.margin - c->c.b : 0;
 		// int gap = scr->style.margin ? scr->style.margin + c->c.b : 0;
 
@@ -5323,38 +5321,38 @@ tile_l(Monitor * m) {
 			c->is.max = False;
 			ewmh_update_net_window_state(c);
 		}
-		nb = min(nb, c->c.b);
-		if (i < mn) {
+		n.b = min(n.b, c->c.b);
+		if (i < m.n) {
 			/* master */
-			nx = mx;
-			ny = my - nb;
-			nw = mw;
-			nh = mh + nb;
-			if (i == (mn - 1)) {
-				nh = w.h - ny + w.y;
-				nb = 0;
+			n.x = m.x;
+			n.y = m.y - n.b;
+			n.w = m.w;
+			n.h = m.h + n.b;
+			if (i == (m.n - 1)) {
+				n.h = w.h - n.y + w.y;
+				n.b = 0;
 			} else
-				nb = c->c.b;
-			my = ny + nh;
-			mb = min(mb, c->c.b);
+				n.b = c->c.b;
+			m.y = n.y + n.h;
+			m.b = min(m.b, c->c.b);
 		} else {
 			/* tile window */
-			tb = min(mb, c->c.b);
-			nx = tx;
-			ny = ty - nb;
-			nw = tw + tb;
-			nh = th + nb;
-			if (i == (n - 1)) {
-				nh = w.h - ny + w.y;
-				nb = 0;
+			t.b = min(m.b, c->c.b);
+			n.x = t.x;
+			n.y = t.y - n.b;
+			n.w = t.w + t.b;
+			n.h = t.h + n.b;
+			if (i == (n.n - 1)) {
+				n.h = w.h - n.y + w.y;
+				n.b = 0;
 			} else
-				nb = c->c.b;
-			ty = ny + nh;
+				n.b = c->c.b;
+			t.y = n.y + n.h;
 		}
-		nw -= 2 * c->c.b;
-		nh -= 2 * c->c.b;
+		n.w -= 2 * c->c.b;
+		n.h -= 2 * c->c.b;
 		c->th = (options.dectiled && c->has.title) ? scr->style.titleheight : 0;
-		resize(c, nx + gap, ny + gap, nw - 2 * gap, nh - 2 * gap, c->c.b);
+		resize(c, n.x + gap, n.y + gap, n.w - 2 * gap, n.h - 2 * gap, c->c.b);
 	}
 }
 

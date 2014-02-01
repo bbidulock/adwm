@@ -90,8 +90,6 @@ void attach(Client * c, Bool attachaside);
 void attachstack(Client * c);
 void ban(Client * c);
 void buttonpress(XEvent * e);
-void tile_b(Monitor * m);
-void tile_t(Monitor * m);
 Bool canfocus(Client *c);
 void checkotherwm(void);
 void cleanup(WithdrawCause cause);
@@ -173,8 +171,7 @@ void setmwfact(const char *arg);
 void setup(char *);
 void spawn(const char *arg);
 void tag(Client *c, int index);
-void tile_r(Monitor * m);
-void tile_l(Monitor * m);
+void tile(Monitor *m);
 void takefocus(Client *c);
 void togglestruts(const char *arg);
 void togglefloating(Client *c);
@@ -287,13 +284,13 @@ struct {
 Layout layouts[] = {
 	/* *INDENT-OFF* */
 	/* function	symbol	features			major		minor		placement		*/
-	{  NULL,	'i',	OVERLAP,			OrientNone,	OrientNone,	ColSmartPlacement	},
-	{  tile_r,	't',	MWFACT | NMASTER | ZOOM,	OrientRight,	OrientTop,	ColSmartPlacement	},
-	{  tile_b,	'b',	MWFACT | NMASTER | ZOOM,	OrientBottom,	OrientLeft,	ColSmartPlacement	},
-	{  tile_t,	'u',	MWFACT | NMASTER | ZOOM,	OrientTop,	OrientLeft,	ColSmartPlacement	},
-	{  tile_l,	'l',	MWFACT | NMASTER | ZOOM,	OrientLeft,	OrientTop,	ColSmartPlacement	},
-	{  monocle,	'm',	0,				OrientNone,	OrientNone,	ColSmartPlacement	},
-	{  NULL,	'f',	OVERLAP,			OrientNone,	OrientNone,	ColSmartPlacement	},
+	{  NULL,	'i',	OVERLAP,			0,		0,		ColSmartPlacement	},
+	{  tile,	't',	MWFACT | NMASTER | ZOOM,	OrientLeft,	OrientBottom,	ColSmartPlacement	},
+	{  tile,	'b',	MWFACT | NMASTER | ZOOM,	OrientBottom,	OrientLeft,	ColSmartPlacement	},
+	{  tile,	'u',	MWFACT | NMASTER | ZOOM,	OrientTop,	OrientRight,	ColSmartPlacement	},
+	{  tile,	'l',	MWFACT | NMASTER | ZOOM,	OrientRight,	OrientTop,	ColSmartPlacement	},
+	{  monocle,	'm',	0,				0,		0,		ColSmartPlacement	},
+	{  NULL,	'f',	OVERLAP,			0,		0,		ColSmartPlacement	},
 	{  grid,	'g',	NCOLUMNS,			OrientLeft,	OrientTop,	ColSmartPlacement	},
 	{  NULL,	'\0',	0,				0,		0,		0			}
 	/* *INDENT-ON* */
@@ -4978,381 +4975,272 @@ tag(Client *c, int index) {
 }
 
 void
-tile(Monitor *m)
+tile(Monitor *cm)
 {
-	View *v = &scr->views[m->curtag];
+	Workarea wa, ma, sa;
+	LayoutArgs n, m, s;
+	Client *c, *mc;
+	View *v;
+	int i, overlap, gap;
 
+	if (!(c = nexttiled(scr->clients, cm)))
+		return;
+
+	getworkarea(cm, &wa);
+	v = &scr->views[cm->curtag];
+	for (n.n = 0, c = nexttiled(scr->clients, cm); c;
+	     c = nexttiled(c->next, cm), n.n++) ;
+
+	/* window geoms */
+
+	/* master & slave number */
+	m.n = (n.n > v->nmaster) ? v->nmaster : n.n;
+	s.n = (m.n < n.n) ? n.n - m.n : 0;
+	DPRINTF("there are %d masters\n", m.n);
+	DPRINTF("there are %d slaves\n", s.n);
+
+	/* master and slave work area dimensions */
 	switch (v->major) {
-	case OrientLeft:
-		/* master at left */
-		tile_l(m);
-		break;
 	case OrientTop:
-		/* master at top */
-		tile_t(m);
-		break;
 	case OrientBottom:
-		/* master at bottom */
-		tile_b(m);
+		ma.w = wa.w;
+		ma.h = (s.n > 0) ? wa.h * v->mwfact : wa.h;
+		sa.w = wa.w;
+		sa.h = wa.h - ma.h;
+		break;
+	case OrientLeft:
+	case OrientRight:
+	default:
+		ma.w = (s.n > 0) ? v->mwfact * wa.w : wa.w;
+		ma.h = wa.h;
+		sa.w = wa.w - ma.w;
+		sa.h = wa.h;
+		break;
+	}
+
+	overlap = (s.n > 0) ? scr->style.border : 0;
+	DPRINTF("overlap is %d\n", overlap);
+
+	/* master and slave work area position */
+	switch (v->major) {
+	case OrientBottom:
+		DPRINTF("major orientation is masters bottom(%d)\n", v->major);
+		ma.x = wa.x;
+		ma.y = wa.y + sa.h;
+		sa.x = wa.x;
+		sa.y = wa.y;
+		ma.y -= overlap;
+		ma.h += overlap;
 		break;
 	case OrientRight:
 	default:
-		/* master at right */
-		tile_r(m);
+		DPRINTF("major orientation is masters right(%d)\n", v->major);
+		ma.x = wa.x + sa.w;
+		ma.y = wa.y;
+		sa.x = wa.x;
+		sa.y = wa.y;
+		ma.x -= overlap;
+		ma.w += overlap;
+		break;
+	case OrientLeft:
+		DPRINTF("major orientation is masters left(%d)\n", v->major);
+		ma.x = wa.x;
+		ma.y = wa.y;
+		sa.x = wa.x + ma.w;
+		sa.y = wa.y;
+		ma.w += overlap;
+		break;
+	case OrientTop:
+		DPRINTF("major orientation is masters top(%d)\n", v->major);
+		ma.x = wa.x;
+		ma.y = wa.y;
+		sa.x = wa.x;
+		sa.y = wa.y + ma.h;
+		ma.h += overlap;
 		break;
 	}
-	return;
-}
+	DPRINTF("master work area %dx%d+%d+%d\n", ma.w, ma.h, ma.x, ma.y);
+	DPRINTF("slave  work area %dx%d+%d+%d\n", sa.w, sa.h, sa.x, sa.y);
 
+
+	/* master tile dimensions */
+	switch (v->minor) {
+	case OrientTop:
+	case OrientBottom:
+		m.w = ma.w;
+		m.h = (m.n > 0) ? ma.h / m.n : ma.h;
+		break;
+	case OrientLeft:
+	case OrientRight:
+	default:
+		m.w = (m.n > 0) ? ma.w / m.n : ma.w;
+		m.h = ma.h;
+		break;
+	}
+	/* slave tile dimensions */
+	switch (v->major) {
+	case OrientTop:
+	case OrientBottom:
+		s.w = (s.n > 0) ? sa.w / s.n : 0;
+		s.h = sa.h;
+		break;
+	case OrientLeft:
+	case OrientRight:
+	default:
+		s.w = sa.w;
+		s.h = (s.n > 0) ? sa.h / s.n : 0;
+		break;
+	}
+
+	/* position of first master */
+	switch (v->minor) {
+	case OrientTop:
+		DPRINTF("minor orientation is top to bottom(%d)\n", v->minor);
+		m.x = ma.x;
+		m.y = ma.y;
+		break;
+	case OrientBottom:
+		DPRINTF("minor orientation is bottom to top(%d)\n", v->minor);
+		m.x = ma.x;
+		m.y = ma.y + ma.h - m.h;
+		break;
+	case OrientLeft:
+		DPRINTF("minor orientation is left to right(%d)\n", v->minor);
+		m.x = ma.x;
+		m.y = ma.y;
+		break;
+	case OrientRight:
+	default:
+		DPRINTF("minor orientation is right to left(%d)\n", v->minor);
+		m.x = ma.x + ma.w - m.w;
+		m.y = ma.y;
+		break;
+	}
 #if 0
-void
-tile_any(Monitor *m)
-{
-	Geometry n, m, s;
-	int nx, ny, nw, nh, nb;
-	int mx, my, mw, mh, mb, mn;	/* master */
-	unsigned int i, num;
-	Client *c, *mc;
-	Workarea w;
-	View *v = &scr->views[m->curtag];
-}
+	m.b = (m.n > 1) ? scr->style.border : 0;
+#else
+	m.b = scr->style.border;
 #endif
+	DPRINTF("initial master %dx%d+%d+%d:%d\n", m.w, m.h, m.x, m.y, m.b);
 
-void
-tile_b(Monitor *cm) {
-	LayoutArgs n, m, t;
-	Client *c, *mc;
-	Workarea w;
-	int i;
+	i = 0;
+	c = mc = nexttiled(scr->clients, cm);
 
-	if (!(c = nexttiled(scr->clients, cm)))
-		return;
+	/* lay out the master area */
+	n = m;
 
-	getworkarea(cm, &w);
+	gap = scr->style.margin > n.b ? scr->style.margin - n.b : 0;
 
-	for (n.n = 0, c = nexttiled(scr->clients, cm); c; c = nexttiled(c->next, cm), n.n++) ;
-
-	/* window geoms */
-
-	/* master & tile number */
-	m.n = (n.n > scr->views[cm->curtag].nmaster) ? scr->views[cm->curtag].nmaster : n.n;
-	t.n = (m.n < n.n) ? n.n - m.n : 0;
-	/* master & tile width */
-	m.w = (m.n > 0) ? w.w / m.n : w.w;
-	t.w = (t.n > 0) ? w.w / t.n : 0;
-	/* master & tile height */
-	m.h = (t.n > 0) ? scr->views[cm->curtag].mwfact * w.h : w.h;
-	t.h = (t.n > 0) ? w.h - m.h : 0;
-	if (t.n > 0 && t.h < scr->style.titleheight)
-		t.h = w.h;
-
-	/* top left corner of master area */
-	m.x = w.x;
-	m.y = w.y;
-
-	/* top left corner of tiled area */
-	t.x = w.x;
-	t.y = w.y + m.h;
-
-	m.b = w.h;
-	n.b = 0;
-
-	for (i = 0, c = mc = nexttiled(scr->clients, cm); c && i < n.n; c = nexttiled(c->next, cm), i++) {
-		int gap = scr->style.margin > c->c.b ? scr->style.margin - c->c.b : 0;
-		// int gap = scr->style.margin ? scr->style.margin + c->border : 0;
-
+	for (;c && i < m.n; c = nexttiled(c->next, cm)) {
 		if (c->is.max) {
 			c->is.max = False;
 			ewmh_update_net_window_state(c);
 		}
-		n.b = min(n.b, c->c.b);
-		if (i < m.n) {
-			/* master */
-			n.x = m.x - n.b;
-			n.y = m.y;
-			n.w = m.w + n.b;
-			n.h = m.h;
-			if (i == (m.n - 1)) {
-				n.w = w.w - n.x + w.x;
-				n.b = 0;
-			} else
-				n.b = c->c.b;
-			m.x = n.x + n.w;
-			m.b = min(m.b, c->c.b);
-		} else {
-			/* tile */
-			t.b = min(m.b, c->c.b);
-			n.x = t.x - n.b;
-			n.y = t.y - t.b;
-			n.w = t.w + n.b;
-			n.h = t.h + t.b;
-			if (i == (n.n - 1)) {
-				n.w = w.w - n.x + w.x;
-				n.b = 0;
-			} else
-				n.b = c->c.b;
-			t.x = n.x + n.w;
-		}
-		n.w -= 2 * c->c.b;
-		n.h -= 2 * c->c.b;
 		c->th = (options.dectiled && c->has.title) ? scr->style.titleheight : 0;
-		resize(c, n.x + gap, n.y + gap, n.w - 2 * gap, n.h - 2 * gap, c->c.b);
+		resize(c, n.x + gap, n.y + gap, n.w - 2 * (gap + n.b),
+		       n.h - 2 * (gap + n.b), n.b);
+		i++;
+		switch (v->minor) {
+		case OrientTop:
+			n.y += n.h - n.b;
+			if (i == m.n - 1)
+				n.h = ma.h - (n.y - ma.y);
+			break;
+		case OrientBottom:
+			n.y -= n.h - n.b;
+			if (i == m.n - 1) {
+				n.h += (n.y - ma.y);
+				n.y = ma.y;
+			}
+			break;
+		case OrientLeft:
+			n.x += n.w - n.b;
+			if (i == m.n - 1)
+				n.w = ma.w - (n.x - ma.x);
+			break;
+		case OrientRight:
+		default:
+			n.x -= n.w - n.b;
+			if (i == m.n - 1) {
+				n.w += (n.x - ma.x);
+				n.x = ma.x;
+			}
+			break;
+		}
 	}
-}
 
-void
-tile_t(Monitor *cm) {
-	LayoutArgs n, m, t;
-	Client *c, *mc;
-	Workarea w;
-	int i;
-
-	if (!(c = nexttiled(scr->clients, cm)))
-		return;
-
-	getworkarea(cm, &w);
-
-	for (n.n = 0, c = nexttiled(scr->clients, cm); c; c = nexttiled(c->next, cm), n.n++) ;
-
-	/* window geoms */
-
-	/* master & tile number */
-	m.n = (n.n > scr->views[cm->curtag].nmaster) ? scr->views[cm->curtag].nmaster : n.n;
-	t.n = (m.n < n.n) ? n.n - m.n : 0;
-	/* master & tile width */
-	m.w = (m.n > 0) ? w.w / m.n : w.w;
-	t.w = (t.n > 0) ? w.w / t.n : 0;
-	/* master & tile height */
-	m.h = (t.n > 0) ? scr->views[cm->curtag].mwfact * w.h : w.h;
-	t.h = (t.n > 0) ? w.h - m.h : 0;
-	if (t.n > 0 && t.h < scr->style.titleheight)
-		t.h = w.h;
-
-	/* top left corner of master area */
-	m.x = w.x;
-	m.y = w.y + w.h - m.h;
-
-	/* top left corner of tiled area */
-	t.x = w.x;
-	t.y = w.y;
-
-	m.b = w.h;
-	n.b = 0;
-
-	for (i = 0, c = mc = nexttiled(scr->clients, cm); c && i < n.n; c = nexttiled(c->next, cm), i++) {
-		int gap = scr->style.margin > c->c.b ? scr->style.margin - c->c.b : 0;
-		// int gap = scr->style.margin ? scr->style.margin + c->border : 0;
-
-		if (c->is.max) {
-			c->is.max = False;
-			ewmh_update_net_window_state(c);
-		}
-		n.b = min(n.b, c->c.b);
-		if (i < m.n) {
-			/* master */
-			n.x = m.x - n.b;
-			n.y = m.y;
-			n.w = m.w + n.b;
-			n.h = m.h;
-			if (i == (m.n - 1)) {
-				n.w = w.w - n.x + w.x;
-				n.b = 0;
-			} else
-				n.b = c->c.b;
-			m.x = n.x + n.w;
-			m.b = min(m.b, c->c.b);
-		} else {
-			/* tile */
-			t.b = min(m.b, c->c.b);
-			n.x = t.x - n.b;
-			n.y = t.y;
-			n.w = t.w + n.b;
-			n.h = t.h + t.b;
-			if (i == (n.n - 1)) {
-				n.w = w.w - n.x + w.x;
-				n.b = 0;
-			} else
-				n.b = c->c.b;
-			t.x = n.x + n.w;
-		}
-		n.w -= 2 * c->c.b;
-		n.h -= 2 * c->c.b;
-		c->th = (options.dectiled && c->has.title) ? scr->style.titleheight : 0;
-		resize(c, n.x + gap, n.y + gap, n.w - 2 * gap, n.h - 2 * gap, c->c.b);
+	/* position of first slave */
+	switch (v->major) {
+	case OrientRight:
+		DPRINTF("slave orientation is top to bottom(%d)\n", v->major);
+		s.x = sa.x;
+		s.y = sa.y;
+		break;
+	case OrientLeft:
+		DPRINTF("slave orientation is bottom to top(%d)\n", v->major);
+		s.x = sa.x;
+		s.y = sa.y + sa.h - s.h;
+		break;
+	case OrientTop:
+		DPRINTF("slave orientation is left to right(%d)\n", v->major);
+		s.x = sa.x;
+		s.y = sa.y;
+		break;
+	case OrientBottom:
+	default:
+		DPRINTF("slave orientation is right to left(%d)\n", v->major);
+		s.x = sa.x + sa.w - s.w;
+		s.y = sa.y;
+		break;
 	}
-}
+	s.b = scr->style.border;
+	DPRINTF("initial slave  %dx%d+%d+%d:%d\n", s.w, s.h, s.x, s.y, s.b);
 
-/* tiles to right, master to left, variable number of masters */
+	/* lay out the slave area - always top->bot, left->right */
+	n = s;
 
-void
-tile_r(Monitor *cm) {
-	LayoutArgs n, m, t;
-	Client *c, *mc;
-	Workarea w;
-	View *v;
-	int i;
+	gap = scr->style.margin > n.b ? scr->style.margin - n.b : 0;
 
-	if (!(c = nexttiled(scr->clients, cm)))
-		return;
-
-	getworkarea(cm, &w);
-
-	for (n.n = 0, c = nexttiled(scr->clients, cm); c; c = nexttiled(c->next, cm), n.n++) ;
-
-	/* window geoms */
-
-	v = &scr->views[cm->curtag];
-
-	/* master & tile number */
-	m.n = (n.n > v->nmaster) ? v->nmaster : n.n;
-	t.n = (m.n < n.n) ? n.n - m.n : 0;
-	/* master & tile height */
-	m.h = (m.n > 0) ? w.h / m.n : w.h;
-	t.h = (t.n > 0) ? w.h / t.n : 0;
-	if (t.n > 0 && t.h < scr->style.titleheight)
-		t.h = w.h;
-	/* master & tile width */
-	m.w = (t.n > 0) ? v->mwfact * w.w : w.w;
-	t.w = (t.n > 0) ? w.w - m.w : 0;
-
-	/* top left corner of master area */
-	m.x = w.x;
-	m.y = w.y;
-
-	/* top left corner of tiled area */
-	t.x = w.x + w.w - t.w;
-	t.y = w.y;
-
-	m.b = w.w;
-	n.b = 0;
-
-	for (i = 0, c = mc = nexttiled(scr->clients, cm); c && i < n.n; c = nexttiled(c->next, cm), i++) {
-		int gap = scr->style.margin > c->c.b ? scr->style.margin - c->c.b : 0;
-		// int gap = scr->style.margin ? scr->style.margin + c->c.b : 0;
-
+	for (;c && i < m.n + s.n; c = nexttiled(c->next, cm)) {
 		if (c->is.max) {
 			c->is.max = False;
 			ewmh_update_net_window_state(c);
 		}
-		n.b = min(n.b, c->c.b);
-		if (i < m.n) {
-			/* master */
-			n.x = m.x;
-			n.y = m.y - n.b;
-			n.w = m.w;
-			n.h = m.h + n.b;
-			if (i == (m.n - 1)) {
-				n.h = w.h - n.y + w.y;
-				n.b = 0;
-			} else
-				n.b = c->c.b;
-			m.y = n.y + n.h;
-			m.b = min(m.b, c->c.b);
-		} else {
-			/* tile window */
-			t.b = min(m.b, c->c.b);
-			n.x = t.x - t.b;
-			n.y = t.y - n.b;
-			n.w = t.w + t.b;
-			n.h = t.h + n.b;
-			if (i == (n.n - 1)) {
-				n.h = w.h - n.y + w.y;
-				n.b = 0;
-			} else
-				n.b = c->c.b;
-			t.y = n.y + n.h;
-		}
-		n.w -= 2 * c->c.b;
-		n.h -= 2 * c->c.b;
 		c->th = (options.dectiled && c->has.title) ? scr->style.titleheight : 0;
-		resize(c, n.x + gap, n.y + gap, n.w - 2 * gap, n.h - 2 * gap, c->c.b);
-	}
-}
-
-/* tiles to left, master to right, variable number of masters */
-
-void
-tile_l(Monitor *cm) {
-	LayoutArgs n, m, t;
-	Client *c, *mc;
-	Workarea w;
-	View *v;
-	int i;
-
-	if (!(c = nexttiled(scr->clients, cm)))
-		return;
-
-	getworkarea(cm, &w);
-
-	for (n.n = 0, c = nexttiled(scr->clients, cm); c; c = nexttiled(c->next, cm), n.n++) ;
-
-	/* window geoms */
-
-	v = &scr->views[cm->curtag];
-
-	/* master & tile number */
-	m.n = (n.n > v->nmaster) ? v->nmaster : n.n;
-	t.n = (m.n < n.n) ? n.n - m.n : 0;
-	/* master & tile height */
-	m.h = (m.n > 0) ? w.h / m.n : w.h;
-	t.h = (t.n > 0) ? w.h / t.n : 0;
-	if (t.n > 0 && t.h < scr->style.titleheight)
-		t.h = w.h;
-	/* master & tile width */
-	m.w = (t.n > 0) ? v->mwfact * w.w : w.w;
-	t.w = (t.n > 0) ? w.w - m.w : 0;
-
-	/* top left corner of master area */
-	m.x = w.x + w.w - m.w;
-	m.y = w.y;
-
-	/* top left corner of tiled area */
-	t.x = w.x;
-	t.y = w.y;
-
-	m.b = w.w;
-	n.b = 0;
-
-	for (i = 0, c = mc = nexttiled(scr->clients, cm); c && i < n.n; c = nexttiled(c->next, cm), i++) {
-		int gap = scr->style.margin > c->c.b ? scr->style.margin - c->c.b : 0;
-		// int gap = scr->style.margin ? scr->style.margin + c->c.b : 0;
-
-		if (c->is.max) {
-			c->is.max = False;
-			ewmh_update_net_window_state(c);
+		resize(c, n.x + gap, n.y + gap, n.w - 2 * (gap + n.b),
+		       n.h - 2 * (gap + n.b), n.b);
+		i++;
+		switch (v->major) {
+		case OrientTop:
+			/* left to right */
+			n.x += n.w - n.b;
+			if (i == m.n + s.n - 1)
+				n.w = sa.w - (n.x - sa.x);
+			break;
+		case OrientBottom:
+			/* right to left */
+			n.x -= n.w - n.b;
+			if (i == m.n + s.n - 1) {
+				n.w += (n.x - sa.x);
+				n.x = sa.x;
+			}
+			break;
+		case OrientLeft:
+			/* bottom to top */
+			n.y -= n.h - n.b;
+			if (i == m.n + s.n - 1) {
+				n.h += (n.y - sa.y);
+				n.y = sa.y;
+			}
+			break;
+		case OrientRight:
+		default:
+			/* top to bottom */
+			n.y += n.h - n.b;
+			if (i == m.n + s.n - 1)
+				n.h = sa.h - (n.y - sa.y);
+			break;
 		}
-		n.b = min(n.b, c->c.b);
-		if (i < m.n) {
-			/* master */
-			n.x = m.x;
-			n.y = m.y - n.b;
-			n.w = m.w;
-			n.h = m.h + n.b;
-			if (i == (m.n - 1)) {
-				n.h = w.h - n.y + w.y;
-				n.b = 0;
-			} else
-				n.b = c->c.b;
-			m.y = n.y + n.h;
-			m.b = min(m.b, c->c.b);
-		} else {
-			/* tile window */
-			t.b = min(m.b, c->c.b);
-			n.x = t.x;
-			n.y = t.y - n.b;
-			n.w = t.w + t.b;
-			n.h = t.h + n.b;
-			if (i == (n.n - 1)) {
-				n.h = w.h - n.y + w.y;
-				n.b = 0;
-			} else
-				n.b = c->c.b;
-			t.y = n.y + n.h;
-		}
-		n.w -= 2 * c->c.b;
-		n.h -= 2 * c->c.b;
-		c->th = (options.dectiled && c->has.title) ? scr->style.titleheight : 0;
-		resize(c, n.x + gap, n.y + gap, n.w - 2 * gap, n.h - 2 * gap, c->c.b);
 	}
 }
 

@@ -230,7 +230,7 @@ typedef enum { ColSmartPlacement, RowSmartPlacement, MinOverlapPlacement,
 	       UnderMousePlacement, CascadePlacement, RandomPlacement } WindowPlacement;
 typedef enum { ModalModeless, ModalPrimary, ModalSystem, ModalGroup } Modality;
 typedef enum { NoInputModel, PassiveInputModel, GloballyActiveModel, LocallyActiveModel } InputModel;
-typedef enum { OrientNone, OrientLeft, OrientTop, OrientRight, OrientBottom } LayoutOrientation;
+typedef enum { OrientLeft, OrientTop, OrientRight, OrientBottom } LayoutOrientation;
 typedef enum { StrutsOn, StrutsOff, StrutsHide } StrutsPosition;
 
 #define GIVE_FOCUS (1<<0)

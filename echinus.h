@@ -570,6 +570,7 @@ void focusicon(const char *arg);
 void focusnext(Client *c);
 void focusprev(Client *c);
 void focusview(int index);
+EScreen *getscreen(Window win);
 void killclient(Client *c);
 void applygravity(Client *c, int *xp, int *yp, int *wp, int *hp, int bw, int gravity);
 void resize(Client * c, int x, int y, int w, int h, int b);

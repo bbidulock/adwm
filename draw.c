@@ -16,11 +16,11 @@
 enum { Normal, Selected };
 enum { AlignLeft, AlignCenter, AlignRight };	/* title position */
 
-static unsigned int textnw(const char *text, unsigned int len);
-static unsigned int textw(const char *text);
+static unsigned int textnw(EScreen *ds, const char *text, unsigned int len);
+static unsigned int textw(EScreen *ds, const char *text);
 
 static int
-drawtext(const char *text, Drawable drawable, XftDraw *xftdrawable,
+drawtext(EScreen *ds, const char *text, Drawable drawable, XftDraw *xftdrawable,
     unsigned long col[ColLast], int x, int y, int mw) {
 	int w, h;
 	char buf[256];
@@ -34,11 +34,11 @@ drawtext(const char *text, Drawable drawable, XftDraw *xftdrawable,
 		len = sizeof buf - 1;
 	memcpy(buf, text, len);
 	buf[len] = 0;
-	h = scr->style.titleheight;
-	y = scr->dc.h / 2 + scr->dc.font.ascent / 2 - 1 - scr->style.outline;
-	x += scr->dc.font.height / 2;
+	h = ds->style.titleheight;
+	y = ds->dc.h / 2 + ds->dc.font.ascent / 2 - 1 - ds->style.outline;
+	x += ds->dc.font.height / 2;
 	/* shorten text if necessary */
-	while (len && (w = textnw(buf, len)) > mw) {
+	while (len && (w = textnw(ds, buf, len)) > mw) {
 		buf[--len] = 0;
 	}
 	if (len < olen) {
@@ -52,67 +52,67 @@ drawtext(const char *text, Drawable drawable, XftDraw *xftdrawable,
 	if (w > mw)
 		return 0;	/* too long */
 	while (x <= 0)
-		x = scr->dc.x++;
-	XSetForeground(dpy, scr->dc.gc, col[ColBG]);
-	XFillRectangle(dpy, drawable, scr->dc.gc, x - scr->dc.font.height / 2, 0,
-	    w + scr->dc.font.height, h);
+		x = ds->dc.x++;
+	XSetForeground(dpy, ds->dc.gc, col[ColBG]);
+	XFillRectangle(dpy, drawable, ds->dc.gc, x - ds->dc.font.height / 2, 0,
+	    w + ds->dc.font.height, h);
 	XftDrawStringUtf8(xftdrawable,
-	    (col == scr->style.color.norm) ? scr->style.color.font[Normal] : scr->style.color.font[Selected],
-	    scr->style.font, x, y, (unsigned char *) buf, len);
-	return w + scr->dc.font.height;
+	    (col == ds->style.color.norm) ? ds->style.color.font[Normal] : ds->style.color.font[Selected],
+	    ds->style.font, x, y, (unsigned char *) buf, len);
+	return w + ds->dc.font.height;
 }
 
 static int
-drawbutton(Drawable d, Button btn, unsigned long col[ColLast], int x, int y) {
+drawbutton(EScreen *ds, Drawable d, Button btn, unsigned long col[ColLast], int x, int y) {
 	if (btn.action == NULL)
 		return 0;
-	XSetForeground(dpy, scr->dc.gc, col[ColBG]);
-	XFillRectangle(dpy, d, scr->dc.gc, x, 0, scr->dc.h, scr->dc.h);
-	XSetForeground(dpy, scr->dc.gc, btn.pressed ? col[ColFG] : col[ColButton]);
-	XSetBackground(dpy, scr->dc.gc, col[ColBG]);
-	XCopyPlane(dpy, btn.pm, d, scr->dc.gc, 0, 0, scr->button[Iconify].pw,
-	    scr->button[Iconify].ph, x, y + scr->button[Iconify].py, 1);
-	return scr->dc.h;
+	XSetForeground(dpy, ds->dc.gc, col[ColBG]);
+	XFillRectangle(dpy, d, ds->dc.gc, x, 0, ds->dc.h, ds->dc.h);
+	XSetForeground(dpy, ds->dc.gc, btn.pressed ? col[ColFG] : col[ColButton]);
+	XSetBackground(dpy, ds->dc.gc, col[ColBG]);
+	XCopyPlane(dpy, btn.pm, d, ds->dc.gc, 0, 0, ds->button[Iconify].pw,
+	    ds->button[Iconify].ph, x, y + ds->button[Iconify].py, 1);
+	return ds->dc.h;
 }
 
 static int
-drawelement(char which, int x, int position, Client *c) {
+drawelement(EScreen *ds, char which, int x, int position, Client *c) {
 	int w;
 	unsigned int j;
-	unsigned long *color = c == sel ? scr->style.color.sel : scr->style.color.norm;
+	unsigned long *color = c == sel ? ds->style.color.sel : ds->style.color.norm;
 
 	switch (which) {
 	case 'T':
 		w = 0;
-		for (j = 0; j < scr->ntags; j++) {
+		for (j = 0; j < ds->ntags; j++) {
 			if (c->tags[j])
-				w += drawtext(scr->tags[j], c->drawable, c->xftdraw,
-				    color, scr->dc.x, scr->dc.y, scr->dc.w);
+				w += drawtext(ds, ds->tags[j], c->drawable, c->xftdraw,
+				    color, ds->dc.x, ds->dc.y, ds->dc.w);
 		}
 		break;
 	case '|':
-		XSetForeground(dpy, scr->dc.gc, color[ColBorder]);
-		XDrawLine(dpy, c->drawable, scr->dc.gc, scr->dc.x + scr->dc.h / 4, 0,
-		    scr->dc.x + scr->dc.h / 4, scr->dc.h);
-		w = scr->dc.h / 2;
+		XSetForeground(dpy, ds->dc.gc, color[ColBorder]);
+		XDrawLine(dpy, c->drawable, ds->dc.gc, ds->dc.x + ds->dc.h / 4, 0,
+		    ds->dc.x + ds->dc.h / 4, ds->dc.h);
+		w = ds->dc.h / 2;
 		break;
 	case 'N':
-		w = drawtext(c->name, c->drawable, c->xftdraw, color, scr->dc.x, scr->dc.y, scr->dc.w);
+		w = drawtext(ds, c->name, c->drawable, c->xftdraw, color, ds->dc.x, ds->dc.y, ds->dc.w);
 		break;
 	case 'I':
-		scr->button[Iconify].x = scr->dc.x;
-		w = drawbutton(c->drawable, scr->button[Iconify], color,
-		    scr->dc.x, scr->dc.h / 2 - scr->button[Iconify].ph / 2);
+		ds->button[Iconify].x = ds->dc.x;
+		w = drawbutton(ds, c->drawable, ds->button[Iconify], color,
+		    ds->dc.x, ds->dc.h / 2 - ds->button[Iconify].ph / 2);
 		break;
 	case 'M':
-		scr->button[Maximize].x = scr->dc.x;
-		w = drawbutton(c->drawable, scr->button[Maximize], color,
-		    scr->dc.x, scr->dc.h / 2 - scr->button[Maximize].ph / 2);
+		ds->button[Maximize].x = ds->dc.x;
+		w = drawbutton(ds, c->drawable, ds->button[Maximize], color,
+		    ds->dc.x, ds->dc.h / 2 - ds->button[Maximize].ph / 2);
 		break;
 	case 'C':
-		scr->button[Close].x = scr->dc.x;
-		w = drawbutton(c->drawable, scr->button[Close], color, scr->dc.x,
-		    scr->dc.h / 2 - scr->button[Maximize].ph / 2);
+		ds->button[Close].x = ds->dc.x;
+		w = drawbutton(ds, c->drawable, ds->button[Close], color, ds->dc.x,
+		    ds->dc.h / 2 - ds->button[Maximize].ph / 2);
 		break;
 	default:
 		w = 0;
@@ -122,7 +122,7 @@ drawelement(char which, int x, int position, Client *c) {
 }
 
 static int
-elementw(char which, Client *c) {
+elementw(EScreen *ds, char which, Client *c) {
 	int w;
 	unsigned int j;
 
@@ -130,18 +130,18 @@ elementw(char which, Client *c) {
 	case 'I':
 	case 'M':
 	case 'C':
-		return scr->dc.h;
+		return ds->dc.h;
 	case 'N':
-		return textw(c->name);
+		return textw(ds, c->name);
 	case 'T':
 		w = 0;
-		for (j = 0; j < scr->ntags; j++) {
+		for (j = 0; j < ds->ntags; j++) {
 			if (c->tags[j])
-				w += textw(scr->tags[j]);
+				w += textw(ds, ds->tags[j]);
 		}
 		return w;
 	case '|':
-		return scr->dc.h / 2;
+		return ds->dc.h / 2;
 	}
 	return 0;
 }
@@ -149,64 +149,70 @@ elementw(char which, Client *c) {
 void
 drawclient(Client *c) {
 	size_t i;
+	EScreen *ds;
 
-	if (scr->style.opacity) {
-		setopacity(c, c == sel ? OPAQUE : scr->style.opacity);
+	/* might be drawing a client that is not on the current screen */
+	if (!(ds = getscreen(c->win))) {
+		DPRINTF("What? no screen for window 0x%lx???\n", c->win);
+		return;
+	}
+	if (ds->style.opacity) {
+		setopacity(c, c == sel ? OPAQUE : ds->style.opacity);
 	}
 	if (!isvisible(c, NULL))
 		return;
 	if (!c->title)
 		return;
-	scr->dc.x = scr->dc.y = 0;
-	scr->dc.w = c->w;
-	scr->dc.h = scr->style.titleheight;
+	ds->dc.x = ds->dc.y = 0;
+	ds->dc.w = c->w;
+	ds->dc.h = ds->style.titleheight;
 	XftDrawChange(c->xftdraw, c->drawable);
-	XSetForeground(dpy, scr->dc.gc, c == sel ? scr->style.color.sel[ColBG] : scr->style.color.norm[ColBG]);
-	XSetLineAttributes(dpy, scr->dc.gc, scr->style.border, LineSolid, CapNotLast, JoinMiter);
-	XFillRectangle(dpy, c->drawable, scr->dc.gc, scr->dc.x, scr->dc.y, scr->dc.w, scr->dc.h);
-	if (scr->dc.w < textw(c->name)) {
-		scr->dc.w -= scr->dc.h;
-		scr->button[Close].x = scr->dc.w;
-		drawtext(c->name, c->drawable, c->xftdraw,
-		    c == sel ? scr->style.color.sel : scr->style.color.norm, scr->dc.x, scr->dc.y, scr->dc.w);
-		drawbutton(c->drawable, scr->button[Close],
-		    c == sel ? scr->style.color.sel : scr->style.color.norm, scr->dc.w,
-		    scr->dc.h / 2 - scr->button[Close].ph / 2);
+	XSetForeground(dpy, ds->dc.gc, c == sel ? ds->style.color.sel[ColBG] : ds->style.color.norm[ColBG]);
+	XSetLineAttributes(dpy, ds->dc.gc, ds->style.border, LineSolid, CapNotLast, JoinMiter);
+	XFillRectangle(dpy, c->drawable, ds->dc.gc, ds->dc.x, ds->dc.y, ds->dc.w, ds->dc.h);
+	if (ds->dc.w < textw(ds, c->name)) {
+		ds->dc.w -= ds->dc.h;
+		ds->button[Close].x = ds->dc.w;
+		drawtext(ds, c->name, c->drawable, c->xftdraw,
+		    c == sel ? ds->style.color.sel : ds->style.color.norm, ds->dc.x, ds->dc.y, ds->dc.w);
+		drawbutton(ds, c->drawable, ds->button[Close],
+		    c == sel ? ds->style.color.sel : ds->style.color.norm, ds->dc.w,
+		    ds->dc.h / 2 - ds->button[Close].ph / 2);
 		goto end;
 	}
 	/* Left */
-	for (i = 0; i < strlen(scr->style.titlelayout); i++) {
-		if (scr->style.titlelayout[i] == ' ' || scr->style.titlelayout[i] == '-')
+	for (i = 0; i < strlen(ds->style.titlelayout); i++) {
+		if (ds->style.titlelayout[i] == ' ' || ds->style.titlelayout[i] == '-')
 			break;
-		scr->dc.x += drawelement(scr->style.titlelayout[i], scr->dc.x, AlignLeft, c);
+		ds->dc.x += drawelement(ds, ds->style.titlelayout[i], ds->dc.x, AlignLeft, c);
 	}
-	if (i == strlen(scr->style.titlelayout) || scr->dc.x >= scr->dc.w)
+	if (i == strlen(ds->style.titlelayout) || ds->dc.x >= ds->dc.w)
 		goto end;
 	/* Center */
-	scr->dc.x = scr->dc.w / 2;
-	for (i++; i < strlen(scr->style.titlelayout); i++) {
-		if (scr->style.titlelayout[i] == ' ' || scr->style.titlelayout[i] == '-')
+	ds->dc.x = ds->dc.w / 2;
+	for (i++; i < strlen(ds->style.titlelayout); i++) {
+		if (ds->style.titlelayout[i] == ' ' || ds->style.titlelayout[i] == '-')
 			break;
-		scr->dc.x -= elementw(scr->style.titlelayout[i], c) / 2;
-		scr->dc.x += drawelement(scr->style.titlelayout[i], 0, AlignCenter, c);
+		ds->dc.x -= elementw(ds, ds->style.titlelayout[i], c) / 2;
+		ds->dc.x += drawelement(ds, ds->style.titlelayout[i], 0, AlignCenter, c);
 	}
-	if (i == strlen(scr->style.titlelayout) || scr->dc.x >= scr->dc.w)
+	if (i == strlen(ds->style.titlelayout) || ds->dc.x >= ds->dc.w)
 		goto end;
 	/* Right */
-	scr->dc.x = scr->dc.w;
-	for (i = strlen(scr->style.titlelayout); i-- ; ) {
-		if (scr->style.titlelayout[i] == ' ' || scr->style.titlelayout[i] == '-')
+	ds->dc.x = ds->dc.w;
+	for (i = strlen(ds->style.titlelayout); i-- ; ) {
+		if (ds->style.titlelayout[i] == ' ' || ds->style.titlelayout[i] == '-')
 			break;
-		scr->dc.x -= elementw(scr->style.titlelayout[i], c);
-		drawelement(scr->style.titlelayout[i], 0, AlignRight, c);
+		ds->dc.x -= elementw(ds, ds->style.titlelayout[i], c);
+		drawelement(ds, ds->style.titlelayout[i], 0, AlignRight, c);
 	}
       end:
-	if (scr->style.outline) {
-		XSetForeground(dpy, scr->dc.gc,
-		    c == sel ? scr->style.color.sel[ColBorder] : scr->style.color.norm[ColBorder]);
-		XDrawLine(dpy, c->drawable, scr->dc.gc, 0, scr->dc.h - 1, scr->dc.w, scr->dc.h - 1);
+	if (ds->style.outline) {
+		XSetForeground(dpy, ds->dc.gc,
+		    c == sel ? ds->style.color.sel[ColBorder] : ds->style.color.norm[ColBorder]);
+		XDrawLine(dpy, c->drawable, ds->dc.gc, 0, ds->dc.h - 1, ds->dc.w, ds->dc.h - 1);
 	}
-	XCopyArea(dpy, c->drawable, c->title, scr->dc.gc, 0, 0, c->w, scr->dc.h, 0, 0);
+	XCopyArea(dpy, c->drawable, c->title, ds->dc.gc, 0, 0, c->w, ds->dc.h, 0, 0);
 }
 
 static unsigned long
@@ -326,13 +332,13 @@ deinitstyle() {
 }
 
 static unsigned int
-textnw(const char *text, unsigned int len) {
-	XftTextExtentsUtf8(dpy, scr->style.font,
-	    (const unsigned char *) text, len, scr->dc.font.extents);
-	return scr->dc.font.extents->xOff;
+textnw(EScreen *ds, const char *text, unsigned int len) {
+	XftTextExtentsUtf8(dpy, ds->style.font,
+	    (const unsigned char *) text, len, ds->dc.font.extents);
+	return ds->dc.font.extents->xOff;
 }
 
 static unsigned int
-textw(const char *text) {
-	return textnw(text, strlen(text)) + scr->dc.font.height;
+textw(EScreen *ds, const char *text) {
+	return textnw(ds, text, strlen(text)) + ds->dc.font.height;
 }

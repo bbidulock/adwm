@@ -1039,7 +1039,7 @@ enternotify(XEvent * e) {
 	if (!curmonitor())
 		return;
 	if ((c = getclient(ev->window, ClientFrame))) {
-		if (c->is.bastard) /* XXX: funny: bastards do not have frames */
+		if (c->is.bastard)
 			return;
 		/* focus when switching monitors */
 		if (!isvisible(sel, curmonitor()))
@@ -1058,7 +1058,7 @@ enternotify(XEvent * e) {
 		case SloppyRaise:
 			if (!c->skip.sloppy) {
 				focus(c);
-				restack();
+				raiseclient(c);
 			}
 			break;
 		}
@@ -3753,7 +3753,7 @@ restack()
 	for (i = 0; i < n; i++) {
 		if (!(c = cl[i]))
 			continue;
-		if (!c->is.bastard && c->skip.arrange && !c->is.below && !WTCHECK(c, WindowTypeDesk)) {
+		if (!c->is.bastard && (c->is.floater || c->skip.arrange) && !c->is.below && !WTCHECK(c, WindowTypeDesk)) {
 			cl[i] = NULL; wl[j] = c->frame; sl[j] = c; j++;
 		}
 	}
@@ -3767,7 +3767,7 @@ restack()
 	for (i = 0; i < n; i++) {
 		if (!(c = cl[i]))
 			continue;
-		if (!c->is.bastard && !c->skip.arrange && !c->is.below && !WTCHECK(c, WindowTypeDesk)) {
+		if (!c->is.bastard && !(c->is.floater || c->skip.arrange) && !c->is.below && !WTCHECK(c, WindowTypeDesk)) {
 			cl[i] = NULL; wl[j] = c->frame; sl[j] = c; j++;
 		}
 	}
@@ -3907,25 +3907,8 @@ sn_handler(SnMonitorEvent *event, void *dummy) {
 void
 run(void)
 {
-	int xfd, dummy;
+	int xfd;
 	XEvent ev;
-
-#ifdef XRANDR
-	haveext[XrandrBase]
-	    = XRRQueryExtension(dpy, &ebase[XrandrBase], &dummy);
-#endif
-#ifdef XINERAMA
-	haveext[XineramaBase]
-	    = XineramaQueryExtension(dpy, &ebase[XineramaBase], &dummy);
-#endif
-#ifdef SYNC
-	haveext[XsyncBase]
-	    = XSyncQueryExtension(dpy, &ebase[XsyncBase], &dummy);
-#endif
-#ifdef STARTUP_NOTIFICATION
-	sn_dpy = sn_display_new(dpy, NULL, NULL);
-	sn_ctx = sn_monitor_context_new(sn_dpy, scr->screen, &sn_handler, NULL, NULL);
-#endif
 
 	/* main event loop */
 	XSync(dpy, False);
@@ -4437,6 +4420,8 @@ initmonitors(XEvent *e)
 #ifdef XRANDR
 	if (e)
 		XRRUpdateConfiguration(e);
+#else
+	DPRINTF("%s", "compiled without RANDR support\n");
 #endif
 
 #ifdef XINERAMA
@@ -4444,9 +4429,18 @@ initmonitors(XEvent *e)
 		int i;
 		XineramaScreenInfo *si;
 
-		if (!XineramaIsActive(dpy))
+		if (!XineramaIsActive(dpy)) {
+			DPRINTF("XINERAMA is not active for screen %d\n", scr->screen);
 			goto no_xinerama;
-		if (!(si = XineramaQueryScreens(dpy, &n)) || n < 2)
+		}
+		DPRINTF("XINERAMA is active for screen %d\n", scr->screen);
+		si = XineramaQueryScreens(dpy, &n);
+		if (!si) {
+			DPRINTF("XINERAMA defines no monitors for screen %d\n", scr->screen);
+			goto no_xinerama;
+		}
+		DPRINTF("XINERAMA defineds %d monitors for screen %d\n", n, scr->screen);
+		if (n < 2)
 			goto no_xinerama;
 		for (i = 0; i < n; i++) {
 			if (i < scr->nmons) {
@@ -4505,8 +4499,11 @@ initmonitors(XEvent *e)
 		updatemonitors(e, n, size_update, full_update);
 		return;
 
-	}
+	} else
+		DPRINTF("no XINERAMA extension for screen %d\n", scr->screen);
       no_xinerama:
+#else
+	DPRINTF("%s", "compiled without XINERAMA support\n");
 #endif
 #ifdef XRANDR
 	if (haveext[XrandrBase]) {
@@ -4869,6 +4866,14 @@ setup(char *conf) {
 	for (scr = screens; scr < screens + nscr; scr++) {
 		if (!scr->managed)
 			continue;
+
+#ifdef STARTUP_NOTIFICATION
+		sn_dpy = sn_display_new(dpy, NULL, NULL);
+		sn_ctx = sn_monitor_context_new(sn_dpy, scr->screen, &sn_handler, NULL, NULL);
+		DPRINTF("startup notification on screen %d\n", scr->screen);
+#else
+		DPRINTF("startup notification not supported screen %d\n", scr->screen);
+#endif
 		/* init EWMH atom */
 		initewmh(scr->selwin);
 
@@ -6109,7 +6114,7 @@ int
 main(int argc, char *argv[])
 {
 	char conf[256] = "", *p;
-	int i;
+	int i, dummy;
 
 	if (argc == 3 && !strcmp("-f", argv[1]))
 		snprintf(conf, sizeof(conf), "%s", argv[2]);
@@ -6128,6 +6133,30 @@ main(int argc, char *argv[])
 	cargv = argv;
 	for (i = 0; i < PartLast; i++)
 		context[i] = XUniqueContext();
+#ifdef XRANDR
+	haveext[XrandrBase]
+	    = XRRQueryExtension(dpy, &ebase[XrandrBase], &dummy);
+	if (haveext[XrandrBase])
+		DPRINTF("have RANDR extension with base %d\n", ebase[XrandrBase]);
+	else
+		DPRINTF("%s", "RANDR extension is not supported\n");
+#endif
+#ifdef XINERAMA
+	haveext[XineramaBase]
+	    = XineramaQueryExtension(dpy, &ebase[XineramaBase], &dummy);
+	if (haveext[XineramaBase])
+		DPRINTF("have XINERAMA extension with base %d\n", ebase[XineramaBase]);
+	else
+		DPRINTF("%s", "XINERAMA extension is not supported\n");
+#endif
+#ifdef SYNC
+	haveext[XsyncBase]
+	    = XSyncQueryExtension(dpy, &ebase[XsyncBase], &dummy);
+	if (haveext[XsyncBase])
+		DPRINTF("have SYNC extension with base %d\n", ebase[XsyncBase]);
+	else
+		DPRINTF("%s", "SYNC extension is not supported\n");
+#endif
 	nscr = ScreenCount(dpy);
 	DPRINTF("there are %u screens\n", nscr);
 	screens = calloc(nscr, sizeof(*screens));

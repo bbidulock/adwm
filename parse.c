@@ -114,6 +114,7 @@ typedef struct {
 
 static KeyItem KeyItems[] = {
 	{ "togglestruts",	togglestruts	},
+	{ "toggledectiled",	toggledectiled	},
 	{ "focusicon",		focusicon	},
 	{ "focusnext",		_focusnext	},
 	{ "focusprev",		_focusprev	},

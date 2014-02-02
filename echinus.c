@@ -2121,6 +2121,7 @@ manage(Window w, XWindowAttributes *wa)
 		c->drawable =
 		    XCreatePixmap(dpy, scr->root, c->c.w, c->th,
 				  DefaultDepth(dpy, scr->screen));
+		c->tw = c->c.w;
 		c->xftdraw =
 		    XftDrawCreate(dpy, c->drawable, DefaultVisual(dpy, scr->screen),
 				  DefaultColormap(dpy, scr->screen));
@@ -2210,10 +2211,12 @@ void
 monocle(Monitor * m) {
 	Client *c;
 	Workarea w;
+	View *v;
 
 	getworkarea(m, &w);
+	v = &scr->views[m->curtag];
 	for (c = nexttiled(scr->clients, m); c; c = nexttiled(c->next, m)) {
-		c->th = (options.dectiled && c->has.title) ? scr->style.titleheight : 0;
+		c->th = (v->dectiled && c->has.title) ? scr->style.titleheight : 0;
 		resize(c, w.x, w.y, w.w - 2 * c->c.b, w.h - 2 * c->c.b, c->c.b);
 	}
 }
@@ -2222,6 +2225,7 @@ void
 grid(Monitor *m) {
 	Client *c;
 	Workarea wa;
+	View *v;
 	int rows, cols, n, i, *rc, *rh, col, row;
 	int cw, cl, *rl;
 	int x, y, w, h, gap;
@@ -2229,11 +2233,13 @@ grid(Monitor *m) {
 	if (!(c = nexttiled(scr->clients, m)))
 		return;
 
+	v = &scr->views[m->curtag];
+
 	getworkarea(m, &wa);
 
 	for (n = 0, c = nexttiled(scr->clients, m); c; c = nexttiled(c->next, m), n++) ;
 
-	for (cols = 1; cols < n && cols < scr->views[m->curtag].ncolumns; cols++) ;
+	for (cols = 1; cols < n && cols < v->ncolumns; cols++) ;
 
 	for (rows = 1; (rows * cols) < n; rows++) ;
 
@@ -2274,7 +2280,7 @@ grid(Monitor *m) {
 		}
 		w -= 2 * scr->style.border;
 		h -= 2 * scr->style.border;
-		c->th = (options.dectiled && c->has.title) ? scr->style.titleheight : 0;
+		c->th = (v->dectiled && c->has.title) ? scr->style.titleheight : 0;
 		resize(c, x + gap, y + gap, w - 2 * gap, h - 2 * gap, scr->style.border);
 	}
 	free(rc);
@@ -3508,11 +3514,12 @@ resize(Client * c, int x, int y, int w, int h, int b) {
 		x = DisplayWidth(dpy, scr->screen) - w - 2 * b;
 	if (y > DisplayHeight(dpy, scr->screen))
 		y = DisplayHeight(dpy, scr->screen) - h - 2 * b;
-	if (w != c->c.w && c->th) {
+	if (w != c->tw && c->th) {
 		assert(c->title != None);
 		XMoveResizeWindow(dpy, c->title, 0, 0, w, c->th);
 		XFreePixmap(dpy, c->drawable);
 		c->drawable = XCreatePixmap(dpy, scr->root, w, c->th, DefaultDepth(dpy, scr->screen));
+		c->tw = w;
 		drawclient(c);
 	}
 	DPRINTF("x = %d y = %d w = %d h = %d b = %d\n", x, y, w, h, b);
@@ -4059,11 +4066,12 @@ get_th(Client *c)
 		return 0;
 
 	for (i = 0; i < scr->ntags; i++)
-		if (c->tags[i])
+		if (c->tags[i]) {
 			f += FEATURES(scr->views[i].layout, OVERLAP);
+			f += scr->views[i].dectiled;
+		}
 
-	return (!c->is.max && (c->skip.arrange || options.dectiled || f) ?
-				scr->style.titleheight : 0);
+	return (!c->is.max && (c->skip.arrange || f) ?  scr->style.titleheight : 0);
 }
 
 void
@@ -4304,6 +4312,7 @@ initview(unsigned int i, double mwfact, double mhfact, int nmaster, int ncolumns
 		}
 	}
 	scr->views[i].barpos = StrutsOn;
+	scr->views[i].dectiled = options.dectiled;
 	scr->views[i].nmaster = nmaster;
 	scr->views[i].ncolumns = ncolumns;
 	scr->views[i].mwfact = mwfact;
@@ -4977,8 +4986,8 @@ tag(Client *c, int index) {
 void
 tile(Monitor *cm)
 {
-	Workarea wa, ma, sa;
-	LayoutArgs n, m, s;
+	LayoutArgs wa, ma, sa;
+	Geometry n, m, s;
 	Client *c, *mc;
 	View *v;
 	int i, overlap, gap;
@@ -4986,39 +4995,41 @@ tile(Monitor *cm)
 	if (!(c = nexttiled(scr->clients, cm)))
 		return;
 
-	getworkarea(cm, &wa);
+	getworkarea(cm, (Workarea *)&wa);
 	v = &scr->views[cm->curtag];
-	for (n.n = 0, c = nexttiled(scr->clients, cm); c;
-	     c = nexttiled(c->next, cm), n.n++) ;
+	for (wa.n = 0, c = nexttiled(scr->clients, cm); c;
+	     c = nexttiled(c->next, cm), wa.n++) ;
 
 	/* window geoms */
 
 	/* master & slave number */
-	m.n = (n.n > v->nmaster) ? v->nmaster : n.n;
-	s.n = (m.n < n.n) ? n.n - m.n : 0;
-	DPRINTF("there are %d masters\n", m.n);
-	DPRINTF("there are %d slaves\n", s.n);
+	ma.n = (wa.n > v->nmaster) ? v->nmaster : wa.n;
+	sa.n = (ma.n < wa.n) ? wa.n - ma.n : 0;
+	DPRINTF("there are %d masters\n", ma.n);
+	DPRINTF("there are %d slaves\n", sa.n);
 
 	/* master and slave work area dimensions */
 	switch (v->major) {
 	case OrientTop:
 	case OrientBottom:
 		ma.w = wa.w;
-		ma.h = (s.n > 0) ? wa.h * v->mwfact : wa.h;
+		ma.h = (sa.n > 0) ? wa.h * v->mwfact : wa.h;
 		sa.w = wa.w;
 		sa.h = wa.h - ma.h;
 		break;
 	case OrientLeft:
 	case OrientRight:
 	default:
-		ma.w = (s.n > 0) ? v->mwfact * wa.w : wa.w;
+		ma.w = (sa.n > 0) ? v->mwfact * wa.w : wa.w;
 		ma.h = wa.h;
 		sa.w = wa.w - ma.w;
 		sa.h = wa.h;
 		break;
 	}
+	ma.b = (ma.n > 1 || v->dectiled) ? scr->style.border : 0;
+	sa.b = scr->style.border;
 
-	overlap = (s.n > 0) ? scr->style.border : 0;
+	overlap = (sa.n > 0) ? ma.b : 0;
 	DPRINTF("overlap is %d\n", overlap);
 
 	/* master and slave work area position */
@@ -5059,8 +5070,8 @@ tile(Monitor *cm)
 		ma.h += overlap;
 		break;
 	}
-	DPRINTF("master work area %dx%d+%d+%d\n", ma.w, ma.h, ma.x, ma.y);
-	DPRINTF("slave  work area %dx%d+%d+%d\n", sa.w, sa.h, sa.x, sa.y);
+	DPRINTF("master work area %dx%d+%d+%d:%d\n", ma.w, ma.h, ma.x, ma.y, ma.b);
+	DPRINTF("slave  work area %dx%d+%d+%d:%d\n", sa.w, sa.h, sa.x, sa.y, sa.b);
 
 
 	/* master tile dimensions */
@@ -5068,29 +5079,31 @@ tile(Monitor *cm)
 	case OrientTop:
 	case OrientBottom:
 		m.w = ma.w;
-		m.h = (m.n > 0) ? ma.h / m.n : ma.h;
+		m.h = ((ma.n > 0) ? ma.h / ma.n : ma.h) + ma.b;
 		break;
 	case OrientLeft:
 	case OrientRight:
 	default:
-		m.w = (m.n > 0) ? ma.w / m.n : ma.w;
+		m.w = ((ma.n > 0) ? ma.w / ma.n : ma.w) + ma.b;
 		m.h = ma.h;
 		break;
 	}
+	m.b = ma.b;
 	/* slave tile dimensions */
 	switch (v->major) {
 	case OrientTop:
 	case OrientBottom:
-		s.w = (s.n > 0) ? sa.w / s.n : 0;
+		s.w = ((sa.n > 0) ? sa.w / sa.n : 0) + sa.b;
 		s.h = sa.h;
 		break;
 	case OrientLeft:
 	case OrientRight:
 	default:
 		s.w = sa.w;
-		s.h = (s.n > 0) ? sa.h / s.n : 0;
+		s.h = ((sa.n > 0) ? sa.h / sa.n : 0) + sa.b;
 		break;
 	}
+	s.b = sa.b;
 
 	/* position of first master */
 	switch (v->minor) {
@@ -5116,11 +5129,6 @@ tile(Monitor *cm)
 		m.y = ma.y;
 		break;
 	}
-#if 0
-	m.b = (m.n > 1) ? scr->style.border : 0;
-#else
-	m.b = scr->style.border;
-#endif
 	DPRINTF("initial master %dx%d+%d+%d:%d\n", m.w, m.h, m.x, m.y, m.b);
 
 	i = 0;
@@ -5131,37 +5139,37 @@ tile(Monitor *cm)
 
 	gap = scr->style.margin > n.b ? scr->style.margin - n.b : 0;
 
-	for (;c && i < m.n; c = nexttiled(c->next, cm)) {
+	for (;c && i < ma.n; c = nexttiled(c->next, cm)) {
 		if (c->is.max) {
 			c->is.max = False;
 			ewmh_update_net_window_state(c);
 		}
-		c->th = (options.dectiled && c->has.title) ? scr->style.titleheight : 0;
+		c->th = (v->dectiled && c->has.title) ? scr->style.titleheight : 0;
 		resize(c, n.x + gap, n.y + gap, n.w - 2 * (gap + n.b),
 		       n.h - 2 * (gap + n.b), n.b);
 		i++;
 		switch (v->minor) {
 		case OrientTop:
 			n.y += n.h - n.b;
-			if (i == m.n - 1)
+			if (i == ma.n - 1)
 				n.h = ma.h - (n.y - ma.y);
 			break;
 		case OrientBottom:
 			n.y -= n.h - n.b;
-			if (i == m.n - 1) {
+			if (i == ma.n - 1) {
 				n.h += (n.y - ma.y);
 				n.y = ma.y;
 			}
 			break;
 		case OrientLeft:
 			n.x += n.w - n.b;
-			if (i == m.n - 1)
+			if (i == ma.n - 1)
 				n.w = ma.w - (n.x - ma.x);
 			break;
 		case OrientRight:
 		default:
 			n.x -= n.w - n.b;
-			if (i == m.n - 1) {
+			if (i == ma.n - 1) {
 				n.w += (n.x - ma.x);
 				n.x = ma.x;
 			}
@@ -5193,7 +5201,6 @@ tile(Monitor *cm)
 		s.y = sa.y;
 		break;
 	}
-	s.b = scr->style.border;
 	DPRINTF("initial slave  %dx%d+%d+%d:%d\n", s.w, s.h, s.x, s.y, s.b);
 
 	/* lay out the slave area - always top->bot, left->right */
@@ -5201,12 +5208,12 @@ tile(Monitor *cm)
 
 	gap = scr->style.margin > n.b ? scr->style.margin - n.b : 0;
 
-	for (;c && i < m.n + s.n; c = nexttiled(c->next, cm)) {
+	for (;c && i < wa.n; c = nexttiled(c->next, cm)) {
 		if (c->is.max) {
 			c->is.max = False;
 			ewmh_update_net_window_state(c);
 		}
-		c->th = (options.dectiled && c->has.title) ? scr->style.titleheight : 0;
+		c->th = (v->dectiled && c->has.title) ? scr->style.titleheight : 0;
 		resize(c, n.x + gap, n.y + gap, n.w - 2 * (gap + n.b),
 		       n.h - 2 * (gap + n.b), n.b);
 		i++;
@@ -5214,13 +5221,13 @@ tile(Monitor *cm)
 		case OrientTop:
 			/* left to right */
 			n.x += n.w - n.b;
-			if (i == m.n + s.n - 1)
+			if (i == wa.n - 1)
 				n.w = sa.w - (n.x - sa.x);
 			break;
 		case OrientBottom:
 			/* right to left */
 			n.x -= n.w - n.b;
-			if (i == m.n + s.n - 1) {
+			if (i == wa.n - 1) {
 				n.w += (n.x - sa.x);
 				n.x = sa.x;
 			}
@@ -5228,7 +5235,7 @@ tile(Monitor *cm)
 		case OrientLeft:
 			/* bottom to top */
 			n.y -= n.h - n.b;
-			if (i == m.n + s.n - 1) {
+			if (i == wa.n - 1) {
 				n.h += (n.y - sa.y);
 				n.y = sa.y;
 			}
@@ -5237,7 +5244,7 @@ tile(Monitor *cm)
 		default:
 			/* top to bottom */
 			n.y += n.h - n.b;
-			if (i == m.n + s.n - 1)
+			if (i == wa.n - 1)
 				n.h = sa.h - (n.y - sa.y);
 			break;
 		}
@@ -5249,6 +5256,12 @@ togglestruts(const char *arg) {
 	scr->views[curmontag].barpos = (scr->views[curmontag].barpos == StrutsOn)
 	    ? (options.hidebastards ? StrutsHide : StrutsOff) : StrutsOn;
 	updategeom(curmonitor());
+	arrange(curmonitor());
+}
+
+void
+toggledectiled(const char *arg) {
+	scr->views[curmontag].dectiled = scr->views[curmontag].dectiled ? False : True;
 	arrange(curmonitor());
 }
 

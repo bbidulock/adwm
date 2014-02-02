@@ -286,9 +286,9 @@ struct Client {
 	char *name;
 	char *icon_name;
 	char *startup_id;
-	int monitor; /* initial monitor */
-	Geometry c, r, s; /* current, restore, static */
-	int th;			/* title height */
+	int monitor;			/* initial monitor */
+	Geometry c, r, s;		/* current, restore, static */
+	int th, tw;			/* title height and width */
 	int basew, baseh, incw, inch, maxw, maxh, minw, minh;
 	int minax, maxax, minay, maxay, gravity;
 	int ignoreunmap;
@@ -348,7 +348,7 @@ struct Client {
 				unsigned int stick:1;
 				unsigned int fill:1;
 				unsigned int floats:1;
-			} but __attribute__((packed));
+			} but __attribute__ ((packed));
 		};
 		unsigned int has;
 	} has;
@@ -413,7 +413,8 @@ struct Group {
 };
 
 typedef struct View {
-	StrutsPosition barpos;
+	StrutsPosition barpos;		/* show struts? */
+	Bool dectiled;			/* decorate tiled? */
 	int nmaster;
 	int ncolumns;
 	double mwfact;			/* master width factor */
@@ -604,6 +605,7 @@ void setlayout(const char *arg);
 void spawn(const char *arg);
 void tag(Client *c, int index);
 void togglestruts(const char *arg);
+void toggledectiled(const char *arg);
 void togglefloating(Client *c);
 void togglefill(Client *c);
 void togglemax(Client *c);

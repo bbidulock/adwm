@@ -442,13 +442,13 @@ typedef struct {
 } DC;				/* draw context */
 
 typedef struct {
-#ifdef IMLIB2
+#if defined IMLIB2 || defined XPM
 	Imlib_Image image;
 	Pixmap pixmap, mask;
 #endif
 	Pixmap bitmap;
 	int px, py;
-	unsigned int pw, ph;
+	unsigned int pw, ph, po;
 	int x;
 	int pressed;
 	void (*action) (const char *arg);

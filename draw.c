@@ -15,6 +15,9 @@
 #ifdef IMLIB2
 #include "Imlib2.h"
 #endif
+#ifdef XPM
+#include <X11/xpm.h>
+#endif
 
 enum { Normal, Selected };
 enum { AlignLeft, AlignCenter, AlignRight };	/* title position */
@@ -70,21 +73,11 @@ drawbutton(EScreen *ds, Drawable d, Button btn, unsigned long col[ColLast], int 
 {
 	if (!btn.action)
 		return 0;
-#ifdef IMLIB2
+#if defined IMLIB2 || defined XPM
 	if (btn.pixmap) {
-#if 0
-		imlib_context_push(ds->context);
-		imlib_context_set_image(btn.image);
-		imlib_context_set_drawable(d);
-		imlib_context_set_mask(None);
-		imlib_render_image_on_drawable_at_size(x, y + ds->button[Iconify].py,
-						       ds->button[Iconify].pw,
-						       ds->button[Iconify].ph);
-		imlib_context_pop();
-#endif
 		DPRINTF("Copying pixmap 0x%lx with geom %dx%d+%d+%d to drawable 0x%lx\n",
 			btn.pixmap, btn.pw, btn.ph, x, y + btn.py, d);
-		XCopyArea(dpy, btn.pixmap, d, ds->dc.gc, 0, 0, btn.pw, btn.ph, x, y + btn.py);
+		XCopyArea(dpy, btn.pixmap, d, ds->dc.gc, 0, btn.po, btn.pw, btn.ph, x, y + btn.py);
 	} else
 #endif
 	if (btn.bitmap) {
@@ -252,8 +245,22 @@ getcolor(const char *colstr) {
 static int
 initpixmap(const char *file, Button * b)
 {
-#ifdef IMLIB2
+#ifdef XPM
+	if (strstr(file, ".xpm") && strlen(strstr(file, ".xpm")) == 4) {
+		XpmAttributes xa = { 0, };
 
+		if (XpmReadFileToPixmap(dpy, scr->root, file, &b->pixmap, &b->mask, &xa) == Success) {
+			if ((b->pw = xa.width) && (b->ph = xa.height)) {
+				if (b->ph > scr->style.titleheight) {
+					b->po = b->ph / 2 - scr->style.titleheight / 2;
+					b->ph = scr->style.titleheight;
+				}
+				return 0;
+			}
+		}
+	}
+#endif
+#ifdef IMILIB2
 	if (!strstr(file, ".xbm") || strlen(strstr(file, ".xbm")) != 4) {
 		imlib_context_push(scr->context);
 		imlib_context_set_mask(None);
@@ -264,18 +271,10 @@ initpixmap(const char *file, Button * b)
 			}
 		}
 		if (b->image) {
-			// Imlib_Border bd;
-
 			imlib_context_set_mask(None);
 			imlib_context_set_image(b->image);
 			b->pw = imlib_image_get_width();
 			b->ph = imlib_image_get_height();
-			/* just use pixel in the middle */
-			// bd.left = b->pw / 2;
-			// bd.right = b->pw - bd.left - 1;
-			// bd.top = b->ph / 2;
-			// bd.bottom = b->ph - bd.top - 1;
-			// imlib_image_set_border(&bd);
 			if (b->ph > scr->style.titleheight)
 				b->ph = scr->style.titleheight;
 			if (b->pw > 2*scr->style.titleheight)
@@ -288,9 +287,9 @@ initpixmap(const char *file, Button * b)
 		imlib_context_pop();
 		if (b->image)
 			return 0;
-	} else
+	}
 #endif
-	{
+	if (strstr(file, ".xbm") && strlen(strstr(file, ".xbm")) == 4) {
 		b->bitmap =
 		    XCreatePixmap(dpy, scr->root, scr->style.titleheight,
 				  scr->style.titleheight, 1);

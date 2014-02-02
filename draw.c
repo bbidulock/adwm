@@ -12,6 +12,9 @@
 #include <X11/Xft/Xft.h>
 #include "echinus.h"
 #include "config.h"
+#ifdef IMLIB2
+#include "Imlib2.h"
+#endif
 
 enum { Normal, Selected };
 enum { AlignLeft, AlignCenter, AlignRight };	/* title position */
@@ -63,16 +66,36 @@ drawtext(EScreen *ds, const char *text, Drawable drawable, XftDraw *xftdrawable,
 }
 
 static int
-drawbutton(EScreen *ds, Drawable d, Button btn, unsigned long col[ColLast], int x, int y) {
-	if (btn.action == NULL)
+drawbutton(EScreen *ds, Drawable d, Button btn, unsigned long col[ColLast], int x, int y)
+{
+	if (!btn.action)
 		return 0;
-	XSetForeground(dpy, ds->dc.gc, col[ColBG]);
-	XFillRectangle(dpy, d, ds->dc.gc, x, 0, ds->dc.h, ds->dc.h);
-	XSetForeground(dpy, ds->dc.gc, btn.pressed ? col[ColFG] : col[ColButton]);
-	XSetBackground(dpy, ds->dc.gc, col[ColBG]);
-	XCopyPlane(dpy, btn.pm, d, ds->dc.gc, 0, 0, ds->button[Iconify].pw,
-	    ds->button[Iconify].ph, x, y + ds->button[Iconify].py, 1);
-	return ds->dc.h;
+#ifdef IMLIB2
+	if (btn.pixmap) {
+#if 0
+		imlib_context_push(ds->context);
+		imlib_context_set_image(btn.image);
+		imlib_context_set_drawable(d);
+		imlib_context_set_mask(None);
+		imlib_render_image_on_drawable_at_size(x, y + ds->button[Iconify].py,
+						       ds->button[Iconify].pw,
+						       ds->button[Iconify].ph);
+		imlib_context_pop();
+#endif
+		DPRINTF("Copying pixmap 0x%lx with geom %dx%d+%d+%d to drawable 0x%lx\n",
+			btn.pixmap, btn.pw, btn.ph, x, y + btn.py, d);
+		XCopyArea(dpy, btn.pixmap, d, ds->dc.gc, 0, 0, btn.pw, btn.ph, x, y + btn.py);
+	} else
+#endif
+	if (btn.bitmap) {
+		XSetForeground(dpy, ds->dc.gc, col[ColBG]);
+		XFillRectangle(dpy, d, ds->dc.gc, x, 0, ds->dc.h, ds->dc.h);
+		XSetForeground(dpy, ds->dc.gc, btn.pressed ? col[ColFG] : col[ColButton]);
+		XSetBackground(dpy, ds->dc.gc, col[ColBG]);
+		XCopyPlane(dpy, btn.bitmap, d, ds->dc.gc, 0, 0, btn.pw, btn.ph, x, y + btn.py, 1);
+		return ds->dc.h;
+	}
+	return 0;
 }
 
 static int
@@ -128,9 +151,11 @@ elementw(EScreen *ds, char which, Client *c) {
 
 	switch (which) {
 	case 'I':
+		return ds->button[Iconify].pw;
 	case 'M':
+		return ds->button[Maximize].pw;
 	case 'C':
-		return ds->dc.h;
+		return ds->button[Iconify].pw;
 	case 'N':
 		return textw(ds, c->name);
 	case 'T':
@@ -225,15 +250,59 @@ getcolor(const char *colstr) {
 }
 
 static int
-initpixmap(const char *file, Button *b) {
-	b->pm = XCreatePixmap(dpy, scr->root, scr->style.titleheight, scr->style.titleheight, 1);
-	if (BitmapSuccess == XReadBitmapFile(dpy, scr->root, file, &b->pw, &b->ph,
-		&b->pm, &b->px, &b->py)) {
-		if (b->px == -1 || b->py == -1)
-			b->px = b->py = 0;
-		return 0;
+initpixmap(const char *file, Button * b)
+{
+#ifdef IMLIB2
+
+	if (!strstr(file, ".xbm") || strlen(strstr(file, ".xbm")) != 4) {
+		imlib_context_push(scr->context);
+		imlib_context_set_mask(None);
+
+		if (!(b->image = imlib_load_image(file))) {
+			if (file[0] != '/') {
+				/* TODO: look for it else where */
+			}
+		}
+		if (b->image) {
+			// Imlib_Border bd;
+
+			imlib_context_set_mask(None);
+			imlib_context_set_image(b->image);
+			b->pw = imlib_image_get_width();
+			b->ph = imlib_image_get_height();
+			/* just use pixel in the middle */
+			// bd.left = b->pw / 2;
+			// bd.right = b->pw - bd.left - 1;
+			// bd.top = b->ph / 2;
+			// bd.bottom = b->ph - bd.top - 1;
+			// imlib_image_set_border(&bd);
+			if (b->ph > scr->style.titleheight)
+				b->ph = scr->style.titleheight;
+			if (b->pw > 2*scr->style.titleheight)
+				b->pw = 2*scr->style.titleheight;
+			imlib_render_pixmaps_for_whole_image_at_size
+			    (&b->pixmap, &b->mask, b->pw, b->ph);
+		} else {
+			DPRINTF("could not load image file %s\n", file);
+		}
+		imlib_context_pop();
+		if (b->image)
+			return 0;
 	} else
-		return 1;
+#endif
+	{
+		b->bitmap =
+		    XCreatePixmap(dpy, scr->root, scr->style.titleheight,
+				  scr->style.titleheight, 1);
+		if (BitmapSuccess ==
+		    XReadBitmapFile(dpy, scr->root, file, &b->pw, &b->ph, &b->bitmap,
+				    &b->px, &b->py)) {
+			if (b->px == -1 || b->py == -1)
+				b->px = b->py = 0;
+			return 0;
+		}
+	}
+	return 1;
 }
 
 static void

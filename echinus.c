@@ -6225,6 +6225,16 @@ main(int argc, char *argv[])
 		scr->root = RootWindow(dpy, i);
 		XSaveContext(dpy, scr->root, context[ScreenContext], (XPointer) scr);
 		DPRINTF("screen %d has root 0x%lx\n", scr->screen, scr->root);
+#ifdef IMLIB2
+		scr->context = imlib_context_new();
+		imlib_context_push(scr->context);
+		imlib_context_set_display(dpy);
+		imlib_context_set_drawable(RootWindow(dpy, scr->screen));
+		imlib_context_set_colormap(DefaultColormap(dpy, scr->screen));
+		imlib_context_set_visual(DefaultVisual(dpy, scr->screen));
+		imlib_context_set_anti_alias(1);
+		imlib_context_pop();
+#endif
 	}
 	if ((p = getenv("DISPLAY")) && (p = strrchr(p, '.')) && strlen(p + 1)
 	    && strspn(p + 1, "0123456789") == strlen(p + 1) && (i = atoi(p + 1)) < nscr) {

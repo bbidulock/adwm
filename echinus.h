@@ -5,6 +5,10 @@
 #include <libsn/sn.h>
 #endif
 
+#ifdef IMLIB2
+#include <Imlib2.h>
+#endif
+
 enum {
 	Manager, Utf8String, WMProto, WMDelete, WMSaveYourself, WMState, WMChangeState,
 	WMTakeFocus,
@@ -438,7 +442,11 @@ typedef struct {
 } DC;				/* draw context */
 
 typedef struct {
-	Pixmap pm;
+#ifdef IMLIB2
+	Imlib_Image image;
+	Pixmap pixmap, mask;
+#endif
+	Pixmap bitmap;
 	int px, py;
 	unsigned int pw, ph;
 	int x;
@@ -489,6 +497,9 @@ struct EScreen {
 	DC dc;
 	Button button[LastBtn];
 	Style style;
+#ifdef IMLIB2
+	Imlib_Context context;
+#endif
 };
 
 typedef struct {

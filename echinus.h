@@ -597,6 +597,8 @@ void rotateview(Client *c);
 void unrotateview(Client *c);
 void rotatezone(Client *c);
 void unrotatezone(Client *c);
+void rotatewins(Client *c);
+void unrotatewins(Client *c);
 void setmwfact(const char *arg);
 void setlayout(const char *arg);
 void spawn(const char *arg);

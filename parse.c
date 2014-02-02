@@ -97,6 +97,16 @@ _unrotatezone(const char *arg) {
 	unrotatezone(sel);
 }
 
+static void
+_rotatewins(const char *arg) {
+	rotatewins(sel);
+}
+
+static void
+_unrotatewins(const char *arg) {
+	unrotatewins(sel);
+}
+
 typedef struct {
 	const char *name;
 	void (*action) (const char *arg);
@@ -140,6 +150,8 @@ static KeyItem KeyItems[] = {
 	{ "unrotateview",	_unrotateview	},
 	{ "rotatezone",		_rotatezone	},
 	{ "unrotatezone",	_unrotatezone	},
+	{ "rotatewins",		_rotatewins	},
+	{ "unrotatewins",	_unrotatewins	},
 };
 
 static int

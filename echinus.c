@@ -5544,6 +5544,49 @@ unrotatezone(Client *c) {
 }
 
 void
+rotatewins(Client *c)
+{
+	Monitor *m = NULL;
+	Client *s;
+
+	if (c)
+		m = findmonitor(c);
+	if (!m)
+		if (!(m = curmonitor()))
+			m = nearmonitor();
+	if (!MFEATURES(m, ROTL))
+		return;
+	if ((s = nexttiled(scr->clients, m))) {
+		detach(s);
+		attach(s, True);
+		arrange(m);
+		focus(s);
+	}
+}
+
+void
+unrotatewins(Client *c)
+{
+	Monitor *m = NULL;
+	Client *last, *s;
+
+	if (c)
+		m = findmonitor(c);
+	if (!m)
+		if (!(m = curmonitor()))
+			m = nearmonitor();
+	if (!MFEATURES(m, ROTL) || !MFEATURES(m, NMASTER))
+		return;
+	for (last = scr->clients; last && last->next; last = last->next) ;
+	if ((s = prevtiled(last, m))) {
+		detach(s);
+		attach(s, False);
+		arrange(m);
+		focus(s);
+	}
+}
+
+void
 toggletag(Client *c, int index) {
 	unsigned int i, j;
 

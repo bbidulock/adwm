@@ -152,6 +152,7 @@ Layout applied to tag if not explicitly set by tags.layout later.
 .It Li "i" Ta "Ifloating"
 .It Li "m" Ta "Maximized"
 .It Li "t" Ta "Tiled"
+.It Li "g" Ta "Grid"
 .El
 .It Ic modkey
 Choose modkey.
@@ -175,11 +176,45 @@ Sets the type of sloppy focus to use.
 Width of the border (in pixels).
 .El
 .Sh BUTTON SETTINGS
+In the settings that follow, '*' can be replaced by the 'name' as follows:
+.Bl -column "maximize" "State" -offset indent
+.It Sy "Name" Ta Sy "Toggle State"
+.It Li "close" Ta "-"
+.It Li "iconify" Ta "-"
+.It Li "maximize" Ta "maximized vertical or horizontal"
+.It Li "shade" Ta "shaded"
+.It Li "stick" Ta "sticky"
+.It Li "fill" Ta "filled"
+.It Li "float" Ta "floating"
+.It Li "resize" Ta "-"
+.El
 .Bl -tag -width Ds
-.It Ic button.close.pixmap
-.It Ic button.iconify.pixmap
-.It Ic button.maximize.pixmap
-Sets the close, iconify and maximize buttons in the titlebar.
+.It Ic button.*.button[n].action
+Where [n] is a digit between 1 and 5 inclusive indicating the action
+to perform when the mouse button is released over the titlebar button.
+.It Ic button.*.pixmap
+Sets the default pixmap for the buttons in the titlebar.  All other pixmaps (with
+the exception of disabled pixmaps) ultimately default to this pixmap when unspecified.
+.It Ic button.*.pressed.pixmap
+Sets the pixmap for the button while pressed.
+.It Ic button.*[.toggled][.disabled].focus.pixmap
+Sets the pixmap for the button while the client window is focused,
+optionally while the button is in the toggled or disabled state.
+Toggled pixmaps default to non-toggled pixmaps.  A missing disabled pixmap
+causes the button to dissapear instead.
+Focus pixmaps default to the default pixmap.
+.It Ic button.*[.toggled][.disabled].unfocus.pixmap
+Sets the pixmap for the button while the client window is unfocused,
+optionally while the button is in the toggled or disabled state.
+Toggled pixmaps default to non-toggled pixmaps.  A missing disabled pixmap
+causes the button to dissapear instead.
+Unfocus pixmaps default to focused pixmaps.
+.It Ic button.*[.toggled][.disabled].hover.pixmap
+Sets the pixmap for the button while the pointer is hovering over the button,
+optionally while the button is in the toggled or disabled state.
+Toggled pixmaps default to non-toggled pixmaps.  A missing disabled pixmap
+causes the button to dissapear instead.
+Hover pixmaps default to focused pixmaps.
 .El
 .Sh COLOR SETTINGS
 .Bl -tag -width Ds
@@ -202,12 +237,12 @@ Sets color options for focused windows.
 .It Ic hidebastards
 Hide panels, pagers and others with togglestruts function.
 .El
-.Sh KEYBINDINS SETTINGS
+.Sh KEY AND MOUSE BINDING SETTINGS
 .Bl -tag -width Ds
-.It Ic ACSW + key [ = options ]
-Binds key to the specified command (see
-.Sx COMMANDS )
-.Ns . Spaces are mandatory.
+.It Ic ACSW + key_or_button [ = options][, ACSW + key_or_button [ = options]] ...
+Binds key or button to the specified command (see
+.Sx "COMMANDS" Ns ).
+Spaces are mandatory.
 .Pp
 Key is taken from the X11 files (usually located under an include directory)
 .Pa keysym.h
@@ -215,7 +250,14 @@ and,
 .Pa XF86keysym.h
 and removing the XK_ prefix before use.
 .Pp
+Button is one of 'Button1', 'Button2', 'Button3', 'Button4' or 'Button5', indicating
+the mouse button to bind, followed by a single space and one
+of 'Window', 'Frame', 'Title' or 'Root', indicating where the button press must occur.
+.Pp
 Commands options are specified after an equal sign.
+.Pp
+Additional key bindings for the same command, with the same or different
+options, can be specified following a comma.
 .El
 .Sh MISC SETTINGS
 .Bl -tag -width Ds
@@ -255,8 +297,14 @@ close buttons on right (note 2 spaces).
 .It Li "C" Ta "Close"
 .It Li "I" Ta "Iconify"
 .It Li "M" Ta "Maximize"
+.It Li "S" Ta "Shade"
+.It Li "A" Ta "Stick"
+.It Li "X" Ta "Fill"
+.It Li "F" Ta "Float"
+.It Li "Z" Ta "Size"
 .It Li "N" Ta "Window name"
 .It Li "T" Ta "Tagbar"
+.It Li "|" Ta "Separator"
 .El
 .El
 .Sh COMMANDS

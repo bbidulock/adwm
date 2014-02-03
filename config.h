@@ -14,6 +14,13 @@
 #define ICONPIXMAP		"iconify.xbm"
 #define MAXPIXMAP		"max.xbm"
 #define CLOSEPIXMAP		"close.xbm"
+#define SHADEPIXMAP		"shade.xbm"
+#define STICKPIXMAP		"stick.xbm"
+#define LHALFPIXMAP		"lhalf.xbm"
+#define RHALFPIXMAP		"rhalf.xbm"
+#define FLOATPIXMAP		"float.xbm"
+#define FILLPIXMAP		"fill.xbm"
+#define SIZEPIXMAP		"resize.xbm"
 #define MINWIDTH		12
 #define MINHEIGHT		12
 #define TITLEHEIGHT		0

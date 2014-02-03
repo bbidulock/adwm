@@ -227,7 +227,16 @@ enum { ColFG, ColBG, ColBorder, ColButton, ColLast };	/* colors */
 enum { ClientWindow, ClientTitle, ClientFrame, ClientTimeWindow, ClientGroup,
        ClientTransFor, ClientTransForGroup, ClientLeader, ClientAny, SysTrayWindows,
        ClientPing, ClientDead, ScreenContext, PartLast };	/* client parts */
-enum { Iconify, Maximize, Close, LastBtn }; /* window buttons */
+typedef enum { IconifyBtn, MaximizeBtn, CloseBtn, ShadeBtn, StickBtn, LHalfBtn, RHalfBtn,
+	FillBtn, FloatBtn, SizeBtn, TitleTags, TitleName, TitleSep, LastElement,
+	LastBtn = TitleTags } ElementType;
+typedef enum { OnClientTitle, OnClientFrame, OnClientWindow, OnRoot, LastOn } OnWhere;
+typedef enum { ButtonImageDefault, ButtonImagePressed, ButtonImageHover, ButtonImageFocus,
+	ButtonImageUnfocus, ButtonImageToggledHover, ButtonImageToggledFocus,
+	ButtonImageToggledUnfocus, ButtonImageDisabledHover, ButtonImageDisabledFocus,
+	ButtonImageDisabledUnfocus, ButtonImageToggledDisabledHover,
+	ButtonImageToggledDisabledFocus, ButtonImageToggledDisabledUnfocus,
+	LastButtonImageType } ButtonImageType;
 typedef enum { CauseDestroyed, CauseUnmapped, CauseReparented,
 	       CauseQuitting, CauseSwitching, CauseRestarting } WithdrawCause;
 typedef enum { ColSmartPlacement, RowSmartPlacement, MinOverlapPlacement,
@@ -284,6 +293,12 @@ typedef struct {
 #define FEATURES(_layout, _which) (!(!((_layout)->features & (_which))))
 #define M2LT(_mon) (scr->views[(_mon)->curtag].layout)
 #define MFEATURES(_monitor, _which) ((_monitor) && FEATURES(M2LT(_monitor), (_which)))
+
+typedef struct {
+	Bool present, hovered;
+	unsigned int pressed;
+	Geometry g;
+} ElementClient;
 
 typedef struct Client Client;
 struct Client {
@@ -400,6 +415,7 @@ struct Client {
 	Window time_window;
 	Window leader;
 	Window transfor;
+	ElementClient *element;
 	Time user_time;
 	Pixmap drawable;
 	XftDraw *xftdraw;
@@ -443,16 +459,19 @@ typedef struct {
 
 typedef struct {
 #if defined IMLIB2 || defined XPM
-	Imlib_Image image;
 	Pixmap pixmap, mask;
 #endif
 	Pixmap bitmap;
-	int px, py;
-	unsigned int pw, ph, po;
-	int x;
-	int pressed;
-	void (*action) (const char *arg);
-} Button; /* window buttons */
+	Bool present;
+	int x, y;
+	unsigned int w, h, b;
+
+} ButtonImage;
+
+typedef struct {
+	ButtonImage *image;
+	void (**action) (Client *, unsigned int, int, int);
+} Element;
 
 typedef struct {
 	unsigned int border;
@@ -495,7 +514,7 @@ struct EScreen {
 	Key **keys;
 	unsigned int nkeys;
 	DC dc;
-	Button button[LastBtn];
+	Element element[LastElement];
 	Style style;
 #ifdef IMLIB2
 	Imlib_Context context;
@@ -583,13 +602,14 @@ const char *getresource(const char *resource, const char *defval);
 Client *getclient(Window w, int part);
 Monitor *getmonitor(int x, int y);
 Bool gettextprop(Window w, Atom atom, char **text);
+void getpointer(int *x, int *y);
 void iconify(Client *c);
 void incnmaster(const char *arg);
 Bool isfloating(Client *c, Monitor *m);
 Bool isvisible(Client *c, Monitor *m);
 Monitor *findmonbynum(int num);
 void focus(Client * c);
-void focusicon(const char *arg);
+void focusicon(void);
 void focusnext(Client *c);
 void focusprev(Client *c);
 void focusview(int index);
@@ -603,6 +623,8 @@ void configurerequest(XEvent * e);
 void moveresizekb(Client *c, int dx, int dy, int dw, int dh);
 void mousemove(Client *c, unsigned int button, int x_root, int y_root);
 void mouseresize_from(Client *c, int from, unsigned int button, int x_root, int y_root);
+void mouseresize(Client * c, unsigned int button, int x_root, int y_root);
+void m_resize(Client *c, unsigned int button, int x_root, int y_root);
 void quit(const char *arg);
 void restart(const char *arg);
 void rotateview(Client *c);
@@ -615,8 +637,8 @@ void setmwfact(const char *arg);
 void setlayout(const char *arg);
 void spawn(const char *arg);
 void tag(Client *c, int index);
-void togglestruts(const char *arg);
-void toggledectiled(const char *arg);
+void togglestruts(void);
+void toggledectiled(void);
 void togglefloating(Client *c);
 void togglefill(Client *c);
 void togglemax(Client *c);
@@ -630,20 +652,20 @@ void togglebelow(Client *c);
 void togglepager(Client *c);
 void toggletaskbar(Client *c);
 void togglemodal(Client *c);
-void togglemonitor(const char *arg);
+void togglemonitor(void);
 void toggletag(Client *c, int index);
 void toggleview(int index);
 void toggleshowing(void);
 void togglehidden(Client *c);
 void updateframe(Client *c);
 void view(int index);
-void viewlefttag(const char *arg);
-void viewprevtag(const char *arg);
-void viewrighttag(const char *arg);
+void viewlefttag(void);
+void viewprevtag(void);
+void viewrighttag(void);
 void zoom(Client *c);
 void selectionclear(XEvent *e);
-void appendtag(const char *arg);
-void rmlasttag(const char *arg);
+void appendtag(void);
+void rmlasttag(void);
 void settags(unsigned int numtags);
 
 /* parse.c */
@@ -695,6 +717,7 @@ extern Display *dpy;
 extern EScreen *scr;
 extern EScreen *screens;
 extern EScreen *event_scr;
+extern void (*actions[LastOn][5])(Client *, unsigned int, int, int);
 // extern Window root;
 // extern Window selwin;
 // extern Client *clients;

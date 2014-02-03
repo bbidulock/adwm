@@ -146,6 +146,12 @@ void maprequest(XEvent * e);
 void mousemove(Client *c, unsigned int button, int x_root, int y_root);
 void mouseresize_from(Client *c, int from, unsigned int button, int x_root, int y_root);
 void mouseresize(Client * c, unsigned int button, int x_root, int y_root);
+void m_move(Client *c, unsigned int button, int x_root, int y_root);
+void m_zoom(Client *c, unsigned int button, int x_root, int y_root);
+void m_resize(Client *c, unsigned int button, int x_root, int y_root);
+void m_spawn(Client *c, unsigned int button, int x_root, int y_root);
+void m_prevtag(Client *c, unsigned int button, int x_root, int y_root);
+void m_nexttag(Client *c, unsigned int button, int x_root, int y_root);
 void moveresizekb(Client *c, int dx, int dy, int dw, int dh);
 Monitor *nearmonitor(void);
 Client *nexttiled(Client * c, Monitor * m);
@@ -173,7 +179,7 @@ void spawn(const char *arg);
 void tag(Client *c, int index);
 void tile(Monitor *m);
 void takefocus(Client *c);
-void togglestruts(const char *arg);
+void togglestruts(void);
 void togglefloating(Client *c);
 void togglemax(Client *c);
 void togglemaxv(Client *c);
@@ -182,7 +188,7 @@ void togglefill(Client *c);
 void toggleshade(Client *c);
 void toggletag(Client *c, int index);
 void toggleview(int index);
-void togglemonitor(const char *arg);
+void togglemonitor(void);
 void toggleshowing(void);
 void togglehidden(Client *c);
 void focusview(int index);
@@ -200,9 +206,9 @@ void removegroup(Client *c, Window leader, int group);
 void updateiconname(Client * c);
 void updatefloat(Client *c, Monitor *m);
 void view(int index);
-void viewprevtag(const char *arg);	/* views previous selected tags */
-void viewlefttag(const char *arg);
-void viewrighttag(const char *arg);
+void viewprevtag(void);	/* views previous selected tags */
+void viewlefttag(void);
+void viewrighttag(void);
 int xerror(Display * dpy, XErrorEvent * ee);
 int xerrordummy(Display * dsply, XErrorEvent * ee);
 int xerrorstart(Display * dsply, XErrorEvent * ee);
@@ -210,9 +216,9 @@ int (*xerrorxlib) (Display *, XErrorEvent *);
 void zoom(Client *c);
 
 void addtag(void);
-void appendtag(const char *arg);
+void appendtag(void);
 void deltag(void);
-void rmlasttag(const char *arg);
+void rmlasttag(void);
 void settags(unsigned int numtags);
 
 Bool isdockapp(Window win);
@@ -254,7 +260,6 @@ Bool haveext[BaseLast];
 // Button button[LastBtn];
 // View *views;
 // Key **keys;
-XKeyEvent *key_event;
 Rule **rules;
 // char **tags;
 // Atom *dt_tags;
@@ -280,6 +285,16 @@ struct {
 	int snap;
 	char command[255];
 } options;
+
+void (*actions[LastOn][5])(Client *, unsigned int, int, int) = {
+	/* *INDENT-OFF* */
+	/* OnWhere	     Button1	Button2	    Button3	Button4	    Button5	*/
+	[OnClientTitle]	 = { mousemove, NULL,	    mouseresize,NULL,	    NULL	},
+	[OnClientFrame]	 = { mouseresize,NULL,	    NULL,	NULL,	    NULL	},
+	[OnClientWindow] = { m_move,	m_zoom,	    m_resize,	NULL,	    NULL	},
+	[OnRoot]	 = { NULL,	NULL,	    m_spawn,	m_prevtag,  m_nexttag	},
+	/* *INDENT-ON* */
+};
 
 Layout layouts[] = {
 	/* *INDENT-OFF* */
@@ -485,13 +500,20 @@ isfloating(Client *c, Monitor *m)
 }
 
 void
-buttonpress(XEvent * e) {
+buttonpress(XEvent *e)
+{
 	Client *c;
 	int i;
 	XButtonPressedEvent *ev = &e->xbutton;
-	static int button_states[Button5+1] = { 0, };
+	static int button_states[Button5 + 1] = { 0, };
+	void (*action) (Client *, unsigned int, int, int);
+	int button;
 
-	if ((int)ev->time - (int)user_time > 0)
+	if (Button1 > ev->button || ev->button > Button5)
+		return;
+	button = ev->button - Button1;
+
+	if (user_time == CurrentTime || (int) ev->time - (int) user_time > 0)
 		user_time = ev->time;
 
 	if (ev->window == scr->root) {
@@ -500,63 +522,69 @@ buttonpress(XEvent * e) {
 		if (ev->type == ButtonPress) {
 			if (ev->state || ev->button < Button3 || ev->button > Button5) {
 				button_states[ev->button] = ev->state;
-				XUngrabPointer(dpy, CurrentTime);
-				XSendEvent(dpy, scr->selwin, False, SubstructureNotifyMask, e);
+				XUngrabPointer(dpy, CurrentTime);	// ev->time ??
+				XSendEvent(dpy, scr->selwin, False,
+					   SubstructureNotifyMask, e);
 				return;
 			}
 			return;
 		} else if (ev->type == ButtonRelease) {
-			if (button_states[ev->button] || ev->button < Button3 || ev->button > Button5) {
-				XSendEvent(dpy, scr->selwin, False, SubstructureNotifyMask, e);
+			if (button_states[ev->button] || ev->button < Button3
+			    || ev->button > Button5) {
+				XSendEvent(dpy, scr->selwin, False,
+					   SubstructureNotifyMask, e);
 				return;
 			}
 		}
-		switch (ev->button) {
-		case Button3:
-			spawn(options.command);
-			break;
-		case Button4:
-			viewlefttag(NULL);
-			break;
-		case Button5:
-			viewrighttag(NULL);
-			break;
-		}
-		return;
-	}
-	if ((c = getclient(ev->window, ClientTitle))) {
+		if ((action = actions[OnRoot][button]))
+			(*action) (NULL, ev->button, ev->x_root, ev->y_root);
+	} else if ((c = getclient(ev->window, ClientTitle)) && ev->window == c->title) {
 		DPRINTF("TITLE %s: 0x%x\n", c->name, (int) ev->window);
 		focus(c);
 		raiseclient(c);
-		for (i = 0; i < LastBtn; i++) {
-			if (scr->button[i].action == NULL)
+		for (i = 0; i < LastElement; i++) {
+			ElementClient *ec = &c->element[i];
+
+			action = scr->element[i].action ? scr->element[i].action[button]
+			    : actions[OnClientTitle][button];
+
+			if (!ec->present)
 				continue;
-			if ((ev->x > scr->button[i].x)
-			    && ((int)ev->x < (int)(scr->button[i].x + scr->style.titleheight))
-			    && (scr->button[i].x != -1) && (int)ev->y < scr->style.titleheight) {
+			if (ev->x >= ec->g.x && ev->x < ec->g.x + ec->g.w
+			    && ev->y >= ec->g.y && ev->y < ec->g.y + ec->g.h) {
 				if (ev->type == ButtonPress) {
-					DPRINTF("BUTTON %d PRESSED\n", i);
-					scr->button[i].pressed = 1;
-				} else {
-					DPRINTF("BUTTON %d RELEASED\n", i);
-					scr->button[i].pressed = 0;
-					scr->button[i].action(NULL);
+					DPRINTF("ELEMENT %d PRESSED\n", i);
+					ec->pressed |= (1 << button);
+					drawclient(c);
+					/* resize needs to be on button press */
+					if (i == SizeBtn && action)
+						(*action) (c, ev->button, ev->x_root,
+							   ev->y_root);
+				} else if (ev->type == ButtonRelease) {
+					DPRINTF("ELEMENT %d RELEASED\n", i);
+					ec->pressed &= !(1 << button);
+					drawclient(c);
+					/* resize needs to be on button press */
+					if (i != SizeBtn && action)
+						(*action) (c, ev->button, ev->x_root,
+							   ev->y_root);
 				}
-				drawclient(c);
 				return;
+			} else {
+				ec->pressed &= !(1 << button);
+				drawclient(c);
 			}
 		}
-		for (i = 0; i < LastBtn; i++)
-			scr->button[i].pressed = 0;
+		for (i = 0; i < LastElement; i++)
+			c->element[i].pressed &= !(1 << button);
 		drawclient(c);
 		if (ev->type == ButtonRelease)
 			return;
 		restack();
-		if (ev->button == Button1)
-			mousemove(c, ev->button, ev->x_root, ev->y_root);
-		else if (ev->button == Button3)
-			mouseresize(c, ev->button, ev->x_root, ev->y_root);
-	} else if ((c = getclient(ev->window, ClientWindow))) {
+		if ((action = actions[OnClientTitle][button]))
+			(*action) (c, ev->button, ev->x_root, ev->y_root);
+		XUngrabPointer(dpy, CurrentTime);	// ev->time ??
+	} else if ((c = getclient(ev->window, ClientWindow)) && ev->window == c->win) {
 		DPRINTF("WINDOW %s: 0x%x\n", c->name, (int) ev->window);
 		focus(c);
 		raiseclient(c);
@@ -565,25 +593,22 @@ buttonpress(XEvent * e) {
 			XAllowEvents(dpy, ReplayPointer, CurrentTime);
 			return;
 		}
-		if (ev->button == Button1) {
-			if (!isfloating(c, curmonitor()))
-				togglefloating(c);
-			mousemove(c, ev->button, ev->x_root, ev->y_root);
-		} else if (ev->button == Button2) {
-			if (isfloating(c, curmonitor()))
-				togglefloating(c);
-			else
-				zoom(c);
-			/* passive grab */
-			XUngrabPointer(dpy, CurrentTime); // ev->time ??
-		} else if (ev->button == Button3) {
-			if (!isfloating(c, curmonitor()))
-				togglefloating(c);
-			mouseresize(c, ev->button, ev->x_root, ev->y_root);
-		}
-	} else if ((c = getclient(ev->window, ClientFrame))) {
+		if (ev->type == ButtonRelease)
+			return;
+		if ((action = actions[OnClientWindow][button]))
+			(*action) (c, ev->button, ev->x_root, ev->y_root);
+		XUngrabPointer(dpy, CurrentTime);	// ev->time ??
+	} else if ((c = getclient(ev->window, ClientFrame)) && ev->window == c->frame) {
 		DPRINTF("FRAME %s: 0x%x\n", c->name, (int) ev->window);
-		/* Not supposed to happen */
+		/* Not supposed to happen, maybe on the border... */
+		focus(c);
+		raiseclient(c);
+		restack();
+		if (ev->type == ButtonRelease)
+			return;
+		if ((action = actions[OnClientFrame][button]))
+			(*action) (c, ev->button, ev->x_root, ev->y_root);
+		XUngrabPointer(dpy, CurrentTime);	// ev->time ??
 	}
 }
 
@@ -1420,7 +1445,7 @@ focus(Client * c) {
 }
 
 void
-focusicon(const char *arg)
+focusicon()
 {
 	Client *c;
 
@@ -1761,7 +1786,7 @@ keyrelease(XEvent *e) {
 	XKeyEvent *ev;
 
 	ev = &e->xkey;
-	if ((int)ev->time - (int)user_time > 0)
+	if (user_time == CurrentTime || (int)ev->time - (int)user_time > 0)
 		user_time = ev->time;
 }
 
@@ -1778,13 +1803,10 @@ keypress(XEvent * e) {
 	for (i = 0; i < scr->nkeys; i++)
 		if (keysym == scr->keys[i]->keysym
 		    && CLEANMASK(scr->keys[i]->mod) == CLEANMASK(ev->state)) {
-			if (scr->keys[i]->func) {
-				key_event = ev;
-				scr->keys[i]->func(scr->keys[i]->arg);
-				key_event = NULL;
-			}
 			if ((int)ev->time - (int)user_time > 0)
 				user_time = ev->time;
+			if (scr->keys[i]->func)
+				scr->keys[i]->func(scr->keys[i]->arg);
 			XUngrabKeyboard(dpy, CurrentTime);
 		}
 }
@@ -1798,8 +1820,6 @@ killclient(Client * c)
 		return;
 	if (!getclient(c->win, ClientDead)) {
 		if (!getclient(c->win, ClientPing)) {
-			Time time = key_event ? key_event->time : CurrentTime;
-
 			if (checkatom(c->win, _XA_WM_PROTOCOLS, _XA_NET_WM_PING)) {
 				XEvent ev;
 
@@ -1810,7 +1830,7 @@ killclient(Client * c)
 				ev.xclient.message_type = _XA_WM_PROTOCOLS;
 				ev.xclient.format = 32;
 				ev.xclient.data.l[0] = _XA_NET_WM_PING;
-				ev.xclient.data.l[1] = time;
+				ev.xclient.data.l[1] = user_time;
 				ev.xclient.data.l[2] = c->win;
 				ev.xclient.data.l[3] = 0;
 				ev.xclient.data.l[4] = 0;
@@ -1827,7 +1847,7 @@ killclient(Client * c)
 				ev.xclient.message_type = _XA_WM_PROTOCOLS;
 				ev.xclient.format = 32;
 				ev.xclient.data.l[0] = _XA_WM_DELETE_WINDOW;
-				ev.xclient.data.l[1] = time;
+				ev.xclient.data.l[1] = user_time;
 				ev.xclient.data.l[2] = 0;
 				ev.xclient.data.l[3] = 0;
 				ev.xclient.data.l[4] = 0;
@@ -2114,6 +2134,7 @@ manage(Window w, XWindowAttributes *wa)
 	twa.event_mask = ExposureMask | MOUSEMASK;
 	/* we create title as root's child as a workaround for 32bit visuals */
 	if (c->has.title) {
+		c->element = ecalloc(LastElement, sizeof(*c->element));
 		c->title = XCreateWindow(dpy, scr->root, 0, 0, c->c.w, c->th,
 					 0, DefaultDepth(dpy, scr->screen),
 					 CopyFromParent, DefaultVisual(dpy, scr->screen),
@@ -2662,6 +2683,14 @@ mousemove(Client * c, unsigned int button, int x_root, int y_root) {
 	ewmh_update_net_window_state(c);
 }
 
+void
+m_move(Client *c, unsigned int button, int x_root, int y_root)
+{
+	if (!isfloating(c, curmonitor()))
+		togglefloating(c);
+	mousemove(c, button, x_root, y_root);
+}
+
 #ifdef SYNC
 void
 sync_request(Client *c, XSyncValue *val, Time time) {
@@ -3063,6 +3092,14 @@ mouseresize(Client *c, unsigned int button, int x_root, int y_root)
 		}
 	}
 	mouseresize_from(c, from, button, x_root, y_root);
+}
+
+void
+m_resize(Client *c, unsigned int button, int x_root, int y_root)
+{
+	if (!isfloating(c, curmonitor()))
+		togglefloating(c);
+	mouseresize(c, button, x_root, y_root);
 }
 
 Client *
@@ -4723,7 +4760,7 @@ deltag() {
 }
 
 void
-rmlasttag(const char *arg) {
+rmlasttag() {
 	deltag();
 	ewmh_process_net_desktop_names();
 	ewmh_update_net_number_of_desktops();
@@ -4765,7 +4802,7 @@ addtag() {
 }
 
 void
-appendtag(const char *arg) {
+appendtag() {
 	addtag();
 	ewmh_process_net_desktop_names();
 	ewmh_update_net_number_of_desktops();
@@ -4960,6 +4997,11 @@ spawn(const char *arg)
 		exit(0);
 	}
 	wait(0);
+}
+
+void
+m_spawn(Client *c, unsigned int button, int x_root, int y_root) {
+	spawn(options.command);
 }
 
 static void
@@ -5252,7 +5294,7 @@ tile(Monitor *cm)
 }
 
 void
-togglestruts(const char *arg) {
+togglestruts() {
 	scr->views[curmontag].barpos = (scr->views[curmontag].barpos == StrutsOn)
 	    ? (options.hidebastards ? StrutsHide : StrutsOff) : StrutsOn;
 	updategeom(curmonitor());
@@ -5260,7 +5302,7 @@ togglestruts(const char *arg) {
 }
 
 void
-toggledectiled(const char *arg) {
+toggledectiled() {
 	scr->views[curmontag].dectiled = scr->views[curmontag].dectiled ? False : True;
 	arrange(curmonitor());
 }
@@ -5616,7 +5658,7 @@ toggletag(Client *c, int index) {
 }
 
 void
-togglemonitor(const char *arg) {
+togglemonitor() {
 	Monitor *m, *cm;
 	int x, y;
 
@@ -5727,6 +5769,7 @@ unmanage(Client * c, WithdrawCause cause) {
 		XDeleteContext(dpy, c->title, context[ClientAny]);
 		XDeleteContext(dpy, c->title, context[ScreenContext]);
 		c->title = None;
+		free(c->element);
 	}
 	if (cause != CauseDestroyed) {
 		XSelectInput(dpy, c->win, CLIENTMASK & ~(StructureNotifyMask | EnterWindowMask));
@@ -6103,7 +6146,7 @@ view(int index) {
 }
 
 void
-viewprevtag(const char *arg) {
+viewprevtag() {
 	Bool tmptags[scr->ntags];
 	unsigned int i = 0;
 	int prevcurtag;
@@ -6124,7 +6167,7 @@ viewprevtag(const char *arg) {
 }
 
 void
-viewlefttag(const char *arg) {
+viewlefttag() {
 	unsigned int i;
 
 	/* wrap around: TODO: do full _NET_DESKTOP_LAYOUT */
@@ -6141,7 +6184,7 @@ viewlefttag(const char *arg) {
 }
 
 void
-viewrighttag(const char *arg) {
+viewrighttag() {
 	unsigned int i;
 
 	for (i = 0; i < scr->ntags - 1; i++) {
@@ -6158,6 +6201,16 @@ viewrighttag(const char *arg) {
 }
 
 void
+m_prevtag(Client *c, unsigned int button, int x_root, int y_root) {
+	viewlefttag();
+}
+
+void
+m_nexttag(Client *c, unsigned int button, int x_root, int y_root) {
+	viewrighttag();
+}
+
+void
 zoom(Client *c) {
 	if (!c || !FEATURES(curlayout, ZOOM) || c->skip.arrange)
 		return;
@@ -6168,6 +6221,14 @@ zoom(Client *c) {
 	attach(c, False);
 	arrange(curmonitor());
 	focus(c);
+}
+
+void
+m_zoom(Client *c, unsigned int button, int x_root, int y_root) {
+	if (isfloating(c, curmonitor()))
+		togglefloating(c);
+	else
+		zoom(c);
 }
 
 int

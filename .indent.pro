@@ -24,6 +24,8 @@
 -ss
 -hnl
 -nbc
+-TButton
+-TButtonImage
 -TXWindowAttributes
 -TEScreen
 -TXEvent

@@ -13,62 +13,62 @@
 #include "config.h"
 
 static void
-_togglefloating(const char *arg) {
+k_togglefloating(const char *arg) {
 	if (sel) togglefloating(sel);
 }
 
 static void
-_togglefill(const char *arg) {
+k_togglefill(const char *arg) {
 	if (sel) togglefill(sel);
 }
 
 static void
-_togglemaxv(const char *arg) {
+k_togglemaxv(const char *arg) {
 	if (sel) togglemaxv(sel);
 }
 
 static void
-_togglemaxh(const char *arg) {
+k_togglemaxh(const char *arg) {
 	if (sel) togglemaxh(sel);
 }
 
 static void
-_toggleshade(const char *arg) {
+k_toggleshade(const char *arg) {
 	if (sel) toggleshade(sel);
 }
 
 static void
-_togglehidden(const char *arg) {
+k_togglehidden(const char *arg) {
 	if (sel) togglehidden(sel);
 }
 
 static void
-_zoom(const char *arg) {
+k_zoom(const char *arg) {
 	if (sel) zoom(sel);
 }
 
 static void
-_focusnext(const char *arg) {
+k_focusnext(const char *arg) {
 	if (sel) focusnext(sel);
 }
 
 static void
-_iconify(const char *arg) {
+k_iconify(const char *arg) {
 	if (sel) iconify(sel);
 }
 
 static void
-_focusprev(const char *arg) {
+k_focusprev(const char *arg) {
 	if (sel) focusprev(sel);
 }
 
 static void
-_killclient(const char *arg) {
+k_killclient(const char *arg) {
 	if (sel) killclient(sel);
 }
 
 static void
-_moveresizekb(const char *arg) {
+k_moveresizekb(const char *arg) {
 	if (sel) {
 		int dw = 0, dh = 0, dx = 0, dy = 0;
 
@@ -78,33 +78,78 @@ _moveresizekb(const char *arg) {
 }
 
 static void
-_rotateview(const char *arg) {
+k_rotateview(const char *arg) {
 	rotateview(sel);
 }
 
 static void
-_unrotateview(const char *arg) {
+k_unrotateview(const char *arg) {
 	unrotateview(sel);
 }
 
 static void
-_rotatezone(const char *arg) {
+k_rotatezone(const char *arg) {
 	rotatezone(sel);
 }
 
 static void
-_unrotatezone(const char *arg) {
+k_unrotatezone(const char *arg) {
 	unrotatezone(sel);
 }
 
 static void
-_rotatewins(const char *arg) {
+k_rotatewins(const char *arg) {
 	rotatewins(sel);
 }
 
 static void
-_unrotatewins(const char *arg) {
+k_unrotatewins(const char *arg) {
 	unrotatewins(sel);
+}
+
+static void
+k_togglestruts(const char *arg) {
+	togglestruts();
+}
+
+static void
+k_toggledectiled(const char *arg) {
+	toggledectiled();
+}
+
+static void
+k_focusicon(const char *arg) {
+	focusicon();
+}
+
+static void
+k_viewprevtag(const char *arg) {
+	viewprevtag();
+}
+
+static void
+k_viewlefttag(const char *arg) {
+	viewlefttag();
+}
+
+static void
+k_viewrighttag(const char *arg) {
+	viewrighttag();
+}
+
+static void
+k_togglemonitor(const char *arg) {
+	togglemonitor();
+}
+
+static void
+k_appendtag(const char *arg) {
+	appendtag();
+}
+
+static void
+k_rmlasttag(const char *arg) {
+	rmlasttag();
 }
 
 typedef struct {
@@ -113,46 +158,46 @@ typedef struct {
 } KeyItem;
 
 static KeyItem KeyItems[] = {
-	{ "togglestruts",	togglestruts	},
-	{ "toggledectiled",	toggledectiled	},
-	{ "focusicon",		focusicon	},
-	{ "focusnext",		_focusnext	},
-	{ "focusprev",		_focusprev	},
-	{ "viewprevtag",	viewprevtag	},
-	{ "viewlefttag",	viewlefttag	},
-	{ "viewrighttag",	viewrighttag	},
-	{ "quit",		quit		},
-	{ "restart", 		restart		},
-	{ "killclient",		_killclient	},
-	{ "togglefloating", 	_togglefloating	},
-	{ "decmwfact", 		setmwfact	},
-	{ "incmwfact", 		setmwfact	},
-	{ "incnmaster", 	incnmaster	},
-	{ "decnmaster", 	incnmaster	},
-	{ "iconify", 		_iconify	},
-	{ "zoom", 		_zoom		},
-	{ "moveright", 		_moveresizekb	},
-	{ "moveleft", 		_moveresizekb	},
-	{ "moveup", 		_moveresizekb	},
-	{ "movedown", 		_moveresizekb	},
-	{ "resizedecx", 	_moveresizekb	},
-	{ "resizeincx", 	_moveresizekb	},
-	{ "resizedecy", 	_moveresizekb	},
-	{ "resizeincy", 	_moveresizekb	},
-	{ "togglemonitor", 	togglemonitor	},
-	{ "togglefill", 	_togglefill	},
-	{ "togglemaxv", 	_togglemaxv	},
-	{ "togglemaxh", 	_togglemaxh	},
-	{ "toggleshade", 	_toggleshade	},
-	{ "togglehidden", 	_togglehidden	},
-	{ "appendtag",		appendtag	},
-	{ "rmlasttag",		rmlasttag	},
-	{ "rotateview",		_rotateview	},
-	{ "unrotateview",	_unrotateview	},
-	{ "rotatezone",		_rotatezone	},
-	{ "unrotatezone",	_unrotatezone	},
-	{ "rotatewins",		_rotatewins	},
-	{ "unrotatewins",	_unrotatewins	},
+	{ "togglestruts",	k_togglestruts	 },
+	{ "toggledectiled",	k_toggledectiled },
+	{ "focusicon",		k_focusicon	 },
+	{ "focusnext",		k_focusnext	 },
+	{ "focusprev",		k_focusprev	 },
+	{ "viewprevtag",	k_viewprevtag	 },
+	{ "viewlefttag",	k_viewlefttag	 },
+	{ "viewrighttag",	k_viewrighttag	 },
+	{ "quit",		quit		 }, /* arg is new command */
+	{ "restart", 		restart		 }, /* arg is new command */
+	{ "killclient",		k_killclient	 },
+	{ "togglefloating", 	k_togglefloating },
+	{ "decmwfact", 		setmwfact	 }, /* arg is delta or factor */
+	{ "incmwfact", 		setmwfact	 }, /* arg is delta or factor */
+	{ "incnmaster", 	incnmaster	 }, /* arg is delta */
+	{ "decnmaster", 	incnmaster	 }, /* arg is delta */
+	{ "iconify", 		k_iconify	 },
+	{ "zoom", 		k_zoom		 },
+	{ "moveright", 		k_moveresizekb	 }, /* arg is delta geometry */
+	{ "moveleft", 		k_moveresizekb	 }, /* arg is delta geometry */
+	{ "moveup", 		k_moveresizekb	 }, /* arg is delta geometry */
+	{ "movedown", 		k_moveresizekb	 }, /* arg is delta geometry */
+	{ "resizedecx", 	k_moveresizekb	 }, /* arg is delta geometry */
+	{ "resizeincx", 	k_moveresizekb	 }, /* arg is delta geometry */
+	{ "resizedecy", 	k_moveresizekb	 }, /* arg is delta geometry */
+	{ "resizeincy", 	k_moveresizekb	 }, /* arg is delta geometry */
+	{ "togglemonitor", 	k_togglemonitor	 },
+	{ "togglefill", 	k_togglefill	 },
+	{ "togglemaxv", 	k_togglemaxv	 },
+	{ "togglemaxh", 	k_togglemaxh	 },
+	{ "toggleshade", 	k_toggleshade	 },
+	{ "togglehidden", 	k_togglehidden	 },
+	{ "appendtag",		k_appendtag	 },
+	{ "rmlasttag",		k_rmlasttag	 },
+	{ "rotateview",		k_rotateview	 },
+	{ "unrotateview",	k_unrotateview	 },
+	{ "rotatezone",		k_rotatezone	 },
+	{ "unrotatezone",	k_unrotatezone	 },
+	{ "rotatewins",		k_rotatewins	 },
+	{ "unrotatewins",	k_unrotatewins	 },
 };
 
 static int
@@ -162,40 +207,40 @@ idxoftag(const char *tag) {
 	if (tag == NULL)
 		return -1;
 	for (i = 0; (i < scr->ntags) && strcmp(tag, scr->tags[i]); i++);
-	return (i < scr->ntags) ? i : 0;
+	return i < scr->ntags ? i : 0;
 }
 
 static void
-_toggletag(const char *arg) {
+k_toggletag(const char *arg) {
 	if (sel) toggletag(sel, idxoftag(arg));
 }
 
 static void
-_tag(const char *arg) {
+k_tag(const char *arg) {
 	if (sel) tag(sel, idxoftag(arg));
 }
 
 static void
-_focusview(const char *arg) {
+k_focusview(const char *arg) {
 	focusview(idxoftag(arg));
 }
 
 static void
-_toggleview(const char *arg) {
+k_toggleview(const char *arg) {
 	toggleview(idxoftag(arg));
 }
 
 static void
-_view(const char *arg) {
+k_view(const char *arg) {
 	view(idxoftag(arg));
 }
 
 static KeyItem KeyItemsByTag[] = {
-	{ "view",		_view		},
-	{ "toggleview",		_toggleview	},
-	{ "focusview",		_focusview	},
-	{ "tag", 		_tag		},
-	{ "toggletag", 		_toggletag	},
+	{ "view",		k_view		},
+	{ "toggleview",		k_toggleview	},
+	{ "focusview",		k_focusview	},
+	{ "tag", 		k_tag		},
+	{ "toggletag", 		k_toggletag	},
 };
 
 static void

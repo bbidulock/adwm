@@ -68,100 +68,264 @@ drawtext(EScreen *ds, const char *text, Drawable drawable, XftDraw *xftdrawable,
 	return w + ds->dc.font.height;
 }
 
-static int
-drawbutton(EScreen *ds, Drawable d, Button btn, unsigned long col[ColLast], int x, int y)
+static ButtonImage *
+buttonimage(EScreen *ds, Client *c, ElementType type)
 {
-	if (!btn.action)
-		return 0;
-#if defined IMLIB2 || defined XPM
-	if (btn.pixmap) {
-		DPRINTF("Copying pixmap 0x%lx with geom %dx%d+%d+%d to drawable 0x%lx\n",
-			btn.pixmap, btn.pw, btn.ph, x, y + btn.py, d);
-		XCopyArea(dpy, btn.pixmap, d, ds->dc.gc, 0, btn.po, btn.pw, btn.ph, x, y + btn.py);
-	} else
-#endif
-	if (btn.bitmap) {
-		XSetForeground(dpy, ds->dc.gc, col[ColBG]);
-		XFillRectangle(dpy, d, ds->dc.gc, x, 0, ds->dc.h, ds->dc.h);
-		XSetForeground(dpy, ds->dc.gc, btn.pressed ? col[ColFG] : col[ColButton]);
-		XSetBackground(dpy, ds->dc.gc, col[ColBG]);
-		XCopyPlane(dpy, btn.bitmap, d, ds->dc.gc, 0, 0, btn.pw, btn.ph, x, y + btn.py, 1);
-		return ds->dc.h;
+	Bool pressed, hovered, focused, enabled, present, toggled;
+	ElementClient *ec;
+	Element *e;
+	int image;
+
+	switch (type) {
+	case IconifyBtn:
+		present = c->has.but.min;
+		toggled = False;
+		enabled = c->can.min;
+		break;
+	case MaximizeBtn:
+		present = c->has.but.max;
+		toggled = c->is.max || c->is.maxv || c->is.maxh || c->is.fs;
+		enabled = c->can.max || c->can.maxv || c->can.maxh || c->can.fs;
+		break;
+	case CloseBtn:
+		present = c->has.but.close;
+		toggled = False;
+		enabled = c->can.close;
+		break;
+	case ShadeBtn:
+		present = c->has.but.shade;
+		toggled = c->is.shaded;
+		enabled = c->can.shade;
+		break;
+	case StickBtn:
+		present = c->has.but.stick;
+		toggled = c->is.sticky;
+		enabled = c->can.stick;
+		break;
+	case LHalfBtn:
+		present = False;
+		toggled = False;
+		enabled = False;
+		break;
+	case RHalfBtn:
+		present = False;
+		toggled = False;
+		enabled = False;
+		break;
+	case FillBtn:
+		present = c->has.but.fill;
+		toggled = c->is.fill;
+		enabled = c->can.fill || c->can.fillh || c->can.fillv;
+		break;
+	case FloatBtn:
+		present = c->has.but.floats;
+		toggled = c->is.floater || c->skip.arrange;
+		enabled = c->can.floats || c->can.arrange;
+		break;
+	case SizeBtn:
+		present = c->has.but.size;
+		toggled = False;
+		enabled = c->can.size || c->can.sizev || c->can.sizeh;
+		break;
+	default:
+		present = False;
+		toggled = False;
+		enabled = False;
+		break;
 	}
-	return 0;
+	if (!present) {
+		DPRINTF("button number %d is not present!\n", type);
+		return NULL;
+	}
+
+	ec = &c->element[type];
+	pressed = ec->pressed ? True : False;
+	hovered = ec->hovered;
+	focused = (c == give) || (c == sel);
+
+	e = &ds->element[type];
+	if (!e->action) {
+		DPRINTF("button number %d has no actions!\n", type);
+		return NULL;
+	}
+
+	if (pressed && e->image[ButtonImagePressed].present)
+		return &e->image[ButtonImagePressed];
+	image = ButtonImageHover + hovered ? 0 : focused ? 1 : 2;
+	image += toggled ? 3 : 0;
+	image += enabled ? 0 : 6;
+	if (hovered && !e->image[image].present)
+		image += focused ? 1 : 2;
+	if (!focused && !e->image[image].present)
+		image -= 1;
+	if (toggled && !e->image[image].present)
+		image -= 3;
+	if (!enabled && !e->image[image].present) {
+		DPRINTF("button number %d missing image %d!\n", type, image);
+		return NULL;
+	}
+	if (e->image[image].present)
+		return &e->image[image];
+	if (e->image[ButtonImageDefault].present)
+		return &e->image[ButtonImageDefault];
+	DPRINTF("button number %d missing default image!\n", type);
+	return NULL;
 }
 
 static int
-drawelement(EScreen *ds, char which, int x, int position, Client *c) {
-	int w;
-	unsigned int j;
-	unsigned long *color = c == sel ? ds->style.color.sel : ds->style.color.norm;
+drawbutton(EScreen *ds, Client *c, ElementType type, unsigned long col[ColLast], int x)
+{
+	ElementClient *ec = &c->element[type];
+	Drawable d = c->drawable;
+	ButtonImage *bi;
 
+	if (!(bi = buttonimage(ds, c, type)) || !bi->present) {
+		DPRINTF("button %d has no button image\n", type);
+		return 0;
+	}
+
+	ec->g.x = x;
+	ec->g.y = (ds->dc.h - bi->h) / 2;
+	ec->g.w = bi->w;
+	ec->g.h = bi->h;
+
+#if defined IMLIB2 || defined XPM
+	if (bi->pixmap) {
+		DPRINTF("Copying pixmap 0x%lx with geom %dx%d+%d+%d to drawable 0x%lx\n",
+			bi->pixmap, ec->g.w, ec->g.h, ec->g.x, ec->g.y, d);
+		XCopyArea(dpy, bi->pixmap, d, ds->dc.gc, 0, bi->y, ec->g.w, ec->g.h, ec->g.x, ec->g.y);
+		return ec->g.w;
+	} else
+#endif
+	if (bi->bitmap) {
+		XSetForeground(dpy, ds->dc.gc, col[ColBG]);
+		XFillRectangle(dpy, d, ds->dc.gc, ec->g.x, 0, ds->dc.h, ds->dc.h);
+		XSetForeground(dpy, ds->dc.gc, ec->pressed ? col[ColFG] : col[ColButton]);
+		XSetBackground(dpy, ds->dc.gc, col[ColBG]);
+		XCopyPlane(dpy, bi->bitmap, d, ds->dc.gc, 0, 0, ec->g.w, ec->g.h, ec->g.x, ec->g.y + bi->y, 1);
+		return ds->dc.h;
+	}
+	DPRINTF("button %d has no pixmap or bitmap\n", type);
+	return 0;
+}
+
+static ElementType
+elementtype(char which)
+{
 	switch (which) {
-	case 'T':
-		w = 0;
-		for (j = 0; j < ds->ntags; j++) {
-			if (c->tags[j])
-				w += drawtext(ds, ds->tags[j], c->drawable, c->xftdraw,
-				    color, ds->dc.x, ds->dc.y, ds->dc.w);
-		}
+	case 'I': return IconifyBtn;
+	case 'M': return MaximizeBtn;
+	case 'C': return CloseBtn;
+	case 'S': return ShadeBtn;
+	case 'A': return StickBtn;
+	case 'L': return LHalfBtn;
+	case 'R': return RHalfBtn;
+	case 'X': return FillBtn;
+	case 'F': return FloatBtn;
+	case 'Z': return SizeBtn;
+	case 'T': return TitleTags;
+	case 'N': return TitleName;
+	case '|': return TitleSep;
+	default:  return LastElement;
+	}
+}
+
+static int
+drawelement(EScreen *ds, char which, int x, int position, Client *c)
+{
+	int w = 0;
+	unsigned long *color = c == sel ? ds->style.color.sel : ds->style.color.norm;
+	ElementType type = elementtype(which);
+	ElementClient *ec = &c->element[type];
+
+	if (0 > type || type >= LastElement)
+		return 0;
+
+	DPRINTF("drawing element '%c' for client %s\n", which, c->name);
+
+	ec->present = False;
+	ec->g.x = ds->dc.x;
+	ec->g.y = 0;
+	ec->g.w = 0;
+	ec->g.h = ds->style.titleheight;
+	ec->g.b = 0;		/* later */
+
+	switch (type) {
+		unsigned int j;
+		int x, tw;
+
+	case TitleTags:
+		for (j = 0, x = ds->dc.x; j < ds->ntags; j++, w += tw, x += tw)
+			tw = c->tags[j] ? drawtext(ds, ds->tags[j], c->drawable,
+						   c->xftdraw, color, x, ds->dc.y,
+						   ds->dc.w) : 0;
 		break;
-	case '|':
+	case TitleSep:
 		XSetForeground(dpy, ds->dc.gc, color[ColBorder]);
 		XDrawLine(dpy, c->drawable, ds->dc.gc, ds->dc.x + ds->dc.h / 4, 0,
-		    ds->dc.x + ds->dc.h / 4, ds->dc.h);
+			  ds->dc.x + ds->dc.h / 4, ds->dc.h);
 		w = ds->dc.h / 2;
 		break;
-	case 'N':
-		w = drawtext(ds, c->name, c->drawable, c->xftdraw, color, ds->dc.x, ds->dc.y, ds->dc.w);
-		break;
-	case 'I':
-		ds->button[Iconify].x = ds->dc.x;
-		w = drawbutton(ds, c->drawable, ds->button[Iconify], color,
-		    ds->dc.x, ds->dc.h / 2 - ds->button[Iconify].ph / 2);
-		break;
-	case 'M':
-		ds->button[Maximize].x = ds->dc.x;
-		w = drawbutton(ds, c->drawable, ds->button[Maximize], color,
-		    ds->dc.x, ds->dc.h / 2 - ds->button[Maximize].ph / 2);
-		break;
-	case 'C':
-		ds->button[Close].x = ds->dc.x;
-		w = drawbutton(ds, c->drawable, ds->button[Close], color, ds->dc.x,
-		    ds->dc.h / 2 - ds->button[Maximize].ph / 2);
+	case TitleName:
+		w = drawtext(ds, c->name, c->drawable, c->xftdraw, color,
+			     ds->dc.x, ds->dc.y, ds->dc.w);
 		break;
 	default:
-		w = 0;
+		if (0 <= type && type < LastBtn)
+			w = drawbutton(ds, c, type, color, ds->dc.x);
 		break;
 	}
+	if (w) {
+		ec->present = True;
+		ec->g.w = w;
+		DPRINTF("element '%c' at %dx%d+%d+%d:%d for client '%s'\n",
+				which, ec->g.w, ec->g.h, ec->g.x, ec->g.y,
+				ec->g.b, c->name);
+	} else
+		DPRINTF("missing element '%c' for client %s\n", which, c->name);
 	return w;
 }
 
 static int
-elementw(EScreen *ds, char which, Client *c) {
-	int w;
-	unsigned int j;
+buttonw(EScreen *ds, Client *c, ElementType type)
+{
+	ButtonImage *bi;
 
-	switch (which) {
-	case 'I':
-		return ds->button[Iconify].pw;
-	case 'M':
-		return ds->button[Maximize].pw;
-	case 'C':
-		return ds->button[Iconify].pw;
-	case 'N':
-		return textw(ds, c->name);
-	case 'T':
-		w = 0;
+	if (!(bi = buttonimage(ds, c, type)) || !bi->present)
+		return 0;
+	return bi->w + 2 * bi->b;
+}
+
+static int
+elementw(EScreen *ds, Client *c, char which)
+{
+	int w = 0;
+	ElementType type = elementtype(which);
+
+	if (0 > type || type >= LastElement)
+		return 0;
+
+	switch (type) {
+		unsigned int j;
+
+	case TitleName:
+		w = textw(ds, c->name);
+		break;
+	case TitleTags:
 		for (j = 0; j < ds->ntags; j++) {
 			if (c->tags[j])
 				w += textw(ds, ds->tags[j]);
 		}
-		return w;
-	case '|':
-		return ds->dc.h / 2;
+		break;
+	case TitleSep:
+		w = ds->dc.h / 2;
+		break;
+	default:
+		if (0 <= type && type < LastBtn)
+			w = buttonw(ds, c, type);
+		break;
 	}
-	return 0;
+	return w;
 }
 
 void
@@ -189,13 +353,11 @@ drawclient(Client *c) {
 	XSetLineAttributes(dpy, ds->dc.gc, ds->style.border, LineSolid, CapNotLast, JoinMiter);
 	XFillRectangle(dpy, c->drawable, ds->dc.gc, ds->dc.x, ds->dc.y, ds->dc.w, ds->dc.h);
 	if (ds->dc.w < textw(ds, c->name)) {
-		ds->dc.w -= ds->dc.h;
-		ds->button[Close].x = ds->dc.w;
+		ds->dc.w -= elementw(ds, c, CloseBtn);
 		drawtext(ds, c->name, c->drawable, c->xftdraw,
 		    c == sel ? ds->style.color.sel : ds->style.color.norm, ds->dc.x, ds->dc.y, ds->dc.w);
-		drawbutton(ds, c->drawable, ds->button[Close],
-		    c == sel ? ds->style.color.sel : ds->style.color.norm, ds->dc.w,
-		    ds->dc.h / 2 - ds->button[Close].ph / 2);
+		drawbutton(ds, c, CloseBtn,
+		    c == sel ? ds->style.color.sel : ds->style.color.norm, ds->dc.w);
 		goto end;
 	}
 	/* Left */
@@ -211,7 +373,7 @@ drawclient(Client *c) {
 	for (i++; i < strlen(ds->style.titlelayout); i++) {
 		if (ds->style.titlelayout[i] == ' ' || ds->style.titlelayout[i] == '-')
 			break;
-		ds->dc.x -= elementw(ds, ds->style.titlelayout[i], c) / 2;
+		ds->dc.x -= elementw(ds, c, ds->style.titlelayout[i]) / 2;
 		ds->dc.x += drawelement(ds, ds->style.titlelayout[i], 0, AlignCenter, c);
 	}
 	if (i == strlen(ds->style.titlelayout) || ds->dc.x >= ds->dc.w)
@@ -221,7 +383,7 @@ drawclient(Client *c) {
 	for (i = strlen(ds->style.titlelayout); i-- ; ) {
 		if (ds->style.titlelayout[i] == ' ' || ds->style.titlelayout[i] == '-')
 			break;
-		ds->dc.x -= elementw(ds, ds->style.titlelayout[i], c);
+		ds->dc.x -= elementw(ds, c, ds->style.titlelayout[i]);
 		drawelement(ds, ds->style.titlelayout[i], 0, AlignRight, c);
 	}
       end:
@@ -243,61 +405,66 @@ getcolor(const char *colstr) {
 }
 
 static int
-initpixmap(const char *file, Button * b)
+initpixmap(const char *file, ButtonImage *bi)
 {
+	if (!file)
+		return 1;
 #ifdef XPM
 	if (strstr(file, ".xpm") && strlen(strstr(file, ".xpm")) == 4) {
 		XpmAttributes xa = { 0, };
 
-		if (XpmReadFileToPixmap(dpy, scr->root, file, &b->pixmap, &b->mask, &xa) == Success) {
-			if ((b->pw = xa.width) && (b->ph = xa.height)) {
-				if (b->ph > scr->style.titleheight) {
-					b->po = b->ph / 2 - scr->style.titleheight / 2;
-					b->ph = scr->style.titleheight;
+		if (XpmReadFileToPixmap(dpy, scr->root, file, &bi->pixmap, &bi->mask, &xa)
+		    == Success) {
+			if ((bi->w = xa.width) && (bi->h = xa.height)) {
+				if (bi->h > scr->style.titleheight) {
+					bi->y += (bi->h - scr->style.titleheight) / 2;
+					bi->h = scr->style.titleheight;
 				}
 				return 0;
 			}
 		}
 	}
 #endif
-#ifdef IMILIB2
+#ifdef IMLIB2
 	if (!strstr(file, ".xbm") || strlen(strstr(file, ".xbm")) != 4) {
+		Imlib_Image image;
+
 		imlib_context_push(scr->context);
 		imlib_context_set_mask(None);
 
-		if (!(b->image = imlib_load_image(file))) {
+		if (!(image = imlib_load_image(file))) {
 			if (file[0] != '/') {
 				/* TODO: look for it else where */
 			}
 		}
-		if (b->image) {
+		if (image) {
 			imlib_context_set_mask(None);
-			imlib_context_set_image(b->image);
-			b->pw = imlib_image_get_width();
-			b->ph = imlib_image_get_height();
-			if (b->ph > scr->style.titleheight)
-				b->ph = scr->style.titleheight;
-			if (b->pw > 2*scr->style.titleheight)
-				b->pw = 2*scr->style.titleheight;
+			imlib_context_set_image(image);
+			bi->w = imlib_image_get_width();
+			bi->h = imlib_image_get_height();
+			if (bi->h > scr->style.titleheight)
+				bi->h = scr->style.titleheight;
+			if (bi->w > 2 * scr->style.titleheight)
+				bi->w = 2 * scr->style.titleheight;
 			imlib_render_pixmaps_for_whole_image_at_size
-			    (&b->pixmap, &b->mask, b->pw, b->ph);
+			    (&bi->pixmap, &bi->mask, bi->w, bi->h);
 		} else {
 			DPRINTF("could not load image file %s\n", file);
 		}
 		imlib_context_pop();
-		if (b->image)
+		if (image)
 			return 0;
 	}
 #endif
 	if (strstr(file, ".xbm") && strlen(strstr(file, ".xbm")) == 4) {
-		b->bitmap =
+		bi->bitmap =
 		    XCreatePixmap(dpy, scr->root, scr->style.titleheight,
 				  scr->style.titleheight, 1);
 		if (BitmapSuccess ==
-		    XReadBitmapFile(dpy, scr->root, file, &b->pw, &b->ph, &b->bitmap,
-				    &b->px, &b->py)) {
-			if (b->px == -1 || b->py == -1)
-				b->px = b->py = 0;
+		    XReadBitmapFile(dpy, scr->root, file, &bi->w, &bi->h, &bi->bitmap,
+				    &bi->x, &bi->y)) {
+			if (bi->x == -1 || bi->y == -1)
+				bi->x = bi->y = 0;
 			return 0;
 		}
 	}
@@ -305,35 +472,181 @@ initpixmap(const char *file, Button * b)
 }
 
 static void
-_iconify(const char *arg) {
-	if (sel) iconify(sel);
+b_min(Client *c, unsigned int button, int x_root, int y_root)
+{
+	iconify(c);
 }
+
 static void
-_togglemax(const char *arg) {
-	if (sel) togglemax(sel);
+b_max(Client *c, unsigned int button, int x_root, int y_root)
+{
+	switch (button) {
+	case Button1:
+		togglemax(c);
+		break;
+	case Button2:
+		togglemaxv(c);
+		break;
+	case Button3:
+		togglemaxh(c);
+		break;
+	}
 }
+
 static void
-_killclient(const char *arg) {
-	if (sel) killclient(sel);
+b_close(Client *c, unsigned int button, int x_root, int y_root)
+{
+	killclient(c);
+}
+
+static void
+b_shade(Client *c, unsigned int button, int x_root, int y_root)
+{
+	switch (button) {
+	case Button1:
+		toggleshade(c);
+		break;
+	case Button2:
+		if (!c->is.shaded)
+			toggleshade(c);
+		break;
+	case Button3:
+		if (c->is.shaded)
+			toggleshade(c);
+		break;
+	}
+}
+
+static void
+b_stick(Client *c, unsigned int button, int x_root, int y_root)
+{
+	togglesticky(c);
+}
+
+static void
+b_lhalf(Client *c, unsigned int button, int x_root, int y_root)
+{
+}
+
+static void
+b_rhalf(Client *c, unsigned int button, int x_root, int y_root)
+{
+}
+
+static void
+b_fill(Client *c, unsigned int button, int x_root, int y_root)
+{
+	switch (button) {
+	case Button1:
+		togglefill(c);
+		break;
+	case Button2:
+		if (!c->is.fill)
+			togglefill(c);
+		break;
+	case Button3:
+		if (c->is.fill)
+			togglefill(c);
+		break;
+	}
+}
+
+static void
+b_float(Client *c, unsigned int button, int x_root, int y_root)
+{
+	switch (button) {
+	case Button1:
+		togglefloating(c);
+		break;
+	case Button2:
+		if (!c->skip.arrange)
+			togglefloating(c);
+		break;
+	case Button3:
+		if (c->skip.arrange)
+			togglefloating(c);
+		break;
+	}
+}
+
+static void
+b_resize(Client *c, unsigned int button, int x_root, int y_root)
+{
+	m_resize(c, button, x_root, y_root);
+}
+
+static void
+initelement(ElementType type, const char *name, const char *def, void (**action)(Client *, unsigned int, int, int)) {
+	char res[128];
+	static const char *kind[LastButtonImageType] = {
+		[ButtonImageDefault] = "",
+		[ButtonImagePressed] = ".pressed",
+		[ButtonImageHover] = ".hover",
+		[ButtonImageFocus] = ".focused",
+		[ButtonImageUnfocus] = ".unfocused",
+		[ButtonImageToggledHover] = ".toggled.hover",
+		[ButtonImageToggledFocus] = ".toggled.focused",
+		[ButtonImageToggledUnfocus] = ".toggled.unfocused",
+		[ButtonImageDisabledHover] = ".disabled.hover",
+		[ButtonImageDisabledFocus] = ".disabled.focused",
+		[ButtonImageDisabledUnfocus] = ".disabled.unfocused",
+		[ButtonImageToggledDisabledHover] = ".toggled.disabled.hover",
+		[ButtonImageToggledDisabledFocus] = ".toggled.disabled.focused",
+		[ButtonImageToggledDisabledUnfocus] = ".toggled.disabled.unfocused",
+	};
+	int i;
+	Element *e = &scr->element[type];
+
+	if (type < LastBtn) {
+		if (!name)
+			return;
+		e->action = NULL;
+		free(e->image);
+		e->image = ecalloc(LastButtonImageType, sizeof(*e->image));
+		for (i = 0; i < LastButtonImageType; i++) {
+			snprintf(res, sizeof(res), "%s%s.pixmap", name, kind[i]);
+			if ((e->image[i].present = !initpixmap(getresource(res, def), &e->image[i])))
+				e->action = action;
+			else
+				DPRINTF("could not load pixmap for %s\n", res);
+			def = NULL;
+		}
+	} else {
+		scr->element[type].action = action;
+	}
 }
 
 static void
 initbuttons() {
-	scr->button[Iconify].action = _iconify;
-	scr->button[Maximize].action = _togglemax;
-	scr->button[Close].action = _killclient;
-	scr->button[Iconify].x = scr->button[Close].x = scr->button[Maximize].x = -1;
+	int i;
+	static struct {
+		const char *name;
+		const char *def;
+		void (*action[5])(Client *, unsigned int, int, int);
+	} setup[LastElement] = {
+		/* *INDENT-OFF* */
+		[IconifyBtn]	= { "button.iconify",	ICONPIXMAP,	{ b_min,	b_min,		b_min,		} },
+		[MaximizeBtn]	= { "button.maximize",	MAXPIXMAP,	{ b_max,	b_max,		b_max,		} },
+		[CloseBtn]	= { "button.close",	CLOSEPIXMAP,	{ b_close,	NULL,		NULL,		} },
+		[ShadeBtn]	= { "button.shade",	SHADEPIXMAP,	{ b_shade,	b_shade,	b_shade,	} },
+		[StickBtn]	= { "button.stick",	STICKPIXMAP,	{ b_stick,	b_stick,	b_stick,	} },
+		[LHalfBtn]	= { "button.lhalf",	LHALFPIXMAP,	{ b_lhalf,	b_lhalf,	b_lhalf,	} },
+		[RHalfBtn]	= { "button.rhalf",	RHALFPIXMAP,	{ b_rhalf,	b_rhalf,	b_rhalf,	} },
+		[FillBtn]	= { "button.fill",	FILLPIXMAP,	{ b_fill,	b_fill,		b_fill,		} },
+		[FloatBtn]	= { "button.float",	FLOATPIXMAP,	{ b_float,	b_float,	b_float,	} },
+		[SizeBtn]	= { "button.resize",	SIZEPIXMAP,	{ b_resize,	b_resize,	b_resize,	} },
+		[TitleTags]	= { "title.tags",	NULL,		{ NULL,		NULL,		NULL,		} },
+		[TitleName]	= { "title.name",	NULL,		{ NULL,		NULL,		NULL,		} },
+		[TitleSep]	= { "title.separator",	NULL,		{ NULL,		NULL,		NULL,		} },
+		/* *INDENT-ON* */
+
+	};
+
 	XSetForeground(dpy, scr->dc.gc, scr->style.color.norm[ColButton]);
 	XSetBackground(dpy, scr->dc.gc, scr->style.color.norm[ColBG]);
-	if (initpixmap(getresource("button.iconify.pixmap", ICONPIXMAP),
-	    &scr->button[Iconify]))
-		scr->button[Iconify].action = NULL;
-	if (initpixmap(getresource("button.maximize.pixmap", MAXPIXMAP),
-	    &scr->button[Maximize]))
-		scr->button[Maximize].action = NULL;
-	if (initpixmap(getresource("button.close.pixmap", CLOSEPIXMAP),
-	    &scr->button[Close]))
-		scr->button[Close].action = NULL;
+
+	for (i = 0; i < LastElement; i++)
+		initelement(i, setup[i].name, setup[i].def, setup[i].action);
 }
 
 static void

@@ -143,15 +143,16 @@ void manage(Window w, XWindowAttributes * wa);
 void mappingnotify(XEvent * e);
 void monocle(Monitor * m);
 void maprequest(XEvent * e);
-void mousemove(Client *c, unsigned int button, int x_root, int y_root);
-void mouseresize_from(Client *c, int from, unsigned int button, int x_root, int y_root);
-void mouseresize(Client * c, unsigned int button, int x_root, int y_root);
-void m_move(Client *c, unsigned int button, int x_root, int y_root);
-void m_zoom(Client *c, unsigned int button, int x_root, int y_root);
-void m_resize(Client *c, unsigned int button, int x_root, int y_root);
-void m_spawn(Client *c, unsigned int button, int x_root, int y_root);
-void m_prevtag(Client *c, unsigned int button, int x_root, int y_root);
-void m_nexttag(Client *c, unsigned int button, int x_root, int y_root);
+void mousemove(Client *c, XEvent *ev);
+void mouseresize_from(Client *c, int from, XEvent *ev);
+void mouseresize(Client *c, XEvent *ev);
+void m_move(Client *c, XEvent *ev);
+void m_shade(Client *c, XEvent *ev);
+void m_zoom(Client *c, XEvent *ev);
+void m_resize(Client *c, XEvent *ev);
+void m_spawn(Client *c, XEvent *ev);
+void m_prevtag(Client *c, XEvent *ev);
+void m_nexttag(Client *c, XEvent *ev);
 void moveresizekb(Client *c, int dx, int dy, int dw, int dh);
 Monitor *nearmonitor(void);
 Client *nexttiled(Client * c, Monitor * m);
@@ -286,13 +287,38 @@ struct {
 	char command[255];
 } options;
 
-void (*actions[LastOn][5])(Client *, unsigned int, int, int) = {
+void (*actions[LastOn][5][2])(Client *, XEvent *) = {
 	/* *INDENT-OFF* */
-	/* OnWhere	     Button1	Button2	    Button3	Button4	    Button5	*/
-	[OnClientTitle]	 = { mousemove, NULL,	    mouseresize,NULL,	    NULL	},
-	[OnClientFrame]	 = { mouseresize,NULL,	    NULL,	NULL,	    NULL	},
-	[OnClientWindow] = { m_move,	m_zoom,	    m_resize,	NULL,	    NULL	},
-	[OnRoot]	 = { NULL,	NULL,	    m_spawn,	m_prevtag,  m_nexttag	},
+	/* OnWhere */
+	[OnClientTitle]	 = {
+				/* ButtonPress	    ButtonRelease */
+		[Button1-1] =	{ mousemove,	    NULL	    },
+		[Button2-1] =	{ NULL,		    m_zoom	    },
+		[Button3-1] =	{ mouseresize,	    NULL	    },
+		[Button4-1] =	{ NULL,		    m_shade	    },
+		[Button5-1] =	{ NULL,		    m_shade	    },
+	},
+	[OnClientFrame]	 = {
+		[Button1-1] =	{ mouseresize,	    NULL	    },
+		[Button2-1] =	{ NULL,		    NULL	    },
+		[Button3-1] =	{ NULL,		    NULL	    },
+		[Button4-1] =	{ NULL,		    m_shade	    },
+		[Button5-1] =	{ NULL,		    m_shade	    },
+	},
+	[OnClientWindow] = {
+		[Button1-1] =	{ m_move,	    NULL	    },
+		[Button2-1] =	{ m_zoom,	    NULL	    },
+		[Button3-1] =	{ m_resize,	    NULL	    },
+		[Button4-1] =	{ m_shade,	    NULL	    },
+		[Button5-1] =	{ m_shade,	    NULL	    },
+	},
+	[OnRoot]	 = {
+		[Button1-1] =	{ NULL,		    NULL	    },
+		[Button2-1] =	{ NULL,		    NULL	    },
+		[Button3-1] =	{ NULL,		    m_spawn	    },
+		[Button4-1] =	{ NULL,		    m_prevtag	    },
+		[Button5-1] =	{ NULL,		    m_nexttag	    },
+	},
 	/* *INDENT-ON* */
 };
 
@@ -505,29 +531,43 @@ buttonpress(XEvent *e)
 	Client *c;
 	int i;
 	XButtonPressedEvent *ev = &e->xbutton;
-	static int button_states[Button5 + 1] = { 0, };
-	void (*action) (Client *, unsigned int, int, int);
-	int button;
+	static int button_states[Button5] = { 0, };
+	static int button_mask = 0;
+	void (*action) (Client *, XEvent *);
+	int button, direct;
 
 	if (Button1 > ev->button || ev->button > Button5)
 		return;
 	button = ev->button - Button1;
+	direct = (ev->type == ButtonPress) ? 0 : 1;
 
 	if (user_time == CurrentTime || (int) ev->time - (int) user_time > 0)
 		user_time = ev->time;
 
+	DPRINTF("BUTTON %d: window 0x%lx root 0x%lx subwindow 0x%lx time %ld x %d y %d x_root %d y_root %d state 0x%x\n",
+			ev->button, ev->window, ev->root, ev->subwindow,
+			ev->time, ev->x, ev->y, ev->x_root, ev->y_root,
+			ev->state);
+
+	if (ev->window != scr->root)
+		button_mask &= ~(1 << button);
+
 	if (ev->window == scr->root) {
+		DPRINTF("SCREEN %d: 0x%lx button: %d\n", scr->screen, ev->window, ev->button);
 		/* _WIN_DESKTOP_BUTTON_PROXY */
 		/* modifiers or not interested in press */
 		if (ev->type == ButtonPress) {
 			if (ev->state || ev->button < Button3 || ev->button > Button5) {
-				button_states[ev->button] = ev->state;
+				button_states[button] = ev->state;
 				XUngrabPointer(dpy, CurrentTime);	// ev->time ??
 				XSendEvent(dpy, scr->selwin, False,
 					   SubstructureNotifyMask, e);
 				return;
 			}
-			return;
+			/* only process button presses once per button */
+			if ((button_mask & (1 << button)))
+				return;
+			button_mask |= (1 << button);
 		} else if (ev->type == ButtonRelease) {
 			if (button_states[ev->button] || ev->button < Button3
 			    || ev->button > Button5) {
@@ -535,18 +575,28 @@ buttonpress(XEvent *e)
 					   SubstructureNotifyMask, e);
 				return;
 			}
+			/* do not process button releases with no corresponding press */
+			if (!(button_mask & (1 << button)))
+				return;
+			button_mask &= ~(1 << button);
 		}
-		if ((action = actions[OnRoot][button]))
-			(*action) (NULL, ev->button, ev->x_root, ev->y_root);
+		if ((action = actions[OnRoot][button][direct]))
+			(*action) (NULL, (XEvent *) ev);
+		XUngrabPointer(dpy, CurrentTime);
 	} else if ((c = getclient(ev->window, ClientTitle)) && ev->window == c->title) {
-		DPRINTF("TITLE %s: 0x%x\n", c->name, (int) ev->window);
-		focus(c);
-		raiseclient(c);
+		DPRINTF("TITLE %s: 0x%lx button: %d\n", c->name, ev->window, ev->button);
 		for (i = 0; i < LastElement; i++) {
 			ElementClient *ec = &c->element[i];
+			Bool active;
 
-			action = scr->element[i].action ? scr->element[i].action[button]
-			    : actions[OnClientTitle][button];
+			active = (scr->element[i].action
+				  && (scr->element[i].action[button * 2 + 0]
+				      || scr->element[i].action[button * 2 + 1]))
+			    ? True : False;
+			action = (scr->element[i].action
+				  && (scr->element[i].action[button * 2 + 0]
+				      || scr->element[i].action[button * 2 + 1]))
+			    ? scr->element[i].action[button * 2 + direct] : NULL;
 
 			if (!ec->present)
 				continue;
@@ -557,58 +607,50 @@ buttonpress(XEvent *e)
 					ec->pressed |= (1 << button);
 					drawclient(c);
 					/* resize needs to be on button press */
-					if (i == SizeBtn && action)
-						(*action) (c, ev->button, ev->x_root,
-							   ev->y_root);
+					if (action) {
+						(*action) (c, (XEvent *) ev);
+						drawclient(c);
+					}
 				} else if (ev->type == ButtonRelease) {
-					DPRINTF("ELEMENT %d RELEASED\n", i);
-					ec->pressed &= !(1 << button);
-					drawclient(c);
-					/* resize needs to be on button press */
-					if (i != SizeBtn && action)
-						(*action) (c, ev->button, ev->x_root,
-							   ev->y_root);
+					/* only process release if processed press */
+					if (ec->pressed & (1 << button)) {
+						DPRINTF("ELEMENT %d RELEASED\n", i);
+						ec->pressed &= !(1 << button);
+						drawclient(c);
+						/* resize needs to be on button press */
+						if (action) {
+							(*action) (c, (XEvent *) ev);
+							drawclient(c);
+						}
+					}
 				}
-				return;
+				if (active)
+					return;
 			} else {
 				ec->pressed &= !(1 << button);
 				drawclient(c);
 			}
 		}
-		for (i = 0; i < LastElement; i++)
-			c->element[i].pressed &= !(1 << button);
+		if ((action = actions[OnClientTitle][button][direct]))
+			(*action) (c, (XEvent *) ev);
+		XUngrabPointer(dpy, CurrentTime);
 		drawclient(c);
-		if (ev->type == ButtonRelease)
-			return;
-		restack();
-		if ((action = actions[OnClientTitle][button]))
-			(*action) (c, ev->button, ev->x_root, ev->y_root);
-		XUngrabPointer(dpy, CurrentTime);	// ev->time ??
 	} else if ((c = getclient(ev->window, ClientWindow)) && ev->window == c->win) {
-		DPRINTF("WINDOW %s: 0x%x\n", c->name, (int) ev->window);
-		focus(c);
-		raiseclient(c);
-		restack();
+		DPRINTF("WINDOW %s: 0x%lx button: %d\n", c->name, ev->window, ev->button);
 		if (CLEANMASK(ev->state) != modkey) {
 			XAllowEvents(dpy, ReplayPointer, CurrentTime);
 			return;
 		}
-		if (ev->type == ButtonRelease)
-			return;
-		if ((action = actions[OnClientWindow][button]))
-			(*action) (c, ev->button, ev->x_root, ev->y_root);
+		if ((action = actions[OnClientWindow][button][direct]))
+			(*action) (c, (XEvent *) ev);
 		XUngrabPointer(dpy, CurrentTime);	// ev->time ??
+		drawclient(c);
 	} else if ((c = getclient(ev->window, ClientFrame)) && ev->window == c->frame) {
-		DPRINTF("FRAME %s: 0x%x\n", c->name, (int) ev->window);
-		/* Not supposed to happen, maybe on the border... */
-		focus(c);
-		raiseclient(c);
-		restack();
-		if (ev->type == ButtonRelease)
-			return;
-		if ((action = actions[OnClientFrame][button]))
-			(*action) (c, ev->button, ev->x_root, ev->y_root);
+		DPRINTF("FRAME %s: 0x%lx button: %d\n", c->name, ev->window, ev->button);
+		if ((action = actions[OnClientFrame][button][direct]))
+			(*action) (c, (XEvent *) ev);
 		XUngrabPointer(dpy, CurrentTime);	// ev->time ??
+		drawclient(c);
 	}
 }
 
@@ -2508,17 +2550,19 @@ nearmonitor() {
 static Bool wind_overlap(int min1, int max1, int min2, int max2);
 
 void
-mousemove(Client * c, unsigned int button, int x_root, int y_root) {
+mousemove(Client *c, XEvent *e) {
 	int ocx, ocy, nx, ny, nx2, ny2;
+	int x_root, y_root;
 	int moved = 0;
 	unsigned int i;
-	XEvent ev;
 	Monitor *m, *nm;
 
 	if (!c->can.move) {
 		XUngrabPointer(dpy, CurrentTime);
 		return;
 	}
+	x_root = e->xbutton.x_root;
+	y_root = e->xbutton.y_root;
 	if (!(m = getmonitor(x_root, y_root)))
 		m = curmonitor();
 	if (XGrabPointer(dpy, scr->root, False, MOUSEMASK, GrabModeAsync,
@@ -2559,6 +2603,7 @@ mousemove(Client * c, unsigned int button, int x_root, int y_root) {
 		int ox, oy, ox2, oy2;
 		unsigned int snap;
 		Client *s;
+		XEvent ev;
 
 		XMaskEvent(dpy,
 			   MOUSEMASK | ExposureMask | SubstructureNotifyMask |
@@ -2684,11 +2729,11 @@ mousemove(Client * c, unsigned int button, int x_root, int y_root) {
 }
 
 void
-m_move(Client *c, unsigned int button, int x_root, int y_root)
+m_move(Client *c, XEvent *e)
 {
 	if (!isfloating(c, curmonitor()))
 		togglefloating(c);
-	mousemove(c, button, x_root, y_root);
+	mousemove(c, e);
 }
 
 #ifdef SYNC
@@ -2715,11 +2760,93 @@ sync_request(Client *c, XSyncValue *val, Time time) {
 	XSendEvent(dpy, c->win, False, NoEventMask, &ce);
 }
 #endif
+
+int
+findcorner(Client *c, int x_root, int y_root)
+{
+	int cx, cy, from;
+	float dx, dy;
+
+	cx = c->c.x + c->c.w / 2;
+	cy = c->c.y + c->c.h / 2;
+	dx = (float) abs(cx - x_root)/ (float) c->c.w;
+	dy = (float) abs(cy - y_root)/ (float) c->c.h;
+
+	if (y_root < cy) {
+		/* top */
+		if (x_root < cx) {
+			/* top-left */
+			if (!c->can.sizev)
+				from = CurResizeLeft;
+			else if (!c->can.sizeh)
+				from = CurResizeTop;
+			else {
+				if (dx < dy * 0.4) {
+					from = CurResizeTop;
+				} else if (dy < dx * 0.4) {
+					from = CurResizeLeft;
+				} else {
+					from = CurResizeTopLeft;
+				}
+			}
+		} else {
+			/* top-right */
+			if (!c->can.sizev)
+				from = CurResizeRight;
+			else if (!c->can.sizeh)
+				from = CurResizeTop;
+			else {
+				if (dx < dy * 0.4) {
+					from = CurResizeTop;
+				} else if (dy < dx * 0.4) {
+					from = CurResizeRight;
+				} else {
+					from = CurResizeTopRight;
+				}
+			}
+		}
+	} else {
+		/* bottom */
+		if (x_root < cx) {
+			/* bottom-left */
+			if (!c->can.sizev)
+				from = CurResizeLeft;
+			else if (!c->can.sizeh)
+				from = CurResizeBottom;
+			else {
+				if (dx < dy * 0.4) {
+					from = CurResizeBottom;
+				} else if (dy < dx * 0.4) {
+					from = CurResizeLeft;
+				} else {
+					from = CurResizeBottomLeft;
+				}
+			}
+		} else {
+			/* bottom-right */
+			if (!c->can.sizev)
+				from = CurResizeRight;
+			else if (!c->can.sizeh)
+				from = CurResizeBottom;
+			else {
+				if (dx < dy * 0.4) {
+					from = CurResizeBottom;
+				} else if (dy < dx * 0.4) {
+					from = CurResizeRight;
+				} else {
+					from = CurResizeBottomRight;
+				}
+			}
+		}
+	}
+	return from;
+}
+
 void
-mouseresize_from(Client * c, int from, unsigned int button, int x_root, int y_root)
+mouseresize_from(Client *c, int from, XEvent *e)
 {
 	int ocx, ocy, ocw, och, dx, dy, nx, ny, nw, nh;
-	XEvent ev;
+	int x_root, y_root;
 	Monitor *m, *nm;
 	int waiting = 0;
 #ifdef SYNC
@@ -2751,6 +2878,9 @@ mouseresize_from(Client * c, int from, unsigned int button, int x_root, int y_ro
 				XSyncCATestType | XSyncCADelta | XSyncCAEvents, &aa);
 	}
 #endif
+	x_root = e->xbutton.x_root;
+	y_root = e->xbutton.y_root;
+
 	if (!(m = getmonitor(x_root, y_root)))
 		m = curmonitor();
 
@@ -2787,6 +2917,7 @@ mouseresize_from(Client * c, int from, unsigned int button, int x_root, int y_ro
 		int ox, oy, ox2, oy2;
 		unsigned int snap;
 		Client *s;
+		XEvent ev;
 
 		XMaskEvent(dpy,
 			   MOUSEMASK | ExposureMask | SubstructureNotifyMask |
@@ -3009,97 +3140,24 @@ mouseresize_from(Client * c, int from, unsigned int button, int x_root, int y_ro
 }
 
 void
-mouseresize(Client *c, unsigned int button, int x_root, int y_root)
+mouseresize(Client *c, XEvent *e)
 {
-	int cx, cy, from;
-	float dx, dy;
+	int from;
 
 	if (!c->can.size || (!c->can.sizeh && !c->can.sizev)) {
 		XUngrabPointer(dpy, CurrentTime);
 		return;
 	}
-
-	cx = c->c.x + c->c.w / 2;
-	cy = c->c.y + c->c.h / 2;
-	dx = (float) abs(cx - x_root)/ (float) c->c.w;
-	dy = (float) abs(cy - y_root)/ (float) c->c.h;
-
-	if (y_root < cy) {
-		/* top */
-		if (x_root < cx) {
-			/* top-left */
-			if (!c->can.sizev)
-				from = CurResizeLeft;
-			else if (!c->can.sizeh)
-				from = CurResizeTop;
-			else {
-				if (dx < dy * 0.4) {
-					from = CurResizeTop;
-				} else if (dy < dx * 0.4) {
-					from = CurResizeLeft;
-				} else {
-					from = CurResizeTopLeft;
-				}
-			}
-		} else {
-			/* top-right */
-			if (!c->can.sizev)
-				from = CurResizeRight;
-			else if (!c->can.sizeh)
-				from = CurResizeTop;
-			else {
-				if (dx < dy * 0.4) {
-					from = CurResizeTop;
-				} else if (dy < dx * 0.4) {
-					from = CurResizeRight;
-				} else {
-					from = CurResizeTopRight;
-				}
-			}
-		}
-	} else {
-		/* bottom */
-		if (x_root < cx) {
-			/* bottom-left */
-			if (!c->can.sizev)
-				from = CurResizeLeft;
-			else if (!c->can.sizeh)
-				from = CurResizeBottom;
-			else {
-				if (dx < dy * 0.4) {
-					from = CurResizeBottom;
-				} else if (dy < dx * 0.4) {
-					from = CurResizeLeft;
-				} else {
-					from = CurResizeBottomLeft;
-				}
-			}
-		} else {
-			/* bottom-right */
-			if (!c->can.sizev)
-				from = CurResizeRight;
-			else if (!c->can.sizeh)
-				from = CurResizeBottom;
-			else {
-				if (dx < dy * 0.4) {
-					from = CurResizeBottom;
-				} else if (dy < dx * 0.4) {
-					from = CurResizeRight;
-				} else {
-					from = CurResizeBottomRight;
-				}
-			}
-		}
-	}
-	mouseresize_from(c, from, button, x_root, y_root);
+	from = findcorner(c, e->xbutton.x_root, e->xbutton.y_root);
+	mouseresize_from(c, from, e);
 }
 
 void
-m_resize(Client *c, unsigned int button, int x_root, int y_root)
+m_resize(Client *c, XEvent *e)
 {
 	if (!isfloating(c, curmonitor()))
 		togglefloating(c);
-	mouseresize(c, button, x_root, y_root);
+	mouseresize(c, e);
 }
 
 Client *
@@ -3583,6 +3641,9 @@ resize(Client * c, int x, int y, int w, int h, int b) {
 	}
 	if (c->th && c->is.shaded) {
 		wc.height = c->th;
+		mask2 |= CWHeight;
+	} else {
+		wc.height = h;
 		mask2 |= CWHeight;
 	}
 	if (c->c.b != b) {
@@ -4108,7 +4169,7 @@ get_th(Client *c)
 			f += scr->views[i].dectiled;
 		}
 
-	return (!c->is.max && (c->skip.arrange || f) ?  scr->style.titleheight : 0);
+	return ((!c->is.max && (c->skip.arrange || f)) ?  scr->style.titleheight : 0);
 }
 
 void
@@ -5000,7 +5061,7 @@ spawn(const char *arg)
 }
 
 void
-m_spawn(Client *c, unsigned int button, int x_root, int y_root) {
+m_spawn(Client *c, XEvent *e) {
 	spawn(options.command);
 }
 
@@ -5390,10 +5451,28 @@ toggleshade(Client * c) {
 		if (!(m = curmonitor()))
 			m = scr->monitors;
 
+	c->was.shaded = c->is.shaded;
 	c->is.shaded = !c->is.shaded;
 	if (c->is.managed) {
 		ewmh_update_net_window_state(c);
 		updatefloat(c, m);
+	}
+}
+
+void
+m_shade(Client *c, XEvent *e)
+{
+	switch (e->xbutton.button) {
+	case Button4:
+		/* up */
+		if (!c->is.shaded)
+			toggleshade(c);
+		break;
+	case Button5:
+		/* down */
+		if (c->is.shaded)
+			toggleshade(c);
+		break;
 	}
 }
 
@@ -6201,12 +6280,12 @@ viewrighttag() {
 }
 
 void
-m_prevtag(Client *c, unsigned int button, int x_root, int y_root) {
+m_prevtag(Client *c, XEvent *e) {
 	viewlefttag();
 }
 
 void
-m_nexttag(Client *c, unsigned int button, int x_root, int y_root) {
+m_nexttag(Client *c, XEvent *e) {
 	viewrighttag();
 }
 
@@ -6224,7 +6303,7 @@ zoom(Client *c) {
 }
 
 void
-m_zoom(Client *c, unsigned int button, int x_root, int y_root) {
+m_zoom(Client *c, XEvent *e) {
 	if (isfloating(c, curmonitor()))
 		togglefloating(c);
 	else

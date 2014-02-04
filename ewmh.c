@@ -2145,11 +2145,29 @@ clientmessage(XEvent *e) {
 			int direct = (int) ev->data.l[2];
 			int button = (int) ev->data.l[3];
 			int source = (int) ev->data.l[4];
+			XButtonEvent bev;
 
 			if (source != 0 && source != 1 && source != 2)
 				return;
 			if (direct < 0 || direct > 11)
 				return;
+			bev.type = ButtonPress;
+			bev.serial = 0;
+			bev.send_event = True;
+			bev.display = dpy;
+			bev.window = c->frame;
+			bev.root = scr->root;
+			bev.subwindow = c->win;
+			bev.time = CurrentTime;
+			bev.x = 0;
+			bev.y = 0;
+			bev.x_root = x_root;
+			bev.y_root = y_root;
+			bev.state = 0;
+			bev.button = button;
+			bev.same_screen = XQueryPointer(dpy, c->frame, &bev.root,
+					&bev.subwindow, &bev.x_root, &bev.y_root,
+					&bev.x, &bev.y, &bev.state);
 			switch (direct) {
 			case 0: /* _NET_WM_MOVERESIZE_SIZE_TOPLEFT */
 			case 1: /* _NET_WM_MOVERESIZE_SIZE_TOP */
@@ -2159,10 +2177,10 @@ clientmessage(XEvent *e) {
 			case 5: /* _NET_WM_MOVERESIZE_SIZE_BOTTOM */
 			case 6: /* _NET_WM_MOVERESIZE_SIZE_BOTTOMLEFT */
 			case 7: /* _NET_WM_MOVERESIZE_SIZE_LEFT */
-				mouseresize_from(c, direct, button, x_root, y_root);
+				mouseresize_from(c, direct, (XEvent *)&bev);
 				break;
 			case 8: /* _NET_WM_MOVERESIZE_MOVE */
-				mousemove(c, button, x_root, y_root);
+				mousemove(c, (XEvent *)&bev);
 				break;
 			case 9: /* _NET_WM_MOVERESIZE_SIZE_KEYBOARD */
 				/* TODO */

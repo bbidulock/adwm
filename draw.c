@@ -75,66 +75,80 @@ buttonimage(EScreen *ds, Client *c, ElementType type)
 	ElementClient *ec;
 	Element *e;
 	int image;
+	const char *name = NULL;
 
+	(void) name;
 	switch (type) {
 	case IconifyBtn:
+		name = "iconify";
 		present = c->has.but.min;
 		toggled = False;
 		enabled = c->can.min;
 		break;
 	case MaximizeBtn:
+		name = "maximize";
 		present = c->has.but.max;
 		toggled = c->is.max || c->is.maxv || c->is.maxh || c->is.fs;
 		enabled = c->can.max || c->can.maxv || c->can.maxh || c->can.fs;
 		break;
 	case CloseBtn:
+		name = "close";
 		present = c->has.but.close;
 		toggled = False;
 		enabled = c->can.close;
 		break;
 	case ShadeBtn:
+		name = "shade";
 		present = c->has.but.shade;
 		toggled = c->is.shaded;
 		enabled = c->can.shade;
 		break;
 	case StickBtn:
+		name = "stick";
 		present = c->has.but.stick;
 		toggled = c->is.sticky;
 		enabled = c->can.stick;
 		break;
 	case LHalfBtn:
+		name = "lhalf";
 		present = False;
 		toggled = False;
 		enabled = False;
 		break;
 	case RHalfBtn:
+		name = "rhalf";
 		present = False;
 		toggled = False;
 		enabled = False;
 		break;
 	case FillBtn:
+		name = "fill";
 		present = c->has.but.fill;
 		toggled = c->is.fill;
 		enabled = c->can.fill || c->can.fillh || c->can.fillv;
 		break;
 	case FloatBtn:
+		name = "float";
 		present = c->has.but.floats;
 		toggled = c->is.floater || c->skip.arrange;
 		enabled = c->can.floats || c->can.arrange;
 		break;
 	case SizeBtn:
+		name = "resize";
 		present = c->has.but.size;
 		toggled = False;
 		enabled = c->can.size || c->can.sizev || c->can.sizeh;
 		break;
 	default:
+		name = "unknown";
 		present = False;
 		toggled = False;
 		enabled = False;
 		break;
 	}
+	DPRINTF("Getting button image for '%s'\n", name);
 	if (!present) {
-		DPRINTF("button number %d is not present!\n", type);
+		DPRINTF("button %s is not present!\n", name);
 		return NULL;
 	}
 
@@ -145,30 +159,46 @@ buttonimage(EScreen *ds, Client *c, ElementType type)
 
 	e = &ds->element[type];
 	if (!e->action) {
-		DPRINTF("button number %d has no actions!\n", type);
+		DPRINTF("button %s has no actions!\n", name);
 		return NULL;
 	}
 
-	if (pressed && e->image[ButtonImagePressed].present)
+	if (pressed && toggled && e->image[ButtonImageToggledPressed].present) {
+		DPRINTF("button %s assigned toggled.pressed image\n", name);
+		return &e->image[ButtonImageToggledPressed];
+	}
+	if (pressed && e->image[ButtonImagePressed].present) {
+		DPRINTF("button %s assigned pressed image\n", name);
 		return &e->image[ButtonImagePressed];
-	image = ButtonImageHover + hovered ? 0 : focused ? 1 : 2;
+	}
+	image = ButtonImageHover + (hovered ? 0 : (focused ? 1 : 2));
 	image += toggled ? 3 : 0;
 	image += enabled ? 0 : 6;
-	if (hovered && !e->image[image].present)
+	if (hovered && !e->image[image].present) {
+		DPRINTF("button %s has no hovered image %d, using %s instead\n", name, image, focused ? "focused" : "unfocus");
 		image += focused ? 1 : 2;
-	if (!focused && !e->image[image].present)
+	}
+	if (!focused && !e->image[image].present) {
+		DPRINTF("button %s has no unfocus image %d, using focused instead\n", name, image);
 		image -= 1;
-	if (toggled && !e->image[image].present)
+	}
+	if (toggled && !e->image[image].present) {
+		DPRINTF("button %s has no toggled image %d, using untoggled instead\n", name, image);
 		image -= 3;
+	}
 	if (!enabled && !e->image[image].present) {
-		DPRINTF("button number %d missing image %d!\n", type, image);
+		DPRINTF("button %s missing disabled image %d, skipping button\n", name, image);
 		return NULL;
 	}
-	if (e->image[image].present)
+	if (e->image[image].present) {
+		DPRINTF("button %s going with chosen image %d\n", name, image);
 		return &e->image[image];
-	if (e->image[ButtonImageDefault].present)
+	}
+	if (e->image[ButtonImageDefault].present) {
+		DPRINTF("button %s missing chosen image %d, going with default\n", name, image);
 		return &e->image[ButtonImageDefault];
-	DPRINTF("button number %d missing default image!\n", type);
+	}
+	DPRINTF("button %s missing default image, skipping button\n", name);
 	return NULL;
 }
 
@@ -472,15 +502,15 @@ initpixmap(const char *file, ButtonImage *bi)
 }
 
 static void
-b_min(Client *c, unsigned int button, int x_root, int y_root)
+b_min(Client *c, XEvent *ev)
 {
 	iconify(c);
 }
 
 static void
-b_max(Client *c, unsigned int button, int x_root, int y_root)
+b_max(Client *c, XEvent *ev)
 {
-	switch (button) {
+	switch (ev->xbutton.button) {
 	case Button1:
 		togglemax(c);
 		break;
@@ -494,15 +524,15 @@ b_max(Client *c, unsigned int button, int x_root, int y_root)
 }
 
 static void
-b_close(Client *c, unsigned int button, int x_root, int y_root)
+b_close(Client *c, XEvent *ev)
 {
 	killclient(c);
 }
 
 static void
-b_shade(Client *c, unsigned int button, int x_root, int y_root)
+b_shade(Client *c, XEvent *ev)
 {
-	switch (button) {
+	switch (ev->xbutton.button) {
 	case Button1:
 		toggleshade(c);
 		break;
@@ -518,25 +548,25 @@ b_shade(Client *c, unsigned int button, int x_root, int y_root)
 }
 
 static void
-b_stick(Client *c, unsigned int button, int x_root, int y_root)
+b_stick(Client *c, XEvent *ev)
 {
 	togglesticky(c);
 }
 
 static void
-b_lhalf(Client *c, unsigned int button, int x_root, int y_root)
+b_lhalf(Client *c, XEvent *ev)
 {
 }
 
 static void
-b_rhalf(Client *c, unsigned int button, int x_root, int y_root)
+b_rhalf(Client *c, XEvent *ev)
 {
 }
 
 static void
-b_fill(Client *c, unsigned int button, int x_root, int y_root)
+b_fill(Client *c, XEvent *ev)
 {
-	switch (button) {
+	switch (ev->xbutton.button) {
 	case Button1:
 		togglefill(c);
 		break;
@@ -552,9 +582,9 @@ b_fill(Client *c, unsigned int button, int x_root, int y_root)
 }
 
 static void
-b_float(Client *c, unsigned int button, int x_root, int y_root)
+b_float(Client *c, XEvent *ev)
 {
-	switch (button) {
+	switch (ev->xbutton.button) {
 	case Button1:
 		togglefloating(c);
 		break;
@@ -570,29 +600,30 @@ b_float(Client *c, unsigned int button, int x_root, int y_root)
 }
 
 static void
-b_resize(Client *c, unsigned int button, int x_root, int y_root)
+b_resize(Client *c, XEvent *ev)
 {
-	m_resize(c, button, x_root, y_root);
+	m_resize(c, ev);
 }
 
 static void
-initelement(ElementType type, const char *name, const char *def, void (**action)(Client *, unsigned int, int, int)) {
+initelement(ElementType type, const char *name, const char *def, void (**action)(Client *, XEvent *)) {
 	char res[128];
 	static const char *kind[LastButtonImageType] = {
 		[ButtonImageDefault] = "",
 		[ButtonImagePressed] = ".pressed",
-		[ButtonImageHover] = ".hover",
+		[ButtonImageToggledPressed] = ".toggled.pressed",
+		[ButtonImageHover] = ".hovered",
 		[ButtonImageFocus] = ".focused",
-		[ButtonImageUnfocus] = ".unfocused",
-		[ButtonImageToggledHover] = ".toggled.hover",
+		[ButtonImageUnfocus] = ".unfocus",
+		[ButtonImageToggledHover] = ".toggled.hovered",
 		[ButtonImageToggledFocus] = ".toggled.focused",
-		[ButtonImageToggledUnfocus] = ".toggled.unfocused",
-		[ButtonImageDisabledHover] = ".disabled.hover",
+		[ButtonImageToggledUnfocus] = ".toggled.unfocus",
+		[ButtonImageDisabledHover] = ".disabled.hovered",
 		[ButtonImageDisabledFocus] = ".disabled.focused",
-		[ButtonImageDisabledUnfocus] = ".disabled.unfocused",
-		[ButtonImageToggledDisabledHover] = ".toggled.disabled.hover",
+		[ButtonImageDisabledUnfocus] = ".disabled.unfocus",
+		[ButtonImageToggledDisabledHover] = ".toggled.disabled.hovered",
 		[ButtonImageToggledDisabledFocus] = ".toggled.disabled.focused",
-		[ButtonImageToggledDisabledUnfocus] = ".toggled.disabled.unfocused",
+		[ButtonImageToggledDisabledUnfocus] = ".toggled.disabled.unfocus",
 	};
 	int i;
 	Element *e = &scr->element[type];
@@ -622,22 +653,101 @@ initbuttons() {
 	static struct {
 		const char *name;
 		const char *def;
-		void (*action[5])(Client *, unsigned int, int, int);
+		void (*action[Button5][2])(Client *, XEvent *);
 	} setup[LastElement] = {
 		/* *INDENT-OFF* */
-		[IconifyBtn]	= { "button.iconify",	ICONPIXMAP,	{ b_min,	b_min,		b_min,		} },
-		[MaximizeBtn]	= { "button.maximize",	MAXPIXMAP,	{ b_max,	b_max,		b_max,		} },
-		[CloseBtn]	= { "button.close",	CLOSEPIXMAP,	{ b_close,	NULL,		NULL,		} },
-		[ShadeBtn]	= { "button.shade",	SHADEPIXMAP,	{ b_shade,	b_shade,	b_shade,	} },
-		[StickBtn]	= { "button.stick",	STICKPIXMAP,	{ b_stick,	b_stick,	b_stick,	} },
-		[LHalfBtn]	= { "button.lhalf",	LHALFPIXMAP,	{ b_lhalf,	b_lhalf,	b_lhalf,	} },
-		[RHalfBtn]	= { "button.rhalf",	RHALFPIXMAP,	{ b_rhalf,	b_rhalf,	b_rhalf,	} },
-		[FillBtn]	= { "button.fill",	FILLPIXMAP,	{ b_fill,	b_fill,		b_fill,		} },
-		[FloatBtn]	= { "button.float",	FLOATPIXMAP,	{ b_float,	b_float,	b_float,	} },
-		[SizeBtn]	= { "button.resize",	SIZEPIXMAP,	{ b_resize,	b_resize,	b_resize,	} },
-		[TitleTags]	= { "title.tags",	NULL,		{ NULL,		NULL,		NULL,		} },
-		[TitleName]	= { "title.name",	NULL,		{ NULL,		NULL,		NULL,		} },
-		[TitleSep]	= { "title.separator",	NULL,		{ NULL,		NULL,		NULL,		} },
+		[IconifyBtn]	= { "button.iconify",	ICONPIXMAP,	{
+				     /* ButtonPress	ButtonRelease	*/
+			[Button1-1] = { NULL,		b_min		},
+			[Button2-1] = { NULL,		b_min		},
+			[Button3-1] = { NULL,		b_min		},
+			[Button4-1] = { NULL,		NULL		},
+			[Button5-1] = { NULL,		NULL		},
+		} },
+		[MaximizeBtn]	= { "button.maximize",	MAXPIXMAP,	{
+			[Button1-1] = { NULL,		b_max		},
+			[Button2-1] = { NULL,		b_max		},
+			[Button3-1] = { NULL,		b_max		},
+			[Button4-1] = { NULL,		NULL		},
+			[Button5-1] = { NULL,		NULL		},
+		} },
+		[CloseBtn]	= { "button.close",	CLOSEPIXMAP,	{
+			[Button1-1] = { NULL,		b_close		},
+			[Button2-1] = { NULL,		NULL		},
+			[Button3-1] = { NULL,		NULL		},
+			[Button4-1] = { NULL,		NULL		},
+			[Button5-1] = { NULL,		NULL		},
+		} },
+		[ShadeBtn]	= { "button.shade",	SHADEPIXMAP,	{
+			[Button1-1] = { NULL,		b_shade		},
+			[Button2-1] = { NULL,		b_shade		},
+			[Button3-1] = { NULL,		b_shade		},
+			[Button4-1] = { NULL,		NULL		},
+			[Button5-1] = { NULL,		NULL		},
+		} },
+		[StickBtn]	= { "button.stick",	STICKPIXMAP,	{
+			[Button1-1] = { NULL,		b_stick		},
+			[Button2-1] = { NULL,		b_stick		},
+			[Button3-1] = { NULL,		b_stick		},
+			[Button4-1] = { NULL,		NULL		},
+			[Button5-1] = { NULL,		NULL		},
+		} },
+		[LHalfBtn]	= { "button.lhalf",	LHALFPIXMAP,	{
+			[Button1-1] = { NULL,		b_lhalf		},
+			[Button2-1] = { NULL,		b_lhalf		},
+			[Button3-1] = { NULL,		b_lhalf	},
+			[Button4-1] = { NULL,		NULL		},
+			[Button5-1] = { NULL,		NULL		},
+		} },
+		[RHalfBtn]	= { "button.rhalf",	RHALFPIXMAP,	{
+			[Button1-1] = { NULL,		b_rhalf		},
+			[Button2-1] = { NULL,		b_rhalf		},
+			[Button3-1] = { NULL,		b_rhalf		},
+			[Button4-1] = { NULL,		NULL		},
+			[Button5-1] = { NULL,		NULL		},
+		} },
+		[FillBtn]	= { "button.fill",	FILLPIXMAP,	{
+			[Button1-1] = { NULL,		b_fill		},
+			[Button2-1] = { NULL,		b_fill		},
+			[Button3-1] = { NULL,		b_fill		},
+			[Button4-1] = { NULL,		NULL		},
+			[Button5-1] = { NULL,		NULL		},
+		} },
+		[FloatBtn]	= { "button.float",	FLOATPIXMAP,	{
+			[Button1-1] = { NULL,		b_float		},
+			[Button2-1] = { NULL,		b_float		},
+			[Button3-1] = { NULL,		b_float		},
+			[Button4-1] = { NULL,		NULL		},
+			[Button5-1] = { NULL,		NULL		},
+		} },
+		[SizeBtn]	= { "button.resize",	SIZEPIXMAP,	{
+			[Button1-1] = { b_resize,	NULL		},
+			[Button2-1] = { b_resize,	NULL		},
+			[Button3-1] = { b_resize,	NULL		},
+			[Button4-1] = { NULL,		NULL		},
+			[Button5-1] = { NULL,		NULL		},
+		} },
+		[TitleTags]	= { "title.tags",	NULL,		{
+			[Button1-1] = { NULL,		NULL		},
+			[Button2-1] = { NULL,		NULL		},
+			[Button3-1] = { NULL,		NULL		},
+			[Button4-1] = { NULL,		NULL		},
+			[Button5-1] = { NULL,		NULL		},
+		} },
+		[TitleName]	= { "title.name",	NULL,		{
+			[Button1-1] = { mousemove,	NULL		},
+			[Button2-1] = { NULL,		NULL		},
+			[Button3-1] = { mouseresize,	NULL		},
+			[Button4-1] = { NULL,		NULL		},
+			[Button5-1] = { NULL,		NULL		},
+		} },
+		[TitleSep]	= { "title.separator",	NULL,		{
+			[Button1-1] = { NULL,		NULL		},
+			[Button2-1] = { NULL,		NULL		},
+			[Button3-1] = { NULL,		NULL		},
+			[Button4-1] = { NULL,		NULL		},
+			[Button5-1] = { NULL,		NULL		},
+		} },
 		/* *INDENT-ON* */
 
 	};
@@ -646,7 +756,7 @@ initbuttons() {
 	XSetBackground(dpy, scr->dc.gc, scr->style.color.norm[ColBG]);
 
 	for (i = 0; i < LastElement; i++)
-		initelement(i, setup[i].name, setup[i].def, setup[i].action);
+		initelement(i, setup[i].name, setup[i].def, &setup[i].action[0][0]);
 }
 
 static void

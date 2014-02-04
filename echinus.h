@@ -231,11 +231,12 @@ typedef enum { IconifyBtn, MaximizeBtn, CloseBtn, ShadeBtn, StickBtn, LHalfBtn, 
 	FillBtn, FloatBtn, SizeBtn, TitleTags, TitleName, TitleSep, LastElement,
 	LastBtn = TitleTags } ElementType;
 typedef enum { OnClientTitle, OnClientFrame, OnClientWindow, OnRoot, LastOn } OnWhere;
-typedef enum { ButtonImageDefault, ButtonImagePressed, ButtonImageHover, ButtonImageFocus,
-	ButtonImageUnfocus, ButtonImageToggledHover, ButtonImageToggledFocus,
-	ButtonImageToggledUnfocus, ButtonImageDisabledHover, ButtonImageDisabledFocus,
-	ButtonImageDisabledUnfocus, ButtonImageToggledDisabledHover,
-	ButtonImageToggledDisabledFocus, ButtonImageToggledDisabledUnfocus,
+typedef enum { ButtonImageDefault,
+	ButtonImagePressed, ButtonImageToggledPressed,
+	ButtonImageHover, ButtonImageFocus, ButtonImageUnfocus,
+	ButtonImageToggledHover, ButtonImageToggledFocus, ButtonImageToggledUnfocus,
+	ButtonImageDisabledHover, ButtonImageDisabledFocus, ButtonImageDisabledUnfocus,
+	ButtonImageToggledDisabledHover, ButtonImageToggledDisabledFocus, ButtonImageToggledDisabledUnfocus,
 	LastButtonImageType } ButtonImageType;
 typedef enum { CauseDestroyed, CauseUnmapped, CauseReparented,
 	       CauseQuitting, CauseSwitching, CauseRestarting } WithdrawCause;
@@ -470,7 +471,7 @@ typedef struct {
 
 typedef struct {
 	ButtonImage *image;
-	void (**action) (Client *, unsigned int, int, int);
+	void (**action) (Client *, XEvent *);
 } Element;
 
 typedef struct {
@@ -621,10 +622,10 @@ void restack(void);
 void restack_client(Client *c, int stack_mode, Client *sibling);
 void configurerequest(XEvent * e);
 void moveresizekb(Client *c, int dx, int dy, int dw, int dh);
-void mousemove(Client *c, unsigned int button, int x_root, int y_root);
-void mouseresize_from(Client *c, int from, unsigned int button, int x_root, int y_root);
-void mouseresize(Client * c, unsigned int button, int x_root, int y_root);
-void m_resize(Client *c, unsigned int button, int x_root, int y_root);
+void mousemove(Client *c, XEvent *e);
+void mouseresize_from(Client *c, int from, XEvent *e);
+void mouseresize(Client * c, XEvent *e);
+void m_resize(Client *c, XEvent *ev);
 void quit(const char *arg);
 void restart(const char *arg);
 void rotateview(Client *c);
@@ -717,7 +718,7 @@ extern Display *dpy;
 extern EScreen *scr;
 extern EScreen *screens;
 extern EScreen *event_scr;
-extern void (*actions[LastOn][5])(Client *, unsigned int, int, int);
+extern void (*actions[LastOn][5][2])(Client *, XEvent *);
 // extern Window root;
 // extern Window selwin;
 // extern Client *clients;

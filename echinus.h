@@ -454,7 +454,7 @@ typedef struct {
 		int descent;
 		int height;
 		int width;
-	} font;
+	} font[2];
 	GC gc;
 } DC;				/* draw context */
 
@@ -478,14 +478,17 @@ typedef struct {
 	unsigned int border;
 	unsigned int margin;
 	unsigned int outline;
+	unsigned int spacing;
 	unsigned int titleheight;
 	unsigned int opacity;
 	char titlelayout[32];
-	XftFont *font;
+	XftFont *font[2];
+	unsigned int drop[2];
 	struct {
 		unsigned long norm[ColLast];
 		unsigned long sel[ColLast];
 		XftColor *font[2];
+		XftColor *shadow[2];
 	} color;
 } Style;
 

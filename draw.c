@@ -22,15 +22,16 @@
 enum { Normal, Selected };
 enum { AlignLeft, AlignCenter, AlignRight };	/* title position */
 
-static unsigned int textnw(EScreen *ds, const char *text, unsigned int len);
-static unsigned int textw(EScreen *ds, const char *text);
+static unsigned int textnw(EScreen *ds, const char *text, unsigned int len, int hilite);
+static unsigned int textw(EScreen *ds, const char *text, int hilite);
 
 static int
 drawtext(EScreen *ds, const char *text, Drawable drawable, XftDraw *xftdrawable,
-    unsigned long col[ColLast], int x, int y, int mw) {
+    unsigned long col[ColLast], int hilite, int x, int y, int mw) {
 	int w, h;
 	char buf[256];
 	unsigned int len, olen;
+	int drop;
 
 	if (!text)
 		return 0;
@@ -41,10 +42,10 @@ drawtext(EScreen *ds, const char *text, Drawable drawable, XftDraw *xftdrawable,
 	memcpy(buf, text, len);
 	buf[len] = 0;
 	h = ds->style.titleheight;
-	y = ds->dc.h / 2 + ds->dc.font.ascent / 2 - 1 - ds->style.outline;
-	x += ds->dc.font.height / 2;
+	y = ds->dc.h / 2 + ds->dc.font[hilite].ascent / 2 - 1 - ds->style.outline;
+	x += ds->dc.font[hilite].height / 2;
 	/* shorten text if necessary */
-	while (len && (w = textnw(ds, buf, len)) > mw) {
+	while (len && (w = textnw(ds, buf, len, hilite)) > mw) {
 		buf[--len] = 0;
 	}
 	if (len < olen) {
@@ -60,12 +61,14 @@ drawtext(EScreen *ds, const char *text, Drawable drawable, XftDraw *xftdrawable,
 	while (x <= 0)
 		x = ds->dc.x++;
 	XSetForeground(dpy, ds->dc.gc, col[ColBG]);
-	XFillRectangle(dpy, drawable, ds->dc.gc, x - ds->dc.font.height / 2, 0,
-	    w + ds->dc.font.height, h);
-	XftDrawStringUtf8(xftdrawable,
-	    (col == ds->style.color.norm) ? ds->style.color.font[Normal] : ds->style.color.font[Selected],
-	    ds->style.font, x, y, (unsigned char *) buf, len);
-	return w + ds->dc.font.height;
+	XFillRectangle(dpy, drawable, ds->dc.gc, x - ds->dc.font[hilite].height / 2, 0,
+	    w + ds->dc.font[hilite].height, h);
+	if ((drop = ds->style.drop[hilite]))
+		XftDrawStringUtf8(xftdrawable, ds->style.color.shadow[hilite], ds->style.font[hilite],
+		    x + drop, y + drop, (unsigned char *) buf, len);
+	XftDrawStringUtf8(xftdrawable, ds->style.color.font[hilite], ds->style.font[hilite],
+	    x, y, (unsigned char *) buf, len);
+	return w + ds->dc.font[hilite].height;
 }
 
 static ButtonImage *
@@ -265,6 +268,7 @@ drawelement(EScreen *ds, char which, int x, int position, Client *c)
 {
 	int w = 0;
 	unsigned long *color = c == sel ? ds->style.color.sel : ds->style.color.norm;
+	int hilite = (c == sel) ? Selected : Normal;
 	ElementType type = elementtype(which);
 	ElementClient *ec = &c->element[type];
 
@@ -287,8 +291,8 @@ drawelement(EScreen *ds, char which, int x, int position, Client *c)
 	case TitleTags:
 		for (j = 0, x = ds->dc.x; j < ds->ntags; j++, w += tw, x += tw)
 			tw = c->tags[j] ? drawtext(ds, ds->tags[j], c->drawable,
-						   c->xftdraw, color, x, ds->dc.y,
-						   ds->dc.w) : 0;
+						   c->xftdraw, color, hilite,
+						   x, ds->dc.y, ds->dc.w) : 0;
 		break;
 	case TitleSep:
 		XSetForeground(dpy, ds->dc.gc, color[ColBorder]);
@@ -297,7 +301,7 @@ drawelement(EScreen *ds, char which, int x, int position, Client *c)
 		w = ds->dc.h / 2;
 		break;
 	case TitleName:
-		w = drawtext(ds, c->name, c->drawable, c->xftdraw, color,
+		w = drawtext(ds, c->name, c->drawable, c->xftdraw, color, hilite,
 			     ds->dc.x, ds->dc.y, ds->dc.w);
 		break;
 	default:
@@ -331,6 +335,7 @@ elementw(EScreen *ds, Client *c, char which)
 {
 	int w = 0;
 	ElementType type = elementtype(which);
+	int hilite = (c == sel) ? Selected : Normal;
 
 	if (0 > type || type >= LastElement)
 		return 0;
@@ -339,12 +344,12 @@ elementw(EScreen *ds, Client *c, char which)
 		unsigned int j;
 
 	case TitleName:
-		w = textw(ds, c->name);
+		w = textw(ds, c->name, hilite);
 		break;
 	case TitleTags:
 		for (j = 0; j < ds->ntags; j++) {
 			if (c->tags[j])
-				w += textw(ds, ds->tags[j]);
+				w += textw(ds, ds->tags[j], hilite);
 		}
 		break;
 	case TitleSep:
@@ -382,19 +387,23 @@ drawclient(Client *c) {
 	XSetForeground(dpy, ds->dc.gc, c == sel ? ds->style.color.sel[ColBG] : ds->style.color.norm[ColBG]);
 	XSetLineAttributes(dpy, ds->dc.gc, ds->style.border, LineSolid, CapNotLast, JoinMiter);
 	XFillRectangle(dpy, c->drawable, ds->dc.gc, ds->dc.x, ds->dc.y, ds->dc.w, ds->dc.h);
-	if (ds->dc.w < textw(ds, c->name)) {
+	/* Don't know about this... */
+	if (ds->dc.w < textw(ds, c->name, (c == sel) ? Selected : Normal)) {
 		ds->dc.w -= elementw(ds, c, CloseBtn);
 		drawtext(ds, c->name, c->drawable, c->xftdraw,
-		    c == sel ? ds->style.color.sel : ds->style.color.norm, ds->dc.x, ds->dc.y, ds->dc.w);
+		    c == sel ? ds->style.color.sel : ds->style.color.norm, c == sel ? 1 : 0,
+		    ds->dc.x, ds->dc.y, ds->dc.w);
 		drawbutton(ds, c, CloseBtn,
 		    c == sel ? ds->style.color.sel : ds->style.color.norm, ds->dc.w);
 		goto end;
 	}
 	/* Left */
+	ds->dc.x += (ds->style.spacing > ds->style.border) ? ds->style.spacing - ds->style.border : 0;
 	for (i = 0; i < strlen(ds->style.titlelayout); i++) {
 		if (ds->style.titlelayout[i] == ' ' || ds->style.titlelayout[i] == '-')
 			break;
 		ds->dc.x += drawelement(ds, ds->style.titlelayout[i], ds->dc.x, AlignLeft, c);
+		ds->dc.x += ds->style.spacing;
 	}
 	if (i == strlen(ds->style.titlelayout) || ds->dc.x >= ds->dc.w)
 		goto end;
@@ -410,11 +419,13 @@ drawclient(Client *c) {
 		goto end;
 	/* Right */
 	ds->dc.x = ds->dc.w;
+	ds->dc.x -= (ds->style.spacing > ds->style.border) ? ds->style.spacing - ds->style.border : 0;
 	for (i = strlen(ds->style.titlelayout); i-- ; ) {
 		if (ds->style.titlelayout[i] == ' ' || ds->style.titlelayout[i] == '-')
 			break;
 		ds->dc.x -= elementw(ds, c, ds->style.titlelayout[i]);
 		drawelement(ds, ds->style.titlelayout[i], 0, AlignRight, c);
+		ds->dc.x -= ds->style.spacing;
 	}
       end:
 	if (ds->style.outline) {
@@ -760,19 +771,19 @@ initbuttons() {
 }
 
 static void
-initfont(const char *fontstr) {
-	scr->style.font = NULL;
-	scr->style.font = XftFontOpenXlfd(dpy, scr->screen, fontstr);
-	if (!scr->style.font)
-		scr->style.font = XftFontOpenName(dpy, scr->screen, fontstr);
-	if (!scr->style.font)
+initfont(const char *fontstr, int hilite) {
+	scr->style.font[hilite] = NULL;
+	scr->style.font[hilite] = XftFontOpenXlfd(dpy, scr->screen, fontstr);
+	if (!scr->style.font[hilite])
+		scr->style.font[hilite] = XftFontOpenName(dpy, scr->screen, fontstr);
+	if (!scr->style.font[hilite])
 		eprint("error, cannot load font: '%s'\n", fontstr);
-	scr->dc.font.extents = emallocz(sizeof(XGlyphInfo));
-	XftTextExtentsUtf8(dpy, scr->style.font,
-	    (const unsigned char *) fontstr, strlen(fontstr), scr->dc.font.extents);
-	scr->dc.font.height = scr->style.font->ascent + scr->style.font->descent + 1;
-	scr->dc.font.ascent = scr->style.font->ascent;
-	scr->dc.font.descent = scr->style.font->descent;
+	scr->dc.font[hilite].extents = emallocz(sizeof(XGlyphInfo));
+	XftTextExtentsUtf8(dpy, scr->style.font[hilite],
+	    (const unsigned char *) fontstr, strlen(fontstr), scr->dc.font[hilite].extents);
+	scr->dc.font[hilite].height = scr->style.font[hilite]->ascent + scr->style.font[hilite]->descent + 1;
+	scr->dc.font[hilite].ascent = scr->style.font[hilite]->ascent;
+	scr->dc.font[hilite].descent = scr->style.font[hilite]->descent;
 }
 
 void
@@ -793,19 +804,37 @@ initstyle() {
 				scr->screen), getresource("selected.fg", SELFGCOLOR), scr->style.color.font[Selected]);
 	XftColorAllocName(dpy, DefaultVisual(dpy, scr->screen), DefaultColormap(dpy,
 				scr->screen), getresource("normal.fg", NORMFGCOLOR), scr->style.color.font[Normal]);
-	if (!scr->style.color.font[Normal] || !scr->style.color.font[Normal])
+	if (!scr->style.color.font[Selected] || !scr->style.color.font[Normal])
 		eprint("error, cannot allocate colors\n");
-	initfont(getresource("font", FONT));
+
+	if ((scr->style.drop[Selected] = atoi(getresource("selected.drop", "0")))) {
+		scr->style.color.shadow[Selected] = emallocz(sizeof(XftColor));
+		XftColorAllocName(dpy, DefaultVisual(dpy, scr->screen), DefaultColormap(dpy,
+					scr->screen), getresource("selected.shadow", SELBORDERCOLOR), scr->style.color.shadow[Selected]);
+		if (!scr->style.color.shadow[Selected])
+			eprint("error, cannot allocate colors\n");
+	}
+	if ((scr->style.drop[Normal] = atoi(getresource("normal.drop", "0")))) {
+		scr->style.color.shadow[Normal] = emallocz(sizeof(XftColor));
+		XftColorAllocName(dpy, DefaultVisual(dpy, scr->screen), DefaultColormap(dpy,
+					scr->screen), getresource("normal.shadow", NORMBORDERCOLOR), scr->style.color.shadow[Normal]);
+		if (!scr->style.color.shadow[Normal])
+			eprint("error, cannot allocate colors\n");
+	}
+	initfont(getresource("normal.font", getresource("font", FONT)), Normal);
+	initfont(getresource("selected.font", getresource("font", FONT)), Selected);
 	scr->style.border = atoi(getresource("border", STR(BORDERPX)));
 	scr->style.margin = atoi(getresource("margin", STR(MARGINPX)));
 	scr->style.opacity = OPAQUE * atof(getresource("opacity", STR(NF_OPACITY)));
 	scr->style.outline = atoi(getresource("outline", "0"));
+	scr->style.spacing = atoi(getresource("spacing", "1"));
 	strncpy(scr->style.titlelayout, getresource("titlelayout", "N  IMC"),
 	    LENGTH(scr->style.titlelayout));
 	scr->style.titlelayout[LENGTH(scr->style.titlelayout) - 1] = '\0';
 	scr->style.titleheight = atoi(getresource("title", STR(TITLEHEIGHT)));
 	if (!scr->style.titleheight)
-		scr->style.titleheight = scr->dc.font.height + 2;
+		scr->style.titleheight = max(scr->dc.font[Selected].height + scr->style.drop[Selected],
+				scr->dc.font[Normal].height + scr->style.drop[Normal]) + 2;
 	scr->dc.gc = XCreateGC(dpy, scr->root, 0, 0);
 	initbuttons();
 }
@@ -817,19 +846,29 @@ deinitstyle() {
 		scr->screen), scr->style.color.font[Normal]);
 	XftColorFree(dpy, DefaultVisual(dpy, scr->screen), DefaultColormap(dpy,
 		scr->screen), scr->style.color.font[Selected]);
-	XftFontClose(dpy, scr->style.font);
-	free(scr->dc.font.extents);
+	if (scr->style.color.shadow[Normal])
+		XftColorFree(dpy, DefaultVisual(dpy, scr->screen), DefaultColormap(dpy,
+			scr->screen), scr->style.color.shadow[Normal]);
+	if (scr->style.color.shadow[Selected])
+		XftColorFree(dpy, DefaultVisual(dpy, scr->screen), DefaultColormap(dpy,
+			scr->screen), scr->style.color.shadow[Selected]);
+	if (scr->style.font[Normal])
+		XftFontClose(dpy, scr->style.font[Normal]);
+	free(scr->dc.font[Normal].extents);
+	if (scr->style.font[Selected])
+		XftFontClose(dpy, scr->style.font[Selected]);
+	free(scr->dc.font[Selected].extents);
 	XFreeGC(dpy, scr->dc.gc);
 }
 
 static unsigned int
-textnw(EScreen *ds, const char *text, unsigned int len) {
-	XftTextExtentsUtf8(dpy, ds->style.font,
-	    (const unsigned char *) text, len, ds->dc.font.extents);
-	return ds->dc.font.extents->xOff;
+textnw(EScreen *ds, const char *text, unsigned int len, int hilite) {
+	XftTextExtentsUtf8(dpy, ds->style.font[hilite],
+	    (const unsigned char *) text, len, ds->dc.font[hilite].extents);
+	return ds->dc.font[hilite].extents->xOff;
 }
 
 static unsigned int
-textw(EScreen *ds, const char *text) {
-	return textnw(ds, text, strlen(text)) + ds->dc.font.height;
+textw(EScreen *ds, const char *text, int hilite) {
+	return textnw(ds, text, strlen(text), hilite) + ds->dc.font[hilite].height;
 }

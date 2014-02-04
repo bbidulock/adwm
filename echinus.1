@@ -226,10 +226,13 @@ Sets the color of a small border around each unfocused window.
 Sets the button foreground for unfocused windows.
 .It Ic normal.fg
 Sets the titlebar foreground for unfocused windows.
+.It Ic normal.shadow
+Sets the titlebar drop shadow color for unfocused windows.
 .It Ic selected.bg
 .It Ic selected.border
 .It Ic selected.button
 .It Ic selected.fg
+.It Ic selected.shadow
 Sets color options for focused windows.
 .El
 .Sh HACKS SETTINGS
@@ -283,6 +286,16 @@ Number of tags.
 If one, draw titles in tiled mode.
 .It Ic font
 Titlebar font.
+.It Ic normal.drop
+Drop shadow in pixels (typically 1, default 0) for unfocused window fonts.
+.It Ic normal.font
+Titlebar font for unfocused windows.
+.It Ic selected.drop
+Drop shadow in pixels (typically 1, default 0) for focused window fonts.
+.It Ic selected.font
+Titlebar font for focused windows.
+.It Ic spacing
+Spacing in pixels between titlebar elements.
 .It Ic title
 Titlebar height.
 .It Ic titlelayout
@@ -309,11 +322,27 @@ close buttons on right (note 2 spaces).
 .El
 .Sh COMMANDS
 .Bl -tag -width Ds
+.It Ic appendtag
+.It Ic rmlasttag
+Appends a new tag or removes the last defined tag.  Effectivley increases
+or decreases the number of "desktops".
+.It Ic decmwfact [-]factor
+.It Ic incmwfact [+]factor
+Decreases, increases or sets the master window factor.  Without the
+leading  '-' or '+', sets the factor.
+.It Ic decnmaster -delta
+.It Ic incnmaster +delta
+Decreases or increases the number of master windows.  When the delta is zero,
+sets the default number of master windows.
+.It Ic focusicon
+Focuses the next iconified window.
 .It Ic focusnext
 .It Ic focusprev
 Focuses next or previous window.
 .It Ic focusview#
 Toggles view number # and focuses the first client in it.
+.It Ic iconify
+Iconifies the current focused window.
 .It Ic killclient
 Closes current focused window.
 .It Ic movedown
@@ -321,11 +350,12 @@ Closes current focused window.
 .It Ic moveright
 .It Ic moveup Ar x y w h
 Moves the window by the specified number of pixels in the specified direction.
-.It Ic restart
-Restarts
+.It Ic restart [arguments]
+Restarts.  Can be given an optional arguments to restart with different
+command line arguments.
 .Nm .
-.It Ic quit
-Exits
+.It Ic quit [command]
+Exits.  Can be given an optional command to start a different window manager.
 .Nm .
 .It Ic resizedecx
 .It Ic resizedecy
@@ -333,6 +363,17 @@ Exits
 .It Ic rezizeincy Ar x y w h
 Resizes the window by the specified number of pixels in the specified
 direction.
+.It Ic rotateview
+.It Ic unrotateview
+Rotates the current tiling layout in the clockwise or counter clockwise directions.
+.It Ic rotatezone
+.It Ic unrotatezone
+Rotates the zone of the selected window (the master zone, slave zone,
+or grid orientation) in the clockwise or counter clockwise direction.
+.It Ic rotatewins
+.It Ic unrotatewins
+Rotates the currently tiled window through the available positions in the
+clockwise or counter clockwise directions.
 .It Ic rule# Ar class.title tag isfloating hastitle
 Sets a rule for the specified window class or title.
 NULL indicates that no tag is needed.
@@ -340,10 +381,22 @@ NULL indicates that no tag is needed.
 Runs specified program (upto 64).
 .It Ic tag#
 Tags current window with tag number #.
+.It Ic toggledectiled
+Toggles decoration of tiled windows.
+.It Ic togglefill
+Toggles filling the available area with a floating window.
 .It Ic togglefloating
 Toggles floating or tiled mode.
+.It Ic togglehidden
+Toggles hiding the currently focused window.
+.It Ic togglemaxh
+.It Ic togglemaxv
+Toggles maximization of the currently focused window in the
+horizontal or vertical directions.
 .It Ic togglemonitor
 Switches from one monitor to another.
+.It Ic toggleshade
+Toggles the shading and unshading of the currently focused window.
 .It Ic togglestruts
 .Nm
 has no bar, but this command switches the area on top or bottom which won't
@@ -357,6 +410,9 @@ Views tag number #.
 Views tag on left or right.
 .It Ic viewprevtag
 View previous tag set.
+.It Ic zoom
+Zooms the currently focused window.  If it is a master, it
+becomes a slave; and visa versa.
 .El
 .Sh EXAMPLES
 To move a window five pixels to the right:
@@ -377,8 +433,8 @@ To show the title centered and the close button on the right:
 .Dl Echinus*titlelayout: -T-C
 .Sh CONFORMING TO
 .Nm
-is partially EWMH (NetWM) compliant, so you can use your favourite panel or
-pager. 
+is fully EWMH (NetWM), WMH (WinWM), MWMH (Motif/DTWM) and ICCCM 2.0 compliant,
+so you can use your favourite panel or pager. 
 .Sh SEE ALSO
 .Xr dmenu 1
 .Xr dwm 1

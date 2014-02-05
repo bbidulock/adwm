@@ -205,9 +205,9 @@ void updategeom(Monitor * m);
 void updatestruts(void);
 void unmapnotify(XEvent * e);
 void updatesizehints(Client * c);
-void updateframe(Client * c);
-void updatetitle(Client * c);
-void updategroup(Client * c, Window leader, int group, int *nonmodal);
+void updateframe(Client *c, Monitor *m);
+void updatetitle(Client *c);
+void updategroup(Client *c, Window leader, int group, int *nonmodal);
 Window *getgroup(Client *c, Window leader, int group, unsigned int *count);
 void removegroup(Client *c, Window leader, int group);
 void updateiconname(Client * c);
@@ -271,6 +271,7 @@ struct {
 	Bool attachaside;
 	Bool dectiled;
 	Bool hidebastards;
+	Bool autoroll;
 	int focus;
 	int snap;
 	char command[255];
@@ -1607,12 +1608,16 @@ focus(Client *c)
 			c->is.attn = False;
 		setclientstate(c, NormalState);
 		XSetWindowBorder(dpy, sel->frame, scr->style.color.sel[ColBorder]);
+		if (c->is.shaded && options.autoroll)
+			updatefloat(c, cm);
 		drawclient(c);
 		ewmh_update_net_window_state(c);
 		if (!isfloating(c, cm))
 			raiseclient(c);
 	}
 	if (o && o != sel) {
+		if (o->is.shaded && options.autoroll)
+			updatefloat(o, cm);
 		drawclient(o);
 		ewmh_update_net_window_state(o);
 	}
@@ -2116,7 +2121,7 @@ reparentclient(Client *c, EScreen *new_scr, int x, int y)
 		XMapWindow(dpy, c->frame);
 		c->is.managed = True;
 		ewmh_update_net_window_desktop(c);
-		updateframe(c);
+		updateframe(c, m);
 		if (c->with.struts) {
 			ewmh_update_net_work_area();
 			updategeom(NULL);
@@ -2374,7 +2379,7 @@ manage(Window w, XWindowAttributes *wa)
 	ewmh_process_net_window_state(c);
 	c->is.managed = True;
 	ewmh_update_net_window_desktop(c);
-	updateframe(c);
+	updateframe(c, NULL);
 
 	if (c->with.struts) {
 		ewmh_update_net_work_area();
@@ -2671,6 +2676,21 @@ clientmonitor(Client * c) {
 	for (m = scr->monitors; m; m = m->next)
 		if (isvisible(c, m))
 			return m;
+	return NULL;
+}
+
+Layout *
+clientlayout(Client *c) {
+	Monitor *m;
+	int i;
+
+	assert(c != NULL);
+	for (m = scr->monitors; m; m = m->next)
+		if (isvisible(c, m))
+			return M2LT(m);
+	for (i = 0; i < scr->ntags; i++)
+		if (c->tags[i])
+			return scr->views[i].layout;
 	return NULL;
 }
 
@@ -3774,7 +3794,7 @@ resize(Client *c, int x, int y, int w, int h, int b)
 		wc.height = h;
 		mask |= CWHeight;
 	}
-	if (c->th && c->is.shaded) {
+	if (c->th && (c->is.shaded && (c != sel || !options.autoroll))) {
 		wc.height = c->th;
 		mask2 |= CWHeight;
 	} else {
@@ -4341,25 +4361,34 @@ calc_maxh(Client *c, Workarea *wa, Geometry *g) {
 }
 
 void
-get_th(Client *c, int *thp, int *ghp)
+get_th(Client *c, Monitor *m, int *thp, int *ghp)
 {
-	int i, f = 0;
+	int i;
+	Bool decorate;
 
-	if (!c->has.title)
+	if (c->is.max || !c->has.title)
 		*thp = 0;
-	if (!c->has.grips)
+	if (c->is.max || !c->has.grips)
 		*ghp = 0;
-	if (!c->has.title && !c->has.grips)
+	if (c->is.max || (!c->has.title && !c->has.grips))
 		return;
-
-	for (i = 0; i < scr->ntags; i++)
-		if (c->tags[i]) {
-			f += FEATURES(scr->views[i].layout, OVERLAP);
-			f += scr->views[i].dectiled;
+	if (c->is.floater || c->skip.arrange)
+		decorate = True;
+	else if (!m && !(m = clientmonitor(c))) {
+		decorate = False;
+		for (i = 0; i < scr->ntags; i++) {
+			if (c->tags[i] && (scr->views[i].dectiled ||
+						FEATURES(scr->views[i].layout, OVERLAP))) {
+				decorate = True;
+				break;
+			}
 		}
-
-	*thp = (!c->is.max && (c->skip.arrange || f)) ?  scr->style.titleheight : 0;
-	*ghp = (!c->is.max && (c->skip.arrange || f)) ?  scr->style.gripsheight : 0;
+	} else {
+		decorate = (scr->views[m->curtag].dectiled || MFEATURES(m, OVERLAP)) ?
+			True : False;
+	}
+	*thp = decorate ? scr->style.titleheight : 0;
+	*ghp = decorate ? scr->style.gripsheight : 0;
 }
 
 void
@@ -4370,7 +4399,7 @@ updatefloat(Client *c, Monitor *m) {
 	if (!(m) && !(m = findmonitor(c)) && !(m = curmonitor(c)))
 		m = scr->monitors;
 	if (!isfloating(c, m)) {
-		updateframe(c);
+		updateframe(c, m);
 		discardenter();
 		return;
 	}
@@ -4386,11 +4415,11 @@ updatefloat(Client *c, Monitor *m) {
 	if (c->is.maxh)
 		calc_maxh(c, &wa, &g);
 	if (!c->is.max) {
-		get_th(c, &c->th, &c->gh);
+		get_th(c, m, &c->th, &c->gh);
 		/* TODO: more than just northwest gravity */
 		constrain(c, &g.w, &g.h);
 	}
-	updateframe(c);
+	updateframe(c, m);
 	resize(c, g.x, g.y, g.w, g.h, g.b);
 	if (c->is.max)
 		ewmh_update_net_window_fs_monitors(c);
@@ -5156,11 +5185,12 @@ setup(char *conf) {
 	initrules();
 
 	/* init appearance */
-	options.attachaside = atoi(getresource("attachaside", "1"));
+	options.attachaside = atoi(getresource("attachaside", "1")) ? True : False;
 	strncpy(options.command, getresource("command", COMMAND), LENGTH(options.command));
 	options.command[LENGTH(options.command) - 1] = '\0';
 	options.dectiled = atoi(getresource("decoratetiled", STR(DECORATETILED)));
-	options.hidebastards = atoi(getresource("hidebastards", "0"));
+	options.hidebastards = atoi(getresource("hidebastards", "0")) ? True : False;
+	options.autoroll = atoi(getresource("autoroll", "0")) ? True : False;
 	options.focus = atoi(getresource("sloppy", "0"));
 	options.snap = atoi(getresource("snap", STR(SNAP)));
 
@@ -5262,7 +5292,7 @@ _tag(Client *c, int index) {
 	i = (index == -1) ? 0 : index;
 	c->tags[i] = True;
 	ewmh_update_net_window_desktop(c);
-	updateframe(c);
+	updateframe(c, NULL);
 	arrange(NULL);
 	focus(NULL);
 }
@@ -6169,9 +6199,9 @@ unmapnotify(XEvent * e) {
 }
 
 void
-updateframe(Client * c) {
+updateframe(Client * c, Monitor *m) {
 	if (c->title || c->grips) {
-		get_th(c, &c->th, &c->gh);
+		get_th(c, m, &c->th, &c->gh);
 		if (c->title) {
 			if (!c->th)
 				XUnmapWindow(dpy, c->title);

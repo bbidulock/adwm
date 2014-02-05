@@ -667,7 +667,7 @@ void toggletag(Client *c, int index);
 void toggleview(int index);
 void toggleshowing(void);
 void togglehidden(Client *c);
-void updateframe(Client *c);
+void updateframe(Client *c, Monitor *m);
 void view(int index);
 void viewlefttag(void);
 void viewprevtag(void);

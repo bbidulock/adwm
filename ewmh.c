@@ -415,7 +415,7 @@ ewmh_update_net_client_list_stacking() {
 	Window *wl = NULL;
 	int i, n;
 
-	DPRINTF("%s\n", "Updating _NET_CLIENT_LIST_STACKING");
+	XPRINTF("%s\n", "Updating _NET_CLIENT_LIST_STACKING");
 	for (n = 0, c = scr->stack; c; n++, c = c->snext) ;
 	if (n && (wl = ecalloc(n, sizeof(Window)))) {
 		for (i = 0, c = scr->stack; c && i < n; c = c->snext)
@@ -434,7 +434,7 @@ ewmh_update_net_client_list() {
 	Window *wl = NULL;
 	int i, n;
 
-	DPRINTF("%s\n", "Updating _NET_CLIENT_LIST");
+	XPRINTF("%s\n", "Updating _NET_CLIENT_LIST");
 	for (n = 0, c = scr->clist; c; n++, c = c->cnext) ;
 	if (n && (wl = calloc(n, sizeof(Window)))) {
 		for (i = 0, c = scr->clist; c && i < n; c = c->cnext)
@@ -470,10 +470,10 @@ ewmh_update_net_desktop_names() {
 	long *data;
 
 	if (names_synced) {
-		DPRINTF("%s\n", "Updating _NET_DESKTOP_NAMES: NOT!");
+		XPRINTF("%s\n", "Updating _NET_DESKTOP_NAMES: NOT!");
 		return;
 	}
-	DPRINTF("%s\n", "Updating _NET_DESKTOP_NAMES");
+	XPRINTF("%s\n", "Updating _NET_DESKTOP_NAMES");
 	for (len = 0, i = 0; i < scr->ntags; i++)
 		if (scr->tags[i])
 			len += strlen(scr->tags[i]);
@@ -509,7 +509,7 @@ ewmh_update_echinus_seltags() {
 	long *seltags;
 	unsigned int i;
 
-	DPRINTF("%s\n", "Updating _ECHINUS_SELTAGS");
+	XPRINTF("%s\n", "Updating _ECHINUS_SELTAGS");
 	seltags = ecalloc(scr->ntags, sizeof(seltags[0]));
 	for (m = scr->monitors; m != NULL; m = m->next)
 		for (i = 0; i < scr->ntags; i++)
@@ -524,7 +524,7 @@ void
 ewmh_update_net_number_of_desktops() {
 	long data = scr->ntags;
 
-	DPRINTF("%s\n", "Updating _NET_NUMBER_OF_DESKTOPS");
+	XPRINTF("%s\n", "Updating _NET_NUMBER_OF_DESKTOPS");
 	XChangeProperty(dpy, scr->root, _XA_NET_NUMBER_OF_DESKTOPS, XA_CARDINAL, 32,
 			PropModeReplace, (unsigned char *) &data, 1);
 	XChangeProperty(dpy, scr->root, _XA_WIN_WORKSPACE_COUNT, XA_CARDINAL, 32,
@@ -554,7 +554,7 @@ ewmh_process_net_showing_desktop() {
 	long *card;
 	unsigned long n = 0;
 
-	DPRINTF("%s\n", "Processing _NET_SHOWING_DESKTOP");
+	XPRINTF("%s\n", "Processing _NET_SHOWING_DESKTOP");
 	card = getcard(scr->root, _XA_NET_SHOWING_DESKTOP, &n);
 	if (n > 0) {
 		Bool show = card[0];
@@ -570,7 +570,7 @@ void
 ewmh_update_net_showing_desktop() {
 	long data = scr->showing_desktop ? 1 : 0;
 
-	DPRINTF("%s\n", "Updating _NET_SHOWING_DESKTOP");
+	XPRINTF("%s\n", "Updating _NET_SHOWING_DESKTOP");
 	XChangeProperty(dpy, scr->root, _XA_NET_SHOWING_DESKTOP, XA_CARDINAL, 32,
 			PropModeReplace, (unsigned char *)&data, 1);
 }
@@ -579,7 +579,7 @@ void
 ewmh_update_net_desktop_geometry() {
 	long data[2];
 
-	DPRINTF("%s\n", "Updating _NET_DESKTOP_GEOMETRY");
+	XPRINTF("%s\n", "Updating _NET_DESKTOP_GEOMETRY");
 	data[0] = DisplayWidth(dpy, scr->screen);
 	data[1] = DisplayHeight(dpy, scr->screen);
 	XChangeProperty(dpy, scr->root, _XA_NET_DESKTOP_GEOMETRY, XA_CARDINAL, 32,
@@ -619,7 +619,7 @@ ewmh_update_net_current_desktop() {
 	unsigned int i, n;
 	Monitor *m;
 
-	DPRINTF("%s\n", "Updating _NET_CURRENT_DESKTOP");
+	XPRINTF("%s\n", "Updating _NET_CURRENT_DESKTOP");
 	for (n = 0, m = scr->monitors; m; m = m->next, n++) ;
 	data = ecalloc(n, sizeof(*data));
 	for (i = 0, m = scr->monitors; m; data[i++] = m->curtag, m = m->next) ;
@@ -646,7 +646,7 @@ ewmh_update_net_visible_desktops() {
 	unsigned int i, n;
 	Monitor *m;
 
-	DPRINTF("%s\n", "Updating _NET_VISIBLE_DESKTOPS");
+	XPRINTF("%s\n", "Updating _NET_VISIBLE_DESKTOPS");
 	for (n = 0, m = scr->monitors; m; m = m->next, n++) ;
 	data = ecalloc(n, sizeof(*data));
 	for (i = 0, m = scr->monitors; m; data[i++] = m->curtag, m = m->next) ;
@@ -780,7 +780,7 @@ ewmh_update_net_window_desktop_mask(Client *c) {
 	unsigned long data[longs];
 	unsigned int i, j, k, l;
 
-	DPRINTF("Updating _NET_WM_DESKTOP_MASK for 0x%lx\n", c->win);
+	XPRINTF("Updating _NET_WM_DESKTOP_MASK for 0x%lx\n", c->win);
 	for (j = 0, k = 0; j < longs; j++, k += 32)
 		for (i = 0, l = k, data[j] = 0; i < 32 && l < scr->ntags; i++, l++)
 			if (c->tags[l])
@@ -793,7 +793,7 @@ ewmh_update_net_window_desktop_mask(Client *c) {
 
 void
 ewmh_update_net_window_desktop(Client *c) {
-	DPRINTF("Updating _NET_WM_DESKTOP for 0x%lx\n", c->win);
+	XPRINTF("Updating _NET_WM_DESKTOP for 0x%lx\n", c->win);
 	if (isomni(c)) {
 		long i = -1;
 
@@ -895,7 +895,7 @@ ewmh_update_net_work_area() {
 	Monitor *m;
 	long workarea[4];
 
-	DPRINTF("%s\n", "Updating _NET_WORKAREA");
+	XPRINTF("%s\n", "Updating _NET_WORKAREA");
 	geoms = ecalloc(longs, sizeof(geoms[0]));
 
 	for (m = scr->monitors; m; m = m->next) {
@@ -950,7 +950,7 @@ ewmh_process_net_desktop_names() {
 	for (pos = ret, i = 0; nitems && i < scr->ntags; i++) {
 		if ((len = strnlen(pos, nitems))) {
 			if ((str = strndup(pos, nitems))) {
-				DPRINTF("Assigning name '%s' to tag %u\n", str, i);
+				XPRINTF("Assigning name '%s' to tag %u\n", str, i);
 				free(scr->tags[i]);
 				scr->tags[i] = str;
 			}
@@ -979,7 +979,7 @@ void
 ewmh_update_net_active_window() {
 	Window win;
 
-	DPRINTF("%s\n", "Updating _NET_ACTIVE_WINDOW");
+	XPRINTF("%s\n", "Updating _NET_ACTIVE_WINDOW");
 	win = sel ? sel->win : None;
 	XChangeProperty(dpy, scr->root, _XA_NET_ACTIVE_WINDOW, XA_WINDOW, 32,
 			PropModeReplace, (unsigned char *) &win, 1);
@@ -992,7 +992,7 @@ ewmh_update_net_desktop_modes() {
 	long *data;
 	unsigned int i;
 
-	DPRINTF("%s\n", "Updating _NET_DESKTOP_MODES");
+	XPRINTF("%s\n", "Updating _NET_DESKTOP_MODES");
 	data = ecalloc(scr->ntags, sizeof(data[0]));
 	for (i = 0; i < scr->ntags; i++) {
 		switch (scr->views[i].layout->symbol) {
@@ -1236,7 +1236,7 @@ ewmh_update_net_window_actions(Client *c) {
 	long action[32];
 	int actions = 0;
 
-	DPRINTF("Updating _NET_WM_ALLOWED_ACTIONS for 0x%lx\n", c->win);
+	XPRINTF("Updating _NET_WM_ALLOWED_ACTIONS for 0x%lx\n", c->win);
 	if (c->can.move)
 		action[actions++] = _XA_NET_WM_ACTION_MOVE;
 	if (c->can.size)
@@ -1293,7 +1293,7 @@ ewmh_update_net_window_state(Client *c)
 	if (!c->is.managed)
 		return;
 
-	DPRINTF("Updating _NET_WM_STATE for 0x%lx\n", c->win);
+	XPRINTF("Updating _NET_WM_STATE for 0x%lx\n", c->win);
 	if (c->is.modal)
 		winstate[states++] = _XA_NET_WM_STATE_MODAL;
 	if (c->is.sticky)
@@ -1319,7 +1319,7 @@ ewmh_update_net_window_state(Client *c)
 		winstate[states++] = _XA_NET_WM_STATE_BELOW;
 	if (c->is.attn)
 		winstate[states++] = _XA_NET_WM_STATE_DEMANDS_ATTENTION;
-	if (c == give)
+	if (c->is.focused)
 		winstate[states++] = _XA_NET_WM_STATE_FOCUSED;
 
 	/* following are non-standard */
@@ -1333,7 +1333,7 @@ ewmh_update_net_window_state(Client *c)
 	XChangeProperty(dpy, c->win, _XA_NET_WM_STATE, XA_ATOM, 32,
 			PropModeReplace, (unsigned char *) winstate, states);
 
-	DPRINTF("Updating _WIN_STATE for 0x%lx\n", c->win);
+	XPRINTF("Updating _WIN_STATE for 0x%lx\n", c->win);
 	if (c->is.sticky)
 		state |= WIN_STATE_STICKY;
 	if (c->is.icon)
@@ -1474,12 +1474,12 @@ ewmh_process_state_atom(Client *c, Atom state, int set) {
 		}
 		DPRINT;
 		arrange(curmonitor());
-		DPRINTF("%s: x%d y%d w%d h%d\n", c->name, c->c.x, c->c.y, c->c.w, c->c.h);
+		XPRINTF("%s: x%d y%d w%d h%d\n", c->name, c->c.x, c->c.y, c->c.w, c->c.h);
 	} else if (state == _XA_NET_WM_STATE_ABOVE) {
 		if ((set == _NET_WM_STATE_ADD && !c->is.above) ||
 		    (set == _NET_WM_STATE_REMOVE && c->is.above) ||
 		    (set == _NET_WM_STATE_TOGGLE))
-			togglebelow(c);
+			toggleabove(c);
 	} else if (state == _XA_NET_WM_STATE_BELOW) {
 		if ((set == _NET_WM_STATE_ADD && !c->is.below) ||
 		    (set == _NET_WM_STATE_REMOVE && c->is.below) ||
@@ -1522,10 +1522,10 @@ ewmh_update_net_window_extents(Client *c) {
 		c->c.b, /* bottom */
 	};
 
-	DPRINTF("Updating _NET_WM_FRAME_EXTENTS for 0x%lx\n", c->win);
+	XPRINTF("Updating _NET_WM_FRAME_EXTENTS for 0x%lx\n", c->win);
 	XChangeProperty(dpy, c->win, _XA_NET_FRAME_EXTENTS, XA_CARDINAL, 32,
 		PropModeReplace, (unsigned char *) data, 4L);
-	DPRINTF("Updating _KDE_NET_WM_FRAME_STRUT for 0x%lx\n", c->win);
+	XPRINTF("Updating _KDE_NET_WM_FRAME_STRUT for 0x%lx\n", c->win);
 	XChangeProperty(dpy, c->win, _XA_KDE_NET_WM_FRAME_STRUT, XA_CARDINAL, 32,
 		PropModeReplace, (unsigned char *) data, 4L);
 }

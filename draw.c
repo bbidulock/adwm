@@ -149,9 +149,9 @@ buttonimage(EScreen *ds, Client *c, ElementType type)
 		enabled = False;
 		break;
 	}
-	DPRINTF("Getting button image for '%s'\n", name);
+	XPRINTF("Getting button image for '%s'\n", name);
 	if (!present) {
-		DPRINTF("button %s is not present!\n", name);
+		XPRINTF("button %s is not present!\n", name);
 		return NULL;
 	}
 
@@ -162,46 +162,46 @@ buttonimage(EScreen *ds, Client *c, ElementType type)
 
 	e = &ds->element[type];
 	if (!e->action) {
-		DPRINTF("button %s has no actions!\n", name);
+		XPRINTF("button %s has no actions!\n", name);
 		return NULL;
 	}
 
 	if (pressed && toggled && e->image[ButtonImageToggledPressed].present) {
-		DPRINTF("button %s assigned toggled.pressed image\n", name);
+		XPRINTF("button %s assigned toggled.pressed image\n", name);
 		return &e->image[ButtonImageToggledPressed];
 	}
 	if (pressed && e->image[ButtonImagePressed].present) {
-		DPRINTF("button %s assigned pressed image\n", name);
+		XPRINTF("button %s assigned pressed image\n", name);
 		return &e->image[ButtonImagePressed];
 	}
 	image = ButtonImageHover + (hovered ? 0 : (focused ? 1 : 2));
 	image += toggled ? 3 : 0;
 	image += enabled ? 0 : 6;
 	if (hovered && !e->image[image].present) {
-		DPRINTF("button %s has no hovered image %d, using %s instead\n", name, image, focused ? "focused" : "unfocus");
+		XPRINTF("button %s has no hovered image %d, using %s instead\n", name, image, focused ? "focused" : "unfocus");
 		image += focused ? 1 : 2;
 	}
 	if (!focused && !e->image[image].present) {
-		DPRINTF("button %s has no unfocus image %d, using focused instead\n", name, image);
+		XPRINTF("button %s has no unfocus image %d, using focused instead\n", name, image);
 		image -= 1;
 	}
 	if (toggled && !e->image[image].present) {
-		DPRINTF("button %s has no toggled image %d, using untoggled instead\n", name, image);
+		XPRINTF("button %s has no toggled image %d, using untoggled instead\n", name, image);
 		image -= 3;
 	}
 	if (!enabled && !e->image[image].present) {
-		DPRINTF("button %s missing disabled image %d, skipping button\n", name, image);
+		XPRINTF("button %s missing disabled image %d, skipping button\n", name, image);
 		return NULL;
 	}
 	if (e->image[image].present) {
-		DPRINTF("button %s going with chosen image %d\n", name, image);
+		XPRINTF("button %s going with chosen image %d\n", name, image);
 		return &e->image[image];
 	}
 	if (e->image[ButtonImageDefault].present) {
-		DPRINTF("button %s missing chosen image %d, going with default\n", name, image);
+		XPRINTF("button %s missing chosen image %d, going with default\n", name, image);
 		return &e->image[ButtonImageDefault];
 	}
-	DPRINTF("button %s missing default image, skipping button\n", name);
+	XPRINTF("button %s missing default image, skipping button\n", name);
 	return NULL;
 }
 
@@ -213,7 +213,7 @@ drawbutton(EScreen *ds, Client *c, ElementType type, unsigned long col[ColLast],
 	ButtonImage *bi;
 
 	if (!(bi = buttonimage(ds, c, type)) || !bi->present) {
-		DPRINTF("button %d has no button image\n", type);
+		XPRINTF("button %d has no button image\n", type);
 		return 0;
 	}
 
@@ -224,7 +224,7 @@ drawbutton(EScreen *ds, Client *c, ElementType type, unsigned long col[ColLast],
 
 #if defined IMLIB2 || defined XPM
 	if (bi->pixmap) {
-		DPRINTF("Copying pixmap 0x%lx with geom %dx%d+%d+%d to drawable 0x%lx\n",
+		XPRINTF("Copying pixmap 0x%lx with geom %dx%d+%d+%d to drawable 0x%lx\n",
 			bi->pixmap, ec->g.w, ec->g.h, ec->g.x, ec->g.y, d);
 		XCopyArea(dpy, bi->pixmap, d, ds->dc.gc, 0, bi->y, ec->g.w, ec->g.h, ec->g.x, ec->g.y);
 		return ec->g.w;
@@ -238,7 +238,7 @@ drawbutton(EScreen *ds, Client *c, ElementType type, unsigned long col[ColLast],
 		XCopyPlane(dpy, bi->bitmap, d, ds->dc.gc, 0, 0, ec->g.w, ec->g.h, ec->g.x, ec->g.y + bi->y, 1);
 		return ds->dc.h;
 	}
-	DPRINTF("button %d has no pixmap or bitmap\n", type);
+	XPRINTF("button %d has no pixmap or bitmap\n", type);
 	return 0;
 }
 
@@ -275,7 +275,7 @@ drawelement(EScreen *ds, char which, int x, int position, Client *c)
 	if (0 > type || type >= LastElement)
 		return 0;
 
-	DPRINTF("drawing element '%c' for client %s\n", which, c->name);
+	XPRINTF("drawing element '%c' for client %s\n", which, c->name);
 
 	ec->present = False;
 	ec->g.x = ds->dc.x;
@@ -312,11 +312,11 @@ drawelement(EScreen *ds, char which, int x, int position, Client *c)
 	if (w) {
 		ec->present = True;
 		ec->g.w = w;
-		DPRINTF("element '%c' at %dx%d+%d+%d:%d for client '%s'\n",
+		XPRINTF("element '%c' at %dx%d+%d+%d:%d for client '%s'\n",
 				which, ec->g.w, ec->g.h, ec->g.x, ec->g.y,
 				ec->g.b, c->name);
 	} else
-		DPRINTF("missing element '%c' for client %s\n", which, c->name);
+		XPRINTF("missing element '%c' for client %s\n", which, c->name);
 	return w;
 }
 

@@ -66,12 +66,15 @@
 #include "echinus.h"
 
 /* macros */
+#define WINDOWMASK		(EnterWindowMask | LeaveWindowMask)
 #define BUTTONMASK		(ButtonPressMask | ButtonReleaseMask)
 #define CLEANMASK(mask)		(mask & ~(numlockmask | LockMask))
 #define MOUSEMASK		(BUTTONMASK | PointerMotionMask)
-#define CLIENTMASK	        (PropertyChangeMask | StructureNotifyMask | FocusChangeMask)
+#define CLIENTMASK	        (PropertyChangeMask | StructureNotifyMask)
 #define CLIENTNOPROPAGATEMASK 	(BUTTONMASK | ButtonMotionMask)
-#define FRAMEMASK               (MOUSEMASK | SubstructureRedirectMask | SubstructureNotifyMask | EnterWindowMask | LeaveWindowMask)
+#define FRAMEMASK               (MOUSEMASK | WINDOWMASK | SubstructureRedirectMask | SubstructureNotifyMask | FocusChangeMask)
+#define MAPPINGMASK		(StructureNotifyMask | SubstructureRedirectMask | SubstructureNotifyMask | EnterWindowMask)
+#define ROOTMASK		(BUTTONMASK | WINDOWMASK | MAPPINGMASK | FocusChangeMask)
 
 #define EXTRANGE    16		/* all X11 extension event must fit in this range */
 
@@ -100,6 +103,7 @@ void configurerequest(XEvent * e);
 void destroynotify(XEvent * e);
 void detach(Client * c);
 void detachstack(Client * c);
+void discardenter(void);
 void *ecalloc(size_t nmemb, size_t size);
 void *emallocz(size_t size);
 void *erealloc(void *ptr, size_t size);
@@ -166,6 +170,7 @@ void restart(const char *arg);
 Bool constrain(Client *c, int *wp, int *hp);
 void resize(Client * c, int x, int y, int w, int h, int b);
 void restack(void);
+void restack_belowif(Client *c, Client *sibling);
 void restack_client(Client *c, int stack_mode, Client *sibling);
 void run(void);
 void save(Client * c);
@@ -173,6 +178,7 @@ void restore(Client *c);
 void restore_float(Client *c);
 void scan(void);
 void setclientstate(Client * c, long state);
+void setfocus(Client *c);
 void setlayout(const char *arg);
 void setmwfact(const char *arg);
 void setup(char *);
@@ -239,38 +245,21 @@ SnDisplay *sn_dpy;
 SnMonitorContext *sn_ctx;
 Notify *notifies;
 #endif
-// int screen;
-// Window root;
-// Window selwin;
 XrmDatabase xrdb;
 Bool otherwm;
 Bool running = True;
-// Monitor *monitors;
-// Client *clients;
 Client *sel;
 Client *give;	/* gave focus last */
 Client *take;	/* take focus last */
-// Client *stack;
-// Client *clist;
 Group window_stack = { NULL, 0, 0 };
 XContext context[PartLast];
 Cursor cursor[CurLast];
 int ebase[BaseLast];
 Bool haveext[BaseLast];
-// Style style;
-// Button button[LastBtn];
-// View *views;
-// Key **keys;
 Rule **rules;
-// char **tags;
-// Atom *dt_tags;
-// unsigned int nmons;
-// unsigned int ntags;
-// unsigned int nkeys;
 unsigned int nrules;
 unsigned int modkey;
 unsigned int numlockmask;
-// Bool showing_desktop = False;
 Time user_time;
 Time give_time;
 Time take_time;
@@ -426,8 +415,6 @@ static void
 arrangemon(Monitor * m) {
 	Client *c;
 
-	XRaiseWindow(dpy, m->veil);
-	XMapWindow(dpy, m->veil);
 	if (scr->views[m->curtag].layout->arrange)
 		scr->views[m->curtag].layout->arrange(m);
 	arrangefloats(m);
@@ -449,9 +436,23 @@ arrangemon(Monitor * m) {
 }
 
 void
+discardenter()
+{
+	XEvent ev;
+
+	XSync(dpy, False);
+	while (XCheckMaskEvent(dpy, EnterWindowMask, &ev)) ;
+}
+
+void
 arrange(Monitor *om) {
 	Monitor *m;
 	
+	if (!om)
+		for (m = scr->monitors; m; m = m->next)
+			XMapRaised(dpy, m->veil);
+	else
+		XMapRaised(dpy, om->veil);
 	if (!om)
 		for (m = scr->monitors; m; m = m->next)
 			arrangemon(m);
@@ -463,6 +464,7 @@ arrange(Monitor *om) {
 			XUnmapWindow(dpy, m->veil);
 	else
 		XUnmapWindow(dpy, om->veil);
+	discardenter();
 }
 
 void
@@ -487,11 +489,31 @@ attach(Client * c, Bool attachaside) {
 }
 
 void
-attachclist(Client *c) {
+attachclist(Client *c)
+{
 	Client **cp;
+
+	assert(c->cnext == NULL);
 	for (cp = &scr->clist; *cp; cp = &(*cp)->cnext) ;
 	*cp = c;
 	c->cnext = NULL;
+}
+
+void
+attachflist(Client *c, Bool front)
+{
+	Client *s;
+
+	assert(c->fnext == NULL);
+	if (front || !sel || sel == c) {
+		c->fnext = scr->flist;
+		scr->flist = c;
+	} else {
+		for (s = scr->flist; s && s != sel; s = s->fnext) ;
+		assert(s == sel);
+		c->fnext = s->fnext;
+		s->fnext = c;
+	}
 }
 
 void
@@ -506,8 +528,8 @@ ban(Client * c) {
 		return;
 	c->ignoreunmap++;
 	setclientstate(c, IconicState);
-	XSelectInput(dpy, c->win, CLIENTMASK & ~(StructureNotifyMask | EnterWindowMask));
-	XSelectInput(dpy, c->frame, NoEventMask);
+	XSelectInput(dpy, c->win, CLIENTMASK & ~MAPPINGMASK);
+	XSelectInput(dpy, c->frame, FRAMEMASK & ~MAPPINGMASK);
 	XUnmapWindow(dpy, c->frame);
 	XUnmapWindow(dpy, c->win);
 	XSelectInput(dpy, c->win, CLIENTMASK);
@@ -544,7 +566,7 @@ buttonpress(XEvent *e)
 	if (user_time == CurrentTime || (int) ev->time - (int) user_time > 0)
 		user_time = ev->time;
 
-	DPRINTF("BUTTON %d: window 0x%lx root 0x%lx subwindow 0x%lx time %ld x %d y %d x_root %d y_root %d state 0x%x\n",
+	XPRINTF("BUTTON %d: window 0x%lx root 0x%lx subwindow 0x%lx time %ld x %d y %d x_root %d y_root %d state 0x%x\n",
 			ev->button, ev->window, ev->root, ev->subwindow,
 			ev->time, ev->x, ev->y, ev->x_root, ev->y_root,
 			ev->state);
@@ -553,7 +575,7 @@ buttonpress(XEvent *e)
 		button_mask &= ~(1 << button);
 
 	if (ev->window == scr->root) {
-		DPRINTF("SCREEN %d: 0x%lx button: %d\n", scr->screen, ev->window, ev->button);
+		XPRINTF("SCREEN %d: 0x%lx button: %d\n", scr->screen, ev->window, ev->button);
 		/* _WIN_DESKTOP_BUTTON_PROXY */
 		/* modifiers or not interested in press */
 		if (ev->type == ButtonPress) {
@@ -584,7 +606,7 @@ buttonpress(XEvent *e)
 			(*action) (NULL, (XEvent *) ev);
 		XUngrabPointer(dpy, CurrentTime);
 	} else if ((c = getclient(ev->window, ClientTitle)) && ev->window == c->title) {
-		DPRINTF("TITLE %s: 0x%lx button: %d\n", c->name, ev->window, ev->button);
+		XPRINTF("TITLE %s: 0x%lx button: %d\n", c->name, ev->window, ev->button);
 		for (i = 0; i < LastElement; i++) {
 			ElementClient *ec = &c->element[i];
 			Bool active;
@@ -603,7 +625,7 @@ buttonpress(XEvent *e)
 			if (ev->x >= ec->g.x && ev->x < ec->g.x + ec->g.w
 			    && ev->y >= ec->g.y && ev->y < ec->g.y + ec->g.h) {
 				if (ev->type == ButtonPress) {
-					DPRINTF("ELEMENT %d PRESSED\n", i);
+					XPRINTF("ELEMENT %d PRESSED\n", i);
 					ec->pressed |= (1 << button);
 					drawclient(c);
 					/* resize needs to be on button press */
@@ -614,7 +636,7 @@ buttonpress(XEvent *e)
 				} else if (ev->type == ButtonRelease) {
 					/* only process release if processed press */
 					if (ec->pressed & (1 << button)) {
-						DPRINTF("ELEMENT %d RELEASED\n", i);
+						XPRINTF("ELEMENT %d RELEASED\n", i);
 						ec->pressed &= !(1 << button);
 						drawclient(c);
 						/* resize needs to be on button press */
@@ -636,7 +658,7 @@ buttonpress(XEvent *e)
 		XUngrabPointer(dpy, CurrentTime);
 		drawclient(c);
 	} else if ((c = getclient(ev->window, ClientWindow)) && ev->window == c->win) {
-		DPRINTF("WINDOW %s: 0x%lx button: %d\n", c->name, ev->window, ev->button);
+		XPRINTF("WINDOW %s: 0x%lx button: %d\n", c->name, ev->window, ev->button);
 		if (CLEANMASK(ev->state) != modkey) {
 			XAllowEvents(dpy, ReplayPointer, CurrentTime);
 			return;
@@ -646,7 +668,7 @@ buttonpress(XEvent *e)
 		XUngrabPointer(dpy, CurrentTime);	// ev->time ??
 		drawclient(c);
 	} else if ((c = getclient(ev->window, ClientFrame)) && ev->window == c->frame) {
-		DPRINTF("FRAME %s: 0x%lx button: %d\n", c->name, ev->window, ev->button);
+		XPRINTF("FRAME %s: 0x%lx button: %d\n", c->name, ev->window, ev->button);
 		if ((action = actions[OnClientFrame][button][direct]))
 			(*action) (c, (XEvent *) ev);
 		XUngrabPointer(dpy, CurrentTime);	// ev->time ??
@@ -1027,7 +1049,7 @@ destroynotify(XEvent * e) {
 	XDestroyWindowEvent *ev = &e->xdestroywindow;
 
 	if ((c = getclient(ev->window, ClientWindow))) {
-		DPRINTF("unmanage destroyed window (%s)\n", c->name);
+		XPRINTF("unmanage destroyed window (%s)\n", c->name);
 		unmanage(c, CauseDestroyed);
 		return;
 	}
@@ -1051,13 +1073,25 @@ detach(Client * c) {
 }
 
 void
-detachclist(Client *c) {
+detachclist(Client *c)
+{
 	Client **cp;
 
 	for (cp = &scr->clist; *cp && *cp != c; cp = &(*cp)->cnext) ;
 	assert(*cp == c);
 	*cp = c->cnext;
 	c->cnext = NULL;
+}
+
+void
+detachflist(Client *c)
+{
+	Client **cp;
+
+	for (cp = &scr->flist; *cp && *cp != c; cp = &(*cp)->fnext) ;
+	assert(*cp == c);
+	*cp = c->fnext;
+	c->fnext = NULL;
 }
 
 void
@@ -1107,29 +1141,39 @@ enternotify(XEvent * e) {
 		if (c->is.bastard)
 			return;
 		/* focus when switching monitors */
-		if (!isvisible(sel, curmonitor()))
+		if (!isvisible(sel, curmonitor())) {
+			XPRINTF("FOCUS: monitor switching focus to 0x%08lx 0x%08lx %s\n", c->frame, c->win, c->name);
 			focus(c);
+		}
 		switch (options.focus) {
 		case Clk2Focus:
 			break;
 		case SloppyFloat:
-			if (!c->skip.sloppy && isfloating(c, curmonitor()))
+			if (!c->skip.sloppy && isfloating(c, curmonitor())) {
+				XPRINTF("FOCUS: sloppy focus to 0x%08lx 0x%08lx %s\n", c->frame, c->win, c->name);
 				focus(c);
+			}
 			break;
 		case AllSloppy:
-			if (!c->skip.sloppy)
+			if (!c->skip.sloppy) {
+				XPRINTF("FOCUS: sloppy focus to 0x%08lx 0x%08lx %s\n", c->frame, c->win, c->name);
 				focus(c);
+			}
 			break;
 		case SloppyRaise:
 			if (!c->skip.sloppy) {
+				XPRINTF("FOCUS: sloppy focus to 0x%08lx 0x%08lx %s\n", c->frame, c->win, c->name);
 				focus(c);
 				raiseclient(c);
 			}
 			break;
 		}
 	} else if (ev->window == scr->root) {
+#if 0
+		/* no no no, stay with previously focused client */
 		if (scr->managed)
 			focus(NULL);
+#endif
 	}
 }
 
@@ -1182,7 +1226,7 @@ focusin(XEvent *e) {
 	 *	      input focus to any of its windows.
 	 */
 
-	c = getclient(ev->window, ClientWindow);
+	c = getclient(ev->window, ClientFrame);
 	switch (ev->mode) {
 	case NotifyWhileGrabbed:
 	case NotifyGrab:
@@ -1201,6 +1245,7 @@ focusin(XEvent *e) {
 		 * window, set the focus to the selected window. */
 		break;
 	default:
+		XPRINTF("Unwanted FocusIn %d from 0x%lx\n", ev->mode, ev->window);
 		return;
 	}
 	switch (ev->detail) {
@@ -1215,8 +1260,7 @@ focusin(XEvent *e) {
 			 * least common ancestor, and the pointer is in window P: FocusIn
 			 * with detail NonlinearVirtual is generated on each window between C
 			 * and B exclusive (in order). */
-		}
-		if ((c && ev->window == c->frame) || ev->window == scr->root) {
+		} else if ((c && ev->window == c->frame) || ev->window == scr->root) {
 			/* When the focus moves from window A to window B on different
 			 * screens and the pointer is in window P: if A is not a root window,
 			 * FocusIn with detail NonlinearVirtual is generated on each window
@@ -1225,6 +1269,9 @@ focusin(XEvent *e) {
 			 * the pointer is in window P: if A is not a root window, FocusIn
 			 * with detail NonlinearVirtual is generated on each window from A's
 			 * root down to but not including A (in order). */
+		} else {
+			XPRINTF("Unwanted FocusIn NotifyNonlinearVirtual from 0x%lx\n", ev->window);
+			return;
 		}
 		break;
 	case NotifyPointer:
@@ -1237,6 +1284,9 @@ focusin(XEvent *e) {
 			 * the pointer is in window P: if the new focus is PointerRoot,
 			 * FocusIn with detail Pointer is generated on each window from P's
 			 * root down to and including P (in order). */
+		} else {
+			XPRINTF("Unwanted FocusIn NotifyPointer from 0x%lx\n", ev->window);
+			return;
 		}
 		break;
 	case NotifyPointerRoot:
@@ -1245,42 +1295,64 @@ focusin(XEvent *e) {
 			/* When the focus moves from PointerRoot (or None) to window A and
 			 * the pointer is in window P: FocusIn with detail None (or
 			 * PointerRoot) is generated on all root windows. */
+		} else {
+			XPRINTF("Unwanted FocusIn NotifyPointer(Root|None) from 0x%lx\n", ev->window);
+			return;
 		}
 		break;
 	default:
+		XPRINTF("Unwanted FocusIn %d from 0x%lx\n", ev->detail, ev->window);
 		return;
 	}
 	if (c && ev->window == c->frame) {
-		if (c == give)
-			return; /* yes, we gave you the focus */
-		if (c == take) {
-			takefocus(NULL);
+		if (c == give) {
+			DPRINTF("FocusIn: gave focus to 0x%08lx 0x%08lx %s\n", c->frame, c->win, c->name);
 			gavefocus(c);
+			return; /* yes, we gave you the focus */
+		}
+		if (c == take) {
+			DPRINTF("FocusIn: gave focus to 0x%08lx 0x%08lx %s\n", c->frame, c->win, c->name);
+			gavefocus(c);
+			takefocus(NULL);
 			return; /* yes, we asked you to take the focus */
 		}
 		if (take) {
 			if (take->can.focus & GIVE_FOCUS) {
-				DPRINTF("Client %s stole focus\n", c->name);
-				DPRINTF("Giving back to %s\n", take->name);
-				focus(take); /* you weren't to give it away */
+				DPRINTF("Client frame 0x%08lx win 0x%08lx name %s stole focus\n",
+						c->frame, c->win, c->name);
+				DPRINTF("Giving back to frame 0x%08lx win 0x%08lx name %s\n",
+						take->frame, take->win, take->name);
+				setfocus(take); /* you weren't to give it away */
 			} else {
+				DPRINTF("FocusIn: gave focus to 0x%08lx 0x%08lx %s\n", c->frame, c->win, c->name);
 				gavefocus(c); /* yes, we asked you to assign focus */
+				takefocus(NULL);
 			}
 		} else if (give) {
-			DPRINTF("Client %s stole focus\n", c->name);
-			DPRINTF("Giving back to %s\n", give->name);
-			focus(give); /* you stole the focus */
+			DPRINTF("Client frame 0x%08lx win 0x%08lx name %s stole focus\n",
+					c->frame, c->win, c->name);
+			DPRINTF("Giving back to frame 0x%08lx win 0x%08lx name %s\n",
+					give->frame, give->win, give->name);
+			setfocus(give); /* you stole the focus */
 		} else {
-			if (canfocus(c))
+			if (canfocus(c)) {
+				DPRINTF("FocusIn: gave focus to 0x%08lx 0x%08lx %s\n", c->frame, c->win, c->name);
 				gavefocus(c); /* you can have the focus */
-			else {
-				DPRINTF("Client %s stole focus\n", c->name);
-				DPRINTF("Giving back to %s\n", "root");
-				focus(NULL); /* you can't have the focus */
+			} else {
+				DPRINTF("Client frame 0x%08lx win 0x%08lx name %s stole focus\n",
+						c->frame, c->win, c->name);
+				DPRINTF("Giving back to 0x%08lx %s\n", scr->root, "root");
+				setfocus(NULL); /* you can't have the focus */
 			}
 		}
-	} else if (!c)
-		fprintf(stderr, "Caught FOCUSIN for unknown window 0x%lx\n", ev->window);
+	} else if (ev->window == scr->root) {
+		/* nothing to do here really */
+		if (give)
+			DPRINTF("FocusIn: took focus from 0x%08lx 0x%08lx %s\n", give->frame, give->win, give->name);
+		gavefocus(NULL);
+		takefocus(NULL);
+	} else
+		fprintf(stderr, "Unwanted FocusIn for unknown window 0x%lx\n", ev->window);
 }
 
 void
@@ -1288,7 +1360,7 @@ focusout(XEvent *e) {
 	XFocusOutEvent *ev = &e->xfocus;
 	Client *c;
 
-	c = getclient(ev->window, ClientWindow);
+	c = getclient(ev->window, ClientFrame);
 	switch (ev->mode) {
 	case NotifyWhileGrabbed:
 	case NotifyGrab:
@@ -1305,6 +1377,7 @@ focusout(XEvent *e) {
 		 * for Normal below) as if the focus were to change from G to F. */
 		break;
 	default:
+		XPRINTF("Unwanted FocusOut %d from 0x%lx\n", ev->mode, ev->window);
 		return;
 	}
 	switch (ev->detail) {
@@ -1319,8 +1392,7 @@ focusout(XEvent *e) {
 			 * least common ancestor, and the pointer is in window P: FocusOut
 			 * with detail NonlinearVirtual is generated on each window between
 			 * A and C exclusive (in order). */
-		}
-		if ((c && ev->window == c->frame) || ev->window == scr->root) {
+		} else if ((c && ev->window == c->frame) || ev->window == scr->root) {
 			/* When the focus moves from window A to window B on different
 			 * screens and the pointer is in window P: if A is not a root
 			 * window, FocusOut with detail NonlinearVirtual is generated on
@@ -1329,6 +1401,9 @@ focusout(XEvent *e) {
 			 * the pointer is in window P: if A is not a root window, FocusOut
 			 * with detail NonlinearVirtual is generated on each window above A
 			 * up to and including its root (in order). */
+		} else {
+			XPRINTF("Unwanted FocusOut NotifyNonlinearVirtual from 0x%lx\n", ev->window);
+			return;
 		}
 		break;
 	case NotifyPointer:
@@ -1337,6 +1412,9 @@ focusout(XEvent *e) {
 			 * the pointer is in window P: if the old focus is PointerRoot,
 			 * FocusOut with detail Pointer is generated on each window from P
 			 * up to and including P's root (in order). */
+		} else {
+			XPRINTF("Unwanted FocusOut NotifyPointer from 0x%lx\n", ev->window);
+			return;
 		}
 		break;
 	case NotifyPointerRoot:
@@ -1348,11 +1426,32 @@ focusout(XEvent *e) {
 			/* When the focus moves from PointerRoot (or None) to window A and
 			 * the pointer is in window P: FocusOut with detail PointerRoot (or
 			 * None) is generated on all root windows. */
+		} else {
+			XPRINTF("Unwanted FocusIn NotifyPointer(Root|None) from 0x%lx\n", ev->window);
+			return;
 		}
 		break;
 	default:
+		XPRINTF("Unwanted FocusOut %d from 0x%lx\n", ev->detail, ev->window);
 		return;
 	}
+	if (c && ev->window == c->frame) {
+		if (c == give) {
+			DPRINTF("FocusOut: lost focus from 0x%08lx 0x%08lx %s\n", c->frame, c->win, c->name);
+			gavefocus(NULL);
+		}
+		else if (c->is.focused) {
+			DPRINTF("FocusOut: lost focus from 0x%08lx 0x%08lx %s\n", c->frame, c->win, c->name);
+			c->is.focused = False;
+			ewmh_update_net_window_state(c);
+		}
+	} else if (ev->window == scr->root) {
+		if (give) {
+			DPRINTF("FocusOut: lost focus from 0x%08lx 0x%08lx %s\n", give->frame, give->win, give->name);
+			gavefocus(NULL);
+		}
+	} else
+		fprintf(stderr, "Unwanted FocusOut for unknown window 0x%lx\n", ev->window);
 }
 
 void
@@ -1369,55 +1468,50 @@ expose(XEvent * e) {
 void
 gavefocus(Client *c)
 {
-	Client *g;
-
-	if ((g = give) != c) {
-		give = (c && (c->can.focus & GIVE_FOCUS)) ? c : NULL;
-		if (g)
-			ewmh_update_net_window_state(g);
-		if (c)
-			ewmh_update_net_window_state(c);
+	if (give != c && give && give->is.focused) {
+		give->is.focused = False;
+		ewmh_update_net_window_state(give);
+	}
+	if ((give = c) && give->is.focused) {
+		give->is.focused = True;
+		ewmh_update_net_window_state(give);
 	}
 }
 
 void
 givefocus(Client *c)
 {
-	Client *g;
-
-	if ((g = give) != c) {
-		if ((give = (c && (c->can.focus & GIVE_FOCUS)) ? c : NULL)) {
-			XSetInputFocus(dpy, c->win, RevertToPointerRoot, user_time);
-			give_time = user_time;
+	if (give != c && give && give->is.focused) {
+		give->is.focused = False;
+		ewmh_update_net_window_state(give);
+	}
+	if ((give = (c && (c->can.focus & GIVE_FOCUS)) ? c : NULL)) {
+		XSetInputFocus(dpy, c->win, RevertToPointerRoot, user_time);
+		give_time = user_time;
+		if (!c->is.focused) {
+			c->is.focused = True;
+			ewmh_update_net_window_state(c);
 		}
-		if (g)
-			ewmh_update_net_window_state(g);
 	}
 }
 
 void
 takefocus(Client *c) {
-	Client *t;
+	if ((take = (c && (c->can.focus & TAKE_FOCUS)) ? c : NULL)) {
+		XEvent ce;
 
-	if ((t = take) != c) {
-		if ((take = c && (c->can.focus & TAKE_FOCUS) ? c : NULL)) {
-			XEvent ce;
-
-			ce.xclient.type = ClientMessage;
-			ce.xclient.message_type = _XA_WM_PROTOCOLS;
-			ce.xclient.display = dpy;
-			ce.xclient.window = c->win;
-			ce.xclient.format = 32;
-			ce.xclient.data.l[0] = _XA_WM_TAKE_FOCUS;
-			ce.xclient.data.l[1] = user_time;
-			ce.xclient.data.l[2] = 0l;
-			ce.xclient.data.l[3] = 0l;
-			ce.xclient.data.l[4] = 0l;
-			XSendEvent(dpy, c->win, False, NoEventMask, &ce);
-			take_time = user_time;
-		}
-		if (t)
-			ewmh_update_net_window_state(t);
+		ce.xclient.type = ClientMessage;
+		ce.xclient.message_type = _XA_WM_PROTOCOLS;
+		ce.xclient.display = dpy;
+		ce.xclient.window = c->win;
+		ce.xclient.format = 32;
+		ce.xclient.data.l[0] = _XA_WM_TAKE_FOCUS;
+		ce.xclient.data.l[1] = user_time;
+		ce.xclient.data.l[2] = 0l;
+		ce.xclient.data.l[3] = 0l;
+		ce.xclient.data.l[4] = 0l;
+		XSendEvent(dpy, c->win, False, NoEventMask, &ce);
+		take_time = user_time;
 	}
 }
 
@@ -1442,42 +1536,66 @@ lowerclient(Client *c) {
 Bool
 canfocus(Client *c)
 {
-	if (c->can.focus && !c->nonmodal)
+	if (c && c->can.focus && !c->nonmodal)
 		return True;
 	return False;
 }
 
 void
-focus(Client * c) {
+setfocus(Client *c)
+{
+	/* focus() function is more like activate... */
+	if (c && canfocus(c)) {
+		DPRINTF("Setting focus to 0x%08lx 0x%08lx %s\n", c->frame, c->win, c->name);
+		/* top of focus stack */
+		detachflist(c);
+		attachflist(c, True);
+		givefocus(c);
+		takefocus(c);
+		return;
+	}
+	DPRINTF("Setting focus to 0x%08lx %s\n", scr->root, "root");
+	givefocus(NULL);
+	takefocus(NULL);
+	XSetInputFocus(dpy, scr->root, RevertToPointerRoot, CurrentTime);
+}
+
+void
+focus(Client *c)
+{
 	Client *o;
+	Monitor *cm = curmonitor();
 
 	o = sel;
-	/* XXX: should check be for can.focus instead of bastards? */
-	if ((!c && scr->managed) || (c && (c->is.bastard || !isvisible(c, curmonitor()))))
-		for (c = scr->stack;
-		    c && (c->is.bastard || (c->is.icon || c->is.hidden) || !isvisible(c, curmonitor())); c = c->snext);
+	if ((!c && scr->managed) || (c && (c->is.bastard || !canfocus(c) || !isvisible(c, cm))))
+		for (c = scr->flist;
+		     c && (c->is.bastard || !canfocus(c) || (c->is.icon || c->is.hidden)
+			   || !isvisible(c, cm)); c = c->fnext) ;
 	if (sel && sel != c) {
 		XSetWindowBorder(dpy, sel->frame, scr->style.color.norm[ColBorder]);
 	}
+	if (sel)
+		XPRINTF("Deselecting %sclient frame 0x%08lx win 0x%08lx named %s\n",
+				sel->is.bastard ? "bastard " : "",
+				sel->frame, sel->win, sel->name);
 	sel = c;
+	if (c)
+		XPRINTF("Selecting   %sclient frame 0x%08lx win 0x%08lx named %s\n",
+				c->is.bastard ? "bastard " : "",
+				c->frame, c->win, c->name);
 	if (!scr->managed)
 		return;
 	ewmh_update_net_active_window();
+	setfocus(sel);
 	if (c) {
 		if (c->is.attn)
 			c->is.attn = False;
 		setclientstate(c, NormalState);
-		if (canfocus(c)) {
-			givefocus(c);
-			takefocus(c);
-		}
 		XSetWindowBorder(dpy, sel->frame, scr->style.color.sel[ColBorder]);
 		drawclient(c);
 		ewmh_update_net_window_state(c);
-	} else {
-		givefocus(NULL);
-		takefocus(NULL);
-		XSetInputFocus(dpy, scr->root, RevertToPointerRoot, CurrentTime);
+		if (!isfloating(c, cm))
+			raiseclient(c);
 	}
 	if (o && o != sel) {
 		drawclient(o);
@@ -1953,6 +2071,7 @@ reparentclient(Client *c, EScreen *new_scr, int x, int y)
 		/* some of what unmanage() does */
 		detach(c);
 		detachclist(c);
+		detachflist(c);
 		detachstack(c);
 		ewmh_del_client(c, CauseReparented);
 		XDeleteContext(dpy, c->title, context[ScreenContext]);
@@ -1972,6 +2091,7 @@ reparentclient(Client *c, EScreen *new_scr, int x, int y)
 		memcpy(c->tags, m->seltags, scr->ntags * sizeof(*c->tags));
 		attach(c, options.attachaside);
 		attachclist(c);
+		attachflist(c, True);
 		attachstack(c);
 		ewmh_update_net_client_list();
 		XReparentWindow(dpy, c->frame, scr->root, x, y);
@@ -2195,6 +2315,7 @@ manage(Window w, XWindowAttributes *wa)
 
 	attach(c, options.attachaside);
 	attachclist(c);
+	attachflist(c, False);
 	attachstack(c);
 	ewmh_update_net_client_list();
 
@@ -2224,14 +2345,19 @@ manage(Window w, XWindowAttributes *wa)
 		updategeom(NULL);
 	}
 	XSync(dpy, False);
-	arrange(NULL);
-	if (!WTCHECK(c, WindowTypeDesk) && focusnew) {
+	if (!c->is.bastard && (focusnew || (canfocus(c) && !canfocus(sel)))) {
+		DPRINTF("Focusing newly managed %sclient: frame 0x%08lx win 0x%08lx name %s\n",
+				c->is.bastard ? "bastard " : "",
+				c->frame, c->win, c->name);
+		arrange(NULL);
 		focus(c);
-		raiseclient(c);
 	} else {
+		DPRINTF("Lowering newly managed %sclient: frame 0x%08lx win 0x%08lx name %s\n",
+				c->is.bastard ? "bastard " : "",
+				c->frame, c->win, c->name);
+		restack_belowif(c, sel);
+		arrange(NULL);
 		focus(sel);
-		if (sel)
-			raiseclient(sel);
 	}
 }
 
@@ -2568,11 +2694,6 @@ mousemove(Client *c, XEvent *e) {
 	if (XGrabPointer(dpy, scr->root, False, MOUSEMASK, GrabModeAsync,
 		GrabModeAsync, None, cursor[CurMove], CurrentTime) != GrabSuccess)
 		return;
-	if (m) {
-		XRaiseWindow(dpy, m->veil);
-		// XRaiseWindow(dpy, c->frame);
-		// XMapWindow(dpy, m->veil);
-	}
 	c->was.is = 0;
 	if ((c->was.max = c->is.max))
 		c->is.max = False;
@@ -2691,13 +2812,6 @@ mousemove(Client *c, XEvent *e) {
 				ewmh_update_net_window_desktop(c);
 				drawclient(c);
 				arrange(NULL);
-				if (m)
-					XUnmapWindow(dpy, m->veil);
-				if (nm) {
-					XRaiseWindow(dpy, nm->veil);
-					// XRaiseWindow(dpy, c->frame);
-					// XMapWindow(dpy, nm->veil);
-				}
 				m = nm;
 			}
 			continue;
@@ -2707,11 +2821,8 @@ mousemove(Client *c, XEvent *e) {
 			continue;
 		}
 		XUngrabPointer(dpy, CurrentTime);
-		while (XCheckMaskEvent(dpy, EnterWindowMask, &ev)) ;
 		break;
 	}
-	if (m)
-		XUnmapWindow(dpy, m->veil);
 	if (c->was.is) {
 		if (c->was.max)
 			c->is.max = True;
@@ -2725,6 +2836,7 @@ mousemove(Client *c, XEvent *e) {
 			c->is.shaded = True;
 		updatefloat(c, m);
 	}
+	discardenter();
 	ewmh_update_net_window_state(c);
 }
 
@@ -2883,12 +2995,6 @@ mouseresize_from(Client *c, int from, XEvent *e)
 
 	if (!(m = getmonitor(x_root, y_root)))
 		m = curmonitor();
-
-	if (m) {
-		XRaiseWindow(dpy, m->veil);
-		// XRaiseWindow(dpy, c->frame);
-		// XMapWindow(dpy, m->veil);
-	}
 
 	nx = ocx = c->c.x;
 	ny = ocy = c->c.y;
@@ -3127,15 +3233,13 @@ mouseresize_from(Client *c, int from, XEvent *e)
 
 #endif
 		XUngrabPointer(dpy, CurrentTime);
-		while (XCheckMaskEvent(dpy, EnterWindowMask, &ev)) ;
 		break;
 	}
-	if (m)
-		XUnmapWindow(dpy, m->veil);
 	if (c->was.shaded) {
 		c->is.shaded = True;
 		updatefloat(c, m);
 	}
+	discardenter();
 	ewmh_update_net_window_state(c);
 }
 
@@ -3802,10 +3906,16 @@ restack_client(Client *c, int stack_mode, Client *o)
 }
 
 void
+restack_belowif(Client *c, Client *o)
+{
+	if (o && client_occludes(c, o))
+		restack_client(c, Below, o);
+}
+
+void
 restack()
 {
 	Client *c, **ol, **cl, **sl;
-	XEvent ev;
 	Window *wl;
 	int i, j, n;
 
@@ -3837,69 +3947,95 @@ restack()
 	 */
 	for (i = 0, j = 0, c = scr->stack; c; ol[i] = cl[i] = c, i++, c = c->snext) ;
 	/* focused windows having state _NET_WM_STATE_FULLSCREEN */
+	XPRINTF("%s", "LAYER: focused windows having state _NET_WM_STATE_FULLSCREEN:\n");
 	for (i = 0; i < n; i++) {
 		if (!(c = cl[i]))
 			continue;
 		if (sel == c && c->is.max) {
 			cl[i] = NULL; wl[j] = c->frame; sl[j] = c; j++;
+			XPRINTF("client 0x%08lx 0x%08lx %s\n", c->frame, c->win, c->name);
 		}
 	}
 	/* windows of type _NET_WM_TYPE_DOCK (unless they have state _NET_WM_STATE_BELOW) and
 	   windows having state _NET_WM_STATE_ABOVE. */
+	XPRINTF("%s", "LAYER: _NET_WINDOW_TYPE_DOCK not _NET_WM_STATE_BELOW and _NET_WM_STATE_ABOVE:\n");
 	for (i = 0; i < n; i++) {
 		if (!(c = cl[i]))
 			continue;
 		if ((WTCHECK(c, WindowTypeDock) && !c->is.below) || c->is.above) {
 			cl[i] = NULL; wl[j] = c->frame; sl[j] = c; j++;
+			XPRINTF("client 0x%08lx 0x%08lx %s\n", c->frame, c->win, c->name);
 		}
 	}
 	/* windows not belonging in any other layer (but we put floating above special above tiled) 
 	 */
+	XPRINTF("%s", "LAYER: floaters:\n");
 	for (i = 0; i < n; i++) {
 		if (!(c = cl[i]))
 			continue;
 		if (!c->is.bastard && (c->is.floater || c->skip.arrange) && !c->is.below && !WTCHECK(c, WindowTypeDesk)) {
 			cl[i] = NULL; wl[j] = c->frame; sl[j] = c; j++;
+			XPRINTF("client 0x%08lx 0x%08lx %s\n", c->frame, c->win, c->name);
 		}
 	}
+	XPRINTF("%s", "LAYER: bastards:\n");
 	for (i = 0; i < n; i++) {
 		if (!(c = cl[i]))
 			continue;
 		if (c->is.bastard && !c->is.below && !WTCHECK(c, WindowTypeDesk)) {
 			cl[i] = NULL; wl[j] = c->frame; sl[j] = c; j++;
+			XPRINTF("client 0x%08lx 0x%08lx %s\n", c->frame, c->win, c->name);
 		}
 	}
+	XPRINTF("%s", "LAYER: tiled:\n");
 	for (i = 0; i < n; i++) {
 		if (!(c = cl[i]))
 			continue;
 		if (!c->is.bastard && !(c->is.floater || c->skip.arrange) && !c->is.below && !WTCHECK(c, WindowTypeDesk)) {
 			cl[i] = NULL; wl[j] = c->frame; sl[j] = c; j++;
+			XPRINTF("client 0x%08lx 0x%08lx %s\n", c->frame, c->win, c->name);
 		}
 	}
 	/* windows having state _NET_WM_STATE_BELOW */
+	XPRINTF("%s", "LAYER: windows having _NET_WM_STATE_BELOW:\n");
 	for (i = 0; i < n; i++) {
 		if (!(c = cl[i]))
 			continue;
 		if (c->is.below && !WTCHECK(c, WindowTypeDesk)) {
 			cl[i] = NULL; wl[j] = c->frame; sl[j] = c; j++;
+			XPRINTF("client 0x%08lx 0x%08lx %s\n", c->frame, c->win, c->name);
 		}
 	}
 	/* windows of type _NET_WM_TYPE_DESKTOP */
+	XPRINTF("%s", "LAYER: windows having _NET_WINDOW_TYPE_DESKTOP:\n");
 	for (i = 0; i < n; i++) {
 		if (!(c = cl[i]))
 			continue;
 		if (WTCHECK(c, WindowTypeDesk)) {
 			cl[i] = NULL; wl[j] = c->frame; sl[j] = c; j++;
+			XPRINTF("client 0x%08lx 0x%08lx %s\n", c->frame, c->win, c->name);
 		}
 	}
 	assert(j == n);
 	free(cl);
 
 	if (bcmp(ol, sl, n * sizeof(*ol))) {
+		XPRINTF("%s", "Old stacking order:\n");
+		for (c = scr->stack; c; c = c->snext)
+			XPRINTF("client frame 0x%08lx win 0x%08lx name %s%s\n",
+					c->frame, c->win, c->name,
+					c->is.bastard ? " (bastard)" : "");
 		scr->stack = sl[0];
 		for (i = 0; i < n - 1; i++)
 			sl[i]->snext = sl[i + 1];
 		sl[i]->snext = NULL;
+		XPRINTF("%s", "New stacking order:\n");
+		for (c = scr->stack; c; c = c->snext)
+			XPRINTF("client frame 0x%08lx win 0x%08lx name %s%s\n",
+					c->frame, c->win, c->name,
+					c->is.bastard ? " (bastard)" : "");
+	} else {
+		XPRINTF("%s", "No new stacking order\n");
 	}
 	free(ol);
 	free(sl);
@@ -3911,14 +4047,13 @@ restack()
 		window_stack.count = n;
 
 		XRestackWindows(dpy, wl, n);
-		XFlush(dpy);
 
 		ewmh_update_net_client_list();
-
-		XSync(dpy, False);
-		while (XCheckMaskEvent(dpy, EnterWindowMask, &ev)) ;
-	} else
+	} else {
+		XPRINTF("%s", "No new stacking order\n");
 		free(wl);
+	}
+	discardenter();
 }
 
 EScreen *
@@ -4124,11 +4259,11 @@ calc_fill(Client *c, Monitor *m, Workarea *wa, Geometry *g) {
 			else
 				y2 = max(y2, o->c.y - scr->style.border);
 		}
-		DPRINTF("x1 = %d x2 = %d y1 = %d y2 = %d\n", x1, x2, y1, y2);
+		XPRINTF("x1 = %d x2 = %d y1 = %d y2 = %d\n", x1, x2, y1, y2);
 	}
 	w = x2 - x1;
 	h = y2 - y1;
-	DPRINTF("x1 = %d w = %d y1 = %d h = %d\n", x1, w, y1, h);
+	XPRINTF("x1 = %d w = %d y1 = %d h = %d\n", x1, w, y1, h);
 	if (w > g->w) {
 		g->x = x1;
 		g->w = w;
@@ -4174,7 +4309,6 @@ get_th(Client *c)
 
 void
 updatefloat(Client *c, Monitor *m) {
-	XEvent ev;
 	Geometry g;
 	Workarea wa;
 
@@ -4182,6 +4316,7 @@ updatefloat(Client *c, Monitor *m) {
 		m = scr->monitors;
 	if (!isfloating(c, m)) {
 		updateframe(c);
+		discardenter();
 		return;
 	}
 	getworkarea(m, &wa);
@@ -4204,7 +4339,7 @@ updatefloat(Client *c, Monitor *m) {
 	resize(c, g.x, g.y, g.w, g.h, g.b);
 	if (c->is.max)
 		ewmh_update_net_window_fs_monitors(c);
-	while (XCheckMaskEvent(dpy, EnterWindowMask, &ev)) ;
+	discardenter();
 }
 
 void
@@ -4929,9 +5064,7 @@ setup(char *conf) {
 	XFreeModifiermap(modmap);
 
 	/* select for events */
-	wa.event_mask = SubstructureRedirectMask | SubstructureNotifyMask
-	    | EnterWindowMask | LeaveWindowMask | StructureNotifyMask |
-	    ButtonPressMask | ButtonReleaseMask;
+	wa.event_mask = ROOTMASK;
 	wa.cursor = cursor[CurNormal];
 	for (scr = screens; scr < screens + nscr; scr++) {
 		XChangeWindowAttributes(dpy, scr->root, CWEventMask | CWCursor, &wa);
@@ -5570,7 +5703,7 @@ togglemodal(Client *c)
 				incmodal(c, g);
 		}
 		if (c->is.managed)
-			focus(c);
+			focus(sel);
 		break;
 	case ModalGroup:
 		if ((g = getleader(c->leader, ClientLeader)))
@@ -5805,8 +5938,8 @@ void
 unban(Client * c) {
 	if (!c->is.banned)
 		return;
-	XSelectInput(dpy, c->win, CLIENTMASK & ~(StructureNotifyMask | EnterWindowMask));
-	XSelectInput(dpy, c->frame, NoEventMask);
+	XSelectInput(dpy, c->win, CLIENTMASK & ~MAPPINGMASK);
+	XSelectInput(dpy, c->frame, FRAMEMASK & ~MAPPINGMASK);
 	XMapWindow(dpy, c->win);
 	XMapWindow(dpy, c->frame);
 	XSelectInput(dpy, c->win, CLIENTMASK);
@@ -5826,12 +5959,8 @@ unmanage(Client * c, WithdrawCause cause) {
 		 XGetTransientForHint(dpy, c->win, &trans))) ||
 		c->is.bastard;
 	dostruts = c->with.struts;
-	if (give == c)
-		givefocus(NULL);
-	if (take == c)
-		takefocus(NULL);
 	if (sel == c)
-		focusback(c);
+		focus(NULL);
 	/* The server grab construct avoids race conditions. */
 	XGrabServer(dpy);
 	XSelectInput(dpy, c->frame, NoEventMask);
@@ -5851,7 +5980,7 @@ unmanage(Client * c, WithdrawCause cause) {
 		free(c->element);
 	}
 	if (cause != CauseDestroyed) {
-		XSelectInput(dpy, c->win, CLIENTMASK & ~(StructureNotifyMask | EnterWindowMask));
+		XSelectInput(dpy, c->win, CLIENTMASK & ~MAPPINGMASK);
 		XUngrabButton(dpy, AnyButton, AnyModifier, c->win);
 		if (cause != CauseReparented) {
 			if (c->gravity == StaticGravity) {
@@ -5878,6 +6007,7 @@ unmanage(Client * c, WithdrawCause cause) {
 	}
 	detach(c);
 	detachclist(c);
+	detachflist(c);
 	detachstack(c);
 
 	ewmh_del_client(c, cause);

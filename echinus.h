@@ -349,6 +349,7 @@ struct Client {
 			unsigned int hidden:1;
 			unsigned int bastard:1;
 			unsigned int fs:1;
+			unsigned int focused:1;
 			unsigned int managed:1;
 		};
 		unsigned int is;
@@ -410,6 +411,7 @@ struct Client {
 	Client *prev;
 	Client *snext;
 	Client *cnext;
+	Client *fnext;
 	Window win;
 	Window title;
 	Window frame;
@@ -509,6 +511,7 @@ struct EScreen {
 	unsigned int nmons;
 	Client *stack;
 	Client *clist;
+	Client *flist;
 	Bool showing_desktop;
 	int screen;
 	char **tags;
@@ -698,11 +701,14 @@ void initstyle();
 
 #define LENGTH(x)		(sizeof(x) / sizeof x[0])
 #ifdef DEBUG
-#define DPRINT			fprintf(stderr, "%s: %s() %d\n",__FILE__,__func__, __LINE__);
+#define DPRINT			fprintf(stderr, "%s: %s() %d\n",__FILE__,__func__, __LINE__)
 #define DPRINTF(format, ...)	fprintf(stderr, "%s %s():%d " format, __FILE__, __func__, __LINE__, __VA_ARGS__)
+//#define XPRINTF(format, ...)	fprintf(stderr, "%s %s():%d " format, __FILE__, __func__, __LINE__, __VA_ARGS__)
+#define XPRINTF(format, ...)	do { } while(0)
 #else
-#define DPRINT			;
-#define DPRINTF(format, ...)
+#define DPRINT			do { } while(0)
+#define DPRINTF(format, ...)	do { } while(0)
+#define XPRINTF(format, ...)	do { } while(0)
 #endif
 #define DPRINTCLIENT(c) DPRINTF("%s: x: %d y: %d w: %d h: %d th: %d f: %d b: %d m: %d\n", \
 				    c->name, c->x, c->y, c->w, c->h, c->th, c->skip.arrange, c->is.bastard, c->is.max)

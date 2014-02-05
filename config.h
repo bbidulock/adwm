@@ -24,6 +24,7 @@
 #define MINWIDTH		12
 #define MINHEIGHT		12
 #define TITLEHEIGHT		0
+#define GRIPHEIGHT		0
 #define COMMAND			"xterm"
 #define DEFMWFACT		0.6	/* master width factor [0.0 .. 1.0] */
 #define DEFMHFACT		1.0	/* master height factor [0.0 .. 1.0] */

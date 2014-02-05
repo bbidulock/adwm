@@ -224,13 +224,13 @@ enum {
 
 enum { LeftStrut, RightStrut, TopStrut, BotStrut, LastStrut }; /* ewmh struts */
 enum { ColFG, ColBG, ColBorder, ColButton, ColLast };	/* colors */
-enum { ClientWindow, ClientTitle, ClientFrame, ClientTimeWindow, ClientGroup,
+enum { ClientWindow, ClientTitle, ClientGrips, ClientFrame, ClientTimeWindow, ClientGroup,
        ClientTransFor, ClientTransForGroup, ClientLeader, ClientAny, SysTrayWindows,
        ClientPing, ClientDead, ScreenContext, PartLast };	/* client parts */
 typedef enum { IconifyBtn, MaximizeBtn, CloseBtn, ShadeBtn, StickBtn, LHalfBtn, RHalfBtn,
 	FillBtn, FloatBtn, SizeBtn, TitleTags, TitleName, TitleSep, LastElement,
 	LastBtn = TitleTags } ElementType;
-typedef enum { OnClientTitle, OnClientFrame, OnClientWindow, OnRoot, LastOn } OnWhere;
+typedef enum { OnClientTitle, OnClientGrips, OnClientFrame, OnClientWindow, OnRoot, LastOn } OnWhere;
 typedef enum { ButtonImageDefault,
 	ButtonImagePressed, ButtonImageToggledPressed,
 	ButtonImageHover, ButtonImageFocus, ButtonImageUnfocus,
@@ -308,7 +308,7 @@ struct Client {
 	char *startup_id;
 	int monitor;			/* initial monitor */
 	Geometry c, r, s;		/* current, restore, static */
-	int th, tw;			/* title height and width */
+	int th, gh, tw;			/* title/grip height and width */
 	int basew, baseh, incw, inch, maxw, maxh, minw, minh;
 	int minax, maxax, minay, maxay, gravity;
 	int ignoreunmap;
@@ -357,7 +357,7 @@ struct Client {
 	union {
 		struct {
 			unsigned int border:1;
-			unsigned int handles:1;
+			unsigned int grips:1;
 			unsigned int title:1;
 			struct {
 				unsigned int menu:1;
@@ -414,6 +414,7 @@ struct Client {
 	Client *fnext;
 	Window win;
 	Window title;
+	Window grips;
 	Window frame;
 	Window time_window;
 	Window leader;
@@ -482,6 +483,7 @@ typedef struct {
 	unsigned int outline;
 	unsigned int spacing;
 	unsigned int titleheight;
+	unsigned int gripsheight;
 	unsigned int opacity;
 	char titlelayout[32];
 	XftFont *font[2];
@@ -631,6 +633,7 @@ void moveresizekb(Client *c, int dx, int dy, int dw, int dh);
 void mousemove(Client *c, XEvent *e);
 void mouseresize_from(Client *c, int from, XEvent *e);
 void mouseresize(Client * c, XEvent *e);
+void m_move(Client *c, XEvent *ev);
 void m_resize(Client *c, XEvent *ev);
 void quit(const char *arg);
 void restart(const char *arg);
@@ -710,8 +713,8 @@ void initstyle();
 #define DPRINTF(format, ...)	do { } while(0)
 #define XPRINTF(format, ...)	do { } while(0)
 #endif
-#define DPRINTCLIENT(c) DPRINTF("%s: x: %d y: %d w: %d h: %d th: %d f: %d b: %d m: %d\n", \
-				    c->name, c->x, c->y, c->w, c->h, c->th, c->skip.arrange, c->is.bastard, c->is.max)
+#define DPRINTCLIENT(c) DPRINTF("%s: x: %d y: %d w: %d h: %d th: %d gh: %d f: %d b: %d m: %d\n", \
+				    c->name, c->x, c->y, c->w, c->h, c->th, c->gh, c->skip.arrange, c->is.bastard, c->is.max)
 
 #define OPAQUE			0xffffffff
 #define RESNAME		       "echinus"

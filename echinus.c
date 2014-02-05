@@ -287,6 +287,13 @@ void (*actions[LastOn][5][2])(Client *, XEvent *) = {
 		[Button4-1] =	{ NULL,		    m_shade	    },
 		[Button5-1] =	{ NULL,		    m_shade	    },
 	},
+	[OnClientGrips]  = {
+		[Button1-1] =	{ mouseresize,	    NULL	    },
+		[Button2-1] =	{ NULL,		    NULL	    },
+		[Button3-1] =	{ NULL,		    NULL	    },
+		[Button4-1] =	{ NULL,		    NULL	    },
+		[Button5-1] =	{ NULL,		    NULL	    },
+	},
 	[OnClientFrame]	 = {
 		[Button1-1] =	{ mouseresize,	    NULL	    },
 		[Button2-1] =	{ NULL,		    NULL	    },
@@ -386,7 +393,8 @@ applyrules(Client * c) {
 	for (i = 0; i < nrules; i++)
 		if (rules[i]->propregex && !regexec(rules[i]->propregex, buf, 1, &tmp, 0)) {
 			c->skip.arrange = rules[i]->isfloating;
-			c->has.title = rules[i]->hastitle;
+			if (!(c->has.title = rules[i]->hastitle))
+				c->has.grips = False;
 			for (j = 0; rules[i]->tagregex && j < scr->ntags; j++) {
 				if (!regexec(rules[i]->tagregex, scr->tags[j], 1, &tmp, 0)) {
 					matched = True;
@@ -657,6 +665,11 @@ buttonpress(XEvent *e)
 			(*action) (c, (XEvent *) ev);
 		XUngrabPointer(dpy, CurrentTime);
 		drawclient(c);
+	} else if ((c = getclient(ev->window, ClientGrips)) && ev->window == c->grips) {
+		if ((action = actions[OnClientGrips][button][direct]))
+			(*action) (c, (XEvent *) ev);
+		XUngrabPointer(dpy, CurrentTime);
+		drawclient(c);
 	} else if ((c = getclient(ev->window, ClientWindow)) && ev->window == c->win) {
 		XPRINTF("WINDOW %s: 0x%lx button: %d\n", c->name, ev->window, ev->button);
 		if (CLEANMASK(ev->state) != modkey) {
@@ -860,7 +873,7 @@ configure(Client * c, Window above) {
 	ce.x = c->c.x;
 	ce.y = c->c.y;
 	ce.width = c->c.w;
-	ce.height = c->c.h - c->th;
+	ce.height = c->c.h - c->th - c->gh;
 	ce.border_width = c->c.b; /* ICCCM 2.0 4.1.5 */
 	ce.above = above;
 	ce.override_redirect = False;
@@ -984,7 +997,7 @@ applygravity(Client * c, int *xp, int *yp, int *wp, int *hp, int bw, int gravity
 		bw = c->s.b;
 	}
 	getreference(c, &xr, &yr, *xp, *yp, *wp, *hp, bw, gravity);
-	*hp += c->th;
+	*hp += c->th + c->gh;
 	if (gravity != StaticGravity)
 		constrain(c, wp, hp);
 	putreference(xp, yp, xr, yr, *wp, *hp, bw, gravity);
@@ -1006,7 +1019,7 @@ configurerequest(XEvent * e) {
 			int x = ((ev->value_mask & CWX) && c->can.move) ? ev->x : c->c.x;
 			int y = ((ev->value_mask & CWY) && c->can.move) ? ev->y : c->c.y;
 			int w = ((ev->value_mask & CWWidth) && c->can.sizeh) ? ev->width : c->c.w;
-			int h = ((ev->value_mask & CWHeight) && c->can.sizev) ? ev->height : c->c.h - c->th;
+			int h = ((ev->value_mask & CWHeight) && c->can.sizev) ? ev->height : c->c.h - c->th - c->gh;
 			int b = (ev->value_mask & CWBorderWidth) ? ev->border_width : c->c.b;
 
 			applygravity(c, &x, &y, &w, &h, b, c->gravity);
@@ -1462,6 +1475,8 @@ expose(XEvent * e) {
 
 	while (XCheckWindowEvent(dpy, ev->window, ExposureMask, &tmp));
 	if ((c = getclient(ev->window, ClientTitle)))
+		drawclient(c);
+	if ((c = getclient(ev->window, ClientGrips)))
 		drawclient(c);
 }
 
@@ -2075,6 +2090,7 @@ reparentclient(Client *c, EScreen *new_scr, int x, int y)
 		detachstack(c);
 		ewmh_del_client(c, CauseReparented);
 		XDeleteContext(dpy, c->title, context[ScreenContext]);
+		XDeleteContext(dpy, c->grips, context[ScreenContext]);
 		XDeleteContext(dpy, c->frame, context[ScreenContext]);
 		XDeleteContext(dpy, c->win, context[ScreenContext]);
 		XUnmapWindow(dpy, c->frame);
@@ -2082,6 +2098,7 @@ reparentclient(Client *c, EScreen *new_scr, int x, int y)
 		scr = new_scr;
 		/* some of what manage() does */
 		XSaveContext(dpy, c->title, context[ScreenContext], (XPointer) scr);
+		XSaveContext(dpy, c->grips, context[ScreenContext], (XPointer) scr);
 		XSaveContext(dpy, c->frame, context[ScreenContext], (XPointer) scr);
 		XSaveContext(dpy, c->win, context[ScreenContext], (XPointer) scr);
 		if (!(m = getmonitor(x, y)))
@@ -2235,13 +2252,18 @@ manage(Window w, XWindowAttributes *wa)
 
 	if (c->has.title)
 		c->th = scr->style.titleheight;
-	else
+	else {
 		c->can.shade = False;
+		c->has.grips = False;
+	}
+	if (c->has.grips)
+		if (!(c->gh = scr->style.gripsheight))
+			c->has.grips = False;
 
 	c->c.x = c->r.x = wa->x;
 	c->c.y = c->r.y = wa->y;
 	c->c.w = c->r.w = wa->width;
-	c->c.h = c->r.h = wa->height + c->th;
+	c->c.h = c->r.h = wa->height + c->th + c->gh;
 
 	c->s.x = wa->x;
 	c->s.y = wa->y;
@@ -2295,22 +2317,34 @@ manage(Window w, XWindowAttributes *wa)
 
 	twa.event_mask = ExposureMask | MOUSEMASK;
 	/* we create title as root's child as a workaround for 32bit visuals */
+	if (c->has.title || c->has.grips) {
+		c->drawable =
+		    XCreatePixmap(dpy, scr->root, c->c.w, max(c->th, c->gh),
+				  DefaultDepth(dpy, scr->screen));
+		c->tw = c->c.w;
+	}
 	if (c->has.title) {
 		c->element = ecalloc(LastElement, sizeof(*c->element));
 		c->title = XCreateWindow(dpy, scr->root, 0, 0, c->c.w, c->th,
 					 0, DefaultDepth(dpy, scr->screen),
 					 CopyFromParent, DefaultVisual(dpy, scr->screen),
 					 CWEventMask, &twa);
-		c->drawable =
-		    XCreatePixmap(dpy, scr->root, c->c.w, c->th,
-				  DefaultDepth(dpy, scr->screen));
-		c->tw = c->c.w;
 		c->xftdraw =
 		    XftDrawCreate(dpy, c->drawable, DefaultVisual(dpy, scr->screen),
 				  DefaultColormap(dpy, scr->screen));
 		XSaveContext(dpy, c->title, context[ClientTitle], (XPointer) c);
 		XSaveContext(dpy, c->title, context[ClientAny], (XPointer) c);
 		XSaveContext(dpy, c->title, context[ScreenContext], (XPointer) scr);
+	}
+	if (c->has.grips) {
+		c->grips = XCreateWindow(dpy, scr->root, 0, 0, c->c.w, c->gh,
+					 0, DefaultDepth(dpy, scr->screen),
+					 CopyFromParent, DefaultVisual(dpy, scr->screen),
+					 CWEventMask, &twa);
+		XSaveContext(dpy, c->grips, context[ClientGrips], (XPointer) c);
+		XSaveContext(dpy, c->grips, context[ClientAny], (XPointer) c);
+		XSaveContext(dpy, c->grips, context[ScreenContext], (XPointer) scr);
+
 	}
 
 	attach(c, options.attachaside);
@@ -2325,6 +2359,8 @@ manage(Window w, XWindowAttributes *wa)
 	XSelectInput(dpy, c->win, CLIENTMASK);
 
 	XReparentWindow(dpy, c->win, c->frame, 0, c->th);
+	if (c->grips)
+		XReparentWindow(dpy, c->grips, c->frame, 0, c->c.h - c->gh);
 	if (c->title)
 		XReparentWindow(dpy, c->title, c->frame, 0, 0);
 	XAddToSaveSet(dpy, c->win);
@@ -2406,6 +2442,7 @@ monocle(Monitor * m) {
 	v = &scr->views[m->curtag];
 	for (c = nexttiled(scr->clients, m); c; c = nexttiled(c->next, m)) {
 		c->th = (v->dectiled && c->has.title) ? scr->style.titleheight : 0;
+		c->gh = (v->dectiled && c->has.grips) ? scr->style.gripsheight : 0;
 		resize(c, w.x, w.y, w.w - 2 * c->c.b, w.h - 2 * c->c.b, c->c.b);
 	}
 }
@@ -2470,6 +2507,7 @@ grid(Monitor *m) {
 		w -= 2 * scr->style.border;
 		h -= 2 * scr->style.border;
 		c->th = (v->dectiled && c->has.title) ? scr->style.titleheight : 0;
+		c->gh = (v->dectiled && c->has.grips) ? scr->style.gripsheight : 0;
 		resize(c, x + gap, y + gap, w - 2 * gap, h - 2 * gap, scr->style.border);
 	}
 	free(rc);
@@ -3320,7 +3358,7 @@ total_overlap(Client *c, Monitor *m, Geometry *g) {
 	x1 = g->x;
 	x2 = g->x + g->w + 2 * g->b;
 	y1 = g->y;
-	y2 = g->y + g->h + 2 * g->b + c->th;
+	y2 = g->y + g->h + 2 * g->b + c->th + c->gh;
 	a = 0;
 
 	for (o = scr->clients; o; o = o->next)
@@ -3350,7 +3388,7 @@ place_smart(Client *c, WindowPlacement p, Geometry *g, Monitor *m, Workarea *w)
 	xl = w->x;
 	xr = w->x + w->w - (g->w + 2 * g->b);
 	yt = w->y;
-	yb = w->y + w->h - (g->h + 2 * g->b + c->th);
+	yb = w->y + w->h - (g->h + 2 * g->b + c->th + c->gh);
 	DPRINTF("boundaries: xl %d xr %x yt %d yb %d\n", xl, xr, yt, yb);
 
 	if (l_r) {
@@ -3643,7 +3681,7 @@ constrain(Client * c, int *wp, int *hp) {
 	Bool ret = False;
 
 	/* remove decoration */
-	h -= c->th;
+	h -= c->th + c->gh;
 
 	/* set minimum possible */
 	if (w < 1)
@@ -3683,7 +3721,7 @@ constrain(Client * c, int *wp, int *hp) {
 		h = c->maxh;
 
 	/* restore decoration */
-	h += c->th;
+	h += c->th + c->gh;
 
 	if (w <= 0 || h <= 0)
 		return ret;
@@ -3702,7 +3740,8 @@ constrain(Client * c, int *wp, int *hp) {
  * or desktop boundaries. */
 
 void
-resize(Client * c, int x, int y, int w, int h, int b) {
+resize(Client *c, int x, int y, int w, int h, int b)
+{
 	XWindowChanges wc;
 	unsigned mask, mask2;
 
@@ -3713,14 +3752,6 @@ resize(Client * c, int x, int y, int w, int h, int b) {
 		x = DisplayWidth(dpy, scr->screen) - w - 2 * b;
 	if (y > DisplayHeight(dpy, scr->screen))
 		y = DisplayHeight(dpy, scr->screen) - h - 2 * b;
-	if (w != c->tw && c->th) {
-		assert(c->title != None);
-		XMoveResizeWindow(dpy, c->title, 0, 0, w, c->th);
-		XFreePixmap(dpy, c->drawable);
-		c->drawable = XCreatePixmap(dpy, scr->root, w, c->th, DefaultDepth(dpy, scr->screen));
-		c->tw = w;
-		drawclient(c);
-	}
 	DPRINTF("x = %d y = %d w = %d h = %d b = %d\n", x, y, w, h, b);
 	mask = mask2 = 0;
 	if (c->c.x != x) {
@@ -3756,11 +3787,29 @@ resize(Client * c, int x, int y, int w, int h, int b) {
 		mask |= CWBorderWidth;
 		ewmh_update_net_window_extents(c);
 	}
-	if (mask|mask2)
-		XConfigureWindow(dpy, c->frame, mask|mask2, &wc);
+	if (mask | mask2)
+		XConfigureWindow(dpy, c->frame, mask | mask2, &wc);
 	/* ICCCM 2.0 4.1.5 */
-	XMoveResizeWindow(dpy, c->win, 0, c->th, w, h - c->th);
-	if (!(mask & (CWWidth | CWHeight))) configure(c, None);
+	XMoveResizeWindow(dpy, c->win, 0, c->th, w, h - c->th - c->gh);
+	if (!(mask & (CWWidth | CWHeight)))
+		configure(c, None);
+
+	XSync(dpy, False);
+	if ((w != c->tw || (mask | mask2)) && (c->th || c->gh)) {
+		if (c->th && c->title)
+			XMoveResizeWindow(dpy, c->title, 0, 0, w, c->th);
+		if (c->gh && c->grips)
+			XMoveResizeWindow(dpy, c->grips, 0, h - c->gh, w, c->gh);
+		if (w != c->tw) {
+			XFreePixmap(dpy, c->drawable);
+			c->drawable = XCreatePixmap(dpy, scr->root, w,
+						    max(scr->style.titleheight,
+							scr->style.gripsheight),
+						    DefaultDepth(dpy, scr->screen));
+			c->tw = w;
+		}
+		drawclient(c);
+	}
 	XSync(dpy, False);
 }
 
@@ -4226,6 +4275,7 @@ calc_max(Client *c, Monitor *m, Geometry *g) {
 	g->h = fsmons[1]->sc.y + fsmons[1]->sc.h - g->y;
 	g->b = 0;
 	c->th = 0;
+	c->gh = 0;
 }
 
 void
@@ -4290,13 +4340,17 @@ calc_maxh(Client *c, Workarea *wa, Geometry *g) {
 	g->b = scr->style.border;
 }
 
-int
-get_th(Client *c)
+void
+get_th(Client *c, int *thp, int *ghp)
 {
 	int i, f = 0;
 
 	if (!c->has.title)
-		return 0;
+		*thp = 0;
+	if (!c->has.grips)
+		*ghp = 0;
+	if (!c->has.title && !c->has.grips)
+		return;
 
 	for (i = 0; i < scr->ntags; i++)
 		if (c->tags[i]) {
@@ -4304,7 +4358,8 @@ get_th(Client *c)
 			f += scr->views[i].dectiled;
 		}
 
-	return ((!c->is.max && (c->skip.arrange || f)) ?  scr->style.titleheight : 0);
+	*thp = (!c->is.max && (c->skip.arrange || f)) ?  scr->style.titleheight : 0;
+	*ghp = (!c->is.max && (c->skip.arrange || f)) ?  scr->style.gripsheight : 0;
 }
 
 void
@@ -4331,7 +4386,7 @@ updatefloat(Client *c, Monitor *m) {
 	if (c->is.maxh)
 		calc_maxh(c, &wa, &g);
 	if (!c->is.max) {
-		c->th = get_th(c);
+		get_th(c, &c->th, &c->gh);
 		/* TODO: more than just northwest gravity */
 		constrain(c, &g.w, &g.h);
 	}
@@ -5381,6 +5436,7 @@ tile(Monitor *cm)
 			ewmh_update_net_window_state(c);
 		}
 		c->th = (v->dectiled && c->has.title) ? scr->style.titleheight : 0;
+		c->gh = (v->dectiled && c->has.grips) ? scr->style.gripsheight : 0;
 		resize(c, n.x + gap, n.y + gap, n.w - 2 * (gap + n.b),
 		       n.h - 2 * (gap + n.b), n.b);
 		i++;
@@ -5450,6 +5506,7 @@ tile(Monitor *cm)
 			ewmh_update_net_window_state(c);
 		}
 		c->th = (v->dectiled && c->has.title) ? scr->style.titleheight : 0;
+		c->gh = (v->dectiled && c->has.grips) ? scr->style.gripsheight : 0;
 		resize(c, n.x + gap, n.y + gap, n.w - 2 * (gap + n.b),
 		       n.h - 2 * (gap + n.b), n.b);
 		i++;
@@ -5971,13 +6028,22 @@ unmanage(Client * c, WithdrawCause cause) {
 		togglemodal(c);
 	if (c->title) {
 		XftDrawDestroy(c->xftdraw);
-		XFreePixmap(dpy, c->drawable);
 		XDestroyWindow(dpy, c->title);
 		XDeleteContext(dpy, c->title, context[ClientTitle]);
 		XDeleteContext(dpy, c->title, context[ClientAny]);
 		XDeleteContext(dpy, c->title, context[ScreenContext]);
 		c->title = None;
 		free(c->element);
+	}
+	if (c->grips) {
+		XDestroyWindow(dpy, c->grips);
+		XDeleteContext(dpy, c->grips, context[ClientGrips]);
+		XDeleteContext(dpy, c->grips, context[ClientAny]);
+		XDeleteContext(dpy, c->grips, context[ScreenContext]);
+		c->title = None;
+	}
+	if (c->title || c->grips) {
+		XFreePixmap(dpy, c->drawable);
 	}
 	if (cause != CauseDestroyed) {
 		XSelectInput(dpy, c->win, CLIENTMASK & ~MAPPINGMASK);
@@ -6104,11 +6170,20 @@ unmapnotify(XEvent * e) {
 
 void
 updateframe(Client * c) {
-	if (c->title) {
-		if (!(c->th = get_th(c)))
-			XUnmapWindow(dpy, c->title);
-		else
-			XMapRaised(dpy, c->title);
+	if (c->title || c->grips) {
+		get_th(c, &c->th, &c->gh);
+		if (c->title) {
+			if (!c->th)
+				XUnmapWindow(dpy, c->title);
+			else
+				XMapRaised(dpy, c->title);
+		}
+		if (c->grips) {
+			if (!c->gh)
+				XUnmapWindow(dpy, c->grips);
+			else
+				XMapRaised(dpy, c->grips);
+		}
 	}
 	ewmh_update_net_window_extents(c);
 }
@@ -6168,8 +6243,10 @@ updatesizehints(Client * c) {
 		c->can.maxv = False;
 		c->can.fillv = False;
 	}
-	if (!c->can.sizeh && !c->can.sizev)
+	if (!c->can.sizeh && !c->can.sizev) {
 		c->can.size = False;
+		c->has.grips = False;
+	}
 	if (!c->can.maxh && !c->can.maxv)
 		c->can.max = False;
 	if (!c->can.fillh && !c->can.fillv)

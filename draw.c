@@ -378,7 +378,7 @@ drawclient(Client *c) {
 	}
 	if (!isvisible(c, NULL))
 		return;
-	if (!c->title)
+	if (!c->title && !c->grips)
 		return;
 	ds->dc.x = ds->dc.y = 0;
 	ds->dc.w = c->c.w;
@@ -433,7 +433,25 @@ drawclient(Client *c) {
 		    c == sel ? ds->style.color.sel[ColBorder] : ds->style.color.norm[ColBorder]);
 		XDrawLine(dpy, c->drawable, ds->dc.gc, 0, ds->dc.h - 1, ds->dc.w, ds->dc.h - 1);
 	}
-	XCopyArea(dpy, c->drawable, c->title, ds->dc.gc, 0, 0, c->c.w, ds->dc.h, 0, 0);
+	if (c->title)
+		XCopyArea(dpy, c->drawable, c->title, ds->dc.gc, 0, 0, c->c.w, ds->dc.h, 0, 0);
+	ds->dc.x = ds->dc.y = 0;
+	ds->dc.w = c->c.w;
+	ds->dc.h = ds->style.gripsheight;
+	XSetForeground(dpy, ds->dc.gc, c == sel ? ds->style.color.sel[ColBG] : ds->style.color.norm[ColBG]);
+	XSetLineAttributes(dpy, ds->dc.gc, ds->style.border, LineSolid, CapNotLast, JoinMiter);
+	XFillRectangle(dpy, c->drawable, ds->dc.gc, ds->dc.x, ds->dc.y, ds->dc.w, ds->dc.h);
+	if (ds->style.outline) {
+		XSetForeground(dpy, ds->dc.gc,
+		    c == sel ? ds->style.color.sel[ColBorder] : ds->style.color.norm[ColBorder]);
+		XDrawLine(dpy, c->drawable, ds->dc.gc, 0, 0, ds->dc.w, 0);
+		ds->dc.x = ds->dc.w / 2 - ds->dc.w / 5;
+		XDrawLine(dpy, c->drawable, ds->dc.gc, ds->dc.x, 0, ds->dc.x, ds->dc.h);
+		ds->dc.x = ds->dc.w / 2 + ds->dc.w / 5;
+		XDrawLine(dpy, c->drawable, ds->dc.gc, ds->dc.x, 0, ds->dc.x, ds->dc.h);
+	}
+	if (c->grips)
+		XCopyArea(dpy, c->drawable, c->grips, ds->dc.gc, 0, 0, c->c.w, ds->dc.h, 0, 0);
 }
 
 static unsigned long
@@ -746,9 +764,9 @@ initbuttons() {
 			[Button5-1] = { NULL,		NULL		},
 		} },
 		[TitleName]	= { "title.name",	NULL,		{
-			[Button1-1] = { mousemove,	NULL		},
+			[Button1-1] = { m_move,		NULL		},
 			[Button2-1] = { NULL,		NULL		},
-			[Button3-1] = { mouseresize,	NULL		},
+			[Button3-1] = { m_resize,	NULL		},
 			[Button4-1] = { NULL,		NULL		},
 			[Button5-1] = { NULL,		NULL		},
 		} },
@@ -826,10 +844,11 @@ initstyle() {
 	scr->style.border = atoi(getresource("border", STR(BORDERPX)));
 	scr->style.margin = atoi(getresource("margin", STR(MARGINPX)));
 	scr->style.opacity = OPAQUE * atof(getresource("opacity", STR(NF_OPACITY)));
-	scr->style.outline = atoi(getresource("outline", "0"));
+	scr->style.outline = atoi(getresource("outline", "0")) ? 1 : 0;
 	scr->style.spacing = atoi(getresource("spacing", "1"));
 	strncpy(scr->style.titlelayout, getresource("titlelayout", "N  IMC"),
 	    LENGTH(scr->style.titlelayout));
+	scr->style.gripsheight = atoi(getresource("grips", STR(GRIPHEIGHT)));
 	scr->style.titlelayout[LENGTH(scr->style.titlelayout) - 1] = '\0';
 	scr->style.titleheight = atoi(getresource("title", STR(TITLEHEIGHT)));
 	if (!scr->style.titleheight)

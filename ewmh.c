@@ -1108,7 +1108,7 @@ mwmh_process_motif_wm_hints(Client *c)
 			if (!(hint & MWM_DECOR_BORDER))
 				c->has.border = False;
 			if (!(hint & MWM_DECOR_RESIZEH)) {
-				c->has.handles = False;
+				c->has.grips = False;
 				c->has.but.size = False;
 				c->has.but.max = False;
 				c->has.but.fill = False;
@@ -1185,7 +1185,7 @@ mwmh_process_dt_wm_hints(Client *c)
 }
 
 void
-getmwmhints(Window win, Window *title, int *border) {
+getmwmhints(Window win, Bool *title, Bool *grips, int *border) {
 	long *hints = NULL;
 	unsigned long n = 0;
 
@@ -1193,7 +1193,8 @@ getmwmhints(Window win, Window *title, int *border) {
 	if (n > 0) {
 		if ((hints[0] & MWM_HINTS_DECORATIONS) && n > 1) {
 			*border = (hints[1] & (MWM_DECOR_ALL|MWM_DECOR_BORDER)) ? scr->style.border : 0;
-			*title = (hints[1] & (MWM_DECOR_ALL|MWM_DECOR_TITLE)) ? 1 : None;
+			*title = (hints[1] & (MWM_DECOR_ALL|MWM_DECOR_TITLE)) ? True : False;
+			*grips = (hints[1] & (MWM_DECOR_ALL|MWM_DECOR_RESIZEH)) ? True : False;
 		}
 		XFree(hints);
 	}
@@ -1519,7 +1520,7 @@ ewmh_update_net_window_extents(Client *c) {
 		c->c.b, /* left */
 		c->c.b, /* right */
 		c->c.b + c->th, /* top */
-		c->c.b, /* bottom */
+		c->c.b + c->gh, /* bottom */
 	};
 
 	XPRINTF("Updating _NET_WM_FRAME_EXTENTS for 0x%lx\n", c->win);
@@ -2254,8 +2255,9 @@ clientmessage(XEvent *e) {
 		} else if (message_type == _XA_NET_REQUEST_FRAME_EXTENTS) {
 			Window win = ev->window;
 			unsigned int wintype;
-			Window title = 1;
-			int th, border = scr->style.border;
+			Bool title = True;
+			Bool grips = True;
+			int th, gh, border = scr->style.border;
 			long data[4];
 
 			if (win == None)
@@ -2270,15 +2272,17 @@ clientmessage(XEvent *e) {
 				    WTTEST(wintype, WindowTypeNotify) ||
 				    WTTEST(wintype, WindowTypeCombo) ||
 				    WTTEST(wintype, WindowTypeDnd)) {
-					title = None;
+					title = False;
+					grips = False;
 					border = 0;
 				}
-			getmwmhints(win, &title, &border);
+			getmwmhints(win, &title, &grips, &border);
 			th = title ? scr->style.titleheight : 0;
+			gh = grips ? scr->style.gripsheight : 0;
 			data[0] = border;
 			data[1] = border;
 			data[2] = border + th;
-			data[3] = border;
+			data[3] = border + gh;
 			XChangeProperty(dpy, win, _XA_NET_FRAME_EXTENTS, XA_CARDINAL, 32,
 					PropModeReplace, (unsigned char *) &data, 4L);
 		}
@@ -2446,6 +2450,7 @@ ewmh_process_net_window_type(Client *c)
 			c->is.floater = True;
 			c->can.arrange = False;
 			c->can.size = False;
+			c->has.grips = False;
 			// c->can.move = False;
 		}
 		if (WTCHECK(c, WindowTypeToolbar) ||

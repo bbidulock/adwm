@@ -118,6 +118,7 @@ Monitor *findcurmonitor(Client *c);
 void focus(Client * c);
 Client *focusforw(Client *c);
 Client *focusback(Client *c);
+Client *focuslast(Client *c);
 void focusnext(Client *c);
 void focusprev(Client *c);
 Client *getclient(Window w, int part);
@@ -1676,6 +1677,22 @@ focusback(Client *c) {
 	if (c)
 		focus(c);
 	return (c);
+}
+
+Client *
+focuslast(Client *c)
+{
+	Client *s;
+	Monitor *cm = curmonitor();
+
+	if (!c || c != sel)
+		return (sel);
+	for (s = scr->flist;
+	     s && (s == c
+		   || (s->is.bastard || !canfocus(s) || (s->is.icon || s->is.hidden)
+		       || !isvisible(s, cm))); s = s->fnext) ;
+	focus(s);
+	return (s);
 }
 
 void
@@ -6046,8 +6063,12 @@ unmanage(Client * c, WithdrawCause cause) {
 		 XGetTransientForHint(dpy, c->win, &trans))) ||
 		c->is.bastard;
 	dostruts = c->with.struts;
+	if (c == give)
+		givefocus(NULL);
+	if (c == take)
+		takefocus(NULL);
 	if (sel == c)
-		focus(NULL);
+		focuslast(c);
 	/* The server grab construct avoids race conditions. */
 	XGrabServer(dpy);
 	XSelectInput(dpy, c->frame, NoEventMask);

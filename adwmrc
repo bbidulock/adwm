@@ -1,31 +1,15 @@
-Adwm*selected.border: #262626
-Adwm*selected.button: #d3d7cf
-Adwm*selected.bg: #262626
-Adwm*selected.fg: #d3d7cf
+Adwm*snap: 5
 
-Adwm*normal.border: #262626
-Adwm*normal.button: #262626
-Adwm*normal.bg: #262626
-Adwm*normal.fg: #b0b4ac
-
-Adwm*border: 1
-
-Adwm*button.iconify.pixmap: iconify.xbm
-Adwm*button.maximize.pixmap: max.xbm
-Adwm*button.close.pixmap: close.xbm
-
-Adwm*attachaside: 0
-Adwm*sloppy: 0
+Adwm*sloppy: 2
 Adwm*opacity: 0.8
 Adwm*decoratetiled: 0
 Adwm*hidebastards: 0
 Adwm*mwfact: 0.6
 Adwm*nmaster: 1
+Adwm*attachaside: 0
+Adwm*autoroll: 1
 
-Adwm*font: fixed-9
-Adwm*modkey: A
-
-Adwm*deflayout: i
+Adwm*deflayout: l
 
 Adwm*tags.number: 7
 Adwm*tags.name0: main
@@ -39,73 +23,5 @@ Adwm*tags.name6: misc
 Adwm*tags.layout1: m
 Adwm*tags.layout3: b
 
-Adwm*togglestruts: A + b
-Adwm*togglemonitor: A + grave
-Adwm*focusnext: A + j
-Adwm*focusprev: A + k
-Adwm*viewprevtag: A + Tab
-Adwm*viewlefttag: AS + Left
-Adwm*viewrighttag: AS + Right
-Adwm*quit: CA + q
-Adwm*restart: AS + q
-Adwm*killclient: AS + c
-Adwm*togglefloating: A + space
-Adwm*zoom: A + Return
-
-Adwm*view0: A + F1
-Adwm*view1: A + F2
-Adwm*view2: A + F3
-Adwm*view3: A + F4
-Adwm*view4: A + F5
-Adwm*view5: A + F6
-
-Adwm*tag0: AS + 1
-Adwm*tag1: AS + 2
-Adwm*tag2: AS + 3
-Adwm*tag3: AS + 4
-Adwm*tag4: AS + 5
-Adwm*tag5: AS + 6
-
-Adwm*toggletag0: CAS + 1
-Adwm*toggletag1: CAS + 2
-Adwm*toggletag2: CAS + 3
-Adwm*toggletag3: CAS + 4
-Adwm*toggletag4: CAS + 5
-Adwm*toggletag5: CAS + 6
-
-Adwm*toggleview0: CA + 1
-Adwm*toggleview1: CA + 1
-Adwm*toggleview2: CA + 1
-Adwm*toggleview3: CA + 1
-Adwm*toggleview4: CA + 1
-Adwm*toggleview5: CA + 1
-
-Adwm*focusview6: A + s
-
-Adwm*setlayoutm: A + m
-Adwm*setlayoutf: A + f
-Adwm*setlayouti: A + i
-Adwm*setlayoutt: A + r
-Adwm*setlayoutb: A + w
-
-Adwm*moveright: A + d = 5
-Adwm*moveleft: A + a = -5
-Adwm*moveup: A + w = 0 -5
-Adwm*movedown: A + s = 0 5
-Adwm*resizedecx: AS + a = 0 0 -5 0
-Adwm*resizedecy: AS + s = 0 0 0 -5
-Adwm*resizeincx: AS + d = 0 0 5 0
-Adwm*resizeincy: AS + w = 0 0 0 5
-
-Adwm*spawn0: A + t = xterm
-
-Adwm*decmwfact: A + h = -0.05
-Adwm*incmwfact: A + l = +0.05
-Adwm*decnmaster: AS + j = -1
-Adwm*incnmaster: AS + k = +1
-
-Adwm*command: xterm
-
-Adwm*rule0: Firefox.* web 0 1
-Adwm*rule4: Mplayer.* NULL 1 1
-Adwm*rule5: Gimp.* gfx 1 1
+#include "keys/keysrc"
+#include "style/stylerc"

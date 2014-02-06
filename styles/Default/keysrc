@@ -1,0 +1,98 @@
+Adwm*modkey: A
+
+Adwm*togglestruts: A + b
+Adwm*toggledectiled: A + d
+Adwm*togglemonitor: A + grave
+Adwm*focusnext: A + j
+Adwm*focusprev: A + k
+Adwm*viewprevtag: A + Tab
+Adwm*viewlefttag: CA + Left
+Adwm*viewrighttag: CA + Right
+Adwm*quit: CA + q
+Adwm*restart: AS + q
+Adwm*killclient: AS + c
+Adwm*togglefloating: A + space
+Adwm*zoom: A + Return
+
+Adwm*view0: A + F1
+Adwm*view1: A + F2
+Adwm*view2: A + F3
+Adwm*view3: A + F4
+Adwm*view4: A + F5
+Adwm*view5: A + F6
+
+Adwm*tag0: AS + 1
+Adwm*tag1: AS + 2
+Adwm*tag2: AS + 3
+Adwm*tag3: AS + 4
+Adwm*tag4: AS + 5
+Adwm*tag5: AS + 6
+
+Adwm*toggletag0: CAS + 1
+Adwm*toggletag1: CAS + 2
+Adwm*toggletag2: CAS + 3
+Adwm*toggletag3: CAS + 4
+Adwm*toggletag4: CAS + 5
+Adwm*toggletag5: CAS + 6
+
+Adwm*toggleview0: CA + 1
+Adwm*toggleview1: CA + 2
+Adwm*toggleview2: CA + 3
+Adwm*toggleview3: CA + 4
+Adwm*toggleview4: CA + 5
+Adwm*toggleview5: CA + 6
+
+Adwm*focusview6: A + s
+
+Adwm*setlayoutm: A + m
+Adwm*setlayoutf: A + f
+Adwm*setlayouti: A + i
+Adwm*setlayoutt: A + r
+Adwm*setlayoutb: A + w
+Adwm*setlayoutl: A + t
+Adwm*setlayoutu: A + u
+Adwm*setlayoutg: A + g
+
+Adwm*moveright: W + l = 5
+Adwm*moveleft: W + h = -5
+Adwm*moveup: W + k = 0 -5
+Adwm*movedown: W + j = 0 5
+Adwm*resizedecx: WS + h = 0 0 -5 0
+Adwm*resizedecy: WS + k = 0 0 0 -5
+Adwm*resizeincx: WS + l = 0 0 5 0
+Adwm*resizeincy: WS + j = 0 0 0 5
+
+Adwm*spawn0: CA + t = roxterm
+Adwm*spawn1: CA + w = firefox
+Adwm*spawn2: CA + f = pcmanfm
+Adwm*spawn3: CA + r = xde-run
+Adwm*spawn4: CA + v = gvim
+Adwm*spawn5: CA + n = uxterm
+
+Adwm*decmwfact: A + h = -0.05
+Adwm*incmwfact: A + l = +0.05
+Adwm*decnmaster: AS + j = -1
+Adwm*incnmaster: AS + k = +1
+
+Adwm*command: uxterm
+
+!Adwm*rule0: Firefox.* web 0 1
+!Adwm*rule4: Mplayer.* NULL 1 1
+!Adwm*rule5: Gimp.* gfx 1 1
+
+Adwm*togglemaxv: CS + Up
+Adwm*togglemaxh: CS + Right
+Adwm*togglemaxb: CS + Left
+Adwm*toggleshade: CS + Down
+!Adwm*togglehidden: CS + _
+!Adwm*toggleshowing: CA + Enter
+
+Adwm*appendtag: CAS + Right
+Adwm*rmlasttag: CAS + Left
+
+Adwm*rotateview: A + y
+Adwm*unrotateview: AS + y
+Adwm*rotatezone: CA + y
+Adwm*unrotatezone: CAS + y
+Adwm*rotatewins: A + e
+Adwm*unrotatewins: AS + e

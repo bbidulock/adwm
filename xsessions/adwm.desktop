@@ -1,0 +1,12 @@
+[Desktop Entry]
+Encoding=UTF-8
+Name=adwm
+Comment=An advanced dynamic window manager for X
+Exec=adwm
+Terminal=false
+Type=XSession
+Icon=adwm
+
+[Window Manager]
+SessionManaged=false
+X-XDE-Managed=true

@@ -4741,9 +4741,19 @@ setmwfact(const char *arg)
 	if (arg == NULL)
 		v->mwfact = DEFMWFACT;
 	else if (sscanf(arg, "%lf", &delta) == 1) {
-		if (arg[0] == '+' || arg[0] == '-')
-			v->mwfact += delta;
-		else
+		if (arg[0] == '+' || arg[0] == '-') {
+			switch (v->major) {
+			case OrientBottom:
+			case OrientLeft:
+				v->mwfact += delta;
+				break;
+			case OrientTop:
+			case OrientRight:
+			case OrientLast:
+				v->mwfact -= delta;
+				break;
+			}
+		} else
 			v->mwfact = delta;
 		if (v->mwfact < 0.1)
 			v->mwfact = 0.1;

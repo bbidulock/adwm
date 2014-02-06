@@ -1,12 +1,3 @@
-/*
- *    EWMH atom support. initial implementation borrowed from
- *    awesome wm, then partially reworked.
- *
- *    Copyright © 2007-2008 Julien Danjou <julien@danjou.info>
- *    Copyright © 2008 Alexander Polakov <polachok@gmail.com>
- *
- */
-
 #include <assert.h>
 #include <unistd.h>
 #include <regex.h>
@@ -25,12 +16,12 @@
 #ifdef SYNC
 #include <X11/extensions/sync.h>
 #endif
-#include "echinus.h"
+#include "adwm.h"
 #include "config.h"
 
 Atom atom[NATOMS];
 
-/* keep in sync with enum in echinus.h */
+/* keep in sync with enum in adwm.h */
 char *atomnames[NATOMS] = {
 	"MANAGER",
 	"UTF8_STRING",
@@ -208,7 +199,7 @@ char *atomnames[NATOMS] = {
 void
 initewmh(Window win)
 {
-	char name[] = "echinus";
+	char name[] = "adwm";
 	long data[2];
 	static Bool atoms_interned = False;
 

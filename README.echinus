@@ -1,0 +1,290 @@
+echinus wm.
+==========
+
+0.Installation
+1.Configuration file
+2.config.h header
+3.About panels and pagers
+
+
+0.Installation
+--------------
+
+You need X11 and Xft headers to compile echinus wm and the pkg-config tool.
+Packages containing this stuff are probably named libx11-dev and libxft-dev
+(note "-dev" suffix). You need libxrandr for multihead support (can be 
+disabled with --disable-xrandr if not needed). XRandr-enabled binary still
+works with single monitor configurations.
+
+# ./autogen.sh                # if working from git
+# ./configure --prefix=/usr
+# make
+# make install
+
+On new install:
+
+% mkdir ~/.echinus
+% cp -r CONFDIR ~/.echinus
+
+1.Configuration file
+--------------------
+
+Name: ~/.echinus/echinusrc
+
+Main settings
+
+    Echinus*deflayout
+        Layout applied to tag if not explicitly set by tags.layout later.
+        One of: i - ifloating, f - floating, t - tiled, b - bottomstack, m - maximized. 
+
+    Echinus*mwfact
+
+        Space occupied by master window in tiled layout (fraction of 1).
+
+    Echinus*nmaster
+
+        Number of clients in master area in tiled layout.
+
+    Echinus*sloppy
+       
+       0 - Click to focus
+       1 - Sloppy focus for floating clients
+       2 - Sloppy focus for everything
+       3 - Sloppy focus + raise on focus
+
+    Echinus*modkey
+
+       Choose modkey. A for alt, W - winkey, S - shift, C - control
+
+Title settings
+
+    Echinus*decoratetiled - boolean (1 or 0)
+
+        Draw titles in tiled mode
+
+    Echinus*titleposition
+    Echinus*tagbar
+    Echinus*tbpos
+
+	Were removed for more general interface, see below
+
+    Echinus*titlelayout - string
+
+	Titlebar consists of 3 parts separated with dashes or
+	spaces. Left is aligned to left, center to center and
+	right to right (obviously).
+
+	Default value is "N  IMC" meaning name on the left
+	iconify, maximize and close buttons on right (note
+	2 spaces).
+
+	- or ' ' (space) - skip space (space can't be
+	    used as first character)
+	N - window name
+	I - iconify
+	M - maximize
+	C - close
+	T - tagbar
+
+	Examples:
+
+	    -T-C - title centered, close button on right
+
+
+Color settings
+
+    Echinus*selected.border
+    Echinus*normal.border
+    Echinus*selected.bg
+    Echinus*normal.bg
+    Echinus*selected.fg
+    Echinus*normal.fg
+    Echinus*selected.button
+    Echinus*normal.button
+
+        border - color of a small border around each window
+        bg - titlebar background
+        fg - titlebar foreground
+        button - button foreground
+
+        normal - unfocused window
+        selected - window in focus
+
+Border settings
+
+    Echinus*border
+
+        width of the border, in pixels
+
+Button settings
+
+    Echinus*button.iconify.pixmap (was: Echinus*button.left.pixmap)
+    Echinus*button.maximize.pixmap (was: Echinus*button.center.pixmap)
+    Echinus*button.close.pixmap (was: Echinus*button.right.pixmap)
+
+    buttons in the titlebar, left iconifies window, center switch
+    to monocle (fullscreen) mode, right - close.
+    ~ are not allowed in pathnames.
+
+Opacity
+
+    Echinus*opacity
+
+        Opacity value for inactive windows, you need xcompmgr running to
+        see the result.
+
+Terminal app
+    
+    Echinus*command (was: Echinus*terminal)
+
+        Application to run on right window click on root window.
+
+Title
+
+    Echinus*title
+
+        Titlebar height
+
+    Echinus*font
+
+        Titlebar font
+
+Tags 
+
+    Echinus*tags.number
+
+        Number of tags
+
+    Echinus*tags.name{...}
+
+        Names for the tags
+
+    Echinus*tags.layout{...}
+
+        Layout per tag on start. See deflayout for possible
+        values
+
+Hacks
+
+    Echinus*hidebastards
+
+        Set to 1 to hide panels, pagers and others with
+        togglestruts function.
+
+Keybindings
+
+    Format is "[ASCW] + key", where:
+        A - Alt (mod1)
+        S - Shift
+        C - Control
+        W - Windows key
+    You can find the list of available keys in keysym.h
+    and XF86keysym.h files (usually located in 
+    /usr/include/X11/), remove XK_ prefix before use.
+
+    Don't miss ' ' (space).
+
+    Echinus*togglestruts
+
+     Echinus has no bar, but this binding switches the area
+     on top or bottom which won't be covered by windows in
+     tiled or monocle mode.
+
+
+    Echinus*togglemonitor
+
+     Switch from one monitor to another.
+
+    Echinus*focusnext
+    Echinus*focusprev
+
+     Focus next and previous window
+
+    Echinus*viewprevtag
+
+     View previous tag set
+
+    Echinus*quit
+
+     Leave echinus
+
+    Echinus*restart
+
+     Restart echinus
+
+    Echinus*killclient
+     
+     Close window in focus
+
+    Echinus*togglefloating
+
+     Toggle floating/tiled
+
+    Echinus*view#
+
+     View tag number #
+
+    Echinus*tag#
+
+     Tag current window with tag number #
+
+    Echinus*toggleview#
+     
+     Toggle view number #
+
+    Echinus*focusview#
+     
+     Toggle view number # and focus the first client
+     from it.
+
+    Echinus*viewlefttag
+    Echinus*viewrighttag
+
+     View tag on the left(right) of current
+
+    Echinus*spawn#: <key> = program
+
+     Run specified program. # is less than 64.
+
+    Echinus*moveright
+    Echinus*moveleft
+    Echinus*moveup
+    Echinus*movedown
+      
+     Syntax for this is rather untrivial: x y w h. For example move right for five pixels:
+
+       Echinus*moveright: AS + l = +5 0 0 0
+    
+    Echinus*resizedecx
+    Echinus*resizedecy
+    Echinus*resizeincy
+    Echinus*resizeincx
+      
+     Same as above, but change second group of values. Resize by y for 5 pixels:
+	
+       Echinus*resizedecy: AS + v = 0 0 0 -5
+
+    Echinus*rule#
+     
+     Format is "<Window class|Window title> <tag> <isfloating> <hastitle>"
+
+2.config.h header
+-----------------
+
+Contains default values of options. You probably don't have
+to edit it.
+
+
+3.About panels and pagers
+-------------------------
+
+Echinus supports some parts of EWMH, so if the author of the pager knows
+what this magical letters mean it *should* work fine.
+
+Known to work:
+    fbpanel
+    ipager
+    ourico
+
+Known to NOT work:
+    pypanel

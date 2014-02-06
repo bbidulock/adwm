@@ -1,7 +1,3 @@
-/*
- *  echinus wm written by Alexander Polakov <polachok@gmail.com>
- *  this file contains code to parse rules and keybindings
- */
 #include <regex.h>
 #include <ctype.h>
 #include <X11/Xatom.h>
@@ -9,7 +5,7 @@
 #include <X11/Xproto.h>
 #include <X11/Xutil.h>
 #include <X11/Xft/Xft.h>
-#include "echinus.h"
+#include "adwm.h"
 #include "config.h"
 
 static void

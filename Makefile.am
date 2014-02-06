@@ -4,23 +4,19 @@ SUBDIRS = tests
 AM_CPPFLAGS = -include autoconf.h -DSYSCONFPATH=\"$(pkgconfdir)\"
 AM_CFLAGS = $(X11_CFLAGS) $(XFT_CFLAGS) $(XRANDR_CFLAGS) $(XSYNC_CFLAGS) $(XINERAMA_CFLAGS) $(SN_CFLAGS) $(XPM_CFLAGS) $(IMLIB2_CFLAGS)
 
-bin_PROGRAMS = echinus
+bin_PROGRAMS = adwm
 
-echinus_SOURCES = draw.c echinus.c ewmh.c parse.c config.h echinus.h
-echinus_LDADD = $(IMLIB2_LIBS) $(XPM_LIBS) $(SN_LIBS) $(XINERAMA_LIBS) $(XSYNC_LIBS) $(XRANDR_LIBS) $(XFT_LIBS) $(X11_LIBS) -lm
+adwm_SOURCES = draw.c adwm.c ewmh.c parse.c config.h adwm.h
+adwm_LDADD = $(IMLIB2_LIBS) $(XPM_LIBS) $(SN_LIBS) $(XINERAMA_LIBS) $(XSYNC_LIBS) $(XRANDR_LIBS) $(XFT_LIBS) $(X11_LIBS) -lm
 
-echinus.man: echinus.1
+adwm.man: adwm.1
 	/bin/cp -f $< $@
 
-README.echinus: README
-	sed 's,CONFDIR,$(pkgconfdir),' $< >$@
+nodist_man1_MANS = adwm.man
 
-nodist_man1_MANS = echinus.man
+dist_pkgdata_DATA = close.xbm adwmrc iconify.xbm max.xbm
 
-dist_pkgdata_DATA = close.xbm echinusrc iconify.xbm max.xbm
-nodist_doc_DATA = README.echinus
-
-EXTRA_DIST = LICENSE echinus.1 README TODO ChangeLog \
+EXTRA_DIST = LICENSE adwm.1 README README.echinus TODO ChangeLog \
 	     debian/changelog \
 	     debian/compat \
 	     debian/control \
@@ -30,5 +26,5 @@ EXTRA_DIST = LICENSE echinus.1 README TODO ChangeLog \
 	     debian/rules \
 	     debian/watch
 
-CLEANFILES = echinus.man README.echinus
+CLEANFILES = adwm.man
 

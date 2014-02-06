@@ -2,15 +2,18 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.69])
-AC_INIT([echinus],[0.4.9],[https://github.com/polachok/echinus/issues])
+AC_INIT([adwm],[0.4.9],[https://github.com/bbidulock/adwm/issues])
 AC_REVISION([0.4.9])
-AC_CONFIG_SRCDIR([echinus.h])
+AC_CONFIG_SRCDIR([adwm.h])
 AC_CONFIG_HEADERS([autoconf.h])
 AC_CONFIG_AUX_DIR([scripts])
 AC_USE_SYSTEM_EXTENSIONS
 
+DATE=`date -uI`
+AC_SUBST([DATE])
+
 # Initialize Automake
-AM_INIT_AUTOMAKE([foreign dist-bzip2 no-dist-gzip])
+AM_INIT_AUTOMAKE([dist-xz no-dist-gzip])
 AM_MAINTAINER_MODE
 
 # Checks for programs.
@@ -37,9 +40,6 @@ AC_FUNC_FORK
 AC_FUNC_MALLOC
 AC_FUNC_REALLOC
 AC_CHECK_FUNCS([getcwd memmove regcomp select setlocale strchr strdup strerror strrchr])
-
-AC_CONFIG_FILES([Makefile
-                 tests/Makefile])
 
 PKG_CHECK_MODULES([X11],[x11])
 PKG_CHECK_MODULES([XFT],[xft])
@@ -119,9 +119,10 @@ fi
 AC_MSG_CHECKING([for debug support])
 AC_MSG_RESULT([${enable_debug:-no}])
 
-pkgconfdir='${datadir}/echinus'
+pkgconfdir='${datadir}/adwm'
 AC_SUBST([pkgconfdir])
 
-AC_OUTPUT
+AC_OUTPUT([Makefile
+	   tests/Makefile])
 
 # vim: set ft=config:

@@ -1,13 +1,13 @@
-adwm -- read me first file.  2014-02-05
+adwm -- read me first file.  @DATE@
 
 adwm
 ====
 
-Package adwm-0.4.9.130 was released under GPL license 2014-02-05.
+Package @PACKAGE@-@VERSION@ was released under GPL license @DATE@.
 
 This was originally a fork of Echinus which in turn was a fork of dwm,
 and borrows concepts from awesome.  The source for adwm is hosted on
-GitHub at (http://github.com/bbidulock/adwm).  What it includes is
+GitHub at (http://github.com/bbidulock/@PACKAGE@).  What it includes is
 a full rewrite with significant updates and additions resulting in
 full EWMH (NetwM), WMH (WinWM), MWMH (CDE/Motif), ICCCM 2.0 compliance
 and support.
@@ -15,11 +15,11 @@ and support.
 Release
 -------
 
-This is the adwm-0.4.9.130 package, released 2014-02-05.  This release,
+This is the @PACKAGE@-@VERSION@ package, released @DATE@.  This release,
 and the latest version, can be obtained from the GitHub repository at
-(http://github.com/bbidulock/adwm), using a command such as:
+(http://github.com/bbidulock/@PACKAGE@), using a command such as:
 
-    $> git clone http://github.com/bbidulock/adwm.git
+    $> git clone http://github.com/bbidulock/@PACKAGE@.git
 
 Please see the `NEWS' file for release notes and history of user visible
 changes for the current version, and the `ChangeLog' file for a more
@@ -42,33 +42,33 @@ that can be found in the file `COPYING'.
 Quick Start:
 ------------
 
-The quickest and easiest way to get adwm up and running is to run
+The quickest and easiest way to get @PACKAGE@ up and running is to run
 the following commands:
 
-    $> git clone https://github.com/bbidulock/adwm.git adwm
-    $> cd adwm
+    $> git clone https://github.com/bbidulock/@PACKAGE@.git @PACKAGE@
+    $> cd @PACKAGE@
     $> ./autogen.sh
     $> ./configure --prefix=/usr --mandir=/usr/share/man
     $> make V=0
     $> make DESTDIR="$pkgdir" install
 
-This will configure, compile and install adwm the quickest.  For
+This will configure, compile and install @PACKAGE@ the quickest.  For
 those who like to spend the extra 15 seconds reading ./configure --help,
 some compile time options can be turned on and off before the build.
-adwm, however, does not provide any compile time options of its
+@PACKAGE@, however, does not provide any compile time options of its
 own.
 
 For general information on GNU's ./configure, see the file `INSTALL'.
 
-Running adwm
+Running @PACKAGE@
 -----------------
 
-Read the manual page after installation: man adwm.
+Read the manual page after installation: man @PACKAGE@.
 
 Issues
 ------
 
-Report issues to (http://github.com/bbidulock/adwm/issues).
+Report issues to (http://github.com/bbidulock/@PACKAGE@/issues).
 
 
 # vim: set ft=asciidoc tw=72 nocin nosi fo+=tcqlorn:

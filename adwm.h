@@ -717,8 +717,8 @@ void initstyle();
 				    c->name, c->x, c->y, c->w, c->h, c->th, c->gh, c->skip.arrange, c->is.bastard, c->is.max)
 
 #define OPAQUE			0xffffffff
-#define RESNAME		       "echinus"
-#define RESCLASS	       "Echinus"
+#define RESNAME		       "adwm"
+#define RESCLASS	       "Adwm"
 #define STR(_s)			TOSTR(_s)
 #define TOSTR(_s)		#_s
 #define min(_a, _b)		((_a) < (_b) ? (_a) : (_b))

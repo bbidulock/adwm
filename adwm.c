@@ -1,24 +1,4 @@
-/* See LICENSE file for copyright and license details.
- *
- * echinus window manager is designed like any other X client as well. It is
- * driven through handling X events. In contrast to other X clients, a window
- * manager selects for SubstructureRedirectMask on the root window, to receive
- * events about window (dis-)appearance.  Only one X connection at a time is
- * allowed to select for this event mask.
- *
- * The event handlers of echinus are organized in an
- * array which is accessed whenever a new event has been fetched. This allows
- * event dispatching in O(1) time.
- *
- * Each child of the root window is called a client, except windows which have
- * set the override_redirect flag.  Clients are organized in a global
- * doubly-linked client list, the focus history is remembered through a global
- * stack list. Each client contains an array of Bools of the same size as the
- * global tags array to indicate the tags of a client.	
- *
- * Keys and tagging rules are organized as arrays and defined in config.h.
- *
- * To understand everything else, start reading main().
+/* See COPYING file for copyright and license details.
  */
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -63,7 +43,7 @@
 #define SN_API_NOT_YET_FROZEN
 #include <libsn/sn.h>
 #endif
-#include "echinus.h"
+#include "adwm.h"
 
 /* macros */
 #define WINDOWMASK		(EnterWindowMask | LeaveWindowMask)
@@ -782,10 +762,10 @@ checkotherwm(void) {
 	hname.nitems = strnlen(hostname, 64);
 
 	class_hint.res_name = NULL;
-	class_hint.res_class = "Echinus";
+	class_hint.res_class = "adwm";
 
-	Xutf8SetWMProperties(dpy, scr->selwin, "Echinus version: " VERSION,
-			"echinus " VERSION, cargv, cargc, NULL, NULL,
+	Xutf8SetWMProperties(dpy, scr->selwin, "Adwm version: " VERSION,
+			"adwm " VERSION, cargv, cargc, NULL, NULL,
 			&class_hint);
 	XSetWMClientMachine(dpy, scr->selwin, &hname);
 	XInternAtoms(dpy, names, 25, False, atoms);
@@ -5137,8 +5117,8 @@ setup(char *conf) {
 	/* configuration files to open (%s gets converted to $HOME) */
 	const char *confs[] = {
 		conf,
-		"%s/.echinus/echinusrc",
-		SYSCONFPATH "/echinusrc",
+		"%s/.adwm/adwmrc",
+		SYSCONFPATH "/adwmrc",
 		NULL
 	};
 
@@ -5179,7 +5159,7 @@ setup(char *conf) {
 	if (!home)
 		*home = '/';
 	if (!getcwd(oldcwd, sizeof(oldcwd)))
-		eprint("echinus: getcwd error: %s\n", strerror(errno));
+		eprint("adwm: getcwd error: %s\n", strerror(errno));
 
 	for (i = 0; confs[i] != NULL; i++) {
 		if (*confs[i] == '\0')
@@ -5190,14 +5170,14 @@ setup(char *conf) {
 		if (slash)
 			snprintf(path, slash - conf + 1, "%s", conf);
 		if (chdir(path) != 0)
-			fprintf(stderr, "echinus: cannot change directory\n");
+			fprintf(stderr, "adwm: cannot change directory\n");
 		xrdb = XrmGetFileDatabase(conf);
 		/* configuration file loaded successfully; break out */
 		if (xrdb)
 			break;
 	}
 	if (!xrdb)
-		fprintf(stderr, "echinus: no configuration file found, using defaults\n");
+		fprintf(stderr, "adwm: no configuration file found, using defaults\n");
 
 	initrules();
 
@@ -5254,7 +5234,7 @@ setup(char *conf) {
 	}
 
 	if (chdir(oldcwd) != 0)
-		fprintf(stderr, "echinus: cannot change directory\n");
+		fprintf(stderr, "adwm: cannot change directory\n");
 
 	/* multihead support */
 	XQueryPointer(dpy, scr->root, &proot, &w, &d, &d, &d, &d, &mask);
@@ -5287,7 +5267,7 @@ spawn(const char *arg)
 				setenv("DISPLAY", s, 1);
 			}
 			execl(shell, shell, "-c", arg, (char *) NULL);
-			fprintf(stderr, "echinus: execl '%s -c %s'", shell, arg);
+			fprintf(stderr, "adwm: execl '%s -c %s'", shell, arg);
 			perror(" failed");
 		}
 		exit(0);
@@ -6430,7 +6410,7 @@ xerror(Display * dsply, XErrorEvent * ee) {
 	    || (ee->request_code == X_CopyArea && ee->error_code == BadDrawable))
 		return 0;
 	fprintf(stderr,
-	    "echinus: fatal error: request code=%d, error code=%d\n",
+	    "adwm: fatal error: request code=%d, error code=%d\n",
 	    ee->request_code, ee->error_code);
 	return xerrorxlib(dsply, ee);	/* may call exit */
 }
@@ -6577,13 +6557,13 @@ main(int argc, char *argv[])
 	if (argc == 3 && !strcmp("-f", argv[1]))
 		snprintf(conf, sizeof(conf), "%s", argv[2]);
 	else if (argc == 2 && !strcmp("-v", argv[1]))
-		eprint("echinus-" VERSION " (c) 2011 Alexander Polakov\n");
+		eprint("adwm-" VERSION " (c) 2011 Alexander Polakov\n");
 	else if (argc != 1)
-		eprint("usage: echinus [-v] [-f conf]\n");
+		eprint("usage: adwm [-v] [-f conf]\n");
 
 	setlocale(LC_CTYPE, "");
 	if (!(dpy = XOpenDisplay(0)))
-		eprint("echinus: cannot open display\n");
+		eprint("adwm: cannot open display\n");
 	signal(SIGHUP, sighandler);
 	signal(SIGINT, sighandler);
 	signal(SIGQUIT, sighandler);
@@ -6648,7 +6628,7 @@ main(int argc, char *argv[])
 		}
 	for (scr = screens; scr < screens + nscr && !scr->managed; scr++) ;
 	if (scr == screens + nscr)
-		eprint("echinus: another window manager is already running on each screen\n");
+		eprint("adwm: another window manager is already running on each screen\n");
 	setup(conf);
 	for (scr = screens; scr < screens + nscr; scr++)
 		if (scr->managed) {

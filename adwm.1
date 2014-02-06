@@ -2,10 +2,10 @@
 .Dt ECHINUS 1
 .Os
 .Sh NAME
-.Nm echinus
-.Nd a lightweight window manager for X11
+.Nm adwm
+.Nd advanced dynamic window manager for X
 .Sh SYNOPSIS
-.Nm echinus
+.Nm adwm
 .Bk -words
 .Op Fl v
 .Op Fl f Ar conf
@@ -38,9 +38,9 @@ Specifies an alternative configuration file.
 By default,
 .Nm
 loads the configuration file from
-.Pa ~/.echinus/echinusrc,
+.Pa ~/.adwm/adwmrc,
 if present, then looks for the system-wide configuration file
-.Pa CONFDIR/echinusrc .
+.Pa /usr/share/adwm/adwmrc .
 .El
 .Pp
 The following notation is used in this page:
@@ -129,7 +129,7 @@ Resizes current window while dragging.
 Tiled windows will be toggled to the floating state.
 .El
 .Sh CUSTOMIZATION
-The configuration file is a set of X resources (with a class of Echinus),
+The configuration file is a set of X resources (with a class of Adwm),
 which are described in the sections below.
 .Pp
 Every relative path specified is relative to the directory in which the
@@ -417,20 +417,20 @@ becomes a slave; and visa versa.
 .Sh EXAMPLES
 To move a window five pixels to the right:
 .Pp
-.Dl Echinus*moveright: AS + l = +5 0 0 0
+.Dl Adwm*moveright: AS + l = +5 0 0 0
 .Pp
 To resize a window five pixels down:
 .Pp
-.Dl Echinus*resizedecy: AS + v = 0 0 0 -5
+.Dl Adwm*resizedecy: AS + v = 0 0 0 -5
 .Pp
 To make mplayer float and with a title by default:
-.Dl Echinus*rule0: Mplayer.* NULL 1 1
+.Dl Adwm*rule0: Mplayer.* NULL 1 1
 .Pp
 To spawn an xterm when A + T is pressed:
-.Dl Echinus*spawn0: A + t = xterm
+.Dl Adwm*spawn0: A + t = xterm
 .Pp
 To show the title centered and the close button on the right:
-.Dl Echinus*titlelayout: -T-C
+.Dl Adwm*titlelayout: -T-C
 .Sh CONFORMING TO
 .Nm
 is fully EWMH (NetWM), WMH (WinWM), MWMH (Motif/DTWM) and ICCCM 2.0 compliant,
@@ -441,5 +441,4 @@ so you can use your favourite panel or pager.
 .Sh BUGS
 parsekey() doesn't handle non-alphanumeric keysyms.
 .Pp
-You should find lots of them. If you did please contact me, my mail is
-<polachok at gmail dot com>.
+Please resport bugs to <https://github.com/bbidulock/adwm/issues>.

@@ -1,0 +1,9 @@
+@PACKAGE@ -- history of user-visible changes.  @DATE@
+
+Release @PACKAGE@-@VERSION@ released @DATE@
+-------------------------------------------
+
+This is the initial development release of @PACKAGE@.
+
+
+# vim: set ft=asciidoc tw=72 nocin nosi fo+=tcqlorn:

@@ -49,7 +49,7 @@ Section 5: Session Management
 	WM_COMMAND			NOT supported
 	WM_SAVE_YOURSELF		NOT supported
 
-	Echinus does not (yet) support the X11 Session Management
+	Adwm does not (yet) support the X11 Session Management
 	Protocol, and as such does not work in such an environment.
 
 ------------------------------------------------------------------------

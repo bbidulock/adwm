@@ -395,9 +395,16 @@ ewmh_del_client(Client * c, WithdrawCause cause)
 }
 
 void
-ewmh_update_echinus_layout_name() {
+ewmh_update_echinus_layout_name()
+{
+	Monitor *cm;
+	View *v;
+
+	if (!(cm = selmonitor()))
+		return;
+	v = scr->views + cm->curtag;
 	XChangeProperty(dpy, scr->root, _XA_ECHINUS_LAYOUT, XA_STRING, 8, PropModeReplace,
-			(const unsigned char *) &scr->views[curmontag].layout->symbol, 1L);
+			(const unsigned char *) &v->layout->symbol, 1L);
 }
 
 void

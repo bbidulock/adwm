@@ -248,6 +248,7 @@ parsekey(const char *s, Key *k) {
 	char *tmp;
 	int i;
 
+	DPRINTF("parsing key string: '%s'\n", s);
 	pos = strchr(s, '+');
 	if ((pos - s) && pos) {
 		for (i = 0, stmp = s; stmp < pos; i++, stmp++) {

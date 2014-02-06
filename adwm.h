@@ -252,7 +252,7 @@ typedef enum { StrutsOn, StrutsOff, StrutsHide } StrutsPosition;
 
 /* typedefs */
 typedef struct {
-	int x, y, w, h, b, n;
+	int x, y, w, h, b, g, n, s, th;
 } LayoutArgs;
 
 typedef struct {
@@ -407,6 +407,7 @@ struct Client {
 		};
 		unsigned int can;
 	} can;
+	Monitor *curmon;
 	Client *next;
 	Client *prev;
 	Client *snext;
@@ -603,6 +604,7 @@ void inittag(unsigned int i);
 void arrange(Monitor * m);
 Monitor *clientmonitor(Client * c);
 Monitor *curmonitor();
+Monitor *selmonitor();
 void *ecalloc(size_t nmemb, size_t size);
 void *emallocz(size_t size);
 void *erealloc(void *ptr, size_t size);
@@ -687,6 +689,7 @@ void drawclient(Client * c);
 void deinitstyle();
 void initstyle();
 
+#if 0
 /* XXX: this block of defines must die */
 #define curseltags curmonitor()->seltags
 #define curprevtags curmonitor()->prevtags
@@ -701,6 +704,7 @@ void initstyle();
 #define curmontag curmonitor()->curtag
 #define curstruts curmonitor()->struts
 #define curlayout scr->views[curmontag].layout
+#endif
 
 #define LENGTH(x)		(sizeof(x) / sizeof x[0])
 #ifdef DEBUG

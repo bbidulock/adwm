@@ -1951,17 +1951,43 @@ ewmh_process_net_window_sync_request_counter(Client *c) {
 
 	if (!checkatom(c->win, _XA_WM_PROTOCOLS, _XA_NET_WM_SYNC_REQUEST))
 		return;
-	status = XGetWindowProperty(dpy, c->win, _XA_KDE_NET_WM_WINDOW_TYPE_OVERRIDE, 0L, 1L,
+	status = XGetWindowProperty(dpy, c->win, _XA_NET_WM_SYNC_REQUEST_COUNTER, 0L, 1L,
 			False, AnyPropertyType, &real, &format, &nitems, &extra,
 			(unsigned char **)&data);
 	if (status == Success && nitems > 0) {
 #ifdef SYNC
-		XSyncValue val;
+		XSyncAlarmAttributes aa;
 
-		XSyncIntToValue(&val, 0);
-		XSyncSetCounter(dpy, c->sync, val);
+		c->sync.counter = data[0];
+
+		if (haveext[XsyncBase]) {
+			XSyncIntToValue(&c->sync.val, 0);
+			XSyncSetCounter(dpy, c->sync.counter, c->sync.val);
+
+			aa.trigger.counter = c->sync.counter;
+			aa.trigger.wait_value = c->sync.val;
+			aa.trigger.value_type = XSyncAbsolute;
+			aa.trigger.test_type = XSyncPositiveTransition;
+			aa.events = True;
+			XSyncIntToValue(&aa.delta, 1);
+
+			c->sync.alarm = XSyncCreateAlarm(dpy,
+					XSyncCACounter|XSyncCAValueType|XSyncCAValue|XSyncCATestType|
+					XSyncCADelta|XSyncCAEvents, &aa);
+
+			if (c->sync.alarm) {
+				CPRINTF(c, "allocated alarm 0x%08lx\n", c->sync.alarm);
+				XSaveContext(dpy, c->sync.alarm, context[ClientSync], (XPointer) c);
+				XSaveContext(dpy, c->sync.alarm, context[ClientAny], (XPointer) c);
+				XSaveContext(dpy, c->sync.alarm, context[ScreenContext], (XPointer) scr);
+
+			} else
+				CPRINTF(c, "could not allocate alarm!\n");
+		} else
+			DPRINTF("SYNC extension not present\n");
+#else
+		DPRINTF("SYNC extension not supported\n");
 #endif
-		c->sync = data[0];
 	}
 	if (data)
 		XFree(data);
@@ -2029,8 +2055,9 @@ ewmh_update_kde_splash_progress() {
 	XSendEvent(dpy, scr->root, False, SubstructureNotifyMask, &ev);
 }
 
-void
-clientmessage(XEvent *e) {
+Bool
+clientmessage(XEvent *e)
+{
 	XClientMessageEvent *ev = &e->xclient;
 	Client *c;
 	Atom message_type = ev->message_type;
@@ -2074,7 +2101,7 @@ clientmessage(XEvent *e) {
 			unsigned i, j;
 
 			if (0 > index || index >= num)
-				return;
+				return False;
 			for (i = 0, j = index<<5; j<scr->ntags; i++, j++) {
 				if (c->tags[j])
 					oldmask |= (1<<i);
@@ -2103,7 +2130,7 @@ clientmessage(XEvent *e) {
 				mr = findmonbynum(ev->data.l[3]);
 				if (!mt || !mb || !ml || !mr) {
 					ewmh_update_net_window_fs_monitors(c);
-					return;
+					return False;
 				}
 				t = mt->sc.y;
 				b = mb->sc.y + mb->sc.h;
@@ -2111,7 +2138,7 @@ clientmessage(XEvent *e) {
 				r = mr->sc.x + mr->sc.w;
 				if (t >= b || r >= l) {
 					ewmh_update_net_window_fs_monitors(c);
-					return;
+					return False;
 				}
 				resize(c, l, t, r - l, b - t, 0);
 			}
@@ -2124,9 +2151,9 @@ clientmessage(XEvent *e) {
 			int x, y, w, h;
 
 			if (!isfloating(c, NULL))
-				return;
+				return False;
 			if (source != 0 && source != 2)
-				return;
+				return False;
 
 			x = ((flags & (1 << 8)) && c->can.move) ? ev->data.l[1] : c->c.x;
 			y = ((flags & (1 << 9)) && c->can.move) ? ev->data.l[2] : c->c.y;
@@ -2147,9 +2174,9 @@ clientmessage(XEvent *e) {
 			XButtonEvent bev;
 
 			if (source != 0 && source != 1 && source != 2)
-				return;
+				return False;
 			if (direct < 0 || direct > 11)
-				return;
+				return False;
 			bev.type = ButtonPress;
 			bev.serial = 0;
 			bev.send_event = True;
@@ -2198,13 +2225,14 @@ clientmessage(XEvent *e) {
 			Client *o = NULL;
 			if (sibling)
 				if (!(o = getclient(sibling, ClientAny)))
-					return;
+					return False;
 			if (source == 1)
-				return;
+				return False;
 			restack_client(c, detail, o);
 		} else if (message_type == _XA_NET_REQUEST_FRAME_EXTENTS) {
 			ewmh_update_net_window_extents(c);
-		}
+		} else
+			return False;
 	} else if (ev->window == scr->root) {
 		if (0) {
 		} else if (message_type == _XA_NET_NUMBER_OF_DESKTOPS) {
@@ -2259,7 +2287,7 @@ clientmessage(XEvent *e) {
 			long data[4];
 
 			if (win == None)
-				return;
+				return False;
 			wintype = getwintype(win);
 			if (!(WTTEST(wintype, WindowTypeNormal)))
 				if (WTTEST(wintype, WindowTypeDesk) ||
@@ -2283,8 +2311,10 @@ clientmessage(XEvent *e) {
 			data[3] = border + gh;
 			XChangeProperty(dpy, win, _XA_NET_FRAME_EXTENTS, XA_CARDINAL, 32,
 					PropModeReplace, (unsigned char *) &data, 4L);
-		}
+		} else
+			return False;
 	}
+	return True;
 }
 
 void

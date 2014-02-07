@@ -24,6 +24,8 @@
 -ss
 -hnl
 -nbc
+-TGroup
+-TXErrorEvent
 -TButton
 -TButtonImage
 -TXWindowAttributes

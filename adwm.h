@@ -1,5 +1,8 @@
 /* enums */
 
+#ifdef SYNC
+#include <X11/extensions/sync.h>
+#endif
 #ifdef STARTUP_NOTIFICATION
 #define SN_API_NOT_YET_FROZEN
 #include <libsn/sn.h>
@@ -222,11 +225,12 @@ enum {
 #define _XA_KDE_SPLASH_PROGRESS			atom[KdeSplashProgress]
 #define _XA_KDE_WM_CHANGE_STATE			atom[WindowChangeState]
 
+enum { XrandrBase, XineramaBase, XsyncBase, BaseLast };  /* X11 extensions */
 enum { LeftStrut, RightStrut, TopStrut, BotStrut, LastStrut }; /* ewmh struts */
 enum { ColFG, ColBG, ColBorder, ColButton, ColLast };	/* colors */
 enum { ClientWindow, ClientTitle, ClientGrips, ClientFrame, ClientTimeWindow, ClientGroup,
        ClientTransFor, ClientTransForGroup, ClientLeader, ClientAny, SysTrayWindows,
-       ClientPing, ClientDead, ScreenContext, PartLast };	/* client parts */
+       ClientPing, ClientDead, ClientSync, ScreenContext, PartLast };	/* client parts */
 typedef enum { IconifyBtn, MaximizeBtn, CloseBtn, ShadeBtn, StickBtn, LHalfBtn, RHalfBtn,
 	FillBtn, FloatBtn, SizeBtn, TitleTags, TitleName, TitleSep, LastElement,
 	LastBtn = TitleTags } ElementType;
@@ -424,7 +428,16 @@ struct Client {
 	Time user_time;
 	Pixmap drawable;
 	XftDraw *xftdraw;
-	XID sync;
+#ifdef SYNC
+	struct {
+		XID counter;
+		Bool waiting;
+		XSyncValue val;
+		XSyncAlarm alarm;
+		int w;
+		int h;
+	} sync;
+#endif
 #ifdef STARTUP_NOTIFICATION
 	SnStartupSequence *seq;
 #endif
@@ -553,7 +566,7 @@ struct Notify {
 Bool checkatom(Window win, Atom bigatom, Atom smallatom);
 unsigned int getwintype(Window win);
 Bool checkwintype(Window win, int wintype);
-void clientmessage(XEvent * e);
+Bool clientmessage(XEvent * e);
 void ewmh_release_user_time_window(Client *c);
 Atom *getatom(Window win, Atom atom, unsigned long *nitems);
 long *getcard(Window win, Atom atom, unsigned long *nitems);
@@ -630,7 +643,7 @@ void applygravity(Client *c, int *xp, int *yp, int *wp, int *hp, int bw, int gra
 void resize(Client * c, int x, int y, int w, int h, int b);
 void restack(void);
 void restack_client(Client *c, int stack_mode, Client *sibling);
-void configurerequest(XEvent * e);
+Bool configurerequest(XEvent * e);
 void moveresizekb(Client *c, int dx, int dy, int dw, int dh);
 void mousemove(Client *c, XEvent *e);
 void mouseresize_from(Client *c, int from, XEvent *e);
@@ -675,7 +688,7 @@ void viewlefttag(void);
 void viewprevtag(void);
 void viewrighttag(void);
 void zoom(Client *c);
-void selectionclear(XEvent *e);
+Bool selectionclear(XEvent *e);
 void appendtag(void);
 void rmlasttag(void);
 void settags(unsigned int numtags);
@@ -708,14 +721,17 @@ void initstyle();
 
 #define LENGTH(x)		(sizeof(x) / sizeof x[0])
 #ifdef DEBUG
-#define DPRINT			fprintf(stderr, "%s: %s() %d\n",__FILE__,__func__, __LINE__)
-#define DPRINTF(format, ...)	fprintf(stderr, "%s %s():%d " format, __FILE__, __func__, __LINE__, __VA_ARGS__)
-//#define XPRINTF(format, ...)	fprintf(stderr, "%s %s():%d " format, __FILE__, __func__, __LINE__, __VA_ARGS__)
-#define XPRINTF(format, ...)	do { } while(0)
+#define DPRINT			do { fprintf(stderr, "%s %s() %d\n",__FILE__,__func__, __LINE__); } while(0)
+#define DPRINTF(args...)	do { fprintf(stderr, "%s %s():%d ", __FILE__,__func__, __LINE__); \
+				     fprintf(stderr, args); } while(0)
+#define CPRINTF(c,args...)	do { fprintf(stderr, "%s %s():%d [0x%08lx 0x%08lx %-20s] ", __FILE__,__func__,__LINE__,(c)->frame,(c)->win,(c)->name); \
+				     fprintf(stderr, args); } while(0)
+#define XPRINTF(args...)	do { } while(0)
 #else
 #define DPRINT			do { } while(0)
-#define DPRINTF(format, ...)	do { } while(0)
-#define XPRINTF(format, ...)	do { } while(0)
+#define DPRINTF(args...)	do { } while(0)
+#define CPRINTF(c,args...)	do { } while(0)
+#define XPRINTF(args...)	do { } while(0)
 #endif
 #define DPRINTCLIENT(c) DPRINTF("%s: x: %d y: %d w: %d h: %d th: %d gh: %d f: %d b: %d m: %d\n", \
 				    c->name, c->x, c->y, c->w, c->h, c->th, c->gh, c->skip.arrange, c->is.bastard, c->is.max)
@@ -762,6 +778,7 @@ extern unsigned int modkey;
 // extern View *views;
 extern XContext context[];
 extern Time user_time;
+extern Bool haveext[];
 #ifdef STARTUP_NOTIFICATION
 extern SnDisplay *sn_dpy;
 extern SnMonitorContext *sn_ctx;

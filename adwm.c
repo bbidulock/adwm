@@ -59,44 +59,44 @@
 #define EXTRANGE    16		/* all X11 extension event must fit in this range */
 
 /* enums */
-enum { XrandrBase, XineramaBase, XsyncBase, BaseLast };  /* X11 extensions */
 enum { CurResizeTopLeft, CurResizeTop, CurResizeTopRight, CurResizeRight,
        CurResizeBottomRight, CurResizeBottom, CurResizeBottomLeft, CurResizeLeft,
        CurMove, CurNormal, CurLast };	    /* cursor */
 enum { Clk2Focus, SloppyFloat, AllSloppy, SloppyRaise };    /* focus model */
 
 /* function declarations */
-void applyatoms(Client * c);
-void applyrules(Client * c);
-void arrange(Monitor * m);
-void attach(Client * c, Bool attachaside);
-void attachstack(Client * c);
-void ban(Client * c);
-void buttonpress(XEvent * e);
+Bool alarmnotify(XEvent *e);
+void applyatoms(Client *c);
+void applyrules(Client *c);
+void arrange(Monitor *m);
+void attach(Client *c, Bool attachaside);
+void attachstack(Client *c);
+void ban(Client *c);
+Bool buttonpress(XEvent *e);
 Bool canfocus(Client *c);
 void checkotherwm(void);
 void cleanup(WithdrawCause cause);
 Monitor *closestmonitor(int x, int y);
 void compileregs(void);
-void configure(Client * c, Window above);
-void configurenotify(XEvent * e);
-void configurerequest(XEvent * e);
-void destroynotify(XEvent * e);
-void detach(Client * c);
-void detachstack(Client * c);
+void send_configurenotify(Client *c, Window above);
+Bool configurenotify(XEvent *e);
+Bool configurerequest(XEvent *e);
+Bool destroynotify(XEvent *e);
+void detach(Client *c);
+void detachstack(Client *c);
 void discardenter(void);
 void *ecalloc(size_t nmemb, size_t size);
 void *emallocz(size_t size);
 void *erealloc(void *ptr, size_t size);
-void enternotify(XEvent * e);
+Bool enternotify(XEvent *e);
 void eprint(const char *errstr, ...);
-void expose(XEvent * e);
+Bool expose(XEvent *e);
 Group *getleader(Window leader, int group);
 Bool handle_event(XEvent *ev);
 void iconify(Client *c);
 void incnmaster(const char *arg);
 Monitor *findcurmonitor(Client *c);
-void focus(Client * c);
+void focus(Client *c);
 Client *focusforw(Client *c);
 Client *focusback(Client *c);
 Client *focuslast(Client *c);
@@ -110,26 +110,26 @@ void getpointer(int *x, int *y);
 Monitor *getmonitor(int x, int y);
 Monitor *curmonitor();
 Monitor *selmonitor();
-Monitor *clientmonitor(Client * c);
-Bool isvisible(Client * c, Monitor * m);
+Monitor *clientmonitor(Client *c);
+Bool isvisible(Client *c, Monitor *m);
 void incmodal(Client *c, Group *g);
 void decmodal(Client *c, Group *g);
-void initmonitors(XEvent * e);
+Bool initmonitors(XEvent *e);
 void freemonitors(void);
 void updatemonitors(XEvent *e, int n, Bool size, Bool full);
-void keypress(XEvent * e);
-void keyrelease(XEvent * e);
+Bool keypress(XEvent *e);
+Bool keyrelease(XEvent *e);
 void killclient(Client *c);
-void leavenotify(XEvent * e);
-void focusin(XEvent * e);
-void focusout(XEvent *e);
+Bool leavenotify(XEvent *e);
+Bool focusin(XEvent *e);
+Bool focusout(XEvent *e);
 EScreen *geteventscr(XEvent *ev);
 void gavefocus(Client *c);
 void grid(Monitor *m);
-void manage(Window w, XWindowAttributes * wa);
-void mappingnotify(XEvent * e);
-void monocle(Monitor * m);
-void maprequest(XEvent * e);
+void manage(Window w, XWindowAttributes *wa);
+Bool mappingnotify(XEvent *e);
+void monocle(Monitor *m);
+Bool maprequest(XEvent *e);
 void mousemove(Client *c, XEvent *ev);
 void mouseresize_from(Client *c, int from, XEvent *ev);
 void mouseresize(Client *c, XEvent *ev);
@@ -142,25 +142,25 @@ void m_prevtag(Client *c, XEvent *ev);
 void m_nexttag(Client *c, XEvent *ev);
 void moveresizekb(Client *c, int dx, int dy, int dw, int dh);
 Monitor *nearmonitor(void);
-Client *nexttiled(Client * c, Monitor * m);
-Client *prevtiled(Client * c, Monitor * m);
+Client *nexttiled(Client *c, Monitor *m);
+Client *prevtiled(Client *c, Monitor *m);
 void place(Client *c, WindowPlacement p);
-void propertynotify(XEvent * e);
-void reparentnotify(XEvent * e);
+Bool propertynotify(XEvent *e);
+Bool reparentnotify(XEvent *e);
 void quit(const char *arg);
 void raiseclient(Client *c);
 void restart(const char *arg);
 Bool constrain(Client *c, int *wp, int *hp);
-void resize(Client * c, int x, int y, int w, int h, int b);
+void resize(Client *c, int x, int y, int w, int h, int b);
 void restack(void);
 void restack_belowif(Client *c, Client *sibling);
 void restack_client(Client *c, int stack_mode, Client *sibling);
 void run(void);
-void save(Client * c);
+void save(Client *c);
 void restore(Client *c);
 void restore_float(Client *c);
 void scan(void);
-void setclientstate(Client * c, long state);
+void setclientstate(Client *c, long state);
 void setfocus(Client *c);
 void setlayout(const char *arg);
 void setmwfact(const char *arg);
@@ -182,26 +182,26 @@ void togglemonitor(void);
 void toggleshowing(void);
 void togglehidden(Client *c);
 void focusview(int index);
-void unban(Client * c, Monitor *m);
-void unmanage(Client * c, WithdrawCause cause);
-void updategeom(Monitor * m);
+void unban(Client *c, Monitor *m);
+void unmanage(Client *c, WithdrawCause cause);
+void updategeom(Monitor *m);
 void updatestruts(void);
-void unmapnotify(XEvent * e);
-void updatesizehints(Client * c);
+Bool unmapnotify(XEvent *e);
+void updatesizehints(Client *c);
 void updateframe(Client *c, Monitor *m);
 void updatetitle(Client *c);
 void updategroup(Client *c, Window leader, int group, int *nonmodal);
 Window *getgroup(Client *c, Window leader, int group, unsigned int *count);
 void removegroup(Client *c, Window leader, int group);
-void updateiconname(Client * c);
+void updateiconname(Client *c);
 void updatefloat(Client *c, Monitor *m);
 void view(int index);
-void viewprevtag(void);	/* views previous selected tags */
+void viewprevtag(void);			/* views previous selected tags */
 void viewlefttag(void);
 void viewrighttag(void);
-int xerror(Display * dpy, XErrorEvent * ee);
-int xerrordummy(Display * dsply, XErrorEvent * ee);
-int xerrorstart(Display * dsply, XErrorEvent * ee);
+int xerror(Display *dpy, XErrorEvent *ee);
+int xerrordummy(Display *dsply, XErrorEvent *ee);
+int xerrorstart(Display *dsply, XErrorEvent *ee);
 int (*xerrorxlib) (Display *, XErrorEvent *);
 void zoom(Client *c);
 
@@ -317,28 +317,53 @@ Layout layouts[] = {
 	/* *INDENT-ON* */
 };
 
-void (*handler[LASTEvent+(EXTRANGE*BaseLast)]) (XEvent *) = {
+Bool
+IGNOREEVENT(XEvent *e)
+{
+	DPRINTF("Got ignored event %d\n", e->type);
+	return False;
+}
+
+Bool (*handler[LASTEvent+(EXTRANGE*BaseLast)]) (XEvent *) = {
+	[KeyPress] = keypress,
+	[KeyRelease] = keyrelease,
 	[ButtonPress] = buttonpress,
 	[ButtonRelease] = buttonpress,
-	[ConfigureRequest] = configurerequest,
-	[ConfigureNotify] = configurenotify,
-	[DestroyNotify] = destroynotify,
+	[MotionNotify] = IGNOREEVENT,
 	[EnterNotify] = enternotify,
 	[LeaveNotify] = leavenotify,
 	[FocusIn] = focusin,
 	[FocusOut] = focusout,
+	[KeymapNotify] = IGNOREEVENT,
 	[Expose] = expose,
-	[KeyPress] = keypress,
-	[KeyRelease] = keyrelease,
-	[MappingNotify] = mappingnotify,
-	[MapRequest] = maprequest,
-	[PropertyNotify] = propertynotify,
-	[ReparentNotify] = reparentnotify,
+	[GraphicsExpose] = IGNOREEVENT,
+	[NoExpose] = IGNOREEVENT,
+	[VisibilityNotify] = IGNOREEVENT,
+	[CreateNotify] = IGNOREEVENT,
+	[DestroyNotify] = destroynotify,
 	[UnmapNotify] = unmapnotify,
-	[ClientMessage] = clientmessage,
+	[MapNotify] = IGNOREEVENT,
+	[MapRequest] = maprequest,
+	[ReparentNotify] = reparentnotify,
+	[ConfigureNotify] = configurenotify,
+	[ConfigureRequest] = configurerequest,
+	[GravityNotify] = IGNOREEVENT,
+	[ResizeRequest] = IGNOREEVENT,
+	[CirculateNotify] = IGNOREEVENT,
+	[CirculateRequest] = IGNOREEVENT,
+	[PropertyNotify] = propertynotify,
 	[SelectionClear] = selectionclear,
+	[SelectionRequest] = IGNOREEVENT,
+	[SelectionNotify] = IGNOREEVENT,
+	[ColormapNotify] = IGNOREEVENT,
+	[ClientMessage] = clientmessage,
+	[MappingNotify] = mappingnotify,
+	[GenericEvent] = IGNOREEVENT,
 #ifdef XRANDR
 	[RRScreenChangeNotify + LASTEvent + EXTRANGE*XrandrBase] = initmonitors,
+#endif
+#ifdef SYNC
+	[XSyncAlarmNotify + LASTEvent + EXTRANGE*XsyncBase] = alarmnotify,
 #endif
 };
 
@@ -612,7 +637,7 @@ isfloating(Client *c, Monitor *m)
 	return False;
 }
 
-void
+Bool
 buttonpress(XEvent *e)
 {
 	Client *c;
@@ -624,7 +649,7 @@ buttonpress(XEvent *e)
 	int button, direct;
 
 	if (Button1 > ev->button || ev->button > Button5)
-		return;
+		return False;
 	button = ev->button - Button1;
 	direct = (ev->type == ButtonPress) ? 0 : 1;
 
@@ -649,22 +674,22 @@ buttonpress(XEvent *e)
 				XUngrabPointer(dpy, CurrentTime);	// ev->time ??
 				XSendEvent(dpy, scr->selwin, False,
 					   SubstructureNotifyMask, e);
-				return;
+				return True;
 			}
 			/* only process button presses once per button */
 			if ((button_mask & (1 << button)))
-				return;
+				return True;
 			button_mask |= (1 << button);
 		} else if (ev->type == ButtonRelease) {
 			if (button_states[ev->button] || ev->button < Button3
 			    || ev->button > Button5) {
 				XSendEvent(dpy, scr->selwin, False,
 					   SubstructureNotifyMask, e);
-				return;
+				return True;
 			}
 			/* do not process button releases with no corresponding press */
 			if (!(button_mask & (1 << button)))
-				return;
+				return True;
 			button_mask &= ~(1 << button);
 		}
 		if ((action = actions[OnRoot][button][direct]))
@@ -712,7 +737,7 @@ buttonpress(XEvent *e)
 					}
 				}
 				if (active)
-					return;
+					return True;
 			} else {
 				ec->pressed &= !(1 << button);
 				drawclient(c);
@@ -731,7 +756,7 @@ buttonpress(XEvent *e)
 		XPRINTF("WINDOW %s: 0x%lx button: %d\n", c->name, ev->window, ev->button);
 		if (CLEANMASK(ev->state) != modkey) {
 			XAllowEvents(dpy, ReplayPointer, CurrentTime);
-			return;
+			return True;
 		}
 		if ((action = actions[OnClientWindow][button][direct]))
 			(*action) (c, (XEvent *) ev);
@@ -743,10 +768,13 @@ buttonpress(XEvent *e)
 			(*action) (c, (XEvent *) ev);
 		XUngrabPointer(dpy, CurrentTime);	// ev->time ??
 		drawclient(c);
-	}
+	} else
+		return False;
+	return True;
 }
 
-static Bool selectionreleased(Display *display, XEvent *event, XPointer arg) {
+static Bool selectionreleased(Display *display, XEvent *event, XPointer arg)
+{
 	if (event->type == DestroyNotify) {
 		if (event->xdestroywindow.window == (Window)arg) {
 			return True;
@@ -755,15 +783,20 @@ static Bool selectionreleased(Display *display, XEvent *event, XPointer arg) {
 	return False;
 }
 
-void
-selectionclear(XEvent * e) {
+Bool
+selectionclear(XEvent * e)
+{
 	char *name = XGetAtomName(dpy, e->xselectionclear.selection);
+	Bool ret = False;
 
-	if (name != NULL && strncmp(name, "WM_S", 4) == 0)
+	if (name != NULL && strncmp(name, "WM_S", 4) == 0) {
 		/* lost WM selection - must exit */
+		ret = True;
 		quit(NULL);
+	}
 	if (name)
 		XFree(name);
+	return ret;
 }
 
 void
@@ -920,7 +953,7 @@ cleanup(WithdrawCause cause) {
 }
 
 void
-configure(Client * c, Window above) {
+send_configurenotify(Client * c, Window above) {
 	XConfigureEvent ce;
 
 	ce.type = ConfigureNotify;
@@ -937,12 +970,16 @@ configure(Client * c, Window above) {
 	XSendEvent(dpy, c->win, False, StructureNotifyMask, (XEvent *) & ce);
 }
 
-void
-configurenotify(XEvent * e) {
+Bool
+configurenotify(XEvent * e)
+{
 	XConfigureEvent *ev = &e->xconfigure;
 
-	if (ev->window == scr->root)
+	if (ev->window == scr->root) {
 		initmonitors(e);
+		return True;
+	}
+	return False;
 }
 
 void
@@ -1060,7 +1097,7 @@ applygravity(Client * c, int *xp, int *yp, int *wp, int *hp, int bw, int gravity
 	putreference(xp, yp, xr, yr, *wp, *hp, bw, gravity);
 }
 
-void
+Bool
 configurerequest(XEvent *e)
 {
 	Client *c;
@@ -1079,7 +1116,7 @@ configurerequest(XEvent *e)
 		   findcurmonitor(). */
 
 		if (!(cm = c->curmon ?: selmonitor()))
-			return;
+			return False;
 		if (!c->is.max && isfloating(c, cm)) {
 			int x = ((ev->value_mask & CWX) && c->can.move) ? ev->x : c->c.x;
 			int y = ((ev->value_mask & CWY) && c->can.move) ? ev->y : c->c.y;
@@ -1110,7 +1147,7 @@ configurerequest(XEvent *e)
 
 			if (ev->value_mask & CWSibling)
 				if (!(s = getclient(ev->above, ClientAny)))
-					return;
+					return False;
 			/* might want to make this optional */
 			restack_client(c, ev->detail, s);
 		}
@@ -1125,24 +1162,28 @@ configurerequest(XEvent *e)
 		XConfigureWindow(dpy, ev->window, ev->value_mask, &wc);
 		XSync(dpy, False);
 	}
+	return True;
 }
 
-void
-destroynotify(XEvent * e) {
+Bool
+destroynotify(XEvent * e)
+{
 	Client *c;
 	XDestroyWindowEvent *ev = &e->xdestroywindow;
 
 	if ((c = getclient(ev->window, ClientWindow))) {
 		XPRINTF("unmanage destroyed window (%s)\n", c->name);
 		unmanage(c, CauseDestroyed);
-		return;
+		return True;
 	}
 	if (XFindContext(dpy, ev->window, context[SysTrayWindows],
 				(XPointer *)&c) == Success) {
 		XDeleteContext(dpy, ev->window, context[SysTrayWindows]);
 		delsystray(ev->window);
+		return True;
 	}
 	XDeleteContext(dpy, ev->window, context[ScreenContext]);
+	return True;
 }
 
 void
@@ -1211,16 +1252,16 @@ erealloc(void *ptr, size_t size) {
 	return res;
 }
 
-void
+Bool
 enternotify(XEvent * e) {
 	XCrossingEvent *ev = &e->xcrossing;
 	Client *c;
 
 	if (ev->mode != NotifyNormal || ev->detail == NotifyInferior)
-		return;
+		return True;
 	if ((c = getclient(ev->window, ClientFrame))) {
 		if (c->is.bastard)
-			return;
+			return True;
 		/* focus when switching monitors */
 		if (!isvisible(sel, c->curmon)) {
 			XPRINTF("FOCUS: monitor switching focus to 0x%08lx 0x%08lx %s\n", c->frame, c->win, c->name);
@@ -1255,7 +1296,9 @@ enternotify(XEvent * e) {
 		if (scr->managed)
 			focus(NULL);
 #endif
-	}
+	} else
+		return False;
+	return True;
 }
 
 void
@@ -1268,8 +1311,9 @@ eprint(const char *errstr, ...) {
 	exit(EXIT_FAILURE);
 }
 
-void
-focusin(XEvent *e) {
+Bool
+focusin(XEvent *e)
+{
 	XFocusInEvent *ev = &e->xfocus;
 	Client *c;
 
@@ -1311,7 +1355,7 @@ focusin(XEvent *e) {
 	switch (ev->mode) {
 	case NotifyWhileGrabbed:
 	case NotifyGrab:
-		return;
+		return False;
 	case NotifyNormal:
 		/* Events generated by SetInputFocus when the keyboard is not grabbed have mode
 		 * NotifyNormal */
@@ -1327,14 +1371,14 @@ focusin(XEvent *e) {
 		break;
 	default:
 		XPRINTF("Unwanted FocusIn %d from 0x%lx\n", ev->mode, ev->window);
-		return;
+		return False;
 	}
 	switch (ev->detail) {
 	case NotifyAncestor: /* not between top-levels */
 	case NotifyVirtual: /* not between top-levels */
 	case NotifyInferior: /* not between top-levels */
 	case NotifyNonlinear: /* not between frames */
-		return;
+		return False;
 	case NotifyNonlinearVirtual: /* can happen between toplevels (on client frame) */
 		if (c && ev->window == c->frame) {
 			/* When the focus moves from window A to window B, window C is their
@@ -1352,7 +1396,7 @@ focusin(XEvent *e) {
 			 * root down to but not including A (in order). */
 		} else {
 			XPRINTF("Unwanted FocusIn NotifyNonlinearVirtual from 0x%lx\n", ev->window);
-			return;
+			return False;
 		}
 		break;
 	case NotifyPointer:
@@ -1367,7 +1411,7 @@ focusin(XEvent *e) {
 			 * root down to and including P (in order). */
 		} else {
 			XPRINTF("Unwanted FocusIn NotifyPointer from 0x%lx\n", ev->window);
-			return;
+			return False;
 		}
 		break;
 	case NotifyPointerRoot:
@@ -1378,24 +1422,24 @@ focusin(XEvent *e) {
 			 * PointerRoot) is generated on all root windows. */
 		} else {
 			XPRINTF("Unwanted FocusIn NotifyPointer(Root|None) from 0x%lx\n", ev->window);
-			return;
+			return False;
 		}
 		break;
 	default:
 		XPRINTF("Unwanted FocusIn %d from 0x%lx\n", ev->detail, ev->window);
-		return;
+		return False;
 	}
 	if (c && ev->window == c->frame) {
 		if (c == give) {
 			DPRINTF("FocusIn: gave focus to 0x%08lx 0x%08lx %s\n", c->frame, c->win, c->name);
 			gavefocus(c);
-			return; /* yes, we gave you the focus */
+			return True; /* yes, we gave you the focus */
 		}
 		if (c == take) {
 			DPRINTF("FocusIn: gave focus to 0x%08lx 0x%08lx %s\n", c->frame, c->win, c->name);
 			gavefocus(c);
 			takefocus(NULL);
-			return; /* yes, we asked you to take the focus */
+			return True; /* yes, we asked you to take the focus */
 		}
 		if (take) {
 			if (take->can.focus & GIVE_FOCUS) {
@@ -1432,12 +1476,16 @@ focusin(XEvent *e) {
 			DPRINTF("FocusIn: took focus from 0x%08lx 0x%08lx %s\n", give->frame, give->win, give->name);
 		gavefocus(NULL);
 		takefocus(NULL);
-	} else
+	} else {
 		fprintf(stderr, "Unwanted FocusIn for unknown window 0x%lx\n", ev->window);
+		return False;
+	}
+	return True;
 }
 
-void
-focusout(XEvent *e) {
+Bool
+focusout(XEvent *e)
+{
 	XFocusOutEvent *ev = &e->xfocus;
 	Client *c;
 
@@ -1445,7 +1493,7 @@ focusout(XEvent *e) {
 	switch (ev->mode) {
 	case NotifyWhileGrabbed:
 	case NotifyGrab:
-		return;
+		return False;
 	case NotifyNormal:
 		/* Events generated by SetInputFocus when the keyboard is not grabbed have mode
 		 * NotifyNormal */
@@ -1459,14 +1507,14 @@ focusout(XEvent *e) {
 		break;
 	default:
 		XPRINTF("Unwanted FocusOut %d from 0x%lx\n", ev->mode, ev->window);
-		return;
+		return False;
 	}
 	switch (ev->detail) {
 	case NotifyAncestor: /* not between top-levels */
 	case NotifyVirtual: /* not between top-levels */
 	case NotifyInferior: /* not between top-levels */
 	case NotifyNonlinear: /* not between frames */
-		return;
+		return False;
 	case NotifyNonlinearVirtual: /* can happen between toplevels (on client frame) */
 		if (c && ev->window == c->frame) {
 			/* When the focus moves from window A to window B, window C is their
@@ -1484,7 +1532,7 @@ focusout(XEvent *e) {
 			 * up to and including its root (in order). */
 		} else {
 			XPRINTF("Unwanted FocusOut NotifyNonlinearVirtual from 0x%lx\n", ev->window);
-			return;
+			return False;
 		}
 		break;
 	case NotifyPointer:
@@ -1495,7 +1543,7 @@ focusout(XEvent *e) {
 			 * up to and including P's root (in order). */
 		} else {
 			XPRINTF("Unwanted FocusOut NotifyPointer from 0x%lx\n", ev->window);
-			return;
+			return False;
 		}
 		break;
 	case NotifyPointerRoot:
@@ -1509,12 +1557,12 @@ focusout(XEvent *e) {
 			 * None) is generated on all root windows. */
 		} else {
 			XPRINTF("Unwanted FocusIn NotifyPointer(Root|None) from 0x%lx\n", ev->window);
-			return;
+			return False;
 		}
 		break;
 	default:
 		XPRINTF("Unwanted FocusOut %d from 0x%lx\n", ev->detail, ev->window);
-		return;
+		return False;
 	}
 	if (c && ev->window == c->frame) {
 		if (c == give) {
@@ -1531,12 +1579,16 @@ focusout(XEvent *e) {
 			DPRINTF("FocusOut: lost focus from 0x%08lx 0x%08lx %s\n", give->frame, give->win, give->name);
 			gavefocus(NULL);
 		}
-	} else
+	} else {
 		fprintf(stderr, "Unwanted FocusOut for unknown window 0x%lx\n", ev->window);
+		return False;
+	}
+	return True;
 }
 
-void
-expose(XEvent * e) {
+Bool
+expose(XEvent * e)
+{
 	XExposeEvent *ev = &e->xexpose;
 	XEvent tmp;
 	Client *c;
@@ -1546,6 +1598,7 @@ expose(XEvent * e) {
 		drawclient(c);
 	if ((c = getclient(ev->window, ClientGrips)))
 		drawclient(c);
+	return True;
 }
 
 void
@@ -2064,16 +2117,17 @@ grabkeys(void) {
     }
 }
 
-void
+Bool
 keyrelease(XEvent *e) {
 	XKeyEvent *ev;
 
 	ev = &e->xkey;
 	if (user_time == CurrentTime || (int)ev->time - (int)user_time > 0)
 		user_time = ev->time;
+	return True;
 }
 
-void
+Bool
 keypress(XEvent *e)
 {
 	unsigned int i;
@@ -2090,7 +2144,9 @@ keypress(XEvent *e)
 			if (scr->keys[i]->func)
 				scr->keys[i]->func(scr->keys[i]->arg);
 			XUngrabKeyboard(dpy, CurrentTime);
+			return True;
 		}
+	return False;
 }
 
 void
@@ -2169,7 +2225,7 @@ killclient(Client * c)
 	XKillClient(dpy, c->win);
 }
 
-void
+Bool
 leavenotify(XEvent * e) {
 	XCrossingEvent *ev = &e->xcrossing;
 
@@ -2178,6 +2234,7 @@ leavenotify(XEvent * e) {
 		if (!scr->managed)
 			focus(NULL);
 	}
+	return True;
 }
 
 void
@@ -2431,7 +2488,7 @@ manage(Window w, XWindowAttributes *wa)
 
 	wc.border_width = c->c.b;
 	XConfigureWindow(dpy, c->frame, CWBorderWidth, &wc);
-	configure(c, None);
+	send_configurenotify(c, None);
 	XSetWindowBorder(dpy, c->frame, scr->style.color.norm[ColBorder]);
 
 	twa.event_mask = ExposureMask | MOUSEMASK;
@@ -2523,31 +2580,36 @@ manage(Window w, XWindowAttributes *wa)
 	}
 }
 
-void
+Bool
 mappingnotify(XEvent * e) {
 	XMappingEvent *ev = &e->xmapping;
 
 	XRefreshKeyboardMapping(ev);
 	if (ev->request == MappingKeyboard)
 		grabkeys();
+	return True;
 }
 
-void
-maprequest(XEvent * e) {
+Bool
+maprequest(XEvent * e)
+{
 	static XWindowAttributes wa;
 	Client *c;
 	XMapRequestEvent *ev = &e->xmaprequest;
 
 	if (!XGetWindowAttributes(dpy, ev->window, &wa))
-		return;
+		return True;
 	if (wa.override_redirect)
-		return;
+		return True;
 	if (issystray(ev->window))
-		return;
+		return True;
 	if (isdockapp(ev->window))
-		return;
-	if (!(c = getclient(ev->window, ClientWindow)))
+		return True;
+	if (!(c = getclient(ev->window, ClientWindow))) {
 		manage(ev->window, &wa);
+		return True;
+	}
+	return False;
 }
 
 void
@@ -2857,6 +2919,227 @@ nearmonitor() {
 	return m;
 }
 
+#ifdef SYNC
+void
+sync_request(Client *c, Time time) {
+	int overflow = 0;
+	XEvent ce;
+	XSyncValue inc;
+	XSyncAlarmAttributes aa;
+
+	XSyncIntToValue(&inc, 1);
+	XSyncValueAdd(&c->sync.val, c->sync.val, inc, &overflow);
+	if (overflow)
+		XSyncMinValue(&c->sync.val);
+
+	CPRINTF(c, "Arming alarm 0x%08lx\n", c->sync.alarm);
+	aa.trigger.counter = c->sync.counter;
+	aa.trigger.wait_value = c->sync.val;
+	aa.trigger.value_type = XSyncAbsolute;
+	aa.trigger.test_type = XSyncPositiveComparison;
+	aa.events = True;
+
+	XSyncChangeAlarm(dpy, c->sync.alarm,
+		XSyncCACounter|XSyncCAValueType|XSyncCAValue|XSyncCATestType|
+		XSyncCAEvents, &aa);
+
+	CPRINTF(c, "%s", "Sending client meessage\n");
+	ce.xclient.type = ClientMessage;
+	ce.xclient.message_type = _XA_WM_PROTOCOLS;
+	ce.xclient.display = dpy;
+	ce.xclient.window = c->win;
+	ce.xclient.format = 32;
+	ce.xclient.data.l[0] = _XA_NET_WM_SYNC_REQUEST;
+	ce.xclient.data.l[1] = time;
+	ce.xclient.data.l[2] = XSyncValueLow32(c->sync.val);
+	ce.xclient.data.l[3] = XSyncValueHigh32(c->sync.val);
+	ce.xclient.data.l[4] = 0;
+	XSendEvent(dpy, c->win, False, NoEventMask, &ce);
+
+	c->sync.waiting = True;
+}
+
+Bool
+newsize(Client *c, int w, int h, Time time)
+{
+	if (!c->sync.alarm)
+		return True;
+	if (c->sync.waiting) {
+		DPRINTF("Deferring size request from %dx%d to %dx%d for 0x%08lx 0x%08lx %s\n",
+				c->c.w, c->c.h - c->th - c->gh, w, h, c->frame, c->win, c->name);
+		return False;
+	}
+	c->sync.w = w;
+	c->sync.h = h;
+	if (time == CurrentTime)
+		time = user_time;
+	sync_request(c, time);
+	return True;
+}
+
+Bool
+alarmnotify(XEvent *e)
+{
+	XSyncAlarmNotifyEvent *ae = (typeof(ae)) e;
+	Client *c;
+	XWindowChanges wc;
+	unsigned mask = 0;
+
+	if (!(c = getclient(ae->alarm, ClientSync))) {
+		DPRINTF("Recevied alarm notify for unknown alarm 0x%08lx\n", ae->alarm);
+		return False;
+	}
+	DPRINTF("Processing alarm notify for 0x%08lx 0x%08lx %s\n", c->frame, c->win, c->name);
+	if (!c->sync.waiting) {
+		DPRINTF("%s", "Alarm was cancelled!\n");
+		return True;
+	}
+	c->sync.waiting = False;
+
+	if ((wc.width = c->c.w) != c->sync.w) {
+		DPRINTF("Width changed from %d to %u since last request\n", c->sync.w, wc.width);
+		mask |= CWWidth;
+	}
+	if ((wc.height = c->c.h - c->th - c->gh) != c->sync.h) {
+		DPRINTF("Height changed from %d to %u since last request\n", c->sync.h, wc.height);
+		mask |= CWHeight;
+	}
+	if (mask && newsize(c, wc.width, wc.height, ae->time)) {
+		DPRINTF("Configuring window %ux%u\n", wc.width, wc.height);
+		XConfigureWindow(dpy, c->win, mask, &wc);
+	}
+	return True;
+}
+#else
+
+Bool
+newsize(Client *c, int w, int h, Time time)
+{
+	return True;
+}
+
+#endif
+
+/* FIXME: this does not handle moving the window across monitor
+ * or desktop boundaries. */
+
+void
+resize(Client *c, int x, int y, int w, int h, int b)
+{
+	XWindowChanges wwc, fwc;
+	unsigned wmask, fmask;
+
+	if (w <= 0 || h <= 0)
+		return;
+	/* offscreen appearance fixes */
+	if (x > DisplayWidth(dpy, scr->screen))
+		x = DisplayWidth(dpy, scr->screen) - w - 2 * b;
+	if (y > DisplayHeight(dpy, scr->screen))
+		y = DisplayHeight(dpy, scr->screen) - h - 2 * b;
+	DPRINTF("x = %d y = %d w = %d h = %d b = %d\n", x, y, w, h, b);
+	wmask = fmask = 0;
+	if (c->c.x != x) {
+		c->c.x = x;
+		fwc.x = x;
+		wmask |= CWX;
+		DPRINTF("frame wc.x = %d\n", fwc.x);
+	}
+	if (c->c.y != y) {
+		c->c.y = y;
+		fwc.y = y;
+		DPRINTF("frame wc.y = %d\n", fwc.y);
+		wmask |= CWY;
+	}
+	if (c->c.w != w) {
+		c->c.w = w;
+		fwc.width = w;
+		DPRINTF("frame wc.w = %u\n", fwc.width);
+		wmask |= CWWidth;
+	}
+	if (c->c.h != h) {
+		c->c.h = h;
+		fwc.height = h;
+		DPRINTF("frame wc.h = %u\n", fwc.height);
+		wmask |= CWHeight;
+	}
+	if (c->th && (c->is.shaded && (c != sel || !options.autoroll))) {
+		fwc.height = c->th;
+		DPRINTF("frame wc.h = %u\n", fwc.height);
+		fmask |= CWHeight;
+	} else {
+		fwc.height = h;
+		DPRINTF("frame wc.h = %u\n", fwc.height);
+		fmask |= CWHeight;
+	}
+	if (c->c.b != b) {
+		c->c.b = b;
+		fwc.border_width = b;
+		DPRINTF("frame wc.b = %u\n", fwc.border_width);
+		fmask |= CWBorderWidth;
+		ewmh_update_net_window_extents(c);
+	}
+	if (wmask | fmask) {
+		DPRINTF("frame wc = %ux%u+%d+%d:%d\n", fwc.width, fwc.height,
+			fwc.x, fwc.y, fwc.border_width);
+		XConfigureWindow(dpy, c->frame, wmask | fmask, &fwc);
+	}
+	wwc.x = 0;
+	wwc.y = c->th;
+	wwc.width = w;
+	wwc.height = h - c->th - c->gh;
+	wwc.border_width = 0;
+	if ((wmask & (CWWidth | CWHeight)) && !newsize(c, wwc.width, wwc.height, CurrentTime))
+		wmask &= ~(CWWidth | CWHeight);
+	if (wmask) {
+		DPRINTF("wind  wc = %ux%u+%d+%d:%d\n", wwc.width, wwc.height,
+			wwc.x, wwc.y, wwc.border_width);
+		XConfigureWindow(dpy, c->win, wmask | CWBorderWidth, &wwc);
+	}
+	/* ICCCM 2.0 4.1.5 */
+	if (!(wmask & (CWWidth | CWHeight))
+#ifdef SYNC
+			|| c->sync.alarm
+#endif
+			)
+		send_configurenotify(c, None);
+	XSync(dpy, False);
+	if ((w != c->tw || (wmask | fmask)) && (c->th || c->gh)) {
+		if (c->th && c->title)
+			XMoveResizeWindow(dpy, c->title, 0, 0, w, c->th);
+		if (c->gh && c->grips)
+			XMoveResizeWindow(dpy, c->grips, 0, h - c->gh, w, c->gh);
+		if (w != c->tw) {
+			XFreePixmap(dpy, c->drawable);
+			c->drawable = XCreatePixmap(dpy, scr->root, w,
+						    max(scr->style.titleheight,
+							scr->style.gripsheight),
+						    DefaultDepth(dpy, scr->screen));
+			c->tw = w;
+		}
+		drawclient(c);
+	}
+	XSync(dpy, False);
+}
+
+static Bool
+ismoveevent(Display *display, XEvent *event, XPointer arg)
+{
+	switch (event->type) {
+	case ButtonPress:
+	case ButtonRelease:
+	case ClientMessage:
+	case ConfigureRequest:
+	case Expose:
+	case MapRequest:
+	case MotionNotify:
+		return True;
+	default:
+		if (event->type == XSyncAlarmNotify + ebase[XsyncBase])
+			return True;
+		return False;
+	}
+}
+
 /* TODO: handle movement across EWMH desktops */
 
 static Bool wind_overlap(int min1, int max1, int min2, int max2);
@@ -2926,10 +3209,9 @@ mousemove(Client *c, XEvent *e)
 		Client *s;
 		XEvent ev;
 
-		XMaskEvent(dpy,
-			   MOUSEMASK | ExposureMask | SubstructureNotifyMask |
-			   SubstructureRedirectMask, &ev);
+		XIfEvent(dpy, &ev, &ismoveevent, (XPointer) c);
 		geteventscr(&ev);
+
 		switch (ev.type) {
 		case ButtonRelease:
 			break;
@@ -3049,31 +3331,6 @@ m_move(Client *c, XEvent *e)
 	mousemove(c, e);
 }
 
-#ifdef SYNC
-void
-sync_request(Client *c, XSyncValue *val, Time time) {
-	int overflow = 0;
-	XEvent ce;
-	XSyncValue inc;
-
-	XSyncIntToValue(&inc, 1);
-	XSyncValueAdd(val, *val, inc, &overflow);
-	if (overflow)
-		XSyncMinValue(val);
-	ce.xclient.type = ClientMessage;
-	ce.xclient.message_type = _XA_WM_PROTOCOLS;
-	ce.xclient.display = dpy;
-	ce.xclient.window = c->win;
-	ce.xclient.format = 32;
-	ce.xclient.data.l[0] = _XA_NET_WM_SYNC_REQUEST;
-	ce.xclient.data.l[1] = time;
-	ce.xclient.data.l[2] = XSyncValueLow32(*val);
-	ce.xclient.data.l[3] = XSyncValueHigh32(*val);
-	ce.xclient.data.l[4] = 0;
-	XSendEvent(dpy, c->win, False, NoEventMask, &ce);
-}
-#endif
-
 int
 findcorner(Client *c, int x_root, int y_root)
 {
@@ -3155,19 +3412,32 @@ findcorner(Client *c, int x_root, int y_root)
 	return from;
 }
 
+static Bool
+isresizeevent(Display *display, XEvent *event, XPointer arg)
+{
+	switch (event->type) {
+	case ButtonPress:
+	case ButtonRelease:
+	case ClientMessage:
+	case ConfigureRequest:
+	case Expose:
+	case MapRequest:
+	case MotionNotify:
+		return True;
+	default:
+		if (event->type == XSyncAlarmNotify + ebase[XsyncBase])
+			return True;
+		return False;
+	}
+}
+
 void
 mouseresize_from(Client *c, int from, XEvent *e)
 {
 	int ocx, ocy, ocw, och, dx, dy, nx, ny, nw, nh;
 	int x_root, y_root;
 	Monitor *m, *nm;
-	int waiting = 0;
-#ifdef SYNC
-	Time event_time = CurrentTime;
-	XSyncValue val;
-	XSyncAlarmAttributes aa;
-	XSyncAlarm alarm = None;
-#endif
+
 	if (!c->can.size ||
 	    ((from == CurResizeTop || from == CurResizeBottom) && !c->can.sizev) ||
 	    ((from == CurResizeLeft || from == CurResizeRight) && !c->can.sizeh)) {
@@ -3183,23 +3453,7 @@ mouseresize_from(Client *c, int from, XEvent *e)
 			XUngrabPointer(dpy, CurrentTime);
 			return;
 		}
-#ifdef SYNC
-	if (c->sync) {
-		XSyncIntToValue(&val, 0);
 
-		aa.trigger.counter = c->sync;
-		aa.trigger.wait_value = val;
-		aa.trigger.value_type = XSyncAbsolute;
-		aa.trigger.test_type = XSyncPositiveTransition;
-		aa.events = True;
-		XSyncIntToValue(&aa.delta, 1);
-
-		XSyncIntToValue(&val, 1);
-		XSyncIntToValue(&val, 1);
-		alarm = XSyncCreateAlarm(dpy, XSyncCACounter | XSyncCAValue | XSyncCAValueType |
-				XSyncCATestType | XSyncCADelta | XSyncCAEvents, &aa);
-	}
-#endif
 	nx = ocx = c->c.x;
 	ny = ocy = c->c.y;
 	nw = ocw = c->c.w;
@@ -3229,29 +3483,9 @@ mouseresize_from(Client *c, int from, XEvent *e)
 		Client *s;
 		XEvent ev;
 
-		XMaskEvent(dpy,
-			   MOUSEMASK | ExposureMask | SubstructureNotifyMask |
-			   SubstructureRedirectMask, &ev);
+		XIfEvent(dpy, &ev, &isresizeevent, (XPointer) c);
 		geteventscr(&ev);
-#ifdef SYNC
-		if (ev.type == XSyncAlarmNotify + ebase[XsyncBase]) {
-			XSyncAlarmNotifyEvent *ae = (typeof(ae)) &ev;
 
-#if 0
-			if (ae->alarm == alarm)
-				if (XSyncValueEqual(ae->counter_value, val))
-					waiting = 0;
-#endif
-			waiting = 0;
-			if (nw != c->c.w && nh != c->c.h) {
-				sync_request(c, &val, event_time);
-				waiting = 1;
-				resize(c, nx, ny, nw, nh, c->c.b);
-				save(c);
-			}
-			continue;
-		}
-#endif
 		switch (ev.type) {
 		case ButtonRelease:
 			break;
@@ -3280,7 +3514,7 @@ mouseresize_from(Client *c, int from, XEvent *e)
 			XSync(dpy, False);
 			dx = (x_root - ev.xmotion.x_root);
 			dy = (y_root - ev.xmotion.y_root);
-			event_time = ev.xmotion.time;
+			user_time = ev.xmotion.time;
 			switch (from) {
 			case CurResizeTopLeft:
 				nw = ocw + dx;
@@ -3415,27 +3649,14 @@ mouseresize_from(Client *c, int from, XEvent *e)
 				nw = MINWIDTH;
 			if (nh < MINHEIGHT)
 				nh = MINHEIGHT;
-			if (!waiting) {
-#ifdef SYNC
-				if (c->sync && alarm && nw != c->r.w && nh != c->r.h) {
-					sync_request(c, &val, event_time);
-					waiting = 1;
-				}
-#endif
-				resize(c, nx, ny, nw, nh, c->c.b);
-				save(c);
-			}
+			resize(c, nx, ny, nw, nh, c->c.b);
+			save(c);
 			continue;
 		default:
 			scr = event_scr;
 			handle_event(&ev);
 			continue;
 		}
-#ifdef SYNC
-		if (c->sync && alarm)
-			XSyncDestroyAlarm(dpy, alarm);
-
-#endif
 		XUngrabPointer(dpy, CurrentTime);
 		break;
 	}
@@ -3482,16 +3703,20 @@ prevtiled(Client *c, Monitor *m) {
 	return c;
 }
 
-void
-reparentnotify(XEvent * e) {
+Bool
+reparentnotify(XEvent * e)
+{
 	Client *c;
 	XReparentEvent *ev = &e->xreparent;
 
-	if ((c = getclient(ev->window, ClientWindow)))
+	if ((c = getclient(ev->window, ClientWindow))) {
 		if (ev->parent != c->frame) {
 			DPRINTF("unmanage reparented window (%s)\n", c->name);
 			unmanage(c, CauseReparented);
 		}
+		return True;
+	}
+	return False;
 }
 
 void
@@ -3734,8 +3959,9 @@ place(Client * c, WindowPlacement p)
 	c->r.y = c->c.y = g.y;
 }
 
-void
-propertynotify(XEvent * e) {
+Bool
+propertynotify(XEvent * e)
+{
 	Client *c;
 	Window trans = None;
 	XPropertyEvent *ev = &e->xproperty;
@@ -3746,7 +3972,7 @@ propertynotify(XEvent * e) {
 			updatestruts();
 		}
 		if (ev->state == PropertyDelete) 
-			return;
+			return True;
 		if (ev->atom <= XA_LAST_PREDEFINED) {
 			switch (ev->atom) {
 			case XA_WM_TRANSIENT_FOR:
@@ -3758,17 +3984,19 @@ propertynotify(XEvent * e) {
 					arrange(NULL);
 					ewmh_update_net_window_state(c);
 				}
-				return;
+				break;
 			case XA_WM_NORMAL_HINTS:
 				updatesizehints(c);
-				return;
+				break;
 			case XA_WM_NAME:
 				updatetitle(c);
 				drawclient(c);
-				return;
+				break;
 			case XA_WM_ICON_NAME:
 				updateiconname(c);
-				return;
+				break;
+			default:
+				return False;
 			}
 		} else {
 			if (0) {
@@ -3787,7 +4015,8 @@ propertynotify(XEvent * e) {
 				/* TODO */
 			} else if (ev->atom == _XA_WIN_HINTS) {
 				wmh_process_win_window_hints(c);
-			}
+			} else
+				return False;
 		}
 	} else if ((c = getclient(ev->window, ClientTimeWindow))) {
 		if (ev->atom > XA_LAST_PREDEFINED) {
@@ -3796,8 +4025,10 @@ propertynotify(XEvent * e) {
 				ewmh_process_net_window_user_time(c);
 			} else if (ev->atom == _XA_NET_WM_USER_TIME_WINDOW) {
 				ewmh_process_net_window_user_time_window(c);
-			}
-		}
+			} else
+				return False;
+		} else
+			return False;
 	} else if (ev->window == scr->root) {
 		if (ev->atom > XA_LAST_PREDEFINED) {
 			if (0) {
@@ -3805,9 +4036,13 @@ propertynotify(XEvent * e) {
 				ewmh_process_net_desktop_names();
 			} else if (ev->atom == _XA_NET_DESKTOP_LAYOUT) {
 				/* TODO */
-			}
-		}
-	}
+			} else
+				return False;
+		} else
+			return False;
+	} else
+		return False;
+	return True;
 }
 
 void
@@ -3901,93 +4136,6 @@ constrain(Client * c, int *wp, int *hp) {
 		ret = True;
 	}
 	return ret;
-}
-
-/* FIXME: this does not handle moving the window across monitor
- * or desktop boundaries. */
-
-void
-resize(Client *c, int x, int y, int w, int h, int b)
-{
-	XWindowChanges wc;
-	unsigned mask, mask2;
-
-	if (w <= 0 || h <= 0)
-		return;
-	/* offscreen appearance fixes */
-	if (x > DisplayWidth(dpy, scr->screen))
-		x = DisplayWidth(dpy, scr->screen) - w - 2 * b;
-	if (y > DisplayHeight(dpy, scr->screen))
-		y = DisplayHeight(dpy, scr->screen) - h - 2 * b;
-	DPRINTF("x = %d y = %d w = %d h = %d b = %d\n", x, y, w, h, b);
-	mask = mask2 = 0;
-	if (c->c.x != x) {
-		c->c.x = x;
-		wc.x = x;
-		mask |= CWX;
-		DPRINTF("wc.x = %d\n", wc.x);
-	}
-	if (c->c.y != y) {
-		c->c.y = y;
-		wc.y = y;
-		DPRINTF("wc.y = %d\n", wc.y);
-		mask |= CWY;
-	}
-	if (c->c.w != w) {
-		c->c.w = w;
-		wc.width = w;
-		DPRINTF("wc.w = %u\n", wc.width);
-		mask |= CWWidth;
-	}
-	if (c->c.h != h) {
-		c->c.h = h;
-		wc.height = h;
-		DPRINTF("wc.h = %u\n", wc.height);
-		mask |= CWHeight;
-	}
-	if (c->th && (c->is.shaded && (c != sel || !options.autoroll))) {
-		wc.height = c->th;
-		DPRINTF("wc.h = %u\n", wc.height);
-		mask2 |= CWHeight;
-	} else {
-		wc.height = h;
-		DPRINTF("wc.h = %u\n", wc.height);
-		mask2 |= CWHeight;
-	}
-	if (c->c.b != b) {
-		c->c.b = b;
-		wc.border_width = b;
-		DPRINTF("wc.b = %u\n", wc.border_width);
-		mask |= CWBorderWidth;
-		ewmh_update_net_window_extents(c);
-	}
-	if (mask | mask2) {
-		DPRINTF("wc = %ux%u+%d+%d:%d\n", wc.width, wc.height,
-				wc.x, wc.y, wc.border_width);
-		XConfigureWindow(dpy, c->frame, mask | mask2, &wc);
-	}
-	/* ICCCM 2.0 4.1.5 */
-	XMoveResizeWindow(dpy, c->win, 0, c->th, w, h - c->th - c->gh);
-	if (!(mask & (CWWidth | CWHeight)))
-		configure(c, None);
-
-	XSync(dpy, False);
-	if ((w != c->tw || (mask | mask2)) && (c->th || c->gh)) {
-		if (c->th && c->title)
-			XMoveResizeWindow(dpy, c->title, 0, 0, w, c->th);
-		if (c->gh && c->grips)
-			XMoveResizeWindow(dpy, c->grips, 0, h - c->gh, w, c->gh);
-		if (w != c->tw) {
-			XFreePixmap(dpy, c->drawable);
-			c->drawable = XCreatePixmap(dpy, scr->root, w,
-						    max(scr->style.titleheight,
-							scr->style.gripsheight),
-						    DefaultDepth(dpy, scr->screen));
-			c->tw = w;
-		}
-		drawclient(c);
-	}
-	XSync(dpy, False);
 }
 
 static Bool
@@ -4314,10 +4462,8 @@ handle_event(XEvent *ev)
 	int i;
 
 	if (ev->type <= LASTEvent) {
-		if (handler[ev->type]) {
-			(handler[ev->type]) (ev);
-			return True;
-		}
+		if (handler[ev->type])
+			return (handler[ev->type]) (ev);
 	} else
 		for (i = BaseLast - 1; i >= 0; i--) {
 			if (!haveext[i])
@@ -4325,12 +4471,11 @@ handle_event(XEvent *ev)
 			if (ev->type >= ebase[i] && ev->type < ebase[i] + EXTRANGE) {
 				int slot = ev->type - ebase[i] + LASTEvent + EXTRANGE * i;
 
-				if (handler[slot]) {
-					(handler[slot]) (ev);
-					return True;
-				}
+				if (handler[slot])
+					return (handler[slot]) (ev);
 			}
 		}
+	DPRINTF("WARNING: No handler for event type %d\n", ev->type);
 	return False;
 }
 
@@ -4399,7 +4544,8 @@ run(void)
 				while (XPending(dpy)) {
 					XNextEvent(dpy, &ev);
 					scr = geteventscr(&ev);
-					handle_event(&ev);
+					if (!handle_event(&ev))
+						DPRINTF("WARNING: Event %d not handled\n", ev.type);
 				}
 			}
 		}
@@ -4891,7 +5037,7 @@ updatemonitors(XEvent *e, int n, Bool size_update, Bool full_update)
 	ewmh_update_net_desktop_geometry();
 }
 
-void
+Bool
 initmonitors(XEvent *e)
 {
 	int n;
@@ -4978,7 +5124,7 @@ initmonitors(XEvent *e)
 		}
 		XFree(si);
 		updatemonitors(e, n, size_update, full_update);
-		return;
+		return True;
 
 	} else
 		DPRINTF("no XINERAMA extension for screen %d\n", scr->screen);
@@ -5062,7 +5208,7 @@ initmonitors(XEvent *e)
 			n++;
 		}
 		updatemonitors(e, n, size_update, full_update);
-		return;
+		return True;
 
 	}
       no_xrandr:
@@ -5120,7 +5266,7 @@ initmonitors(XEvent *e)
 		XChangeWindowAttributes(dpy, m->veil, CWBackPixmap|CWOverrideRedirect, &wa);
 	}
 	updatemonitors(e, n, size_update, full_update);
-	return;
+	return True;
 }
 
 void
@@ -6251,6 +6397,16 @@ unmanage(Client * c, WithdrawCause cause) {
 	c->is.managed = False;
 	if (c->is.modal)
 		togglemodal(c);
+#ifdef SYNC
+	if (c->sync.alarm) {
+		c->sync.waiting = False;
+		XSyncDestroyAlarm(dpy, c->sync.alarm);
+		XDeleteContext(dpy, c->sync.alarm, context[ClientSync]);
+		XDeleteContext(dpy, c->sync.alarm, context[ClientAny]);
+		XDeleteContext(dpy, c->sync.alarm, context[ScreenContext]);
+		c->sync.alarm = None;
+	}
+#endif
 	if (c->title) {
 		XftDrawDestroy(c->xftdraw);
 		XDestroyWindow(dpy, c->title);
@@ -6380,17 +6536,20 @@ updatestruts() {
 	arrange(NULL);
 }
 
-void
-unmapnotify(XEvent * e) {
+Bool
+unmapnotify(XEvent * e)
+{
 	Client *c;
 	XUnmapEvent *ev = &e->xunmap;
 
 	if ((c = getclient(ev->window, ClientWindow)) /* && ev->send_event */) {
 		if (c->ignoreunmap--)
-			return;
+			return True;
 		DPRINTF("unmanage self-unmapped window (%s)\n", c->name);
 		unmanage(c, CauseUnmapped);
+		return True;
 	}
+	return False;
 }
 
 void

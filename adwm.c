@@ -151,7 +151,7 @@ void quit(const char *arg);
 void raiseclient(Client *c);
 void restart(const char *arg);
 Bool constrain(Client *c, ClientGeometry *g);
-void resize(Client *c, ClientGeometry *g);
+void reconfigure(Client *c, ClientGeometry *g);
 void restack(void);
 void restack_belowif(Client *c, Client *sibling);
 void restack_client(Client *c, int stack_mode, Client *sibling);
@@ -1118,8 +1118,8 @@ configurerequest(XEvent *e)
 			g.b = (ev->value_mask & CWBorderWidth) ? ev->border_width : g.b;
 
 			applygravity(c, &g, c->gravity);
-			DPRINTF("CALLING resize()\n");
-			resize(c, &g);
+			DPRINTF("CALLING reconfigure()\n");
+			reconfigure(c, &g);
 			if (ev->value_mask &
 			    (CWX | CWY | CWWidth | CWHeight | CWBorderWidth))
 				save(c);
@@ -1132,8 +1132,8 @@ configurerequest(XEvent *e)
 
 			g.b = (ev->value_mask & CWBorderWidth) ? ev->border_width : g.b;
 
-			DPRINTF("CALLING resize()\n");
-			resize(c, &g);
+			DPRINTF("CALLING reconfigure()\n");
+			reconfigure(c, &g);
 			if (ev->value_mask & (CWBorderWidth))
 				c->s.b = g.b;
 		}
@@ -1732,8 +1732,10 @@ focus(Client *c)
 		if (c->is.shaded && options.autoroll)
 			arrange(cm);
 		ewmh_update_net_window_state(c);
-		if (!isfloating(c, cm))
+		if (!isfloating(c, cm)) {
+			CPRINTF(c, "raising non-floating client on focus\n");
 			raiseclient(c);
+		}
 	}
 	if (o && o != sel) {
 		drawclient(o);
@@ -2279,7 +2281,7 @@ reparentclient(Client *c, AScreen *new_scr, int x, int y)
 			ewmh_update_net_work_area();
 			updategeom(NULL);
 		}
-		/* caller must resize client */
+		/* caller must reconfigure client */
 	} else {
 		Window win = c->win;
 
@@ -2645,8 +2647,8 @@ monocle(Monitor * m) {
 		g.t = (v->dectiled && c->has.title) ? scr->style.titleheight : 0;
 		g.g = (v->dectiled && c->has.grips) ? scr->style.gripsheight : 0;
 
-		DPRINTF("CALLING resize()\n");
-		resize(c, &g);
+		DPRINTF("CALLING reconfigure()\n");
+		reconfigure(c, &g);
 	}
 }
 
@@ -2713,8 +2715,8 @@ grid(Monitor *m) {
 		n.h -= 2 * (gap + n.b);
 		n.t = (v->dectiled && c->has.title) ? scr->style.titleheight : 0;
 		n.g = (v->dectiled && c->has.grips) ? scr->style.gripsheight : 0;
-		DPRINTF("CALLING resize()\n");
-		resize(c, &n);
+		DPRINTF("CALLING reconfigure()\n");
+		reconfigure(c, &n);
 	}
 	free(rc);
 	free(rh);
@@ -3045,11 +3047,11 @@ newsize(Client *c, int w, int h, Time time)
  * or desktop boundaries. */
 
 void
-resize(Client *c, ClientGeometry * n)
+reconfigure(Client *c, ClientGeometry * n)
 {
 	XWindowChanges wwc, fwc;
 	unsigned wmask, fmask;
-	Bool tchange = False, gchange = False;
+	Bool tchange = False, gchange = False, shaded = False;
 
 	if (n->w <= 0 || n->h <= 0)
 		return;
@@ -3105,10 +3107,12 @@ resize(Client *c, ClientGeometry * n)
 		fwc.height = n->t;
 		DPRINTF("frame wc.h = %u\n", fwc.height);
 		fmask |= CWHeight;
+		shaded = True;
 	} else {
 		fwc.height = n->h;
 		DPRINTF("frame wc.h = %u\n", fwc.height);
 		fmask |= CWHeight;
+		shaded = False;
 	}
 	if (c->c.b != (fwc.border_width = n->b)) {
 		c->c.b = n->b;
@@ -3126,6 +3130,10 @@ resize(Client *c, ClientGeometry * n)
 	if ((wmask & (CWWidth | CWHeight))
 	    && !newsize(c, wwc.width, wwc.height, CurrentTime))
 		wmask &= ~(CWWidth | CWHeight);
+	if (shaded)
+		XUnmapWindow(dpy, c->win);
+	else
+		XMapWindow(dpy, c->win);
 	if (wmask) {
 		DPRINTF("wind  wc = %ux%u+%d+%d:%d\n", wwc.width, wwc.height, wwc.x,
 			wwc.y, wwc.border_width);
@@ -3145,13 +3153,11 @@ resize(Client *c, ClientGeometry * n)
 		if (n->t && (tchange || ((wmask | fmask) & (CWWidth))))
 			XMoveResizeWindow(dpy, c->title, 0, 0, wwc.width, n->t);
 	}
-	if (c->grips && (gchange || ((wmask | fmask) & (CWWidth | CWHeight | CWY)))) {
-		if (gchange) {
-			if (n->g)
-				XMapWindow(dpy, c->grips);
-			else
-				XUnmapWindow(dpy, c->grips);
-		}
+	if (c->grips) {
+		if (shaded || !n->g)
+			XUnmapWindow(dpy, c->grips);
+		else
+			XMapWindow(dpy, c->grips);
 		if (n->g && (gchange || ((wmask | fmask) & (CWWidth | CWHeight | CWY))))
 			XMoveResizeWindow(dpy, c->grips, 0, n->h - n->g, wwc.width, n->g);
 	}
@@ -3265,8 +3271,8 @@ mousemove(Client *c, XEvent *e)
 					/* _NET_WM_MOVERESIZE_CANCEL */
 					g.x = o.x;
 					g.y = o.y;
-					DPRINTF("CALLING resize()\n");
-					resize(c, &g);
+					DPRINTF("CALLING reconfigure()\n");
+					reconfigure(c, &g);
 					save(c);
 					break;
 				}
@@ -3339,8 +3345,8 @@ mousemove(Client *c, XEvent *e)
 				reparentclient(c, event_scr, n.x, n.y);
 			g.x = n.x;
 			g.y = n.y;
-			DPRINTF("CALLING resize()\n");
-			resize(c, &g);
+			DPRINTF("CALLING reconfigure()\n");
+			reconfigure(c, &g);
 			save(c);
 			if (m != nm) {
 				for (i = 0; i < scr->ntags; i++)
@@ -3543,8 +3549,8 @@ mouseresize_from(Client *c, int from, XEvent *e)
 			if (ev.xclient.message_type == _XA_NET_WM_MOVERESIZE) {
 				if (ev.xclient.data.l[2] == 11) {
 					/* _NET_WM_MOVERESIZE_CANCEL */
-					DPRINTF("CALLING resize()\n");
-					resize(c, &o);
+					DPRINTF("CALLING reconfigure()\n");
+					reconfigure(c, &o);
 					save(c);
 					break;
 				}
@@ -3710,8 +3716,8 @@ mouseresize_from(Client *c, int from, XEvent *e)
 				n.w = MINWIDTH;
 			if (n.h < MINHEIGHT)
 				n.h = MINHEIGHT;
-			DPRINTF("CALLING resize()\n");
-			resize(c, &n);
+			DPRINTF("CALLING reconfigure()\n");
+			reconfigure(c, &n);
 			save(c);
 			continue;
 		default:
@@ -3817,11 +3823,11 @@ total_overlap(Client *c, Monitor *m, Geometry *g) {
 	a = 0;
 
 	for (o = scr->clients; o; o = o->next)
-		if (o != c && !o->is.bastard && isfloating(o, m) && isvisible(o, m))
+		if (o != c && !o->is.bastard && o->can.floats && isvisible(o, m))
 			a += area_overlap(x1, y1, x2, y2,
-					  o->c.x, o->c.y,
-					  o->c.x + o->c.w + 2 * o->c.b,
-					  o->c.y + o->c.h + 2 * o->c.b);
+					  o->r.x, o->r.y,
+					  o->r.x + o->r.w + 2 * o->r.b,
+					  o->r.y + o->r.h + 2 * o->r.b);
 	return a;
 }
 
@@ -4638,8 +4644,8 @@ restore(Client *c)
 	getgeometry(c, &c->r, &g);
 	DPRINTF("CALLING: constrain()\n");
 	constrain(c, &g);
-	DPRINTF("CALLING resize()\n");
-	resize(c, &g);
+	DPRINTF("CALLING reconfigure()\n");
+	reconfigure(c, &g);
 }
 
 Monitor *
@@ -4807,8 +4813,8 @@ updatefloat(Client *c, Monitor *m) {
 		constrain(c, &g);
 	}
 	CPRINTF(c, "g: %dx%d+%d+%d:%d\n", g.w, g.h, g.x, g.y, g.b);
-	DPRINTF("CALLING resize()\n");
-	resize(c, &g);
+	DPRINTF("CALLING reconfigure()\n");
+	reconfigure(c, &g);
 	if (c->is.max)
 		ewmh_update_net_window_fs_monitors(c);
 	discardenter();
@@ -5889,8 +5895,8 @@ tile(Monitor *cm)
 		g.y += ma.g;
 		g.w -= 2 * (ma.g + g.b);
 		g.h -= 2 * (ma.g + g.b);
-		DPRINTF("CALLING resize()\n");
-		resize(c, &g);
+		DPRINTF("CALLING reconfigure()\n");
+		reconfigure(c, &g);
 		if (c->is.shaded && (c != sel || !options.autoroll))
 			if (ma.s)
 				n.h = ma.th;
@@ -5973,8 +5979,8 @@ tile(Monitor *cm)
 		g.y += sa.g;
 		g.w -= 2 * (sa.g + g.b);
 		g.h -= 2 * (sa.g + g.b);
-		DPRINTF("CALLING resize()\n");
-		resize(c, &g);
+		DPRINTF("CALLING reconfigure()\n");
+		reconfigure(c, &g);
 		if (c->is.shaded && (c != sel || !options.autoroll))
 			if (sa.s)
 				n.h = sa.th;

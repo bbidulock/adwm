@@ -2148,7 +2148,7 @@ clientmessage(XEvent *e)
 				g.b = 0;
 				g.t = 0;
 				g.g = 0;
-				resize(c, &g);
+				reconfigure(c, &g);
 			}
 			XChangeProperty(dpy, c->win, _XA_NET_WM_FULLSCREEN_MONITORS, XA_CARDINAL, 32,
 					PropModeReplace, (unsigned char *)&ev->data.l[0], 4L);
@@ -2175,7 +2175,7 @@ clientmessage(XEvent *e)
 			applygravity(c, &g, gravity);
 			/* FIXME: this just resizes and moves the window, it does
 			 * handle changing monitors */
-			resize(c, &g);
+			reconfigure(c, &g);
 		} else if (message_type == _XA_NET_WM_MOVERESIZE) {
 			int x_root = (int) ev->data.l[0];
 			int y_root = (int) ev->data.l[1];

@@ -1,0 +1,118 @@
+=head1 NAME
+
+adwm - advanced dynamic window manager for X
+
+=head1 SYNOPSIS
+
+B<adwm> [B<-v>] [B<-f> I<conf>]
+
+=head1 DESCRIPTION
+
+B<ADWM> is an lightweight advanced dynamic window manager for X based on
+originally on dwm's source, but has deviated far from that base.  The
+intent and purpose remain similar.  It manages windows in monocle,
+floating, grid and tiled layouts.  Each layout can be applied
+dynamically, optimizing the environment in use and the task performed.
+
+In monocle layout, onely one window can be seent at a time in the work
+area, but you can switch between them with hotkeys or via an EWMH/NetWM
+compliant panel or window list (such as L<bbkeys(1)>).
+
+In floating layout, windows can be resized and are stacked and moved
+freely.  Dialogue windows are always managed floating, regardless of the
+layout applied.  Serveral automatic placement algorithms can be used to
+placing newly created windows.  Keyboard focus can be cycled through the
+windows using hot keys or an EWMH/NetWM compliant task list or pager.
+
+In grid layout, windows are organized by columns and rows.  The number
+of rows can be changed and the orientation (left-to-right,
+top-to-bottom) can be selected.  The layout can be rotated, or windows
+can be rotated through the layout.  The focus can be cycled between the
+windows.
+
+In tile layout, windows are orgnanized into to zones: a master zone that
+has a fixed number of windows that are laid out in their own
+orientation, and a slave zone that holds the remaining windows.  The
+proportion allotted to zones can be adjusted, the number of masters
+can be adjusted, the columns or rows of slaves can be adjusted, the
+layout can be rotated one way or the other, the masters can be rotated
+within the master zone and the slaves can be rotate within the slave
+zone, windows can be cycled through the layout or the focus can be
+cycled through the windows in the layout.  Windows can be torn out of
+the layout and made to float over the layout, or can be joined back
+into the tiled layout.
+
+Windows are grouped by views and tags.  Each window can be tagged with
+one or more tags.  Each tag by corresponds to a view.  When a view is
+selected, all of the windows tagged with the corresponding tag are
+display in the view.  By default windows start life with the sole tag
+corresponding to the current view.  It gets more complicated for
+multiple monitors.
+
+=head1 OPTIONS
+
+B<ADWM> recognizes the following options:
+
+=over
+
+=item B<-v>
+
+Prints version information to standard output and then exits.
+
+=item B<-f> I<conf>
+
+Sepcifies an alternative configuration file.  By default, B<ADWM> loads
+the configuration file from F<~/.adwm/adwmrc>, if present, then looks
+for the system-wide configuration file F</usr/share/adwm/adwmrc>.
+
+=back
+
+=head1 USAGE
+
+=head1 DEFAULT BINDINGS
+
+
+=head1 CONFIGURATION
+
+=head2 STYLES
+
+=head2 BINDINGS
+
+The default bindings for B<ADWM> are described above under L</DEFAULT
+BINDINGS>.  Take a look in the F</usr/share/adwm/feels/> directory for
+settable sets of key bindings that can make B<ADWM> take on the
+personality of other L<dwm(1)> variants.  Some examples follow:
+
+=over
+
+=item L<dwm(1)>, F</usr/share/adwm/feels/dwm/keysrc>
+
+When set to a L<dwm(1)> personality, B<ADWM> uses the mouse and key
+bindings described in the L<dwm(1)> manual page.
+
+=item L<xdwm(1)>, F</usr/share/adwm/feels/xdwm/keysrc>
+
+When set to a L<xdwm(1)> personality, B<ADWM> uses the mouse and key
+bindings described in the L<xdwm(1)> manual page.
+
+=item L<echinus(1)>, F</usr/share/adwm/feels/echinus/keysrc>
+
+When set to a L<echinus(1)> personality, B<ADWM> uses the mouse and key
+bindings described in the L<echinus(1)> manual page.
+
+=item L<awesome(1)>, F</usr/share/adwm/feels/awesome/keysrc>
+
+When set to a L<awesome(1)> personality, B<ADWM> uses the default mouse
+and key bindings described in the L<awesome(1)> manual page.
+
+=back
+
+=head1 HISTORY
+
+=head1 AUTHOR
+
+Brian Bidulock <bidulock@openss7.org>
+
+=cut
+
+# vim: set ft=pod tw=72:

@@ -77,6 +77,23 @@ uninstall-hook:
 	rm -f $(DESTDIR)$(pkgdatadir)/style
 	rm -f $(DESTDIR)$(pkgdatadir)/keys
 
+SUFFIXES = .man .pod
+
+adwm.1.man: adwm.1.pod
+
+.pod.man:
+	pod2man --center="User Commands" \
+		--date="$(DATE)" \
+		--errors="none" \
+		--fixed="CW" \
+		--fixedbold="CB" \
+		--fixeditalic="CI" \
+		--fixedbolditalic="CX" \
+		--nourls \
+		--release="$(PACKAGE) $(VERSION)" \
+		--section="1" \
+		$< >$@
+
 EXTRA_DIST = LICENSE adwm.1 README README.echinus TODO ChangeLog
 
 CLEANFILES = adwm.man

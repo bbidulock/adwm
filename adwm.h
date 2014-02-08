@@ -650,7 +650,7 @@ void focusview(int index);
 AScreen *getscreen(Window win);
 void killclient(Client *c);
 void applygravity(Client *c, ClientGeometry *g, int gravity);
-void resize(Client *c, ClientGeometry *g);
+void reconfigure(Client *c, ClientGeometry *g);
 void restack(void);
 void restack_client(Client *c, int stack_mode, Client *sibling);
 Bool configurerequest(XEvent * e);

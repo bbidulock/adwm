@@ -2123,6 +2123,7 @@ clientmessage(XEvent *e)
 			if (c->is.max) {
 				Monitor *mt, *mb, *ml, *mr;
 				int t, b, l, r;
+				ClientGeometry g;
 
 				mt = findmonbynum(ev->data.l[0]);
 				mb = findmonbynum(ev->data.l[1]);
@@ -2140,7 +2141,14 @@ clientmessage(XEvent *e)
 					ewmh_update_net_window_fs_monitors(c);
 					return False;
 				}
-				resize(c, l, t, r - l, b - t, 0);
+				g.x = l;
+				g.y = t;
+				g.w = r - l;
+				g.h = b - t;
+				g.b = 0;
+				g.t = 0;
+				g.g = 0;
+				resize(c, &g);
 			}
 			XChangeProperty(dpy, c->win, _XA_NET_WM_FULLSCREEN_MONITORS, XA_CARDINAL, 32,
 					PropModeReplace, (unsigned char *)&ev->data.l[0], 4L);
@@ -2148,23 +2156,26 @@ clientmessage(XEvent *e)
 			unsigned flags = (unsigned) ev->data.l[0];
 			unsigned source = ((flags >> 12) & 0x0f);
 			unsigned gravity = flags & 0xff;
-			int x, y, w, h;
+			ClientGeometry g;
 
 			if (!isfloating(c, NULL))
 				return False;
 			if (source != 0 && source != 2)
 				return False;
 
-			x = ((flags & (1 << 8)) && c->can.move) ? ev->data.l[1] : c->c.x;
-			y = ((flags & (1 << 9)) && c->can.move) ? ev->data.l[2] : c->c.y;
-			w = ((flags & (1 << 10)) && c->can.sizeh) ? ev->data.l[3] : c->c.w;
-			h = ((flags & (1 << 11)) && c->can.sizev) ? ev->data.l[4] : c->c.h;
+			g.x = ((flags & (1 << 8)) && c->can.move) ? ev->data.l[1] : c->c.x;
+			g.y = ((flags & (1 << 9)) && c->can.move) ? ev->data.l[2] : c->c.y;
+			g.w = ((flags & (1 << 10)) && c->can.sizeh) ? ev->data.l[3] : c->c.w;
+			g.h = ((flags & (1 << 11)) && c->can.sizev) ? ev->data.l[4] : c->c.h;
+			g.b = c->c.b;
+			g.t = c->th;
+			g.g = c->gh;
 			if (gravity == 0)
 				gravity = c->gravity;
-			applygravity(c, &x, &y, &w, &h, c->c.b, gravity);
+			applygravity(c, &g, gravity);
 			/* FIXME: this just resizes and moves the window, it does
 			 * handle changing monitors */
-			resize(c, x, y, w, h, c->c.b);
+			resize(c, &g);
 		} else if (message_type == _XA_NET_WM_MOVERESIZE) {
 			int x_root = (int) ev->data.l[0];
 			int y_root = (int) ev->data.l[1];

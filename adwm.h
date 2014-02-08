@@ -264,6 +264,10 @@ typedef struct {
 } Geometry;
 
 typedef struct {
+	int x, y, w, h, b, t, g;
+} ClientGeometry;
+
+typedef struct {
 	int x, y, w, h;
 } Workarea;
 
@@ -302,7 +306,9 @@ typedef struct {
 typedef struct {
 	Bool present, hovered;
 	unsigned int pressed;
-	Geometry g;
+	struct {
+		int x, y, w, h, b;
+	} g;
 } ElementClient;
 
 typedef struct Client Client;
@@ -312,7 +318,7 @@ struct Client {
 	char *startup_id;
 	int monitor;			/* initial monitor */
 	Geometry c, r, s;		/* current, restore, static */
-	int th, gh, tw;			/* title/grip height and width */
+	int th, gh;			/* title/grip height and width */
 	int basew, baseh, incw, inch, maxw, maxh, minw, minh;
 	int minax, maxax, minay, maxay, gravity;
 	int ignoreunmap;
@@ -426,8 +432,6 @@ struct Client {
 	Window transfor;
 	ElementClient *element;
 	Time user_time;
-	Pixmap drawable;
-	XftDraw *xftdraw;
 #ifdef SYNC
 	struct {
 		XID counter;
@@ -473,6 +477,12 @@ typedef struct {
 		int width;
 	} font[2];
 	GC gc;
+	struct {
+		Pixmap pixmap;
+		XftDraw *xft;
+		int w;
+		int h;
+	} draw;
 } DC;				/* draw context */
 
 typedef struct {
@@ -517,8 +527,8 @@ typedef struct {
 	const char *arg;
 } Key; /* keyboard shortcuts */
 
-typedef struct EScreen EScreen;
-struct EScreen {
+typedef struct AScreen AScreen;
+struct AScreen {
 	Bool managed;
 	Window root;
 	Window selwin;
@@ -637,10 +647,10 @@ void focusicon(void);
 void focusnext(Client *c);
 void focusprev(Client *c);
 void focusview(int index);
-EScreen *getscreen(Window win);
+AScreen *getscreen(Window win);
 void killclient(Client *c);
-void applygravity(Client *c, int *xp, int *yp, int *wp, int *hp, int bw, int gravity);
-void resize(Client * c, int x, int y, int w, int h, int b);
+void applygravity(Client *c, ClientGeometry *g, int gravity);
+void resize(Client *c, ClientGeometry *g);
 void restack(void);
 void restack_client(Client *c, int stack_mode, Client *sibling);
 Bool configurerequest(XEvent * e);
@@ -682,7 +692,6 @@ void toggletag(Client *c, int index);
 void toggleview(int index);
 void toggleshowing(void);
 void togglehidden(Client *c);
-void updateframe(Client *c, Monitor *m);
 void view(int index);
 void viewlefttag(void);
 void viewprevtag(void);
@@ -747,9 +756,9 @@ void initstyle();
 /* globals */
 extern Atom atom[NATOMS];
 extern Display *dpy;
-extern EScreen *scr;
-extern EScreen *screens;
-extern EScreen *event_scr;
+extern AScreen *scr;
+extern AScreen *screens;
+extern AScreen *event_scr;
 extern void (*actions[LastOn][5][2])(Client *, XEvent *);
 // extern Window root;
 // extern Window selwin;

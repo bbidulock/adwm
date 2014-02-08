@@ -18,11 +18,11 @@
 enum { Normal, Selected };
 enum { AlignLeft, AlignCenter, AlignRight };	/* title position */
 
-static unsigned int textnw(EScreen *ds, const char *text, unsigned int len, int hilite);
-static unsigned int textw(EScreen *ds, const char *text, int hilite);
+static unsigned int textnw(AScreen *ds, const char *text, unsigned int len, int hilite);
+static unsigned int textw(AScreen *ds, const char *text, int hilite);
 
 static int
-drawtext(EScreen *ds, const char *text, Drawable drawable, XftDraw *xftdrawable,
+drawtext(AScreen *ds, const char *text, Drawable drawable, XftDraw *xftdrawable,
     unsigned long col[ColLast], int hilite, int x, int y, int mw) {
 	int w, h;
 	char buf[256];
@@ -68,7 +68,7 @@ drawtext(EScreen *ds, const char *text, Drawable drawable, XftDraw *xftdrawable,
 }
 
 static ButtonImage *
-buttonimage(EScreen *ds, Client *c, ElementType type)
+buttonimage(AScreen *ds, Client *c, ElementType type)
 {
 	Bool pressed, hovered, focused, enabled, present, toggled;
 	ElementClient *ec;
@@ -202,10 +202,10 @@ buttonimage(EScreen *ds, Client *c, ElementType type)
 }
 
 static int
-drawbutton(EScreen *ds, Client *c, ElementType type, unsigned long col[ColLast], int x)
+drawbutton(AScreen *ds, Client *c, ElementType type, unsigned long col[ColLast], int x)
 {
 	ElementClient *ec = &c->element[type];
-	Drawable d = c->drawable;
+	Drawable d = ds->dc.draw.pixmap;
 	ButtonImage *bi;
 
 	if (!(bi = buttonimage(ds, c, type)) || !bi->present) {
@@ -260,7 +260,7 @@ elementtype(char which)
 }
 
 static int
-drawelement(EScreen *ds, char which, int x, int position, Client *c)
+drawelement(AScreen *ds, char which, int x, int position, Client *c)
 {
 	int w = 0;
 	unsigned long *color = c == sel ? ds->style.color.sel : ds->style.color.norm;
@@ -286,18 +286,18 @@ drawelement(EScreen *ds, char which, int x, int position, Client *c)
 
 	case TitleTags:
 		for (j = 0, x = ds->dc.x; j < ds->ntags; j++, w += tw, x += tw)
-			tw = c->tags[j] ? drawtext(ds, ds->tags[j], c->drawable,
-						   c->xftdraw, color, hilite,
+			tw = c->tags[j] ? drawtext(ds, ds->tags[j], ds->dc.draw.pixmap,
+						   ds->dc.draw.xft, color, hilite,
 						   x, ds->dc.y, ds->dc.w) : 0;
 		break;
 	case TitleSep:
 		XSetForeground(dpy, ds->dc.gc, color[ColBorder]);
-		XDrawLine(dpy, c->drawable, ds->dc.gc, ds->dc.x + ds->dc.h / 4, 0,
+		XDrawLine(dpy, ds->dc.draw.pixmap, ds->dc.gc, ds->dc.x + ds->dc.h / 4, 0,
 			  ds->dc.x + ds->dc.h / 4, ds->dc.h);
 		w = ds->dc.h / 2;
 		break;
 	case TitleName:
-		w = drawtext(ds, c->name, c->drawable, c->xftdraw, color, hilite,
+		w = drawtext(ds, c->name, ds->dc.draw.pixmap, ds->dc.draw.xft, color, hilite,
 			     ds->dc.x, ds->dc.y, ds->dc.w);
 		break;
 	default:
@@ -317,7 +317,7 @@ drawelement(EScreen *ds, char which, int x, int position, Client *c)
 }
 
 static int
-buttonw(EScreen *ds, Client *c, ElementType type)
+buttonw(AScreen *ds, Client *c, ElementType type)
 {
 	ButtonImage *bi;
 
@@ -327,7 +327,7 @@ buttonw(EScreen *ds, Client *c, ElementType type)
 }
 
 static int
-elementw(EScreen *ds, Client *c, char which)
+elementw(AScreen *ds, Client *c, char which)
 {
 	int w = 0;
 	ElementType type = elementtype(which);
@@ -362,7 +362,7 @@ elementw(EScreen *ds, Client *c, char which)
 void
 drawclient(Client *c) {
 	size_t i;
-	EScreen *ds;
+	AScreen *ds;
 
 	/* might be drawing a client that is not on the current screen */
 	if (!(ds = getscreen(c->win))) {
@@ -379,14 +379,20 @@ drawclient(Client *c) {
 	ds->dc.x = ds->dc.y = 0;
 	ds->dc.w = c->c.w;
 	ds->dc.h = ds->style.titleheight;
-	XftDrawChange(c->xftdraw, c->drawable);
+	if (ds->dc.draw.w < ds->dc.w) {
+		XFreePixmap(dpy, ds->dc.draw.pixmap);
+		ds->dc.draw.w = ds->dc.w;
+		ds->dc.draw.pixmap = XCreatePixmap(dpy, ds->root, ds->dc.w,
+				ds->dc.draw.h, DefaultDepth(dpy, ds->screen));
+		XftDrawChange(ds->dc.draw.xft, ds->dc.draw.pixmap);
+	}
 	XSetForeground(dpy, ds->dc.gc, c == sel ? ds->style.color.sel[ColBG] : ds->style.color.norm[ColBG]);
 	XSetLineAttributes(dpy, ds->dc.gc, ds->style.border, LineSolid, CapNotLast, JoinMiter);
-	XFillRectangle(dpy, c->drawable, ds->dc.gc, ds->dc.x, ds->dc.y, ds->dc.w, ds->dc.h);
+	XFillRectangle(dpy, ds->dc.draw.pixmap, ds->dc.gc, ds->dc.x, ds->dc.y, ds->dc.w, ds->dc.h);
 	/* Don't know about this... */
 	if (ds->dc.w < textw(ds, c->name, (c == sel) ? Selected : Normal)) {
 		ds->dc.w -= elementw(ds, c, CloseBtn);
-		drawtext(ds, c->name, c->drawable, c->xftdraw,
+		drawtext(ds, c->name, ds->dc.draw.pixmap, ds->dc.draw.xft,
 		    c == sel ? ds->style.color.sel : ds->style.color.norm, c == sel ? 1 : 0,
 		    ds->dc.x, ds->dc.y, ds->dc.w);
 		drawbutton(ds, c, CloseBtn,
@@ -427,27 +433,27 @@ drawclient(Client *c) {
 	if (ds->style.outline) {
 		XSetForeground(dpy, ds->dc.gc,
 		    c == sel ? ds->style.color.sel[ColBorder] : ds->style.color.norm[ColBorder]);
-		XDrawLine(dpy, c->drawable, ds->dc.gc, 0, ds->dc.h - 1, ds->dc.w, ds->dc.h - 1);
+		XDrawLine(dpy, ds->dc.draw.pixmap, ds->dc.gc, 0, ds->dc.h - 1, ds->dc.w, ds->dc.h - 1);
 	}
 	if (c->title)
-		XCopyArea(dpy, c->drawable, c->title, ds->dc.gc, 0, 0, c->c.w, ds->dc.h, 0, 0);
+		XCopyArea(dpy, ds->dc.draw.pixmap, c->title, ds->dc.gc, 0, 0, c->c.w, ds->dc.h, 0, 0);
 	ds->dc.x = ds->dc.y = 0;
 	ds->dc.w = c->c.w;
 	ds->dc.h = ds->style.gripsheight;
 	XSetForeground(dpy, ds->dc.gc, c == sel ? ds->style.color.sel[ColBG] : ds->style.color.norm[ColBG]);
 	XSetLineAttributes(dpy, ds->dc.gc, ds->style.border, LineSolid, CapNotLast, JoinMiter);
-	XFillRectangle(dpy, c->drawable, ds->dc.gc, ds->dc.x, ds->dc.y, ds->dc.w, ds->dc.h);
+	XFillRectangle(dpy, ds->dc.draw.pixmap, ds->dc.gc, ds->dc.x, ds->dc.y, ds->dc.w, ds->dc.h);
 	if (ds->style.outline) {
 		XSetForeground(dpy, ds->dc.gc,
 		    c == sel ? ds->style.color.sel[ColBorder] : ds->style.color.norm[ColBorder]);
-		XDrawLine(dpy, c->drawable, ds->dc.gc, 0, 0, ds->dc.w, 0);
+		XDrawLine(dpy, ds->dc.draw.pixmap, ds->dc.gc, 0, 0, ds->dc.w, 0);
 		ds->dc.x = ds->dc.w / 2 - ds->dc.w / 5;
-		XDrawLine(dpy, c->drawable, ds->dc.gc, ds->dc.x, 0, ds->dc.x, ds->dc.h);
+		XDrawLine(dpy, ds->dc.draw.pixmap, ds->dc.gc, ds->dc.x, 0, ds->dc.x, ds->dc.h);
 		ds->dc.x = ds->dc.w / 2 + ds->dc.w / 5;
-		XDrawLine(dpy, c->drawable, ds->dc.gc, ds->dc.x, 0, ds->dc.x, ds->dc.h);
+		XDrawLine(dpy, ds->dc.draw.pixmap, ds->dc.gc, ds->dc.x, 0, ds->dc.x, ds->dc.h);
 	}
 	if (c->grips)
-		XCopyArea(dpy, c->drawable, c->grips, ds->dc.gc, 0, 0, c->c.w, ds->dc.h, 0, 0);
+		XCopyArea(dpy, ds->dc.draw.pixmap, c->grips, ds->dc.gc, 0, 0, c->c.w, ds->dc.h, 0, 0);
 }
 
 static unsigned long
@@ -851,6 +857,14 @@ initstyle() {
 		scr->style.titleheight = max(scr->dc.font[Selected].height + scr->style.drop[Selected],
 				scr->dc.font[Normal].height + scr->style.drop[Normal]) + 2;
 	scr->dc.gc = XCreateGC(dpy, scr->root, 0, 0);
+	scr->dc.draw.w = DisplayWidth(dpy, scr->screen);
+	scr->dc.draw.h = max(scr->style.titleheight, scr->style.gripsheight);
+	if (scr->dc.draw.h) {
+		scr->dc.draw.pixmap = XCreatePixmap(dpy, scr->root, scr->dc.draw.w, scr->dc.draw.h,
+				DefaultDepth(dpy, scr->screen));
+		scr->dc.draw.xft = XftDrawCreate(dpy, scr->dc.draw.pixmap,
+				DefaultVisual(dpy, scr->screen), DefaultColormap(dpy, scr->screen));
+	}
 	initbuttons();
 }
 
@@ -874,16 +888,20 @@ deinitstyle() {
 		XftFontClose(dpy, scr->style.font[Selected]);
 	free(scr->dc.font[Selected].extents);
 	XFreeGC(dpy, scr->dc.gc);
+	if (scr->dc.draw.xft)
+		XftDrawDestroy(scr->dc.draw.xft);
+	if (scr->dc.draw.pixmap)
+		XFreePixmap(dpy, scr->dc.draw.pixmap);
 }
 
 static unsigned int
-textnw(EScreen *ds, const char *text, unsigned int len, int hilite) {
+textnw(AScreen *ds, const char *text, unsigned int len, int hilite) {
 	XftTextExtentsUtf8(dpy, ds->style.font[hilite],
 	    (const unsigned char *) text, len, ds->dc.font[hilite].extents);
 	return ds->dc.font[hilite].extents->xOff;
 }
 
 static unsigned int
-textw(EScreen *ds, const char *text, int hilite) {
+textw(AScreen *ds, const char *text, int hilite) {
 	return textnw(ds, text, strlen(text), hilite) + ds->dc.font[hilite].height;
 }

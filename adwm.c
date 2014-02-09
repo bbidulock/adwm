@@ -144,6 +144,8 @@ void moveresizekb(Client *c, int dx, int dy, int dw, int dh);
 Monitor *nearmonitor(void);
 Client *nexttiled(Client *c, Monitor *m);
 Client *prevtiled(Client *c, Monitor *m);
+Client *nextdockapp(Client *c, Monitor *m);
+Client *prevdockapp(Client *c, Monitor *m);
 void place(Client *c, WindowPlacement p);
 Bool propertynotify(XEvent *e);
 Bool reparentnotify(XEvent *e);
@@ -420,6 +422,244 @@ applyrules(Client * c) {
 }
 
 void
+arrangedock(Monitor *m)
+{
+	Client *c = nextdockapp(scr->clients, m);
+	View *v = &scr->views[m->curtag];
+	int i, num, rows, cols, margin = 4, max = 64, b = scr->style.border;
+	ClientGeometry *g = NULL, n;
+	DockPosition pos = m->dock.position;
+	DockSide side;
+	Bool overlap = FEATURES(v->layout, OVERLAP) ? True : False;
+
+	if (!c || pos == DockNone)
+		return;
+
+	for (num = 0, c = nextdockapp(scr->clients, m); c;
+	     c = nextdockapp(c->next, m), num++) ;
+
+	m->dock.wa = m->wa;
+
+	switch (pos) {
+	case DockNorth:
+		side = DockSideNorth;
+		break;
+	case DockEast:
+		side = DockSideEast;
+		break;
+	case DockSouth:
+		side = DockSideSouth;
+		break;
+	case DockWest:
+		side = DockSideWest;
+		break;
+	case DockNorthEast:
+		side = (m->dock.orient == DockHorz) ? DockSideNorth : DockSideEast;
+		break;
+	case DockNorthWest:
+		side = (m->dock.orient == DockHorz) ? DockSideNorth : DockSideWest;
+		break;
+	case DockSouthWest:
+		side = (m->dock.orient == DockHorz) ? DockSideSouth : DockSideWest;
+		break;
+	case DockSouthEast:
+		side = (m->dock.orient == DockHorz) ? DockSideSouth : DockSideEast;
+		break;
+	default:
+		return;
+	}
+
+	switch ((int)side) {
+	case DockEast:
+	case DockWest:
+		rows = (m->wa.h - b) / (max + b);
+		cols = (num - 1) / rows + 1;
+		if (rows > num)
+			rows = num;
+		g = calloc(cols, sizeof(*g));
+		for (i = 0; i < cols; i++) {
+			g[i].b = b;
+			g[i].w = max;
+			g[i].h = (m->wa.h - b) / rows - b;
+			g[i].y = m->wa.y;
+			switch ((int)side) {
+			case DockSideEast:
+				g[i].x = m->wa.x + m->wa.w - (i + 1) * (g[i].w + b);
+				break;
+			case DockSideWest:
+				g[i].x = m->wa.x + i * (g[i].w + b);
+				break;
+			}
+			num -= rows;
+			if (rows > num)
+				rows = num;
+		}
+		if (overlap) {
+			int h;
+
+			for (i = 0, c = nextdockapp(scr->clients, m); c;
+			     c = nextdockapp(c->next, m)) {
+				Client *next = nextdockapp(c->next, m);
+
+				h = c->r.h + 2 * margin;
+				if (h > max)
+					h = max;
+				h += b;
+				if (!next || g[i].y + h + b <= m->wa.y + m->wa.h) {
+					g[i].y += h + b;
+					if (next)
+						continue;
+				}
+				switch ((int)pos) {
+				case DockEast:
+				case DockWest:
+					g[i].y = m->wa.y + (m->wa.h -
+							    (g[i].y + b - m->wa.y)) / 2;
+					break;
+				case DockNorthEast:
+				case DockNorthWest:
+					g[i].y = m->wa.y;
+					break;
+				case DockSouthEast:
+				case DockSouthWest:
+					g[i].y = m->wa.y + (m->wa.h -
+							    (g[i].y + b - m->wa.y));
+					break;
+				}
+			}
+			cols = i;
+		}
+		switch ((int)side) {
+		case DockSideEast:
+			m->dock.wa.w -= cols * (max + b) + b;
+			break;
+		case DockSideWest:
+			m->dock.wa.w -= cols * (max + b) + b;
+			m->dock.wa.x += cols * (max + b) + b;
+			break;
+		}
+		break;
+	case DockNorth:
+	case DockSouth:
+		cols = (m->wa.w - b) / (max + b);
+		rows = (num - 1) / cols + 1;
+		if (cols > num)
+			cols = num;
+		g = calloc(rows, sizeof(*g));
+		for (i = 0; i < rows; i++) {
+			g[i].b = b;
+			g[i].w = (m->wa.w - b) / cols - b;
+			g[i].h = max;
+			g[i].x = m->wa.x;
+			switch ((int)side) {
+			case DockSideNorth:
+				g[i].y = m->wa.y + i * (g[i].h + b);
+				break;
+			case DockSideSouth:
+				g[i].y = m->wa.y + m->wa.h - (i + 1) * (g[i].h + b);
+				break;
+			}
+			num -= cols;
+			if (cols > num)
+				cols = num;
+		}
+		if (overlap) {
+			int w;
+
+			for (i = 0, c = nextdockapp(scr->clients, m); c;
+			     c = nextdockapp(c->next, m)) {
+				Client *next = nextdockapp(c->next, m);
+
+				w = c->r.w + 2 * margin;
+				if (w > max)
+					w = max;
+				w += b;
+				if (!next || g[i].x + w + b <= m->wa.x + m->wa.w) {
+					g[i].x += w + b;
+					if (next)
+						continue;
+				}
+				switch ((int)pos) {
+				case DockNorth:
+				case DockSouth:
+					g[i].x = m->wa.x + (m->wa.w -
+							(g[i].x + b - m->wa.x)) / 2;
+					break;
+				case DockNorthWest:
+				case DockSouthWest:
+					g[i].x = m->wa.x;
+					break;
+				case DockNorthEast:
+				case DockSouthEast:
+					g[i].x = m->wa.x + (m->wa.w -
+							(g[i].x + b - m->wa.x));
+					break;
+				}
+			}
+			cols = i;
+		}
+		switch ((int)side) {
+		case DockSideNorth:
+			m->dock.wa.y += rows * (max + b) + b;
+			m->dock.wa.h -= rows * (max + b) + b;
+			break;
+		case DockSideSouth:
+			m->dock.wa.h -= rows * (max + b) + b;
+			break;
+		}
+		break;
+	}
+	for (i = 0, c = nextdockapp(scr->clients, m); c; c = nextdockapp(c->next, m)) {
+		switch (m->dock.orient) {
+		case DockVert:
+			if (overlap) {
+				g[i].h = c->r.h + 2 * margin;
+				if (g[i].h > max)
+					g[i].h = max;
+				g[i].h += b;
+				if (g[i].y + g[i].h + b > m->wa.y + m->wa.h) {
+					g[i + 1].h = g[i].h;
+					i++;
+				}
+				n = g[i];
+				g[i].y += g[i].h + b;
+			} else {
+				n = g[i];
+				if (g[i].y + g[i].h + b > m->wa.y + m->wa.h) {
+					n.h = m->wa.y + m->wa.h - n.y - 2 * b;
+					i++;
+				} else
+					g[i].y += g[i].h + b;
+			}
+			break;
+		case DockHorz:
+			if (overlap) {
+				g[i].w = c->r.w + 2 * margin;
+				if (g[i].w > max)
+					g[i].w = max;
+				g[i].w += b;
+				if (g[i].x + g[i].w + b > m->wa.x + m->wa.w) {
+					g[i + 1].w = g[i].w;
+					i++;
+				}
+				n = g[i];
+				g[i].x += g[i].w + b;
+			} else {
+				n = g[i];
+				if (g[i].x + g[i].w + b > m->wa.x + m->wa.w) {
+					n.w = m->wa.x + m->wa.h - n.x - 2 * b;
+					i++;
+				} else
+					g[i].x += g[i].w + b;
+			}
+			break;
+		}
+		reconfigure(c, &n);
+	}
+	free(g);
+}
+
+void
 arrangefloats(Monitor * m) {
 	Client *c;
 
@@ -433,6 +673,7 @@ arrangemon(Monitor *m)
 {
 	Client *c;
 
+	arrangedock(m);
 	if (scr->views[m->curtag].layout->arrange)
 		scr->views[m->curtag].layout->arrange(m);
 	arrangefloats(m);
@@ -2292,6 +2533,25 @@ reparentclient(Client *c, AScreen *new_scr, int x, int y)
 }
 
 void
+process_dockapp(Client *c)
+{
+	XWMHints *wmh;
+	
+	if ((wmh = XGetWMHints(dpy, c->win)) &&
+			(wmh->flags & StateHint) &&
+			(wmh->initial_state == WithdrawnState)) {
+		setwmstate(c->win, WithdrawnState, None);
+		c->is.dockapp = True;
+		c->is.bastard = True;
+		c->skip.skip = -1U; /* skip everything */
+		c->can.can = 0; /* no functionality */
+		/* might let one move later */
+		c->has.has = 0; /* no decorations */
+		c->is.floater = True;
+	}
+}
+
+void
 manage(Window w, XWindowAttributes *wa)
 {
 	Client *c, *t = NULL;
@@ -2317,6 +2577,7 @@ manage(Window w, XWindowAttributes *wa)
 	// c->with.with = 0;
 	c->has.has = -1U;
 	c->can.can = -1U;
+	process_dockapp(c);
 	ewmh_process_net_window_type(c);
 	ewmh_process_kde_net_window_type_override(c);
 
@@ -2326,8 +2587,8 @@ manage(Window w, XWindowAttributes *wa)
 	c->r.b = c->c.b = c->is.bastard ? 0 : scr->style.border;
 	/* XXX: had.border? */
 	mwmh_process_motif_wm_hints(c);
-	updatesizehints(c);
 
+	updatesizehints(c);
 	updatetitle(c);
 	updateiconname(c);
 	applyrules(c);
@@ -2542,11 +2803,6 @@ manage(Window w, XWindowAttributes *wa)
 	wc.border_width = 0;
 	XConfigureWindow(dpy, c->win, CWBorderWidth, &wc);
 
-	/* FIXME: wrong in so may ways.  ban() unmaps the c->win we just mapped after
-	   reparenting. It also unmaps an already unmapped c->frame.  What's worse is it
-	   sets the WM_STATE to the IconicState and can confuse the heck out of clients
-	   that requested being mapped in the NormalState. */
-
 	ban(c);
 
 	ewmh_process_net_window_desktop(c);
@@ -2623,10 +2879,25 @@ maprequest(XEvent * e)
 
 void
 getworkarea(Monitor * m, Workarea *w) {
-	w->x = max(m->wa.x, 1);
-	w->y = max(m->wa.y, 1);
-	w->w = min(m->wa.x + m->wa.w, DisplayWidth(dpy, scr->screen) - 1) - w->x;
-	w->h = min(m->wa.y + m->wa.h, DisplayHeight(dpy, scr->screen) - 1) - w->y;
+	Workarea *wa;
+
+	switch (scr->views[m->curtag].barpos) {
+	case StrutsOn:
+	default:
+		if (m->dock.position)
+			wa = &m->dock.wa;
+		else
+			wa = &m->wa;
+		break;
+	case StrutsHide:
+	case StrutsOff:
+		wa = &m->sc;
+		break;
+	}
+	w->x = max(wa->x, 1);
+	w->y = max(wa->y, 1);
+	w->w = min(wa->x + wa->w, DisplayWidth(dpy, scr->screen) - 1) - w->x;
+	w->h = min(wa->y + wa->h, DisplayHeight(dpy, scr->screen) - 1) - w->y;
 }
 
 void
@@ -3043,6 +3314,80 @@ newsize(Client *c, int w, int h, Time time)
 
 #endif
 
+void
+reconfigure_dockapp(Client *c, ClientGeometry * n)
+{
+	XWindowChanges wwc, fwc;
+	unsigned wmask, fmask;
+
+	wmask = fmask = 0;
+	if (c->c.x != (fwc.x = n->x)) {
+		c->c.x = n->x;
+		fmask |= CWX;
+	}
+	if (c->c.y != (fwc.y = n->y)) {
+		c->c.y = n->y;
+		fmask |= CWY;
+	}
+	if (c->c.w != (fwc.width = n->w)) {
+		c->c.w = n->w;
+		fmask |= CWWidth;
+	}
+	if (c->c.h != (fwc.height = n->h)) {
+		c->c.h = n->h;
+		fmask |= CWHeight;
+	}
+	if (c->c.b != (fwc.border_width = n->b)) {
+		c->c.b = n->b;
+		fmask |= CWBorderWidth;
+	}
+	if (c->r.x != (wwc.x = (n->w - c->r.w) / 2)) {
+		c->r.x = (n->w - c->r.w) / 2;
+		wmask |= CWX;
+	}
+	if (c->r.y != (wwc.y = (n->h - c->r.h) / 2)) {
+		c->r.y = (n->h - c->r.h) / 2;
+		wmask |= CWY;
+	}
+	wwc.width = c->r.w;
+	wwc.height = c->r.h;
+	wwc.border_width = c->r.b;
+	if (fmask) {
+		DPRINTF("frame wc = %ux%u+%d+%d:%d\n", fwc.width, fwc.height, fwc.x, fwc.y,
+			fwc.border_width);
+		XConfigureWindow(dpy, c->frame,
+				 CWX | CWY | CWWidth | CWHeight | CWBorderWidth, &fwc);
+	}
+	if (wmask) {
+		DPRINTF("wind  wc = %ux%u+%d+%d:%d\n", wwc.width, wwc.height, wwc.x, wwc.y,
+			wwc.border_width);
+		XConfigureWindow(dpy, c->icon_win,
+				 CWX | CWY | CWWidth | CWHeight | CWBorderWidth, &wwc);
+	}
+	if ((fmask | wmask) && !(wmask & (CWWidth | CWHeight))) {
+		XConfigureEvent ce;
+
+		ce.type = ConfigureNotify;
+		ce.display = dpy;
+		ce.event = c->icon_win;
+		ce.window = c->icon_win;
+		ce.x = c->c.x + c->r.x;
+		ce.y = c->c.y + c->r.y;
+		ce.width = c->r.w;
+		ce.height = c->r.h;
+		ce.border_width = c->c.b;
+		ce.above = None;
+		ce.override_redirect = False;
+		XSendEvent(dpy, c->icon_win, False, StructureNotifyMask, (XEvent *) &ce);
+	}
+	XSync(dpy, False);
+	if (fmask & (CWWidth | CWHeight)) {
+		drawclient(c);
+		ewmh_update_net_window_extents(c);
+	}
+	XSync(dpy, False);
+}
+
 /* FIXME: this does not handle moving the window across monitor
  * or desktop boundaries. */
 
@@ -3053,8 +3398,10 @@ reconfigure(Client *c, ClientGeometry * n)
 	unsigned wmask, fmask;
 	Bool tchange = False, gchange = False, shaded = False;
 
-	if (n->w <= 0 || n->h <= 0)
+	if (n->w <= 0 || n->h <= 0) {
+		CPRINTF(c, "zero width %d or height %d\n", n->w, n->h);
 		return;
+	}
 	/* offscreen appearance fixes */
 	if (n->x > DisplayWidth(dpy, scr->screen))
 		n->x = DisplayWidth(dpy, scr->screen) - n->w - 2 * n->b;
@@ -3062,6 +3409,10 @@ reconfigure(Client *c, ClientGeometry * n)
 		n->y = DisplayHeight(dpy, scr->screen) - n->h - 2 * n->b;
 	DPRINTF("x = %d y = %d w = %d h = %d b = %d t = %d g = %d\n", n->x, n->y, n->w,
 		n->h, n->b, n->t, n->g);
+
+	if (c->is.dockapp)
+		return reconfigure_dockapp(c, n);
+
 	wmask = fmask = 0;
 	if (c->c.x != (fwc.x = n->x)) {
 		c->c.x = n->x;
@@ -3758,16 +4109,34 @@ m_resize(Client *c, XEvent *e)
 }
 
 Client *
-nexttiled(Client *c, Monitor *m) {
-	for (; c && (c->is.floater || c->skip.arrange || !isvisible(c, m) || c->is.bastard
-		     || (c->is.icon || c->is.hidden)); c = c->next) ;
+nexttiled(Client *c, Monitor *m)
+{
+	for (;
+	     c && (c->is.floater || c->skip.arrange || !isvisible(c, m) || c->is.bastard
+		   || (c->is.icon || c->is.hidden)); c = c->next) ;
 	return c;
 }
 
 Client *
-prevtiled(Client *c, Monitor *m) {
-	for (; c && (c->is.floater || c->skip.arrange || !isvisible(c, m) || c->is.bastard
-		     || (c->is.icon || c->is.hidden)); c = c->prev) ;
+prevtiled(Client *c, Monitor *m)
+{
+	for (;
+	     c && (c->is.floater || c->skip.arrange || !isvisible(c, m) || c->is.bastard
+		   || (c->is.icon || c->is.hidden)); c = c->prev) ;
+	return c;
+}
+
+Client *
+nextdockapp(Client *c, Monitor *m)
+{
+	for (; c && (!c->is.dockapp || !isvisible(c, m) || c->is.hidden); c = c->next) ;
+	return c;
+}
+
+Client *
+prevdockapp(Client *c, Monitor *m)
+{
+	for (; c && (!c->is.dockapp || !isvisible(c, m) || c->is.hidden); c = c->prev) ;
 	return c;
 }
 

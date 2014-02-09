@@ -250,6 +250,10 @@ typedef enum { ModalModeless, ModalPrimary, ModalSystem, ModalGroup } Modality;
 typedef enum { NoInputModel, PassiveInputModel, GloballyActiveModel, LocallyActiveModel } InputModel;
 typedef enum { OrientLeft, OrientTop, OrientRight, OrientBottom, OrientLast } LayoutOrientation;
 typedef enum { StrutsOn, StrutsOff, StrutsHide } StrutsPosition;
+typedef enum { DockNone, DockEast, DockNorthEast, DockNorth, DockNorthWest, DockWest,
+	DockSouthWest, DockSouth, DockSouthEast } DockPosition;
+typedef enum { DockSideEast, DockSideNorth, DockSideWest, DockSideSouth } DockSide;
+typedef enum { DockHorz, DockVert } DockOrient;
 
 #define GIVE_FOCUS (1<<0)
 #define TAKE_FOCUS (1<<1)
@@ -279,9 +283,14 @@ struct Monitor {
 	Bool *prevtags;
 	Monitor *next;
 	int mx, my;
-	unsigned int curtag;
-	unsigned int num, index;
+	unsigned curtag;
+	unsigned num, index;
 	Window veil;
+	struct {
+		Workarea wa;
+		DockPosition position;
+		DockOrient orient;
+	} dock;
 };
 
 typedef struct {
@@ -305,7 +314,7 @@ typedef struct {
 
 typedef struct {
 	Bool present, hovered;
-	unsigned int pressed;
+	unsigned pressed;
 	struct {
 		int x, y, w, h, b;
 	} g;
@@ -329,93 +338,94 @@ struct Client {
 	int nonmodal;
 	union {
 		struct {
-			unsigned int taskbar:1;
-			unsigned int pager:1;
-			unsigned int winlist:1;
-			unsigned int cycle:1;
-			unsigned int focus:1;
-			unsigned int arrange:1;
-			unsigned int sloppy:1;
+			unsigned taskbar:1;
+			unsigned pager:1;
+			unsigned winlist:1;
+			unsigned cycle:1;
+			unsigned focus:1;
+			unsigned arrange:1;
+			unsigned sloppy:1;
 		};
-		unsigned int skip;
+		unsigned skip;
 	} skip;
 	union {
 		struct {
-			unsigned int transient:1;
-			unsigned int grptrans:1;
-			unsigned int banned:1;
-			unsigned int max:1;
-			unsigned int floater:1;
-			unsigned int maxv:1;
-			unsigned int maxh:1;
-			unsigned int shaded:1;
-			unsigned int icon:1;
-			unsigned int fill:1;
-			unsigned int modal:2;
-			unsigned int above:1;
-			unsigned int below:1;
-			unsigned int attn:1;
-			unsigned int sticky:1;
-			unsigned int hidden:1;
-			unsigned int bastard:1;
-			unsigned int fs:1;
-			unsigned int focused:1;
-			unsigned int managed:1;
+			unsigned transient:1;
+			unsigned grptrans:1;
+			unsigned banned:1;
+			unsigned max:1;
+			unsigned floater:1;
+			unsigned maxv:1;
+			unsigned maxh:1;
+			unsigned shaded:1;
+			unsigned icon:1;
+			unsigned fill:1;
+			unsigned modal:2;
+			unsigned above:1;
+			unsigned below:1;
+			unsigned attn:1;
+			unsigned sticky:1;
+			unsigned hidden:1;
+			unsigned bastard:1;
+			unsigned fs:1;
+			unsigned focused:1;
+                        unsigned dockapp:1;
+			unsigned managed:1;
 		};
-		unsigned int is;
+		unsigned is;
 	} is, was;
 	union {
 		struct {
-			unsigned int border:1;
-			unsigned int grips:1;
-			unsigned int title:1;
+			unsigned border:1;
+			unsigned grips:1;
+			unsigned title:1;
 			struct {
-				unsigned int menu:1;
-				unsigned int min:1;
-				unsigned int max:1;
-				unsigned int close:1;
-				unsigned int size:1;
-				unsigned int shade:1;
-				unsigned int stick:1;
-				unsigned int fill:1;
-				unsigned int floats:1;
+				unsigned menu:1;
+				unsigned min:1;
+				unsigned max:1;
+				unsigned close:1;
+				unsigned size:1;
+				unsigned shade:1;
+				unsigned stick:1;
+				unsigned fill:1;
+				unsigned floats:1;
 			} but __attribute__ ((packed));
 		};
-		unsigned int has;
+		unsigned has;
 	} has;
 	union {
 		struct {
-			unsigned int struts:1;
-			unsigned int time:1;
+			unsigned struts:1;
+			unsigned time:1;
 		};
-		unsigned int with;
+		unsigned with;
 	} with;
 	union {
 		struct {
-			unsigned int move:1;
-			unsigned int size:1;
-			unsigned int sizev:1;
-			unsigned int sizeh:1;
-			unsigned int min:1;
-			unsigned int max:1;
-			unsigned int maxv:1;
-			unsigned int maxh:1;
-			unsigned int close:1;
-			unsigned int shade:1;
-			unsigned int stick:1;
-			unsigned int fs:1;
-			unsigned int above:1;
-			unsigned int below:1;
-			unsigned int fill:1;
-			unsigned int fillh:1;
-			unsigned int fillv:1;
-			unsigned int floats:1;
-			unsigned int hide:1;
-			unsigned int tag:1;
-			unsigned int arrange:1;
-			unsigned int focus:2;
+			unsigned move:1;
+			unsigned size:1;
+			unsigned sizev:1;
+			unsigned sizeh:1;
+			unsigned min:1;
+			unsigned max:1;
+			unsigned maxv:1;
+			unsigned maxh:1;
+			unsigned close:1;
+			unsigned shade:1;
+			unsigned stick:1;
+			unsigned fs:1;
+			unsigned above:1;
+			unsigned below:1;
+			unsigned fill:1;
+			unsigned fillh:1;
+			unsigned fillv:1;
+			unsigned floats:1;
+			unsigned hide:1;
+			unsigned tag:1;
+			unsigned arrange:1;
+			unsigned focus:2;
 		};
-		unsigned int can;
+		unsigned can;
 	} can;
 	Monitor *curmon;
 	Client *next;
@@ -424,6 +434,7 @@ struct Client {
 	Client *cnext;
 	Client *fnext;
 	Window win;
+        Window icon_win;
 	Window title;
 	Window grips;
 	Window frame;
@@ -450,7 +461,7 @@ struct Client {
 typedef struct Group Group;
 struct Group {
 	Window *members;
-	unsigned int count;
+	unsigned count;
 	int modal_transients;
 };
 
@@ -468,7 +479,7 @@ typedef struct View {
 } View; /* per-tag settings */
 
 typedef struct {
-	unsigned int x, y, w, h;
+	unsigned x, y, w, h;
 	struct {
 		XGlyphInfo *extents;
 		int ascent;
@@ -492,7 +503,7 @@ typedef struct {
 	Pixmap bitmap;
 	Bool present;
 	int x, y;
-	unsigned int w, h, b;
+	unsigned w, h, b;
 
 } ButtonImage;
 
@@ -502,16 +513,16 @@ typedef struct {
 } Element;
 
 typedef struct {
-	unsigned int border;
-	unsigned int margin;
-	unsigned int outline;
-	unsigned int spacing;
-	unsigned int titleheight;
-	unsigned int gripsheight;
-	unsigned int opacity;
+	unsigned border;
+	unsigned margin;
+	unsigned outline;
+	unsigned spacing;
+	unsigned titleheight;
+	unsigned gripsheight;
+	unsigned opacity;
 	char titlelayout[32];
 	XftFont *font[2];
-	unsigned int drop[2];
+	unsigned drop[2];
 	struct {
 		unsigned long norm[ColLast];
 		unsigned long sel[ColLast];
@@ -534,18 +545,18 @@ struct AScreen {
 	Window selwin;
 	Client *clients;
 	Monitor *monitors;
-	unsigned int nmons;
+	unsigned nmons;
 	Client *stack;
 	Client *clist;
 	Client *flist;
 	Bool showing_desktop;
 	int screen;
 	char **tags;
-	unsigned int ntags;
+	unsigned ntags;
 	Atom *dt_tags;
 	View *views;
 	Key **keys;
-	unsigned int nkeys;
+	unsigned nkeys;
 	DC dc;
 	Element element[LastElement];
 	Style style;
@@ -574,7 +585,7 @@ struct Notify {
 
 /* ewmh.c */
 Bool checkatom(Window win, Atom bigatom, Atom smallatom);
-unsigned int getwintype(Window win);
+unsigned getwintype(Window win);
 Bool checkwintype(Window win, int wintype);
 Bool clientmessage(XEvent * e);
 void ewmh_release_user_time_window(Client *c);
@@ -584,7 +595,7 @@ void initewmh(Window w);
 void exitewmh(WithdrawCause cause);
 void ewmh_add_client(Client *c);
 void ewmh_del_client(Client *c, WithdrawCause cause);
-void setopacity(Client * c, unsigned int opacity);
+void setopacity(Client * c, unsigned opacity);
 int getstruts(Client * c);
 
 void ewmh_process_net_desktop_names(void);
@@ -623,7 +634,7 @@ void wmh_process_win_window_hints(Client *);
 void wmh_process_win_layer(Client *);
 
 /* main */
-void inittag(unsigned int i);
+void inittag(unsigned i);
 void arrange(Monitor * m);
 Monitor *clientmonitor(Client * c);
 Monitor *curmonitor();
@@ -700,7 +711,7 @@ void zoom(Client *c);
 Bool selectionclear(XEvent *e);
 void appendtag(void);
 void rmlasttag(void);
-void settags(unsigned int numtags);
+void settags(unsigned numtags);
 
 /* parse.c */
 void initrules();
@@ -769,11 +780,11 @@ extern Client *give;	/* gave focus last */
 extern Client *take;	/* take focus last */
 // extern Client *stack;
 // extern Client *clist;
-// extern unsigned int nmons;
-// extern unsigned int ntags;
-extern unsigned int nscr;
-// extern unsigned int nkeys;
-extern unsigned int nrules;
+// extern unsigned nmons;
+// extern unsigned ntags;
+extern unsigned nscr;
+// extern unsigned nkeys;
+extern unsigned nrules;
 // extern Bool showing_desktop;
 // extern int screen;
 // extern Style style;
@@ -783,7 +794,7 @@ extern unsigned int nrules;
 // extern Key **keys;
 extern Rule **rules;
 extern Layout layouts[];
-extern unsigned int modkey;
+extern unsigned modkey;
 // extern View *views;
 extern XContext context[];
 extern Time user_time;

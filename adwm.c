@@ -291,6 +291,13 @@ void (*actions[LastOn][5][2])(Client *, XEvent *) = {
 		[Button4-1] =	{ NULL,		    m_shade	    },
 		[Button5-1] =	{ NULL,		    m_shade	    },
 	},
+	[OnClientDock]   = {
+		[Button1-1] =	{ NULL,		    NULL	    },
+		[Button2-1] =	{ NULL,		    NULL	    },
+		[Button3-1] =	{ NULL,		    NULL	    },
+		[Button4-1] =	{ NULL,		    NULL	    },
+		[Button5-1] =	{ NULL,		    NULL	    },
+	},
 	[OnClientWindow] = {
 		[Button1-1] =	{ m_move,	    NULL	    },
 		[Button2-1] =	{ m_zoom,	    NULL	    },
@@ -429,7 +436,7 @@ applyrules(Client * c) {
 void
 arrangedock(Monitor *m)
 {
-	Client *c = nextdockapp(scr->clients, m);
+	Client *c = nextdockapp(scr->clients, m), *cn;
 	View *v = &scr->views[m->curtag];
 	int i, num, rows, cols, margin = 4, max = 64, b = scr->style.border;
 	ClientGeometry *g = NULL, n;
@@ -437,6 +444,7 @@ arrangedock(Monitor *m)
 	DockSide side;
 	Bool overlap = FEATURES(v->layout, OVERLAP) ? True : False;
 
+	updategeom(m);
 	m->dock.wa = m->wa;
 
 	if (!c || pos == DockNone)
@@ -538,17 +546,16 @@ arrangedock(Monitor *m)
 		if (overlap) {
 			int h;
 
-			for (i = 0, c = nextdockapp(scr->clients, m); c;
-			     c = nextdockapp(c->next, m)) {
-				Client *next = nextdockapp(c->next, m);
+			for (i = 0, cn = nextdockapp(scr->clients, m); (c = cn); ) {
+				cn = nextdockapp(c->next, m);
 
 				h = c->r.h + 2 * margin;
 				if (h > max)
 					h = max;
 				h += b;
-				if (!next || g[i].y + h + b <= m->wa.y + m->wa.h) {
+				if (!cn || g[i].y + h + b <= m->wa.y + m->wa.h) {
 					g[i].y += h + b;
-					if (next)
+					if (cn)
 						continue;
 				}
 				switch ((int)pos) {
@@ -575,10 +582,13 @@ arrangedock(Monitor *m)
 		switch ((int)side) {
 		case DockSideEast:
 			m->dock.wa.w -= cols * (max + b) + b;
+			XResizeWindow(dpy, m->veil, m->dock.wa.w, m->dock.wa.h);
 			break;
 		case DockSideWest:
 			m->dock.wa.w -= cols * (max + b) + b;
+			XResizeWindow(dpy, m->veil, m->dock.wa.w, m->dock.wa.h);
 			m->dock.wa.x += cols * (max + b) + b;
+			XMoveWindow(dpy, m->veil, m->dock.wa.x, m->dock.wa.y);
 			break;
 		}
 		break;
@@ -611,17 +621,16 @@ arrangedock(Monitor *m)
 		if (overlap) {
 			int w;
 
-			for (i = 0, c = nextdockapp(scr->clients, m); c;
-			     c = nextdockapp(c->next, m)) {
-				Client *next = nextdockapp(c->next, m);
+			for (i = 0, cn = nextdockapp(scr->clients, m); (c = cn); ) {
+				cn = nextdockapp(c->next, m);
 
 				w = c->r.w + 2 * margin;
 				if (w > max)
 					w = max;
 				w += b;
-				if (!next || g[i].x + w + b <= m->wa.x + m->wa.w) {
+				if (!cn || g[i].x + w + b <= m->wa.x + m->wa.w) {
 					g[i].x += w + b;
-					if (next)
+					if (cn)
 						continue;
 				}
 				switch ((int)pos) {
@@ -648,15 +657,19 @@ arrangedock(Monitor *m)
 		switch ((int)side) {
 		case DockSideNorth:
 			m->dock.wa.y += rows * (max + b) + b;
+			XMoveWindow(dpy, m->veil, m->dock.wa.x, m->dock.wa.y);
 			m->dock.wa.h -= rows * (max + b) + b;
+			XResizeWindow(dpy, m->veil, m->dock.wa.w, m->dock.wa.h);
 			break;
 		case DockSideSouth:
 			m->dock.wa.h -= rows * (max + b) + b;
+			XResizeWindow(dpy, m->veil, m->dock.wa.w, m->dock.wa.h);
 			break;
 		}
 		break;
 	}
-	for (i = 0, c = nextdockapp(scr->clients, m); c; c = nextdockapp(c->next, m)) {
+	for (i = 0, cn = nextdockapp(scr->clients, m); (c = cn); ) {
+		cn = nextdockapp(c->next, m);
 		switch (m->dock.orient) {
 		case DockVert:
 			if (overlap) {
@@ -672,11 +685,11 @@ arrangedock(Monitor *m)
 				g[i].y += g[i].h + b;
 			} else {
 				n = g[i];
-				if (g[i].y + g[i].h + b > m->wa.y + m->wa.h) {
+				g[i].y += g[i].h + b;
+				if (!cn || g[i].y > m->wa.y + m->wa.h) {
 					n.h = m->wa.y + m->wa.h - n.y - 2 * b;
 					i++;
-				} else
-					g[i].y += g[i].h + b;
+				}
 			}
 			break;
 		case DockHorz:
@@ -693,11 +706,11 @@ arrangedock(Monitor *m)
 				g[i].x += g[i].w + b;
 			} else {
 				n = g[i];
-				if (g[i].x + g[i].w + b > m->wa.x + m->wa.w) {
+				g[i].x += g[i].w + b;
+				if (!cn || g[i].x > m->wa.x + m->wa.w) {
 					n.w = m->wa.x + m->wa.h - n.x - 2 * b;
 					i++;
-				} else
-					g[i].x += g[i].w + b;
+				}
 			}
 			break;
 		}
@@ -1112,8 +1125,13 @@ buttonpress(XEvent *e)
 		drawclient(c);
 	} else if ((c = getclient(ev->window, ClientFrame)) && ev->window == c->frame) {
 		XPRINTF("FRAME %s: 0x%lx button: %d\n", c->name, ev->window, ev->button);
-		if ((action = actions[OnClientFrame][button][direct]))
-			(*action) (c, (XEvent *) ev);
+		if (c->is.dockapp) {
+			if ((action = actions[OnClientDock][button][direct]))
+				(*action) (c, (XEvent *) ev);
+		} else {
+			if ((action = actions[OnClientFrame][button][direct]))
+				(*action) (c, (XEvent *) ev);
+		}
 		XUngrabPointer(dpy, CurrentTime);	// ev->time ??
 		drawclient(c);
 	} else

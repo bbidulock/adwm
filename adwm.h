@@ -234,7 +234,7 @@ enum { ClientWindow, ClientIcon, ClientTitle, ClientGrips, ClientFrame, ClientTi
 typedef enum { IconifyBtn, MaximizeBtn, CloseBtn, ShadeBtn, StickBtn, LHalfBtn, RHalfBtn,
 	FillBtn, FloatBtn, SizeBtn, TitleTags, TitleName, TitleSep, LastElement,
 	LastBtn = TitleTags } ElementType;
-typedef enum { OnClientTitle, OnClientGrips, OnClientFrame, OnClientWindow, OnRoot, LastOn } OnWhere;
+typedef enum { OnClientTitle, OnClientGrips, OnClientFrame, OnClientDock, OnClientWindow, OnRoot, LastOn } OnWhere;
 typedef enum { ButtonImageDefault,
 	ButtonImagePressed, ButtonImageToggledPressed,
 	ButtonImageHover, ButtonImageFocus, ButtonImageUnfocus,

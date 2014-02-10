@@ -151,6 +151,7 @@ Bool propertynotify(XEvent *e);
 Bool reparentnotify(XEvent *e);
 void quit(const char *arg);
 void raiseclient(Client *c);
+void lowerclient(Client *c);
 void restart(const char *arg);
 Bool constrain(Client *c, ClientGeometry *g);
 void reconfigure(Client *c, ClientGeometry *g);
@@ -217,6 +218,7 @@ Bool issystray(Window win);
 void delsystray(Window win);
 
 /* variables */
+volatile int signum = 0;
 int cargc;
 char **cargv;
 Display *dpy;
@@ -259,6 +261,8 @@ struct {
 	int focus;
 	int snap;
 	char command[255];
+	DockPosition dockpos;
+	DockOrient dockori;
 } options;
 
 void (*actions[LastOn][5][2])(Client *, XEvent *) = {
@@ -432,48 +436,83 @@ arrangedock(Monitor *m)
 	DockSide side;
 	Bool overlap = FEATURES(v->layout, OVERLAP) ? True : False;
 
+	m->dock.wa = m->wa;
+
 	if (!c || pos == DockNone)
 		return;
 
 	for (num = 0, c = nextdockapp(scr->clients, m); c;
 	     c = nextdockapp(c->next, m), num++) ;
 
-	m->dock.wa = m->wa;
+	DPRINTF("there are %d dock apps\n", num);
+
+	switch (m->dock.orient) {
+	case DockHorz:
+		DPRINTF("Dock orientation Horz\n");
+		break;
+	case DockVert:
+		DPRINTF("Dock orientation Vert\n");
+		break;
+	}
 
 	switch (pos) {
 	case DockNorth:
 		side = DockSideNorth;
+		DPRINTF("Dock position North\n");
 		break;
 	case DockEast:
 		side = DockSideEast;
+		DPRINTF("Dock position East\n");
 		break;
 	case DockSouth:
 		side = DockSideSouth;
+		DPRINTF("Dock position South\n");
 		break;
 	case DockWest:
 		side = DockSideWest;
+		DPRINTF("Dock position South\n");
 		break;
 	case DockNorthEast:
 		side = (m->dock.orient == DockHorz) ? DockSideNorth : DockSideEast;
+		DPRINTF("Dock position NorthEast\n");
 		break;
 	case DockNorthWest:
 		side = (m->dock.orient == DockHorz) ? DockSideNorth : DockSideWest;
+		DPRINTF("Dock position NorthWest\n");
 		break;
 	case DockSouthWest:
 		side = (m->dock.orient == DockHorz) ? DockSideSouth : DockSideWest;
+		DPRINTF("Dock position SouthWest\n");
 		break;
 	case DockSouthEast:
 		side = (m->dock.orient == DockHorz) ? DockSideSouth : DockSideEast;
+		DPRINTF("Dock position SouthEast\n");
 		break;
 	default:
 		return;
 	}
 
-	switch ((int)side) {
-	case DockEast:
-	case DockWest:
+	switch(side) {
+	case DockSideEast:
+		DPRINTF("Dock side East\n");
+		break;
+	case DockSideWest:
+		DPRINTF("Dock side West\n");
+		break;
+	case DockSideNorth:
+		DPRINTF("Dock side North\n");
+		break;
+	case DockSideSouth:
+		DPRINTF("Dock side South\n");
+		break;
+	}
+
+	switch (side) {
+	case DockSideEast:
+	case DockSideWest:
 		rows = (m->wa.h - b) / (max + b);
 		cols = (num - 1) / rows + 1;
+		DPRINTF("dock columns %d, rows %d\n", cols, rows);
 		if (rows > num)
 			rows = num;
 		g = calloc(cols, sizeof(*g));
@@ -490,6 +529,7 @@ arrangedock(Monitor *m)
 				g[i].x = m->wa.x + i * (g[i].w + b);
 				break;
 			}
+			DPRINTF("geometry col %d is %dx%d+%d+%d:%d\n", i, g[i].w, g[i].h, g[i].x, g[i].y, g[i].b);
 			num -= rows;
 			if (rows > num)
 				rows = num;
@@ -526,6 +566,8 @@ arrangedock(Monitor *m)
 							    (g[i].y + b - m->wa.y));
 					break;
 				}
+				DPRINTF("geometry col %d is %dx%d+%d+%d:%d\n", i, g[i].w, g[i].h, g[i].x, g[i].y, g[i].b);
+				i++;
 			}
 			cols = i;
 		}
@@ -539,12 +581,13 @@ arrangedock(Monitor *m)
 			break;
 		}
 		break;
-	case DockNorth:
-	case DockSouth:
+	case DockSideNorth:
+	case DockSideSouth:
 		cols = (m->wa.w - b) / (max + b);
 		rows = (num - 1) / cols + 1;
 		if (cols > num)
 			cols = num;
+		DPRINTF("dock columns %d, rows %d\n", cols, rows);
 		g = calloc(rows, sizeof(*g));
 		for (i = 0; i < rows; i++) {
 			g[i].b = b;
@@ -559,6 +602,7 @@ arrangedock(Monitor *m)
 				g[i].y = m->wa.y + m->wa.h - (i + 1) * (g[i].h + b);
 				break;
 			}
+			DPRINTF("geometry row %d is %dx%d+%d+%d:%d\n", i, g[i].w, g[i].h, g[i].x, g[i].y, g[i].b);
 			num -= cols;
 			if (cols > num)
 				cols = num;
@@ -595,6 +639,8 @@ arrangedock(Monitor *m)
 							(g[i].x + b - m->wa.x));
 					break;
 				}
+				DPRINTF("geometry row %d is %dx%d+%d+%d:%d\n", i, g[i].w, g[i].h, g[i].x, g[i].y, g[i].b);
+				i++;
 			}
 			cols = i;
 		}
@@ -664,7 +710,7 @@ arrangefloats(Monitor * m) {
 	Client *c;
 
 	for (c = scr->stack; c; c = c->snext)
-		if (isvisible(c, m) && !c->is.bastard) /* XXX: can.move? can.tag? */
+		if (isvisible(c, m) && !c->is.bastard && !c->is.dockapp) /* XXX: can.move? can.tag? */
 			updatefloat(c, m);
 }
 
@@ -672,23 +718,25 @@ static void
 arrangemon(Monitor *m)
 {
 	Client *c;
+	int struts;
 
 	arrangedock(m);
 	if (scr->views[m->curtag].layout->arrange)
 		scr->views[m->curtag].layout->arrange(m);
 	arrangefloats(m);
+	struts = scr->views[m->curtag].barpos;
 	for (c = scr->stack; c; c = c->snext) {
-		if ((clientmonitor(c) == m)
-		    && ((!c->is.bastard && !(c->is.icon || c->is.hidden))
-			|| (c->is.bastard && scr->views[m->curtag].barpos == StrutsOn))) {
+		if ((clientmonitor(c) == m) &&
+		    ((!c->is.bastard && !c->is.dockapp && !(c->is.icon || c->is.hidden))
+		     || ((c->is.bastard || c->is.dockapp) && struts == StrutsOn))) {
 			unban(c, m);
 		}
 	}
 
 	for (c = scr->stack; c; c = c->snext) {
 		if ((clientmonitor(c) == NULL)
-		    || (!c->is.bastard && (c->is.icon || c->is.hidden))
-		    || (c->is.bastard && scr->views[m->curtag].barpos == StrutsHide)) {
+		    || (!c->is.bastard && !c->is.dockapp && (c->is.icon || c->is.hidden))
+		    || ((c->is.bastard || c->is.dockapp) && struts == StrutsHide)) {
 			ban(c);
 		}
 	}
@@ -792,36 +840,111 @@ getgeometry(Client *c, Geometry *g, ClientGeometry *gc)
 }
 
 void
-setwmstate(Window win, long state, Window icon_win)
+setwmstate(Window win, long state, Window icon)
 {
-	long data[] = { state, icon_win };
-	XEvent ev;
+	if (state == WithdrawnState)
+		XDeleteProperty(dpy, win, _XA_WM_STATE);
+	else {
+		long data[] = { state, icon };
+		XEvent ev;
 
-	ev.xclient.display = dpy;
-	ev.xclient.type = ClientMessage;
-	ev.xclient.window = win;
-	ev.xclient.message_type = _XA_KDE_WM_CHANGE_STATE;
-	ev.xclient.format = 32;
-	ev.xclient.data.l[0] = state;
-	ev.xclient.data.l[1] = ev.xclient.data.l[2] = 0;
-	ev.xclient.data.l[3] = ev.xclient.data.l[4] = 0;
+		ev.xclient.display = dpy;
+		ev.xclient.type = ClientMessage;
+		ev.xclient.window = win;
+		ev.xclient.message_type = _XA_KDE_WM_CHANGE_STATE;
+		ev.xclient.format = 32;
+		ev.xclient.data.l[0] = state;
+		ev.xclient.data.l[1] = ev.xclient.data.l[2] = 0;
+		ev.xclient.data.l[3] = ev.xclient.data.l[4] = 0;
 
-	XSendEvent(dpy, scr->root, False,
-		   SubstructureRedirectMask | SubstructureNotifyMask, &ev);
+		XSendEvent(dpy, scr->root, False,
+			   SubstructureRedirectMask | SubstructureNotifyMask, &ev);
 
-	XChangeProperty(dpy, win, _XA_WM_STATE, _XA_WM_STATE, 32,
-			PropModeReplace, (unsigned char *) data, 2);
+		XChangeProperty(dpy, win, _XA_WM_STATE, _XA_WM_STATE, 32,
+				PropModeReplace, (unsigned char *) data, 2);
+	}
+}
+
+void
+applystate(Client *c, XWMHints * wmh)
+{
+	int state = NormalState;
+
+	if (wmh && (wmh->flags & StateHint))
+		state = wmh->initial_state;
+
+	switch (state) {
+#if 0
+	case DontCareState:	/* obsolete */
+		/* don't know or don't care */
+		break;
+#endif
+	case ZoomState:	/* obsolete */
+		/* application wants to start zoomed */
+		c->is.fs = True;
+		/* fall through */
+	case NormalState:
+	default:
+		/* most applications want to start this way */
+		c->is.icon = False;
+		c->is.hidden = False;
+		state = NormalState;
+		break;
+	case WithdrawnState:
+		/* for windows that are not mapped */
+		c->is.dockapp = True;
+		c->is.above = True;	/* for now */
+		c->skip.skip = -1U;
+		c->skip.sloppy = False;
+		c->can.can = 0;	/* maybe move later */
+		c->has.has = 0;
+		c->is.floater = True;
+		c->icon = ((wmh->flags & IconWindowHint) && wmh->icon_window) ?
+		    wmh->icon_window : c->win;
+		/* fall through */
+	case IconicState:
+		/* application wants to start as icon */
+		c->is.icon = True;
+		c->is.hidden = False;
+		state = IconicState;
+		break;
+	case InactiveState:	/* obsolete */
+		/* application believes it is seldom used: some wm's may put it on
+		   inactive menu. */
+		c->is.icon = False;
+		c->is.hidden = True;
+		state = NormalState;
+		break;
+	}
+	c->winstate = state;
 }
 
 void
 setclientstate(Client *c, long state)
 {
-	setwmstate(c->win, state, None);
+	if (c->is.dockapp && state == NormalState)
+		state = IconicState;
 
-	if (state == NormalState && (c->is.icon || c->is.hidden)) {
-		c->is.icon = False;
-		c->is.hidden = False;
-		ewmh_update_net_window_state(c);
+	switch (state) {
+	case WithdrawnState:
+		break;
+	case NormalState:
+	default:
+		if (c->is.icon) {
+			c->is.icon = False;
+			ewmh_update_net_window_state(c);
+		}
+		break;
+	case IconicState:
+		if (!c->is.icon) {
+			c->is.icon = True;
+			ewmh_update_net_window_state(c);
+		}
+		break;
+	}
+	if (c->winstate != state) {
+		setwmstate(c->win, state, c->icon ? c->frame : None);
+		c->winstate = state;
 	}
 }
 
@@ -830,11 +953,7 @@ ban(Client *c)
 {
 	c->curmon = NULL;
 
-	if (c->is.icon)
-		setclientstate(c, IconicState);
-	else
-		setwmstate(c->win, NormalState, None);
-
+	setclientstate(c, c->is.icon ? IconicState : NormalState);
 	if (!c->is.banned) {
 		c->is.banned = True;
 		XUnmapWindow(dpy, c->frame);
@@ -1495,12 +1614,15 @@ enternotify(XEvent * e) {
 
 	if (ev->mode != NotifyNormal || ev->detail == NotifyInferior)
 		return True;
-	if ((c = getclient(ev->window, ClientFrame))) {
-		if (c->is.bastard)
+	if ((c = getclient(ev->window, ClientAny))) {
+		CPRINTF(c, "EnterNotify received\n");
+		if (c->is.bastard && !c->is.dockapp) {
+			CPRINTF(c, "FOCUS: cannot focus bastards.\n");
 			return True;
+		}
 		/* focus when switching monitors */
 		if (!isvisible(sel, c->curmon)) {
-			XPRINTF("FOCUS: monitor switching focus to 0x%08lx 0x%08lx %s\n", c->frame, c->win, c->name);
+			CPRINTF(c, "FOCUS: monitor switching focus\n");
 			focus(c);
 		}
 		switch (options.focus) {
@@ -1508,32 +1630,35 @@ enternotify(XEvent * e) {
 			break;
 		case SloppyFloat:
 			if (!c->skip.sloppy && isfloating(c, c->curmon)) {
-				XPRINTF("FOCUS: sloppy focus to 0x%08lx 0x%08lx %s\n", c->frame, c->win, c->name);
+				CPRINTF(c, "FOCUS: sloppy focus\n");
 				focus(c);
 			}
 			break;
 		case AllSloppy:
 			if (!c->skip.sloppy) {
-				XPRINTF("FOCUS: sloppy focus to 0x%08lx 0x%08lx %s\n", c->frame, c->win, c->name);
+				CPRINTF(c, "FOCUS: sloppy focus\n");
 				focus(c);
 			}
 			break;
 		case SloppyRaise:
 			if (!c->skip.sloppy) {
-				XPRINTF("FOCUS: sloppy focus to 0x%08lx 0x%08lx %s\n", c->frame, c->win, c->name);
+				CPRINTF(c, "FOCUS: sloppy focus\n");
 				focus(c);
 				raiseclient(c);
 			}
 			break;
 		}
 	} else if (ev->window == scr->root) {
+		DPRINTF("Not focusing root\n");
 #if 0
 		/* no no no, stay with previously focused client */
 		if (scr->managed)
 			focus(NULL);
 #endif
-	} else
+	} else {
+		DPRINTF("Unknown entered window 0x%08lx\n", ev->window);
 		return False;
+	}
 	return True;
 }
 
@@ -1830,11 +1955,11 @@ expose(XEvent * e)
 	Client *c;
 
 	while (XCheckWindowEvent(dpy, ev->window, ExposureMask, &tmp));
-	if ((c = getclient(ev->window, ClientTitle)))
+	if ((c = getclient(ev->window, ClientAny))) {
 		drawclient(c);
-	if ((c = getclient(ev->window, ClientGrips)))
-		drawclient(c);
-	return True;
+		return True;
+	}
+	return False;
 }
 
 void
@@ -1944,7 +2069,7 @@ focus(Client *c)
 	if ((!c && scr->managed)
 	    || (c && (c->is.bastard || !canfocus(c) || !isvisible(c, cm))))
 		for (c = scr->flist;
-		     c && (c->is.bastard || !canfocus(c) || (c->is.icon || c->is.hidden)
+		     c && (c->is.bastard || !canfocus(c) || (!c->is.dockapp && (c->is.icon || c->is.hidden))
 			   || !isvisible(c, cm)); c = c->fnext) ;
 	if (sel && sel != c) {
 		XSetWindowBorder(dpy, sel->frame, scr->style.color.norm[ColBorder]);
@@ -1972,16 +2097,28 @@ focus(Client *c)
 		drawclient(c);
 		if (c->is.shaded && options.autoroll)
 			arrange(cm);
-		ewmh_update_net_window_state(c);
-		if (!isfloating(c, cm)) {
+		if (c->is.bastard || c->is.dockapp || !isfloating(c, cm)) {
 			CPRINTF(c, "raising non-floating client on focus\n");
+			if (c->is.bastard || c->is.dockapp) {
+				c->is.below = False;
+				c->is.above = True;
+			}
 			raiseclient(c);
 		}
+		ewmh_update_net_window_state(c);
 	}
 	if (o && o != sel) {
 		drawclient(o);
 		if (o->is.shaded && options.autoroll)
 			arrange(cm);
+		if (o->is.bastard || o->is.dockapp || !isfloating(o, cm)) {
+			CPRINTF(o, "lowering non-floating client on focus\n");
+			if (o->is.bastard || o->is.dockapp) {
+				o->is.below = True;
+				o->is.above = False;
+			}
+			lowerclient(o);
+		}
 		ewmh_update_net_window_state(o);
 	}
 	XSync(dpy, False);
@@ -1996,13 +2133,12 @@ focusicon()
 	if (!(cm = selmonitor()))
 		return;
 	for (c = scr->clients;
-	     c && (!canfocus(c) || c->skip.focus || !c->is.icon || !c->can.min
+	     c && (!canfocus(c) || c->skip.focus || c->is.dockapp || !c->is.icon || !c->can.min
 		   || !isvisible(c, cm)); c = c->next) ;
 	if (!c)
 		return;
-	if (c->is.icon) {
+	if (!c->is.dockapp && c->is.icon) {
 		c->is.icon = False;
-		c->is.hidden = False;
 		ewmh_update_net_window_state(c);
 	}
 	focus(c);
@@ -2064,7 +2200,7 @@ focuslast(Client *c)
 	if (!(m = c->curmon))
 		return (NULL);
 	for (s = scr->flist; s &&
-	     (s == c || (s->is.bastard || !canfocus(s) || (s->is.icon || s->is.hidden)
+	     (s == c || (s->is.bastard || !canfocus(s) || (!c->is.dockapp && (s->is.icon || s->is.hidden))
 			 || !isvisible(s, m))); s = s->fnext) ;
 	focus(s);
 	return (s);
@@ -2123,7 +2259,6 @@ _deiconify(Client *c, int dummy) {
 	if (!c->is.icon)
 		return;
 	c->is.icon = False;
-	c->is.hidden = False;
 	if (c->is.managed)
 		arrange(NULL);
 }
@@ -2533,25 +2668,6 @@ reparentclient(Client *c, AScreen *new_scr, int x, int y)
 }
 
 void
-process_dockapp(Client *c)
-{
-	XWMHints *wmh;
-	
-	if ((wmh = XGetWMHints(dpy, c->win)) &&
-			(wmh->flags & StateHint) &&
-			(wmh->initial_state == WithdrawnState)) {
-		setwmstate(c->win, WithdrawnState, None);
-		c->is.dockapp = True;
-		c->is.bastard = True;
-		c->skip.skip = -1U; /* skip everything */
-		c->can.can = 0; /* no functionality */
-		/* might let one move later */
-		c->has.has = 0; /* no decorations */
-		c->is.floater = True;
-	}
-}
-
-void
 manage(Window w, XWindowAttributes *wa)
 {
 	Client *c, *t = NULL;
@@ -2577,12 +2693,22 @@ manage(Window w, XWindowAttributes *wa)
 	// c->with.with = 0;
 	c->has.has = -1U;
 	c->can.can = -1U;
-	process_dockapp(c);
-	ewmh_process_net_window_type(c);
-	ewmh_process_kde_net_window_type_override(c);
+	// c->is.icon = False;
+	// c->is.hidden = False;
+	wmh = XGetWMHints(dpy, c->win);
+	applystate(c, wmh);
+	if (c->is.dockapp)
+		c->wintype = WTFLAG(WindowTypeDock);
+	else {
+		ewmh_process_net_window_type(c);
+		ewmh_process_kde_net_window_type_override(c);
+	}
+	if (c->icon && c->icon != c->win) {
+		XSaveContext(dpy, c->icon, context[ClientWindow], (XPointer) c);
+		XSaveContext(dpy, c->icon, context[ClientAny], (XPointer) c);
+		XSaveContext(dpy, c->icon, context[ScreenContext], (XPointer) scr);
+	}
 
-	c->is.icon = False;
-	c->is.hidden = False;
 	c->tags = ecalloc(scr->ntags, sizeof(*c->tags));
 	c->r.b = c->c.b = c->is.bastard ? 0 : scr->style.border;
 	/* XXX: had.border? */
@@ -2614,7 +2740,7 @@ manage(Window w, XWindowAttributes *wa)
 	   setwmstate() at the end of this sequence (clients use appearance of WM_STATE
 	   to indicate mapping). */
 
-	if ((wmh = XGetWMHints(dpy, c->win))) {
+	if (wmh) {
 		if (wmh->flags & InputHint)
 			c->can.focus = take_focus | (wmh->input ? GIVE_FOCUS : 0);
 		c->is.attn = (wmh->flags & XUrgencyHint) ? True : False;
@@ -2699,14 +2825,28 @@ manage(Window w, XWindowAttributes *wa)
 	c->s.h = wa->height;
 	c->s.b = wa->border_width;
 
-	CPRINTF(c, "initial geometry c: %dx%d+%d+%d:%d t %d g %d\n",
-			c->c.w, c->c.h, c->c.x, c->c.y, c->c.b, c->th, c->gh);
-	CPRINTF(c, "initial geometry r: %dx%d+%d+%d:%d t %d g %d\n",
-			c->r.w, c->r.h, c->r.x, c->r.y, c->r.b, c->th, c->gh);
-	CPRINTF(c, "initial geometry s: %dx%d+%d+%d:%d t %d g %d\n",
-			c->s.w, c->s.h, c->s.x, c->s.y, c->s.b, c->th, c->gh);
+	if (c->icon) {
+		c->r.x = c->c.x = 0;
+		c->r.y = c->c.y = 0;
+		if (c->icon != c->win && XGetWindowAttributes(dpy, c->icon, wa)) {
+			c->r.x = wa->x;
+			c->r.y = wa->y;
+			c->r.w = wa->width;
+			c->r.h = wa->height;
+			c->r.b = wa->border_width;
+			c->c.w = c->r.w + 2 * c->r.x;
+			c->c.h = c->r.h + 2 * c->r.y;
+		}
+	}
 
-	if (!wa->x && !wa->y && c->can.move) {
+	CPRINTF(c, "initial geometry c: %dx%d+%d+%d:%d t %d g %d\n",
+		c->c.w, c->c.h, c->c.x, c->c.y, c->c.b, c->th, c->gh);
+	CPRINTF(c, "initial geometry r: %dx%d+%d+%d:%d t %d g %d\n",
+		c->r.w, c->r.h, c->r.x, c->r.y, c->r.b, c->th, c->gh);
+	CPRINTF(c, "initial geometry s: %dx%d+%d+%d:%d t %d g %d\n",
+		c->s.w, c->s.h, c->s.x, c->s.y, c->s.b, c->th, c->gh);
+
+	if (!wa->x && !wa->y && c->can.move && !c->is.dockapp) {
 		/* put it on the monitor startup notification requested if not already
 		   placed with its group */
 		if (c->monitor && !clientmonitor(c))
@@ -2716,18 +2856,18 @@ manage(Window w, XWindowAttributes *wa)
 	}
 
 	CPRINTF(c, "placed geometry c: %dx%d+%d+%d:%d t %d g %d\n",
-			c->c.w, c->c.h, c->c.x, c->c.y, c->c.b, c->th, c->gh);
+		c->c.w, c->c.h, c->c.x, c->c.y, c->c.b, c->th, c->gh);
 	CPRINTF(c, "placed geometry r: %dx%d+%d+%d:%d t %d g %d\n",
-			c->r.w, c->r.h, c->r.x, c->r.y, c->r.b, c->th, c->gh);
+		c->r.w, c->r.h, c->r.x, c->r.y, c->r.b, c->th, c->gh);
 	CPRINTF(c, "placed geometry s: %dx%d+%d+%d:%d t %d g %d\n",
-			c->s.w, c->s.h, c->s.x, c->s.y, c->s.b, c->th, c->gh);
+		c->s.w, c->s.h, c->s.x, c->s.y, c->s.b, c->th, c->gh);
 
 	c->with.struts = getstruts(c);
 
 	if (!c->can.move) {
 		int rx, ry;
 
-		getreference(&rx, &ry, (Geometry *)wa, wa->win_gravity);
+		getreference(&rx, &ry, (Geometry *) wa, wa->win_gravity);
 		if (!(cm = getmonitor(rx, ry)))
 			cm = closestmonitor(rx, ry);
 		memcpy(c->tags, cm->seltags, scr->ntags * sizeof(*c->tags));
@@ -2735,8 +2875,13 @@ manage(Window w, XWindowAttributes *wa)
 
 	XGrabButton(dpy, AnyButton, AnyModifier, c->win, True,
 		    ButtonPressMask, GrabModeSync, GrabModeAsync, None, None);
+	if (c->icon && c->icon != c->win)
+		XGrabButton(dpy, AnyButton, AnyModifier, c->icon, True,
+			    ButtonPressMask, GrabModeSync, GrabModeAsync, None, None);
 	twa.override_redirect = True;
 	twa.event_mask = FRAMEMASK;
+	if (c->is.dockapp)
+		twa.event_mask |= ExposureMask | MOUSEMASK;
 	mask = CWOverrideRedirect | CWEventMask;
 	if (wa->depth == 32) {
 		mask |= CWColormap | CWBorderPixel | CWBackPixel;
@@ -2790,18 +2935,29 @@ manage(Window w, XWindowAttributes *wa)
 
 	twa.event_mask = CLIENTMASK;
 	twa.do_not_propagate_mask = CLIENTNOPROPAGATEMASK;
-	XChangeWindowAttributes(dpy, c->win, CWEventMask | CWDontPropagate, &twa);
-	XSelectInput(dpy, c->win, CLIENTMASK);
-
-	XReparentWindow(dpy, c->win, c->frame, 0, c->th);
-	if (c->grips)
-		XReparentWindow(dpy, c->grips, c->frame, 0, c->c.h - c->gh);
-	if (c->title)
-		XReparentWindow(dpy, c->title, c->frame, 0, 0);
-	XAddToSaveSet(dpy, c->win);
-	XMapWindow(dpy, c->win);
 	wc.border_width = 0;
-	XConfigureWindow(dpy, c->win, CWBorderWidth, &wc);
+
+	if (c->icon) {
+		XChangeWindowAttributes(dpy, c->icon, CWEventMask | CWDontPropagate, &twa);
+		XSelectInput(dpy, c->icon, CLIENTMASK);
+
+		XReparentWindow(dpy, c->icon, c->frame, c->r.x, c->r.y);
+		XAddToSaveSet(dpy, c->icon);
+		XConfigureWindow(dpy, c->icon, CWBorderWidth, &wc);
+		XMapWindow(dpy, c->icon);
+	} else {
+		XChangeWindowAttributes(dpy, c->win, CWEventMask | CWDontPropagate, &twa);
+		XSelectInput(dpy, c->win, CLIENTMASK);
+
+		XReparentWindow(dpy, c->win, c->frame, 0, c->th);
+		if (c->grips)
+			XReparentWindow(dpy, c->grips, c->frame, 0, c->c.h - c->gh);
+		if (c->title)
+			XReparentWindow(dpy, c->title, c->frame, 0, 0);
+		XAddToSaveSet(dpy, c->win);
+		XConfigureWindow(dpy, c->win, CWBorderWidth, &wc);
+		XMapWindow(dpy, c->win);
+	}
 
 	ban(c);
 
@@ -2810,9 +2966,10 @@ manage(Window w, XWindowAttributes *wa)
 	ewmh_process_net_window_sync_request_counter(c);
 	ewmh_process_net_window_state(c);
 	c->is.managed = True;
+	setwmstate(c->win, c->winstate, c->icon ? c->frame : None);
+	ewmh_update_net_window_state(c);
 	ewmh_update_net_window_desktop(c);
 
-	XMoveResizeWindow(dpy, c->win, 0, c->th, c->c.w, c->c.h - c->th - c->gh);
 	if (c->grips && c->gh) {
 		XMoveResizeWindow(dpy, c->grips, 0, c->c.h - c->gh, c->c.w, c->gh);
 		XMapWindow(dpy, c->grips);
@@ -2829,6 +2986,69 @@ manage(Window w, XWindowAttributes *wa)
 		updategeom(NULL);
 	}
 	XSync(dpy, False);
+	CPRINTF(c, "%-20s: %s\n", "skip.taskbar", c->skip.taskbar ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "skip.pager", c->skip.pager ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "skip.winlist", c->skip.winlist ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "skip.cycle", c->skip.cycle ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "skip.focus", c->skip.focus ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "skip.arrange", c->skip.arrange ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "skip.sloppy", c->skip.sloppy ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "is.transient", c->is.transient ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "is.grptrans", c->is.grptrans ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "is.banned", c->is.banned ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "is.max", c->is.max ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "is.floater", c->is.floater ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "is.maxv", c->is.maxv ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "is.maxh", c->is.maxh ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "is.shaded", c->is.shaded ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "is.icon", c->is.icon ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "is.fill", c->is.fill ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "is.modal", c->is.modal ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "is.above", c->is.above ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "is.below", c->is.below ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "is.attn", c->is.attn ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "is.sticky", c->is.sticky ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "is.hidden", c->is.hidden ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "is.bastard", c->is.bastard ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "is.fs", c->is.fs ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "is.focused", c->is.focused ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "is.dockapp", c->is.dockapp ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "is.managed", c->is.managed ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "has.border", c->has.border ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "has.grips", c->has.grips ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "has.title", c->has.title ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "has.but.menu", c->has.but.menu ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "has.but.min", c->has.but.min ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "has.but.max", c->has.but.max ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "has.but.close", c->has.but.close ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "has.but.size", c->has.but.size ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "has.but.shade", c->has.but.shade ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "has.but.fill", c->has.but.fill ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "has.but.floats", c->has.but.floats ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "with.struts", c->with.struts ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "with.time", c->with.time ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "can.move", c->can.move ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "can.size", c->can.size ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "can.sizev", c->can.sizev ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "can.sizeh", c->can.sizeh ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "can.min", c->can.min ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "can.max", c->can.max ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "can.maxv", c->can.maxv ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "can.maxh", c->can.maxh ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "can.close", c->can.close ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "can.shade", c->can.shade ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "can.stick", c->can.stick ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "can.fs", c->can.fs ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "can.above", c->can.above ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "can.below", c->can.below ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "can.fill", c->can.fill ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "can.fillh", c->can.fillh ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "can.fillv", c->can.fillv ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "can.floats", c->can.floats ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "can.hide", c->can.hide ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "can.tag", c->can.tag ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "can.arrange", c->can.arrange ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "can.focus", c->can.focus ? "true" : "false");
 	if (!c->is.bastard && (focusnew || (canfocus(c) && !canfocus(sel)))) {
 		DPRINTF
 		    ("Focusing newly managed %sclient: frame 0x%08lx win 0x%08lx name %s\n",
@@ -3349,6 +3569,7 @@ reconfigure_dockapp(Client *c, ClientGeometry * n)
 		c->r.y = (n->h - c->r.h) / 2;
 		wmask |= CWY;
 	}
+	XMapWindow(dpy, c->frame); /* not mapped for some reason... */
 	wwc.width = c->r.w;
 	wwc.height = c->r.h;
 	wwc.border_width = c->r.b;
@@ -3361,7 +3582,7 @@ reconfigure_dockapp(Client *c, ClientGeometry * n)
 	if (wmask) {
 		DPRINTF("wind  wc = %ux%u+%d+%d:%d\n", wwc.width, wwc.height, wwc.x, wwc.y,
 			wwc.border_width);
-		XConfigureWindow(dpy, c->icon_win,
+		XConfigureWindow(dpy, c->icon,
 				 CWX | CWY | CWWidth | CWHeight | CWBorderWidth, &wwc);
 	}
 	if ((fmask | wmask) && !(wmask & (CWWidth | CWHeight))) {
@@ -3369,8 +3590,8 @@ reconfigure_dockapp(Client *c, ClientGeometry * n)
 
 		ce.type = ConfigureNotify;
 		ce.display = dpy;
-		ce.event = c->icon_win;
-		ce.window = c->icon_win;
+		ce.event = c->icon;
+		ce.window = c->icon;
 		ce.x = c->c.x + c->r.x;
 		ce.y = c->c.y + c->r.y;
 		ce.width = c->r.w;
@@ -3378,13 +3599,12 @@ reconfigure_dockapp(Client *c, ClientGeometry * n)
 		ce.border_width = c->c.b;
 		ce.above = None;
 		ce.override_redirect = False;
-		XSendEvent(dpy, c->icon_win, False, StructureNotifyMask, (XEvent *) &ce);
+		XSendEvent(dpy, c->icon, False, StructureNotifyMask, (XEvent *) &ce);
 	}
 	XSync(dpy, False);
-	if (fmask & (CWWidth | CWHeight)) {
-		drawclient(c);
+	drawclient(c);
+	if (fmask & (CWWidth | CWHeight))
 		ewmh_update_net_window_extents(c);
-	}
 	XSync(dpy, False);
 }
 
@@ -4112,7 +4332,7 @@ Client *
 nexttiled(Client *c, Monitor *m)
 {
 	for (;
-	     c && (c->is.floater || c->skip.arrange || !isvisible(c, m) || c->is.bastard
+	     c && (c->is.dockapp || c->is.floater || c->skip.arrange || !isvisible(c, m) || c->is.bastard
 		   || (c->is.icon || c->is.hidden)); c = c->next) ;
 	return c;
 }
@@ -4121,7 +4341,7 @@ Client *
 prevtiled(Client *c, Monitor *m)
 {
 	for (;
-	     c && (c->is.floater || c->skip.arrange || !isvisible(c, m) || c->is.bastard
+	     c && (c->is.dockapp || c->is.floater || c->skip.arrange || !isvisible(c, m) || c->is.bastard
 		   || (c->is.icon || c->is.hidden)); c = c->prev) ;
 	return c;
 }
@@ -4192,7 +4412,7 @@ total_overlap(Client *c, Monitor *m, Geometry *g) {
 	a = 0;
 
 	for (o = scr->clients; o; o = o->next)
-		if (o != c && !o->is.bastard && o->can.floats && isvisible(o, m))
+		if (o != c && !o->is.bastard && !c->is.dockapp && o->can.floats && isvisible(o, m))
 			a += area_overlap(x1, y1, x2, y2,
 					  o->r.x, o->r.y,
 					  o->r.x + o->r.w + 2 * o->r.b,
@@ -4972,25 +5192,33 @@ run(void)
 	while (running) {
 		struct pollfd pfd = { xfd, POLLIN | POLLERR | POLLHUP, 0 };
 
-		switch (poll(&pfd, 1, -1)) {
-		case -1:
+		if (signum) {
+			if (signum == SIGHUP)
+				quit("HUP!");
+			else
+				quit(NULL);
+			break;
+		}
+
+		if (poll(&pfd, 1, -1) == -1) {
 			if (errno == EAGAIN || errno == EINTR || errno == ERESTART)
 				continue;
 			cleanup(CauseRestarting);
 			eprint("poll failed: %s\n", strerror(errno));
 			exit(EXIT_FAILURE);
-		case 1:
+		} else {
 			if (pfd.revents & (POLLNVAL | POLLHUP | POLLERR)) {
 				cleanup(CauseRestarting);
 				eprint("poll error\n");
 				exit(EXIT_FAILURE);
 			}
 			if (pfd.revents & POLLIN) {
-				while (XPending(dpy)) {
+				while (XPending(dpy) && running) {
 					XNextEvent(dpy, &ev);
 					scr = geteventscr(&ev);
 					if (!handle_event(&ev))
-						XPRINTF("WARNING: Event %d not handled\n", ev.type);
+						XPRINTF("WARNING: Event %d not handled\n",
+							ev.type);
 				}
 			}
 		}
@@ -5066,7 +5294,7 @@ calc_fill(Client *c, Monitor *m, Workarea *wa, ClientGeometry *g) {
 			continue;
 		if (o == c)
 			continue;
-		if (o->is.bastard)
+		if (o->is.bastard || o->is.dockapp)
 			continue;
 		if (!isfloating(o, m))
 			continue;
@@ -5208,6 +5436,7 @@ delsystray(Window win) {
 
 Bool
 isdockapp(Window win) {
+#if 0
 	XWMHints *wmh;
 	Bool ret;
 
@@ -5215,6 +5444,9 @@ isdockapp(Window win) {
 		(wmh->flags & StateHint) && (wmh->initial_state == WithdrawnState))))
 		setwmstate(win, WithdrawnState, None);
 	return ret;
+#else
+	return False;
+#endif
 }
 
 Bool
@@ -5531,22 +5763,22 @@ initmonitors(XEvent *e)
 			if (i < scr->nmons) {
 				m = &scr->monitors[i];
 				if (m->sc.x != si[i].x_org) {
-					m->sc.x = m->wa.x = si[i].x_org;
+					m->sc.x = m->wa.x = m->dock.wa.x = si[i].x_org;
 					m->mx = m->sc.x + m->sc.w/2;
 					full_update = True;
 				}
 				if (m->sc.y != si[i].y_org) {
-					m->sc.y = m->wa.y = si[i].y_org;
+					m->sc.y = m->wa.y = m->dock.wa.y = si[i].y_org;
 					m->my = m->sc.y + m->sc.h/2;
 					full_update = True;
 				}
 				if (m->sc.w != si[i].width) {
-					m->sc.w = m->wa.w = si[i].width;
+					m->sc.w = m->wa.w = m->dock.wa.w = si[i].width;
 					m->mx = m->sc.x + m->sc.w/2;
 					size_update = True;
 				}
 				if (m->sc.h != si[i].height) {
-					m->sc.h = m->wa.h = si[i].height;
+					m->sc.h = m->wa.h = m->dock.wa.h = si[i].height;
 					m->my = m->sc.y + m->sc.h/2;
 					size_update = True;
 				}
@@ -5561,10 +5793,12 @@ initmonitors(XEvent *e)
 				m = &scr->monitors[i];
 				full_update = True;
 				m->index = i;
-				m->sc.x = m->wa.x = si[i].x_org;
-				m->sc.y = m->wa.y = si[i].y_org;
-				m->sc.w = m->wa.w = si[i].width;
-				m->sc.h = m->wa.h = si[i].height;
+				m->sc.x = m->wa.x = m->dock.wa.x = si[i].x_org;
+				m->sc.y = m->wa.y = m->dock.wa.y = si[i].y_org;
+				m->sc.w = m->wa.w = m->dock.wa.w = si[i].width;
+				m->sc.h = m->wa.h = m->dock.wa.h = si[i].height;
+				m->dock.position = options.dockpos;
+				m->dock.orient = options.dockori;
 				m->mx = m->sc.x + m->sc.w/2;
 				m->my = m->sc.y + m->sc.h/2;
 				m->num = si[i].screen_number;
@@ -5573,8 +5807,8 @@ initmonitors(XEvent *e)
 				m->prevtags[m->num % scr->ntags] = True;
 				m->seltags[m->num % scr->ntags] = True;
 				m->curtag = m->num % scr->ntags;
-				m->veil = XCreateSimpleWindow(dpy, scr->root, m->wa.x, m->wa.y,
-						m->wa.w, m->wa.h, 0, 0, 0);
+				m->veil = XCreateSimpleWindow(dpy, scr->root, m->sc.x, m->sc.y,
+						m->sc.w, m->sc.h, 0, 0, 0);
 				wa.background_pixmap = None;
 				wa.override_redirect = True;
 				XChangeWindowAttributes(dpy, m->veil, CWBackPixmap|CWOverrideRedirect, &wa);
@@ -5615,22 +5849,22 @@ initmonitors(XEvent *e)
 			if (n < scr->nmons) {
 				m = &scr->monitors[n];
 				if (m->sc.x != ci->x) {
-					m->sc.x = m->wa.x = ci->x;
+					m->sc.x = m->wa.x = m->dock.wa.x = ci->x;
 					m->mx = m->sc.x + m->sc.w/2;
 					full_update = True;
 				}
 				if (m->sc.y != ci->y) {
-					m->sc.y = m->wa.y = ci->y;
+					m->sc.y = m->wa.y = m->dock.wa.y = ci->y;
 					m->my = m->sc.y + m->sc.h/2;
 					full_update = True;
 				}
 				if (m->sc.w != ci->width) {
-					m->sc.w = m->wa.w = ci->width;
+					m->sc.w = m->wa.w = m->dock.wa.w = ci->width;
 					m->mx = m->sc.x + m->sc.w/2;
 					size_update = True;
 				}
 				if (m->sc.h != ci->height) {
-					m->sc.h = m->wa.h = ci->height;
+					m->sc.h = m->wa.h = m->dock.wa.h = ci->height;
 					m->my = m->sc.y + m->sc.h/2;
 					size_update = True;
 				}
@@ -5645,10 +5879,12 @@ initmonitors(XEvent *e)
 				m = &scr->monitors[n];
 				full_update = True;
 				m->index = n;
-				m->sc.x = m->wa.x = ci->x;
-				m->sc.y = m->wa.y = ci->y;
-				m->sc.w = m->wa.w = ci->width;
-				m->sc.h = m->wa.h = ci->height;
+				m->dock.position = options.dockpos;
+				m->dock.orient = options.dockori;
+				m->sc.x = m->wa.x = m->dock.wa.x = ci->x;
+				m->sc.y = m->wa.y = m->dock.wa.y = ci->y;
+				m->sc.w = m->wa.w = m->dock.wa.w = ci->width;
+				m->sc.h = m->wa.h = m->dock.wa.h = ci->height;
 				m->mx = m->sc.x + m->sc.w/2;
 				m->my = m->sc.y + m->sc.h/2;
 				m->num = i;
@@ -5657,8 +5893,8 @@ initmonitors(XEvent *e)
 				m->prevtags[m->num % scr->ntags] = True;
 				m->seltags[m->num % scr->ntags] = True;
 				m->curtag = m->num % scr->ntags;
-				m->veil = XCreateSimpleWindow(dpy, scr->root, m->wa.x, m->wa.y,
-						m->wa.w, m->wa.h, 0, 0, 0);
+				m->veil = XCreateSimpleWindow(dpy, scr->root, m->sc.x, m->sc.y,
+						m->sc.w, m->sc.h, 0, 0, 0);
 				wa.background_pixmap = None;
 				wa.override_redirect = True;
 				XChangeWindowAttributes(dpy, m->veil, CWBackPixmap|CWOverrideRedirect, &wa);
@@ -5675,22 +5911,22 @@ initmonitors(XEvent *e)
 	if (n <= scr->nmons) {
 		m = &scr->monitors[0];
 		if (m->sc.x != 0) {
-			m->sc.x = m->wa.x = 0;
+			m->sc.x = m->wa.x = m->dock.wa.x = 0;
 			m->mx = m->sc.x + m->sc.w/2;
 			full_update = True;
 		}
 		if (m->sc.y != 0) {
-			m->sc.y = m->wa.y = 0;
+			m->sc.y = m->wa.y = m->dock.wa.y = 0;
 			m->my = m->sc.y + m->sc.h/2;
 			full_update = True;
 		}
 		if (m->sc.w != DisplayWidth(dpy, scr->screen)) {
-			m->sc.w = m->wa.w = DisplayWidth(dpy, scr->screen);
+			m->sc.w = m->wa.w = m->dock.wa.w = DisplayWidth(dpy, scr->screen);
 			m->mx = m->sc.x + m->sc.w/2;
 			size_update = True;
 		}
 		if (m->sc.h != DisplayHeight(dpy, scr->screen)) {
-			m->sc.h = m->wa.h = DisplayHeight(dpy, scr->screen);
+			m->sc.h = m->wa.h = m->dock.wa.h = DisplayHeight(dpy, scr->screen);
 			m->my = m->sc.y + m->sc.h/2;
 			size_update = True;
 		}
@@ -5705,10 +5941,12 @@ initmonitors(XEvent *e)
 		m = &scr->monitors[0];
 		full_update = True;
 		m->index = 0;
-		m->sc.x = m->wa.x = 0;
-		m->sc.y = m->wa.y = 0;
-		m->sc.w = m->wa.w = DisplayWidth(dpy, scr->screen);
-		m->sc.h = m->wa.h = DisplayHeight(dpy, scr->screen);
+		m->dock.position = options.dockpos;
+		m->dock.orient = options.dockori;
+		m->sc.x = m->wa.x = m->dock.wa.x = 0;
+		m->sc.y = m->wa.y = m->dock.wa.y = 0;
+		m->sc.w = m->wa.w = m->dock.wa.w = DisplayWidth(dpy, scr->screen);
+		m->sc.h = m->wa.h = m->dock.wa.h = DisplayHeight(dpy, scr->screen);
 		m->mx = m->sc.x + m->sc.w/2;
 		m->my = m->sc.y + m->sc.h/2;
 		m->num = 0;
@@ -5717,8 +5955,8 @@ initmonitors(XEvent *e)
 		m->prevtags[m->num % scr->ntags] = True;
 		m->seltags[m->num % scr->ntags] = True;
 		m->curtag = m->num % scr->ntags;
-		m->veil = XCreateSimpleWindow(dpy, scr->root, m->wa.x, m->wa.y,
-				m->wa.w, m->wa.h, 0, 0, 0);
+		m->veil = XCreateSimpleWindow(dpy, scr->root, m->sc.x, m->sc.y,
+				m->sc.w, m->sc.h, 0, 0, 0);
 		wa.background_pixmap = None;
 		wa.override_redirect = True;
 		XChangeWindowAttributes(dpy, m->veil, CWBackPixmap|CWOverrideRedirect, &wa);
@@ -5855,11 +6093,8 @@ settags(unsigned int numtags) {
 }
 
 void
-sighandler(int signum) {
-	if (signum == SIGHUP)
-		quit("HUP!");
-	else
-		quit(NULL);
+sighandler(int sig) {
+	if (sig) signum = sig;
 }
 
 void
@@ -5949,6 +6184,8 @@ setup(char *conf) {
 	options.autoroll = atoi(getresource("autoroll", "0")) ? True : False;
 	options.focus = atoi(getresource("sloppy", "0"));
 	options.snap = atoi(getresource("snap", STR(SNAP)));
+	options.dockpos = atoi(getresource("dock.position", "1"));
+	options.dockori = atoi(getresource("dock.orient", "1"));
 
 	for (scr = screens; scr < screens + nscr; scr++) {
 		if (!scr->managed)
@@ -6534,12 +6771,12 @@ togglemin(Client *c) {
 		return;
 	if (c->is.icon) {
 		c->is.icon = False;
-		c->is.hidden = False;
-		if (c->is.managed) {
+		if (c->is.managed && !c->is.hidden) {
 			focus(c);
 			arrange(clientmonitor(c));
 		}
 	} else {
+		c->is.icon = True;
 		if (c->is.managed)
 			iconify(c);
 	}
@@ -6569,7 +6806,7 @@ togglebelow(Client *c) {
 
 void
 togglepager(Client *c) {
-	if (!c || c->is.bastard)
+	if (!c || c->is.bastard || c->is.dockapp)
 		return;
 	c->skip.pager = !c->skip.pager;
 	ewmh_update_net_window_state(c);
@@ -6577,7 +6814,7 @@ togglepager(Client *c) {
 
 void
 toggletaskbar(Client *c) {
-	if (!c || c->is.bastard)
+	if (!c || c->is.bastard || c->is.dockapp)
 		return;
 	c->skip.taskbar = !c->skip.taskbar;
 	ewmh_update_net_window_state(c);
@@ -6828,7 +7065,7 @@ focusview(int index)
 	if (!cm->seltags[i])
 		return;
 	for (c = scr->stack; c; c = c->snext) {
-		if (c->tags[i] && !c->is.bastard) {	/* XXX: c->can.focus? */
+		if (c->tags[i] && !c->is.bastard && !c->is.dockapp) {	/* XXX: c->can.focus? */
 			focus(c);
 			break;
 		}
@@ -6845,7 +7082,7 @@ unmanage(Client * c, WithdrawCause cause) {
 	doarrange = !(c->skip.arrange || c->is.floater ||
 		(cause != CauseDestroyed &&
 		 XGetTransientForHint(dpy, c->win, &trans))) ||
-		c->is.bastard;
+		c->is.bastard || c->is.dockapp;
 	dostruts = c->with.struts;
 	c->can.focus = 0;
 	if (c == give)
@@ -6890,8 +7127,12 @@ unmanage(Client * c, WithdrawCause cause) {
 	if (cause != CauseDestroyed) {
 		XSelectInput(dpy, c->win, CLIENTMASK & ~MAPPINGMASK);
 		XUngrabButton(dpy, AnyButton, AnyModifier, c->win);
+		if (c->icon && c->icon != c->win) {
+			XSelectInput(dpy, c->icon, CLIENTMASK & ~MAPPINGMASK);
+			XUngrabButton(dpy, AnyButton, AnyModifier, c->icon);
+		}
 		if (cause != CauseReparented) {
-			if (c->gravity == StaticGravity) {
+			if (c->gravity == StaticGravity || c->is.dockapp) {
 				/* restore static geometry */
 				wc.x = c->s.x;
 				wc.y = c->s.y;
@@ -6905,10 +7146,17 @@ unmanage(Client * c, WithdrawCause cause) {
 				wc.height = c->r.h;
 			}
 			wc.border_width = c->s.b;
-			XReparentWindow(dpy, c->win, scr->root, wc.x, wc.y);
-			XMoveWindow(dpy, c->win, wc.x, wc.y);
-			XConfigureWindow(dpy, c->win,
-				(CWX|CWY|CWWidth|CWHeight|CWBorderWidth), &wc);
+			if (c->icon) {
+				XReparentWindow(dpy, c->icon, scr->root, wc.x, wc.y);
+				XMoveWindow(dpy, c->icon, wc.x, wc.y);
+				XConfigureWindow(dpy, c->icon,
+					(CWX|CWY|CWWidth|CWHeight|CWBorderWidth), &wc);
+			} else {
+				XReparentWindow(dpy, c->win, scr->root, wc.x, wc.y);
+				XMoveWindow(dpy, c->win, wc.x, wc.y);
+				XConfigureWindow(dpy, c->win,
+					(CWX|CWY|CWWidth|CWHeight|CWBorderWidth), &wc);
+			}
 			if (!running)
 				XMapWindow(dpy, c->win);
 		}
@@ -6929,6 +7177,11 @@ unmanage(Client * c, WithdrawCause cause) {
 	XDeleteContext(dpy, c->win, context[ClientPing]);
 	XDeleteContext(dpy, c->win, context[ClientDead]);
 	XDeleteContext(dpy, c->win, context[ScreenContext]);
+	if (c->icon && c->icon != c->win) {
+		XDeleteContext(dpy, c->icon, context[ClientWindow]);
+		XDeleteContext(dpy, c->icon, context[ClientAny]);
+		XDeleteContext(dpy, c->icon, context[ScreenContext]);
+	}
 	ewmh_release_user_time_window(c);
 	removegroup(c, c->leader, ClientGroup);
 	if (c->is.grptrans)
@@ -7385,6 +7638,7 @@ main(int argc, char *argv[])
 		eprint("adwm: cannot open display\n");
 	signal(SIGHUP, sighandler);
 	signal(SIGINT, sighandler);
+	signal(SIGTERM, sighandler);
 	signal(SIGQUIT, sighandler);
 	cargc = argc;
 	cargv = argv;

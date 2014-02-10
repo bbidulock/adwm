@@ -230,7 +230,7 @@ enum { LeftStrut, RightStrut, TopStrut, BotStrut, LastStrut }; /* ewmh struts */
 enum { ColFG, ColBG, ColBorder, ColButton, ColLast };	/* colors */
 enum { ClientWindow, ClientTitle, ClientGrips, ClientFrame, ClientTimeWindow, ClientGroup,
        ClientTransFor, ClientTransForGroup, ClientLeader, ClientAny, SysTrayWindows,
-       ClientPing, ClientDead, ClientSync, ScreenContext, PartLast };	/* client parts */
+       ClientPing, ClientDead, ClientSync, ScreenContext, PartLast }; /* client parts */
 typedef enum { IconifyBtn, MaximizeBtn, CloseBtn, ShadeBtn, StickBtn, LHalfBtn, RHalfBtn,
 	FillBtn, FloatBtn, SizeBtn, TitleTags, TitleName, TitleSep, LastElement,
 	LastBtn = TitleTags } ElementType;
@@ -333,6 +333,7 @@ struct Client {
 	int ignoreunmap;
 	long flags;
 	int wintype;
+	int winstate;
 	Bool wasfloating;
 	Bool *tags;
 	int nonmodal;
@@ -434,7 +435,7 @@ struct Client {
 	Client *cnext;
 	Client *fnext;
 	Window win;
-        Window icon_win;
+        Window icon;
 	Window title;
 	Window grips;
 	Window frame;
@@ -741,11 +742,11 @@ void initstyle();
 
 #define LENGTH(x)		(sizeof(x) / sizeof x[0])
 #ifdef DEBUG
-#define DPRINT			do { fprintf(stderr, "%s %s() %d\n",__FILE__,__func__, __LINE__); } while(0)
+#define DPRINT			do { fprintf(stderr, "%s %s() %d\n",__FILE__,__func__, __LINE__); fflush(stderr); } while(0)
 #define DPRINTF(args...)	do { fprintf(stderr, "%s %s():%d ", __FILE__,__func__, __LINE__); \
-				     fprintf(stderr, args); } while(0)
-#define CPRINTF(c,args...)	do { fprintf(stderr, "%s %s():%d [0x%08lx 0x%08lx %-20s] ", __FILE__,__func__,__LINE__,(c)->frame,(c)->win,(c)->name); \
-				     fprintf(stderr, args); } while(0)
+				     fprintf(stderr, args); fflush(stderr); } while(0)
+#define CPRINTF(c,args...)	do { fprintf(stderr, "%s %s():%d [0x%08lx 0x%08lx 0x%08lx %-20s] ", __FILE__,__func__,__LINE__,(c)->frame,(c)->win,(c)->icon,(c)->name); \
+				     fprintf(stderr, args); fflush(stderr); } while(0)
 #define XPRINTF(args...)	do { } while(0)
 #else
 #define DPRINT			do { } while(0)

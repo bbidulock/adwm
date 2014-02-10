@@ -360,6 +360,21 @@ elementw(AScreen *ds, Client *c, char which)
 }
 
 void
+drawdockapp(Client *c, AScreen *ds)
+{
+	ds->dc.x = ds->dc.y = 0;
+	if (!(ds->dc.w = c->c.w))
+		return;
+	if (!(ds->dc.h = c->c.h))
+		return;
+	XClearWindow(dpy, c->frame);
+	XSetForeground(dpy, ds->dc.gc, c == sel ? ds->style.color.sel[ColBG] : ds->style.color.norm[ColBG]);
+	XSetLineAttributes(dpy, ds->dc.gc, ds->style.border, LineSolid, CapNotLast, JoinMiter);
+	XFillRectangle(dpy, c->frame, ds->dc.gc, ds->dc.x, ds->dc.y, ds->dc.w, ds->dc.h);
+	CPRINTF(c, "Filled dockapp frame %dx%d+%d+%d\n", ds->dc.w, ds->dc.h, ds->dc.x, ds->dc.y);
+}
+
+void
 drawclient(Client *c) {
 	size_t i;
 	AScreen *ds;
@@ -374,6 +389,8 @@ drawclient(Client *c) {
 	}
 	if (!isvisible(c, NULL))
 		return;
+	if (c->is.dockapp)
+		return drawdockapp(c, ds);
 	if (!c->title && !c->grips)
 		return;
 	ds->dc.x = ds->dc.y = 0;

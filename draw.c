@@ -367,7 +367,6 @@ drawdockapp(Client *c, AScreen *ds)
 		return;
 	if (!(ds->dc.h = c->c.h))
 		return;
-	XClearWindow(dpy, c->frame);
 	XSetForeground(dpy, ds->dc.gc, c == sel ? ds->style.color.sel[ColBG] : ds->style.color.norm[ColBG]);
 	XSetLineAttributes(dpy, ds->dc.gc, ds->style.border, LineSolid, CapNotLast, JoinMiter);
 	XFillRectangle(dpy, c->frame, ds->dc.gc, ds->dc.x, ds->dc.y, ds->dc.w, ds->dc.h);

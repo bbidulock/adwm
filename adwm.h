@@ -228,7 +228,7 @@ enum {
 enum { XrandrBase, XineramaBase, XsyncBase, BaseLast };  /* X11 extensions */
 enum { LeftStrut, RightStrut, TopStrut, BotStrut, LastStrut }; /* ewmh struts */
 enum { ColFG, ColBG, ColBorder, ColButton, ColLast };	/* colors */
-enum { ClientWindow, ClientTitle, ClientGrips, ClientFrame, ClientTimeWindow, ClientGroup,
+enum { ClientWindow, ClientIcon, ClientTitle, ClientGrips, ClientFrame, ClientTimeWindow, ClientGroup,
        ClientTransFor, ClientTransForGroup, ClientLeader, ClientAny, SysTrayWindows,
        ClientPing, ClientDead, ClientSync, ScreenContext, PartLast }; /* client parts */
 typedef enum { IconifyBtn, MaximizeBtn, CloseBtn, ShadeBtn, StickBtn, LHalfBtn, RHalfBtn,

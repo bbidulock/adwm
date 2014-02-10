@@ -1097,6 +1097,9 @@ buttonpress(XEvent *e)
 			(*action) (c, (XEvent *) ev);
 		XUngrabPointer(dpy, CurrentTime);
 		drawclient(c);
+	} else if ((c = getclient(ev->window, ClientIcon)) && ev->window == c->icon) {
+		XAllowEvents(dpy, ReplayPointer, CurrentTime);
+		return True;
 	} else if ((c = getclient(ev->window, ClientWindow)) && ev->window == c->win) {
 		XPRINTF("WINDOW %s: 0x%lx button: %d\n", c->name, ev->window, ev->button);
 		if (CLEANMASK(ev->state) != modkey) {
@@ -2704,10 +2707,12 @@ manage(Window w, XWindowAttributes *wa)
 		ewmh_process_net_window_type(c);
 		ewmh_process_kde_net_window_type_override(c);
 	}
-	if (c->icon && c->icon != c->win) {
-		XSaveContext(dpy, c->icon, context[ClientWindow], (XPointer) c);
-		XSaveContext(dpy, c->icon, context[ClientAny], (XPointer) c);
-		XSaveContext(dpy, c->icon, context[ScreenContext], (XPointer) scr);
+	if (c->icon) {
+		XSaveContext(dpy, c->icon, context[ClientIcon], (XPointer) c);
+		if (c->icon != c->win) {
+			XSaveContext(dpy, c->icon, context[ClientAny], (XPointer) c);
+			XSaveContext(dpy, c->icon, context[ScreenContext], (XPointer) scr);
+		}
 	}
 
 	c->tags = ecalloc(scr->ntags, sizeof(*c->tags));
@@ -2934,9 +2939,9 @@ manage(Window w, XWindowAttributes *wa)
 	attachstack(c);
 	ewmh_update_net_client_list();
 
+	wc.border_width = 0;
 	twa.event_mask = CLIENTMASK;
 	twa.do_not_propagate_mask = CLIENTNOPROPAGATEMASK;
-	wc.border_width = 0;
 
 	if (c->icon) {
 		XChangeWindowAttributes(dpy, c->icon, CWEventMask | CWDontPropagate, &twa);
@@ -7443,10 +7448,12 @@ unmanage(Client * c, WithdrawCause cause) {
 	XDeleteContext(dpy, c->win, context[ClientPing]);
 	XDeleteContext(dpy, c->win, context[ClientDead]);
 	XDeleteContext(dpy, c->win, context[ScreenContext]);
-	if (c->icon && c->icon != c->win) {
-		XDeleteContext(dpy, c->icon, context[ClientWindow]);
-		XDeleteContext(dpy, c->icon, context[ClientAny]);
-		XDeleteContext(dpy, c->icon, context[ScreenContext]);
+	if (c->icon) {
+		XDeleteContext(dpy, c->icon, context[ClientIcon]);
+		if (c->icon != c->win) {
+			XDeleteContext(dpy, c->icon, context[ClientAny]);
+			XDeleteContext(dpy, c->icon, context[ScreenContext]);
+		}
 	}
 	ewmh_release_user_time_window(c);
 	removegroup(c, c->leader, ClientGroup);

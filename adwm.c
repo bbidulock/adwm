@@ -142,11 +142,12 @@ void m_prevtag(Client *c, XEvent *ev);
 void m_nexttag(Client *c, XEvent *ev);
 void moveresizekb(Client *c, int dx, int dy, int dw, int dh);
 Monitor *nearmonitor(void);
-Client *nexttiled(Client *c, Monitor *m);
-Client *prevtiled(Client *c, Monitor *m);
 Client *nextdockapp(Client *c, Monitor *m);
 Client *prevdockapp(Client *c, Monitor *m);
+Client *nexttiled(Client *c, Monitor *m);
+Client *prevtiled(Client *c, Monitor *m);
 void place(Client *c, WindowPlacement p);
+static Bool place_overlap(Geometry *c, Geometry *o);
 Bool propertynotify(XEvent *e);
 Bool reparentnotify(XEvent *e);
 void quit(const char *arg);
@@ -2852,7 +2853,7 @@ manage(Window w, XWindowAttributes *wa)
 		if (c->monitor && !clientmonitor(c))
 			memcpy(c->tags, scr->monitors[c->monitor - 1].seltags,
 			       scr->ntags * sizeof(*c->tags));
-		place(c, CascadePlacement);
+		place(c, ColSmartPlacement);
 	}
 
 	CPRINTF(c, "placed geometry c: %dx%d+%d+%d:%d t %d g %d\n",
@@ -4331,18 +4332,16 @@ m_resize(Client *c, XEvent *e)
 Client *
 nexttiled(Client *c, Monitor *m)
 {
-	for (;
-	     c && (c->is.dockapp || c->is.floater || c->skip.arrange || !isvisible(c, m) || c->is.bastard
-		   || (c->is.icon || c->is.hidden)); c = c->next) ;
+	for (; c && (c->is.dockapp || c->is.floater || c->skip.arrange || !isvisible(c, m)
+		     || c->is.bastard || (c->is.icon || c->is.hidden)); c = c->next) ;
 	return c;
 }
 
 Client *
 prevtiled(Client *c, Monitor *m)
 {
-	for (;
-	     c && (c->is.dockapp || c->is.floater || c->skip.arrange || !isvisible(c, m) || c->is.bastard
-		   || (c->is.icon || c->is.hidden)); c = c->prev) ;
+	for (; c && (c->is.dockapp || c->is.floater || c->skip.arrange || !isvisible(c, m)
+		     || c->is.bastard || (c->is.icon || c->is.hidden)); c = c->prev) ;
 	return c;
 }
 
@@ -4420,8 +4419,262 @@ total_overlap(Client *c, Monitor *m, Geometry *g) {
 	return a;
 }
 
+Client *
+nextplaced(Client *x, Client *c, Monitor *m)
+{
+	for (; c && (c == x || c->is.bastard || c->is.dockapp || !c->can.floats
+		     || !isvisible(c, m)); c = c->snext) ;
+	return c;
+}
+
+static int
+qsort_t2b_l2r(const void *a, const void *b)
+{
+	Geometry *ga = *(typeof(ga) *)a;
+	Geometry *gb = *(typeof(ga) *)b;
+	int ret;
+
+	if (!(ret = ga->y - gb->y))
+		ret = ga->x - gb->x;
+	return ret;
+}
+
+static int
+qsort_l2r_t2b(const void *a, const void *b)
+{
+	Geometry *ga = *(typeof(ga) *)a;
+	Geometry *gb = *(typeof(ga) *)b;
+	int ret;
+
+	if (!(ret = ga->x - gb->x))
+		ret = ga->y - gb->y;
+	return ret;
+}
+
+static int
+qsort_cascade(const void *a, const void *b)
+{
+	Geometry *ga = *(typeof(ga) *)a;
+	Geometry *gb = *(typeof(ga) *)b;
+	int ret;
+
+	if ((ret = ga->x - gb->x) < 0 || (ret = ga->y - gb->y) < 0)
+		return -1;
+	return 1;
+}
+
+Geometry *
+place_geom(Client *c)
+{
+	if (c->is.max || c->is.maxv || c->is.maxh || c->is.fill || c->is.fs)
+		return &c->c;
+	return &c->r;
+}
+
 void
-place_smart(Client *c, WindowPlacement p, ClientGeometry *g, Monitor *m, Workarea *w)
+place_smart(Client *c, WindowPlacement p, ClientGeometry * g, Monitor *m, Workarea *w)
+{
+	Client *s;
+	Geometry **stack = NULL, **unobs, *e, *o;
+	unsigned int num, i, j;
+
+	/* XXX: this algorithm is smarter than the old place_smart: it first determines
+	   the top layer of windows by determining which windows are not obscured by any
+	   other.  Then, for cascade placement it simply cascades over the northwest
+	   unobscured window (if possible) and starts a new cascade in the northwest
+	   otherwise.  For column placement, it attempts to place the window to the right 
+	   of unobscured windows (if possible) and then works its way right and then down 
+	   and right again.  For row placement, it attempts to place windows below
+	   unobscured windows (if possible) and then works its way right and then down
+	   again.  If either row or column fail it reverts to cascade. */
+
+	/* find all placeable windows in stacking order */
+	for (num = 0, s = nextplaced(c, scr->stack, m); s;
+	     num++, s = nextplaced(c, s->snext, m)) {
+		stack = erealloc(stack, (num + 1) * sizeof(*stack));
+		stack[num] = place_geom(s);
+	}
+	DPRINTF("There are %d stacked windows\n", num);
+
+	unobs = ecalloc(num, sizeof(*unobs));
+	memcpy(unobs, stack, num * sizeof(*unobs));
+
+	/* nulls all occluded windows */
+	for (i = 0; i < num; i++)
+		if ((e = stack[i]))
+			for (j = i + 1; j < num; j++)
+				if ((o = unobs[j]) && place_overlap(e, o))
+					unobs[j] = NULL;
+
+	/* collect non-nulls to the start */
+	for (i = 0, j = 0; i < num; i++) {
+		if (!(e = unobs[i]))
+			break;
+		stack[j++] = e;
+	}
+
+	free(unobs);
+	unobs = NULL;
+
+	DPRINTF("There are %d unoccluded windows\n", j);
+
+	assert(j > 0 || num == 0);	/* first window always unoccluded */
+	num = j;
+
+	g->x = w->x;
+	g->y = w->y;
+
+	/* if northwest placement works, go with it */
+	for (i = 0; i < num && !place_overlap((Geometry *) g, stack[i]); i++) ;
+	if (i == num) {
+		free(stack);
+		return;
+	}
+
+	switch (p) {
+	case RowSmartPlacement:
+		/* sort top to bottom, left to right */
+		DPRINTF("sorting top to bottom, left to right\n");
+		qsort(stack, num, sizeof(*stack), &qsort_t2b_l2r);
+		break;
+	case ColSmartPlacement:
+		/* sort left to right, top to bottom */
+		DPRINTF("sorting left to right, top to bottom\n");
+		qsort(stack, num, sizeof(*stack), &qsort_l2r_t2b);
+		break;
+	case CascadePlacement:
+	default:
+		DPRINTF("sorting top left to bottom right\n");
+		qsort(stack, num, sizeof(*stack), &qsort_cascade);
+		break;
+	}
+	DPRINTF("Sort result:\n");
+	for (i = 0; i < num; i++) {
+		e = stack[i];
+		DPRINTF("%d: %dx%d+%d+%d\n", i, e->w, e->h, e->x, e->y);
+	}
+
+	switch (p) {
+	case RowSmartPlacement:
+		DPRINTF("trying RowSmartPlacement\n");
+		/* try below, right each window */
+		/* below */
+		for (i = 0; i < num; i++) {
+			e = stack[i];
+			DPRINTF("below: %dx%d+%d+%d this\n", e->w, e->h, e->x, e->y);
+			g->x = e->x;
+			g->y = e->y + e->h;
+			if (g->x < w->x || g->y < w->y || g->x + g->w > w->x + w->w
+			    || g->y + g->h > w->y + w->h) {
+				DPRINTF("below: %dx%d+%d+%d outside\n", g->w, g->h, g->x,
+					g->y);
+				continue;
+			}
+			for (j = 0; j < num && !place_overlap((Geometry *) g, stack[j]);
+			     j++) ;
+			if (j == num) {
+				DPRINTF("below: %dx%d+%d+%d good\n", g->w, g->h, g->x,
+					g->y);
+				free(stack);
+				return;
+			}
+			DPRINTF("below: %dx%d+%d+%d no good\n", g->w, g->h, g->x, g->y);
+		}
+		/* right */
+		for (i = 0; i < num; i++) {
+			e = stack[i];
+			DPRINTF("right: %dx%d+%d+%d this\n", e->w, e->h, e->x, e->y);
+			g->x = e->x + e->w;
+			g->y = e->y;
+			if (g->x < w->x || g->y < w->y || g->x + g->w > w->x + w->w
+			    || g->y + g->h > w->y + w->h) {
+				DPRINTF("right: %dx%d+%d+%d outside\n", g->w, g->h, g->x,
+					g->y);
+				continue;
+			}
+			for (j = 0; j < num && !place_overlap((Geometry *) g, stack[j]);
+			     j++) ;
+			if (j == num) {
+				DPRINTF("right: %dx%d+%d+%d good\n", g->w, g->h, g->x,
+					g->y);
+				free(stack);
+				return;
+			}
+			DPRINTF("right: %dx%d+%d+%d no good\n", g->w, g->h, g->x, g->y);
+		}
+		DPRINTF("defaulting to CascadePlacement\n");
+		break;
+	case ColSmartPlacement:
+		DPRINTF("trying ColSmartPlacement\n");
+		/* try right, below each window */
+		/* right */
+		for (i = 0; i < num; i++) {
+			e = stack[i];
+			DPRINTF("right: %dx%d+%d+%d this\n", e->w, e->h, e->x, e->y);
+			g->x = e->x + e->w;
+			g->y = e->y;
+			if (g->x < w->x || g->y < w->y || g->x + g->w > w->x + w->w
+			    || g->y + g->h > w->y + w->h) {
+				DPRINTF("right: %dx%d+%d+%d outside\n", g->w, g->h, g->x,
+					g->y);
+				continue;
+			}
+			for (j = 0; j < num && !place_overlap((Geometry *) g, stack[j]);
+			     j++) ;
+			if (j == num) {
+				DPRINTF("right: %dx%d+%d+%d good\n", g->w, g->h, g->x,
+					g->y);
+				free(stack);
+				return;
+			}
+			DPRINTF("right: %dx%d+%d+%d no good\n", g->w, g->h, g->x, g->y);
+		}
+		/* below */
+		for (i = 0; i < num; i++) {
+			e = stack[i];
+			DPRINTF("below: %dx%d+%d+%d this\n", e->w, e->h, e->x, e->y);
+			g->x = e->x;
+			g->y = e->y + e->h;
+			if (g->x < w->x || g->y < w->y || g->x + g->w > w->x + w->w
+			    || g->y + g->h > w->y + w->h) {
+				DPRINTF("below: %dx%d+%d+%d outside\n", g->w, g->h, g->x,
+					g->y);
+				continue;
+			}
+			for (j = 0; j < num && !place_overlap((Geometry *) g, stack[j]);
+			     j++) ;
+			if (j == num) {
+				DPRINTF("below: %dx%d+%d+%d good\n", g->w, g->h, g->x,
+					g->y);
+				free(stack);
+				return;
+			}
+			DPRINTF("below: %dx%d+%d+%d no good\n", g->w, g->h, g->x, g->y);
+		}
+		DPRINTF("defaulting to CascadePlacement\n");
+		break;
+	default:
+		DPRINTF("trying CascadePlacement\n");
+		break;
+	}
+
+	/* default to cascade placement */
+	e = stack[0];
+	g->x = e->x + scr->style.titleheight;
+	g->y = e->y + scr->style.titleheight;
+
+	/* keep window on screen if possible */
+	if (g->y + g->h > w->y + w->h && g->y > w->y)
+		g->y = w->y;
+	if (g->x + g->w > w->x + w->w && g->x > w->x)
+		g->x = w->x;
+
+	free(stack);
+	return;
+}
+
+void
+old_place_smart(Client *c, WindowPlacement p, ClientGeometry *g, Monitor *m, Workarea *w)
 {
 	int t_b, l_r, xl, xr, yt, yb, x_beg, x_end, xd, y_beg, y_end, yd;
 	int best_x, best_y, best_a;
@@ -4810,6 +5063,19 @@ client_overlap(Client *c, Client *o)
 	    wind_overlap(c->c.y, c->c.y + c->c.h, o->c.y, o->c.y + o->c.h))
 		return True;
 	return False;
+}
+
+static Bool
+place_overlap(Geometry *c, Geometry *o)
+{
+	Bool ret = False;
+
+	if (wind_overlap(c->x, c->x + c->w, o->x, o->x + o->w) &&
+	    wind_overlap(c->y, c->y + c->h, o->y, o->y + o->h))
+		ret = True;
+	DPRINTF("%dx%d+%d+%d and %dx%d+%d+%d %s\n", c->w, c->h, c->x, c->y,
+			o->w, o->h, o->x, o->y, ret ? "overlap" : "disjoint");
+	return ret;
 }
 
 static Bool

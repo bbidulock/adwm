@@ -293,7 +293,7 @@ void (*actions[LastOn][5][2])(Client *, XEvent *) = {
 		[Button5-1] =	{ NULL,		    m_shade	    },
 	},
 	[OnClientDock]   = {
-		[Button1-1] =	{ NULL,		    NULL	    },
+		[Button1-1] =	{ m_move,	    NULL	    },
 		[Button2-1] =	{ NULL,		    NULL	    },
 		[Button3-1] =	{ NULL,		    NULL	    },
 		[Button4-1] =	{ NULL,		    NULL	    },
@@ -305,6 +305,13 @@ void (*actions[LastOn][5][2])(Client *, XEvent *) = {
 		[Button3-1] =	{ m_resize,	    NULL	    },
 		[Button4-1] =	{ m_shade,	    NULL	    },
 		[Button5-1] =	{ m_shade,	    NULL	    },
+	},
+	[OnClientIcon] = {
+		[Button1-1] =	{ m_move,	    NULL	    },
+		[Button2-1] =	{ NULL,		    NULL	    },
+		[Button3-1] =	{ NULL,		    NULL	    },
+		[Button4-1] =	{ NULL,		    NULL	    },
+		[Button5-1] =	{ NULL,		    NULL	    },
 	},
 	[OnRoot]	 = {
 		[Button1-1] =	{ NULL,		    NULL	    },
@@ -318,16 +325,16 @@ void (*actions[LastOn][5][2])(Client *, XEvent *) = {
 
 Layout layouts[] = {
 	/* *INDENT-OFF* */
-	/* function	symbol	features			major		minor		placement		*/
-	{  NULL,	'i',	OVERLAP,			0,		0,		ColSmartPlacement	},
-	{  tile,	't',	MWFACT | NMASTER | ZOOM | ROTL,	OrientLeft,	OrientBottom,	ColSmartPlacement	},
-	{  tile,	'b',	MWFACT | NMASTER | ZOOM | ROTL,	OrientBottom,	OrientLeft,	ColSmartPlacement	},
-	{  tile,	'u',	MWFACT | NMASTER | ZOOM | ROTL,	OrientTop,	OrientRight,	ColSmartPlacement	},
-	{  tile,	'l',	MWFACT | NMASTER | ZOOM | ROTL,	OrientRight,	OrientTop,	ColSmartPlacement	},
-	{  monocle,	'm',	0,				0,		0,		ColSmartPlacement	},
-	{  NULL,	'f',	OVERLAP,			0,		0,		ColSmartPlacement	},
-	{  grid,	'g',	NCOLUMNS | ROTL,		OrientLeft,	OrientTop,	ColSmartPlacement	},
-	{  NULL,	'\0',	0,				0,		0,		0			}
+	/* function	symbol	features				major		minor		placement		*/
+	{  NULL,	'i',	OVERLAP,				0,		0,		ColSmartPlacement	},
+	{  tile,	't',	MWFACT | NMASTER | ZOOM | ROTL | MMOVE,	OrientLeft,	OrientBottom,	ColSmartPlacement	},
+	{  tile,	'b',	MWFACT | NMASTER | ZOOM | ROTL | MMOVE,	OrientBottom,	OrientLeft,	ColSmartPlacement	},
+	{  tile,	'u',	MWFACT | NMASTER | ZOOM | ROTL | MMOVE,	OrientTop,	OrientRight,	ColSmartPlacement	},
+	{  tile,	'l',	MWFACT | NMASTER | ZOOM | ROTL | MMOVE,	OrientRight,	OrientTop,	ColSmartPlacement	},
+	{  monocle,	'm',	0,					0,		0,		ColSmartPlacement	},
+	{  NULL,	'f',	OVERLAP,				0,		0,		ColSmartPlacement	},
+	{  grid,	'g',	NCOLUMNS | ROTL | MMOVE,		OrientLeft,	OrientTop,	ColSmartPlacement	},
+	{  NULL,	'\0',	0,					0,		0,		0			}
 	/* *INDENT-ON* */
 };
 
@@ -715,7 +722,18 @@ arrangedock(Monitor *m)
 			}
 			break;
 		}
-		reconfigure(c, &n);
+		if (!c->is.moveresize) {
+			DPRINTF("CALLING reconfigure()\n");
+			reconfigure(c, &n);
+		} else {
+			ClientGeometry C = n;
+
+			/* center it where it was before */
+			C.x = (c->c.x + c->c.w/2) - C.w / 2;
+			C.y = (c->c.y + c->c.h/2) - C.h / 2;
+			DPRINTF("CALLING reconfigure()\n");
+			reconfigure(c, &C);
+		}
 	}
 	free(g);
 }
@@ -791,8 +809,25 @@ arrange(Monitor *om) {
 	discardenter();
 }
 
+Bool
+validlist()
+{
+	Client *p, *c;
+
+	if (!scr->clients)
+		return True;
+	for (p = NULL, c = scr->clients; c ; p = c, c = c->next) {
+		if (c->prev != p)
+			return False;
+		if (p && p->next != c)
+			return False;
+	}
+	return True;
+}
+
 void
 attach(Client * c, Bool attachaside) {
+	assert(!c->prev && !c->next);
 	if (attachaside) {
 		if (scr->clients) {
 			Client * lastClient = scr->clients;
@@ -810,6 +845,9 @@ attach(Client * c, Bool attachaside) {
 		c->next = scr->clients;
 		scr->clients = c;
 	}
+#ifdef DEBUG
+	assert(validlist());
+#endif
 }
 
 void
@@ -921,8 +959,10 @@ applystate(Client *c, XWMHints * wmh)
 		c->is.dockapp = True;
 		c->is.above = True;	/* for now */
 		c->skip.skip = -1U;
+		c->skip.arrange = False;
 		c->skip.sloppy = False;
 		c->can.can = 0;	/* maybe move later */
+		c->can.move = True;
 		c->has.has = 0;
 		c->is.floater = True;
 		c->icon = ((wmh->flags & IconWindowHint) && wmh->icon_window) ?
@@ -1000,7 +1040,7 @@ unban(Client *c, Monitor *m)
 Bool
 isfloating(Client *c, Monitor *m)
 {
-	if (c->is.floater || c->skip.arrange)
+	if ((c->is.floater && !c->is.dockapp) || c->skip.arrange)
 		return True;
 	if (m && MFEATURES(m, OVERLAP))
 		return True;
@@ -1026,7 +1066,7 @@ buttonpress(XEvent *e)
 	if (user_time == CurrentTime || (int) ev->time - (int) user_time > 0)
 		user_time = ev->time;
 
-	XPRINTF("BUTTON %d: window 0x%lx root 0x%lx subwindow 0x%lx time %ld x %d y %d x_root %d y_root %d state 0x%x\n",
+	DPRINTF("BUTTON %d: window 0x%lx root 0x%lx subwindow 0x%lx time %ld x %d y %d x_root %d y_root %d state 0x%x\n",
 			ev->button, ev->window, ev->root, ev->subwindow,
 			ev->time, ev->x, ev->y, ev->x_root, ev->y_root,
 			ev->state);
@@ -1035,7 +1075,7 @@ buttonpress(XEvent *e)
 		button_mask &= ~(1 << button);
 
 	if (ev->window == scr->root) {
-		XPRINTF("SCREEN %d: 0x%lx button: %d\n", scr->screen, ev->window, ev->button);
+		DPRINTF("SCREEN %d: 0x%lx button: %d\n", scr->screen, ev->window, ev->button);
 		/* _WIN_DESKTOP_BUTTON_PROXY */
 		/* modifiers or not interested in press */
 		if (ev->type == ButtonPress) {
@@ -1066,7 +1106,7 @@ buttonpress(XEvent *e)
 			(*action) (NULL, (XEvent *) ev);
 		XUngrabPointer(dpy, CurrentTime);
 	} else if ((c = getclient(ev->window, ClientTitle)) && ev->window == c->title) {
-		XPRINTF("TITLE %s: 0x%lx button: %d\n", c->name, ev->window, ev->button);
+		DPRINTF("TITLE %s: 0x%lx button: %d\n", c->name, ev->window, ev->button);
 		for (i = 0; i < LastElement; i++) {
 			ElementClient *ec = &c->element[i];
 			Bool active;
@@ -1085,7 +1125,7 @@ buttonpress(XEvent *e)
 			if (ev->x >= ec->g.x && ev->x < ec->g.x + ec->g.w
 			    && ev->y >= ec->g.y && ev->y < ec->g.y + ec->g.h) {
 				if (ev->type == ButtonPress) {
-					XPRINTF("ELEMENT %d PRESSED\n", i);
+					DPRINTF("ELEMENT %d PRESSED\n", i);
 					ec->pressed |= (1 << button);
 					drawclient(c);
 					/* resize needs to be on button press */
@@ -1096,7 +1136,7 @@ buttonpress(XEvent *e)
 				} else if (ev->type == ButtonRelease) {
 					/* only process release if processed press */
 					if (ec->pressed & (1 << button)) {
-						XPRINTF("ELEMENT %d RELEASED\n", i);
+						DPRINTF("ELEMENT %d RELEASED\n", i);
 						ec->pressed &= !(1 << button);
 						drawclient(c);
 						/* resize needs to be on button press */
@@ -1123,11 +1163,18 @@ buttonpress(XEvent *e)
 		XUngrabPointer(dpy, CurrentTime);
 		drawclient(c);
 	} else if ((c = getclient(ev->window, ClientIcon)) && ev->window == c->icon) {
-		XAllowEvents(dpy, ReplayPointer, CurrentTime);
-		return True;
+		DPRINTF("ICON %s: 0x%lx button: %d\n", c->name, ev->window, ev->button);
+		if ((CLEANMASK(ev->state) & modkey) != modkey) {
+			XAllowEvents(dpy, ReplayPointer, CurrentTime);
+			return True;
+		}
+		if ((action = actions[OnClientIcon][button][direct]))
+			(*action) (c, (XEvent *) ev);
+		XUngrabPointer(dpy, CurrentTime);	// ev->time ??
+		drawclient(c);
 	} else if ((c = getclient(ev->window, ClientWindow)) && ev->window == c->win) {
-		XPRINTF("WINDOW %s: 0x%lx button: %d\n", c->name, ev->window, ev->button);
-		if (CLEANMASK(ev->state) != modkey) {
+		DPRINTF("WINDOW %s: 0x%lx button: %d\n", c->name, ev->window, ev->button);
+		if ((CLEANMASK(ev->state) & modkey) != modkey) {
 			XAllowEvents(dpy, ReplayPointer, CurrentTime);
 			return True;
 		}
@@ -1136,7 +1183,7 @@ buttonpress(XEvent *e)
 		XUngrabPointer(dpy, CurrentTime);	// ev->time ??
 		drawclient(c);
 	} else if ((c = getclient(ev->window, ClientFrame)) && ev->window == c->frame) {
-		XPRINTF("FRAME %s: 0x%lx button: %d\n", c->name, ev->window, ev->button);
+		DPRINTF("FRAME %s: 0x%lx button: %d\n", c->name, ev->window, ev->button);
 		if (c->is.dockapp) {
 			if ((action = actions[OnClientDock][button][direct]))
 				(*action) (c, (XEvent *) ev);
@@ -1584,6 +1631,9 @@ detach(Client * c) {
 	if (c == scr->clients)
 		scr->clients = c->next;
 	c->next = c->prev = NULL;
+#ifdef DEBUG
+	assert(validlist());
+#endif
 }
 
 void
@@ -3247,8 +3297,18 @@ grid(Monitor *m) {
 		n.h -= 2 * (gap + n.b);
 		n.t = (v->dectiled && c->has.title) ? scr->style.titleheight : 0;
 		n.g = (v->dectiled && c->has.grips) ? scr->style.gripsheight : 0;
-		DPRINTF("CALLING reconfigure()\n");
-		reconfigure(c, &n);
+		if (!c->is.moveresize) {
+			DPRINTF("CALLING reconfigure()\n");
+			reconfigure(c, &n);
+		} else {
+			ClientGeometry C = n;
+
+			/* center it where it was before */
+			C.x = (c->c.x + c->c.w/2) - C.w / 2;
+			C.y = (c->c.y + c->c.h/2) - C.h / 2;
+			DPRINTF("CALLING reconfigure()\n");
+			reconfigure(c, &C);
+		}
 	}
 	free(rc);
 	free(rh);
@@ -3325,6 +3385,81 @@ getmonitor(int x, int y) {
 			return m;
 	}
 	return NULL;
+}
+
+Client *
+ontiled(Client *c, Monitor *m, int cx, int cy)
+{
+	Client *s;
+
+	for (s = nexttiled(scr->clients, m);
+	     s && (s == c ||
+		   s->c.x > cx || cx > s->c.x + s->c.w ||
+		   s->c.y > cy || cy > s->c.y + s->c.h); s = nexttiled(s->next, m)) ;
+	return s;
+}
+
+Client *
+ondockapp(Client *c, Monitor *m, int cx, int cy)
+{
+	Client *s;
+
+	for (s = nextdockapp(scr->clients, m);
+	     s && (s == c ||
+		   s->c.x > cx || cx > s->c.x + s->c.w ||
+		   s->c.y > cy || cy > s->c.y + s->c.h); s = nextdockapp(s->next, m)) ;
+	return s;
+}
+
+Client *
+onstacked(Client *c, Monitor *m, int cx, int cy)
+{
+	return (c->is.dockapp ? ondockapp(c, m, cx, cy) : ontiled(c, m, cx, cy));
+}
+
+void
+swapstacked(Client *c, Client *s)
+{
+	Client *cn = c->next;
+	Client *cp = c->prev;
+	Client *sn = s->next;
+	Client *sp = s->prev;
+
+	assert(s != c);
+	assert(cn || sn); /* only one tail */
+	assert(cp || sp); /* only one head */
+
+	if (scr->clients == c)
+		scr->clients = s;
+	else if (scr->clients == s)
+		scr->clients = c;
+
+	if (cn == s)
+		cn = c;
+	if (cp == s)
+		cp = c;
+	if (sn == c)
+		sn = s;
+	if (sp == c)
+		sp = s;
+
+	s->next = cn;
+	s->prev = cp;
+	c->next = sn;
+	c->prev = sp;
+
+	if (cn)
+		cn->prev = s;
+	if (cp)
+		cp->next = s;
+	if (sn)
+		sn->prev = c;
+	if (sp)
+		sp->next = c;
+
+#ifdef DEBUG
+	assert(validlist());
+#endif
 }
 
 static int
@@ -3831,16 +3966,23 @@ begin_move(Client *c, Monitor *m, Bool toggle, int move)
 			c->is.shaded = False;
 		if (!isfloater) {
 			save(c); /* tear out at current geometry */
+			detachstack(c);
+			attachstack(c, True);
 			togglefloating(c);
 		} else if (c->was.is) {
 			c->was.floater = isfloater;
 			updatefloat(c, m);
-		}
-		return True;
+			raiseclient(c);
+		} else
+			raiseclient(c);
 	} else {
-		/* can't move tiled yet... */
-		return False;
+		/* can't move tiled in monocle mode */
+		if (!c->is.dockapp && !MFEATURES(m, MMOVE)) {
+			c->is.moveresize = False;
+			return False;
+		}
 	}
+	return True;
 }
 
 Bool
@@ -3914,7 +4056,6 @@ Bool
 mousemove(Client *c, XEvent *e, Bool toggle)
 {
 	int dx, dy;
-	int nx2, ny2;
 	int x_root, y_root;
 	unsigned int i;
 	Monitor *m, *nm;
@@ -3935,17 +4076,19 @@ mousemove(Client *c, XEvent *e, Bool toggle)
 
 	if (!(m = getmonitor(x_root, y_root)) || (c->curmon && m != c->curmon))
 		if (!(m = c->curmon)) {
+			CPRINTF(c, "No monitor to move from!\n");
 			XUngrabPointer(dpy, CurrentTime);
 			return moved;
 		}
 
-	if (!c->can.floats)
+	if (!c->can.floats || c->is.dockapp)
 		toggle = False;
 
 	isfloater = (toggle || isfloating(c, NULL)) ? True : False;
 
 	if (XGrabPointer(dpy, scr->root, False, MOUSEMASK, GrabModeAsync,
 			 GrabModeAsync, None, None, CurrentTime) != GrabSuccess) {
+			CPRINTF(c, "Couldn't grab pointer!\n");
 			XUngrabPointer(dpy, CurrentTime);
 			return moved;
 	}
@@ -3967,6 +4110,7 @@ mousemove(Client *c, XEvent *e, Bool toggle)
 			if (ev.xclient.message_type == _XA_NET_WM_MOVERESIZE) {
 				if (ev.xclient.data.l[2] == 11) {
 					/* _NET_WM_MOVERESIZE_CANCEL */
+					CPRINTF(c, "Move cancelled!\n");
 					moved = cancel_move(c, m, &o);
 					break;
 				}
@@ -3985,22 +4129,42 @@ mousemove(Client *c, XEvent *e, Bool toggle)
 			dx = (ev.xmotion.x_root - x_root);
 			dy = (ev.xmotion.y_root - y_root);
 			user_time = ev.xmotion.time;
-			if (!c->is.moveresize) {
+			if (!moved) {
 				if (abs(dx) < options.dragdist && abs(dy) < options.dragdist)
 					continue;
-				if (!(moved = begin_move(c, m, toggle, move)))
+				if (!(moved = begin_move(c, m, toggle, move))) {
+					CPRINTF(c, "Couldn't move client!\n");
 					break;
+				}
 				getgeometry(c, &c->c, &n);
 			}
-			/* we are probably moving to a different monitor */
-			if (!(nm = getmonitor(ev.xmotion.x_root, ev.xmotion.y_root)))
+			nm = getmonitor(ev.xmotion.x_root, ev.xmotion.y_root);
+			if (c->is.dockapp || !isfloater) {
+				Client *s;
+
+				/* cannot move off monitor when shuffling tiled */
+				if (event_scr != scr || nm != m) {
+					CPRINTF(c, "Cannot move off monitor!\n");
+					continue;
+				}
+				if ((s = onstacked(c, m, ev.xmotion.x_root, ev.xmotion.y_root))) {
+					swapstacked(c, s);
+					arrange(m);
+				}
+				/* move center to new position */
+				getgeometry(c, &c->c, &n);
+				n.x = ev.xmotion.x_root - n.w / 2;
+				n.y = ev.xmotion.y_root - n.h / 2;
+				DPRINTF("CALLING reconfigure()\n");
+				reconfigure(c, &n);
 				continue;
+			}
 			n.x = o.x + dx;
 			n.y = o.y + dy;
-			nx2 = n.x + c->c.w + 2 * c->c.b;
-			ny2 = n.y + c->c.h + 2 * c->c.b;
-			if (isfloater && options.snap && !(ev.xmotion.state & ControlMask)) {
+			if (nm && options.snap && !(ev.xmotion.state & ControlMask)) {
 				Workarea w;
+				int nx2 = n.x + c->c.w + 2 * c->c.b;
+				int ny2 = n.y + c->c.h + 2 * c->c.b;
 
 				getworkarea(nm, &w);
 				if (abs(n.x - w.x) < options.snap)
@@ -4048,7 +4212,7 @@ mousemove(Client *c, XEvent *e, Bool toggle)
 			}
 			if (event_scr != scr)
 				reparentclient(c, event_scr, n.x, n.y);
-			if (m != nm) {
+			if (nm && m != nm) {
 				for (i = 0; i < scr->ntags; i++)
 					c->tags[i] = nm->seltags[i];
 				ewmh_update_net_window_desktop(c);
@@ -4058,8 +4222,7 @@ mousemove(Client *c, XEvent *e, Bool toggle)
 			}
 			DPRINTF("CALLING reconfigure()\n");
 			reconfigure(c, &n);
-			if (isfloating(c, m))
-				save(c);
+			save(c);
 			continue;
 		}
 		XUngrabPointer(dpy, CurrentTime);
@@ -4071,14 +4234,13 @@ mousemove(Client *c, XEvent *e, Bool toggle)
 	ewmh_update_net_window_state(c);
 	return moved;
 }
+
 void
 m_move(Client *c, XEvent *e)
 {
-#if 0
-	if (!isfloating(c, c->curmon))
-		togglefloating(c);
-#endif
-	if (!mousemove(c, e, True))
+	DPRINT;
+	focus(c);
+	if (!mousemove(c, e, (e->xbutton.state & ControlMask) ? False : True))
 		raiselower(c);
 }
 
@@ -4228,16 +4390,21 @@ begin_resize(Client *c, Monitor *m, Bool toggle, int from)
 			c->is.shaded = False;
 		if (!isfloater) {
 			save(c); /* tear out at current geometry */
+			detachstack(c);
+			attachstack(c, True);
 			togglefloating(c);
 		} else if (c->was.is) {
 			c->was.floater = isfloater;
 			updatefloat(c, m);
-		}
-		return True;
+			raiseclient(c);
+		} else
+			raiseclient(c);
 	} else {
 		/* can't resize tiled yet... */
+		c->is.moveresize = False;
 		return False;
 	}
+	return True;
 }
 
 Bool
@@ -4317,7 +4484,7 @@ mouseresize_from(Client *c, int from, XEvent *e, Bool toggle)
 			return resized;
 		}
 
-	if (!c->can.floats)
+	if (!c->can.floats || c->is.dockapp)
 		toggle = False;
 
 	isfloater = (toggle || isfloating(c, m)) ? True : False;
@@ -4369,7 +4536,7 @@ mouseresize_from(Client *c, int from, XEvent *e, Bool toggle)
 			dx = (x_root - ev.xmotion.x_root);
 			dy = (y_root - ev.xmotion.y_root);
 			user_time = ev.xmotion.time;
-			if (!c->is.moveresize) {
+			if (!resized) {
 				if (abs(dx) < options.dragdist && abs(dy) < options.dragdist)
 					continue;
 				if (!(resized = begin_resize(c, m, toggle, from)))
@@ -4552,11 +4719,8 @@ mouseresize(Client *c, XEvent *e, Bool toggle)
 void
 m_resize(Client *c, XEvent *e)
 {
-#if 0
-	if (!isfloating(c, c->curmon))
-		togglefloating(c);
-#endif
-	if (!mouseresize(c, e, True))
+	focus(c);
+	if (!mouseresize(c, e, (e->xbutton.state & ControlMask) ? False : True))
 		raiselower(c);
 }
 
@@ -5844,6 +6008,11 @@ get_decor(Client *c, Monitor *m, ClientGeometry *g)
 	int i;
 	Bool decorate;
 
+	if (c->is.dockapp) {
+		g->t = 0;
+		g->g = 0;
+		return;
+	}
 	g->t = c->th;
 	g->g = c->gh;
 	if (c->is.max || !c->has.title)
@@ -5878,6 +6047,8 @@ updatefloat(Client *c, Monitor *m) {
 	ClientGeometry g;
 	Workarea wa;
 
+	if (c->is.dockapp)
+		return;
 	if (!m && !(m = c->curmon))
 		return;
 	if (!isfloating(c, m))
@@ -6999,8 +7170,18 @@ tile(Monitor *cm)
 		g.y += ma.g;
 		g.w -= 2 * (ma.g + g.b);
 		g.h -= 2 * (ma.g + g.b);
-		DPRINTF("CALLING reconfigure()\n");
-		reconfigure(c, &g);
+		if (!c->is.moveresize) {
+			DPRINTF("CALLING reconfigure()\n");
+			reconfigure(c, &g);
+		} else {
+			ClientGeometry C = g;
+
+			/* center it where it was before */
+			C.x = (c->c.x + c->c.w/2) - C.w / 2;
+			C.y = (c->c.y + c->c.h/2) - C.h / 2;
+			DPRINTF("CALLING reconfigure()\n");
+			reconfigure(c, &C);
+		}
 		if (c->is.shaded && (c != sel || !options.autoroll))
 			if (ma.s)
 				n.h = ma.th;
@@ -7083,8 +7264,18 @@ tile(Monitor *cm)
 		g.y += sa.g;
 		g.w -= 2 * (sa.g + g.b);
 		g.h -= 2 * (sa.g + g.b);
-		DPRINTF("CALLING reconfigure()\n");
-		reconfigure(c, &g);
+		if (!c->is.moveresize) {
+			DPRINTF("CALLING reconfigure()\n");
+			reconfigure(c, &g);
+		} else {
+			ClientGeometry C = g;
+
+			/* center it where it was before */
+			C.x = (c->c.x + c->c.w/2) - C.w / 2;
+			C.y = (c->c.y + c->c.h/2) - C.h / 2;
+			DPRINTF("CALLING reconfigure()\n");
+			reconfigure(c, &C);
+		}
 		if (c->is.shaded && (c != sel || !options.autoroll))
 			if (sa.s)
 				n.h = sa.th;
@@ -7158,10 +7349,12 @@ void
 togglefloating(Client *c) {
 	Monitor *m;
 
-	if (!c || c->is.floater || !(m = c->curmon))
+	if (!c || c->is.floater || !c->can.floats || !(m = c->curmon))
 		return;
+#if 0
 	if (MFEATURES(m, OVERLAP)) /* XXX: why? */
 		return;
+#endif
 
 	c->skip.arrange = !c->skip.arrange;
 	if (c->is.managed) {

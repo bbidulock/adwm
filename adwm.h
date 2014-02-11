@@ -234,7 +234,8 @@ enum { ClientWindow, ClientIcon, ClientTitle, ClientGrips, ClientFrame, ClientTi
 typedef enum { IconifyBtn, MaximizeBtn, CloseBtn, ShadeBtn, StickBtn, LHalfBtn, RHalfBtn,
 	FillBtn, FloatBtn, SizeBtn, TitleTags, TitleName, TitleSep, LastElement,
 	LastBtn = TitleTags } ElementType;
-typedef enum { OnClientTitle, OnClientGrips, OnClientFrame, OnClientDock, OnClientWindow, OnRoot, LastOn } OnWhere;
+typedef enum { OnClientTitle, OnClientGrips, OnClientFrame, OnClientDock, OnClientWindow,
+	OnClientIcon, OnRoot, LastOn } OnWhere;
 typedef enum { ButtonImageDefault,
 	ButtonImagePressed, ButtonImageToggledPressed,
 	ButtonImageHover, ButtonImageFocus, ButtonImageUnfocus,
@@ -302,6 +303,7 @@ typedef struct {
 #define	OVERLAP		(1<<3)	/* floating layout */
 #define NCOLUMNS	(1<<4)	/* adjust number of columns */
 #define ROTL		(1<<5)	/* adjust rotation */
+#define MMOVE		(1<<6)	/* shuffle tile position with mouse */
 	int features;
 	LayoutOrientation major;	/* overall orientation */
 	LayoutOrientation minor;	/* master area orientation */

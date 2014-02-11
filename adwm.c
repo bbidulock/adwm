@@ -5226,8 +5226,8 @@ constrain(Client *c, ClientGeometry *g)
 	int w = g->w, h = g->h;
 	Bool ret = False;
 
-	CPRINTF(c, "geometry before constraint: %dx%d+%d+%d:%d\n",
-			g->w, g->h, g->x, g->y, g->b);
+	CPRINTF(c, "geometry before constraint: %dx%d+%d+%d:%d[%d,%d]\n",
+			g->w, g->h, g->x, g->y, g->b, g->t, g->g);
 
 	/* remove decoration */
 	h -= g->t + g->g;
@@ -5282,8 +5282,8 @@ constrain(Client *c, ClientGeometry *g)
 		g->h = h;
 		ret = True;
 	}
-	CPRINTF(c, "geometry after constraints: %dx%d+%d+%d:%d\n",
-			g->w, g->h, g->x, g->y, g->b);
+	CPRINTF(c, "geometry after constraints: %dx%d+%d+%d:%d[%d,%d]\n",
+			g->w, g->h, g->x, g->y, g->b, g->t, g->g);
 	return ret;
 }
 
@@ -5869,8 +5869,8 @@ get_decor(Client *c, Monitor *m, ClientGeometry *g)
 		decorate = (scr->views[m->curtag].dectiled || MFEATURES(m, OVERLAP)) ?
 			True : False;
 	}
-	g->t = decorate ? scr->style.titleheight : 0;
-	g->g = decorate ? scr->style.gripsheight : 0;
+	g->t = decorate ? ((c->title && c->has.title) ? scr->style.titleheight : 0) : 0;
+	g->g = decorate ? ((c->grips && c->has.grips) ? scr->style.gripsheight : 0) : 0;
 }
 
 void

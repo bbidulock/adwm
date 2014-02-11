@@ -71,6 +71,695 @@ for the system-wide configuration file F</usr/share/adwm/adwmrc>.
 
 =head1 DEFAULT BINDINGS
 
+=head2 KEY BINDINGS
+
+B<adwm> provides key bindings that are consistent with L<dwm(1)>,
+L<echinus(1)>, L<xdwm(1)> and L<awesome(1)>.
+
+The default key bindings are:
+
+=over
+
+=item I<Window Manager>
+
+=over 24
+
+=item B<A-S-q>, B<W-C-r>
+
+Restart B<adwm>.
+
+=item B<A-C-q>, B<W-S-q>, B<M-S-q>
+
+Quit B<adwm>.
+
+=item B<W-r>
+
+Run prompt.
+
+=item B<A-t>, B<W-Return>, B<M-S-Return>
+
+Spawn terminal.
+
+=item B<W-w>
+
+Open main menu.
+
+=back
+
+=item I<Clients>
+
+=over 24
+
+=item B<W-m>
+
+Maximize client.
+
+=item B<W-n>
+
+Minimize client.
+
+=item B<W-C-n>
+
+Restore client.
+
+=item B<W-f>
+
+Set client fullscreen.
+
+=item B<A-S-c>, B<W-S-c>, B<M-S-c>
+
+Close client.  Closes focused window.
+
+=item B<W-t>
+
+Set client on top.
+
+=item B<A-S-[1..9]>, B<W-S-[1..9]>, B<m-S-[1..9]>
+
+Tag client with tag.  Applies n-th tag to the current window.
+
+=item B<M-S-0>
+
+Apply all tags to focused window.
+
+=item B<A-C-S-[1..9]>, B<W-C-S-[1..9]>, B<M-C-S-[1..9]>
+
+Toggle tag on client.  Toggles n-th tag for the current window.
+
+=item B<A-Space>, B<W-C-Space>, B<M-S-Space>
+
+Toggle client between tiled and floating layout.
+
+=item B<A-Return>, B<W-C-Return>, B<M-Return>
+
+Toggles current window to or from the master area (tiled layout).
+Swap focused client with master.
+
+=item B<W-S-j>
+
+Switch client with next client.
+
+=item B<W-S-k>
+
+Switch client with previous client.
+
+=item B<W-o>
+
+Send client to next screen.
+
+=back
+
+=item I<Navigation>
+
+=over 24
+
+=item B<M-,>, B<M-.>
+
+Focus previous or next screen, if any.
+
+=item B<M-S-,>, B<M-S-.>
+
+Send focused window to previous or next screen, if any.
+
+=item B<A-j>, B<W-j>, B<M-j>
+
+Focus next client on the current monitor.
+
+=item B<M-s>
+
+Toggle (swap) focus to the previously focused window.
+
+=item B<A-k>, B<W-j>, B<M-k>
+
+Focus previous client on the current monitor.
+
+=item B<A-u>, B<W-u>
+
+Focus first urgent client.
+
+=item B<A-C-Left>, B<W-Left>
+
+View previous tag.
+
+=item B<A-C-Right>, B<W-Right>
+
+View next tag.
+
+=item B<A-[F1..Fn]>, B<W-[1..n]>, B<M-[1..n]>
+
+View n-th tag: that is, view all windows that are tagged with tag n.
+
+=item B<M-0>
+
+View all windows with any tag.
+
+=item B<A-C-j>, B<W-C-j>
+
+Focus next screen.
+
+=item B<A-C-j>, B<W-C-k>
+
+Focus previous screen.
+
+=item B<A-Tab>, B<W-Escape>, B<M-Tab>
+
+Focus previously selected tag set.
+
+=back
+
+=item I<Layout>
+
+=over 24
+
+=item B<A-b>, B<M-b>
+
+Toggles struts (status bar) on and off.
+
+=item B<A-f>, B<A-i>, B<M-f>
+
+Enabled floating mode.
+
+=item B<A-m>, B<M-m>
+
+Enables maximized (monocole) mode.
+
+=item B<A-r>, B<M-t>
+
+Enables tiled mode.
+
+=item B<A-w>
+
+Enables bottom-tiled mode.
+
+=item B<A-h>, B<W-h>, B<M-h>
+
+Decrease master width factor by 5% (tiled layout only).  (Moves the
+master/stacking area divider up or the left depending on the layout
+orientation.)
+
+=item B<A-l>, B<W-l>, B<M-l>
+
+Increase master width factor by 5% (tiled layout only).  (Moves the
+master/stacking area diviser down or to the right, depending on the
+layout orientation.)
+
+=item B<A-S-k>, B<W-S-h>, B<M-i>
+
+Increase number of master windows by 1 (tiled layout only).  B<A-S-k>
+also increases the number of rows/columns by one (grid layout).
+
+=item B<A-S-j>, B<W-S-l>, B<M-d>
+
+Decrease number of master windows by 1 (tiled layout only).  B<A-S-j>
+also decreases the number of rows/columns by one (grid layout).
+
+=item B<W-C-h>
+
+Increase number of columns in stacking area by 1.
+
+=item B<W-C-l>
+
+Decrease number of columns in stacking area by 1.
+
+=item B<W-Space>, B<M-Space>
+
+Switch to next layout. (Toggles between current and previous layout.)
+
+=item B<W-S-Space>
+
+Switch to previous layout.
+
+=item B<A-C-[1..9]>, B<W-C-[1..9]>, B<M-C-[1..9]>
+
+Toggle tag view.  Toggles all windows with the n-th tag for the view.
+
+=item B<A-y>, B<A-S-y>
+
+Rotate layout clockwise or counterclockwise.
+
+=item B<A-C-y>, B<A-C-S-y>
+
+Rotate master or stacking area (depending on focused area) clockwise or
+counterclockwise.
+
+=item B<A-e>, B<A-S-e>
+
+Rotate windows through layout clockwise or counterclockwise.
+
+=item B<A-C-d>, B<A-C-S-d>
+
+Rotate dock around monitor clockwise or counterclockwise.
+
+=back
+
+=back
+
+=head2 MOUSE BINDINGS
+
+Mouse bindings can be changed in the configuration file; however, the
+following are the default bindings when no overriding mouse bindings are
+configured.
+
+=over
+
+=item I<Title Bar>
+
+Mouse buttons perform the following actions by default when clicked or
+clicked and dragged on the title bar (not within a title bar button).
+
+=over 16
+
+=item B<M1> I<move>
+
+Focuses window and raises it to the top of the stack.  When already at
+the top of the stack, lowers it to the bottom of the stack.  When
+clicked and dragged, moves the window.
+
+=item B<M2> I<zoom>
+
+Zooms/cycles the current window to/from master area.  If it is a
+floating (but not fixed) window, it will be toggled to the tiled state.
+
+=item B<M3> I<resize>
+
+Focuses, raises and resizes the window when dragged.
+
+=item B<M4> I<shade>
+
+Shades the window when unshaded.
+
+=item B<M5> I<unshade>
+
+Unshades the window when shaded.
+
+=back
+
+=item I<Client Window>
+
+Mouse buttons perform the following actions by default when clicked or
+clicked and dragged within the client window.
+
+=over 16
+
+=item B<A-M1> I<move>
+
+=item B<C-A-M1> I<move>
+
+Focuses window and raises it to the top of the stack.  When already at
+the top of the stack, lowers it to the bottom of the stack.  When
+dragged, moves the window.
+
+The version with the control key pressed moves the window within the
+tiled area and does not float the window.  The version without the
+control key pressed, floats a tiled window before moving.
+
+=item B<A-M2> I<zoom>
+
+Zooms/cycles the current window to/from master area.  If it is a
+floating (but not fixed) window, it will be toggled to the tiled state.
+
+=item B<A-M3> I<resize>
+
+=item B<C-A-M3> I<resize>
+
+Focuses, raises and resizes the window when dragged.
+
+The version with the control key pressed resizes the window within the
+tiled area and does not float the window.  The version without the
+control key pressed, float a tiled window before resizing.
+
+=item B<A-M4> I<shade>
+
+Shades the window when unshaded.
+
+=item B<A-M5> I<unshade>
+
+Unshades the window when shaded.
+
+=back
+
+=item I<Resize Handles>
+
+Mouse buttons perform the following actions by default when clicked or
+clicked and dragged on the resize handles.  Resize handles are 4 pixels
+tall by default and rather easy to select with the pointer.
+
+=over 16
+
+=item B<M1> I<resize>
+
+Focuses, raises and resizes the window when dragged.
+
+=item B<M2>
+
+No default action.
+
+=item B<M3> I<resize>
+
+Focuses, raises and resizes the window when dragged.
+
+=item B<M4> I<shade>
+
+Shades an unshaded window.
+
+=item B<M5> I<unshade>
+
+Unshades a shaded window.
+
+=back
+
+=item I<Frame Border>
+
+Mouse buttons perform the following actions by default when clicked or
+clicked and dragged on the frame border.  As the default border width is
+1 pixel, it is in fact quite difficult to select the border with the
+pointer.
+
+=over 16
+
+=item B<M1> I<resize>
+
+Focuses, raises and resizes the window when dragged.
+
+=item B<M2>
+
+No default action.
+
+=item B<M3> I<resize>
+
+Focuses, raises and resizes the window when dragged.
+
+=item B<M4> I<shade>
+
+Shades an unshaded window.
+
+=item B<M5> I<unshade>
+
+Unshades a shaded window.
+
+=back
+
+=item I<Dock Application Border>
+
+Mouse buttons perform the following actions by default when clicked or
+clicked and dragged on the dock application border.  Dock application
+borders are typically 4 pixels surrounding the application icon window,
+and this area is easy to select with the pointer.
+
+=over 16
+
+=item B<M1> I<move>
+
+Focuses, raises and moves the dock application when dragged.
+
+=item B<M2> I<toggletag>
+
+Removes the dock application from the current view.  When the current
+view is the only view for the dock application, adds the dock
+application to all views.
+
+=item B<M3> I<resize>
+
+Focuses, raises and resizes the dock application when dragged.
+
+=item B<M4> I<move -1>
+
+Moves the dock application in the list: up (when dock is vertical) or to
+the left (when dock is horizontal).
+
+=item B<M5> I<move +1>
+
+Moves the dock application in the list: down (when dock is vertical)
+or to the right (when dock is horizontal).
+
+=back
+
+=item I<Dock App Window>
+
+Mouse buttons perform the following actions by default when clicked or
+clicked and dragged within the dock application client window.  Dock
+application windows are typically 56x56 pixels and are easier to select
+with the pointer than the dock border.
+
+=over 16
+
+=item B<A-M1> I<move>
+
+Focuses, raises and moves the dock application when dragged.
+
+=item B<A-M2> I<toggletag>
+
+Removes the dock application from the current view.  When the current
+view is the only view for the dock application, adds the dock
+application to all views.
+
+=item B<A-M3> I<resize>
+
+Focuses, raises and resizes the dock application when dragged.
+
+=item B<A-M4> I<move -1>
+
+Moves the dock application in the list: up (when dock is vertical) or to
+the left (when dock is horizontal).
+
+=item B<A-M5> I<move +1>
+
+Moves the dock application in the list: down (when dock is vertical)
+or to the right (when dock is horizontal).
+
+=back
+
+=item I<Root Window>
+
+Mouse buttons perform the following actions by default when clicked or
+clicked and dragged on the root window.  A 1-pixel border is provided
+around the work area of the screen and the root window can easily be
+selected, even in tiled layouts, by moving the pointer to the edge of
+the screen (not the edge of the monitor).
+
+=over 16
+
+=item B<M1>
+
+No defined action.
+
+=item B<M2>
+
+No defined action.
+
+=item B<M3> I<spawn>
+
+Starts a terminal.
+
+=item B<M4> I<viewprev>
+
+Changes the view to the next view (tag number n+1, wrapping to tag 1).
+
+=item B<M5> I<viewnext>
+
+Changes the view to the previous view (tag number n-1, wrapping to the
+last tag).
+
+=back
+
+=back
+
+=head2 BUTTON BINDINGS
+
+Default bindings for mouse buttons pressed on title bar buttons are as
+follows:
+
+=over
+
+=item I<Iconify Button>
+
+=over 16
+
+=item B<M1> I<minimize>
+
+Minimize (iconify) the window.
+
+=item B<M2> I<minimize>
+
+Minimize (iconify) the window.
+
+=item B<M3> I<minimize>
+
+Minimize (iconify) the window.
+
+=back
+
+=item  I<Maximize Button>
+
+=over 16
+
+=item B<M1> I<togglemax>
+
+Toggle maximization of the window (in both vertical and horizontal
+directions).
+
+=item B<M2> I<togglemaxv>
+
+Toggle maximization of the window in the vertical direction.
+
+=item B<M3> I<togglemaxh>
+
+Toggle maximization of the window in the horizontal direction.
+
+=back
+
+=item I<Close Button>
+
+=over 16
+
+=item B<M1> I<close>
+
+Close the window.  Windows that observe the B<_NET_WM_PING> protocol
+will be pinged when closed.  A second press will send a I<SIGTERM> to an
+unresponsive window with a B<_NET_WM_PID>.  A third press will send a
+I<SIGKILL> to the B<_NET_WM_PID> of a still unresponsive window.
+
+=back
+
+=item I<Shade Button>
+
+=over 16
+
+=item B<M1> I<toggleshade>
+
+Toggle the shaded state of the window.
+
+=item B<M2> I<shade>
+
+Shade an unshaded window.
+
+=item B<M3> I<unshade>
+
+Unshade a shaded window.
+
+=back
+
+=item I<Stick Button>
+
+=over 16
+
+=item B<M1> I<togglesticky>
+
+Toggles the sticky state of the window.
+
+=item B<M2> I<stick>
+
+Sticks an unstuck window.
+
+=item B<M3> I<unstick>
+
+Unsticks a stuck window.
+
+=back
+
+=item I<Left Half Button>
+
+=over 16
+
+=item B<M1> I<unzoom>
+
+=item B<M2> I<unzoom>
+
+=item B<M3> I<unzoom>
+
+=back
+
+=item I<Right Half Button>
+
+=over 16
+
+=item B<M1> I<zoom>
+
+=item B<M2> I<zoom>
+
+=item B<M3> I<zoom>
+
+=back
+
+=item I<Fill Button>
+
+=over 16
+
+=item B<M1> I<togglefill>
+
+Toggles the fill state of a floating window.
+
+=item B<M2> I<fill>
+
+Fills an unfilled window.
+
+=item B<M3> I<unfill>
+
+Unfills a filled window.
+
+=back
+
+=item I<Float Button>
+
+=over 16
+
+=item B<M1> I<togglefloat>
+
+Toggles the floating/tiled state of a window.
+
+=item B<M2> I<float>
+
+Floats a tiled window.
+
+=item B<M3> I<unfloat>
+
+Tiles a floating window.
+
+=back
+
+=item I<Size Button>
+
+=over 16
+
+=item B<M1> I<resize>
+
+Focuses, raises and initiates a resize of the window.
+
+=item B<M2> I<resize>
+
+Focuses, raises and initiates a resize of the window.
+
+=item B<M3> I<resize>
+
+Focuses, raises and initiates a resize of the window.
+
+=back
+
+=item I<Title Tags>
+
+No default actions (i.e. same actions as title bar).
+
+=item I<Title Label>
+
+=over 16
+
+=item B<M1> I<move>
+
+Focuses, raises (or lowers) the window, or moves the window when
+dragged.
+
+=item B<M3> I<resize>
+
+Focuses, raises, or resizes the window when dragged.
+
+=back
+
+=item I<Title Separator>
+
+No default actions (i.e. same actions as title bar).
+
+=back
+
 
 =head1 CONFIGURATION
 

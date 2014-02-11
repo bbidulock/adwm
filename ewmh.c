@@ -2214,10 +2214,10 @@ clientmessage(XEvent *e)
 			case 5: /* _NET_WM_MOVERESIZE_SIZE_BOTTOM */
 			case 6: /* _NET_WM_MOVERESIZE_SIZE_BOTTOMLEFT */
 			case 7: /* _NET_WM_MOVERESIZE_SIZE_LEFT */
-				mouseresize_from(c, direct, (XEvent *)&bev);
+				mouseresize_from(c, direct, (XEvent *)&bev, False);
 				break;
 			case 8: /* _NET_WM_MOVERESIZE_MOVE */
-				mousemove(c, (XEvent *)&bev);
+				mousemove(c, (XEvent *)&bev, False);
 				break;
 			case 9: /* _NET_WM_MOVERESIZE_SIZE_KEYBOARD */
 				/* TODO */

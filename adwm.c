@@ -70,7 +70,7 @@ void applyatoms(Client *c);
 void applyrules(Client *c);
 void arrange(Monitor *m);
 void attach(Client *c, Bool attachaside);
-void attachstack(Client *c);
+void attachstack(Client *c, Bool front);
 void ban(Client *c);
 Bool buttonpress(XEvent *e);
 Bool canfocus(Client *c);
@@ -130,9 +130,9 @@ void manage(Window w, XWindowAttributes *wa);
 Bool mappingnotify(XEvent *e);
 void monocle(Monitor *m);
 Bool maprequest(XEvent *e);
-void mousemove(Client *c, XEvent *ev);
-void mouseresize_from(Client *c, int from, XEvent *ev);
-void mouseresize(Client *c, XEvent *ev);
+Bool mousemove(Client *c, XEvent *ev, Bool toggle);
+Bool mouseresize_from(Client *c, int from, XEvent *ev, Bool toggle);
+Bool mouseresize(Client *c, XEvent *ev, Bool toggle);
 void m_move(Client *c, XEvent *ev);
 void m_shade(Client *c, XEvent *ev);
 void m_zoom(Client *c, XEvent *ev);
@@ -264,6 +264,7 @@ struct {
 	char command[255];
 	DockPosition dockpos;
 	DockOrient dockori;
+	unsigned dragdist;
 } options;
 
 void (*actions[LastOn][5][2])(Client *, XEvent *) = {
@@ -271,21 +272,21 @@ void (*actions[LastOn][5][2])(Client *, XEvent *) = {
 	/* OnWhere */
 	[OnClientTitle]	 = {
 				/* ButtonPress	    ButtonRelease */
-		[Button1-1] =	{ mousemove,	    NULL	    },
+		[Button1-1] =	{ m_move,	    NULL	    },
 		[Button2-1] =	{ NULL,		    m_zoom	    },
-		[Button3-1] =	{ mouseresize,	    NULL	    },
+		[Button3-1] =	{ m_resize,	    NULL	    },
 		[Button4-1] =	{ NULL,		    m_shade	    },
 		[Button5-1] =	{ NULL,		    m_shade	    },
 	},
 	[OnClientGrips]  = {
-		[Button1-1] =	{ mouseresize,	    NULL	    },
+		[Button1-1] =	{ m_resize,	    NULL	    },
 		[Button2-1] =	{ NULL,		    NULL	    },
 		[Button3-1] =	{ NULL,		    NULL	    },
 		[Button4-1] =	{ NULL,		    NULL	    },
 		[Button5-1] =	{ NULL,		    NULL	    },
 	},
 	[OnClientFrame]	 = {
-		[Button1-1] =	{ mouseresize,	    NULL	    },
+		[Button1-1] =	{ m_resize,	    NULL	    },
 		[Button2-1] =	{ NULL,		    NULL	    },
 		[Button3-1] =	{ NULL,		    NULL	    },
 		[Button4-1] =	{ NULL,		    m_shade	    },
@@ -840,9 +841,20 @@ attachflist(Client *c, Bool front)
 }
 
 void
-attachstack(Client *c) {
-	c->snext = scr->stack;
-	scr->stack = c;
+attachstack(Client *c, Bool front)
+{
+	if (front) {
+		assert(c && c->snext == NULL);
+		c->snext = scr->stack;
+		scr->stack = c;
+	} else {
+		Client **cp;
+
+		assert(c && c->snext == NULL);
+		for (cp = &scr->stack; *cp; cp = &(*cp)->snext) ;
+		c->snext = NULL;
+		*cp = c;
+	}
 }
 
 void
@@ -2037,19 +2049,24 @@ takefocus(Client *c) {
 void
 raiseclient(Client *c) {
 	detachstack(c);
-	attachstack(c);
+	attachstack(c, True);
 	restack();
 }
 
 void
 lowerclient(Client *c) {
-	Client **cp;
-
-	for (cp = &scr->stack; *cp; cp = &(*cp)->snext) ;
 	detachstack(c);
-	*cp = c;
-	c->snext = NULL;
+	attachstack(c, False);
 	restack();
+}
+
+void
+raiselower(Client *c)
+{
+	if (c == scr->stack)
+		lowerclient(c);
+	else
+		raiseclient(c);
 }
 
 Bool
@@ -2668,7 +2685,7 @@ reparentclient(Client *c, AScreen *new_scr, int x, int y)
 		attach(c, options.attachaside);
 		attachclist(c);
 		attachflist(c, True);
-		attachstack(c);
+		attachstack(c, True);
 		ewmh_update_net_client_list();
 		XReparentWindow(dpy, c->frame, scr->root, x, y);
 		XMoveWindow(dpy, c->frame, x, y);
@@ -2954,7 +2971,7 @@ manage(Window w, XWindowAttributes *wa)
 	attach(c, options.attachaside);
 	attachclist(c);
 	attachflist(c, False);
-	attachstack(c);
+	attachstack(c, True);
 	ewmh_update_net_client_list();
 
 	wc.border_width = 0;
@@ -3783,25 +3800,128 @@ ismoveevent(Display *display, XEvent *event, XPointer arg)
 	}
 }
 
+Bool
+begin_move(Client *c, Monitor *m, Bool toggle, int move)
+{
+	Bool isfloater;
+
+	if (!c->can.move)
+		return False;
+	
+	/* regrab pointer with move cursor */
+	XGrabPointer(dpy, scr->root, False, MOUSEMASK, GrabModeAsync,
+			 GrabModeAsync, None, cursor[move], CurrentTime);
+
+	isfloater = isfloating(c, NULL) ? True : False;
+
+	c->is.moveresize = True;
+	c->was.is = 0;
+	if (toggle || isfloater) {
+		if ((c->was.fs = c->is.fs))
+			c->is.fs = False;
+		if ((c->was.max = c->is.max))
+			c->is.max = False;
+		if ((c->was.maxv = c->is.maxv))
+			c->is.maxv = False;
+		if ((c->was.maxh = c->is.maxh))
+			c->is.maxh = False;
+		if ((c->was.fill = c->is.fill))
+			c->is.fill = False;
+		if ((c->was.shaded = c->is.shaded))
+			c->is.shaded = False;
+		if (!isfloater) {
+			save(c); /* tear out at current geometry */
+			togglefloating(c);
+		} else if (c->was.is) {
+			c->was.floater = isfloater;
+			updatefloat(c, m);
+		}
+		return True;
+	} else {
+		/* can't move tiled yet... */
+		return False;
+	}
+}
+
+Bool
+cancel_move(Client *c, Monitor *m, ClientGeometry *orig)
+{
+	Bool wasfloating;
+
+	if (!c->is.moveresize)
+		return False; /* nothing to cancel */
+
+	c->is.moveresize = False;
+	wasfloating = c->was.floater;
+	c->was.floater = False;
+
+	if (isfloating(c, NULL)) {
+		if (c->was.is) {
+			c->is.fs = c->was.fs;
+			c->is.max = c->was.max;
+			c->is.maxv = c->was.maxv;
+			c->is.maxh = c->was.maxh;
+			c->is.fill = c->was.fill;
+			c->is.shaded = c->was.shaded;
+		}
+		if (wasfloating) {
+			DPRINTF("CALLING reconfigure()\n");
+			reconfigure(c, orig);
+			save(c);
+			updatefloat(c, m);
+		} else
+			togglefloating(c);
+	} else
+		arrange(m);
+	return True;
+}
+
+Bool
+finish_move(Client *c, Monitor *m)
+{
+	Bool wasfloating;
+
+	if (!c->is.moveresize)
+		return False; /* didn't start or was cancelled */
+
+	c->is.moveresize = False;
+	wasfloating = c->was.floater;
+	c->was.floater = False;
+
+	if (isfloating(c, m)) {
+		if (c->was.is) {
+			c->is.fs = c->was.fs;
+			c->is.max = c->was.max;
+			c->is.maxv = c->was.maxv;
+			c->is.maxh = c->was.maxh;
+			c->is.fill = c->was.fill;
+			c->is.shaded = c->was.shaded;
+		}
+		if (wasfloating)
+			updatefloat(c, m);
+		else
+			arrange(m);
+	} else
+		arrange(m);
+	return True;
+}
+
 /* TODO: handle movement across EWMH desktops */
 
 static Bool wind_overlap(int min1, int max1, int min2, int max2);
 
-void
-mousemove(Client *c, XEvent *e)
+Bool
+mousemove(Client *c, XEvent *e, Bool toggle)
 {
+	int dx, dy;
 	int nx2, ny2;
 	int x_root, y_root;
-	int moved = 0;
 	unsigned int i;
 	Monitor *m, *nm;
-	ClientGeometry g;
-	Geometry n, o;
+	ClientGeometry n, o;
+	Bool moved = False, isfloater;
+	int move = CurMove;
 
-	if (!c->can.move) {
-		XUngrabPointer(dpy, CurrentTime);
-		return;
-	}
 	x_root = e->xbutton.x_root;
 	y_root = e->xbutton.y_root;
 
@@ -3816,41 +3936,24 @@ mousemove(Client *c, XEvent *e)
 	if (!(m = getmonitor(x_root, y_root)) || (c->curmon && m != c->curmon))
 		if (!(m = c->curmon)) {
 			XUngrabPointer(dpy, CurrentTime);
-			return;
+			return moved;
 		}
+
+	if (!c->can.floats)
+		toggle = False;
+
+	isfloater = (toggle || isfloating(c, NULL)) ? True : False;
+
 	if (XGrabPointer(dpy, scr->root, False, MOUSEMASK, GrabModeAsync,
-			 GrabModeAsync, None, cursor[CurMove],
-			 CurrentTime) != GrabSuccess)
-		return;
-	c->was.is = 0;
-	if ((c->was.max = c->is.max))
-		c->is.max = False;
-	if ((c->was.maxv = c->is.maxv))
-		c->is.maxv = False;
-	if ((c->was.maxh = c->is.maxh))
-		c->is.maxh = False;
-	if ((c->was.fill = c->is.fill))
-		c->is.fill = False;
-	if ((c->was.shaded = c->is.shaded))
-		c->is.shaded = False;
-	/* If the cursor is not over the window move the window under the curor instead
-	   of warping the pointer. */
-	if (x_root < c->r.x || c->r.x + c->r.w < x_root) {
-		c->r.x = x_root - c->r.w / 2 - c->r.b;
-		moved = 1;
+			 GrabModeAsync, None, None, CurrentTime) != GrabSuccess) {
+			XUngrabPointer(dpy, CurrentTime);
+			return moved;
 	}
-	if (y_root < c->r.y || c->r.y + c->r.h < y_root) {
-		c->r.y = y_root - c->r.h / 2 - c->r.b;
-		moved = 1;
-	}
-	if (c->was.is || moved)
-		updatefloat(c, m);
-	getgeometry(c, &c->c, &g);
-	o = c->c;
-	n = c->c;
+
+	getgeometry(c, &c->c, &n);
+	getgeometry(c, &c->c, &o);
+
 	for (;;) {
-		Workarea w;
-		unsigned int snap;
 		Client *s;
 		XEvent ev;
 
@@ -3864,38 +3967,45 @@ mousemove(Client *c, XEvent *e)
 			if (ev.xclient.message_type == _XA_NET_WM_MOVERESIZE) {
 				if (ev.xclient.data.l[2] == 11) {
 					/* _NET_WM_MOVERESIZE_CANCEL */
-					g.x = o.x;
-					g.y = o.y;
-					DPRINTF("CALLING reconfigure()\n");
-					reconfigure(c, &g);
-					save(c);
+					moved = cancel_move(c, m, &o);
 					break;
 				}
 				continue;
 			}
-			scr = event_scr;
-			handle_event(&ev);
-			continue;
+			/* fall through */
 		case ConfigureRequest:
 		case Expose:
 		case MapRequest:
+		default:
 			scr = event_scr;
 			handle_event(&ev);
 			continue;
 		case MotionNotify:
 			XSync(dpy, False);
+			dx = (ev.xmotion.x_root - x_root);
+			dy = (ev.xmotion.y_root - y_root);
+			user_time = ev.xmotion.time;
+			if (!c->is.moveresize) {
+				if (abs(dx) < options.dragdist && abs(dy) < options.dragdist)
+					continue;
+				if (!(moved = begin_move(c, m, toggle, move)))
+					break;
+				getgeometry(c, &c->c, &n);
+			}
 			/* we are probably moving to a different monitor */
 			if (!(nm = getmonitor(ev.xmotion.x_root, ev.xmotion.y_root)))
 				continue;
-			getworkarea(nm, &w);
-			n.x = o.x + (ev.xmotion.x_root - x_root);
-			n.y = o.y + (ev.xmotion.y_root - y_root);
+			n.x = o.x + dx;
+			n.y = o.y + dy;
 			nx2 = n.x + c->c.w + 2 * c->c.b;
 			ny2 = n.y + c->c.h + 2 * c->c.b;
-			if ((snap = (ev.xmotion.state & ControlMask) ? 0 : options.snap)) {
-				if (abs(n.x - w.x) < snap)
+			if (isfloater && options.snap && !(ev.xmotion.state & ControlMask)) {
+				Workarea w;
+
+				getworkarea(nm, &w);
+				if (abs(n.x - w.x) < options.snap)
 					n.x += w.x - n.x;
-				else if (abs(nx2 - (w.x + w.w)) < snap)
+				else if (abs(nx2 - (w.x + w.w)) < options.snap)
 					n.x += (w.x + w.w) - nx2;
 				else
 					for (s = event_scr->stack; s; s = s->snext) {
@@ -3905,18 +4015,18 @@ mousemove(Client *c, XEvent *e)
 						int sy2 = s->c.y + s->c.h + 2 * s->c.b;
 
 						if (wind_overlap(n.y, ny2, sy, sy2)) {
-							if (abs(n.x - sx) < snap)
+							if (abs(n.x - sx) < options.snap)
 								n.x += sx - n.x;
-							else if (abs(nx2 - sx2) < snap)
+							else if (abs(nx2 - sx2) < options.snap)
 								n.x += sx2 - nx2;
 							else
 								continue;
 							break;
 						}
 					}
-				if (abs(n.y - w.y) < snap)
+				if (abs(n.y - w.y) < options.snap)
 					n.y += w.y - n.y;
-				else if (abs(ny2 - (w.y + w.h)) < snap)
+				else if (abs(ny2 - (w.y + w.h)) < options.snap)
 					n.y += (w.y + w.h) - ny2;
 				else
 					for (s = event_scr->stack; s; s = s->snext) {
@@ -3926,9 +4036,9 @@ mousemove(Client *c, XEvent *e)
 						int sy2 = s->c.y + s->c.h + 2 * s->c.b;
 
 						if (wind_overlap(n.x, nx2, sx, sx2)) {
-							if (abs(n.y - sy) < snap)
+							if (abs(n.y - sy) < options.snap)
 								n.y += sy - n.y;
-							else if (abs(ny2 - sy2) < snap)
+							else if (abs(ny2 - sy2) < options.snap)
 								n.y += sy2 - ny2;
 							else
 								continue;
@@ -3938,11 +4048,6 @@ mousemove(Client *c, XEvent *e)
 			}
 			if (event_scr != scr)
 				reparentclient(c, event_scr, n.x, n.y);
-			g.x = n.x;
-			g.y = n.y;
-			DPRINTF("CALLING reconfigure()\n");
-			reconfigure(c, &g);
-			save(c);
 			if (m != nm) {
 				for (i = 0; i < scr->ntags; i++)
 					c->tags[i] = nm->seltags[i];
@@ -3951,37 +4056,30 @@ mousemove(Client *c, XEvent *e)
 				arrange(NULL);
 				m = nm;
 			}
-			continue;
-		default:
-			scr = event_scr;
-			handle_event(&ev);
+			DPRINTF("CALLING reconfigure()\n");
+			reconfigure(c, &n);
+			if (isfloating(c, m))
+				save(c);
 			continue;
 		}
 		XUngrabPointer(dpy, CurrentTime);
 		break;
 	}
-	if (c->was.is) {
-		if (c->was.max)
-			c->is.max = True;
-		if (c->was.maxv)
-			c->is.maxv = True;
-		if (c->was.maxh)
-			c->is.maxh = True;
-		if (c->was.fill)
-			c->is.fill = True;
-		if (c->was.shaded)
-			c->is.shaded = True;
-		updatefloat(c, m);
-	}
+	if (finish_move(c, m))
+		moved = True;
 	discardenter();
 	ewmh_update_net_window_state(c);
+	return moved;
 }
 void
 m_move(Client *c, XEvent *e)
 {
+#if 0
 	if (!isfloating(c, c->curmon))
 		togglefloating(c);
-	mousemove(c, e);
+#endif
+	if (!mousemove(c, e, True))
+		raiselower(c);
 }
 
 int
@@ -4084,20 +4182,131 @@ isresizeevent(Display *display, XEvent *event, XPointer arg)
 	}
 }
 
-void
-mouseresize_from(Client *c, int from, XEvent *e)
+Bool
+begin_resize(Client *c, Monitor *m, Bool toggle, int from)
+{
+	Bool isfloater;
+	
+	if (!c->can.size)
+		return False;
+
+	switch (from) {
+	case CurResizeTop:
+	case CurResizeBottom:
+		if (!c->can.sizev)
+			return False;
+		break;
+	case CurResizeLeft:
+	case CurResizeRight:
+		if (!c->can.sizeh)
+			return False;
+		break;
+	default:
+		break;
+	}
+
+	/* regrab pointer with resize cursor */
+	XGrabPointer(dpy, scr->root, False, MOUSEMASK, GrabModeAsync,
+			 GrabModeAsync, None, cursor[from], CurrentTime);
+
+	isfloater = isfloating(c, m) ? True : False;
+
+	c->is.moveresize = True;
+	c->was.is = 0;
+	if (toggle || isfloater) {
+		if ((c->was.fs = c->is.fs))
+			c->is.fs = False;
+		if ((c->was.max = c->is.max))
+			c->is.max = False;
+		if ((c->was.maxv = c->is.maxv))
+			c->is.maxv = False;
+		if ((c->was.maxh = c->is.maxh))
+			c->is.maxh = False;
+		if ((c->was.fill = c->is.fill))
+			c->is.fill = False;
+		if ((c->was.shaded = c->is.shaded))
+			c->is.shaded = False;
+		if (!isfloater) {
+			save(c); /* tear out at current geometry */
+			togglefloating(c);
+		} else if (c->was.is) {
+			c->was.floater = isfloater;
+			updatefloat(c, m);
+		}
+		return True;
+	} else {
+		/* can't resize tiled yet... */
+		return False;
+	}
+}
+
+Bool
+cancel_resize(Client *c, Monitor *m, ClientGeometry *orig)
+{
+	Bool wasfloating;
+
+	if (!c->is.moveresize)
+		return False; /* nothing to cancel */
+	
+	c->is.moveresize = False;
+	wasfloating = c->was.floater;
+	c->was.floater = False;
+
+	if (isfloating(c, m)) {
+		if (c->was.is) {
+			c->is.fs = c->was.fs;
+			c->is.max = c->was.max;
+			c->is.maxv = c->was.maxv;
+			c->is.maxh = c->was.maxh;
+			c->is.fill = c->was.fill;
+			c->is.shaded = c->was.shaded;
+		}
+		if (wasfloating) {
+			DPRINTF("CALLING reconfigure()\n");
+			reconfigure(c, orig);
+			save(c);
+			updatefloat(c, m);
+		} else
+			togglefloating(c);
+	} else
+		arrange(m);
+	return True;
+}
+
+Bool
+finish_resize(Client *c, Monitor *m)
+{
+	Bool wasfloating;
+
+	if (!c->is.moveresize)
+		return False; /* didn't start or was cancelled */
+
+	c->is.moveresize = False;
+	wasfloating = c->was.floater;
+	c->was.floater = False;
+
+	if (isfloating(c, m)) {
+		if (c->was.is) {
+			c->is.shaded = c->was.shaded;
+		}
+		if (wasfloating)
+			updatefloat(c, m);
+		else
+			arrange(m);
+	} else
+		arrange(m);
+	return True;
+}
+
+
+Bool
+mouseresize_from(Client *c, int from, XEvent *e, Bool toggle)
 {
 	int dx, dy;
 	int x_root, y_root;
 	Monitor *m, *nm;
 	ClientGeometry n, o;
-
-	if (!c->can.size ||
-	    ((from == CurResizeTop || from == CurResizeBottom) && !c->can.sizev) ||
-	    ((from == CurResizeLeft || from == CurResizeRight) && !c->can.sizeh)) {
-		XUngrabPointer(dpy, CurrentTime);
-		return;
-	}
+	Bool resized = False, isfloater;
 
 	x_root = e->xbutton.x_root;
 	y_root = e->xbutton.y_root;
@@ -4105,28 +4314,24 @@ mouseresize_from(Client *c, int from, XEvent *e)
 	if (!(m = getmonitor(x_root, y_root)) || (c->curmon && m != c->curmon))
 		if (!(m = c->curmon)) {
 			XUngrabPointer(dpy, CurrentTime);
-			return;
+			return resized;
 		}
+
+	if (!c->can.floats)
+		toggle = False;
+
+	isfloater = (toggle || isfloating(c, m)) ? True : False;
+	(void) isfloater; /* for later when resizing tiled */
+
+	if (XGrabPointer(dpy, scr->root, False, MOUSEMASK, GrabModeAsync,
+			 GrabModeAsync, None, None, CurrentTime) != GrabSuccess) {
+		XUngrabPointer(dpy, CurrentTime);
+		return resized;
+	}
 
 	getgeometry(c, &c->c, &o);
 	getgeometry(c, &c->c, &n);
 
-	if (XGrabPointer(dpy, scr->root, False, MOUSEMASK, GrabModeAsync,
-			 GrabModeAsync, None, cursor[from], CurrentTime) != GrabSuccess)
-		return;
-	c->was.is = 0;
-	if ((c->was.max = c->is.max))
-		c->is.max = False;
-	if ((c->was.maxv = c->is.maxv))
-		c->is.maxv = False;
-	if ((c->was.maxh = c->is.maxh))
-		c->is.maxh = False;
-	if ((c->was.fill = c->is.fill))
-		c->is.fill = False;
-	if ((c->was.shaded = c->is.shaded))
-		c->is.shaded = False;
-	if (c->was.is)
-		updatefloat(c, m);
 	for (;;) {
 		Workarea w;
 		int rx, ry, nx2, ny2;
@@ -4144,19 +4349,16 @@ mouseresize_from(Client *c, int from, XEvent *e)
 			if (ev.xclient.message_type == _XA_NET_WM_MOVERESIZE) {
 				if (ev.xclient.data.l[2] == 11) {
 					/* _NET_WM_MOVERESIZE_CANCEL */
-					DPRINTF("CALLING reconfigure()\n");
-					reconfigure(c, &o);
-					save(c);
+					resized = cancel_resize(c, m, &o);
 					break;
 				}
 				continue;
 			}
-			scr = event_scr;
-			handle_event(&ev);
-			continue;
+			/* fall through */
 		case ConfigureRequest:
 		case Expose:
 		case MapRequest:
+		default:
 			scr = event_scr;
 			handle_event(&ev);
 			continue;
@@ -4167,6 +4369,13 @@ mouseresize_from(Client *c, int from, XEvent *e)
 			dx = (x_root - ev.xmotion.x_root);
 			dy = (y_root - ev.xmotion.y_root);
 			user_time = ev.xmotion.time;
+			if (!c->is.moveresize) {
+				if (abs(dx) < options.dragdist && abs(dy) < options.dragdist)
+					continue;
+				if (!(resized = begin_resize(c, m, toggle, from)))
+					break;
+				getgeometry(c, &c->c, &n);
+			}
 			switch (from) {
 			case CurResizeTopLeft:
 				n.w = o.w + dx;
@@ -4313,43 +4522,42 @@ mouseresize_from(Client *c, int from, XEvent *e)
 				n.h = MINHEIGHT;
 			DPRINTF("CALLING reconfigure()\n");
 			reconfigure(c, &n);
-			save(c);
-			continue;
-		default:
-			scr = event_scr;
-			handle_event(&ev);
+			if (isfloating(c, m))
+				save(c);
 			continue;
 		}
 		XUngrabPointer(dpy, CurrentTime);
 		break;
 	}
-	if (c->was.shaded) {
-		c->is.shaded = True;
-		updatefloat(c, m);
-	}
+	if (finish_resize(c, m))
+		resized = True;
 	discardenter();
 	ewmh_update_net_window_state(c);
+	return resized;
 }
 
-void
-mouseresize(Client *c, XEvent *e)
+Bool
+mouseresize(Client *c, XEvent *e, Bool toggle)
 {
 	int from;
 
 	if (!c->can.size || (!c->can.sizeh && !c->can.sizev)) {
 		XUngrabPointer(dpy, CurrentTime);
-		return;
+		return False;
 	}
 	from = findcorner(c, e->xbutton.x_root, e->xbutton.y_root);
-	mouseresize_from(c, from, e);
+	return mouseresize_from(c, from, e, toggle);
 }
 
 void
 m_resize(Client *c, XEvent *e)
 {
+#if 0
 	if (!isfloating(c, c->curmon))
 		togglefloating(c);
-	mouseresize(c, e);
+#endif
+	if (!mouseresize(c, e, True))
+		raiselower(c);
 }
 
 Client *
@@ -6475,6 +6683,7 @@ setup(char *conf) {
 	options.snap = atoi(getresource("snap", STR(SNAP)));
 	options.dockpos = atoi(getresource("dock.position", "1"));
 	options.dockori = atoi(getresource("dock.orient", "1"));
+	options.dragdist = atoi(getresource("dragdistance", "5"));
 
 	for (scr = screens; scr < screens + nscr; scr++) {
 		if (!scr->managed)

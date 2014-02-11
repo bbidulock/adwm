@@ -1,0 +1,17 @@
+adwm -- notes file.  2014-02-10
+
+Notes on ADWM
+=============
+
+Key Bindings
+------------
+
+
+ Function	adwm		dwm		xdwm		echinus		awesome		scrotwm
+ --------	----		---		----		-------		-------		-------
+ screennext
+ screenprev
+ --------	----		---		----		-------		-------		-------
+
+# vim: set ft=asciidoc tw=72 nocin nosi fo+=tcqlorn:
+

@@ -24,6 +24,8 @@
 -ss
 -hnl
 -nbc
+-TKey
+-TView
 -TGroup
 -TXErrorEvent
 -TButton

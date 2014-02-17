@@ -10,7 +10,7 @@ adwm_SOURCES = draw.c adwm.c ewmh.c parse.c config.h adwm.h
 adwm_LDADD = $(IMLIB2_LIBS) $(XPM_LIBS) $(SN_LIBS) $(XINERAMA_LIBS) $(XSYNC_LIBS) $(XRANDR_LIBS) $(XFT_LIBS) $(X11_LIBS) -lm
 
 adwm.man: adwm.1
-	/bin/cp -f $< $@
+	sed 's,[@]PACKAGE[@],$(PACKAGE),g;s,[@]VERSION[@],$(VERSION),g' $< >$@
 
 nobase_dist_data_DATA = xsessions/adwm.desktop
 

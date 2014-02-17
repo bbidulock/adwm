@@ -19,6 +19,7 @@
 #include <regex.h>
 #include <signal.h>
 #include <math.h>
+#include <execinfo.h>
 #include <X11/cursorfont.h>
 #include <X11/keysym.h>
 #include <X11/XKBlib.h>
@@ -94,7 +95,6 @@ Bool expose(XEvent *e);
 Group *getleader(Window leader, int group);
 Bool handle_event(XEvent *ev);
 void iconify(Client *c);
-void incnmaster(const char *arg);
 Monitor *findcurmonitor(Client *c);
 void focus(Client *c);
 Client *focusforw(Client *c);
@@ -123,6 +123,7 @@ void killclient(Client *c);
 Bool leavenotify(XEvent *e);
 Bool focusin(XEvent *e);
 Bool focusout(XEvent *e);
+Bool focuschange(XEvent *e);
 AScreen *geteventscr(XEvent *ev);
 void gavefocus(Client *c);
 void grid(Monitor *m);
@@ -167,13 +168,11 @@ void scan(void);
 void setclientstate(Client *c, long state);
 void setfocus(Client *c);
 void setlayout(const char *arg);
-void setmwfact(const char *arg);
 void setup(char *);
 void spawn(const char *arg);
 void tag(Client *c, int index);
 void tile(Monitor *m);
 void takefocus(Client *c);
-void togglestruts(void);
 void togglefloating(Client *c);
 void togglemax(Client *c);
 void togglemaxv(Client *c);
@@ -181,11 +180,9 @@ void togglemaxh(Client *c);
 void togglefill(Client *c);
 void toggleshade(Client *c);
 void toggletag(Client *c, int index);
-void toggleview(int index);
 void togglemonitor(void);
 void toggleshowing(void);
 void togglehidden(Client *c);
-void focusview(int index);
 void unban(Client *c, Monitor *m);
 void unmanage(Client *c, WithdrawCause cause);
 void updategeom(Monitor *m);
@@ -199,6 +196,10 @@ void removegroup(Client *c, Window leader, int group);
 void updateiconname(Client *c);
 void updatefloat(Client *c, Monitor *m);
 void view(int index);
+void viewnext(Monitor *m);
+void viewprev(Monitor *m);
+void viewleft(Monitor *m);
+void viewright(Monitor *m);
 void viewprevtag(void);			/* views previous selected tags */
 void viewlefttag(void);
 void viewrighttag(void);
@@ -353,8 +354,8 @@ Bool (*handler[LASTEvent+(EXTRANGE*BaseLast)]) (XEvent *) = {
 	[MotionNotify] = IGNOREEVENT,
 	[EnterNotify] = enternotify,
 	[LeaveNotify] = leavenotify,
-	[FocusIn] = focusin,
-	[FocusOut] = focusout,
+	[FocusIn] = focuschange,
+	[FocusOut] = focuschange,
 	[KeymapNotify] = IGNOREEVENT,
 	[Expose] = expose,
 	[GraphicsExpose] = IGNOREEVENT,
@@ -784,6 +785,8 @@ discardenter()
 
 	XSync(dpy, False);
 	while (XCheckMaskEvent(dpy, EnterWindowMask, &ev)) ;
+	if (sel)
+		focus(sel);	/* put focus back where it was */
 }
 
 void
@@ -1684,9 +1687,9 @@ emallocz(size_t size) {
 
 void *
 erealloc(void *ptr, size_t size) {
-	void *res = realloc(ptr, size);
+	void *res;
 
-	if (!res)
+	if (!(res = realloc(ptr, size)))
 		eprint("fatal: could not realloc() %z bytes\n", size);
 	return res;
 }
@@ -1747,13 +1750,88 @@ enternotify(XEvent * e) {
 }
 
 void
+dumpstack()
+{
+	void *buffer[32];
+	int nptr;
+	char **strings;
+	int i;
+
+	if ((nptr = backtrace(buffer, 32)) && (strings = backtrace_symbols(buffer, nptr)))
+		for (i = 0; i < nptr; i++)
+			fprintf(stderr, "%s\n", strings[i]);
+}
+
+void
 eprint(const char *errstr, ...) {
 	va_list ap;
 
 	va_start(ap, errstr);
 	vfprintf(stderr, errstr, ap);
 	va_end(ap);
+
+	dumpstack();
 	exit(EXIT_FAILURE);
+}
+
+Bool
+focuschange(XEvent *e)
+{
+	XEvent ev;
+	Window win, froot = scr->root, fparent = None, *children = NULL;
+	int revert;
+	unsigned nchild = 0;
+	Client *c, *f;
+
+	/* Different approach: don't force focus, just track it.  When it goes to
+	   PointerRoot or None, set it to something reasonable. */
+
+	XSync(dpy, False);
+	/* discard all subsequent focus change events */
+	while (XCheckMaskEvent(dpy, FocusChangeMask, &ev)) ;
+
+	XGetInputFocus(dpy, &win, &revert);
+	while (XQueryTree(dpy, win, &froot, &fparent, &children, &nchild)) {
+		if (children)
+			XFree(children);
+		if (win == froot || fparent == froot)
+			break;
+		win = fparent;
+	}
+	XFindContext(dpy, froot, context[ScreenContext], (XPointer *) &scr);
+	f = scr->flist;
+
+	switch (win) {
+	case None:
+	case PointerRoot:
+		focus(f);
+		break;
+	default:
+		if (!(c = getclient(win, ClientAny))) {
+			/* try harder */
+		}
+		if (c) {
+			if (f != c) {
+				if (f->is.focused) {
+					f->is.focused = False;
+					ewmh_update_net_window_state(f);
+				}
+				detachflist(c);
+				attachflist(c, True);
+			}
+			if (!c->is.focused) {
+				c->is.focused = True;
+				ewmh_update_net_window_state(c);
+			}
+		} else {
+			if (f && f->is.focused) {
+				f->is.focused = False;
+				ewmh_update_net_window_state(f);
+			}
+		}
+		break;
+	}
+	return True;
 }
 
 Bool
@@ -2130,6 +2208,31 @@ canfocus(Client *c)
 void
 setfocus(Client *c)
 {
+	/* more simple */
+	if (c && canfocus(c)) {
+		if (c->can.focus & GIVE_FOCUS)
+			XSetInputFocus(dpy, c->win, RevertToPointerRoot, user_time);
+		if (c->can.focus & TAKE_FOCUS) {
+			XEvent ce;
+
+			ce.xclient.type = ClientMessage;
+			ce.xclient.message_type = _XA_WM_PROTOCOLS;
+			ce.xclient.display = dpy;
+			ce.xclient.window = c->win;
+			ce.xclient.format = 32;
+			ce.xclient.data.l[0] = _XA_WM_TAKE_FOCUS;
+			ce.xclient.data.l[1] = user_time;
+			ce.xclient.data.l[2] = 0l;
+			ce.xclient.data.l[3] = 0l;
+			ce.xclient.data.l[4] = 0l;
+			XSendEvent(dpy, c->win, False, NoEventMask, &ce);
+		}
+	}
+}
+
+void
+setfocus_old(Client *c)
+{
 	/* focus() function is more like activate... */
 	if (c && canfocus(c)) {
 		DPRINTF("Setting focus to 0x%08lx 0x%08lx %s\n", c->frame, c->win, c->name);
@@ -2175,7 +2278,7 @@ focus(Client *c)
 		return;
 	ewmh_update_net_active_window();
 	setfocus(sel);
-	if (c) {
+	if (c && c != o) {
 		if (c->is.attn)
 			c->is.attn = False;
 		/* FIXME: why would it be otherwise if it is focusable? Also, a client
@@ -2343,6 +2446,20 @@ iconify(Client *c) {
 	return with_transients(c, &_iconify, 0);
 }
 
+void
+iconifyall(Monitor *m)
+{
+	Client *c;
+
+	for (c = scr->clients; c; c = c->next) {
+		if (!isvisible(c, m))
+			continue;
+		if (c->is.bastard || c->is.dockapp)
+			continue;
+		iconify(c);
+	}
+}
+
 static void
 _deiconify(Client *c, int dummy) {
 	if (!c->is.icon)
@@ -2378,6 +2495,20 @@ hide(Client *c) {
 	return with_transients(c, &_hide, 0);
 }
 
+void
+hideall(Monitor *m)
+{
+	Client *c;
+
+	for (c = scr->clients; c; c = c->next) {
+		if (!isvisible(c, m))
+			continue;
+		if (c->is.bastard || c->is.dockapp)
+			continue;
+		hide(c);
+	}
+}
+
 
 static void
 _show(Client *c, int dummy) {
@@ -2395,6 +2526,20 @@ show(Client *c) {
 }
 
 void
+showall(Monitor *m)
+{
+	Client *c;
+
+	for (c = scr->clients; c; c = c->next) {
+		if (!isvisible(c, m))
+			continue;
+		if (c->is.bastard || c->is.dockapp)
+			continue;
+		show(c);
+	}
+}
+
+void
 togglehidden(Client *c) {
 	if (!c || !c->can.hide)
 		return;
@@ -2406,67 +2551,71 @@ togglehidden(Client *c) {
 }
 
 void
-hideall() {
-	Client *c;
-
-	for (c = scr->clients; c; c = c->next)
-		_hide(c, 0);
-	arrange(NULL);
-}
-
-void
-showall() {
-	Client *c;
-
-	for (c = scr->clients; c; c = c->next)
-		_show(c, 0);
-	arrange(NULL);
-}
-
-void
 toggleshowing() {
 	if ((scr->showing_desktop = scr->showing_desktop ? False : True))
-		hideall();
+		hideall(NULL);
 	else
-		showall();
+		showall(NULL);
 	ewmh_update_net_showing_desktop();
 }
 
 void
-incnmaster(const char *arg)
+setnmaster(Monitor *m, View *v, int n)
 {
-	unsigned int i;
-	Monitor *cm;
-	View *v;
+	Bool master;
+	int length;
 
-	if (!(cm = selmonitor()))
+	if (n < 1)
 		return;
-	v = scr->views + cm->curtag;
 
-	if (!FEATURES(v->layout, NMASTER) && !FEATURES(v->layout, NCOLUMNS))
-		return;
-	if (FEATURES(v->layout, NMASTER)) {
-		if (!arg)
-			v->nmaster = DEFNMASTER;
-		else {
-			i = atoi(arg);
-			if ((v->nmaster + i) < 1 ||
-			    cm->wa.h / (v->nmaster + i) <= 2 * scr->style.border)
-				return;
-			v->nmaster += i;
+	master = FEATURES(v->layout, NMASTER) ? True : False;
+	switch (v->major) {
+	case OrientTop:
+	case OrientBottom:
+		length = m->wa.h;
+		if (master) {
+			switch (v->minor) {
+			case OrientTop:
+			case OrientBottom:
+				length = (double) m->wa.h * v->mwfact;
+				break;
+			default:
+				break;
+			}
 		}
-	} else if (FEATURES(v->layout, NCOLUMNS)) {
-		if (!arg)
-			v->ncolumns = DEFNCOLUMNS;
-		else {
-			i = atoi(arg);
-			if ((v->ncolumns + i) < 1 || cm->wa.w / (v->ncolumns + i) < 100)
-				return;
-			v->ncolumns += i;
+		if (length / n < 2 * (scr->style.titleheight + scr->style.border))
+			return;
+		break;
+	case OrientLeft:
+	case OrientRight:
+		length = m->wa.w;
+		if (master) {
+			switch (v->minor) {
+			case OrientLeft:
+			case OrientRight:
+				length = (double) m->wa.w * v->mwfact;
+				break;
+			default:
+				break;
+			}
+		}
+		if (length / n < 2 * (6 * scr->style.titleheight + scr->style.border))
+			return;
+		break;
+	case OrientLast:
+		return;
+	}
+	if (master) {
+		if (v->nmaster != n) {
+			v->nmaster = n;
+			arrange(m);
+		}
+	} else {
+		if (v->ncolumns != n) {
+			v->ncolumns = n;
+			arrange(m);
 		}
 	}
-	if (sel)
-		arrange(cm);
 }
 
 Client *
@@ -2580,11 +2729,12 @@ grabkeys(void) {
 }
 
 Bool
-keyrelease(XEvent *e) {
+keyrelease(XEvent *e)
+{
 	XKeyEvent *ev;
 
 	ev = &e->xkey;
-	if (user_time == CurrentTime || (int)ev->time - (int)user_time > 0)
+	if (user_time == CurrentTime || (int) ev->time - (int) user_time > 0)
 		user_time = ev->time;
 	return True;
 }
@@ -2597,17 +2747,20 @@ keypress(XEvent *e)
 	XKeyEvent *ev;
 
 	ev = &e->xkey;
+	if (user_time == CurrentTime || (int) ev->time - (int) user_time > 0)
+		user_time = ev->time;
+
 	keysym = XkbKeycodeToKeysym(dpy, (KeyCode) ev->keycode, 0, 0);
-	for (i = 0; i < scr->nkeys; i++)
-		if (keysym == scr->keys[i]->keysym
-		    && CLEANMASK(scr->keys[i]->mod) == CLEANMASK(ev->state)) {
-			if ((int) ev->time - (int) user_time > 0)
-				user_time = ev->time;
-			if (scr->keys[i]->func)
-				scr->keys[i]->func(scr->keys[i]->arg);
+	for (i = 0; i < scr->nkeys; i++) {
+		Key *k = scr->keys[i];
+
+		if (keysym == k->keysym && CLEANMASK(k->mod) == CLEANMASK(ev->state)) {
+			if (k->func)
+				k->func(e, k);
 			XUngrabKeyboard(dpy, CurrentTime);
 			return True;
 		}
+	}
 	return False;
 }
 
@@ -5342,7 +5495,7 @@ propertynotify(XEvent * e)
 			} else if (ev->atom == _XA_NET_DESKTOP_NAMES) {
 				ewmh_process_net_desktop_names();
 			} else if (ev->atom == _XA_NET_DESKTOP_LAYOUT) {
-				/* TODO */
+				ewmh_process_net_desktop_layout();
 			} else
 				return False;
 		} else
@@ -6229,46 +6382,22 @@ setlayout(const char *arg)
 }
 
 void
-setmwfact(const char *arg)
+setmwfact(Monitor *m, View *v, double factor)
 {
-	double delta;
-	Monitor *cm;
-	View *v;
-
-	if (!(cm = selmonitor()))
-		return;
-
-	v = scr->views + cm->curtag;
-	if (!FEATURES(v->layout, MWFACT))
-		return;
-	/* arg handling, manipulate mwfact */
-	if (arg == NULL)
-		v->mwfact = DEFMWFACT;
-	else if (sscanf(arg, "%lf", &delta) == 1) {
-		if (arg[0] == '+' || arg[0] == '-') {
-			switch (v->major) {
-			case OrientBottom:
-			case OrientLeft:
-				v->mwfact += delta;
-				break;
-			case OrientTop:
-			case OrientRight:
-			case OrientLast:
-				v->mwfact -= delta;
-				break;
-			}
-		} else
-			v->mwfact = delta;
-		if (v->mwfact < 0.1)
-			v->mwfact = 0.1;
-		else if (v->mwfact > 0.9)
-			v->mwfact = 0.9;
+	if (factor < 0.1)
+		factor = 0.1;
+	if (factor > 0.9)
+		factor = 0.9;
+	if (v->mwfact != factor) {
+		v->mwfact = factor;
+		arrange(m);
 	}
-	arrange(cm);
 }
 
 void
-initview(unsigned int i, double mwfact, double mhfact, int nmaster, int ncolumns, const char *deflayout) {
+initview(unsigned int i, double mwfact, double mhfact, int nmaster, int ncolumns,
+	 const char *deflayout)
+{
 	unsigned int j;
 	char conf[32], ltname;
 
@@ -6290,6 +6419,14 @@ initview(unsigned int i, double mwfact, double mhfact, int nmaster, int ncolumns
 	scr->views[i].major = scr->views[i].layout->major;
 	scr->views[i].minor = scr->views[i].layout->minor;
 	scr->views[i].placement = scr->views[i].layout->placement;
+	scr->views[i].index = i;
+	if (scr->d.rows && scr->d.cols) {
+		scr->views[i].row = i / scr->d.cols;
+		scr->views[i].col = i - scr->views[i].row * scr->d.cols;
+	} else {
+		scr->views[i].row = -1;
+		scr->views[i].col = -1;
+	}
 }
 
 void
@@ -6361,6 +6498,8 @@ updatemonitors(XEvent *e, int n, Bool size_update, Bool full_update)
 	int i, j;
 	Client *c;
 	Monitor *m;
+	int w, h;
+	Bool changed;
 
 	for (i = 0; i < n; i++)
 		scr->monitors[i].next = &scr->monitors[i + 1];
@@ -6378,10 +6517,11 @@ updatemonitors(XEvent *e, int n, Bool size_update, Bool full_update)
 				if (!(m = findmonitor(c)))
 					if (!(m = curmonitor()))
 						m = scr->monitors;
-				memcpy(c->tags, m->seltags, scr->ntags * sizeof(*c->tags));
+				memcpy(c->tags, m->seltags,
+				       scr->ntags * sizeof(*c->tags));
 			}
 			for (i = 0; i < scr->nmons; i++) {
-				m = &scr->monitors[i];
+				m = scr->monitors + i;
 				m->curtag = i % scr->ntags;
 				for (j = 0; j < scr->ntags; j++)
 					m->seltags[j] = False;
@@ -6392,6 +6532,44 @@ updatemonitors(XEvent *e, int n, Bool size_update, Bool full_update)
 			updatestruts();
 		}
 	}
+	/* find largest monitor */
+	for (w = 0, h = 0, scr->sw = 0, scr->sh = 0, i = 0; i < n; i++) {
+		m = scr->monitors + i;
+		w = max(w, m->sc.w);
+		h = max(h, m->sc.h);
+		scr->sw = max(scr->sw, m->sc.x + m->sc.w);
+		scr->sh = max(scr->sh, m->sc.y + m->sc.h);
+	}
+	scr->m.rows = (scr->sh + h - 1) / h;
+	scr->m.cols = (scr->sw + w - 1) / w;
+	h = scr->sh / scr->m.rows;
+	w = scr->sw / scr->m.cols;
+	for (i = 0; i < n; i++) {
+		m = scr->monitors + i;
+		m->row = m->my / h;
+		m->col = m->mx / w;
+	}
+	/* handle insane geometries, push overlaps to the right */
+	do {
+		changed = False;
+		for (i = 0; i < n && !changed; i++) {
+			m = scr->monitors + i;
+			for (j = i + 1; j < n && !changed; j++) {
+				Monitor *o = scr->monitors + j;
+
+				if (m->row != o->row || m->col != o->col)
+					continue;
+				if (m->mx < o->mx) {
+					o->col++;
+					scr->m.cols = max(scr->m.cols, o->col + 1);
+				} else {
+					m->col++;
+					scr->m.cols = max(scr->m.cols, m->col + 1);
+				}
+				changed = True;
+			}
+		}
+	} while (changed);
 	ewmh_update_net_desktop_geometry();
 }
 
@@ -6879,6 +7057,8 @@ setup(char *conf) {
 		initkeys();
 		initlayouts();
 
+		ewmh_process_net_desktop_layout();
+		ewmh_update_net_desktop_layout();
 		ewmh_update_net_number_of_desktops();
 		ewmh_update_net_current_desktop();
 		ewmh_update_net_virtual_roots();
@@ -6964,6 +7144,49 @@ tag(Client *c, int index) {
 		return;
 	return with_transients(c, &_tag, index);
 }
+
+void
+taketo(Client *c, int index)
+{
+	if (!c || (!c->can.tag && c->is.managed))
+		return;
+	with_transients(c, &_tag, index);
+	view(index);
+}
+
+void
+taketoprev(Client *c)
+{
+	Monitor *m;
+
+	if (!c||!(m = c->curmon))
+		return;
+	viewprev(m);
+	taketo(c, m->curtag);
+}
+
+void
+taketoleft(Client *c)
+{
+	Monitor *m;
+
+	if (!c||!(m = c->curmon))
+		return;
+	viewleft(m);
+	taketo(c, m->curtag);
+}
+
+void
+taketoright(Client *c)
+{
+	Monitor *m;
+
+	if (!c||!(m = c->curmon))
+		return;
+	viewright(m);
+	taketo(c, m->curtag);
+}
+
 
 void
 tile(Monitor *cm)
@@ -7320,29 +7543,23 @@ tile(Monitor *cm)
 }
 
 void
-togglestruts() {
-	Monitor *cm;
-	View *v;
-	
-	if (!(cm = selmonitor()))
-		return;
-	v = scr->views + cm->curtag;
+togglestruts(Monitor *m, View *v)
+{
 	v->barpos = (v->barpos == StrutsOn)
 	    ? (options.hidebastards ? StrutsHide : StrutsOff) : StrutsOn;
-	updategeom(cm);
-	arrange(cm);
+	if (m) {
+		updategeom(m);
+		arrange(m);
+	}
 }
 
 void
-toggledectiled() {
-	Monitor *cm;
-	View *v;
-	
-	if (!(cm = selmonitor()))
-		return;
-	v = scr->views + cm->curtag;
+toggledectiled(Monitor *m, View *v)
+{
+	v = scr->views + m->curtag;
 	v->dectiled = v->dectiled ? False : True;
-	arrange(cm);
+	if (m)
+		arrange(m);
 }
 
 void
@@ -7384,7 +7601,7 @@ togglemax(Client * c) {
 
 	if (!c || (!c->can.max && c->is.managed) || !(m = c->curmon))
 		return;
-	c->is.max = !c->is.max;
+	c->is.max = c->is.maxv = c->is.maxh = !c->is.max;
 	if (c->is.managed) {
 		ewmh_update_net_window_state(c);
 		updatefloat(c, m);
@@ -7399,10 +7616,23 @@ togglemaxv(Client * c) {
 	if (!c || (!c->can.maxv && c->is.managed) || !(m = c->curmon))
 		return;
 	c->is.maxv = !c->is.maxv;
+	c->is.max = (c->is.maxv || c->is.maxh) ? True : False;
 	if (c->is.managed) {
 		ewmh_update_net_window_state(c);
 		updatefloat(c, m);
 	}
+}
+
+void
+togglemaxh(Client *c) {
+	Monitor *m;
+
+	if (!c || (!c->can.maxh && c->is.managed) || !(m = c->curmon))
+		return;
+	c->is.maxh = !c->is.maxh;
+	c->is.max = (c->is.maxv || c->is.maxh) ? True : False;
+	ewmh_update_net_window_state(c);
+	updatefloat(c, m);
 }
 
 void
@@ -7557,17 +7787,6 @@ togglemodal(Client *c)
 }
 
 void
-togglemaxh(Client *c) {
-	Monitor *m;
-
-	if (!c || (!c->can.maxh && c->is.managed) || !(m = c->curmon))
-		return;
-	c->is.maxh = !c->is.maxh;
-	ewmh_update_net_window_state(c);
-	updatefloat(c, m);
-}
-
-void
 rotateview(Client *c) {
 	Monitor *m;
 	View *v;
@@ -7706,18 +7925,15 @@ togglemonitor()
 }
 
 void
-toggleview(int index)
+toggleview(Monitor *cm, int index)
 {
 	unsigned int i, j;
-	Monitor *m, *cm;
+	Monitor *m;
 
 	/* Typically from a keyboard command.  Again, we should use the monitor with the
 	   keyboard focus before the monitor with the pointer in it. */
 
 	i = (index == -1) ? 0 : index;
-	if (!(cm = selmonitor()))
-		return;
-
 	memcpy(cm->prevtags, cm->seltags, scr->ntags * sizeof(cm->seltags[0]));
 	cm->seltags[i] = !cm->seltags[i];
 	for (m = scr->monitors; m; m = m->next) {
@@ -7743,24 +7959,472 @@ toggleview(int index)
 }
 
 void
-focusview(int index)
+moveto(Client *c, RelativeDirection position)
+{
+	Monitor *m;
+	Workarea w;
+	ClientGeometry g;
+
+	if (!c || !c->can.move || !(m = c->curmon))
+		return;
+	if (!isfloating(c, m))
+		return;		/* for now */
+
+	getworkarea(m, &w);
+	getgeometry(c, &c->c, &g);
+
+	switch (position) {
+	case RelativeNone:
+		if (c->gravity == ForgetGravity)
+			return;
+		return moveto(c, c->gravity);
+	case RelativeNorthWest:
+		g.x = w.x;
+		g.y = w.y;
+		break;
+	case RelativeNorth:
+		g.x = w.x + w.w / 2 - (g.w + 2 * g.b) / 2;
+		g.y = w.y;
+		break;
+	case RelativeNorthEast:
+		g.x = w.x + w.w - (g.w + 2 * g.b);
+		g.y = w.y;
+		break;
+	case RelativeWest:
+		g.x = w.x;
+		g.y = w.y + w.h / 2 - (g.h + 2 * g.b) / 2;
+		break;
+	case RelativeCenter:
+		g.x = w.x + w.w / 2 - (g.w + 2 * g.b) / 2;
+		g.y = w.y + w.h / 2 - (g.h + 2 * g.b) / 2;
+		break;
+	case RelativeEast:
+		g.x = w.x + w.w - (g.w + 2 * g.b);
+		g.y = w.y + w.h / 2 - (g.h + 2 * g.b) / 2;
+		break;
+	case RelativeSouthWest:
+		g.x = w.x;
+		g.y = w.y + w.h - (g.h + 2 * g.b);
+		break;
+	case RelativeSouth:
+		g.x = w.x + w.w / 2 - (g.w + 2 * g.b) / 2;
+		g.y = w.y + w.h - (g.h + 2 * g.b);
+		break;
+	case RelativeSouthEast:
+		g.x = w.x + w.w - (g.w + 2 * g.b);
+		g.y = w.y + w.h - (g.h + 2 * g.b);
+		break;
+	case RelativeStatic:
+		g.x = c->s.x;
+		g.y = c->s.y;
+		break;
+	default:
+		return;
+	}
+	reconfigure(c, &g);
+	save(c);
+	discardenter();
+}
+
+void
+moveby(Client *c, RelativeDirection direction, int amount)
+{
+	Monitor *m;
+	Workarea w;
+	ClientGeometry g;
+
+	if (!c || !c->can.move || !(m = c->curmon))
+		return;
+	if (!isfloating(c, m))
+		return;		/* for now */
+
+	getworkarea(m, &w);
+	getgeometry(c, &c->c, &g);
+	switch (direction) {
+		int dx, dy;
+	case RelativeNone:
+		if (c->gravity == ForgetGravity)
+			return;
+		return moveby(c, c->gravity, amount);
+	case RelativeNorthWest:
+		g.x -= amount;
+		g.y -= amount;
+		break;
+	case RelativeNorth:
+		g.y -= amount;
+		break;
+	case RelativeNorthEast:
+		g.x += amount;
+		g.y -= amount;
+		break;
+	case RelativeWest:
+		g.x -= amount;
+		break;
+	case RelativeCenter:
+		dx = w.x + w.w / 2 - (g.x + g.w / 2 + g.b);
+		dy = w.y + w.h / 2 - (g.y + g.h / 2 + g.b);
+		if (amount < 0) {
+			/* move away from center */
+			dx = dx/abs(dx) * amount;
+			dy = dy/abs(dx) * amount;
+		} else {
+			/* move toward center */
+			dx = dx/abs(dx) * min(abs(dx),abs(amount));
+			dy = dy/abs(dy) * min(abs(dy),abs(amount));
+		}
+		g.x -= dx;
+		g.y -= dy;
+		break;
+	case RelativeEast:
+		g.x += amount;
+		break;
+	case RelativeSouthWest:
+		g.x -= amount;
+		g.y += amount;
+		break;
+	case RelativeSouth:
+		g.y += amount;
+		break;
+	case RelativeSouthEast:
+		g.x += amount;
+		g.y += amount;
+		break;
+	case RelativeStatic:
+		dx = c->s.x + c->s.w / 2 - (g.x + g.w / 2 + g.b);
+		dy = c->s.y + c->s.h / 2 - (g.y + g.h / 2 + g.b);
+		if (amount < 0) {
+			/* move away from static */
+			dx = dx/abs(dx) * amount;
+			dy = dy/abs(dx) * amount;
+		} else {
+			/* move toward static */
+			dx = dx/abs(dx) * min(abs(dx),abs(amount));
+			dy = dy/abs(dy) * min(abs(dy),abs(amount));
+		}
+		g.x -= dx;
+		g.y -= dy;
+		break;
+	default:
+		return;
+	}
+	/* keep onscreen */
+	if (g.x >= m->sc.x + m->sc.w)
+		g.x = m->sc.x + m->sc.w - 1;
+	if (g.x + g.w + g.b < m->sc.x)
+		g.x = m->sc.x - (g.w + g.b);
+	if (g.y >= m->sc.y + m->sc.h)
+		g.y = m->sc.y + m->sc.h - 1;
+	if (g.y + g.h + g.b < m->sc.y)
+		g.y = m->sc.y - (g.h + g.b);
+	reconfigure(c, &g);
+	save(c);
+	discardenter();
+}
+
+void
+snapto(Client *c, RelativeDirection direction)
+{
+	Monitor *m;
+	Workarea w;
+	ClientGeometry g;
+	Client *s, *ox, *oy;
+	int min1, max1, edge;
+
+	if (!c || !c->can.move || !(m = c->curmon))
+		return;
+	if (!isfloating(c, m))
+		return;		/* for now */
+
+	getworkarea(m, &w);
+	getgeometry(c, &c->c, &g);
+
+	switch (direction) {
+	case RelativeNone:
+		if (c->gravity == ForgetGravity)
+			return;
+		return snapto(c, c->gravity);
+	case RelativeNorthWest:
+		min1 = g.y + g.b;
+		max1 = g.y + g.b + g.h;
+		edge = g.x;
+		for (ox = NULL, s = scr->clients; s; s = s->next) {
+			if (s->curmon != m)
+				continue;
+			if (s->c.x + s->c.b + s->c.w >= edge)
+				continue;
+			if (segm_overlap(min1, max1,
+					 s->c.y + s->c.b, s->c.y + s->c.b + s->c.h))
+				if (!ox || ox->c.x + ox->c.w + 2 * ox->c.b >
+				    s->c.x + s->c.w + 2 * s->c.b)
+					ox = s;
+		}
+		min1 = g.x + g.b;
+		max1 = g.x + g.b + g.w;
+		edge = g.y;
+		for (oy = NULL, s = scr->clients; s; s = s->next) {
+			if (s->curmon != m)
+				continue;
+			if (s->c.y + s->c.b + s->c.h >= edge)
+				continue;
+			if (segm_overlap(min1, max1,
+					 s->c.x + s->c.b, s->c.x + s->c.b + s->c.w))
+				if (!oy || oy->c.y + oy->c.h + 2 * oy->c.b >
+				    s->c.y + s->c.h + 2 * s->c.b)
+					oy = s;
+		}
+		g.x = ox ? ox->c.x + ox->c.b + ox->c.w : w.x;
+		g.y = oy ? oy->c.y + oy->c.b + oy->c.h : w.y;
+		break;
+	case RelativeNorth:
+		min1 = g.x + g.b;
+		max1 = g.x + g.b + g.w;
+		edge = g.y;
+		for (oy = NULL, s = scr->clients; s; s = s->next) {
+			if (s->curmon != m)
+				continue;
+			if (s->c.y + s->c.b + s->c.h >= edge)
+				continue;
+			if (segm_overlap(min1, max1,
+					 s->c.x + s->c.b, s->c.x + s->c.b + s->c.w))
+				if (!oy || oy->c.y + oy->c.h + 2 * oy->c.b >
+				    s->c.y + s->c.h + 2 * s->c.b)
+					oy = s;
+		}
+		g.y = oy ? oy->c.y + oy->c.b + oy->c.h : w.y;
+		break;
+	case RelativeNorthEast:
+		min1 = g.y + g.b;
+		max1 = g.y + g.b + g.h;
+		edge = g.x + g.b + g.w;
+		for (ox = NULL, s = scr->clients; s; s = s->next) {
+			if (s->curmon != m)
+				continue;
+			if (s->c.x < edge)
+				continue;
+			if (segm_overlap(min1, max1,
+					 s->c.y + s->c.b, s->c.y + s->c.b + s->c.h))
+				if (!ox || ox->c.x >= s->c.x)
+					ox = s;
+		}
+		min1 = g.x + g.b;
+		max1 = g.x + g.b + g.w;
+		edge = g.y;
+		for (oy = NULL, s = scr->clients; s; s = s->next) {
+			if (s->curmon != m)
+				continue;
+			if (s->c.y + s->c.b + s->c.h >= edge)
+				continue;
+			if (segm_overlap(min1, max1,
+					 s->c.x + s->c.b, s->c.x + s->c.b + s->c.w))
+				if (!oy || oy->c.y + oy->c.h + 2 * oy->c.b >
+				    s->c.y + s->c.h + 2 * s->c.b)
+					oy = s;
+		}
+		g.x = (ox ? ox->c.x : w.x + w.w - g.b) - (g.w + g.b);
+		g.y = oy ? oy->c.y + oy->c.b + oy->c.h : w.y;
+		break;
+	case RelativeWest:
+		min1 = g.y + g.b;
+		max1 = g.y + g.b + g.h;
+		edge = g.x;
+		for (ox = NULL, s = scr->clients; s; s = s->next) {
+			if (s->curmon != m)
+				continue;
+			if (s->c.x + s->c.b + s->c.w >= edge)
+				continue;
+			if (segm_overlap(min1, max1,
+					 s->c.y + s->c.b, s->c.y + s->c.b + s->c.h))
+				if (!ox || ox->c.x + ox->c.w + 2 * ox->c.b >
+				    s->c.x + s->c.w + 2 * s->c.b)
+					ox = s;
+		}
+		g.x = ox ? ox->c.x + ox->c.b + ox->c.w : w.x;
+		break;
+	case RelativeCenter:
+		return;
+	case RelativeEast:
+		min1 = g.y + g.b;
+		max1 = g.y + g.b + g.h;
+		edge = g.x + g.b + g.w;
+		for (ox = NULL, s = scr->clients; s; s = s->next) {
+			if (s->curmon != m)
+				continue;
+			if (s->c.x < edge)
+				continue;
+			if (segm_overlap(min1, max1,
+					 s->c.y + s->c.b, s->c.y + s->c.b + s->c.h))
+				if (!ox || ox->c.x >= s->c.x)
+					ox = s;
+		}
+		g.x = (ox ? ox->c.x : w.x + w.w - g.b) - (g.w + g.b);
+		break;
+	case RelativeSouthWest:
+		min1 = g.y + g.b;
+		max1 = g.y + g.b + g.h;
+		edge = g.x;
+		for (ox = NULL, s = scr->clients; s; s = s->next) {
+			if (s->curmon != m)
+				continue;
+			if (s->c.x + s->c.b + s->c.w >= edge)
+				continue;
+			if (segm_overlap(min1, max1,
+					 s->c.y + s->c.b, s->c.y + s->c.b + s->c.h))
+				if (!ox || ox->c.x + ox->c.w + 2 * ox->c.b >
+				    s->c.x + s->c.w + 2 * s->c.b)
+					ox = s;
+		}
+		min1 = g.x + g.b;
+		max1 = g.x + g.b + g.w;
+		edge = g.y + g.b + g.h;
+		for (oy = NULL, s = scr->clients; s; s = s->next) {
+			if (s->curmon != m)
+				continue;
+			if (s->c.y < edge)
+				continue;
+			if (segm_overlap(min1, max1,
+					 s->c.x + s->c.b, s->c.x + s->c.b + s->c.w))
+				if (!oy || oy->c.y >= s->c.y)
+					oy = s;
+		}
+		g.x = ox ? ox->c.x + ox->c.b + ox->c.w : w.x;
+		g.y = (oy ? oy->c.y : w.y + w.h - g.b) - (g.h + g.b);
+		break;
+	case RelativeSouth:
+		min1 = g.x + g.b;
+		max1 = g.x + g.b + g.w;
+		edge = g.y + g.b + g.h;
+		for (oy = NULL, s = scr->clients; s; s = s->next) {
+			if (s->curmon != m)
+				continue;
+			if (s->c.y < edge)
+				continue;
+			if (segm_overlap(min1, max1,
+					 s->c.x + s->c.b, s->c.x + s->c.b + s->c.w))
+				if (!oy || oy->c.y >= s->c.y)
+					oy = s;
+		}
+		g.y = (oy ? oy->c.y : w.y + w.h - g.b) - (g.h + g.b);
+		break;
+	case RelativeSouthEast:
+		min1 = g.y + g.b;
+		max1 = g.y + g.b + g.h;
+		edge = g.x + g.b + g.w;
+		for (ox = NULL, s = scr->clients; s; s = s->next) {
+			if (s->curmon != m)
+				continue;
+			if (s->c.x < edge)
+				continue;
+			if (segm_overlap(min1, max1,
+					 s->c.y + s->c.b, s->c.y + s->c.b + s->c.h))
+				if (!ox || ox->c.x >= s->c.x)
+					ox = s;
+		}
+		min1 = g.x + g.b;
+		max1 = g.x + g.b + g.w;
+		edge = g.y + g.b + g.h;
+		for (oy = NULL, s = scr->clients; s; s = s->next) {
+			if (s->curmon != m)
+				continue;
+			if (s->c.y < edge)
+				continue;
+			if (segm_overlap(min1, max1,
+					 s->c.x + s->c.b, s->c.x + s->c.b + s->c.w))
+				if (!oy || oy->c.y >= s->c.y)
+					oy = s;
+		}
+		g.x = (ox ? ox->c.x : w.x + w.w - g.b) - (g.w + g.b);
+		g.y = (oy ? oy->c.y : w.y + w.h - g.b) - (g.h + g.b);
+		break;
+	case RelativeStatic:
+		return;
+	default:
+		return;
+	}
+	reconfigure(c, &g);
+	save(c);
+	discardenter();
+}
+
+void
+edgeto(Client *c, int direction)
+{
+	Monitor *m;
+	Workarea w;
+	ClientGeometry g;
+
+	if (!c || !c->can.move || !(m = c->curmon))
+		return;
+	if (!isfloating(c, m))
+		return;		/* for now */
+
+	getworkarea(m, &w);
+	getgeometry(c, &c->c, &g);
+
+	switch (direction) {
+	case RelativeNone:
+		if (c->gravity == ForgetGravity)
+			return;
+		return edgeto(c, c->gravity);
+	case RelativeNorthWest:
+		g.x = w.x;
+		g.y = w.y;
+		break;
+	case RelativeNorth:
+		g.y = w.y;
+		break;
+	case RelativeNorthEast:
+		g.x = w.x + w.w - (g.w + 2 * g.b);
+		g.y = w.y;
+		break;
+	case RelativeWest:
+		g.x = w.x;
+		break;
+	case RelativeCenter:
+		g.x = w.x + w.w / 2 - (g.w / 2 + g.b);
+		g.y = w.y + w.h / 2 - (g.h / 2 + g.b);
+		break;
+	case RelativeEast:
+		g.x = w.x + w.w - (g.w + 2 * g.b);
+		break;
+	case RelativeSouthWest:
+		g.x = w.x;
+		g.y = w.y + w.h - (g.h + 2 * g.b);
+		break;
+	case RelativeSouth:
+		g.y = w.y + w.h - (g.h + 2 * g.b);
+		break;
+	case RelativeSouthEast:
+		g.x = w.x + w.w - (g.w + 2 * g.b);
+		g.y = w.y + w.h - (g.h + 2 * g.b);
+		break;
+	case RelativeStatic:
+		g.x = c->s.x;
+		g.y = c->s.y;
+		break;
+	default:
+		return;
+	}
+	reconfigure(c, &g);
+	save(c);
+	discardenter();
+}
+
+void
+focusview(Monitor *cm, int index)
 {
 	unsigned int i;
 	Client *c;
-	Monitor *cm;
 
-	if (!(cm = selmonitor()))
-		return;
 	i = (index == -1) ? 0 : index;
-	toggleview(i);
+	if (!cm->seltags[i])
+		toggleview(cm, i);
 	if (!cm->seltags[i])
 		return;
-	for (c = scr->stack; c; c = c->snext) {
-		if (c->tags[i] && !c->is.bastard && !c->is.dockapp) {	/* XXX: c->can.focus? */
-			focus(c);
+	for (c = scr->stack; c; c = c->snext)
+		if (c->tags[i] && !c->is.bastard && !c->is.dockapp)	/* XXX: c->can.focus? */
 			break;
-		}
-	}
+	if (c)
+		focus(c);
 	restack();
 }
 
@@ -7776,10 +8440,12 @@ unmanage(Client * c, WithdrawCause cause) {
 		c->is.bastard || c->is.dockapp;
 	dostruts = c->with.struts;
 	c->can.focus = 0;
+#if 0
 	if (c == give)
 		givefocus(NULL);
 	if (c == take)
 		takefocus(NULL);
+#endif
 	if (sel == c)
 		focuslast(c);
 	/* The server grab construct avoids race conditions. */
@@ -8204,45 +8870,47 @@ view(int index) {
 }
 
 void
-viewprevtag() {
+viewprev(Monitor *m)
+{
 	Bool tmptags[scr->ntags];
-	unsigned int i = 0;
+	unsigned int i;
 	int prevcurtag;
-	Monitor *cm;
 
-	if (!(cm = selmonitor()))
-		return;
+	for (i = 0; i < scr->ntags - 1 && !m->prevtags[i]; i++) ;
+	prevcurtag = m->curtag;
+	m->curtag = i;
 
-	while (i < scr->ntags - 1 && !cm->prevtags[i])
-		i++;
-	prevcurtag = cm->curtag;
-	cm->curtag = i;
-
-	memcpy(tmptags, cm->seltags, scr->ntags * sizeof(cm->seltags[0]));
-	memcpy(cm->seltags, cm->prevtags, scr->ntags * sizeof(cm->seltags[0]));
-	memcpy(cm->prevtags, tmptags, scr->ntags * sizeof(cm->seltags[0]));
-	if (scr->views[prevcurtag].barpos != scr->views[cm->curtag].barpos)
-		updategeom(cm);
+	memcpy(tmptags, m->seltags, scr->ntags * sizeof(m->seltags[0]));
+	memcpy(m->seltags, m->prevtags, scr->ntags * sizeof(m->seltags[0]));
+	memcpy(m->prevtags, tmptags, scr->ntags * sizeof(m->seltags[0]));
+	if (scr->views[prevcurtag].barpos != scr->views[m->curtag].barpos)
+		updategeom(m);
 	arrange(NULL);
 	focus(NULL);
 	ewmh_update_net_current_desktop();
 }
 
 void
-viewlefttag() {
-	unsigned int i;
+viewprevtag()
+{
 	Monitor *cm;
 
 	if (!(cm = selmonitor()))
 		return;
+	return viewprev(cm);
+}
+
+void
+viewleft(Monitor *m) {
+	unsigned int i;
 
 	/* wrap around: TODO: do full _NET_DESKTOP_LAYOUT */
-	if (cm->seltags[0]) {
+	if (m->seltags[0]) {
 		view(scr->ntags - 1);
 		return;
 	}
 	for (i = 1; i < scr->ntags; i++) {
-		if (cm->seltags[i]) {
+		if (m->seltags[i]) {
 			view(i - 1);
 			return;
 		}
@@ -8250,15 +8918,20 @@ viewlefttag() {
 }
 
 void
-viewrighttag() {
-	unsigned int i;
+viewlefttag() {
 	Monitor *cm;
 
 	if (!(cm = selmonitor()))
 		return;
+	return viewleft(cm);
+}
+
+void
+viewright(Monitor *m) {
+	unsigned int i;
 
 	for (i = 0; i < scr->ntags - 1; i++) {
-		if (cm->seltags[i]) {
+		if (m->seltags[i]) {
 			view(i + 1);
 			return;
 		}
@@ -8268,6 +8941,15 @@ viewrighttag() {
 		view(0);
 		return;
 	}
+}
+
+void
+viewrighttag() {
+	Monitor *cm;
+
+	if (!(cm = selmonitor()))
+		return;
+	return viewright(cm);
 }
 
 void

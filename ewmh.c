@@ -519,6 +519,68 @@ ewmh_update_echinus_seltags() {
 }
 
 void
+ewmh_update_net_desktop_layout() {
+}
+
+void
+ewmh_process_net_desktop_layout()
+{
+	long *card, start = _NET_WM_TOPLEFT;
+	unsigned long n = 0;
+	int i, r, c;
+
+	XPRINTF("Processing _NET_DESKTOP_LAYOUT\n");
+	card = getcard(scr->root, _XA_NET_DESKTOP_LAYOUT, &n);
+	if (n >= 4)
+		start = card[3];
+	if (n >= 3) {
+		scr->layout.orient = card[0];
+		scr->layout.cols = card[1];
+		scr->layout.rows = card[2];
+		scr->layout.start = start;
+	}
+	if (n > 0)
+		XFree(card);
+	switch (scr->layout.orient) {
+	case _NET_WM_ORIENTATION_HORZ:
+	case _NET_WM_ORIENTATION_VERT:
+		break;
+	default:
+		scr->layout.orient = _NET_WM_ORIENTATION_HORZ;
+		break;
+	}
+	switch (scr->layout.start) {
+	case _NET_WM_TOPLEFT:
+	case _NET_WM_TOPRIGHT:
+	case _NET_WM_BOTTOMRIGHT:
+	case _NET_WM_BOTTOMLEFT:
+		break;
+	default:
+		scr->layout.start = _NET_WM_TOPLEFT;
+		break;
+	}
+	if (!(scr->d.cols = scr->layout.cols) && !(scr->d.rows = scr->layout.rows)) {
+		scr->d.rows = 2;
+		scr->d.cols = 0;
+	}
+	if (!scr->d.rows)
+		scr->d.rows = (scr->ntags + scr->d.cols - 1) / scr->d.cols;
+	if (!scr->d.cols || scr->d.rows * scr->d.cols < scr->ntags)
+		scr->d.cols = (scr->ntags + scr->d.rows - 1) / scr->d.rows;
+	if (scr->d.rows < scr->m.rows)
+		scr->d.rows = scr->m.rows;
+	if (scr->d.cols < scr->m.cols)
+		scr->d.cols = scr->m.cols;
+	/* label row and col in views */
+	for (i = 0, r = 0, c = 0; i < scr->ntags;
+	     i++, r = i / scr->d.cols, c = i - r * scr->d.cols) {
+		scr->views[i].index = i;
+		scr->views[i].row = r;
+		scr->views[i].col = c;
+	}
+}
+
+void
 ewmh_update_net_number_of_desktops() {
 	long data = scr->ntags;
 

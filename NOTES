@@ -1,17 +1,1604 @@
 adwm -- notes file.  2014-02-10
 
-Notes on ADWM
-=============
+== Notes on ADWM ==
 
-Key Bindings
-------------
+=== GNOME Metactiy/Mutter ===
+
+.org.gnome.desktop.wm.preferences:
+[width="100%",options="header"]
+|===
+|Function			|ADWM Option		|gnome (mutter/metacity)	|fluxbox	|waimea		|Description
+|action-double-click-titlebar	|			|toggle-maximize		|shade		|toggle-shade	|
+|action-middle-click-titlebar	|			|lower				|lower		|lower		|
+|action-right-click-titlebar	|			|menu				|menu		|menu		|
+|audible-bell			|			|True				|		|		|
+|auto-raise			|			|False				|		|		|
+|auto-raise-delay		|			|500				|		|		|
+|button-layout			|			|:minimize,maximize,close	|		|		|
+|disable-worksarounds		|			|False				|		|		|
+|focus-mode			|			|click				|		|		|
+|focus-new-windows		|			|smart				|		|		|
+|mouse-button-modifier		|			|<Super>			|		|		|
+|num-workspaces			|			|4				|		|		|
+|raise-on-click			|			|True				|		|		|
+|resize-with-right-button	|			|False				|		|		|
+|theme				|			|Adwaita			|		|		|
+|titlebar-font			|			|Cantarell Bold 11		|		|		|
+|titlebar-uses-system-font	|			|False				|		|		|
+|visual-bell			|			|False				|		|		|
+|visual-bell-type		|			|fullscreen-flash		|		|		|
+|workspace-names		|			|				|		|		|
+|===
+
+.org.gnome.desktop.wm.keybings:
+[width="100%",options="header"]
+|===
+|Function			|ADWM Function		|gnome (mutter/metacity)	|Description
+|activate-window-menu		|			|A-Space			|Activate the window menu
+|begin-move			|begmove		|A-F7				|Move window
+|begin-resize			|begsize		|A-F8				|Resize window
+|close				|killclient		|A-F4				|Close window
+|cycle-group			|group +1		|A-F6				|Switch windows of an app directly
+|cycle-group-backward		|group -1		|AS-F6				|Reverse switch windows of an app directly
+|cycle-panels			|dock +1		|AC-Escape			|Switch system controls directly
+|cycle-panels-backward		|dock -1		|ACS-Escape			|Reverse switch system controls directly
+|cycle-windows			|window +1		|A-Escape			|Switch windows directly
+|cycle-windows-backward		|window -1		|AS-Escape			|Reverse switch windows directly
+|lower				|lower			|				|Lower window below other windows
+|maximize-horizontally		|maxh			|				|Maximize window horizontally
+|maximize			|max			|W-Up				|Maximize window 
+|maximize-veritcally		|maxv			|				|Maximize window vertically
+|minimize			|iconify		|W-h				|Minimize window
+|move-to-center			|moveto C		|				|Move window to center of screen
+|move-to-corner-ne		|moveto NE		|				|Move window to top right corner
+|move-to-corner-nw		|moveto NW		|				|Move window to top left corner
+|move-to-corner-se		|moveto SE		|				|Move window to bottom right corner
+|move-to-corner-sw		|moveto SW		|				|Move window to bottom left corner
+|move-to-side-e			|moveto E		|				|Move window to right side of screen
+|move-to-side-n			|moveto N		|				|Move window to top edge of screen
+|move-to-side-s			|moveto S		|				|Move window to bottom edge of screen
+|move-to-side-w			|moveto W		|				|Move window to left side of screen
+|move-to-workspace-10		|taketo 10		|				|Move window to workspace 10
+|move-to-workspace-11		|taketo 11		|				|Move window to workspace 11
+|move-to-workspace-12		|taketo 12		|				|Move window to workspace 12
+|move-to-workspace-1		|taketo 1		|				|Move window to workspace 1
+|move-to-workspace-2		|taketo 2		|				|Move window to workspace 2
+|move-to-workspace-3		|taketo 3		|				|Move window to workspace 3
+|move-to-workspace-4		|taketo 4		|				|Move window to workspace 4
+|move-to-workspace-5		|taketo 5		|				|Move window to workspace 5
+|move-to-workspace-6		|taketo 6		|				|Move window to workspace 6
+|move-to-workspace-7		|taketo 7		|				|Move window to workspace 7
+|move-to-workspace-8		|taketo 8		|				|Move window to workspace 8
+|move-to-workspace-9		|taketo 9		|				|Move window to workspace 9
+|move-to-workspace-down		|taketo S		|ACS-Down, WS-Page_Down		|Move window one workspace down
+|move-to-workspace-left		|taketo W		|ACS-Left			|Move window one workspace to the left
+|move-to-workspace-right	|taketo E		|ACS-Right			|Move window one workspace to the right
+|move-to-workspace-up		|taketo N		|ACS-Up, WS-Page_up		|Move window one workspace up
+|panel-main-menu		|spawn			|W-s, A-F1			|Show the activities overview
+|panel-run-dialog		|spawn			|A-F2				|Show the run command prompt
+|raise-or-lower			|raiselower		|				|Raise window if covered, otherwise lower it
+|raise				|raise			|				|Raise window above other windows
+|set-spew-mark			|--			|--				|Don't use
+|show-desktop			|toggleshowing		|				|Hide all normal windows
+|switch-applications		|app +1			|W-Tab, A-Tab			|Reverse switch applications
+|switch-applications-backward	|app -1			|WS-Tab, AS-Tab			|Switch applications
+|switch-group			|group +1		|W-Above_Tab, A-Above_Tab	|Reverse switch windows of an application
+|switch-group-backward		|group -1		|				|Switch windows of an application
+|switch-input-source		|			|W-Space			|Binding to select the previous input source
+|switch-input-source-backward	|			|				|Binding to select the next input source
+|switch-panels			|dock +1		|AC-Tab				|Switch system controls
+|switch-panels-backward		|dock -1		|				|Reverse switch system controls
+|switch-to-workspace-10		|view 10		|				|Switch to workspace 10
+|switch-to-workspace-11		|view 11		|				|Switch to workspace 11
+|switch-to-workspace-12		|view 12		|				|Switch to workspace 12
+|switch-to-workspace-1		|view 1			|				|Switch to workspace 1
+|switch-to-workspace-2		|view 2			|				|Switch to workspace 2
+|switch-to-workspace-3		|view 3			|				|Switch to workspace 3
+|switch-to-workspace-4		|view 4			|				|Switch to workspace 4
+|switch-to-workspace-5		|view 5			|				|Switch to workspace 5
+|switch-to-workspace-6		|view 6			|				|Switch to workspace 6
+|switch-to-workspace-7		|view 7			|				|Switch to workspace 7
+|switch-to-workspace-8		|view 8			|				|Switch to workspace 8
+|switch-to-workspace-9		|view 9			|				|Switch to workspace 9
+|switch-to-workspace-down	|view S			|W-Page_Down, AC-Down		|Switch to workspace below
+|switch-to-workspace-left	|view W			|AC-Left			|Switch to workspace left
+|switch-to-workspace-right	|view E			|AC-Right			|Switch to workspace right
+|switch-to-workspace-up		|view N			|W-Page_up, AC-Up		|Switch to workspace above
+|switch-windows			|window +1		|				|Switch windows
+|switch-windows-backward	|window -1		|				|Reverse switch windows
+|toggle-above			|togglefloating		|				|Toggle window always appearing on top
+|toggle-fullscreen		|togglefull		|				|Toggle fullscreen mode
+|toggle-maximized		|togglemax		|A-F10				|Toggle maximization state
+|toggle-on-all-workspaces	|togglesticky		|				|Toggle window on all workspace or one
+|toggle-shaded			|toggleshade		|				|Toggle shaded state
+|unmaximize			|togglemax 0		|W-Down, A-F5			|Restore window
+|===
+
+==== Mutter ====
+
+.org.gnome.mutter:
+[width="100%",options="header"]
+|===
+|Function			|ADWM Option		|mutter		|Description
+|attach-modal-dialogs		|			|false		|
+|auto-maximize			|			|false		|
+|draggable-border-width		|			|10		|
+|dynamic-workspaces		|			|false		|
+|edge-tiling			|			|false		|
+|focuse-change-on-pointer-rest	|			|true		|
+|no-tab-popup			|			|false		|
+|overlay-key			|			|Super_L	|
+|workspaces-only-on-primary	|			|false		|
+|===
+
+.org.gnome.mutter.keybindings:
+[width="100%",options="header"]
+|===
+|Function			|ADWM Function		|mutter default		|Description
+|tab-popup-cancel		|			|			|Cancel tab popup
+|tab-popup-select		|			|			|Select window from tab popup
+|toggle-tiled-left(lhalf)	|maxto W		|W-Left			|
+|toggle-tiled-right(rhalf)	|maxto E		|W-Right		|
+|===
+
+==== Metacity ====
+
+.org.gnome.metacity:
+[width="100%",options="header"]
+|===
+|Function			|ADWM Option		|metacity		|Description
+|compositing-manager		|			|true			|
+|reduced-resources		|			|false			|
+|===
+
+.not listed under org.gnome
+[width="100%",options="header"]
+|===
+|Function			|icewm		|fluxbox	|waimea		|blackbox	|Description
+|execute-terminal		|		|A-F1		|AC-Return	|A-F1		|
+|hide-menus			|		|M1-D		|M1-D		|		|
+|kill				|-		|A-F5		|A-F10		|		|
+|mouse-group			|		|C-M1-T		|		|		|
+|mouse-lower			|		|A-M2-W, M2-T	|M2-TBG		|		|
+|mouse-move			|A-M1		|A-M1-W, +M1-B/T|		|		|
+|mouse-resize			|A-M3		|A-M3-W, +M1-G	|		|		|
+|mouse-tab			|		|M1-T		|M1-T		|		|
+|mouse-viewport			|		|		|M2-D		|		|
+|===
+
+=== Fluxbox ===
+
+Fluxbox permits mutliple keys to be bound to the same key action.
+
+.Fluxbox Key Bindings
+[width="100%",options="header"]
+|===
+|Function Name				|ADWM Function		|Fluxbox Default	|XDE Default		|Description
+|AddWorkspace				|appendtag		|			|			|
+|ArrangeWindows				|			|			|			|arrange windows minimum overlap
+|ArrangeWindowsHorizontal		|			|			|			|arrange windows prefer one atop another
+|ArrangeWindowsVertical			|			|			|			|arrange windows prefer side-by-side
+|ClientMenu				|			|			|W-m			|opens a menu containing all windows
+|Close					|killclient		|A-F4			|A-F4, A-q		|
+|CloseAllWindows			|			|			|			|close all windows on all desktops
+|CommandDialog				|			|			|			|fluxbox command dialog
+|CustomMenu path			|			|			|			|opens a custom menu file
+|Deiconify All Current			|			|			|			|deiconify all icons to current workspace
+|Deiconify All OriginQuiet		|			|			|			|deiconify all icons to original workspace
+|Deiconify AllWorkspace Current		|			|			|			|deiconify all icons on current workspace
+|Deiconify AllWorkspace OriginQuiet	|			|			|			|deiconify all icons on current workspace
+|Deiconify Last Current			|			|			|			|deiconify last icon to current workspace
+|Deiconify Last OriginQuiet		|			|			|			|deiconify last icon to original workspace
+|Deiconify LastWorkspace Current	|			|			|			|deiconify last icon on current workspace
+|Deiconify LastWorkspace OriginQuiet	|			|			|			|deiconify last icon on current workspace
+|DetachClient				|			|AC-T:D			|			|
+|Exec xterm				|spawn			|A-F1			|A-F1, A-x		|
+|Exec fbrun				|spawn			|A-F2			|A-F2			|
+|Exec pcmanfm				|spawn			|			|W-e			|
+|Exec lxpanelctl run			|spawn			|			|W-r, #A-F2		|
+|Exec lxpanelctl menu			|spawn			|			|C-Escape		|
+|Exec roxterm				|spawn			|			|A-t			|
+|Exec gvim				|spawn			|			|A-v			|
+|Exec amixer sset Master,0, 1+		|spawn			|176			|176, XF86AudioRaiseVolume|
+|Exec amixer sset Master,0, 1-		|spawn			|174			|174, XF86AudioLowerVolume|
+|Exec amixer sset Master,0, toggle	|spawn			|160			|160, XF86AudioMute	|
+|Exec					|spawn			|			|			|
+|FocusDown				|focus S		|			|			|focus next window down
+|FocusLeft				|focus W		|			|			|focus next window left
+|FocusRight				|focus E		|			|			|focus next window right
+|FocusUp				|focus N		|			|			|focus next window up
+|Fullscreen				|togglefull		|A-F11			|A-F11			|
+|GotoWindow w groups			|focusgrp w		|			|			|tab-group W focus order
+|GotoWindow w static groups		|activategrp w		|			|			|tab-group W taskbar order
+|GotoWindow w static			|activate w		|			|			|window W taskbar order
+|GotoWindow w				|focus w		|			|			|window W focus order
+|HideMenus				|			|			|			|hides all popup menus
+|Kill					|killclient		|A-F5			|A-F5			|
+|LeftWorkspace dW			|view W dW		|			|			|prev workspace (no wrap)
+|Lower					|lower			|			|A-Down			|
+|LowerLayer				|			|			|			|
+|Maximize				|togglemax		|A-F10			|A-F10, CS-Left		|
+|MaximizeHorizontal			|togglemaxh		|			|CS-Right		|
+|MaximizeVertical			|togglemaxv		|			|CS-Up			|
+|Minimize				|iconify		|A-F9			|A-F9, A-m		|
+|MoveDown dY				|moveresize 0 dY 0 0	|			|			|
+|Move dX dY				|moveresize dX dY 0 0	|			|			|
+|MoveLeft dX				|moveresize -dX 0 0 0	|			|			|
+|MoveRight dX				|moveresize dX 0 0 0 	|			|			|
+|MoveTabLeft				|tab -1			|			|			|
+|MoveTabRight				|tab +1			|			|			|
+|MoveTo X Y A				|			|			|			|
+|MoveUp dY				|moveresize 0 -dY 0 0	|			|			|
+|NextGroup workspace=[current]		|focusgrp +1		|A-Tab			|A-Tab			|next tab-group focus order
+|NextGroup static			|activategrp +1		|			|			|next tab-group taskbar order
+|NextTab				|tab +1			|W-Tab			|			|
+|NextWindow				|focus +1		|			|			|next window focus order
+|NextWindow static			|activate +1		|			|			|next window taskbar order
+|NextWorkspace dW			|view +1		|AC-Right		|AC-Right		|next workspace (wraps)
+|PrevGroup workspace=[current]		|focusgrp -1		|AS-Tab			|AS-Tab			|prev tab-group focus order
+|PrevGroup static			|activategrp -1		|			|			|prev tab-group taskbar order
+|PrevTab				|tab -1			|WS-Tab			|			|
+|PrevWindow				|focus -1		|			|			|prev window focus order
+|PrevWindow static			|activate -1		|			|			|prev window taskbar order
+|PrevWorkspace dW			|view -1		|AC-Left		|AC-Left		|prev workspace (wraps)
+|Quit					|quit			|AC-Delete		|AC-Delete		|quits window manager
+|Raise					|raise			|			|A-Up			|
+|RaiseLayer				|			|			|			|
+|Reconfig				|			|			|A-r			|reload configuration files
+|ReloadStyle				|			|			|			|
+|RemoveLastWorkspace			|rmlasttag		|			|			|
+|Resize dW dH				|moveresize 0 0 +dW +dH	|			|			|
+|ResizeHorizontal dW			|moveresize 0 0 +dW 0	|			|			|
+|ResizeTo W H				|			|			|			|
+|ResizeVertical dH			|moveresize 0 0 0 +dH	|			|			|
+|Restart [path]				|restart [path]		|			|			|restart or replace
+|RightWorkspace dW			|view E +1		|			|			|next workspace (no wrap)
+|RootMenu				|			|			|			|opens the root menu
+|SendToNextHead dM			|			|			|			|
+|SendToNextWorkspace dW			|tag +1			|W-Right		|W-Right		|
+|SendToPrevHead dM			|screen -1		|			|			|
+|SendToPrevWorkspace dW			|tag -1			|W-Left			|W-Left			|
+|SendToWorkspace 1			|tag 1			|W-F1			|W-F1			|
+|SendToWorkspace 2			|tag 2			|W-F2			|W-F2			|
+|SendToWorkspace 3			|tag 3			|W-F3			|W-F3			|
+|SendToWorkspace 4			|tag 4			|W-F4			|W-F4			|
+|SendToWorkspace 5			|tag 5			|W-F5			|W-F5			|
+|SendToWorkspace 6			|tag 6			|W-F6			|W-F6			|
+|SendToWorkspace 7			|tag 7			|W-F7			|W-F7			|
+|SendToWorkspace 8			|tag 8			|W-F8			|W-F8			|
+|SendToWorkspace 9			|tag 9			|W-F9			|W-F9			|
+|SendToWorkspace 10			|tag 10			|W-F10			|W-F10			|
+|SendToWorkspace 11			|tag 11			|W-F11			|W-F11			|
+|SendToWorkspace 12			|tag 12			|W-F12			|W-F12			|
+|SetAlpha A UA				|			|			|			|
+|SetDecor				|			|			|			|
+|SetHead M				|movetoscreen M		|			|			|
+|SetLayer				|			|			|			|
+|SetStyle path				|			|			|			|
+|SetWorkspaceNameDialog			|			|			|			|
+|SetWorkspaceName N			|			|			|			|
+|SetXProp PROP=value			|			|			|			|
+|Shade					|toggleshade		|			|#A-s			|
+|ShadeOff				|toggleshade 0		|			|			|
+|ShadeOn				|toggleshade 1		|			|			|
+|ShowDesktop				|			|			|			|toggle minimize all
+|Stick					|togglesticky		|			|			|
+|Tab 1					|tab 1			|W-1			|W-1			|
+|Tab 2					|tab 2			|W-2			|W-2			|
+|Tab 3					|tab 3			|W-3			|W-3			|
+|Tab 4					|tab 4			|W-4			|W-4			|
+|Tab 5					|tab 5			|W-5			|W-5			|
+|Tab 6					|tab 6			|W-6			|W-6			|
+|Tab 7					|tab 7			|W-7			|W-7			|
+|Tab 8					|tab 8			|W-8			|W-8			|
+|Tab 9					|tab 9			|W-9			|W-9			|
+|TakeToNextWorkspace dW			|taketo +1		|WC-Right		|WC-Right		|
+|TakeToPrevWorkspace dW			|taketo -1		|WC-Left		|WC-Left		|
+|TakeToWorkspace 1			|taketo 1		|WC-F1			|WC-F1			|
+|TakeToWorkspace 2			|taketo 2		|WC-F2			|WC-F2			|
+|TakeToWorkspace 3			|taketo 3		|WC-F3			|WC-F3			|
+|TakeToWorkspace 4			|taketo 4		|WC-F4			|WC-F4			|
+|TakeToWorkspace 5			|taketo 5		|WC-F5			|WC-F5			|
+|TakeToWorkspace 6			|taketo 6		|WC-F6			|WC-F6			|
+|TakeToWorkspace 7			|taketo 7		|WC-F7			|WC-F7			|
+|TakeToWorkspace 8			|taketo 8		|WC-F8			|WC-F8			|
+|TakeToWorkspace 9			|taketo 9		|WC-F9			|WC-F9			|
+|TakeToWorkspace 10			|taketo 10		|WC-F10			|WC-F10			|
+|TakeToWorkspace 11			|taketo 11		|WC-F11			|WC-F11			|
+|TakeToWorkspace 12			|taketo 12		|WC-F12			|WC-F12			|
+|ToggleDecor				|toggledecor		|			|			|
+|WindowMenu				|			|A-Space		|A-Space		|opens window menu for current window
+|WorkspaceMenu				|			|			|			|opens the workspace/windows menu
+|Workspace 1				|view 1			|C-F1			|C-F1, A-1		|
+|Workspace 2				|view 2			|C-F2			|C-F2, A-2		|
+|Workspace 3				|view 3			|C-F3			|C-F3, A-3		|
+|Workspace 4				|view 4			|C-F4			|C-F4, A-4		|
+|Workspace 5				|view 5			|C-F5			|C-F5, A-5		|
+|Workspace 6				|view 6			|C-F6			|C-F6, A-6		|
+|Workspace 7				|view 7			|C-F7			|C-F7, A-7		|
+|Workspace 8				|view 8			|C-F8			|C-F8, A-8		|
+|Workspace 9				|view 9			|C-F9			|C-F9, A-9		|
+|Workspace 10				|view 10		|C-F10			|C-F10, A-0		|
+|Workspace 11				|view 11		|C-F11			|C-F11			|
+|Workspace 12				|view 12		|C-F12			|C-F12			|
+|===
 
 
- Function	adwm		dwm		xdwm		echinus		awesome		scrotwm
- --------	----		---		----		-------		-------		-------
- screennext
- screenprev
- --------	----		---		----		-------		-------		-------
+=== Blackbox ===
+
+Blackbox (bbkeys(1)) allows multiple keys to be bound to the same action.
+
+.Blackbox Key Options
+[width="100%",options="header"]
+|===
+|Option Name				|ADWM Option		|BBKeys Default		|XDE Default		|Description
+|stylefile				|			|			|			|
+|honorModifiers				|			|false			|false			|
+|raiseWhileCycling			|			|false			|true			|
+|followWindowOnSend			|			|false			|true			|
+|includeIconifiedWindowsInCycle		|			|true			|true			|
+|showCycleMenu				|			|true			|true			|
+|cycleMenuTitle				|			|			|			|
+|menuTextJustify			|			|right			|left			|
+|autoConfig				|			|true			|true			|
+|autoConfigCheckTimeout			|			|2			|2			|
+|workspaceColumns			|			|4			|4			|
+|workspaceRows				|			|2			|2			|
+|cycleMenuX				|			|20			|30			|
+|cycleMenuY				|			|20			|30			|
+|===
+
+.Blackbox Key Bindings
+[width="100%",options="header"]
+|===
+|Function Name				|ADWM Function		|BBKeys Default		|XDE Default		|Description
+|chain					|--			|--			|--			|chain keys
+|cancelchain				|--			|--			|--			|cancel key chain
+|changeWorkspace 1			|view 1			|A-1			|C-F1, A-1		|
+|changeWorkspace 2			|view 2			|A-2			|C-F2, A-2		|
+|changeWorkspace 3			|view 3			|A-3			|C-F3, A-3		|
+|changeWorkspace 4			|view 4			|A-4			|C-F4, A-4		|
+|changeWorkspace 5			|view 5			|A-5			|C-F5, A-5		|
+|changeWorkspace 6			|view 6			|A-6			|C-F6, A-6		|
+|changeWorkspace 7			|view 7			|A-7			|C-F7, A-7		|
+|changeWorkspace 8			|view 8			|A-8			|C-F8, A-8		|
+|changeWorkspace 9			|view 9			|			|C-F9			|
+|changeWorkspace 10			|view 10		|			|C-F10			|
+|changeWorkspace 11			|view 11		|			|C-F11			|
+|changeWorkspace 12			|view 12		|			|C-F12			|
+|close					|killclient		|A-F4			|A-F4, A-q		|
+|downWorkspace				|			|#AC-j			|AC-Down		|
+|execute xrefresh			|spawn			|A-F5			|A-F5			|
+|execute gnome-terminal			|spawn			|A-F1			|			|
+|execute nautilus ~			|spawn			|W-E, F20		|			|
+|execute uxterm				|spawn			|			|A-F1			|
+|execute fbrun				|spawn			|			|A-F2			|
+|execute roxterm			|spawn			|			|A-C-t			|
+|execute pcmanfm			|spawn			|			|W-m			|
+|execute lxpanelctl run			|spawn			|			|W-r			|
+|execute lxpanelctl menu		|spawn			|			|C-Escape		|
+|iconify				|iconify		|A-m			|A-m			|
+|keychain				|--			|--			|--			|
+|leftWorkspace				|viewleft		|#AC-H			|			|
+|lower					|lower			|A-Down			|A-Down			|
+|moveWindowDown 1			|movedown		|AC-Down		|			|
+|moveWindowLeft 1			|moveleft		|AC-Left		|			|
+|moveWindowRight 1			|moveright		|AC-Right		|			|
+|moveWindowUp 1				|moveup			|AC-Up			|			|
+|nextScreen				|			|			|			|
+|nextWindow				|			|A-Tab			|A-Tab			|
+|nextWindowOfClass			|			|			|			|
+|nextWindowOfClassonAllWorkspaces	|			|			|			|
+|nextWindowOnAllScreens			|			|			|			|
+|nextWindowOnAllWorkspaces		|			|AC-Tab			|AC-Tab			|
+|nextWorkspace				|viewright		|			|AC-Right		|
+|nextWorkspaceColumn			|			|			|			|
+|nextWorkspaceRow			|			|			|			|
+|noaction				|--			|--			|--			|
+|numberchain				|--			|--			|--			|
+|prevScreen				|			|			|			|
+|prevWindow				|			|AS-Tab			|AS-Tab			|
+|prevWindowOfClass			|			|			|			|
+|prevWindowOfClassOnAllWorkspaces	|			|			|			|
+|prevWindowOnAllScreens			|			|			|			|
+|prevWindowOnAllWorkspaces		|			|			|			|
+|prevWorkspace				|viewleft		|			|AC-Left		|
+|prevWorkspaceColumn			|			|			|			|
+|prevWorkspaceRow			|			|			|			|
+|raise					|raise			|A-Up			|A-Up			|
+|resizeWindowHeight +5			|moveresize 0 0 0 +5	|ACS-Down		|			|
+|resizeWindowHeight -5			|moveresize 0 0 0 -5	|ACS-Up			|			|
+|resizeWindowWidth -5			|moveresize 0 0 -5 0	|ACS-Left		|			|
+|resizeWindowWidth +5			|moveresize 0 0 +5 0	|ACS-Right		|			|
+|rightWorkspace				|viewright		|#AC-L			|			|
+|sendtonextworkspace			|tagright/taketoright	|			|			|
+|sendtoprevworkspace			|tagleft/taketoleft	|			|			|
+|sendToWorkspace 1			|tag/taketo 1		|AC-w:1			|W-F1, AC-w:1		|
+|sendToWorkspace 2			|tag/taketo 2		|AC-w:2			|W-F2, AC-w:2		|
+|sendToWorkspace 3			|tag/taketo 3		|AC-w:3			|W-F3, AC-w:3		|
+|sendToWorkspace 4			|tag/taketo 4		|AC-w:4			|W-F4, AC-w:4		|
+|sendToWorkspace 5			|tag/taketo 5		|AC-w:5			|W-F5, AC-w:5		|
+|sendToWorkspace 6			|tag/taketo 6		|AC-w:6			|W-F6, AC-w:6		|
+|sendToWorkspace 7			|tag/taketo 7		|AC-w:7			|W-F7, AC-w:7		|
+|sendToWorkspace 8			|tag/taketo 8		|AC-w:8			|W-F8, AC-w:8		|
+|sendToWorkspace 9			|tag/taketo 9		|			|W-F9			|
+|sendToWorkspace 10			|tag/taketo 10		|			|W-F10			|
+|sendToWorkspace 11			|tag/taketo 11		|			|W-F11			|
+|sendToWorkspace 12			|tag/taketo 12		|			|W-F12			|
+|showRootMenu				|			|AC-Escape		|AC-Escape		|
+|showworkspacemenu			|			|			|			|
+|stringchain				|			|			|			|
+|toggleDecorations			|			|			|			|
+|toggleGrabs				|			|			|			|
+|toggleMaximizeFull			|togglemax		|A-F12			|A-F12, CS-Left		|
+|toggleMaximizeHorizontal		|togglemaxh		|A-F11			|A-F11, CS-Right	|
+|toggleMaximizeVertical			|togglemaxv		|A-F10			|A-F10, CS-Up		|
+|toggleOmnipresent			|			|AC-s			|AC-s			|
+|toggleShade				|toggleshade		|A-F9			|A-F9, #A-s		|
+|upWorkspace				|			|#AC-j			|AC-Up			|
+|===
+
+=== Waimea ===
+
+=== Openbox ===
+
+It is rather amazing how few default keybindins openbox has.  Perhaps it
+is because openbox used to use a separate keybinder like bbkeys.
+
+.openbox Key Bindings
+[width="100%",options="header"]
+|===
+|Action Name			|ADWM Action		|openbox Default	|LXDE Default		|Description
+|MaximizeFull			|max			|A-F10			|			|
+|UnmaximizeFull			|unmax			|A-F5			|			|
+|ToggleShade			|toggleshade		|A-F12			|			|
+|DesktopLeft (wrap=no)		|view W			|AC-Left		|AC-Left		|
+|DesktopRight (wrap=no)		|view E			|AC-Right		|AC-Right		|
+|DesktopUp (wrap=no)		|view N			|AC-Up			|AC-Up			|
+|DesktopDown (wrap=no)		|view S			|AC-Down		|AC-Down		|
+|SendToDesktopLeft (wrap=no)	|tag W			|AS-Left		|AS-Left		|
+|SendToDesktopRight (wrap=no)	|tag E			|AS-Right		|AS-Right		|
+|SendToDesktopUp (wrap=no)	|tag N			|AS-Up			|AS-Up			|
+|SendToDesktopDown (wrap=no)	|tag S			|AS-Down		|AS-Down		|
+|ToggleShowDesktop		|toggleshowing		|AS-d			|W-d, AC-d		|
+|Close				|killclient		|A-F4			|A-F4			|
+|Close (no kill in openbox)	|killclient		|			|A-F5			|
+|NextWindow			|focusnext		|A-Tab			|			|
+|PreviousWindow			|focusprev		|AS-Tab			|			|
+|NextWindow (panels,desktop)	|focusnext		|AC-Tab			|			|
+|PreviousWindow (panels,dt)	|focusprev		|ACS-Tab		|			|
+|Move				|begmove		|A-F7			|			|
+|Resize				|begsize		|A-F8			|			|
+|Iconify			|iconify		|A-F9			|A-F9			|
+|ShowMenu client-menu		|winmenu		|A-Space		|A-Space		|
+|Desktop 1			|view 1			|			|W-F1			|
+|Desktop 2			|view 2			|			|W-F2			|
+|Desktop 3			|view 3			|			|W-F3			|
+|Desktop 4			|view 4			|			|W-F4			|
+|ToggleMaximize (both)		|togglemax		|			|A-F10			|
+|ToggleFullscreen		|togglefull		|			|A-F11			|
+|Lower FocusToBottom Unfocus	|lower			|			|A-Escape		|
+|DirectionalCycleWindows right	|focus E		|WS-Right		|			|
+|DirectionalCycleWindows left	|focus W		|WS-Left		|			|
+|DirectionalCycleWIndows up	|focus N		|WS-Up			|			|
+|DirectionalCycleWindows down	|focus S		|WS-Down		|			|
+|Execute kfmclient		|spawn xde-fm		|W-e			|			|
+|Activate			|activate #		|			|			|
+|BreakChroot			|			|			|			|
+|Close				|killclient		|			|			|
+|Desktop			|view #			|			|			|
+|DesktopDown			|view S			|			|			|
+|DesktopLast			|view L			|			|			|
+|DesktopLeft			|view W			|			|			|
+|DesktopNext			|view +1		|			|			|
+|DesktopPrevious		|view -1		|			|			|
+|DesktopRight			|view W			|			|			|
+|DesktopUp			|view N			|			|			|
+|DirectionalFocusEast		|focus E		|			|			|
+|DirectionalFocusNorth		|focus N		|			|			|
+|DirectionalFocusNorthEast	|focus NE		|			|			|
+|DirectionalFocusNorthWest	|focus NW		|			|			|
+|DirectionalfocusSouth		|focus S		|			|			|
+|DirectionalFocusSouthEast	|focus SE		|			|			|
+|DirectionalFocusSouthWest	|focus SW		|			|			|
+|DirectionalFocusWest		|focus W		|			|			|
+|Execute			|spawn			|			|			|
+|Exit				|quit			|			|			|
+|Focus				|focus #		|			|			|
+|FocusToBottom			|--			|			|			|
+|GrowToEdgeEast			|fill E			|			|			|
+|GrowToEdgeNorth		|fill N			|			|			|
+|GrowToEdgeSouth		|fill S			|			|			|
+|GrowToEdgeWest			|fill W			|			|			|
+|Iconify			|iconify		|			|			|
+|Kill				|killclient		|			|			|
+|Lower				|lower			|			|			|
+|MaximizeFull			|max			|			|			|
+|MaximizeHorz			|maxh			|			|			|
+|MaximizeVert			|maxv			|			|			|
+|Move				|begmove		|			|			|
+|MoveFromEdgeEast		|begmove E		|			|			|
+|MoveFromEdgeNorth		|begmove N		|			|			|
+|MoveFromEdgeSouth		|begmove S		|			|			|
+|MoveFromEdgeWest		|begmove W		|			|			|
+|MoveRelative			|moveresize dX dY 0 0	|			|			|
+|MoveRelativeHorz		|moveresize dX 0 0 0	|			|			|
+|MoveRelativeVert		|moveresize 0 dY 0 0	|			|			|
+|MoveToCenter			|moveto C		|			|			|
+|MoveToEdgeeast			|align E		|			|			|
+|MovetoEdgenorth		|align N		|			|			|
+|MoveToEdgesouth		|align S		|			|			|
+|MoveToEdgewest			|align W		|			|			|
+|NextWindow			|focusnext		|			|			|
+|PreviousWindow			|focusprev		|			|			|
+|Raise				|raise			|			|			|
+|RaiseLower			|raiselower		|			|			|
+|Reconfigure			|reconfig		|			|			|
+|Resize				|moveresize +0 +0 w h	|			|			|
+|ResizeRelative			|moveresize +0 +0 dW dH	|			|			|
+|ResizeRelativeHorz		|moveresize +0 +0 dW +0 |			|			|
+|ResizeRelativeVert		|moveresize +0 +0 +0 dH	|			|			|
+|Restart			|restart		|			|			|
+|SendToBottomLayer		|below			|			|			|
+|SendToDesktop			|tag #			|			|			|
+|SendToDesktopDown		|tag S			|			|			|
+|SendToDesktopLeft		|tag W			|			|			|
+|SendToDesktopNext		|tag +1			|			|			|
+|SendToDesktopPrevious		|tag -1			|			|			|
+|SendToDesktopRight		|tag E			|			|			|
+|SendToDesktopUp		|tag N			|			|			|
+|SendToNormalLayer		|normal			|			|			|
+|SendTotoplayer			|above			|			|			|
+|SessionLogout			|quit			|			|			|
+|Shade				|shade			|			|			|
+|ShadeLower			|--			|			|			|
+|ShowDesktop			|showing		|			|			|
+|ShowMenu			|spawn dmenu		|			|			|
+|ToggleAlwaysOnBottom		|togglebelow		|			|			|
+|ToggleAlwaysOnTop		|toggleabove		|			|			|
+|ToggleDecorations		|toggledecor		|			|			|
+|ToggleDockAutoHide		|--			|			|			|
+|ToggleFullScreen		|togglefull		|			|			|
+|ToggleMaximizeFull		|togglemax		|			|			|
+|ToggleMaximizeHorz		|togglemaxh		|			|			|
+|ToggleMaximizeVert		|togglemaxv		|			|			|
+|ToggleOmniPresent		|togglestick		|			|			|
+|ToggleShade			|toggleshade		|			|			|
+|ToggleShowDesktop		|toggleshowing		|			|			|
+|UnFocus			|--			|			|			|
+|UnMaximizeFull			|unmax			|			|			|
+|UnMaximizeHorz			|unmaxh			|			|			|
+|UnMaximizeVert			|unmaxv			|			|			|
+|UnShade			|unshade		|			|			|
+|UnShadeRaise			|--			|			|			|
+|UnShowDesktop			|unshowing		|			|			|
+|===
+
+=== PekWM ===
+
+.PekWM Key Bindings
+[width="100%",options="header"]
+|===
+|Action Name			|ADWM Action		|Default		|XDE Default		|Description
+|Focus				|			|			|			|
+|UnFocus			|			|			|			|
+|Set Iconified			|			|AC-a:i			|			|
+|Set				|			|			|			|
+|Unset Tagged			|			|AC-t:c			|			|
+|Unset				|			|			|			|
+|Toggle Maximized True True	|togglemax		|W-m, AC-a:m:m		|			|
+|Toggle Maximized False True	|togglemaxv		|AC-a:m:v		|			|
+|Toggle Maximized True False	|togglemaxh		|AC-a:m:h		|			|
+|Toggle Fullscreen		|togglefull		|W-f, AC-a:f		|			|
+|Toggle Shaded			|toggleshade		|W-s, AC-a:s		|			|
+|Toggle Iconified		|iconify		|W-i			|			|
+|Toggle Marked			|toggleselect		|W-z, AC-t:m		|			|
+|Toggle Tagged False		|toggletab		|W-t, AC-t:t		|			|
+|Toggle Tagged True		|			|AC-t:b			|			|
+|Toggle HarbourHidden		|			|W-h, AC-p:h		|			|
+|Toggle Tagged False		|			|			|			|
+|Toggle GlobalGrouping		|			|AC-t:g			|			|
+|Toggle DecorBorder		|			|AC-d:b			|			|
+|Toggle DecorTitlebar		|			|AC-d:t			|			|
+|Toggle DecorBorder;Titlebar	|			|AC-d:d			|			|
+|Toggle Sticky			|			|AC-a:a			|			|
+|Toggle AlwaysOnTop		|			|AC-a:o			|			|
+|Toggle AlwaysBelow		|			|AC-a:b			|			|
+|Toggle Skip Menus		|			|AC-s:m			|			|
+|Toggle Skip FocusToggle	|			|AC-s:f			|			|
+|Toggle Skip Snap		|			|AC-s:s			|			|
+|Toggle				|			|			|			|
+|MaxFill True True		|togglefill		|W-g, AC-a:g:g		|			|
+|MaxFill False True		|togglefillv		|AC-a:g:v		|			|
+|MaxFill True False		|togglefillh		|AC-a:g:h		|			|
+|MaxFill			|			|			|			|
+|GrowDirection Left		|			|AC-a:Left		|			|
+|GrowDirection Right		|			|AC-a:Right		|			|
+|GrowDirection Up		|			|AC-a:Up		|			|
+|GrowDirection Down		|			|AC-a:Down		|			|
+|GrowDirection			|			|			|			|
+|Close				|close			|W-q, AC-a:q:q		|			|
+|CloseFrame			|			|AC-a:q:f		|			|
+|Kill				|			|AC-a:q:k		|			|
+|SetGeometry			|			|			|			|
+|Raise				|			|AC-a:r			|			|
+|Raise True			|			|AC-a:S-r		|			|
+|Lower				|			|AC-a:l			|			|
+|Lower True			|			|AC-a:S-l		|			|
+|ActivateOrRaise		|			|AC-a:u			|			|
+|ActivateClientRel +1		|			|W-Tab, AC-f:i		|			|
+|ActivateClientRel -1		|			|WS-Tab, AC-f:u		|			|
+|MoveClientRel +1		|			|WC-Right, AC-f:S-i	|			|
+|MoveClientRel -1		|			|WC-Left, AC-f:S-u	|			|
+|ActivateClient			|			|			|			|
+|ActivateClientNum 1		|			|AC-f:1			|			|
+|ActivateClientNum 2		|			|AC-f:2			|			|
+|ActivateClientNum 3		|			|AC-f:3			|			|
+|ActivateClientNum 4		|			|AC-f:4			|			|
+|ActivateClientNum 5		|			|AC-f:5			|			|
+|ActivateClientNum 6		|			|AC-f:6			|			|
+|ActivateClientNum 7		|			|AC-f:7			|			|
+|ActivateClientNum 8		|			|AC-f:8			|			|
+|ActivateClientNum 9		|			|AC-f:9			|			|
+|ActivateClientNum 10		|			|AC-f:0			|			|
+|Resize				|			|			|			|
+|Move				|			|			|			|
+|MoveResize			|begmoveresize		|W-Return, AC-a:Return	|			|
+|GroupingDrag			|			|			|			|
+|MoveToHead			|			|			|			|
+|MoveToEdge TopLeft		|moveto NW		|AC-c:q			|			|
+|MoveToEdge TopCenterEdge	|moveto N		|AC-c:y/w		|			|
+|MoveToEdge TopEdge		|align N		|AC-c:S-y/w		|			|
+|MoveToEdge TopRight		|moveto NE		|AC-c:p/e		|			|
+|MoveToEdge LeftCenterEdge	|moveto W		|AC-c:a			|			|
+|MoveToEdge LeftEdge		|align W		|AC-c:S-a		|			|
+|MoveToEdge RightCenterEdge	|moveto E		|AC-c:l/d		|			|
+|MoveToEdge RightEdge		|align E		|AC-c:S-l/d		|			|
+|MoveToEdge BottomLeft		|moveto SW		|AC-c:z			|			|
+|MoveToEdge BottomCenterEdge	|moveto S		|AC-c:b/x		|			|
+|MoveToEdge BottomEdge		|align S		|AC-c:S-b/x		|			|
+|MoveToEdge BottomRight		|moveto SE		|AC-c:m/c		|			|
+|MoveToEdge Center		|moveto C		|AC-c:h/s		|			|
+|MoveToEdge			|			|			|			|
+|NextFrame EndRaise		|			|A-Tab			|			|
+|NextFrame AlwaysRaise		|			|AC-f:o			|			|
+|NextFrame			|			|			|			|
+|PrevFrame EndRaise		|			|AS-Tab			|			|
+|PrevFrame AlwaysRaise		|			|AC-f:p			|			|
+|PrevFrame			|			|			|			|
+|NextFrameMRU EndRaise		|			|AC-Tab, AC-f:S-p	|			|
+|PrevFrameMRU EndRaise		|			|ACS-Tab, AC-f:S-o	|			|
+|FocusDirectional Left		|			|W-Left, AC-f:Left	|			|
+|FocusDirectional Right		|			|W-Right, AC-f:Right	|			|
+|FocusDirectional Up		|			|W-Up, AC-f:Up		|			|
+|FocusDirectional Down		|			|W-Down, AC-f:Down	|			|
+|AttachMarked			|			|W-a, AC-t:a		|			|
+|AttachClientInNextFrame	|			|AC-t:p			|			|
+|AttachClientInPrevFrame	|			|AC-t:o			|			|
+|AttachFrameInNextFrame		|			|AC-t:i			|			|
+|AttachFrameInPrevFrame		|			|AC-t:u			|			|
+|FindClient			|			|			|			|
+|GotoClientID			|			|			|			|
+|SendToWorkspace 1		|tag 1			|W-F1, AC-w:F1		|			|
+|SendToWorkspace 2		|tag 2			|W-F2, AC-w:F2		|			|
+|SendToWorkspace 3		|tag 3			|W-F3, AC-w:F3		|			|
+|SendToWorkspace 4		|tag 4			|W-F4, AC-w:F4		|			|
+|SendToWorkspace 5		|tag 5			|W-F5, AC-w:F5		|			|
+|SendToWorkspace 6		|tag 6			|W-F6, AC-w:F6		|			|
+|SendToWorkspace 7		|tag 7			|W-F7, AC-w:F7		|			|
+|SendToWorkspace 8		|tag 8			|W-F8, AC-w:F8		|			|
+|SendToWorkspace 9		|tag 9			|W-F9, AC-w:F9		|			|
+|Send/GoToWorkspace Next	|taketo W		|ACS-Left, AC-W:Up	|			|
+|Send/GoToWorkspace Prev	|taketo E		|ACS-Right, AC-W:Down	|			|
+|Send/GoToWorkspace NextV	|taketo S		|ACS-Up			|			|
+|Send/GoToWorkspace PrevV	|taketo N		|ACS-Down		|			|
+|GotoWorkspace 1		|view 1			|W-1, AC-w:1		|			|
+|GotoWorkspace 2		|view 2			|W-2, AC-w:2		|			|
+|GotoWorkspace 3		|view 3			|W-3, AC-w:3		|			|
+|GotoWorkspace 4		|view 4			|W-4, AC-W:4		|			|
+|GotoWorkspace 5		|view 5			|W-5, AC-w:5		|			|
+|GotoWorkspace 6		|view 6			|W-6, AC-w:6		|			|
+|GotoWorkspace 7		|view 7			|W-7, AC-w:7		|			|
+|GotoWorkspace 8		|view 8			|W-8, AC-w:8		|			|
+|GotoWorkspace 9		|view 9			|W-9, AC-w:9		|			|
+|GotoWorkspace Left		|view W			|WC-Left, AC-W:Left	|			|
+|GotoWorkspace Right		|view E			|WC-Right, AC-W:Right	|			|
+|GotoWorkspace Up		|view N			|WC-Up			|			|
+|GotoWorkspace Down		|view S			|WC-Down		|			|
+|GotoWorkspace Next		|view +1		|AC-w:n			|			|
+|GotoWorkspace Prev		|view -1		|AC-w:p			|			|
+|Exec pekwm_screenshot.sh	|			|A-Print		|			|
+|Exec $TERM			|			|W-e, AC-e:e		|			|
+|Exec xlock -mode blank &	|			|AC-e:l			|			|
+|Exec scrot &			|			|AC-e:s			|			|
+|Exec				|			|			|			|
+|Reload				|			|AC-Delete, AC-P:Delete	|			|
+|Restart			|			|AC-p:Next		|			|
+|RestartOther twm		|			|AC-p:Prior		|			|
+|Exit				|			|AC-p:End		|			|
+|ShowCmdDialog			|			|W-d, AC-e:c, AC-p:d	|			|
+|ShowCmdDialog GotoClientID	|			|AC-f:c			|			|
+|ShowSearchDialog		|			|W-v			|			|
+|ShowMenu Root			|			|W-r			|			|
+|ShowMenu Window		|			|W-w			|			|
+|ShowMenu Goto			|			|W-l			|			|
+|ShowMenu GotoClient		|			|W-c			|			|
+|ShowMenu Icon			|			|WS-i			|			|
+|ShowMenu			|			|			|			|
+|HideAllMenus			|			|W-X			|			|
+|SubMenu			|			|			|			|
+|Dynamic			|			|			|			|
+|SendKey			|			|			|			|
+|SetOpacity			|			|			|			|
+|LayoutOnce			|			|			|			|
+|SetLayouter			|			|			|			|
+|SetLayouterOption		|			|			|			|
+|Debug				|			|			|			|
+|SetPlacementOption SwitchGeom 1|			|W-Space		|			|
+|===
+
+.PekWM Key Bindings Move or Resize
+[width="100%",options="header"]
+|===
+|Action Name			|ADWM Action		|Default		|XDE Default		|Description
+|MoveHorizontal +1		|			|S-Right		|			|
+|MoveHorizontal -1		|			|S-Left			|			|
+|MoveHorizontal +10		|			|Right			|			|
+|MoveHorizontal -10		|			|Left			|			|
+|MoveVertical +1		|			|S-Down			|			|
+|MoveVertical -1		|			|S-Up			|			|
+|MoveVertical +10		|			|Down			|			|
+|MoveVertical -10		|			|Up			|			|
+|MoveSnap			|			|s			|			|
+|ResizeHorizontal +1		|			|WS-Down, AS-Down	|			|
+|ResizeHorizontal -1		|			|WS-Up, AS-Up		|			|
+|ResizeHorizontal +10		|			|W-Down, A-Down		|			|
+|ResizeHorizontal -10		|			|W-Up, A-Up		|			|
+|ResizeVertical +1		|			|WS-Right, AS-Right	|			|
+|ResizeVertical -1		|			|WS-Left, AS-Left	|			|
+|ResizeVertical +10		|			|W-Right, A-Right	|			|
+|ResizeVertical -10		|			|W-Left, A-Left		|			|
+|Cancel				|			|Escape, q		|			|
+|End				|			|Return			|			|
+|===
+
+=== WindowMaker ===
+
+WindowMaker does not allow multiple keys to be bound to the same action (unless is is an execute action).
+
+.WindowMaker Key Binding Options
+[width="100%",options="header"]
+|===
+|Option Name			|ADWM Option		|Default		|XDE Default		|Description
+|===
+
+.WindowMaker Key Bindings
+[width="100%",options="header"]
+|===
+|Key name			|ADWM Function		|Default		|XDE Default		|Description
+|BHMaximizeKey			|maxto S		|			|			|maximize active window bottom half
+|ClipRaiseLowerKey		|			|			|A-End, AC-Return	|raise/lower clip
+|CloseKey			|killclient		|			|A-q, A-w		|close active window
+|DockRaiseLowerKey		|			|			|AC-space		|raise/lower dock
+|FocusNextKey			|focus +1		|A-Tab			|A-Tab			|focus next window (shows switch window)
+|FocusPrevKey			|focus -1		|AS-Tab			|AS-Tab			|focus previous window (shows switch window)
+|GroupNextKey			|group +1		|			|W-Tab			|focus next group window (window of same WM_CLASS) (shows switch window)
+|GroupPrevKey			|group -1		|			|WS-Tab			|focus previous group window (window of same WM_CLASS) (shows switch window)
+|HideKey			|hide			|A-H			|A-H			|hide active application
+|HideOthersKey			|hideothers		|			|AS-H			|hide other applications
+|HMaximizeKey			|togglemaxh		|			|CS-Right		|maximize active window horizontally
+|LastWorkspaceKey		|view L			|			|			|switch to last used workspace
+|LBCMaximizeKey			|maxto SW		|			|			|maximize active window left bottom corner
+|LHMaximizeKey			|maxto W		|			|W-Left			|maximize active window left half
+|LowerKey			|lower			|A-Down			|A-Down			|lower active window
+|LTCMaximizeKey			|maxto NW		|			|			|maximize active window left top corner
+|MaximizeKey			|togglemax		|			|CS-Left		|maximize active window
+|MaximusKey			|togglefill		|			|CS-Down		|tiled maximization
+|MiniaturizeKey			|iconify		|A-M			|A-M			|miniaturize active window
+|MinimizeAllKey			|iconify *		|			|AS-M			|miniaturize all windows
+|ModifierKey			|modkey			|A			|Mode1			|default mouse modifier key
+|MoveResizeKey			|begmove/begsize	|			|W-M			|move/resize active window
+|MoveToLastWorkspaceKey		|tag L			|			|			|move window to last used workspace
+|MoveToNextWorkspaceKey		|tag +1			|			|			|move window to next workspace
+|MoveToNextWorkspaceLayerKey	|tag +10		|			|			|move window to next ten workspaces
+|MoveToPrevWorkspaceKey		|tag -1			|			|			|move window to previous workspace
+|MoveToPrevWorkspaceLayerKey	|tag -10		|			|			|move window to previous ten workspaces
+|MoveToWorkspace10Key		|tag 10			|			|W-F10			|move window to workspace 10
+|MoveToWorkspace1Key		|tag 1			|			|W-F1			|move window to workspace 1
+|MoveToWorkspace2Key		|tag 2			|			|W-F2			|move window to workspace 2
+|MoveToWorkspace3Key		|tag 3			|			|W-F3			|move window to workspace 3
+|MoveToWorkspace4Key		|tag 4			|			|W-F4			|move window to workspace 4
+|MoveToWorkspace5Key		|tag 5			|			|W-F5			|move window to workspace 5
+|MoveToWorkspace6Key		|tag 6			|			|W-F6			|move window to workspace 6
+|MoveToWorkspace7Key		|tag 7			|			|W-F7			|move window to workspace 7
+|MoveToWorkspace8Key		|tag 8			|			|W-F8			|move window to workspace 8
+|MoveToWorkspace9Key		|tag 9			|			|W-F9			|move window to workspace 9
+|NextWorkspaceKey		|view +1		|AC-Right		|AC-Right		|switch to next workspace
+|NextWorkspaceLayerKey		|view +10		|			|AC-Up			|switch to next ten workspaces
+|PrevWorkspaceKey		|view -1		|AC-Left		|AC-Left		|switch to previous workspace
+|PrevWorkspaceLayerKey		|view -10		|			|AC-Down		|switch to previous ten workspaces
+|RaiseKey			|raise			|A-Up			|A-Up			|raise active window
+|RaiseLowerKey			|raiselower		|			|A-Space, A-Home	|raise/lower window under mouse pointer
+|RBCMaximizeKey			|maxto SE		|			|			|maximize active window right bottom corner
+|RHMaximizeKey			|maxto E		|			|W-Right		|maximize active window right half
+|RootMenuKey			|			|F12			|F12			|open applications menu
+|RTCMaximizeKey			|maxto NE		|			|			|maximize active window right top corner
+|ScreenSwitchKey		|screen +1		|			|W-Next			|switch to next screen/monitor
+|SelectKey			|select			|			|CS-Return		|select active window
+|ShadeKey			|toggleshade		|			|A-S, AS-S		|shade active window
+|THMaximizeKey			|maxto N		|			|			|maximize active window top half
+|ToggleKbdModeKey		|			|			|AC-K			|toggle keyboard language
+|VMaximizeKey			|togglemaxv		|			|CS-Up			|maximize active window vertically
+|WindowListKey			|			|F11			|F11			|open window list menu
+|WindowMenuKey			|			|C-Escape		|C-Escape		|open window commands menu
+|WindowRelaunchKey		|relaunch		|			|W-Return		|launch a new instance of application
+|WindowShortcut10Key		|activate 10		|			|W-0			|shortcut for window 10
+|WindowShortcut1Key		|activate 1		|			|W-1			|shortcut for window 1
+|WindowShortcut2Key		|activate 2		|			|W-2			|shortcut for window 2
+|WindowShortcut3Key		|activate 3		|			|W-3			|shortcut for window 3
+|WindowShortcut4Key		|activate 4		|			|W-4			|shortcut for window 4
+|WindowShortcut5Key		|activate 5		|			|W-5			|shortcut for window 5
+|WindowShortcut6Key		|activate 6		|			|W-6			|shortcut for window 6
+|WindowShortcut7Key		|activate 7		|			|W-7			|shortcut for window 7
+|WindowShortcut8Key		|activate 8		|			|W-8			|shortcut for window 8
+|WindowShortcut9Key		|activate 9		|			|W-9			|shortcut for window 9
+|Workspace10Key			|view 10		|A-0			|A-0			|switch to workspace 10
+|Workspace1Key			|view 1			|A-1			|A-1			|switch to workspace 1
+|Workspace2Key			|view 2			|A-2			|A-2			|switch to workspace 2
+|Workspace3Key			|view 3			|A-3			|A-3			|switch to workspace 3
+|Workspace4Key			|view 4			|A-4			|A-4			|switch to workspace 4
+|Workspace5Key			|view 5			|A-5			|A-5			|switch to workspace 5
+|Workspace6Key			|view 6			|A-6			|A-6			|switch to workspace 6
+|Workspace7Key			|view 7			|A-7			|A-7			|switch to workspace 7
+|Workspace8Key			|view 8			|A-8			|A-8			|switch to workspace 8
+|Workspace9Key			|view 9			|A-9			|A-9			|switch to workspace 9
+|===
+
+
+=== IceWM ===
+
+Note that IceWM can only have on key assigned to each action (unless it is an
+execute action), so where multiple keys are normally assigned to a particular
+action, IceWM defines two different key names that peform the same action.
+An example is KeyWinNext and KeySysSwitchNext.
+
+It appears that IceWM tries to be the most consistent with Windows95 key bindings.
+
+.IceWM Options
+[width="100%",options="header"]
+|===
+|Option Name			|ADWM Option		|IceWM Default		|XDE Default		|Description
+|ClickToFocus			|			|			|			|Focus windows by clicking
+|FocusOnAppRaise		|			|			|			|Focus windows when applications requests to raise
+|RequestFocusOnAppRaise		|			|			|			|Request focus (flashing in taskbar) when application requests raise
+|RaiseOnFocus			|			|			|			|Raise windows when focused
+|FocusChangesWorkspace		|			|			|			|Change to the workspace of newly focused windows
+|FocusOnMap			|			|			|			|Focus normal windows when initially mapped
+|FocusOnMapTransientActive	|			|			|			|Focus dialog window when initially mapped
+|MapInactiveOnTop		|			|			|			|Put new windows on top even if not focusing them
+|LimitSize			|			|			|			|Limit size of windows to screen
+|LimitPosition			|			|			|			|Limit position of windows to screen
+|LimitByDockLayer		|			|			|			|Let the Dock Layer limit the workspace (incompatible with GNOME Panel)
+|ConsiderHBorder		|			|			|			|Consider border frames when maximizing horizontally
+|ConsiderVBorder		|			|			|			|Consider border frames when maximizing vertically
+|CenterMaximizedWindows		|			|			|			|Center maximized windows which can't fit the screen (like terminals)
+|SizeMaximized			|			|			|			|Maximized windows can be resized
+|StrongPointerFocus		|			|			|			|Always maintain focus under mouse window (makes some keyboard support non-functional or unreliable)
+|ManualPlacement		|			|			|			|Windows initially placed manually by user
+|SmartPlacement			|			|			|			|Smart window placement (minimal overlap)
+|HideTitleBarWhenMaximized	|			|			|			|Hide title bar when maximized
+|CenterLarge			|			|			|			|Center large windows
+|CenterTransientsOnOwner	|			|			|			|Center dialogs on owner window
+|AutoRaise			|			|			|			|Auto raise windows after delay
+|DelayPointerFocus		|			|			|			|Delay pointer focusing when mouse moves
+|QuickSwitchAllIcons		|			|1			|1			|Show all reachable icons when quick switching
+|QuickSwitchTextFirst		|			|0			|0			|Show the window title above (all reachable) icons
+|QuickSwitchSmallWindow		|			|0			|1			|Attempt to create a small QuickSwitch window (1/3 instead of 3/5 of screen width)
+|QuickSwitchMaxWidth		|			|0			|0			|Go through all window titles and choose width of the longest one
+|QuickSwitchVertical		|			|1			|1			|Place the icons and titles vertical instead of horizontal
+|QuickSwitchHugeIcon		|			|0			|0			|Show the huge (48x48) of the window icon for the active window
+|QuickSwitchFillSelection	|			|0			|1			|Fill the rectangle highlighting the current icon
+|SnapMove			|			|1			|1			|Snap to nearest screen edge/window when moving windows
+|EdgeSwitch			|			|0			|1			|Workspace switches by moving mouse to left/right screen edge
+|HorizontalEdgeSwitch		|			|0			|1			|Workspace switches by moving mouse to left/right screen edge
+|VerticalEdgeSwitch		|			|0			|0			|Workspace switches by moving mouse to top/bottom screen edge
+|ContinuousEdgeSwitch		|			|1			|1			|Workspace switches continuously when moving mouse to screen edge
+|TaskBarAtTop			|			|0			|0			|Task bar at top of the screen
+|TaskBarKeepBelow		|			|0			|0			|Keep the task bar below regular windows
+|TaskBarAutoHide		|			|0			|0			|Auto hide task bar after delay
+|TaskBarFullscreenAutoShow	|			|1			|1			|Auto show task bar when fullscreen window active
+|AllowFullscreen		|			|1			|1			|Allow to switch a window to fullscreen
+|DoubleBuffer			|			|1			|1			|Use double buffering when redrawing the display
+|XRRDisable			|			|0			|0			|Disable use of new XRANDR API for dual head (nvidia workaround)
+|PointerFocusDelay		|			|200			|200			|Delay for pointer focus switching
+|MenuActivateDelay		|			|40			|40			|Delay before activating menu items
+|SubmenuMenuActivateDelay	|			|300			|300			|Delay before activating menu submenus
+|EdgeResistance			|			|32			|32			|Resistance in pixels when trying to move windows off the screen (10000 = infinite)
+|SnapDistance			|			|8			|8			|Distance in pixels before windows snap together
+|XineramaPrimaryScreen		|			|0			|0			|Primary screen for xinerama (taskbar, ...)
+|===
+
+.IceWM Mouse Binding Options
+[width="100%",options="header"]
+|===
+|Option Name			|ADWM Option		|IceWM Default		|XDE Default		|Description
+|FocusOnClickClient		|			|			|			|Focus window when client area clicked
+|RaiseOnClickClient		|			|			|			|Raise window when client area clicked
+|RaiseOnClickTitleBar		|			|			|			|Raise window when titlebar is clicked
+|RaiseOnClickButton		|			|			|			|Raise window when frame button is clicked
+|RaiseOnClickFrame		|			|			|			|Raise window when frame border is clicked
+|LowerOnClickWhenRaised		|			|			|			|Lower the active window when clicked again
+|PassFirstClickToClient		|			|			|			|Pass focusing click on client area to client
+|UseMouseWheel			|			|0			|1			|Support mouse wheel
+|ShowTaskBar			|			|1			|1			|Show task bar
+|ClientWindowMouseActions	|			|1			|1			|Allow mouse actions on client windows (buggy with some programs)
+|ClickMotionDistance		|			|4			|4			|Pointer motion distance before click gets interpreted as drag
+|ClickMotionDelay		|			|200			|200			|Delay before click gets interpreted as drag
+|MultiClickTime			|			|400			|400			|MultiClickTime=400 # [0-5000]
+|AutoHideDelay			|			|300			|300			|Delay before task bar is hidden
+|AutoShowDelay			|			|500			|500			|Delay before task bar is shown
+|AutoRaiseDelay			|			|400			|400			|Delay before windows are auto raised
+|EdgeSwitchDelay    		|			|600			|600			|Screen edge workspace switching delay
+|UseRootButtons			|			|255			|255			|Bitmask of root window button click to use in window manager
+|ButtonRaiseMask		|			|1			|1			|Bitmask of buttons that raise the window when pressed
+|DesktopWinMenuButton		|			|0			|0			|Desktop mouse-button click to show the window list menu
+|DesktopWinListButton		|			|2			|2			|Desktop mouse-button click to show the window list
+|DesktopMenuButton		|			|3			|3			|Desktop mouse-button click to show the root menu
+|TitleBarMaximizeButton		|			|1			|1			|TitleBar mouse-button double click to maximize the window
+|TitleBarRollupButton		|			|2			|2			|TitleBar mouse-button double click to rollup the window
+|MouseWinMove			|			|A+Pointer_Button1	|A+Pointer_Button1	|Mouse binding for window move
+|MouseWinSize			|			|A+Pointer_Button3	|A+Pointer_Button3	|Mouse binding for window resize
+|MouseWinRaise			|			|AC+Pointer_Button1	|AC+Pointer_Button1	|Mouse binding to raise window
+|===
+
+.IceWM Key Binding Options
+[width="100%",options="header"]
+|===
+|Option Name			|ADWM Option		|IceWM Default		|XDE Default		|Description
+|Win95Keys			|			|			|			|Support win95 keyboard keys (Penguin/Meta/Win_L,R shows menu)
+|ModSuperIsCA			|			|			|			|Treat Super/Win modifier as C+A
+|QuickSwitch			|			|1			|1			|A+Tab window switching
+|QuickSwitchToMinimized		|			|1			|1			|A+Tab to minimized windows
+|QuickSwitchToHidden		|			|1			|1			|A+Tab to hidden windows
+|QuickSwitchToAllWorkspaces	|			|0			|0			|A+Tab to windows on other workspaces
+|QuickSwitchGroupWorkspaces	|			|1			|1			|A+Tab: group windows on current workspace
+|===
+
+.IceWM Key Bindings
+[width="100%",options="header"]
+|===
+|Key Name			|ADWM Function		|IceWM Default		|XDE Default		|Description
+|`KeyWinRaise`			|raise			|A-F1			|A-F1			|raise focused window
+|`KeyWinOccupyAll`		|togglesticky		|A-F2			|A-F2			|stick focused window
+|`KeyWinLower`			|lower			|A-F3			|A-F3			|lower focused window
+|`KeyWinClose`			|killclient		|A-F4			|A-F4			|close focused window
+|`KeyWinKill`			|			|			|			|kill focused window
+|`KeyWinRestore`		|togglemax 0		|A-F5			|A-F5			|restore (unmaximize) focused window
+|`KeyWinNext`			|activate +1		|A-F6			|A-F6			|next window in focus order
+|`KeyWinPrev`			|activate -1		|AS-F6			|AS-F6			|prev window in focus order
+|`KeyWinMove`			|begmove		|A-F7			|A-F7			|begin move on focused window
+|`KeyWinSize`			|begsize		|A-F8			|A-F8			|begin reize on focused window
+|`KeyWinMinimize`		|iconify		|A-F9			|A-F9			|
+|`KeyWinMaximize`		|togglemax		|A-F10			|A-F10			|
+|`KeyWinMaximizeVert`		|togglemaxv		|AS-F10			|AS-F10			|
+|`KeyWinMaximizeHoriz`		|togglemaxh		|			|			|
+|`KeyWinFullscreen`		|togglefull		|A-F11			|A-F11			|
+|`KeyWinHide`			|hide			|AS-F12			|AS-F12			|
+|`KeyWinRollup`			|toggleshade 1		|A-F12			|A-F12			|
+|`KeyWinArrangeN`		|moveto N		|AC-KP_8		|AC-KP_8		|move window center N to monitor center N
+|`KeyWinArrangeNE`		|moveto NE		|AC-KP_9		|AC-KP_9		|move window NE corner to monitor NE corner
+|`KeyWinArrangeE`		|moveto E		|AC-KP_6		|AC-KP_6		|move window center E to monitor center E
+|`KeyWinArrangeSE`		|moveto SE		|AC-KP_3		|AC-KP_3		|move window SE corner to monitor SE corner
+|`KeyWinArrangeS`		|moveto S		|AC-KP_2		|AC-KP_2		|move window center S to monitor center S
+|`KeyWinArrangeSW`		|moveto SW		|AC-KP_1		|AC-KP_1		|move window SW corner to monitor SW corner
+|`KeyWinArrangeW`		|moveto W		|AC-KP_4		|AC-KP_4		|move window center W to moniotr center W
+|`KeyWinArrangeNW`		|moveto NW		|AC-KP_7		|AC-KP_7		|move window NW corner to monitor NW corner
+|`KeyWinArrangeC`		|moveto C		|AC-KP_5		|AC-KP_5		|move window center to monitor center
+|`KeyWinSnapMoveN`		|snapto N		|ACS-KP_8		|ACS-KP_8		|move window N to next S edge or monitor N
+|`KeyWinSnapMoveNE`		|snapto NE		|ACS-KP_9		|ACS-KP_9		|combination of N and E
+|`KeyWinSnapMoveE`		|snapto E		|ACS-KP_6		|ACS-KP_6		|move window E to next W edge or monitor E
+|`KeyWinSnapMoveSE`		|snapto SE		|ACS-KP_3		|ACS-KP_3		|combination of S and E
+|`KeyWinSnapMoveS`		|snapto S		|ACS-KP_2		|ACS-KP_2		|move window S to next N edge or monitor S
+|`KeyWinSnapMoveSW`		|snapto SW		|ACS-KP_1		|ACS-KP_1		|combination of S and W
+|`KeyWinSnapMoveW`		|snapto W		|ACS-KP_4		|ACS-KP_4		|move window W to next E edge or monitor W
+|`KeyWinSnapMoveNW`		|snapto NW		|ACS-KP_7		|ACS-KP_7		|combination of N and W
+|`KeyWinSmartPlace`		|			|ACS-KP_5		|ACS-KP_5		|
+|`KeySysSwitchNext`		|window +1		|A-Tab			|A-Tab			|next window in focus order with system switch dialog
+|`KeySysSwitchLast`		|window -1		|AS-Tab			|AS-Tab			|prev window in focus order with system switch dialog
+|`KeySysWinNext`		|focus +1		|A-Esc			|A-Esc			|next window in focus order without system switch dialog
+|`KeySysWinPrev`		|focus -1		|AS-Esc			|AS-Esc			|prev window in focus order without system switch dialog
+|`KeySysWinMenu`		|			|S-Esc			|S-Esc			|
+|`KeySysDialog`			|			|AC-Del			|AC-Del			|
+|`KeySysMenu`			|			|C-Esc			|C-Esc			|
+|`KeySysWindowList`		|			|AC-Esc			|AC-Esc			|
+|`KeySysWinListMenu`		|			|			|			|
+|`KeySysRun`			|spawn xde-run		|AC-r			|AC-r			|
+|`KeySysAddressBar`		|			|AC-Space		|AC-Space		|
+|`KeyWinMenu`			|			|A-Space		|A-Space		|
+|`KeySysWorkspacePrev`		|view -1		|AC-Left		|AC-Left		|
+|`KeySysWorkspaceNext`		|view +1		|AC-Right		|AC-Right		|
+|`KeySysWorkspaceLast`		|view L			|AC-Down		|AC-Down		|
+|`KeySysWorkspacePrevTakeWin`	|taketo -1		|ACS-Left		|ACS-Left		|
+|`KeySysWorkspaceNextTakeWin`	|taketo +1		|ACS-Right		|ACS-Right		|
+|`KeySysWorkspaceLastTakeWin`	|taketo L		|ACS-Down		|ACS-Down		|
+|`KeySysWorkspace1`		|view 1			|AC-1			|AC-1			|
+|`KeySysWorkspace2`		|view 2			|AC-2			|AC-2			|
+|`KeySysWorkspace3`		|view 3			|AC-3			|AC-3			|
+|`KeySysWorkspace4`		|view 4			|AC-4			|AC-4			|
+|`KeySysWorkspace5`		|view 5			|AC-5			|AC-5			|
+|`KeySysWorkspace6`		|view 6			|AC-6			|AC-6			|
+|`KeySysWorkspace7`		|view 7			|AC-7			|AC-7			|
+|`KeySysWorkspace8`		|view 8			|AC-8			|AC-8			|
+|`KeySysWorkspace9`		|view 9			|AC-9			|AC-9			|
+|`KeySysWorkspace10`		|view 10		|AC-0			|AC-0			|
+|`KeySysWorkspace11`		|view 11		|AC-bracketleft		|AC-bracketleft		|
+|`KeySysWorkspace12`		|view 12		|AC-bracketright	|AC-bracketright	|
+|`KeySysWorkspace1TakeWin`	|taketo 1		|ACS-1			|ACS-1			|
+|`KeySysWorkspace2TakeWin`	|taketo 2		|ACS-2			|ACS-2			|
+|`KeySysWorkspace3TakeWin`	|taketo 3		|ACS-3			|ACS-3			|
+|`KeySysWorkspace4TakeWin`	|taketo 4		|ACS-4			|ACS-4			|
+|`KeySysWorkspace5TakeWin`	|taketo 5		|ACS-5			|ACS-5			|
+|`KeySysWorkspace6TakeWin`	|taketo 6		|ACS-6			|ACS-6			|
+|`KeySysWorkspace7TakeWin`	|taketo 7		|ACS-7			|ACS-7			|
+|`KeySysWorkspace8TakeWin`	|taketo 8		|ACS-8			|ACS-8			|
+|`KeySysWorkspace9TakeWin`	|taketo 9		|ACS-9			|ACS-9			|
+|`KeySysWorkspace10TakeWin`	|taketo 10		|ACS-0			|ACS-0			|
+|`KeySysWorkspace11TakeWin`	|taketo 11		|ACS-bracketleft	|ACS-bracketleft	|
+|`KeySysWorkspace12TakeWin`	|taketo 12		|ACS-bracketright	|ACS-bracketright	|
+|`KeySysTileVertical`		|			|AS-F2			|AS-F2			|
+|`KeySysTileHorizontal`		|			|AS-F3			|AS-F3			|
+|`KeySysCascade`		|			|AS-F4			|AS-F4			|
+|`KeySysArrange`		|			|AS-F5			|AS-F5			|
+|`KeySysArrangeIcons`		|			|AS-F8			|AS-F8			|
+|`KeySysMinimizeAll`		|iconify *		|AS-F9			|AS-F9			|
+|`KeySysHideAll`		|hide *			|AS-F11			|AS-F11			|
+|`KeySysUndoArrange`		|			|AS-F7			|AS-F7			|
+|`KeySysShowDesktop`		|toggleshowing		|AC-d			|AC-d			|
+|`KeySysCollapseTaskBar`	|			|AC-h			|AC-h			|
+|===
+
+
+==== IceWM Notes ====
+
+IceWM does not raise windows on resize or movement, while it seem that
+all the other window managers do.  We will make it an option somehow.  I
+started by following IceWM and then fell back to what the others were
+doing.  The window must focus when sloppy focus is set, but it is a
+question as to what the various WMs do when click to focus is set.
+
+The arrangement functions of IceWM simply position the window corner or 
+edge: NW, W, SW, S, SE, E, NE, N or C and do no resize the window in any
+way.
+
+Note that the difference between KeyWinNext/Prev, KeySysSwitchNext/Last
+and KeySysWinNext/Prev is that the later pair provide a window list for
+the current desktop while switching, the former two pairs do not.
+
+
+=== DWM Variants ===
+
+.DWM Variant Key Bindings
+[width="100%",options="header"]
+|===
+|Function Name		|ADWM Function		|dwm			|xdwm			|Description
+|			|spawn st/uxterm	|AS-Return		|AS-Return		|Spawn a terminal
+|			|screenprev		|A-,			|A-,			|Focus previous screen/monitor
+|			|screennext		|A-.			|A-.			|Focus next screen/monitor
+|			|sendtoscreenprev	|A-S-,			|AS-,			|Send window to previous screen/monitor
+|			|sendtoscreennext	|A-S-.			|AS-.			|Send window to next screen/monitor
+|			|togglestruts		|A-b			|A-b			|Toggle status bar
+|			|setlayoutt		|A-t			|A-t			|Set tiled layout
+|			|setlayoutf		|A-f			|A-f			|Set floating layout
+|			|setlayoutm		|A-m			|A-m			|Set monocle layout
+|			|cyclelayout		|A-space		|A-space		|Next layout
+|			|focusnext		|A-j			|A-j			|Focus next window
+|			|focusprev		|A-k			|A-k			|Focus previous window
+|			|incnmaster		|A-i			|A-i			|Increase number of master windows by 1
+|			|decnmaster		|A-d			|A-d			|Decrease number of master windows by 1
+|			|incmwfact		|A-l			|A-l			|Increase master width factor by 5%
+|			|decmwfact		|A-h			|A-h			|Decrease master width factor by 5%
+|			|zoom			|A-Return		|A-Return		|Zoom/cycle window to/from stacking area
+|			|killclient		|AS-c			|AS-c			|Close window
+|			|togglefloating		|AS-Space		|AS-Space		|Toggle window from floating to tiled
+|			|viewprevtag		|A-Tab			|A-Tab			|View previous tag set
+|			|tag0			|AS-1			|AS-1			|Apply tag 1 to current window
+|			|tag1			|AS-2			|AS-2			|Apply tag 2 to current window
+|			|tag2			|AS-3			|AS-3			|Apply tag 3 to current window
+|			|tag3			|AS-4			|AS-4			|Apply tag 4 to current window
+|			|tag4			|AS-5			|AS-5			|Apply tag 5 to current window
+|			|tag5			|AS-6			|AS-6			|Apply tag 6 to current window
+|			|tag6			|AS-7			|AS-7			|Apply tag 7 to current window
+|			|tag7			|AS-8			|AS-8			|Apply tag 8 to current window
+|			|tag8			|AS-9			|AS-9			|Apply tag 9 to current window
+|			|tag			|AS-0			|AS-0			|Apply all tags to current window
+|			|toggletag0		|ACS-1			|ACS-1			|Add/remove tag 1 to/from current window
+|			|toggletag1		|ACS-2			|ACS-2			|Add/remove tag 2 to/from current window
+|			|toggletag2		|ACS-3			|ACS-3			|Add/remove tag 3 to/from current window
+|			|toggletag3		|ACS-4			|ACS-4			|Add/remove tag 4 to/from current window
+|			|toggletag4		|ACS-5			|ACS-5			|Add/remove tag 5 to/from current window
+|			|toggletag5		|ACS-6			|ACS-6			|Add/remove tag 6 to/from current window
+|			|toggletag6		|ACS-7			|ACS-7			|Add/remove tag 7 to/from current window
+|			|toggletag7		|ACS-8			|ACS-8			|Add/remove tag 8 to/from current window
+|			|toggletag8		|ACS-9			|ACS-9			|Add/remove tag 9 to/from current window
+|			|view0			|A-1			|A-1			|View windows with tag 1
+|			|view1			|A-2			|A-2			|View windows with tag 2
+|			|view2			|A-3			|A-3			|View windows with tag 3
+|			|view3			|A-4			|A-4			|View windows with tag 4
+|			|view4			|A-5			|A-5			|View windows with tag 5
+|			|view5			|A-6			|A-6			|View windows with tag 6
+|			|view6			|A-7			|A-7			|View windows with tag 7
+|			|view7			|A-8			|A-8			|View windows with tag 8
+|			|view8			|A-9			|A-9			|View windows with tag 9
+|			|view			|A-0			|A-0			|View windows with any tag
+|			|quit			|A-S-q			|A-S-q			|Quit dwm
+|===
+
+==== echinus ====
+
+.echinus Key Bindings
+[width="100%",options="header"]
+|===
+|Function Name			|ADWM Function		|echinus Default	|XDE Default		|Description
+|focusnext			|focusnext		|A-j			|A-j			|Focus next window
+|focusprev			|focusprev		|A-k			|A-k			|Focus prev window
+|focusview#			|focusview6		|A-s			|A-s			|Toggles view number # and focuses the first client in it
+|killclient			|killclient		|AS-c			|AS-c			|Closes current focused window.
+|movedown dx dy dw dh		|moveresize 0 n 0 0	|A-s			|W-j			|Moves the window by the specified number of pixels
+|moveleft dx dy dw dh		|moveresize -n 0 0 0	|A-a			|W-h			|Moves the window by the specified number of pixels
+|moveright dx dy dw dh		|moveresize n 0 0 0	|A-d			|W-l			|Moves the window by the specified number of pixels
+|moveup dx dy dw dh		|moveresize 0 -n 0 0	|A-w			|W-k			|Moves the window by the specified number of pixels
+|restart			|restart		|AS-q			|AS-q			|Restarts echinus
+|quit				|quit			|AC-q			|AC-q			|Exits echinus
+|resizedecx dx dy dw dh		|moveresize 0 0 -n 0	|AS-a			|WS-h			|Resizes the window by the specified number of pixes in the specified direction
+|resizedecy dx dy dw dh		|moveresize 0 0 0 -n	|AS-s			|WS-k			|Resizes the window by the specified number of pixes in the specified direction
+|resizeincx dx dy dw dh		|moveresize 0 0 n 0 	|AS-d			|WS-l			|Resizes the window by the specified number of pixes in the specified direction
+|resizeincy dx dy dw dh		|moveresize 0 0 0 n 	|AS-w			|WS-j			|Resizes the window by the specified number of pixes in the specified direction
+|rule#				|rule#			|--			|			|Sets a rule (not used by keybindings)
+|spawn#				|spawn#			|			|			|Runs specified program (up to 64)
+|togglefloating			|togglefloating		|A-Space		|A-Space		|Toggles floating or tiled mode
+|togglestruts			|togglestruts		|A-b			|A-b			|Echinus has no bar, but this command switches the area on top or bottom which won't be covered by windows in tiled or monocle mode
+|toggleview#			|toggleview#		|AC-[n]			|AC-#			|Toggles view number #.  Adds/removes all windows with n-th tag to/from the view.
+|toggletag#			|toggletag#		|ACS-#			|ACS-#			|Adds/removes n-th tag to/from current window
+|tag#				|tag#			|AS-#			|AS-#			|Applies n-th tag to current window
+|view#				|view#			|A-[F1-Fn]		|A-[F1-Fn]		|Views tag number #
+|viewlefttag			|viewlefttag		|AC-Left		|AC-Left		|Views tag on left
+|viewrighttag			|viewrighttag		|AC-Right		|AC-Right		|Views tag on right
+|viewprevtag			|viewprevtag		|A-Tab			|A-Tab			|Views previously selected tag set
+|zoom				|zoom			|A-Return		|A-Return		|Zooms/cycles current window to/from master area
+|setlayoutf			|setlayoutf		|A-f, A-i		|A-f, A-i		|Enables floating mode
+|setlayoutm			|setlayoutm		|A-m			|A-m			|Enables maximized (monocle) mode
+|setlayoutt			|setlayoutt		|A-r			|A-r			|Enables tiled mode
+|setlayoutb			|setlayoutb		|A-w			|A-w			|Enables bottom-tiled mode
+|decmwfact			|decmwfact		|A-h			|A-h			|Decreases the master area width about 5% (tiled layout only)
+|incmwfact			|incmwfact		|A-l			|A-l			|Increases the master area width about 5% (tiled layout only)
+|spawn uxterm			|spawn uxterm		|A-t			|A-t, AC-t		|Spawns a terminal
+|togglemonitor			|togglemonitor		|A-grave		|A-grave		|Focus next screen/monitor
+|===
+
+==== velox ====
+
+.velox Key Bindings
+[width="100%",options="header"]
+|===
+|Function Name			|ADWM Function		|velox Default		|Description
+|focus_next			|focusnext		|W-j			|
+|focus_previous			|focusprev		|W-k			|
+|toggle_focus_type		|--			|W-g			|
+|move_next			|taketonext		|WS-j			|
+|move_previous			|taketoprev		|WS-k			|
+|kill_focused_window		|killclient		|WS-c			|
+|toggle_floating		|togglefloating		|W-f			|
+|next_layout			|layoutnext		|W-Space		|
+|previous_layout		|layoutprev		|WS-Space		|
+|quit				|quit			|WS-q			|
+|decrease_master_factor		|decmwfact		|W-h			|
+|increase_master_factor		|incmwfact		|W-l			|
+|increase_master_count		|incnmaster		|WS-h			|
+|decrease_master_count		|decnmaster		|WS-l			|
+|increase_column_count		|incncolumns		|WC-h			|
+|decrease_column_count		|decncolumns		|WC-l			|
+|terminal			|spawn roxterm		|WS-Return		|
+|dmenu				|spawn dmenu		|W-r			|
+|set_workspace_1		|view 1			|W-1			|
+|set_workspace_2		|view 2			|W-2			|
+|set_workspace_3		|view 3			|W-3			|
+|set_workspace_4		|view 4			|W-4			|
+|set_workspace_5		|view 5			|W-5			|
+|set_workspace_6		|view 6			|W-6			|
+|set_workspace_7		|view 7			|W-7			|
+|set_workspace_8		|view 8			|W-8			|
+|set_workspace_9		|view 9			|W-9			|
+|move_focus_to_workspace_1	|taketo 1		|WS-1			|
+|move_focus_to_workspace_2	|taketo 2		|WS-2			|
+|move_focus_to_workspace_3	|taketo 3		|WS-3			|
+|move_focus_to_workspace_4	|taketo 4		|WS-4			|
+|move_focus_to_workspace_5	|taketo 5		|WS-5			|
+|move_focus_to_workspace_6	|taketo 6		|WS-6			|
+|move_focus_to_workspace_7	|taketo 7		|WS-7			|
+|move_focus_to_workspace_8	|taketo 8		|WS-8			|
+|move_focus_to_workspace_9	|taketo 9		|WS-9			|
+|play_pause			|--			|XF86AudioPlay, XF86AudioPause|
+|next				|--			|XF86AudioNext		|
+|previous			|--			|XF86AudioPrev		|
+|stop				|--			|XF86AudioStop		|
+|===
+
+
+==== awesome ====
+
+.awesome Key Bindings
+[width="100%",options="header"]
+|===
+|Function Name		|ADWM Function		|awesome Default	|Description
+|			|restart		|WC-r			|Restart awesome
+|			|quit			|WS-q			|Quit awesome
+|			|spawn xde-run		|W-r			|Run prompt
+|			|--			|W-x			|Run lua code prompt
+|			|spawn uxterm		|W-Return		|Spawn terminal emulator
+|			|--			|W-w			|Open main menu
+|			|max			|W-m			|Maximize client
+|			|iconify		|W-n			|Minimize client
+|			|unmax			|WC-n			|Restore client
+|			|full			|W-f			|Set client fullscreen
+|			|killclient		|WS-c			|Kill focused client
+|			|above			|W-t			|Set client on top
+|			|focusnext		|W-j			|Focus next client
+|			|focusprev		|W-k			|Focus previous client
+|			|focusurgent		|W-u			|Focus first urgent client
+|			|viewprev		|W-Left			|View previous tag
+|			|viewnext		|W-Right		|View next tag
+|			|view 1			|W-1			|Switch to tag 1
+|			|view 2			|W-2			|Switch to tag 2
+|			|view 3			|W-3			|Switch to tag 3
+|			|view 4			|W-4			|Switch to tag 4
+|			|view 5			|W-5			|Switch to tag 5
+|			|view 6			|W-6			|Switch to tag 6
+|			|view 7			|W-7			|Switch to tag 7
+|			|view 8			|W-8			|Switch to tag 8
+|			|view 9			|W-9			|Switch to tag 9
+|			|screennext		|WC-j			|Focus next screen
+|			|screenprev		|WC-k			|Focus previous screen
+|			|viewlast		|W-Escape		|Focus previously selected tag set
+|			|swapnext		|WS-j			|Switch client with next client
+|			|swapprev		|WS-k			|Switch client with previous client
+|			|toscreennext		|W-o			|Send client to next screen
+|			|decmwfact		|W-h			|Decrease master width factor by 5%
+|			|incmwfact		|W-l			|Increase master width factor by 5%
+|			|incnmaster		|WS-h			|Increase number of master windows by 1
+|			|decnmaster		|WS-l			|Decrease number of master windows by 1
+|			|incnstacking		|WC-h			|Increase number of columns for non-master windows by 1
+|			|decnstacking		|WC-l			|Decrease number of columns for non-master windows by 1
+|			|layoutnext		|W-Space		|Switch to next layout
+|			|layoutprev		|WS-Space		|Switch to previous layout
+|			|togglefloating		|WC-Space		|Toggle client floating status
+|			|zoom			|WC-Return		|Swap focussed client with master
+|			|toggleview 1		|WC-1			|Toggle tag view 1
+|			|toggleview 2		|WC-2			|Toggle tag view 2
+|			|toggleview 3		|WC-3			|Toggle tag view 3
+|			|toggleview 4		|WC-4			|Toggle tag view 4
+|			|toggleview 5		|WC-5			|Toggle tag view 5
+|			|toggleview 6		|WC-6			|Toggle tag view 6
+|			|toggleview 7		|WC-7			|Toggle tag view 7
+|			|toggleview 8		|WC-8			|Toggle tag view 8
+|			|toggleview 9		|WC-9			|Toggle tag view 9
+|			|tag 1			|WS-1			|Tag client with tag 1
+|			|tag 2			|WS-2			|Tag client with tag 2
+|			|tag 3			|WS-3			|Tag client with tag 3
+|			|tag 4			|WS-4			|Tag client with tag 4
+|			|tag 5			|WS-5			|Tag client with tag 5
+|			|tag 6			|WS-6			|Tag client with tag 6
+|			|tag 7			|WS-7			|Tag client with tag 7
+|			|tag 8			|WS-8			|Tag client with tag 8
+|			|tag 9			|WS-9			|Tag client with tag 9
+|			|toggletag 1		|WCS-1			|Toggle tag 1 on client
+|			|toggletag 2		|WCS-2			|Toggle tag 1 on client
+|			|toggletag 3		|WCS-3			|Toggle tag 1 on client
+|			|toggletag 4		|WCS-4			|Toggle tag 1 on client
+|			|toggletag 5		|WCS-5			|Toggle tag 1 on client
+|			|toggletag 6		|WCS-6			|Toggle tag 1 on client
+|			|toggletag 7		|WCS-7			|Toggle tag 1 on client
+|			|toggletag 8		|WCS-8			|Toggle tag 1 on client
+|			|toggletag 9		|WCS-9			|Toggle tag 1 on client
+|===
+
+==== spectrwm/scrotwm =====
+
+There are some conflicts between spectrwm/scrotwm key bindings and other
+dwm variants.  There is also some conflict between common floating
+window manager key bindings and spectrwm/scrotwm key bindings.  Spectrwm
+does, however, have some advanced functions worth emulating.  These are:
+
+* layout cycling
+* layout flipping
+* layout reset
+* definable regions instead of monitors (good for testing)
+* swappping windows in layout
+* focusing an urgent window
+* toggling struts on a single workspace versus all workspaces
+* uniconify and search functions
+
+The window movement and resize are not so necessary.
+
+.spectrwm Key Bindings
+[width="100%",options="header"]
+|===
+|Function Name		|ADWM Function		|spectrwm Default	|Description
+|term			|			|WS-Return		|Spawn a new terminal
+|menu			|			|W-p			|Menu
+|quit			|			|WS-q			|Quit spectrwm
+|restart		|			|W-q			|Restart spectrwm
+|cycle_layout		|			|W-Space		|Cycle layout
+|flip_layout		|			|WS-backslash		|Swap the master and stacking areas
+|stack_reset		|			|WS-Space		|Reset layout
+|master_shrink		|			|W-h			|Shrink master area
+|master_grow		|			|W-l			|Grow master area
+|master_add		|			|W-comma		|Add windows to master area
+|master_del		|			|W-period		|Remove windows from master area
+|stack_inc		|			|WS-comma		|Add columns/rows to stacking area
+|stack_dec		|			|WS-period		|Remove columns/rows from stacking area
+|swap_main		|			|W-Return		|Move current window to master area
+|focus_next		|			|W-j, W-Tab		|Focus next window in workspace
+|focus_prev		|			|W-k, W-S-Tab		|Focus previous window in workspace
+|focus_main		|			|W-m			|Focus on main window in workspace
+|focus_urgent		|			|WS-j			|Focus on next window with an urgency hint flag set.  The workspace is switched if needed.
+|swap_next		|			|W-u			|Swap with next window in workspace
+|swap_prev		|			|WS-k			|Swap with previous window in workspace
+|bar_toggle		|			|W-b			|Toggle overall visibility of status bars
+|bar_toggle_ws		|			|WS-b			|Toggle status bar on current workspace
+|wind_del		|			|W-x			|Delete current window in workspace
+|wind_kill		|			|WS-x			|Destroy current window in workspace
+|ws_[n]			|			|W-(1-0,F1-F12)		|Switch to workspace n, where n is 1 through workspace_limit
+|mvws_[n]		|			|WS-(1-0,F1-F12)	|Move current window to workspace n, where n is 1 through workspace limit
+|rg_[n]			|			|W-(KP_1-KP_9)		|Focus on region n, where n is 1 through 9
+|mvrg_[n]		|			|WS-(KP_1-KP_9)		|Move current window to region n, where n is 1 through 9
+|ws_next		|			|W-Right		|Switch to next workspace with a window in it
+|ws_prev		|			|W-Left			|Switch to previous workspace with a window in it
+|ws_next_all		|			|W-Up			|Switch to next workspace
+|ws_prev_all		|			|W-Down			|Switch to previous workspace
+|ws_next_move		|			|W-a			|Switch to next workspace with the current window
+|ws_prev_move		|			|WS-Left		|Switch to previous workspace with the current window
+|ws_prior		|			|WS-Up			|Switch to last visited workspace
+|rg_next		|			|WS-Right		|Switch to next region
+|rg_prev		|			|WS-Left		|Switch to previous region
+|screenshot_all		|			|W-s			|Take screenshot of entire screen (if enabled)
+|screenshot_wind	|			|WS-s			|Take screenshot of selected window (if enabled)
+|version		|			|WS-v			|Toggle version in status bar
+|float_toggle		|			|W-t			|Toggle focused window between tiled and floating
+|lock			|			|WS-Delete		|Lock screen
+|initscr		|			|WS-i			|Reinitialize physical screens
+|iconify		|			|W-w			|Minimize (unmap) currently focused window
+|uniconify		|			|WS-w			|Restore (map) window returned by dmenu selection
+|maximize_toggle	|			|			|Toggle maximization of focused window
+|always_raise		|			|WS-r			|When set tiled windows are allowed to obscure floating windows
+|button2		|			|W-v			|Fake middle mouse button click (mouse button 2)
+|width_shrink		|			|W-minus		|Shrink the width of a floating window
+|width_grow		|			|W-equal		|Grow the width of a floating window
+|height_shrink		|			|W-S-minus		|Shrink the height of a floating window
+|height_grow		|			|W-S-equal		|Grow the height of a floating window
+|move_left		|			|W-bracketleft		|Move a floating window a step to the left
+|move_right		|			|W-bracketright		|Move a floating window a step to the right
+|move_up		|			|WS-bracketleft		|Move a floating window a step upwards
+|move_down		|			|WS-bracketright	|Move a floating window a stop downwards
+|name_workspace		|			|WS-backslash		|Name the current workspace
+|search_workspace	|			|W-backslash		|Search for a workspace
+|search_win		|			|W-f			|Search the windows in the current workspace
+|===
+
+== ADWM Key Bindings ==
+
+The purpose of ADWM key binding defaults is to provide as wide a
+coverage of other defaults as possible.
+
+.Key Bindings
+[width="100%",options="header"]
+|===
+|Key Sequence		|ADWM		|GNOME		|Fluxbox	|Blackbox	|WindowMaker	|Openbox/LXDE	|IceWM		|PekWM		|dwm		|xdwm		|Echinus	|Spectrwm	|velox		|awesome	|Notes
+|C-F1			|		|		|view 1		|view 1		|		|		|		|		|		|		|		|		|		|		|
+|C-F2			|		|		|view 2		|view 2		|		|		|		|		|		|		|		|		|		|		|
+|C-F3			|		|		|view 3		|view 3		|		|		|		|		|		|		|		|		|		|		|
+|C-F4			|		|		|view 4		|view 4		|		|		|		|		|		|		|		|		|		|		|
+|C-F5			|		|		|view 5		|view 5		|		|		|		|		|		|		|		|		|		|		|
+|C-F6			|		|		|view 6		|view 6		|		|		|		|		|		|		|		|		|		|		|
+|C-F7			|		|		|view 7		|view 7		|		|		|		|		|		|		|		|		|		|		|
+|C-F8			|		|		|view 8		|view 8		|		|		|		|		|		|		|		|		|		|		|
+|C-F9			|		|		|view 9		|view 9		|		|		|		|		|		|		|		|		|		|		|
+|C-F10			|		|		|view 10	|view 10	|		|		|		|		|		|		|		|		|		|		|
+|C-F11			|		|		|view 11	|view 11	|		|		|		|		|		|		|		|		|		|		|
+|C-F12			|		|		|view 12	|view 12	|		|		|		|		|		|		|		|		|		|		|
+|A-space		|		|winmenu	|winmenu	|		|raiselower	|winmenu	|winmenu	|		|layoutnext	|layoutnext	|togglefloating	|		|		|		|
+|W-space		|		|inputnext	|		|		|		|		|		|layoutnext?	|		|		|		|		|layoutnext	|layoutnext	|
+|A-1			|		|		|view 1		|view 1		|view 1		|		|		|view 1		|view 1		|view 1		|		|		|		|		|
+|A-2			|		|		|view 2		|view 2		|view 2		|		|		|view 2		|view 2		|view 2		|		|		|		|		|
+|A-3			|		|		|view 3		|view 3		|view 3		|		|		|view 3		|view 3		|view 3		|		|		|		|		|
+|A-4			|		|		|view 4		|view 4		|view 4		|		|		|view 4		|view 4		|view 4		|		|		|		|		|
+|A-5			|		|		|view 5		|view 5		|view 5		|		|		|view 5		|view 5		|view 5		|		|		|		|		|
+|A-6			|		|		|view 6		|view 6		|view 6		|		|		|view 6		|view 6		|view 6		|		|		|		|		|
+|A-7			|		|		|view 7		|view 7		|view 7		|		|		|view 7		|view 7		|view 7		|		|		|		|		|
+|A-8			|		|		|view 8		|view 8		|view 8		|		|		|view 8		|view 8		|view 8		|		|		|		|		|
+|A-9			|		|		|view 9		|		|view 9		|		|		|view 9		|view 9		|view 9		|		|		|		|		|
+|A-0			|		|		|view 10	|		|view 10	|		|		|		|view *		|view *		|		|		|		|		|
+|A-F1			|		|spawn xde-menu	|spawn xde-terminal|spawn xde-terminal|		|		|raise		|		|		|		|view 1		|		|		|		|
+|A-F2			|		|spawn xde-run	|spawn xde-run	|		|		|		|togglesticky	|		|		|		|view 2		|		|		|		|
+|A-F3			|		|		|		|		|		|		|lower		|		|		|		|view 3		|		|		|		|
+|A-F4			|		|close		|close		|close		|		|close		|close		|		|		|		|view 4		|		|		|		|
+|A-F5			|		|unmaximize	|kill		|spawn xrefresh	|		|unmaximize/kill|unmaximize	|		|		|		|view 5		|		|		|		|
+|A-F6			|		|groupnext	|		|		|		|		|focusnext	|		|		|		|view 6		|		|		|		|
+|A-F7			|		|begmove	|		|		|		|begmove	|begmove	|		|		|		|view 7		|		|		|		|
+|A-F8			|		|begsize	|		|		|		|begsize	|begsize	|		|		|		|view 8		|		|		|		|
+|A-F9			|		|iconify	|		|toggleshade	|		|iconify	|iconify	|		|		|		|view 9		|		|		|		|
+|A-F10			|		|togglemax	|togglemax	|togglemaxv	|		|maximize/togglemax|togglemax	|		|		|		|view 10	|		|		|		|
+|A-F11			|		|		|togglefull	|togglemaxh	|		|togglefull	|togglefull	|		|		|		|view 11	|		|		|		|
+|A-F12			|		|		|		|togglefull	|		|toggleshade	|toggleshade	|		|		|		|view 12	|		|		|		|
+|W-1			|		|		|tab 1		|		|focus 1	|		|		|		|		|		|		|view 1		|view 1		|view 1		|
+|W-2			|		|		|tab 2		|		|focus 2	|		|		|		|		|		|		|view 2		|view 2		|view 2		|
+|W-3			|		|		|tab 3		|		|focus 3	|		|		|		|		|		|		|view 3		|view 3		|view 3		|
+|W-4			|		|		|tab 4		|		|focus 4	|		|		|		|		|		|		|view 4		|view 4		|view 4		|
+|W-5			|		|		|tab 5		|		|focus 5	|		|		|		|		|		|		|view 5		|view 5		|view 5		|
+|W-6			|		|		|tab 6		|		|focus 6	|		|		|		|		|		|		|view 6		|view 6		|view 6		|
+|W-7			|		|		|tab 7		|		|focus 7	|		|		|		|		|		|		|view 7		|view 7		|view 7		|
+|W-8			|		|		|tab 8		|		|focus 8	|		|		|		|		|		|		|view 8		|view 8		|view 8		|
+|W-9			|		|		|tab 9		|		|focus 9	|		|		|		|		|		|		|view 9		|view 9		|view 9		|
+|W-0			|		|		|tab 10		|		|focus 10	|		|		|		|		|		|		|view 10	|view 10	|		|
+|W-F1			|		|		|tag 1		|tag 1		|tag 1		|view 1		|		|tag 1		|		|		|		|view 1		|view 11	|		|
+|W-F2			|		|		|tag 2		|tag 2		|tag 2		|view 2		|		|tag 2		|		|		|		|view 2		|view 12	|		|
+|W-F3			|		|		|tag 3		|tag 3		|tag 3		|view 3		|		|tag 3		|		|		|		|view 3		|view 13	|		|
+|W-F4			|		|		|tag 4		|tag 4		|tag 4		|view 4		|		|tag 4		|		|		|		|view 4		|view 14	|		|
+|W-F5			|		|		|tag 5		|tag 5		|tag 5		|		|		|tag 5		|		|		|		|view 5		|view 15	|		|
+|W-F6			|		|		|tag 6		|tag 6		|tag 6		|		|		|tag 6		|		|		|		|view 6		|view 16	|		|
+|W-F7			|		|		|tag 7		|tag 7		|tag 7		|		|		|tag 7		|		|		|		|view 7		|view 17	|		|
+|W-F8			|		|		|tag 8		|tag 8		|tag 8		|		|		|tag 8		|		|		|		|view 8		|view 18	|		|
+|W-F9			|		|		|tag 9		|tag 9		|tag 9		|		|		|tag 9		|		|		|		|view 9		|view 19	|		|
+|W-F10			|		|		|tag 10		|tag 10		|tag 10		|		|		|		|		|		|		|view 10	|view 20	|		|
+|W-F11			|		|		|tag 11		|tag 11		|		|		|		|		|		|		|		|view 11	|view 21	|		|
+|W-F12			|		|		|tag 12		|tag 12		|		|		|		|		|		|		|		|view 12	|view 22	|		|
+|AS-1			|		|		|		|		|		|		|		|		|tag 1		|tag 1		|tag 1		|		|		|		|
+|AS-2			|		|		|		|		|		|		|		|		|tag 2		|tag 2		|tag 2		|		|		|		|
+|AS-3			|		|		|		|		|		|		|		|		|tag 3		|tag 3		|tag 3		|		|		|		|
+|AS-4			|		|		|		|		|		|		|		|		|tag 4		|tag 4		|tag 4		|		|		|		|
+|AS-5			|		|		|		|		|		|		|		|		|tag 5		|tag 5		|tag 5		|		|		|		|
+|AS-6			|		|		|		|		|		|		|		|		|tag 6		|tag 6		|tag 6		|		|		|		|
+|AS-7			|		|		|		|		|		|		|		|		|tag 7		|tag 7		|tag 7		|		|		|		|
+|AS-8			|		|		|		|		|		|		|		|		|tag 8		|tag 8		|tag 8		|		|		|		|
+|AS-9			|		|		|		|		|		|		|		|		|tag 9		|tag 9		|tag 9		|		|		|		|
+|AS-0			|		|		|		|		|		|		|		|		|		|		|		|		|		|		|
+|AS-F1			|		|		|		|		|		|		|		|		|		|		|		|		|		|		|
+|AS-F2			|		|		|		|		|		|		|arrange TileVertical|		|		|		|		|		|		|		|
+|AS-F3			|		|		|		|		|		|		|arrange TileHorizontal|	|		|		|		|		|		|		|
+|AS-F4			|		|		|		|		|		|		|arrange Cascade|		|		|		|		|		|		|		|
+|AS-F5			|		|		|		|		|		|		|arrange Smart	|		|		|		|		|		|		|		|
+|AS-F6			|		|groupprev	|		|		|		|		|focusprev	|		|		|		|		|		|		|		|
+|AS-F7			|		|		|		|		|		|		|unarrange	|		|		|		|		|		|		|		|
+|AS-F8			|		|		|		|		|		|		|arrange Icons	|		|		|		|		|		|		|		|
+|AS-F9			|		|		|		|		|		|		|iconifyall	|		|		|		|		|		|		|		|
+|AS-F10			|		|		|		|		|		|		|togglemaxv	|		|		|		|		|		|		|		|
+|AS-F11			|		|		|		|		|		|		|hideall	|		|		|		|		|		|		|		|
+|AS-F12			|		|		|		|		|		|		|hide		|		|		|		|		|		|		|		|
+|WS-1			|		|		|		|		|		|		|		|		|		|		|		|		|tag 1		|tag 1		|
+|WS-2			|		|		|		|		|		|		|		|		|		|		|		|		|tag 2		|tag 2		|
+|WS-3			|		|		|		|		|		|		|		|		|		|		|		|		|tag 3		|tag 3		|
+|WS-4			|		|		|		|		|		|		|		|		|		|		|		|		|tag 4		|tag 4		|
+|WS-5			|		|		|		|		|		|		|		|		|		|		|		|		|tag 5		|tag 5		|
+|WS-6			|		|		|		|		|		|		|		|		|		|		|		|		|tag 6		|tag 6		|
+|WS-7			|		|		|		|		|		|		|		|		|		|		|		|		|tag 7		|tag 7		|
+|WS-8			|		|		|		|		|		|		|		|		|		|		|		|		|tag 8		|tag 8		|
+|WS-9			|		|		|		|		|		|		|		|		|		|		|		|		|tag 9		|tag 9		|
+|WS-0			|		|		|		|		|		|		|		|		|		|		|		|		|tag 10		|		|
+|WS-F1			|		|		|		|		|		|		|		|		|		|		|		|tag 1		|tag 11		|		|
+|WS-F2			|		|		|		|		|		|		|		|		|		|		|		|tag 2		|tag 12		|		|
+|WS-F3			|		|		|		|		|		|		|		|		|		|		|		|tag 3		|tag 13		|		|
+|WS-F4			|		|		|		|		|		|		|		|		|		|		|		|tag 4		|tag 14		|		|
+|WS-F5			|		|		|		|		|		|		|		|		|		|		|		|tag 5		|tag 15		|		|
+|WS-F6			|		|		|		|		|		|		|		|		|		|		|		|tag 6		|tag 16		|		|
+|WS-F7			|		|		|		|		|		|		|		|		|		|		|		|tag 7		|tag 17		|		|
+|WS-F8			|		|		|		|		|		|		|		|		|		|		|		|tag 8		|tag 18		|		|
+|WS-F9			|		|		|		|		|		|		|		|		|		|		|		|tag 9		|tag 19		|		|
+|WS-F10			|		|		|		|		|		|		|		|		|		|		|		|tag 10		|tag 20		|		|
+|WS-F11			|		|		|		|		|		|		|		|		|		|		|		|tag 11		|tag 21		|		|
+|WS-F12			|		|		|		|		|		|		|		|		|		|		|		|tag 12		|tag 22		|		|
+|WS-KP_1		|		|		|		|		|		|		|		|		|		|		|		|monitor 1	|		|		|
+|WS-KP_2		|		|		|		|		|		|		|		|		|		|		|		|monitor 2	|		|		|
+|WS-KP_3		|		|		|		|		|		|		|		|		|		|		|		|monitor 3	|		|		|
+|WS-KP_4		|		|		|		|		|		|		|		|		|		|		|		|monitor 4	|		|		|
+|WS-KP_5		|		|		|		|		|		|		|		|		|		|		|		|monitor 5	|		|		|
+|WS-KP_6		|		|		|		|		|		|		|		|		|		|		|		|monitor 6	|		|		|
+|WS-KP_7		|		|		|		|		|		|		|		|		|		|		|		|monitor 7	|		|		|
+|WS-KP_8		|		|		|		|		|		|		|		|		|		|		|		|monitor 8	|		|		|
+|WS-KP_9		|		|		|		|		|		|		|		|		|		|		|		|monitor 9	|		|		|
+|WS-KP_0		|		|		|		|		|		|		|		|		|		|		|		|		|		|		|
+|AC-1			|		|		|		|		|		|		|view 1		|		|		|		|toggleview 1	|		|		|		|
+|AC-2			|		|		|		|		|		|		|view 2		|		|		|		|toggleview 2	|		|		|		|
+|AC-3			|		|		|		|		|		|		|view 3		|		|		|		|toggleview 3	|		|		|		|
+|AC-4			|		|		|		|		|		|		|view 4		|		|		|		|toggleview 4	|		|		|		|
+|AC-5			|		|		|		|		|		|		|view 5		|		|		|		|toggleview 5	|		|		|		|
+|AC-6			|		|		|		|		|		|		|view 6		|		|		|		|toggleview 6	|		|		|		|
+|AC-7			|		|		|		|		|		|		|view 7		|		|		|		|toggleview 7	|		|		|		|
+|AC-8			|		|		|		|		|		|		|view 8		|		|		|		|toggleview 8	|		|		|		|
+|AC-9			|		|		|		|		|		|		|view 9		|		|		|		|toggleview 9	|		|		|		|
+|AC-0			|		|		|		|		|		|		|view 10	|		|		|		|		|		|		|		|
+|AC-bracketleft		|		|		|		|		|		|		|view 11	|		|		|		|		|		|		|		|
+|AC-bracketright	|		|		|		|		|		|		|view 12	|		|		|		|		|		|		|		|
+|AC-F1			|		|		|		|		|		|		|		|		|		|		|		|		|		|		|
+|AC-F2			|		|		|		|		|		|		|		|		|		|		|		|		|		|		|
+|AC-F3			|		|		|		|		|		|		|		|		|		|		|		|		|		|		|
+|AC-F4			|		|		|		|		|		|		|		|		|		|		|		|		|		|		|
+|AC-F5			|		|		|		|		|		|		|		|		|		|		|		|		|		|		|
+|AC-F6			|		|		|		|		|		|		|		|		|		|		|		|		|		|		|
+|AC-F7			|		|		|		|		|		|		|		|		|		|		|		|		|		|		|
+|AC-F8			|		|		|		|		|		|		|		|		|		|		|		|		|		|		|
+|AC-F9			|		|		|		|		|		|		|		|		|		|		|		|		|		|		|
+|AC-F10			|		|		|		|		|		|		|		|		|		|		|		|		|		|		|
+|AC-F11			|		|		|		|		|		|		|		|		|		|		|		|		|		|		|
+|AC-F12			|		|		|		|		|		|		|		|		|		|		|		|		|		|		|
+|WC-1			|		|		|		|		|		|		|		|		|		|		|		|		|		|toggleview 1	|
+|WC-2			|		|		|		|		|		|		|		|		|		|		|		|		|		|toggleview 2	|
+|WC-3			|		|		|		|		|		|		|		|		|		|		|		|		|		|toggleview 3	|
+|WC-4			|		|		|		|		|		|		|		|		|		|		|		|		|		|toggleview 4	|
+|WC-5			|		|		|		|		|		|		|		|		|		|		|		|		|		|toggleview 5	|
+|WC-6			|		|		|		|		|		|		|		|		|		|		|		|		|		|toggleview 6	|
+|WC-7			|		|		|		|		|		|		|		|		|		|		|		|		|		|toggleview 7	|
+|WC-8			|		|		|		|		|		|		|		|		|		|		|		|		|		|toggleview 8	|
+|WC-9			|		|		|		|		|		|		|		|		|		|		|		|		|		|toggleview 9	|
+|WC-0			|		|		|		|		|		|		|		|		|		|		|		|		|		|		|
+|WC-F1			|		|		|taketo 1	|		|		|		|		|		|		|		|		|		|		|		|
+|WC-F2			|		|		|taketo 2	|		|		|		|		|		|		|		|		|		|		|		|
+|WC-F3			|		|		|taketo 3	|		|		|		|		|		|		|		|		|		|		|		|
+|WC-F4			|		|		|taketo 4	|		|		|		|		|		|		|		|		|		|		|		|
+|WC-F5			|		|		|taketo 5	|		|		|		|		|		|		|		|		|		|		|		|
+|WC-F6			|		|		|taketo 6	|		|		|		|		|		|		|		|		|		|		|		|
+|WC-F7			|		|		|taketo 7	|		|		|		|		|		|		|		|		|		|		|		|
+|WC-F8			|		|		|taketo 8	|		|		|		|		|		|		|		|		|		|		|		|
+|WC-F9			|		|		|taketo 9	|		|		|		|		|		|		|		|		|		|		|		|
+|WC-F10			|		|		|taketo 10	|		|		|		|		|		|		|		|		|		|		|		|
+|WC-F11			|		|		|taketo 11	|		|		|		|		|		|		|		|		|		|		|		|
+|WC-F12			|		|		|taketo 12	|		|		|		|		|		|		|		|		|		|		|		|
+|ACS-1			|		|		|		|		|		|		|taketo 1	|		|toggletag 1	|toggletag 1	|toggletag 1	|		|		|		|
+|ACS-2			|		|		|		|		|		|		|taketo 2	|		|toggletag 2	|toggletag 2	|toggletag 2	|		|		|		|
+|ACS-3			|		|		|		|		|		|		|taketo 3	|		|toggletag 3	|toggletag 3	|toggletag 3	|		|		|		|
+|ACS-4			|		|		|		|		|		|		|taketo 4	|		|toggletag 4	|toggletag 4	|toggletag 4	|		|		|		|
+|ACS-5			|		|		|		|		|		|		|taketo 5	|		|toggletag 5	|toggletag 5	|toggletag 5	|		|		|		|
+|ACS-6			|		|		|		|		|		|		|taketo 6	|		|toggletag 6	|toggletag 6	|toggletag 6	|		|		|		|
+|ACS-7			|		|		|		|		|		|		|taketo 7	|		|toggletag 7	|toggletag 7	|toggletag 7	|		|		|		|
+|ACS-8			|		|		|		|		|		|		|taketo 8	|		|toggletag 8	|toggletag 8	|toggletag 8	|		|		|		|
+|ACS-9			|		|		|		|		|		|		|taketo 9	|		|toggletag 9	|toggletag 9	|toggletag 9	|		|		|		|
+|ACS-0			|		|		|		|		|		|		|taketo 10	|		|		|		|		|		|		|		|
+|ACS-bracketleft	|		|		|		|		|		|		|taketo 11	|		|		|		|		|		|		|		|
+|ACS-bracketright	|		|		|		|		|		|		|taketo 12	|		|		|		|		|		|		|		|
+|ACS-Down		|		|taketo S	|		|resize +0 +5	|		|		|		|taketo S	|		|		|		|		|		|		|
+|ACS-Left		|		|taketo W	|		|resize -5 +0	|		|		|		|taketo W	|		|		|		|		|		|		|
+|ACS-Right		|		|taketo E	|		|resize +5 +0	|		|		|		|taketo E	|		|		|		|		|		|		|
+|ACS-Up			|		|taketo N	|		|resize +0 -5	|		|		|		|taketo N	|		|		|		|		|		|		|
+|ACS-KP_8		|		|		|		|		|		|		|snapto N	|		|		|		|		|		|		|		|
+|ACS-KP_9		|		|		|		|		|		|		|snapto NE	|		|		|		|		|		|		|		|
+|ACS-KP_6		|		|		|		|		|		|		|snapto E	|		|		|		|		|		|		|		|
+|ACS-KP_3		|		|		|		|		|		|		|snapto SE	|		|		|		|		|		|		|		|
+|ACS-KP_2		|		|		|		|		|		|		|snapto S	|		|		|		|		|		|		|		|
+|ACS-KP_1		|		|		|		|		|		|		|snapto SW	|		|		|		|		|		|		|		|
+|ACS-KP_4		|		|		|		|		|		|		|snapto W	|		|		|		|		|		|		|		|
+|ACS-KP_7		|		|		|		|		|		|		|snapto NW	|		|		|		|		|		|		|		|
+|ACS-KP_5		|		|		|		|		|		|		|		|		|		|		|		|		|		|		|
+|ACS-KP_0		|		|		|		|		|		|		|		|		|		|		|		|		|		|		|
+|WCS-1			|		|		|		|		|		|		|		|		|		|		|		|		|		|toggletag 1	|
+|WCS-2			|		|		|		|		|		|		|		|		|		|		|		|		|		|toggletag 2	|
+|WCS-3			|		|		|		|		|		|		|		|		|		|		|		|		|		|toggletag 3	|
+|WCS-4			|		|		|		|		|		|		|		|		|		|		|		|		|		|toggletag 4	|
+|WCS-5			|		|		|		|		|		|		|		|		|		|		|		|		|		|toggletag 5	|
+|WCS-6			|		|		|		|		|		|		|		|		|		|		|		|		|		|toggletag 6	|
+|WCS-7			|		|		|		|		|		|		|		|		|		|		|		|		|		|toggletag 7	|
+|WCS-8			|		|		|		|		|		|		|		|		|		|		|		|		|		|toggletag 8	|
+|WCS-9			|		|		|		|		|		|		|		|		|		|		|		|		|		|toggletag 9	|
+|WCS-0			|		|		|		|		|		|		|		|		|		|		|		|		|		|		|
+|			|		|		|		|		|		|		|		|		|		|		|		|		|		|		|
+|			|		|		|		|		|		|		|		|		|		|		|		|		|		|		|
+|			|		|		|		|		|		|		|		|		|		|		|		|		|		|		|
+|			|		|		|		|		|		|		|		|		|		|		|		|		|		|		|
+|===
+
+1.	Note that GNOME does not follow focus order for A-F6/AS-F6 and is really
+	supposed to cycle windows of an application directrly (i.e. windows within the same
+	window group or WM_CLASS).
+
+2.	Openbox version of A-F10 togglemax is not really toggle.
+
 
 # vim: set ft=asciidoc tw=72 nocin nosi fo+=tcqlorn:
 

@@ -1,11 +1,11 @@
 .Dd $Mdocdate$
-.Dt ECHINUS 1
-.Os
+.Dt ADWM \&1 "User Commands"
+.Os @PACKAGE@ @VERSION@
 .Sh NAME
-.Nm adwm
+.Nm @PACKAGE@
 .Nd advanced dynamic window manager for X
 .Sh SYNOPSIS
-.Nm adwm
+.Nm @PACKAGE@
 .Bk -words
 .Op Fl v
 .Op Fl f Ar conf
@@ -38,9 +38,9 @@ Specifies an alternative configuration file.
 By default,
 .Nm
 loads the configuration file from
-.Pa ~/.adwm/adwmrc,
+.Pa ~/.@PACKAGE@/@PACKAGE@rc,
 if present, then looks for the system-wide configuration file
-.Pa /usr/share/adwm/adwmrc .
+.Pa /usr/share/@PACKAGE@/@PACKAGE@rc .
 .El
 .Pp
 The following notation is used in this page:
@@ -54,6 +54,8 @@ Control.
 Shift.
 .It Ic W
 Windows key.
+.It Ic M
+Mod key (definable to one of the above).
 .It Ic M1
 Left mouse button.
 .It Ic M2
@@ -61,7 +63,7 @@ Middle mouse button.
 .It Ic M3
 Right mouse button.
 .El
-.Sh KEY BINDINGS
+.Ss KEY BINDINGS
 The default key bindings are:
 .Pp
 .Bl -tag -width "XXXXXXXXXXXX" -offset indent -compact
@@ -107,7 +109,7 @@ Applies n-th tag to current window.
 .It Ic A-S-c
 Closes focused window.
 .El
-.Sh MOUSE BINDINGS
+.Ss MOUSE BINDINGS
 The default mouse bindings are:
 .Pp
 .Bl -tag -width "XXXXXXXX" -offset indent -compact
@@ -128,13 +130,13 @@ instead.
 Resizes current window while dragging.
 Tiled windows will be toggled to the floating state.
 .El
-.Sh CUSTOMIZATION
+.Ss CUSTOMIZATION
 The configuration file is a set of X resources (with a class of Adwm),
 which are described in the sections below.
 .Pp
 Every relative path specified is relative to the directory in which the
 configuration file is in.
-.Sh MAIN SETTINGS
+.Ss MAIN SETTINGS
 .Bl -tag -width Ds
 .It Ic attachaside
 Set new windows as slave or master.
@@ -170,12 +172,12 @@ Sets the type of sloppy focus to use.
 .It Li "3" Ta "Sloppy focus and raise on focus"
 .El
 .El
-.Sh BORDER SETTINGS
+.Ss BORDER SETTINGS
 .Bl -tag -width Ds
 .It Ic border
 Width of the border (in pixels).
 .El
-.Sh BUTTON SETTINGS
+.Ss BUTTON SETTINGS
 In the settings that follow, '*' can be replaced by the 'name' as follows:
 .Bl -column "maximize" "State" -offset indent
 .It Sy "Name" Ta Sy "Toggle State"
@@ -216,7 +218,7 @@ Toggled pixmaps default to non-toggled pixmaps.  A missing disabled pixmap
 causes the button to dissapear instead.
 Hover pixmaps default to focused pixmaps.
 .El
-.Sh COLOR SETTINGS
+.Ss COLOR SETTINGS
 .Bl -tag -width Ds
 .It Ic normal.bg
 Sets the titlebar background for unfocused windows.
@@ -235,12 +237,12 @@ Sets the titlebar drop shadow color for unfocused windows.
 .It Ic selected.shadow
 Sets color options for focused windows.
 .El
-.Sh HACKS SETTINGS
+.Ss HACKS SETTINGS
 .Bl -tag -width Ds
 .It Ic hidebastards
 Hide panels, pagers and others with togglestruts function.
 .El
-.Sh KEY AND MOUSE BINDING SETTINGS
+.Ss KEY AND MOUSE BINDING SETTINGS
 .Bl -tag -width Ds
 .It Ic ACSW + key_or_button [ = options][, ACSW + key_or_button [ = options]] ...
 Binds key or button to the specified command (see
@@ -262,14 +264,14 @@ Commands options are specified after an equal sign.
 Additional key bindings for the same command, with the same or different
 options, can be specified following a comma.
 .El
-.Sh MISC SETTINGS
+.Ss MISC SETTINGS
 .Bl -tag -width Ds
 .It Ic command
 Application to run on right click on root window.
 .It Ic opacity
 Opacity value for inactive windows (xcompmgr needed).
 .El
-.Sh TAGS SETTINGS
+.Ss TAGS SETTINGS
 .Bl -tag -width Ds
 .It Ic tags.layout{...}
 Layout per tag on start (see
@@ -280,7 +282,7 @@ Names of the tags.
 .It Ic tags.number
 Number of tags.
 .El
-.Sh TITLE SETTINGS
+.Ss TITLE SETTINGS
 .Bl -tag -width Ds
 .It Ic decoratetiled
 If one, draw titles in tiled mode.
@@ -320,7 +322,7 @@ close buttons on right (note 2 spaces).
 .It Li "|" Ta "Separator"
 .El
 .El
-.Sh COMMANDS
+.Ss COMMANDS
 .Bl -tag -width Ds
 .It Ic appendtag
 .It Ic rmlasttag
@@ -431,7 +433,7 @@ To spawn an xterm when A + T is pressed:
 .Pp
 To show the title centered and the close button on the right:
 .Dl Adwm*titlelayout: -T-C
-.Sh CONFORMING TO
+.Sh STANDARDS
 .Nm
 is fully EWMH (NetWM), WMH (WinWM), MWMH (Motif/DTWM) and ICCCM 2.0 compliant,
 so you can use your favourite panel or pager. 
@@ -441,4 +443,6 @@ so you can use your favourite panel or pager.
 .Sh BUGS
 parsekey() doesn't handle non-alphanumeric keysyms.
 .Pp
-Please resport bugs to <https://github.com/bbidulock/adwm/issues>.
+Please resport bugs to <https://github.com/bbidulock/@PACKAGE@/issues>.
+.Sh AUTHORS
+.An Brian Bidulock Aq bidulock@openss7.org

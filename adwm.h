@@ -255,6 +255,16 @@ typedef enum { DockNone, DockEast, DockNorthEast, DockNorth, DockNorthWest, Dock
 	DockSouthWest, DockSouth, DockSouthEast } DockPosition;
 typedef enum { DockSideEast, DockSideNorth, DockSideWest, DockSideSouth } DockSide;
 typedef enum { DockHorz, DockVert } DockOrient;
+typedef enum { ListFocus, ListActive, ListGroup, ListClient, ListTab } WhichList;
+typedef enum { RelativeNone, RelativeNorthWest, RelativeNorth, RelativeNorthEast,
+	RelativeWest, RelativeCenter, RelativeEast, RelativeSouthWest, RelativeSouth,
+	RelativeSouthEast, RelativeStatic, RelativeNext, RelativePrev, RelativeLast }
+	RelativeDirection;
+typedef enum { SetFlagSetting, UnsetFlagSetting, ToggleFlagSetting } FlagSetting;
+typedef enum { IncCount, DecCount, SetCount } ActionCount;
+typedef enum { FocusClient, PointerClient, AnyClient, AllClients, EveryClient } WhichClient;
+enum { _NET_WM_ORIENTATION_HORZ, _NET_WM_ORIENTATION_VERT };
+enum { _NET_WM_TOPLEFT, _NET_WM_TOPRIGHT, _NET_WM_BOTTOMRIGHT, _NET_WM_BOTTOMLEFT };
 
 #define GIVE_FOCUS (1<<0)
 #define TAKE_FOCUS (1<<1)
@@ -292,6 +302,7 @@ struct Monitor {
 		DockPosition position;
 		DockOrient orient;
 	} dock;
+	int row, col;			/* row and column in monitor layout */
 };
 
 typedef struct {
@@ -480,6 +491,8 @@ typedef struct View {
 	LayoutOrientation minor;	/* master area orientation */
 	WindowPlacement placement;	/* float placement policy */
 	Layout *layout;
+	int index;
+	int row, col;			/* row and column in desktop layout */
 } View; /* per-tag settings */
 
 typedef struct {
@@ -535,12 +548,19 @@ typedef struct {
 	} color;
 } Style;
 
-typedef struct {
+typedef struct _Key Key;
+struct _Key {
 	unsigned long mod;
 	KeySym keysym;
-	void (*func) (const char *arg);
-	const char *arg;
-} Key; /* keyboard shortcuts */
+	void (*func) (XEvent *, Key *);
+	Key *chain;
+	Key *cnext;
+	char *arg;
+	RelativeDirection dir;
+	ActionCount act;
+	FlagSetting set;
+	WhichClient any;
+}; /* keyboard shortcuts */
 
 typedef struct AScreen AScreen;
 struct AScreen {
@@ -549,6 +569,7 @@ struct AScreen {
 	Window selwin;
 	Client *clients;
 	Monitor *monitors;
+	int last;
 	unsigned nmons;
 	Client *stack;
 	Client *clist;
@@ -561,6 +582,15 @@ struct AScreen {
 	View *views;
 	Key **keys;
 	unsigned nkeys;
+	struct {
+		int orient;		/* orientation */
+		int rows, cols;		/* rows and cols (one can be zero) */
+		int start;		/* starting corner */
+	} layout;
+	struct {
+		int rows, cols;		/* rows and cols in desk/monitor layout */
+	} d, m;
+	int sh, sw;
 	DC dc;
 	Element element[LastElement];
 	Style style;
@@ -605,6 +635,7 @@ int getstruts(Client * c);
 void ewmh_process_net_desktop_names(void);
 void ewmh_process_net_number_of_desktops(void);
 void ewmh_process_net_showing_desktop(void);
+void ewmh_process_net_desktop_layout(void);
 void ewmh_update_kde_splash_progress(void);
 void ewmh_update_net_active_window(void);
 void ewmh_update_net_client_list(void);
@@ -615,6 +646,7 @@ void ewmh_update_net_number_of_desktops(void);
 void ewmh_update_net_showing_desktop(void);
 void ewmh_update_net_virtual_roots(void);
 void ewmh_update_net_work_area(void);
+void ewmh_update_net_desktop_layout(void);
 
 void mwmh_process_motif_wm_hints(Client *);
 
@@ -643,7 +675,9 @@ void arrange(Monitor * m);
 Monitor *clientmonitor(Client * c);
 Monitor *curmonitor();
 Monitor *selmonitor();
+Monitor *nearmonitor();
 void *ecalloc(size_t nmemb, size_t size);
+void edgeto(Client *c, int direction);
 void *emallocz(size_t size);
 void *erealloc(void *ptr, size_t size);
 void eprint(const char *errstr, ...);
@@ -652,8 +686,11 @@ Client *getclient(Window w, int part);
 Monitor *getmonitor(int x, int y);
 Bool gettextprop(Window w, Atom atom, char **text);
 void getpointer(int *x, int *y);
+void hide(Client *c);
+void hideall(Monitor *m);
 void iconify(Client *c);
-void incnmaster(const char *arg);
+void iconifyall(Monitor *m);
+void setnmaster(Monitor *m, View *v, int n);
 Bool isfloating(Client *c, Monitor *m);
 Bool isvisible(Client *c, Monitor *m);
 Monitor *findmonbynum(int num);
@@ -661,7 +698,7 @@ void focus(Client * c);
 void focusicon(void);
 void focusnext(Client *c);
 void focusprev(Client *c);
-void focusview(int index);
+void focusview(Monitor *m, int index);
 AScreen *getscreen(Window win);
 void killclient(Client *c);
 void applygravity(Client *c, ClientGeometry *g, int gravity);
@@ -669,6 +706,8 @@ void reconfigure(Client *c, ClientGeometry *g);
 void restack(void);
 void restack_client(Client *c, int stack_mode, Client *sibling);
 Bool configurerequest(XEvent * e);
+void moveto(Client *c, RelativeDirection position);
+void moveby(Client *c, RelativeDirection direction, int amount);
 void moveresizekb(Client *c, int dx, int dy, int dw, int dh);
 Bool mousemove(Client *c, XEvent *e, Bool toggle);
 Bool mouseresize_from(Client *c, int from, XEvent *e, Bool toggle);
@@ -676,6 +715,9 @@ Bool mouseresize(Client * c, XEvent *e, Bool toggle);
 void m_move(Client *c, XEvent *ev);
 void m_resize(Client *c, XEvent *ev);
 void quit(const char *arg);
+void raiseclient(Client *c);
+void lowerclient(Client *c);
+void raiselower(Client *c);
 void restart(const char *arg);
 void rotateview(Client *c);
 void unrotateview(Client *c);
@@ -683,12 +725,14 @@ void rotatezone(Client *c);
 void unrotatezone(Client *c);
 void rotatewins(Client *c);
 void unrotatewins(Client *c);
-void setmwfact(const char *arg);
+void setmwfact(Monitor *m, View *v, double factor);
 void setlayout(const char *arg);
+void snapto(Client *c, RelativeDirection direction);
 void spawn(const char *arg);
 void tag(Client *c, int index);
-void togglestruts(void);
-void toggledectiled(void);
+void taketo(Client *c, int index);
+void togglestruts(Monitor *m, View *v);
+void toggledectiled(Monitor *m, View *v);
 void togglefloating(Client *c);
 void togglefill(Client *c);
 void togglemax(Client *c);
@@ -704,7 +748,7 @@ void toggletaskbar(Client *c);
 void togglemodal(Client *c);
 void togglemonitor(void);
 void toggletag(Client *c, int index);
-void toggleview(int index);
+void toggleview(Monitor *cm, int index);
 void toggleshowing(void);
 void togglehidden(Client *c);
 void view(int index);
@@ -743,7 +787,7 @@ void initstyle();
 #define curlayout scr->views[curmontag].layout
 #endif
 
-#define LENGTH(x)		(sizeof(x) / sizeof x[0])
+#define LENGTH(x)		(sizeof(x)/sizeof(*x))
 #ifdef DEBUG
 #define DPRINT			do { fprintf(stderr, "%s %s() %d\n",__FILE__,__func__, __LINE__); fflush(stderr); } while(0)
 #define DPRINTF(args...)	do { fprintf(stderr, "%s %s():%d ", __FILE__,__func__, __LINE__); \
@@ -799,6 +843,7 @@ extern unsigned nrules;
 extern Rule **rules;
 extern Layout layouts[];
 extern unsigned modkey;
+extern unsigned numlockmask;
 // extern View *views;
 extern XContext context[];
 extern Time user_time;

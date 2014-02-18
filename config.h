@@ -32,3 +32,4 @@
 #define DEFNCOLUMNS		3	/* number of columsn in grid layout */
 #define SNAP			5	/* snap pixel */
 #define DECORATETILED		0	/* set to 1 to draw titles in tiled layouts */
+#define DECORATEMAX		1	/* set to 1 to draw titles on maximized windows */

@@ -381,7 +381,7 @@ struct Client {
 			unsigned sticky:1;
 			unsigned hidden:1;
 			unsigned bastard:1;
-			unsigned fs:1;
+			unsigned full:1;
 			unsigned focused:1;
                         unsigned dockapp:1;
 			unsigned moveresize:1;
@@ -428,7 +428,7 @@ struct Client {
 			unsigned close:1;
 			unsigned shade:1;
 			unsigned stick:1;
-			unsigned fs:1;
+			unsigned full:1;
 			unsigned above:1;
 			unsigned below:1;
 			unsigned fill:1;
@@ -560,6 +560,7 @@ struct _Key {
 	ActionCount act;
 	FlagSetting set;
 	WhichClient any;
+	unsigned tag;
 }; /* keyboard shortcuts */
 
 typedef struct AScreen AScreen;
@@ -735,6 +736,7 @@ void togglestruts(Monitor *m, View *v);
 void toggledectiled(Monitor *m, View *v);
 void togglefloating(Client *c);
 void togglefill(Client *c);
+void togglefull(Client *c);
 void togglemax(Client *c);
 void togglemaxv(Client *c);
 void togglemaxh(Client *c);

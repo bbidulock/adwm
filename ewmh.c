@@ -1158,7 +1158,7 @@ mwmh_process_motif_wm_hints(Client *c)
 			if (!(hint & MWM_FUNC_MAXIMIZE)) {
 				c->can.max = False;
 				c->can.fill = False;
-				c->can.fs = False;
+				c->can.full = False;
 			}
 			if (!(hint & MWM_FUNC_CLOSE))
 				c->can.close = False;
@@ -1312,7 +1312,7 @@ ewmh_update_net_window_actions(Client *c) {
 		action[actions++] = _XA_NET_WM_ACTION_MAXIMIZE_HORZ;
 	if (c->can.maxv || c->can.max)
 		action[actions++] = _XA_NET_WM_ACTION_MAXIMIZE_VERT;
-	if (c->can.fs)
+	if (c->can.full)
 		action[actions++] = _XA_NET_WM_ACTION_FULLSCREEN;
 	if (c->can.tag)
 		action[actions++] = _XA_NET_WM_ACTION_CHANGE_DESKTOP;
@@ -1359,9 +1359,9 @@ ewmh_update_net_window_state(Client *c)
 		winstate[states++] = _XA_NET_WM_STATE_MODAL;
 	if (c->is.sticky)
 		winstate[states++] = _XA_NET_WM_STATE_STICKY;
-	if (c->is.maxv)
+	if (c->is.maxv || c->is.max)
 		winstate[states++] = _XA_NET_WM_STATE_MAXIMIZED_VERT;
-	if (c->is.maxh)
+	if (c->is.maxh || c->is.max)
 		winstate[states++] = _XA_NET_WM_STATE_MAXIMIZED_HORZ;
 	if (c->is.shaded)
 		winstate[states++] = _XA_NET_WM_STATE_SHADED;
@@ -1371,8 +1371,7 @@ ewmh_update_net_window_state(Client *c)
 		winstate[states++] = _XA_NET_WM_STATE_SKIP_PAGER;
 	if (c->is.icon || c->is.hidden)
 		winstate[states++] = _XA_NET_WM_STATE_HIDDEN;
-	/* FIXME: should be is.fs not is.max */
-	if (c->is.max)
+	if (c->is.full)
 		winstate[states++] = _XA_NET_WM_STATE_FULLSCREEN;
 	if (c->is.above)
 		winstate[states++] = _XA_NET_WM_STATE_ABOVE;
@@ -1399,9 +1398,9 @@ ewmh_update_net_window_state(Client *c)
 		state |= WIN_STATE_STICKY;
 	if (c->is.icon)
 		state |= WIN_STATE_MINIMIZED;
-	if (c->is.maxv)
+	if (c->is.maxv || c->is.max)
 		state |= WIN_STATE_MAXIMIZED_VERT;
-	if (c->is.maxh)
+	if (c->is.maxh || c->is.max)
 		state |= WIN_STATE_MAXIMIZED_HORIZ;
 	if (c->skip.taskbar || c->is.hidden)	/* not sure which */
 		state |= WIN_STATE_HIDDEN;
@@ -1520,18 +1519,12 @@ ewmh_process_state_atom(Client *c, Atom state, int set) {
 		    (set == _NET_WM_STATE_TOGGLE))
 			togglehidden(c);
 	} else if (state == _XA_NET_WM_STATE_FULLSCREEN) {
-		/* FIXME: this needs to be fullscreen not maximize */
 		if ((set == _NET_WM_STATE_ADD || set == _NET_WM_STATE_TOGGLE)
-		    && !c->is.max) {
-			c->wasfloating = c->skip.arrange;
-			if (!c->skip.arrange)
-				togglefloating(c);
-			togglemax(c);
+		    && !c->is.full) {
+			togglefull(c);
 		} else if ((set == _NET_WM_STATE_REMOVE ||
-			    set == _NET_WM_STATE_TOGGLE) && c->is.max) {
-			togglemax(c);
-			if (!c->wasfloating)
-				togglefloating(c);
+			    set == _NET_WM_STATE_TOGGLE) && c->is.full) {
+			togglefull(c);
 		}
 		DPRINT;
 		arrange(curmonitor());

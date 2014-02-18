@@ -379,6 +379,30 @@ k_setfill(XEvent *e, Key *k)
 	return k_setgeneric(e, k, &c_setfill);
 }
 
+static void
+c_setfull(XEvent *e, Key *k, Client *c)
+{
+	switch (k->set) {
+	case SetFlagSetting:
+		if (c->is.full)
+			return;
+		break;
+	case UnsetFlagSetting:
+		if (!c->is.full)
+			return;
+		break;
+	default:
+	case ToggleFlagSetting:
+		break;
+	}
+	togglefull(c);
+}
+
+static void
+k_setfull(XEvent *e, Key *k)
+{
+	return k_setgeneric(e, k, &c_setfull);
+}
 
 static void
 c_setmax(XEvent *e, Key *k, Client *c)
@@ -819,6 +843,7 @@ static KeyItem KeyItemsByState[] = {
 	/* *INDENT-OFF* */
 	{ "floating",		k_setfloating	 },
 	{ "fill",		k_setfill	 },
+	{ "full",		k_setfull	 },
 	{ "max",		k_setmax	 },
 	{ "maxv",		k_setmaxv	 },
 	{ "maxh",		k_setmaxh	 },
@@ -982,7 +1007,7 @@ idxoftag(View *v, Key *k)
 		d = 1;
 	switch (dir) {
 	case RelativeNone:
-		idx = d - 1;
+		idx = k->tag;
 		goto done;
 	case RelativeNext:
 		idx += d;
@@ -1593,7 +1618,7 @@ initkeys()
 	}
 	/* per tag functions */
 	for (j = 0; j < LENGTH(KeyItemsByTag); j++) {
-		for (i = 0; i < scr->ntags; i++) {
+		for (i = 0; i < 32; i++) {
 			Key key = { 0, };
 
 			snprintf(t, sizeof(t), "%s%d", KeyItemsByTag[j].name, i);
@@ -1602,8 +1627,9 @@ initkeys()
 			if (!tmp)
 				continue;
 			key.func = KeyItemsByTag[j].action;
-			key.arg = strdup(scr->tags[i]);
+			key.arg = NULL;
 			key.dir = RelativeNone;
+			key.tag = i;
 			parsekeys(tmp, &key);
 		}
 		for (i = 0; i < LENGTH(tag_suffix); i++) {
@@ -1618,6 +1644,7 @@ initkeys()
 			key.func = KeyItemsByTag[j].action;
 			key.arg = NULL;
 			key.dir = tag_suffix[i].dir;
+			key.tag = 0;
 			parsekeys(tmp, &key);
 		}
 	}

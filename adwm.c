@@ -174,6 +174,7 @@ void tag(Client *c, int index);
 void tile(Monitor *m);
 void takefocus(Client *c);
 void togglefloating(Client *c);
+void togglefull(Client *c);
 void togglemax(Client *c);
 void togglemaxv(Client *c);
 void togglemaxh(Client *c);
@@ -258,6 +259,7 @@ Group systray = { NULL, 0, 0 };
 struct {
 	Bool attachaside;
 	Bool dectiled;
+	Bool decmax;
 	Bool hidebastards;
 	Bool autoroll;
 	int focus;
@@ -948,7 +950,7 @@ applystate(Client *c, XWMHints * wmh)
 #endif
 	case ZoomState:	/* obsolete */
 		/* application wants to start zoomed */
-		c->is.fs = True;
+		c->is.full = True;
 		/* fall through */
 	case NormalState:
 	default:
@@ -1044,6 +1046,8 @@ Bool
 isfloating(Client *c, Monitor *m)
 {
 	if ((c->is.floater && !c->is.dockapp) || c->skip.arrange)
+		return True;
+	if (c->is.full)
 		return True;
 	if (m && MFEATURES(m, OVERLAP))
 		return True;
@@ -3240,8 +3244,8 @@ manage(Window w, XWindowAttributes *wa)
 	CPRINTF(c, "%-20s: %s\n", "is.transient", c->is.transient ? "true" : "false");
 	CPRINTF(c, "%-20s: %s\n", "is.grptrans", c->is.grptrans ? "true" : "false");
 	CPRINTF(c, "%-20s: %s\n", "is.banned", c->is.banned ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "is.max", c->is.max ? "true" : "false");
 	CPRINTF(c, "%-20s: %s\n", "is.floater", c->is.floater ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "is.max", c->is.max ? "true" : "false");
 	CPRINTF(c, "%-20s: %s\n", "is.maxv", c->is.maxv ? "true" : "false");
 	CPRINTF(c, "%-20s: %s\n", "is.maxh", c->is.maxh ? "true" : "false");
 	CPRINTF(c, "%-20s: %s\n", "is.shaded", c->is.shaded ? "true" : "false");
@@ -3254,7 +3258,7 @@ manage(Window w, XWindowAttributes *wa)
 	CPRINTF(c, "%-20s: %s\n", "is.sticky", c->is.sticky ? "true" : "false");
 	CPRINTF(c, "%-20s: %s\n", "is.hidden", c->is.hidden ? "true" : "false");
 	CPRINTF(c, "%-20s: %s\n", "is.bastard", c->is.bastard ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "is.fs", c->is.fs ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "is.full", c->is.full ? "true" : "false");
 	CPRINTF(c, "%-20s: %s\n", "is.focused", c->is.focused ? "true" : "false");
 	CPRINTF(c, "%-20s: %s\n", "is.dockapp", c->is.dockapp ? "true" : "false");
 	CPRINTF(c, "%-20s: %s\n", "is.managed", c->is.managed ? "true" : "false");
@@ -3282,7 +3286,7 @@ manage(Window w, XWindowAttributes *wa)
 	CPRINTF(c, "%-20s: %s\n", "can.close", c->can.close ? "true" : "false");
 	CPRINTF(c, "%-20s: %s\n", "can.shade", c->can.shade ? "true" : "false");
 	CPRINTF(c, "%-20s: %s\n", "can.stick", c->can.stick ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "can.fs", c->can.fs ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "can.full", c->can.full ? "true" : "false");
 	CPRINTF(c, "%-20s: %s\n", "can.above", c->can.above ? "true" : "false");
 	CPRINTF(c, "%-20s: %s\n", "can.below", c->can.below ? "true" : "false");
 	CPRINTF(c, "%-20s: %s\n", "can.fill", c->can.fill ? "true" : "false");
@@ -4105,8 +4109,8 @@ begin_move(Client *c, Monitor *m, Bool toggle, int move)
 	c->is.moveresize = True;
 	c->was.is = 0;
 	if (toggle || isfloater) {
-		if ((c->was.fs = c->is.fs))
-			c->is.fs = False;
+		if ((c->was.full = c->is.full))
+			c->is.full = False;
 		if ((c->was.max = c->is.max))
 			c->is.max = False;
 		if ((c->was.maxv = c->is.maxv))
@@ -4152,7 +4156,7 @@ cancel_move(Client *c, Monitor *m, ClientGeometry *orig)
 
 	if (isfloating(c, NULL)) {
 		if (c->was.is) {
-			c->is.fs = c->was.fs;
+			c->is.full = c->was.full;
 			c->is.max = c->was.max;
 			c->is.maxv = c->was.maxv;
 			c->is.maxh = c->was.maxh;
@@ -4185,7 +4189,7 @@ finish_move(Client *c, Monitor *m)
 
 	if (isfloating(c, m)) {
 		if (c->was.is) {
-			c->is.fs = c->was.fs;
+			c->is.full = c->was.full;
 			c->is.max = c->was.max;
 			c->is.maxv = c->was.maxv;
 			c->is.maxh = c->was.maxh;
@@ -4529,8 +4533,8 @@ begin_resize(Client *c, Monitor *m, Bool toggle, int from)
 	c->is.moveresize = True;
 	c->was.is = 0;
 	if (toggle || isfloater) {
-		if ((c->was.fs = c->is.fs))
-			c->is.fs = False;
+		if ((c->was.full = c->is.full))
+			c->is.full = False;
 		if ((c->was.max = c->is.max))
 			c->is.max = False;
 		if ((c->was.maxv = c->is.maxv))
@@ -4574,7 +4578,7 @@ cancel_resize(Client *c, Monitor *m, ClientGeometry *orig)
 
 	if (isfloating(c, m)) {
 		if (c->was.is) {
-			c->is.fs = c->was.fs;
+			c->is.full = c->was.full;
 			c->is.max = c->was.max;
 			c->is.maxv = c->was.maxv;
 			c->is.maxh = c->was.maxh;
@@ -5014,7 +5018,7 @@ qsort_cascade(const void *a, const void *b)
 Geometry *
 place_geom(Client *c)
 {
-	if (c->is.max || c->is.maxv || c->is.maxh || c->is.fill || c->is.fs)
+	if (c->is.max || c->is.maxv || c->is.maxh || c->is.fill || c->is.full)
 		return &c->c;
 	return &c->r;
 }
@@ -6068,7 +6072,7 @@ findmonbynum(int num) {
 }
 
 void
-calc_max(Client *c, Monitor *m, ClientGeometry *g) {
+calc_full(Client *c, Monitor *m, ClientGeometry *g) {
 	Monitor *fsmons[4] = { m, m, m, m };
 	long *mons;
 	unsigned long n = 0;
@@ -6142,14 +6146,28 @@ calc_fill(Client *c, Monitor *m, Workarea *wa, ClientGeometry *g) {
 }
 
 void
-calc_maxv(Client *c, Workarea *wa, ClientGeometry *g) {
+calc_max(Client *c, Workarea *wa, ClientGeometry * g)
+{
+	g->x = wa->x;
+	g->y = wa->y;
+	g->w = wa->w;
+	g->h = wa->h;
+	if (!options.decmax)
+		g->t = 0;
+	g->b = 0;
+}
+
+void
+calc_maxv(Client *c, Workarea *wa, ClientGeometry * g)
+{
 	g->y = wa->y;
 	g->h = wa->h;
 	g->b = scr->style.border;
 }
 
 void
-calc_maxh(Client *c, Workarea *wa, ClientGeometry *g) {
+calc_maxh(Client *c, Workarea *wa, ClientGeometry * g)
+{
 	g->x = wa->x;
 	g->w = wa->w;
 	g->b = scr->style.border;
@@ -6196,7 +6214,8 @@ get_decor(Client *c, Monitor *m, ClientGeometry *g)
 }
 
 void
-updatefloat(Client *c, Monitor *m) {
+updatefloat(Client *c, Monitor *m)
+{
 	ClientGeometry g;
 	Workarea wa;
 
@@ -6214,18 +6233,30 @@ updatefloat(Client *c, Monitor *m) {
 	CPRINTF(c, "g: %dx%d+%d+%d:%d\n", g.w, g.h, g.x, g.y, g.b);
 	get_decor(c, m, &g);
 	CPRINTF(c, "g: %dx%d+%d+%d:%d\n", g.w, g.h, g.x, g.y, g.b);
-	if (c->is.max)
-		calc_max(c, m, &g);
-	else if (c->is.fill)
-		calc_fill(c, m, &wa, &g);
-	CPRINTF(c, "g: %dx%d+%d+%d:%d\n", g.w, g.h, g.x, g.y, g.b);
-	if (c->is.maxv)
-		calc_maxv(c, &wa, &g);
-	CPRINTF(c, "g: %dx%d+%d+%d:%d\n", g.w, g.h, g.x, g.y, g.b);
-	if (c->is.maxh)
-		calc_maxh(c, &wa, &g);
-	CPRINTF(c, "g: %dx%d+%d+%d:%d\n", g.w, g.h, g.x, g.y, g.b);
-	if (!c->is.max) {
+	if (c->is.full) {
+		calc_full(c, m, &g);
+		CPRINTF(c, "g: %dx%d+%d+%d:%d\n", g.w, g.h, g.x, g.y, g.b);
+	} else {
+		if (c->is.max) {
+			calc_max(c, &wa, &g);
+			CPRINTF(c, "g: %dx%d+%d+%d:%d\n", g.w, g.h, g.x, g.y, g.b);
+		} else if (c->is.fill) {
+			calc_fill(c, m, &wa, &g);
+			CPRINTF(c, "g: %dx%d+%d+%d:%d\n", g.w, g.h, g.x, g.y, g.b);
+		} else {
+			if (c->is.maxv) {
+				calc_maxv(c, &wa, &g);
+				CPRINTF(c, "g: %dx%d+%d+%d:%d\n", g.w, g.h, g.x, g.y,
+					g.b);
+			}
+			if (c->is.maxh) {
+				calc_maxh(c, &wa, &g);
+				CPRINTF(c, "g: %dx%d+%d+%d:%d\n", g.w, g.h, g.x, g.y,
+					g.b);
+			}
+		}
+	}
+	if (!c->is.max && !c->is.full) {
 		/* TODO: more than just northwest gravity */
 		DPRINTF("CALLING: constrain()\n");
 		constrain(c, &g);
@@ -7026,6 +7057,7 @@ setup(char *conf) {
 	strncpy(options.command, getresource("command", COMMAND), LENGTH(options.command));
 	options.command[LENGTH(options.command) - 1] = '\0';
 	options.dectiled = atoi(getresource("decoratetiled", STR(DECORATETILED)));
+	options.decmax = atoi(getresource("decoratemax", STR(DECORATEMAX)));
 	options.hidebastards = atoi(getresource("hidebastards", "0")) ? True : False;
 	options.autoroll = atoi(getresource("autoroll", "0")) ? True : False;
 	options.focus = atoi(getresource("sloppy", "0"));
@@ -7596,12 +7628,36 @@ togglefill(Client * c) {
 }
 
 void
-togglemax(Client * c) {
+togglefull(Client *c)
+{
+	Monitor *m;
+
+	if (!c || (!c->can.full && c->is.managed) || !(m = c->curmon))
+		return;
+	if (!c->is.full) {
+		c->wasfloating = c->skip.arrange;
+		if (!c->skip.arrange)
+			c->skip.arrange = True;
+	} else {
+		if (!c->wasfloating && c->skip.arrange)
+			c->skip.arrange = False;
+	}
+	c->is.full = !c->is.full;
+	if (c->is.managed) {
+		ewmh_update_net_window_state(c);
+		updatefloat(c, m);
+		restack();
+	}
+}
+
+void
+togglemax(Client *c)
+{
 	Monitor *m;
 
 	if (!c || (!c->can.max && c->is.managed) || !(m = c->curmon))
 		return;
-	c->is.max = c->is.maxv = c->is.maxh = !c->is.max;
+	c->is.max = !c->is.max;
 	if (c->is.managed) {
 		ewmh_update_net_window_state(c);
 		updatefloat(c, m);
@@ -7616,7 +7672,6 @@ togglemaxv(Client * c) {
 	if (!c || (!c->can.maxv && c->is.managed) || !(m = c->curmon))
 		return;
 	c->is.maxv = !c->is.maxv;
-	c->is.max = (c->is.maxv || c->is.maxh) ? True : False;
 	if (c->is.managed) {
 		ewmh_update_net_window_state(c);
 		updatefloat(c, m);
@@ -7630,7 +7685,6 @@ togglemaxh(Client *c) {
 	if (!c || (!c->can.maxh && c->is.managed) || !(m = c->curmon))
 		return;
 	c->is.maxh = !c->is.maxh;
-	c->is.max = (c->is.maxv || c->is.maxh) ? True : False;
 	ewmh_update_net_window_state(c);
 	updatefloat(c, m);
 }

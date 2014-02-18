@@ -87,8 +87,8 @@ buttonimage(AScreen *ds, Client *c, ElementType type)
 	case MaximizeBtn:
 		name = "maximize";
 		present = c->has.but.max;
-		toggled = c->is.max || c->is.maxv || c->is.maxh || c->is.fs;
-		enabled = c->can.max || c->can.maxv || c->can.maxh || c->can.fs;
+		toggled = c->is.max || c->is.maxv || c->is.maxh || c->is.full;
+		enabled = c->can.max || c->can.maxv || c->can.maxh || c->can.full;
 		break;
 	case CloseBtn:
 		name = "close";

@@ -503,6 +503,7 @@ ewmh_update_net_desktop_names() {
 
 void
 ewmh_update_echinus_seltags() {
+	unsigned long long tags;
 	Monitor *m;
 	long *seltags;
 	unsigned int i;
@@ -510,8 +511,8 @@ ewmh_update_echinus_seltags() {
 	XPRINTF("%s\n", "Updating _ECHINUS_SELTAGS");
 	seltags = ecalloc(scr->ntags, sizeof(seltags[0]));
 	for (m = scr->monitors; m != NULL; m = m->next)
-		for (i = 0; i < scr->ntags; i++)
-			if (m->seltags[i])
+		for (tags = 1, i = 0; i < scr->ntags; i++, tags <<= 1)
+			if (m->seltags & tags)
 				seltags[i] = True;
 	XChangeProperty(dpy, scr->root, _XA_ECHINUS_SELTAGS, XA_CARDINAL, 32,
 			PropModeReplace, (unsigned char *) seltags, scr->ntags);
@@ -716,23 +717,18 @@ ewmh_update_net_visible_desktops() {
 }
 
 static Bool
-isomni(Client *c) {
-	unsigned int i;
-
+isomni(Client *c)
+{
 	if (!c->is.sticky)
-		for (i = 0; i < scr->ntags; i++)
-			if (!c->tags[i])
-				return False;
+		if ((c->tags & ((1ULL << scr->ntags) - 1)) != ((1ULL << scr->ntags) - 1))
+			return False;
 	return True;
 }
 
 static Bool
-islost(Client *c) {
-	unsigned int i;
-	for (i = 0; i < scr->ntags; i++)
-		if (c->tags[i])
-			return False;
-	return True;
+islost(Client *c)
+{
+	return (c->tags & ((1ULL << scr->ntags) - 1)) ? False : True;
 }
 
 #define DT_WORKSPACE_HINTS_WSFLAGS	(1<<0)
@@ -752,8 +748,7 @@ ewmh_process_net_window_desktop(Client *c)
 	if (n > 0) {
 		desktop = desktops[0];
 		if ((desktop & 0xffffffff) == 0xffffffff) {
-			for (i = 0; i < scr->ntags; i++)
-				c->tags[i] = True;
+			c->tags = ((1ULL << scr->ntags) - 1);
 			XFree(desktops);
 			return True;
 		} else {
@@ -761,11 +756,10 @@ ewmh_process_net_window_desktop(Client *c)
 				if (0 <= desktops[i] && desktops[i] < scr->ntags)
 					goodone = True;
 			if (goodone) {
-				for (i = 0; i < scr->ntags; i++)
-					c->tags[i] = False;
+				c->tags = 0;
 				for (j = 0; j < n; j++)
 					if (0 <= desktops[j] && desktops[j] < scr->ntags)
-						c->tags[desktops[j]] = True;
+						c->tags |= (1ULL << desktops[j]);
 				XFree(desktops);
 				return True;
 			}
@@ -777,8 +771,7 @@ ewmh_process_net_window_desktop(Client *c)
 	if (n > 0) {
 		desktop = desktops[0];
 		if ((desktop & 0xffffffff) == 0xffffffff) {
-			for (i = 0; i < scr->ntags; i++)
-				c->tags[i] = True;
+			c->tags = ((1ULL << scr->ntags) - 1);
 			XFree(desktops);
 			return True;
 		} else {
@@ -786,11 +779,10 @@ ewmh_process_net_window_desktop(Client *c)
 				if (0 <= desktops[i] && desktops[i] < scr->ntags)
 					goodone = True;
 			if (goodone) {
-				for (i = 0; i < scr->ntags; i++)
-					c->tags[i] = False;
+				c->tags = 0;
 				for (j = 0; j < n; j++)
 					if (0 <= desktops[j] && desktops[j] < scr->ntags)
-						c->tags[desktops[j]] = True;
+						c->tags |= (1ULL << desktops[j]);
 				XFree(desktops);
 				return True;
 			}
@@ -806,8 +798,7 @@ ewmh_process_net_window_desktop(Client *c)
 		}
 		if ((desktops[1] & DT_WORKSPACE_HINTS_WSFLAGS) &&
 		    (desktops[2] & DT_WORKSPACE_FLAGS_OCCUPY_ALL)) {
-			for (i = 0; i < scr->ntags; i++)
-				c->tags[i] = True;
+			c->tags = ((1ULL << scr->ntags) - 1);
 			XFree(desktops);
 			return True;
 		} else
@@ -818,12 +809,11 @@ ewmh_process_net_window_desktop(Client *c)
 					if (scr->dt_tags[k] == desktops[i])
 						goodone = True;
 			if (goodone) {
-				for (i = 0; i < scr->ntags; i++)
-					c->tags[i] = False;
+				c->tags = 0;
 				for (j = 4; j < desktops[3] + 4; j++)
 					for (k = 0; k < scr->ntags; k++)
 						if (scr->dt_tags[k] == desktops[j])
-							c->tags[k] = True;
+							c->tags |= (1ULL << k);
 				XFree(desktops);
 				return True;
 			}
@@ -843,7 +833,7 @@ ewmh_update_net_window_desktop_mask(Client *c) {
 	XPRINTF("Updating _NET_WM_DESKTOP_MASK for 0x%lx\n", c->win);
 	for (j = 0, k = 0; j < longs; j++, k += 32)
 		for (i = 0, l = k, data[j] = 0; i < 32 && l < scr->ntags; i++, l++)
-			if (c->tags[l])
+			if (c->tags & (1ULL << l))
 				data[j] |= (1<<i);
 	XChangeProperty(dpy, c->win, _XA_WIN_WORKSPACES, XA_CARDINAL, 32,
 		PropModeReplace, (unsigned char *)data, longs);
@@ -868,11 +858,11 @@ ewmh_update_net_window_desktop(Client *c) {
 		long *data;
 
 		for (n = 0, i = 0; i < scr->ntags; i++)
-			if (c->tags[i])
+			if (c->tags & (1ULL << i))
 				n++;
 		data = calloc(n, sizeof(*data));
 		for (j = 0, i = 0; i < scr->ntags; i++)
-			if (c->tags[i])
+			if (c->tags & (1ULL << i))
 				data[j++] = i;
 		XChangeProperty(dpy, c->win, _XA_NET_WM_DESKTOP, XA_CARDINAL, 32,
 				PropModeReplace, (unsigned char *) data, n);
@@ -887,11 +877,11 @@ ewmh_update_net_window_desktop(Client *c) {
 		long *data;
 
 		for (n = 0, i = 0; i < scr->ntags; i++)
-			if (c->tags[i])
+			if (c->tags & (1ULL << i))
 				n++;
 		data = ecalloc(n, sizeof(*data));
 		for (j = 0, i = 0; i < scr->ntags; i++)
-			if (c->tags[i])
+			if (c->tags & (1ULL << i))
 				data[j++] = scr->dt_tags[i];
 		XChangeProperty(dpy, c->win, _XA_DT_WORKSPACE_PRESENCE, XA_ATOM, 32,
 				PropModeReplace, (unsigned char *) data, n);
@@ -906,41 +896,35 @@ ewmh_process_net_window_desktop_mask(Client *c) {
 	unsigned int i, j, k, l;
 	long *desktops = NULL;
 	unsigned long n = 0;
-	Bool *prev;
+	unsigned long long prev;
 
 	desktops = getcard(c->win, _XA_WIN_WORKSPACES, &n);
 	if (n > 0) {
-		prev = ecalloc(scr->ntags, sizeof(*prev));
-		memcpy(prev, c->tags, scr->ntags * sizeof(*prev));
+		prev = c->tags;
 		for (j = 0, k = 0; j < n; j++, k += 32)
 			for (i = 0, l = k; i < 32 && l < scr->ntags; i++, l++)
 				if (desktops[j] & (1<<i))
-					c->tags[l] = True;
-		for (i = 0; i < scr->ntags && !c->tags[i]; i++) ;
+					c->tags |= (1ULL << l);
+		for (i = 0; i < scr->ntags && !(c->tags & (1ULL << i)); i++) ;
 		if (i < scr->ntags) {
-			free(prev);
 			return True;
 		}
-		memcpy(c->tags, prev, scr->ntags * sizeof(*prev));
-		free(prev);
+		c->tags = prev;
 	} else {
 		if (desktops)
 			XFree(desktops);
 		desktops = getcard(c->win, _XA_NET_WM_DESKTOP_MASK, &n);
 		if (n > 0) {
-			prev = ecalloc(scr->ntags, sizeof(*prev));
-			memcpy(prev, c->tags, scr->ntags * sizeof(*prev));
+			prev = c->tags;
 			for (j = 0, k = 0; j < n; j++, k += 32)
 				for (i = 0, l = k; i < 32 && l < scr->ntags; i++, l++)
 					if (desktops[j] & (1<<i))
-						c->tags[l] = True;
-			for (i = 0; i < scr->ntags && !c->tags[i]; i++) ;
+						c->tags |= (1ULL << l);
+			for (i = 0; i < scr->ntags && !(c->tags & (1ULL << i)); i++) ;
 			if (i < scr->ntags) {
-				free(prev);
 				return True;
 			}
-			memcpy(c->tags, prev, scr->ntags * sizeof(*prev));
-			free(prev);
+			c->tags = prev;
 		}
 	}
 	if (desktops)
@@ -1788,7 +1772,7 @@ ewmh_process_net_startup_id(Client *c)
 	}
 #ifdef STARTUP_NOTIFICATION
 	if ((seq = find_startup_seq(c))) {
-		int i, workspace;
+		int workspace;
 
 		if (!c->startup_id) {
 			c->startup_id = strdup(sn_startup_sequence_get_id(seq));
@@ -1800,11 +1784,8 @@ ewmh_process_net_startup_id(Client *c)
 		push_client_time(c, sn_startup_sequence_get_timestamp(seq));
 		/* NOTE: should not override _NET_WM_DESKTOP */
 		workspace = sn_startup_sequence_get_workspace(seq);
-		if (0 <= workspace && workspace < scr->ntags) {
-			for (i = 0; i < scr->ntags; i++)
-				c->tags[i] = False;
-			c->tags[workspace] = True;
-		}
+		if (0 <= workspace && workspace < scr->ntags)
+			c->tags = (1ULL << workspace);
 		/* TODO: use screen number to select monitor */
 	}
 #endif
@@ -2158,13 +2139,19 @@ clientmessage(XEvent *e)
 			if (0 > index || index >= num)
 				return False;
 			for (i = 0, j = index<<5; j<scr->ntags; i++, j++) {
-				if (c->tags[j])
+				if (c->tags & (1ULL << j))
 					oldmask |= (1<<i);
-				c->tags[j] = (mask & (1<<i)) ? True : False;
+				if (mask & (1<<i))
+					c->tags |= (1ULL << j);
+				else
+					c->tags &= ~(1ULL << j);
 			}
 			if (islost(c))
 				for (i = 0, j = index<<5; j<scr->ntags; i++, j++)
-					c->tags[j] = (oldmask & (1<<i)) ? True : False;
+					if (oldmask & (1<<i))
+						c->tags |= (1ULL << j);
+					else
+						c->tags &= ~(1ULL << j);
 			else {
 				/* what toggletag does */
 				ewmh_update_net_window_desktop(c);

@@ -289,8 +289,8 @@ typedef struct Monitor Monitor;
 struct Monitor {
 	Workarea sc, wa;
 	unsigned long struts[LastStrut];
-	Bool *seltags;
-	Bool *prevtags;
+	unsigned long long seltags;
+	unsigned long long prevtags;
 	Monitor *next;
 	int mx, my;
 	unsigned curtag;
@@ -347,7 +347,7 @@ struct Client {
 	int wintype;
 	int winstate;
 	Bool wasfloating;
-	Bool *tags;
+	unsigned long long tags;
 	int nonmodal;
 	union {
 		struct {
@@ -564,6 +564,7 @@ struct _Key {
 	Key *cnext;
 	char *arg;
 	RelativeDirection dir;
+	Bool wrap;
 	ActionCount act;
 	FlagSetting set;
 	WhichClient any;
@@ -789,23 +790,6 @@ void drawclient(Client * c);
 void deinitstyle();
 void initstyle();
 
-#if 0
-/* XXX: this block of defines must die */
-#define curseltags curmonitor()->seltags
-#define curprevtags curmonitor()->prevtags
-#define cursx curmonitor()->sc.x
-#define cursy curmonitor()->sc.y
-#define cursh curmonitor()->sc.h
-#define cursw curmonitor()->sc.w
-#define curwax curmonitor()->wa.x
-#define curway curmonitor()->wa.y
-#define curwaw curmonitor()->wa.w
-#define curwah curmonitor()->wa.h
-#define curmontag curmonitor()->curtag
-#define curstruts curmonitor()->struts
-#define curlayout scr->views[curmontag].layout
-#endif
-
 #define LENGTH(x)		(sizeof(x)/sizeof(*x))
 #ifdef DEBUG
 #define DPRINT			do { fprintf(stderr, "%s %s() %d\n",__FILE__,__func__, __LINE__); fflush(stderr); } while(0)
@@ -838,32 +822,15 @@ extern AScreen *scr;
 extern AScreen *screens;
 extern AScreen *event_scr;
 extern void (*actions[LastOn][5][2])(Client *, XEvent *);
-// extern Window root;
-// extern Window selwin;
-// extern Client *clients;
-// extern Monitor *monitors;
 extern Client *sel;
 extern Client *give;	/* gave focus last */
 extern Client *take;	/* take focus last */
-// extern Client *stack;
-// extern Client *clist;
-// extern unsigned nmons;
-// extern unsigned ntags;
 extern unsigned nscr;
-// extern unsigned nkeys;
 extern unsigned nrules;
-// extern Bool showing_desktop;
-// extern int screen;
-// extern Style style;
-// extern Button button[LastBtn];
-// extern char **tags;
-// extern Atom *dt_tags;
-// extern Key **keys;
 extern Rule **rules;
 extern Layout layouts[];
 extern unsigned modkey;
 extern unsigned numlockmask;
-// extern View *views;
 extern XContext context[];
 extern Time user_time;
 extern Bool haveext[];

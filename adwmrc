@@ -3,7 +3,7 @@ Adwm*snap: 5
 Adwm*sloppy: 2
 Adwm*opacity: 0.8
 Adwm*decoratetiled: 0
-Adwm*hidebastards: 0
+Adwm*hidebastards: 1
 Adwm*mwfact: 0.6
 Adwm*nmaster: 1
 Adwm*attachaside: 0

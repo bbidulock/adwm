@@ -86,6 +86,7 @@ k_viewprevtag(XEvent *e, Key *k) {
 	viewprevtag();
 }
 
+#if 0
 static void
 k_viewlefttag(XEvent *e, Key *k) {
 	viewlefttag();
@@ -95,6 +96,7 @@ static void
 k_viewrighttag(XEvent *e, Key *k) {
 	viewrighttag();
 }
+#endif
 
 static void
 k_togglemonitor(XEvent *e, Key *k) {
@@ -154,8 +156,10 @@ static KeyItem KeyItems[] = {
 	{ "focusprev",		k_focusprev	 },
 #endif
 	{ "viewprevtag",	k_viewprevtag	 },
+#if 0
 	{ "viewlefttag",	k_viewlefttag	 },
 	{ "viewrighttag",	k_viewrighttag	 },
+#endif
 	{ "quit",		k_quit		 }, /* arg is new command */
 	{ "restart", 		k_restart	 }, /* arg is new command */
 	{ "killclient",		k_killclient	 },
@@ -1029,7 +1033,7 @@ k_floating(Client *c, Monitor *m, WhichClient any, RelativeDirection dir)
 		int i;
 
 		for (i = 0; i < scr->ntags; i++) {
-			if (c->tags[i]) {
+			if (c->tags & (1ULL << i)) {
 				View *v = scr->views + i;
 
 				if (FEATURES(v->layout, OVERLAP))
@@ -1093,14 +1097,9 @@ k_tiled(Client *c, Monitor *m, WhichClient any, RelativeDirection dir)
 			return False;
 		break;
 	case EveryClient:
-	{
-		int i;
-
-		for (i = 0; i < scr->ntags; i++)
-			if (c->tags[i])
-				return True;
+		if (c->tags & ((1ULL << scr->ntags) - 1))
+			return True;
 		break;
-	}
 	}
 	return True;
 }
@@ -1225,14 +1224,14 @@ k_select_cl(Monitor *cm, Key *k, CycleList * cl)
 	}
 	c = cl->c;
 	if (!(m = c->curmon) && !(m = clientmonitor(c))) {
-		for (i = 0; i < scr->ntags; i++)
-			if (c->tags[i])
-				break;
-		if (i >= scr->ntags) {
+		if (!(c->tags & ((1ULL << scr->ntags) - 1))) {
 			k_stop(NULL, k);
 			return;
 		}
 		/* have to switch views on monitor cm */
+		for (i = 0; i < scr->ntags; i++)
+			if (c->tags & (1ULL << i))
+				break;
 		view(i);
 		m = cm;
 	}
@@ -1735,7 +1734,7 @@ getviewrandc(int r, int c)
 }
 
 static int
-_getviewrandc(View *v, int dr, int dc)
+_getviewrandc(View *v, Key *k, int dr, int dc)
 {
 	int r, c, idx, iter;
 
@@ -1747,13 +1746,27 @@ _getviewrandc(View *v, int dr, int dc)
 	assert(scr->d.cols > 0);
 	do {
 		r += dr;
-		while (r < 0)
-			r += scr->d.rows;
-		r = r % scr->d.rows;
+		if (k->wrap) {
+			while (r < 0)
+				r += scr->d.rows;
+			r = r % scr->d.rows;
+		} else {
+			if (r < 0)
+				r = 0;
+			if (r >= scr->d.rows)
+				r = scr->d.rows - 1;
+		}
 		c += dc;
-		while (c < 0)
-			c += scr->d.rows;
-		c = c % scr->d.cols;
+		if (k->wrap) {
+			while (c < 0)
+				c += scr->d.rows;
+			c = c % scr->d.cols;
+		} else {
+			if (c < 0)
+				c = 0;
+			if (c > scr->d.cols)
+				c = scr->d.cols - 1;
+		}
 	} while (!(v = getviewrandc(r, c)) && ++iter < scr->ntags);
 	if (v)
 		idx = v->index;
@@ -1943,11 +1956,18 @@ idxoftag(View *v, Key *k)
 	default:
 		goto done;
 	}
-	idx = _getviewrandc(v, dr, dc);
+	idx = _getviewrandc(v, k, dr, dc);
       done:
-	while (idx < 0)
-		idx += scr->ntags;
-	idx = idx % scr->ntags;
+	if (k->wrap) {
+		while (idx < 0)
+			idx += scr->ntags;
+		idx = idx % scr->ntags;
+	} else {
+		if (idx < 0)
+			idx = 0;
+		if (idx >= scr->ntags)
+			idx = scr->ntags - 1;
+	}
 	return idx;
 }
 
@@ -2032,24 +2052,25 @@ k_taketo(XEvent *e, Key *k)
 static const struct {
 	const char *suffix;
 	RelativeDirection dir;
+	Bool wrap;
 } tag_suffix[] = {
 	/* *INDENT-OFF* */
-	{ "",		RelativeNone		},
-	{ "next",	RelativeNext		},
-	{ "prev",	RelativePrev		},
-	{ "last",	RelativeLast		},
-	{ "up",		RelativeNorth		},
-	{ "down",	RelativeSouth		},
-	{ "left",	RelativeWest		},
-	{ "right",	RelativeEast		},
-	{ "NW",		RelativeNorthWest	},
-	{ "N",		RelativeNorth		},
-	{ "NE",		RelativeNorthEast	},
-	{ "W",		RelativeWest		},
-	{ "E",		RelativeEast		},
-	{ "SW",		RelativeSouthWest	},
-	{ "S",		RelativeSouth		},
-	{ "SE",		RelativeSouthEast	}
+	{ "",		RelativeNone,		False	},
+	{ "next",	RelativeNext,		True	},
+	{ "prev",	RelativePrev,		True	},
+	{ "last",	RelativeLast,		False	},
+	{ "up",		RelativeNorth,		False	},
+	{ "down",	RelativeSouth,		False	},
+	{ "left",	RelativeWest,		False	},
+	{ "right",	RelativeEast,		False	},
+	{ "NW",		RelativeNorthWest,	True	},
+	{ "N",		RelativeNorth,		True	},
+	{ "NE",		RelativeNorthEast,	True	},
+	{ "W",		RelativeWest,		True	},
+	{ "E",		RelativeEast,		True	},
+	{ "SW",		RelativeSouthWest,	True	},
+	{ "S",		RelativeSouth,		True	},
+	{ "SE",		RelativeSouthEast,	True	}
 	/* *INDENT-ON* */
 };
 
@@ -2439,7 +2460,7 @@ initkeys()
 	}
 	/* per tag functions */
 	for (j = 0; j < LENGTH(KeyItemsByTag); j++) {
-		for (i = 0; i < 32; i++) {
+		for (i = 0; i < sizeof(unsigned long long) * 8; i++) {
 			Key key = { 0, };
 
 			snprintf(t, sizeof(t), "%s%d", KeyItemsByTag[j].name, i);
@@ -2466,6 +2487,7 @@ initkeys()
 			key.arg = NULL;
 			key.tag = 0;
 			key.dir = tag_suffix[i].dir;
+			key.wrap = tag_suffix[i].wrap;
 			parsekeys(tmp, &key);
 		}
 	}

@@ -255,14 +255,13 @@ typedef enum { DockNone, DockEast, DockNorthEast, DockNorth, DockNorthWest, Dock
 	DockSouthWest, DockSouth, DockSouthEast } DockPosition;
 typedef enum { DockSideEast, DockSideNorth, DockSideWest, DockSideSouth } DockSide;
 typedef enum { DockHorz, DockVert } DockOrient;
-typedef enum { ListFocus, ListActive, ListGroup, ListClient, ListTab } WhichList;
 typedef enum { RelativeNone, RelativeNorthWest, RelativeNorth, RelativeNorthEast,
 	RelativeWest, RelativeCenter, RelativeEast, RelativeSouthWest, RelativeSouth,
 	RelativeSouthEast, RelativeStatic, RelativeNext, RelativePrev, RelativeLast }
 	RelativeDirection;
 typedef enum { SetFlagSetting, UnsetFlagSetting, ToggleFlagSetting } FlagSetting;
 typedef enum { IncCount, DecCount, SetCount } ActionCount;
-typedef enum { FocusClient, PointerClient, AnyClient, AllClients, EveryClient } WhichClient;
+typedef enum { FocusClient, ActiveClient, PointerClient, AnyClient, AllClients, EveryClient } WhichClient;
 enum { _NET_WM_ORIENTATION_HORZ, _NET_WM_ORIENTATION_VERT };
 enum { _NET_WM_TOPLEFT, _NET_WM_TOPRIGHT, _NET_WM_BOTTOMRIGHT, _NET_WM_BOTTOMLEFT };
 
@@ -473,6 +472,13 @@ struct Client {
 #endif
 };
 
+typedef struct _CycleList CycleList;
+struct _CycleList {
+	Client *c;
+	CycleList *next;
+	CycleList *prev;
+};
+
 typedef struct Group Group;
 struct Group {
 	Window *members;
@@ -553,6 +559,7 @@ struct _Key {
 	unsigned long mod;
 	KeySym keysym;
 	void (*func) (XEvent *, Key *);
+	void (*stop) (XEvent *, Key *);
 	Key *chain;
 	Key *cnext;
 	char *arg;
@@ -561,6 +568,9 @@ struct _Key {
 	FlagSetting set;
 	WhichClient any;
 	unsigned tag;
+	CycleList *cycle, *where;
+	unsigned num;
+	Bool cyc;
 }; /* keyboard shortcuts */
 
 typedef struct AScreen AScreen;
@@ -691,7 +701,13 @@ void hide(Client *c);
 void hideall(Monitor *m);
 void iconify(Client *c);
 void iconifyall(Monitor *m);
+void setborder(int px);
+void incborder(int px);
+void decborder(int px);
 void setnmaster(Monitor *m, View *v, int n);
+void setmargin(int px);
+void incmargin(int px);
+void decmargin(int px);
 Bool isfloating(Client *c, Monitor *m);
 Bool isvisible(Client *c, Monitor *m);
 Monitor *findmonbynum(int num);
@@ -715,6 +731,7 @@ Bool mouseresize_from(Client *c, int from, XEvent *e, Bool toggle);
 Bool mouseresize(Client * c, XEvent *e, Bool toggle);
 void m_move(Client *c, XEvent *ev);
 void m_resize(Client *c, XEvent *ev);
+void pushtime(Time time);
 void quit(const char *arg);
 void raiseclient(Client *c);
 void lowerclient(Client *c);

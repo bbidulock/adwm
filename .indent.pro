@@ -24,6 +24,7 @@
 -ss
 -hnl
 -nbc
+-TRelativeDirection
 -TKey
 -TView
 -TGroup

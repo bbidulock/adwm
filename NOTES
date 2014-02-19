@@ -1323,10 +1323,10 @@ The window movement and resize are not so necessary.
 [width="100%",options="header"]
 |===
 |Function Name		|ADWM Function		|spectrwm Default	|Description
-|term			|			|WS-Return		|Spawn a new terminal
+|term			|spawn xde-terminal	|WS-Return		|Spawn a new terminal
 |menu			|			|W-p			|Menu
-|quit			|			|WS-q			|Quit spectrwm
-|restart		|			|W-q			|Restart spectrwm
+|quit			|quit			|WS-q			|Quit spectrwm
+|restart		|restart		|W-q			|Restart spectrwm
 |cycle_layout		|			|W-Space		|Cycle layout
 |flip_layout		|			|WS-backslash		|Swap the master and stacking areas
 |stack_reset		|			|WS-Space		|Reset layout
@@ -1389,7 +1389,13 @@ The window movement and resize are not so necessary.
 The purpose of ADWM key binding defaults is to provide as wide a
 coverage of other defaults as possible.
 
-.Key Bindings
+.Key Bindings by Function
+[width="100%",options="header"]
+|===
+|ADWM Function		|ADWM		|GNOME		|Fluxbox	|Blackbox	|WindowMaker	|Openbox/LXDE	|IceWM		|PekWM		|dwm		|xdwm		|Echinus	|Spectrwm	|velox		|awesome	|Notes
+|===
+
+.Key Bindings by Key Sequence
 [width="100%",options="header"]
 |===
 |Key Sequence		|ADWM		|GNOME		|Fluxbox	|Blackbox	|WindowMaker	|Openbox/LXDE	|IceWM		|PekWM		|dwm		|xdwm		|Echinus	|Spectrwm	|velox		|awesome	|Notes

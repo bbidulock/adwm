@@ -1,6 +1,7 @@
 #include <regex.h>
 #include <ctype.h>
 #include <assert.h>
+#include <math.h>
 #include <X11/keysym.h>
 #include <X11/XKBlib.h>
 #include <X11/Xatom.h>
@@ -16,6 +17,7 @@ k_zoom(XEvent *e, Key *k) {
 	if (sel) zoom(sel);
 }
 
+#if 0
 static void
 k_focusnext(XEvent *e, Key *k) {
 	if (sel) focusnext(sel);
@@ -25,6 +27,7 @@ static void
 k_focusprev(XEvent *e, Key *k) {
 	if (sel) focusprev(sel);
 }
+#endif
 
 static void
 k_killclient(XEvent *e, Key *k) {
@@ -71,10 +74,12 @@ k_unrotatewins(XEvent *e, Key *k) {
 	unrotatewins(sel);
 }
 
+#if 0
 static void
 k_focusicon(XEvent *e, Key *k) {
 	focusicon();
 }
+#endif
 
 static void
 k_viewprevtag(XEvent *e, Key *k) {
@@ -143,9 +148,11 @@ typedef struct {
 
 static KeyItem KeyItems[] = {
 	/* *INDENT-OFF* */
+#if 0
 	{ "focusicon",		k_focusicon	 },
 	{ "focusnext",		k_focusnext	 },
 	{ "focusprev",		k_focusprev	 },
+#endif
 	{ "viewprevtag",	k_viewprevtag	 },
 	{ "viewlefttag",	k_viewlefttag	 },
 	{ "viewrighttag",	k_viewrighttag	 },
@@ -193,7 +200,7 @@ k_setmwfactor(XEvent *e, Key * k)
 		arg = k->arg ? : strdup("+5%");
 		break;
 	case DecCount:
-		arg = k->arg ? : strdup("-5%");
+		arg = k->arg ? : strdup("+5%");
 		break;
 	default:
 	case SetCount:
@@ -203,7 +210,7 @@ k_setmwfactor(XEvent *e, Key * k)
 	if (sscanf(arg, "%lf", &factor) == 1) {
 		if (strchr(arg, '%'))
 			factor /= 100.0;
-		if (arg[0] == '+' || arg[0] == '-' || k->act != SetCount) {
+		if (*arg == '+' || *arg == '-' || k->act != SetCount) {
 			switch (v->major) {
 			case OrientTop:
 			case OrientRight:
@@ -248,7 +255,7 @@ k_setnmaster(XEvent *e, Key * k)
 		arg = k->arg ? : strdup("+1");
 		break;
 	case DecCount:
-		arg = k->arg ? : strdup("-1");
+		arg = k->arg ? : strdup("+1");
 		break;
 	default:
 	case SetCount:
@@ -273,6 +280,64 @@ k_setnmaster(XEvent *e, Key * k)
 	}
 }
 
+void
+k_setmargin(XEvent *e, Key *k)
+{
+	const char *arg;
+	int num;
+
+	switch (k->act) {
+	case IncCount:
+		arg = k->arg ? : strdup("+1");
+		break;
+	case DecCount:
+		arg = k->arg ? : strdup("+1");
+		break;
+	default:
+	case SetCount:
+		arg = k->arg ? : strdup(STR(MARGINPX));
+		break;
+	}
+	if (sscanf(arg, "%d", &num) == 1) {
+		if (*arg == '+' || *arg == '-' || k->act != SetCount) {
+			if (k->act == DecCount)
+				decmargin(num);
+			else
+				incmargin(num);
+		} else
+			setmargin(num);
+	}
+}
+
+void
+k_setborder(XEvent *e, Key *k)
+{
+	const char *arg;
+	int num;
+
+	switch (k->act) {
+	case IncCount:
+		arg = k->arg ? : strdup("+1");
+		break;
+	case DecCount:
+		arg = k->arg ? : strdup("+1");
+		break;
+	default:
+	case SetCount:
+		arg = k->arg ? : strdup(STR(BORDERPX));
+		break;
+	}
+	if (sscanf(arg, "%d", &num) == 1) {
+		if (*arg == '+' || *arg == '-' || k->act != SetCount) {
+			if (k->act == DecCount)
+				decborder(num);
+			else
+				incborder(num);
+		} else
+			setborder(num);
+	}
+}
+
 static const struct {
 	const char *prefix;
 	ActionCount act;
@@ -288,7 +353,9 @@ static KeyItem KeyItemsByAmt[] = {
 	/* *INDENT-OFF* */
 	{ "mwfact",		k_setmwfactor	 },
 	{ "nmaster",		k_setnmaster	 },
-	{ "ncolumns",		k_setnmaster	 }
+	{ "ncolumns",		k_setnmaster	 },
+	{ "margin",		k_setmargin	 },
+	{ "border",		k_setborder	 }
 	/* *INDENT-ON* */
 };
 
@@ -833,6 +900,7 @@ static const struct {
 	WhichClient any;
 } set_suffix[] = {
 	{ "",		FocusClient	    },
+	{ "sel",	ActiveClient	    },
 	{ "ptr",	PointerClient	    },
 	{ "all",	AllClients	    }, /* all on current monitor */
 	{ "any",	AnyClient	    }, /* clients on any monitor */
@@ -894,30 +962,6 @@ k_moveby(XEvent *e, Key *k) {
 static const struct {
 	const char *suffix;
 	RelativeDirection dir;
-} lst_suffix[] = {
-	/* *INDENT-OFF* */
-	{ "next",	RelativeNext	},
-	{ "prev",	RelativePrev	},
-	{ "last",	RelativeLast	}
-	/* *INDENT-ON* */
-};
-
-static const struct {
-	const char *prefix;
-	WhichList list;
-} lst_prefix[] = {
-	/* *INDENT-OFF* */
-	{ "focus",	ListFocus	},
-	{ "active",	ListActive	},
-	{ "group",	ListGroup	},
-	{ "client",	ListClient	},
-	{ "tab",	ListTab		}
-	/* *INDENT-ON* */
-};
-
-static const struct {
-	const char *suffix;
-	RelativeDirection dir;
 } rel_suffix[] = {
 	/* *INDENT-OFF* */
 	{ "NW",	RelativeNorthWest	},
@@ -940,6 +984,739 @@ static KeyItem KeyItemsByDir[] = {
 	{ "snapto",		k_snapto	}, /* arg is direction */
 	{ "edgeto",		k_edgeto	}, /* arg is direction */
 	{ "moveby",		k_moveby	}  /* arg is direction and amount */
+	/* *INDENT-ON* */
+};
+
+static Bool
+k_floating(Client *c, Monitor *m, WhichClient any, RelativeDirection dir)
+{
+	if (dir == RelativeCenter)
+		if (!c->is.icon && !c->is.hidden)
+			return False;
+	if (c->is.bastard)
+		return False;
+	if (c->is.dockapp)
+		return False;
+	switch (any) {
+	case PointerClient:
+		break;
+	case FocusClient:
+		if (dir != RelativeCenter)
+			if (c->is.icon || c->is.hidden)
+				return False;
+		if (!isvisible(c, m))
+			return False;
+		if (m && MFEATURES(m, OVERLAP))
+			return True;
+		break;
+	case ActiveClient:
+	case AllClients:
+		m = clientmonitor(c);
+		if (!isvisible(c, m))
+			return False;
+		if (m && MFEATURES(m, OVERLAP))
+			return True;
+		break;
+	case AnyClient:
+		m = clientmonitor(c);
+		if (!isvisible(c, NULL))
+			return False;
+		if (m && MFEATURES(m, OVERLAP))
+			return True;
+		break;
+	case EveryClient:
+	{
+		int i;
+
+		for (i = 0; i < scr->ntags; i++) {
+			if (c->tags[i]) {
+				View *v = scr->views + i;
+
+				if (FEATURES(v->layout, OVERLAP))
+					return True;
+
+			}
+		}
+		break;
+	}
+	}
+	if (c->is.floater)
+		return True;
+	if (c->skip.arrange)
+		return True;
+	if (c->is.full)
+		return True;
+	return False;
+}
+
+static Bool
+k_tiled(Client *c, Monitor *m, WhichClient any, RelativeDirection dir)
+{
+	if (dir == RelativeCenter)
+		if (!c->is.icon && !c->is.hidden)
+			return False;
+	if (c->is.bastard)
+		return False;
+	if (c->is.dockapp)
+		return False;
+	if (c->is.floater)
+		return False;
+	if (c->skip.arrange)
+		return False;
+	if (c->is.full)
+		return False;
+	switch (any) {
+	case PointerClient:
+		return False;
+	case FocusClient:
+		if (dir != RelativeCenter)
+			if (c->is.icon || c->is.hidden)
+				return False;
+		if (!isvisible(c, m))
+			return False;
+		if (m && MFEATURES(m, OVERLAP))
+			return False;
+		break;
+	case ActiveClient:
+	case AllClients:
+		m = clientmonitor(c);
+		if (!isvisible(c, m))
+			return False;
+		if (m && MFEATURES(m, OVERLAP))
+			return False;
+		break;
+	case AnyClient:
+		m = clientmonitor(c);
+		if (!isvisible(c, NULL))
+			return False;
+		if (m && MFEATURES(m, OVERLAP))
+			return False;
+		break;
+	case EveryClient:
+	{
+		int i;
+
+		for (i = 0; i < scr->ntags; i++)
+			if (c->tags[i])
+				return True;
+		break;
+	}
+	}
+	return True;
+}
+
+Bool canfocus(Client *c);
+
+static Bool
+k_focusable(Client *c, Monitor *m, WhichClient any, RelativeDirection dir)
+{
+	if (dir == RelativeCenter)
+		if (!c->is.icon && !c->is.hidden)
+			return False;
+
+	switch (any) {
+	case PointerClient:
+		return False;
+	case FocusClient:
+		if (!canfocus(c))
+			return False;
+		if (c->skip.focus)
+			return False;
+		if (dir != RelativeCenter)
+			if (c->is.icon || c->is.hidden)
+				return False;
+		break;
+	case ActiveClient:
+		if (!isvisible(c, m))
+			return False;
+		break;
+	case AllClients:
+		if (c->skip.focus)
+			return False;
+		if (!isvisible(c, m))
+			return False;
+		break;
+	case AnyClient:
+		if (c->skip.focus)
+			return False;
+		if (!isvisible(c, NULL))
+			return False;
+		break;
+	case EveryClient:
+		break;
+	}
+	return True;
+}
+
+static void
+k_stop(XEvent *e, Key *k)
+{
+	free(k->cycle);
+	k->cycle = k->where = NULL;
+	k->num = 0;
+	k->stop = NULL;
+}
+
+static float
+howfar(Client *c, Client *o, RelativeDirection * dir)
+{
+	int dx, dy;
+	int mxc, myc, mxo, myo;
+
+	mxc = c->c.x + c->c.b + c->c.w / 2;
+	myc = c->c.y + c->c.b + c->c.h / 2;
+	mxo = o->c.x + o->c.b + o->c.w / 2;
+	myo = o->c.y + o->c.b + o->c.h / 2;
+	dx = mxo - mxc;
+	dy = myo - myc;
+	if (!dx && !dy)
+		*dir = RelativeCenter;
+	else if (abs(dx) < abs(dy) / 6)
+		*dir = (dy < 0) ? RelativeNorth : RelativeSouth;
+	else if (abs(dy) < abs(dx) / 6)
+		*dir = (dx < 0) ? RelativeWest : RelativeEast;
+	else if (dx < 0 && dy < 0)
+		*dir = RelativeNorthWest;
+	else if (dx < 0 && dy > 0)
+		*dir = RelativeSouthWest;
+	else if (dx > 0 && dy < 0)
+		*dir = RelativeNorthEast;
+	else
+		*dir = RelativeSouthEast;
+	return hypotf(dx, dy);
+}
+
+static CycleList *
+findclosest(Key *k, RelativeDirection dir)
+{
+	CycleList *cl, *which = NULL;
+	float mindist = 0;
+
+	if (!k->where)
+		k->where = k->cycle;
+
+	for (cl = k->where->next; cl != k->where; cl = cl->next) {
+		RelativeDirection where;
+		float res;
+
+		res = howfar(k->where->c, cl->c, &where);
+		if (where == dir && (!which || res < mindist)) {
+			which = cl;
+			mindist = res;
+		}
+	}
+	return which;
+}
+
+static void
+k_select_cl(Monitor *cm, Key *k, CycleList * cl)
+{
+	Client *c;
+	Monitor *m;
+	int i;
+
+	if (cl != k->where) {
+		c = k->where->c;
+		c->is.icon = c->was.icon;
+		c->is.hidden = c->was.hidden;
+		if (c->was.icon || c->was.hidden)
+			arrange(c->curmon);
+		c->was.is = 0;
+	}
+	c = cl->c;
+	if (!(m = c->curmon) && !(m = clientmonitor(c))) {
+		for (i = 0; i < scr->ntags; i++)
+			if (c->tags[i])
+				break;
+		if (i >= scr->ntags) {
+			k_stop(NULL, k);
+			return;
+		}
+		/* have to switch views on monitor cm */
+		view(i);
+		m = cm;
+	}
+	if (cl != k->where) {
+		c->was.is = 0;
+		if (c->is.icon || c->is.hidden) {
+			if ((c->was.icon = c->is.icon))
+				c->is.icon = False;
+			if ((c->was.hidden = c->is.hidden))
+				c->is.hidden = False;
+		}
+	}
+	focus(c);
+	if (k->cyc) {
+		k->stop = k_stop;
+		if (!XGrabKeyboard(dpy, scr->root, GrabModeSync, False,
+				   GrabModeAsync, CurrentTime))
+			return;
+		DPRINTF("Could not grab keyboard\n");
+	}
+	k_stop(NULL, k);
+}
+
+static void
+k_select_dir(Monitor *cm, Key *k, RelativeDirection dir)
+{
+	CycleList *cl;
+
+	if (!(cl = findclosest(k, dir))) {
+		k_stop(NULL, k);
+		return;
+	}
+	k_select_cl(cm, k, cl);
+}
+
+static void
+k_select_lst(Monitor *cm, Key *k, RelativeDirection dir)
+{
+	const char *arg = k->arg;
+	CycleList *cl;
+	int d, i, j, idx;
+
+	if (arg && (sscanf(arg, "%d", &d) == 1)) {
+		if ((*arg == '+' || *arg == '-') && dir == RelativeNone)
+			dir = RelativeNext;
+	} else
+		d = 1;
+
+	switch (dir) {
+	case RelativeNone:
+		idx = k->tag;
+		XPRINTF("Absolute index is %d\n", idx);
+		break;
+	case RelativeNext:
+	case RelativeCenter:
+		if (k->where) {
+			i = ((char *)k->where - (char *)k->cycle) / sizeof(*k->where);
+			XPRINTF("Index of selected is %d\n", i);
+			idx = i + d;
+		} else {
+			k->where = k->cycle;
+			idx = 0;
+		}
+		XPRINTF("Next index is %d\n", idx);
+		break;
+	case RelativePrev:
+		if (k->where) {
+			i = ((char *)k->where - (char *)k->cycle) / sizeof(*k->where);
+			XPRINTF("Index of selected is %d\n", i);
+			idx = i - d;
+		} else {
+			k->where = k->cycle;
+			idx = 0;
+		}
+		XPRINTF("Previous index is %d\n", idx);
+		break;
+	case RelativeLast:
+		if (k->where) {
+			i = ((char *)k->where - (char *)k->cycle) / sizeof(*k->where);
+			XPRINTF("Index of selected is %d\n", i);
+			idx = (i == 0) ? 1 : 0;
+		} else {
+			k->where = k->cycle;
+			idx = 0;
+		}
+		XPRINTF("Last index is %d\n", idx);
+		break;
+	default:
+		k_stop(NULL, k);
+		return;
+	}
+	cl = k->cycle;
+	j = idx;
+	for (; j < 0; cl = cl->prev, j++) ;
+	for (; j > 0; cl = cl->next, j--) ;
+#if 0
+	CPRINTF(k->cycle->c, "<-- cycle %d\n", 0);
+	CPRINTF(k->where->c, "<-- where %d\n", i);
+	CPRINTF(cl->c, "<-- index %d\n", idx);
+	{
+		CycleList *l = k->cycle;
+		j = 0;
+
+		XPRINTF("Client stack is:\n");
+		do {
+			CPRINTF(l->c, "<-- %d%s%s%s\n", j,
+					l == k->where ? " where" : "",
+					l == cl       ? " index" : "",
+					l->c == sel   ? " focus" : "");
+			j++;
+			l = l->next;
+		} while (l != k->cycle);
+	}
+#endif
+	k_select_cl(cm, k, cl);
+}
+
+static void
+k_select(Monitor *cm, Key *k)
+{
+	switch (k->dir) {
+	case RelativeNone:
+	case RelativeNext:
+	case RelativePrev:
+	case RelativeLast:
+	case RelativeCenter:
+		k_select_lst(cm, k, k->dir);
+		break;
+	case RelativeNorthWest:
+	case RelativeNorth:
+	case RelativeNorthEast:
+	case RelativeWest:
+	case RelativeEast:
+	case RelativeSouthWest:
+	case RelativeSouth:
+	case RelativeSouthEast:
+		k_select_dir(cm, k, k->dir);
+		break;
+	default:
+		k_stop(NULL, k);
+		break;
+	}
+}
+
+static void
+k_focus(XEvent *e, Key *k)
+{
+	Monitor *m;
+
+	if (!(m = selmonitor()))
+		m = nearmonitor();
+
+	/* active order */
+	if (!k->cycle) {
+		Client *c;
+		int i, j, n;
+		CycleList *cl;
+
+		k->where = NULL;
+		for (n = 0, c = scr->clients; c; c = c->next)
+			if (k_focusable(c, m, k->any, k->dir))
+				if (k_tiled(c, m, k->any, k->dir)
+				    || k_floating(c, m, k->any, k->dir))
+					n++;
+		if (!n)
+			return;
+		DPRINTF("There are %d focus windows to cycle\n", n);
+		cl = k->cycle = ecalloc(n, sizeof(*k->cycle));
+		i = 0;
+		/* put tiled before floats */
+		for (c = scr->clients; c && i < n; c = c->next) {
+			if (!k_focusable(c, m, k->any, k->dir))
+				continue;
+			if (!k_tiled(c, m, k->any, k->dir))
+				continue;
+			if (c == sel)
+				k->where = cl;
+			cl->c = c;
+			cl->next = cl + 1;
+			cl->prev = cl - 1;
+			i++;
+			cl++;
+		}
+		j = i;
+		(void) j;
+		DPRINTF("There are %d tiled windows of %d total\n", j, n);
+		/* put tiled before floats */
+		for (c = scr->clients; c && i < n; c = c->next) {
+			if (!k_focusable(c, m, k->any, k->dir))
+				continue;
+			if (k_tiled(c, m, k->any, k->dir))
+				continue;
+			if (!k_floating(c, m, k->any, k->dir))
+				continue;
+			if (c == sel)
+				k->where = cl;
+			cl->c = c;
+			cl->next = cl + 1;
+			cl->prev = cl - 1;
+			i++;
+			cl++;
+		}
+		DPRINTF("There are %d float windows of %d total\n", i - j, n);
+		k->cycle[0].prev = &k->cycle[n - 1];
+		k->cycle[n - 1].next = &k->cycle[0];
+		k->num = n;
+	}
+	k_select(m, k);
+}
+
+static void
+k_client(XEvent *e, Key *k)
+{
+	Monitor *m;
+
+	if (!(m = selmonitor()))
+		m = nearmonitor();
+
+	/* client order */
+	if (!k->cycle) {
+		Client *c;
+		int i, n;
+		CycleList *cl;
+
+		k->where = NULL;
+		for (n = 0, c = scr->clist; c; c = c->cnext)
+			if (k_focusable(c, m, k->any, k->dir))
+				n++;
+		if (!n)
+			return;
+		cl = k->cycle = ecalloc(n, sizeof(*k->cycle));
+		for (i = 0, c = scr->clist; c && i < n; c = c->cnext) {
+			if (!k_focusable(c, m, k->any, k->dir))
+				continue;
+			if (c == sel)
+				k->where = cl;
+			cl->c = c;
+			cl->next = cl + 1;
+			cl->prev = cl - 1;
+			i++;
+			cl++;
+		}
+		k->cycle[0].prev = &k->cycle[n - 1];
+		k->cycle[n - 1].next = &k->cycle[0];
+		k->num = n;
+	}
+	k_select(m, k);
+}
+
+static void
+k_stack(XEvent *e, Key *k)
+{
+	Monitor *m;
+
+	if (!(m = selmonitor()))
+		m = nearmonitor();
+
+	/* stacking order */
+	if (!k->cycle) {
+		Client *c;
+		int i, n;
+		CycleList *cl;
+
+		k->where = NULL;
+		for (n = 0, c = scr->stack; c; c = c->snext)
+			if (k_focusable(c, m, k->any, k->dir))
+				n++;
+		if (!n)
+			return;
+		cl = k->cycle = ecalloc(n, sizeof(*k->cycle));
+		for (i = 0, c = scr->stack; c && i < n; c = c->snext) {
+			if (!k_focusable(c, m, k->any, k->dir))
+				continue;
+			if (c == sel)
+				k->where = cl;
+			cl->c = c;
+			cl->next = cl + 1;
+			cl->prev = cl - 1;
+			i++;
+			cl++;
+		}
+		k->cycle[0].prev = &k->cycle[n - 1];
+		k->cycle[n - 1].next = &k->cycle[0];
+		k->num = n;
+	}
+	k_select(m, k);
+}
+
+static void
+k_group(XEvent *e, Key *k)
+{
+	Monitor *m;
+
+	if (!(m = selmonitor()))
+		m = nearmonitor();
+
+	/* client order same WM_CLASS */
+	if (!k->cycle) {
+		Client *c;
+		int i, n;
+		CycleList *cl;
+
+		/* FIXME: just stick within the same resource class */
+		k->where = NULL;
+		for (n = 0, c = scr->clist; c; c = c->cnext)
+			if (k_focusable(c, m, k->any, k->dir))
+				n++;
+		if (!n)
+			return;
+		cl = k->cycle = ecalloc(n, sizeof(*k->cycle));
+		for (i = 0, c = scr->clist; c && i < n; c = c->cnext) {
+			if (!k_focusable(c, m, k->any, k->dir))
+				continue;
+			if (c == sel)
+				k->where = cl;
+			cl->c = c;
+			cl->next = cl + 1;
+			cl->prev = cl - 1;
+			i++;
+			cl++;
+		}
+		k->cycle[0].prev = &k->cycle[n - 1];
+		k->cycle[n - 1].next = &k->cycle[0];
+		k->num = n;
+	}
+	k_select(m, k);
+}
+
+static void
+k_tab(XEvent *e, Key *k)
+{
+	/* tag within tab group */
+	/* TODO */
+	return;
+}
+
+static void
+k_panel(XEvent *e, Key *k)
+{
+	Monitor *m;
+
+	if (!(m = selmonitor()))
+		m = nearmonitor();
+
+	/* panel (app with struts) */
+	if (!k->cycle) {
+		Client *c;
+		int i, n;
+		CycleList *cl;
+
+		k->where = NULL;
+		for (n = 0, c = scr->clist; c; c = c->cnext)
+			if (WTCHECK(c, WindowTypeDock))
+				if (k_focusable(c, m, EveryClient, k->dir))
+					n++;
+		if (!n)
+			return;
+		cl = k->cycle = ecalloc(n, sizeof(*k->cycle));
+		for (i = 0, c = scr->clist; c && i < n; c = c->cnext) {
+			if (!WTCHECK(c, WindowTypeDock))
+				continue;
+			if (!k_focusable(c, m, EveryClient, k->dir))
+				continue;
+			if (c == sel)
+				k->where = cl;
+			cl->c = c;
+			cl->next = cl + 1;
+			cl->prev = cl - 1;
+			i++;
+			cl++;
+		}
+		k->cycle[0].prev = &k->cycle[n - 1];
+		k->cycle[n - 1].next = &k->cycle[0];
+		k->num = n;
+	}
+	k_select(m, k);
+}
+
+static void
+k_dock(XEvent *e, Key *k)
+{
+	Monitor *m;
+
+	if (!(m = selmonitor()))
+		m = nearmonitor();
+
+	/* dock apps */
+	if (!k->cycle) {
+		Client *c;
+		int i, n;
+		CycleList *cl;
+
+		k->where = NULL;
+		for (n = 0, c = scr->clist; c; c = c->cnext)
+			if (c->is.dockapp)
+				if (k_focusable(c, m, EveryClient, k->dir))
+					n++;
+		if (!n)
+			return;
+		cl = k->cycle = ecalloc(n, sizeof(*k->cycle));
+		for (i = 0, c = scr->clist; c && i < n; c = c->cnext) {
+			if (!c->is.dockapp)
+				continue;
+			if (!k_focusable(c, m, EveryClient, k->dir))
+				continue;
+			if (c == sel)
+				k->where = cl;
+			cl->c = c;
+			cl->next = cl + 1;
+			cl->prev = cl - 1;
+			i++;
+			cl++;
+		}
+		k->cycle[0].prev = &k->cycle[n - 1];
+		k->cycle[n - 1].next = &k->cycle[0];
+		k->num = n;
+	}
+	k_select(m, k);
+}
+
+static void
+k_swap(XEvent *e, Key *k)
+{
+	/* TODO: swap windows */
+	return;
+}
+
+static const struct {
+	const char *which;
+	WhichClient any;
+} list_which[] = {
+	{ "",		FocusClient	}, /* focusable, same monitor */
+	{ "act",	ActiveClient	}, /* activatable (incl. icons), same monitor */
+	{ "all",	AllClients	}, /* all clients (incl. icons), same mon */
+	{ "any",	AnyClient	}, /* any client on any monitor */
+	{ "every",	EveryClient	}  /* all clients, all desktops */
+};
+
+static const struct {
+	const char *suffix;
+	RelativeDirection dir;
+} lst_suffix[] = {
+	/* *INDENT-OFF* */
+	{ "",		RelativeNone		},
+	{ "icon",	RelativeCenter		},
+	{ "next",	RelativeNext		},
+	{ "prev",	RelativePrev		},
+	{ "last",	RelativeLast		},
+	{ "up",		RelativeNorth		},
+	{ "down",	RelativeSouth		},
+	{ "left",	RelativeWest		},
+	{ "right",	RelativeEast		},
+	{ "NW",		RelativeNorthWest	},
+	{ "N",		RelativeNorth		},
+	{ "NE",		RelativeNorthEast	},
+	{ "W",		RelativeWest		},
+	{ "E",		RelativeEast		},
+	{ "SW",		RelativeSouthWest	},
+	{ "S",		RelativeSouth		},
+	{ "SE",		RelativeSouthEast	}
+	/* *INDENT-ON* */
+};
+
+static const struct {
+	const char *suffix;
+	RelativeDirection dir;
+} cyc_suffix[] = {
+	/* *INDENT-OFF* */
+	{ "icon",	RelativeCenter		},
+	{ "next",	RelativeNext		},
+	{ "prev",	RelativePrev		}
+	/* *INDENT-ON* */
+};
+
+static KeyItem KeyItemsByList[] = {
+	/* *INDENT-OFF* */
+	{ "focus",	k_focus		},
+	{ "client",	k_client	},
+	{ "stack",	k_stack		},
+	{ "group",	k_group		},
+	{ "tab",	k_tab		},
+	{ "panel",	k_panel		},
+	{ "dock",	k_dock		},
+	{ "swap",	k_swap		}
 	/* *INDENT-ON* */
 };
 
@@ -990,7 +1767,6 @@ static int
 idxoftag(View *v, Key *k)
 {
 	const char *arg;
-	const char *one = "1";
 	int d, dr, dc, idx;
 	RelativeDirection dir;
 
@@ -998,13 +1774,14 @@ idxoftag(View *v, Key *k)
 
 	assert(scr->ntags > 0);
 
-	arg = k->arg ? : strdup(one);
+	arg = k->arg;
 	dir = k->dir;
-	if (sscanf(arg, "%d", &d) == 1) {
-		if ((arg[0] == '+' || arg[0] == '-') && dir == RelativeNone)
+	if (arg && (sscanf(arg, "%d", &d) == 1)) {
+		if ((*arg == '+' || *arg == '-') && dir == RelativeNone)
 			dir = RelativeNext;
 	} else
 		d = 1;
+
 	switch (dir) {
 	case RelativeNone:
 		idx = k->tag;
@@ -1257,6 +2034,7 @@ static const struct {
 	RelativeDirection dir;
 } tag_suffix[] = {
 	/* *INDENT-OFF* */
+	{ "",		RelativeNone		},
 	{ "next",	RelativeNext		},
 	{ "prev",	RelativePrev		},
 	{ "last",	RelativeLast		},
@@ -1289,20 +2067,63 @@ static KeyItem KeyItemsByTag[] = {
 static void
 k_chain(XEvent *e, Key *key)
 {
-	XEvent ev;
-	KeySym keysym;
-	Key *k;
+	Key *k = NULL;
 
-	XMaskEvent(dpy, KeyPressMask, &ev);
+	if (XGrabKeyboard(dpy, scr->root, GrabModeSync, False, GrabModeAsync, CurrentTime)) {
+		DPRINTF("Could not grab keyboard\n");
+		return;
+	}
 
-	keysym = XkbKeycodeToKeysym(dpy, (KeyCode) ev.xkey.keycode, 0, 0);
+	for (;;) {
+		XEvent ev;
+		KeySym keysym;
+		unsigned long mod;
 
-	for (k = key->cnext; k; k = k->cnext)
-		if (keysym == k->keysym && CLEANMASK(ev.xkey.state) == k->mod) {
-			if (k->func)
-				k->func(&ev, k);
-			return;
+		XMaskEvent(dpy, KeyPressMask | KeyReleaseMask, &ev);
+		pushtime(ev.xkey.time);
+		keysym = XkbKeycodeToKeysym(dpy, (KeyCode) ev.xkey.keycode, 0, 0);
+		mod = CLEANMASK(ev.xkey.state);
+
+		switch (ev.type) {
+			Key *kp;
+
+		case KeyRelease:
+			/* a key release other than the active key is a release of a
+			   modifier indicating a stop */
+			if (k && k->keysym != keysym) {
+				if (k->stop)
+					k->stop(&ev, k);
+				return;
+			}
+			break;
+		case KeyPress:
+			/* a press of a different key, even a modifier, or a press of the 
+			   same key with a different modifier mask indicates a stop of
+			   the current sequence and the potential start of a new one */
+			if (k && (k->keysym != keysym || k->mod != mod)) {
+				if (k->stop)
+					k->stop(&ev, k);
+				return;
+			}
+			for (kp = key->cnext; !k && kp; kp = kp->cnext)
+				if (kp->keysym == keysym && kp->mod == mod)
+					k = kp;
+			if (k) {
+				if (k->func)
+					k->func(&ev, k);
+				if (k->chain || !k->stop)
+					return;
+				break;
+			}
+			/* Use the Escape key without modifiers to escape from a key
+			   chain. */
+			if (keysym == XK_Escape && !mod)
+				return;
+			/* unrecognized key presses must be ignored because they may just 
+			   be a modifier being pressed */
+			break;
 		}
+	}
 }
 
 static void
@@ -1628,8 +2449,8 @@ initkeys()
 				continue;
 			key.func = KeyItemsByTag[j].action;
 			key.arg = NULL;
-			key.dir = RelativeNone;
 			key.tag = i;
+			key.dir = RelativeNone;
 			parsekeys(tmp, &key);
 		}
 		for (i = 0; i < LENGTH(tag_suffix); i++) {
@@ -1643,9 +2464,68 @@ initkeys()
 				continue;
 			key.func = KeyItemsByTag[j].action;
 			key.arg = NULL;
-			key.dir = tag_suffix[i].dir;
 			key.tag = 0;
+			key.dir = tag_suffix[i].dir;
 			parsekeys(tmp, &key);
+		}
+	}
+	/* list settings */
+	for (j = 0; j < LENGTH(KeyItemsByList); j++) {
+		for (i = 0; i < 32; i++) {
+			Key key = { 0, };
+
+			snprintf(t, sizeof(t), "%s%d", KeyItemsByList[j].name, i);
+			DPRINTF("Check for key item '%s'\n", t);
+			tmp = getresource(t, NULL);
+			if (!tmp)
+				continue;
+			key.func = KeyItemsByList[j].action;
+			key.arg = NULL;
+			key.tag = i;
+			key.any = AllClients;
+			key.dir = RelativeNone;
+			key.cyc = False;
+			parsekeys(tmp, &key);
+		}
+		for (i = 0; i < LENGTH(lst_suffix); i++) {
+			for (l = 0; l < LENGTH(list_which); l++) {
+				Key key = { 0, };
+
+				snprintf(t, sizeof(t), "%s%s%s",
+					 KeyItemsByList[j].name,
+					 lst_suffix[i].suffix, list_which[l].which);
+				DPRINTF("Check for key item '%s'\n", t);
+				tmp = getresource(t, NULL);
+				if (!tmp)
+					continue;
+				key.func = KeyItemsByList[j].action;
+				key.arg = NULL;
+				key.tag = 0;
+				key.any = list_which[l].any;
+				key.dir = lst_suffix[i].dir;
+				key.cyc = False;
+				parsekeys(tmp, &key);
+			}
+		}
+		for (i = 0; i < LENGTH(cyc_suffix); i++) {
+			for (l = 0; l < LENGTH(list_which); l++) {
+				Key key = { 0, };
+
+				snprintf(t, sizeof(t), "cycle%s%s%s",
+					 KeyItemsByList[j].name,
+					 cyc_suffix[i].suffix, list_which[l].which);
+				DPRINTF("Check for key item '%s'\n", t);
+				tmp = getresource(t, NULL);
+				if (!tmp)
+					continue;
+				key.func = KeyItemsByList[j].action;
+				key.arg = NULL;
+				key.tag = 0;
+				key.any = list_which[l].any;
+				key.dir = cyc_suffix[i].dir;
+				key.cyc = True;
+				parsekeys(tmp, &key);
+			}
 		}
 	}
 	/* layout setting */

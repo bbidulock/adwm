@@ -150,6 +150,7 @@ Client *prevtiled(Client *c, Monitor *m);
 void place(Client *c, WindowPlacement p);
 static Bool place_overlap(Geometry *c, Geometry *o);
 Bool propertynotify(XEvent *e);
+void pushtime(Time time);
 Bool reparentnotify(XEvent *e);
 void quit(const char *arg);
 void raiseclient(Client *c);
@@ -747,6 +748,7 @@ arrangefloats(Monitor * m) {
 
 	for (c = scr->stack; c; c = c->snext)
 		if (isvisible(c, m) && !c->is.bastard && !c->is.dockapp) /* XXX: can.move? can.tag? */
+
 			updatefloat(c, m);
 }
 
@@ -1070,8 +1072,7 @@ buttonpress(XEvent *e)
 	button = ev->button - Button1;
 	direct = (ev->type == ButtonPress) ? 0 : 1;
 
-	if (user_time == CurrentTime || (int) ev->time - (int) user_time > 0)
-		user_time = ev->time;
+	pushtime(ev->time);
 
 	DPRINTF("BUTTON %d: window 0x%lx root 0x%lx subwindow 0x%lx time %ld x %d y %d x_root %d y_root %d state 0x%x\n",
 			ev->button, ev->window, ev->root, ev->subwindow,
@@ -2622,6 +2623,62 @@ setnmaster(Monitor *m, View *v, int n)
 	}
 }
 
+void
+setborder(int px)
+{
+	int border = scr->style.border;
+
+	border = px;
+	if (border < 0)
+		border = 0;
+	if (border > scr->style.titleheight / 2)
+		border = scr->style.titleheight / 2;
+	if (scr->style.border != border) {
+		scr->style.border = border;
+		arrange(NULL);
+	}
+}
+
+void
+incborder(int px)
+{
+	setborder(scr->style.border + px);
+}
+
+void
+decborder(int px)
+{
+	setborder(scr->style.border - px);
+}
+
+void
+setmargin(int px)
+{
+	int margin = scr->style.margin;
+
+	margin = px;
+	if (margin < 0)
+		margin = 0;
+	if (margin > scr->style.titleheight)
+		margin = scr->style.titleheight;
+	if (scr->style.margin != margin) {
+		scr->style.margin = margin;
+		arrange(NULL);
+	}
+}
+
+void
+incmargin(int px)
+{
+	setmargin(scr->style.margin + px);
+}
+
+void
+decmargin(int px)
+{
+	setmargin(scr->style.margin - px);
+}
+
 Client *
 getclient(Window w, int part) {
 	Client *c = NULL;
@@ -2735,37 +2792,71 @@ grabkeys(void) {
 Bool
 keyrelease(XEvent *e)
 {
-	XKeyEvent *ev;
-
-	ev = &e->xkey;
-	if (user_time == CurrentTime || (int) ev->time - (int) user_time > 0)
-		user_time = ev->time;
+	pushtime(e->xkey.time);
 	return True;
 }
 
 Bool
 keypress(XEvent *e)
 {
-	unsigned int i;
-	KeySym keysym;
-	XKeyEvent *ev;
+	Key *k = NULL;
+	Bool handled = False;
 
-	ev = &e->xkey;
-	if (user_time == CurrentTime || (int) ev->time - (int) user_time > 0)
-		user_time = ev->time;
+	XPutBackEvent(dpy, e);
 
-	keysym = XkbKeycodeToKeysym(dpy, (KeyCode) ev->keycode, 0, 0);
-	for (i = 0; i < scr->nkeys; i++) {
-		Key *k = scr->keys[i];
+	do {
+		XEvent ev;
+		KeySym keysym;
+		unsigned long mod;
 
-		if (keysym == k->keysym && CLEANMASK(k->mod) == CLEANMASK(ev->state)) {
-			if (k->func)
-				k->func(e, k);
-			XUngrabKeyboard(dpy, CurrentTime);
-			return True;
+		XMaskEvent(dpy, KeyPressMask | KeyReleaseMask, &ev);
+		pushtime(ev.xkey.time);
+		keysym = XkbKeycodeToKeysym(dpy, (KeyCode) ev.xkey.keycode, 0, 0);
+		mod = CLEANMASK(ev.xkey.state);
+
+		switch (ev.type) {
+			Key **kp;
+			int i;
+
+		case KeyRelease:
+			DPRINTF("KeyRelease: 0x%02lx %s\n", mod, XKeysymToString(keysym));
+			/* a key release other than the active key is a release of a
+			   modifier indicating a stop */
+			if (k && k->keysym != keysym) {
+				DPRINTF("KeyRelease: stopping sequence\n");
+				if (k->stop)
+					k->stop(&ev, k);
+				k = NULL;
+			}
+			break;
+		case KeyPress:
+			DPRINTF("KeyPress: 0x%02lx %s\n", mod, XKeysymToString(keysym));
+			/* a press of a different key, even a modifier, or a press of the 
+			   same key with a different modifier mask indicates a stop of
+			   the current sequence and the potential start of a new one */
+			if (k && (k->keysym != keysym || k->mod != mod)) {
+				DPRINTF("KeyPress: stopping sequence\n");
+				if (k->stop)
+					k->stop(&ev, k);
+				k = NULL;
+			}
+			for (i = 0, kp = scr->keys; !k && i < scr->nkeys; i++, kp++)
+				if ((*kp)->keysym == keysym && (*kp)->mod == mod)
+					k = *kp;
+			if (k) {
+				DPRINTF("KeyPress: activating action\n");
+				handled = True;
+				if (k->func)
+					k->func(&ev, k);
+				if (k->chain || !k->stop)
+					k = NULL;
+			}
+			break;
 		}
-	}
-	return False;
+	} while (k);
+	DPRINTF("Done handling keypress function\n");
+	XUngrabKeyboard(dpy, CurrentTime);
+	return handled;
 }
 
 void
@@ -2913,6 +3004,8 @@ reparentclient(Client *c, AScreen *new_scr, int x, int y)
 	}
 }
 
+Bool latertime(Time time);
+
 void
 manage(Window w, XWindowAttributes *wa)
 {
@@ -2971,9 +3064,7 @@ manage(Window w, XWindowAttributes *wa)
 	ewmh_process_net_window_user_time_window(c);
 	ewmh_process_net_startup_id(c);
 
-	if ((c->with.time) &&
-	    (c->user_time == CurrentTime ||
-	     (int) ((int) c->user_time - (int) user_time) < 0))
+	if ((c->with.time) && latertime(c->user_time))
 		focusnew = False;
 
 	take_focus =
@@ -3380,11 +3471,11 @@ monocle(Monitor * m) {
 		ClientGeometry g;
 
 		memcpy(&g, &w, sizeof(w));
-		g.b = c->c.b;
-		g.w -= 2 * g.b;
-		g.h -= 2 * g.b;
 		g.t = (v->dectiled && c->has.title) ? scr->style.titleheight : 0;
 		g.g = (v->dectiled && c->has.grips) ? scr->style.gripsheight : 0;
+		g.b = (g.t || g.g) ? scr->style.border : 0;
+		g.w -= 2 * g.b;
+		g.h -= 2 * g.b;
 
 		DPRINTF("CALLING reconfigure()\n");
 		reconfigure(c, &g);
@@ -4285,7 +4376,7 @@ mousemove(Client *c, XEvent *e, Bool toggle)
 			XSync(dpy, False);
 			dx = (ev.xmotion.x_root - x_root);
 			dy = (ev.xmotion.y_root - y_root);
-			user_time = ev.xmotion.time;
+			pushtime(ev.xmotion.time);
 			if (!moved) {
 				if (abs(dx) < options.dragdist && abs(dy) < options.dragdist)
 					continue;
@@ -4692,7 +4783,7 @@ mouseresize_from(Client *c, int from, XEvent *e, Bool toggle)
 			XSync(dpy, False);
 			dx = (x_root - ev.xmotion.x_root);
 			dy = (y_root - ev.xmotion.y_root);
-			user_time = ev.xmotion.time;
+			pushtime(ev.xmotion.time);
 			if (!resized) {
 				if (abs(dx) < options.dragdist && abs(dy) < options.dragdist)
 					continue;
@@ -5507,6 +5598,23 @@ propertynotify(XEvent * e)
 	} else
 		return False;
 	return True;
+}
+
+Bool
+latertime(Time time)
+{
+	if (time == CurrentTime)
+		return False;
+	if (user_time == CurrentTime || (int) time - (int) user_time > 0)
+		return True;
+	return False;
+}
+
+void
+pushtime(Time time)
+{
+	if (latertime(time))
+		user_time = time;
 }
 
 void
@@ -8896,7 +9004,7 @@ view(int index) {
 
 	i = (index == -1) ? 0 : index;
 	if (!(cm = selmonitor()))
-		return;
+		cm = nearmonitor();
 
 	if (cm->seltags[i])
 		return;

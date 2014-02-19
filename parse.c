@@ -215,17 +215,17 @@ k_setmwfactor(XEvent *e, Key * k)
 			case OrientTop:
 			case OrientRight:
 				if (k->act == DecCount)
-					setmwfact(m, v, v->mwfact - factor);
-				else
 					setmwfact(m, v, v->mwfact + factor);
+				else
+					setmwfact(m, v, v->mwfact - factor);
 				break;
 			case OrientBottom:
 			case OrientLeft:
 			case OrientLast:
 				if (k->act == DecCount)
-					setmwfact(m, v, v->mwfact + factor);
-				else
 					setmwfact(m, v, v->mwfact - factor);
+				else
+					setmwfact(m, v, v->mwfact + factor);
 				break;
 			}
 		} else

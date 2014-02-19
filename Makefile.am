@@ -12,9 +12,12 @@ adwm_LDADD = $(IMLIB2_LIBS) $(XPM_LIBS) $(SN_LIBS) $(XINERAMA_LIBS) $(XSYNC_LIBS
 adwm.man: adwm.1
 	sed 's,[@]PACKAGE[@],$(PACKAGE),g;s,[@]VERSION[@],$(VERSION),g' $< >$@
 
+adwm-keys.man: adwm-keys.1
+	sed 's,[@]PACKAGE[@],$(PACKAGE),g;s,[@]VERSION[@],$(VERSION),g' $< >$@
+
 nobase_dist_data_DATA = xsessions/adwm.desktop
 
-nodist_man1_MANS = adwm.man
+nodist_man1_MANS = adwm.man adwm-keys.man
 
 dist_pkgdata_DATA = close.xbm adwmrc iconify.xbm max.xbm
 

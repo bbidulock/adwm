@@ -1,5 +1,5 @@
 
-AM_CPPFLAGS = -include ../autoconf.h
+AM_CPPFLAGS = -include ../src/autoconf.h
 AM_CFLAGS = $(X11_CFLAGS) $(XFT_CFLAGS)
 
 noinst_PROGRAMS = ewmhpanel

@@ -4,8 +4,8 @@
 AC_PREREQ([2.69])
 AC_INIT([adwm],[0.4.9],[https://github.com/bbidulock/adwm/issues])
 AC_REVISION([0.4.9])
-AC_CONFIG_SRCDIR([adwm.h])
-AC_CONFIG_HEADERS([autoconf.h])
+AC_CONFIG_SRCDIR([src/adwm.h])
+AC_CONFIG_HEADERS([src/autoconf.h])
 AC_CONFIG_AUX_DIR([scripts])
 AC_USE_SYSTEM_EXTENSIONS
 
@@ -123,6 +123,7 @@ pkgconfdir='${datadir}/adwm'
 AC_SUBST([pkgconfdir])
 
 AC_OUTPUT([Makefile
+	   src/Makefile
 	   tests/Makefile
 	   doc/Makefile
 	   data/Makefile])

@@ -35,3 +35,8 @@ stamp-h1
 _test/
 ewmhpanel
 adwm.1.man
+*.la
+*.lo
+.libs/
+m4/
+libtool

@@ -6,6 +6,7 @@ AC_INIT([adwm],[0.4.9],[https://github.com/bbidulock/adwm/issues])
 AC_REVISION([0.4.9])
 AC_CONFIG_SRCDIR([src/adwm.h])
 AC_CONFIG_HEADERS([src/autoconf.h])
+AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_AUX_DIR([scripts])
 AC_USE_SYSTEM_EXTENSIONS
 
@@ -17,12 +18,21 @@ AM_INIT_AUTOMAKE([dist-xz no-dist-gzip])
 AM_MAINTAINER_MODE
 
 # Checks for programs.
+AC_PROG_AWK
 AC_PROG_CC
+AC_PROG_CPP
+AC_PROG_INSTALL
 AC_PROG_LN_S
 AC_PROG_MAKE_SET
+AM_PROG_AR
 AC_PROG_MKDIR_P
-AC_PROG_INSTALL
 AC_ARG_VAR([LD], [Linker loader command])
+
+AC_DISABLE_STATIC
+LT_PREREQ([2.4.2])
+LT_INIT([])
+LT_LANG([C])
+AC_SUBST([LIBTOOL_DEPS])
 
 PKG_PROG_PKG_CONFIG
 
@@ -121,6 +131,16 @@ AC_MSG_RESULT([${enable_debug:-no}])
 
 pkgconfdir='${datadir}/adwm'
 AC_SUBST([pkgconfdir])
+
+test "x$prefix" = xNONE && prefix="$ac_default_prefix"
+sharedir="$datadir"
+eval "sharedir=\"$sharedir\""
+eval "sharedir=\"$sharedir\""
+eval "sharedir=\"$sharedir\""
+AC_SUBST([sharedir])
+
+adwmmoddir='${libdir}/adwm/modules'
+AC_SUBST([adwmmoddir])
 
 AC_OUTPUT([Makefile
 	   src/Makefile

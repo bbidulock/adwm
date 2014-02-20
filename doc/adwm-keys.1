@@ -1,0 +1,414 @@
+.Dd $Mdocdate$
+.Dt ADWM-KEYS \&1 "User Commands"
+.Os @PACKAGE@ @VERSION@
+.Sh NAME
+.Nm @PACKAGE@-keys
+.Nd advanced dynamic window manager for X key bindings
+.Sh SYNOPSIS
+.Nm @PACKAGE@
+.Sh DESCRIPTION
+.Nm
+.Ss SYNTAX
+.Ss COMMANDS
+.Bl -tag -width Ds -compact
+.It Ic quit
+
+.It Ic restart
+
+.It Ic killclient
+
+.It Ic zoom
+
+.It Ic moveright
+.It Ic moveleft
+.It Ic moveup
+.It Ic movedown
+
+.It Ic resizedecx
+.It Ic resizedecy
+.It Ic resizeincx
+.It Ic resizeincy
+
+.It Ic togglemonitor
+
+.It Ic appendtag
+.It Ic rmlasttag
+
+.It Ic rotateview
+.It Ic unrotateview
+
+.It Ic rotatezone
+.It Ic unrotatezone
+
+.It Ic rotatewins
+.It Ic unrotatewins
+
+.It Ic raise
+.It Ic lower
+
+.It Ic raiselower
+
+.It Ic <prefix><setting> [[+-]value[%]]
+.Pp
+.Ic <setting>
+can be one of:
+.Pp
+.Bl -tag -width Ds -compact
+.It Ic mwfact
+Set, increase or decrease the master width factor.  The default when factor is not specified is
+to set the factor to 60%, or increase or decrease the factor by 5%.
+.It Ic nmaster
+Sets, increase or decrease the number of masters.  The default when number is not specified is
+to set the number to 1, or increase or decrease the factory by 1.
+.It Ic ncolumn
+Sets, increase or decrease the number of columns (or rows) in the stacking area.  The default
+when number is not specified is to set the number to 1, or increase or decrease the number by 1.
+.It Ic margin
+Sets, increase or decrease the margin between tiled windows in pixels.  The default when
+number is not specified is to set the number to 0, or increase or decrease the number by 1.
+.It Ic border
+Sets, increase or decrease the border around decorated windows in pixels.  The default when
+number is not specified is to set the number to the value set by the style, or increase or
+decrease the number by 1.
+.El
+.Pp
+.Ic <prefix>
+can be one of:
+.Pp
+.Bl -tag -width Ds -compact
+.It Ic set
+Set the count or factor to
+.Ic value Ns .
+.It Ic inc
+Increase the count or factor by
+.Ic value Ns .
+.It Ic dec
+Decrease the count or factor by
+.Ic value Ns .
+.El
+.Pp
+.It Ic [<prefix>]<state>[<suffix>] [0|1]
+.Pp
+The
+.Ic <state>
+indicates which state to change and is one of:
+.Pp
+.Bl -tag -width "XXXXXXXXXX" -compact
+.It Ic floating
+The window is floating (or tiled).
+.It Ic fill
+The window fills the available area.
+.It Ic full
+The window is fullscreen.
+.It Ic max
+The window is maximized.
+.It Ic maxv
+The window is vertically maximized.
+.It Ic maxh
+The window is horizontally maximized.
+.It Ic shade
+The window is shaded.
+.It Ic shaded
+The window is shaded.
+.It Ic hide
+The window is hidden.
+.It Ic hidden
+The window is hidden.
+.It Ic iconify
+The window is iconified (minimized).
+.It Ic min
+The window is iconified (minimized).
+.It Ic above
+The window is placed above others.
+.It Ic below
+The window is placed below others.
+.It Ic pager
+The window appears in the pager.
+.It Ic taskbar
+The window appears on the taskbar.
+.Pp
+.It Ic showing
+The layout is showing the desktop.
+.It Ic struts
+The layout is showing panels/docks.
+.It Ic dectiled
+The layout decorates tiled windows.
+.El
+.Pp
+The optional
+.Ic <prefix>
+indicates whether to set, unset or toggle the state and is one of (defaulting to
+.Ic set Ns ):
+.Pp
+.Bl -tag -width Ds -compact
+.It Ic set
+Sets the state.
+.It Ic un
+Unsets the state.
+.It Ic de
+Unsets the state.
+.It Ic unset
+Unsets the state.
+.It Ic toggle
+Toggles the state.
+.El
+.Pp
+The optional
+.Ic <suffix>
+indicates to which windows or layouts the setting applies and is one of (defaulting
+to
+.Ic sel Ns ):
+.Pp
+.Bl -tag -width Ds -compact
+.It Ic sel
+The current window or layout.
+.It Ic ptr
+The window or layout under the pointer.
+.It Ic all
+All windows or layout on current monitor.
+.It Ic any
+All windows or layouts on any monitor.
+.It Ic every
+All windows or layouts.
+.El
+.Pp
+.It Ic <movement><suffix> [increment]
+.Pp
+.Ic <movement>
+indicates the type of movement to perform and is one of:
+.Pp
+.Bl -tag -width Ds -compact
+.It Ic moveto
+Moves the window to the corresponding position in a 3x3 grid.
+.It Ic snapto
+Moves the window toward the corresponding position in a 3x3 grid, stopping at the first
+obstacle.
+.It Ic edgeto
+Moves the window to the corresponding edges.
+.It Ic moveby
+Moves the window in the corresponding direction by the specified increment (or 1 when no default
+increment is specified).
+.El
+.Pp
+.Ic <suffix>
+indicates the position or direction to which to move and
+is one of the following:
+.Pp
+.Bl -tag -width Ds -compact
+.It Ic NW
+The upper-left corner of the monitor.
+.It Ic N
+The upper edge of the monitor.
+.It Ic NE
+The upper-right corner of the monitor.
+.It Ic W
+The left edge of the monitor.
+.It Ic C
+The center of the monitor.
+.It Ic E
+The right edge of the monitor.
+.It Ic SW
+The lower-left corner of the monitor.
+.It Ic S
+The lower edge of the monitor.
+.It Ic SE
+The lower-right corner of the monitor.
+.It Ic R
+The initial static position of the window.
+.It Ic L
+The last position of the window.
+.El
+.Pp
+.It Ic <tagaction>[<suffix>] [tag|[+-]increment]
+.Pp
+.Ic <tagaction>
+indicates the tag action to perform and
+can be one of the following:
+.Pp
+.Bl -tag -width Ds -compact
+.It Ic view
+View the corresponding tag on the current monitor.  This has the effect of changing to the
+corresponding desktop/workspace.
+.It Ic focusview
+Switch to the view of the corresponding tag and focus the first window in the view.
+.It Ic toggleview
+Toggle viewing the corresponding tag on the current monitor.  This does not change
+desktop/workspace, just changes which windows are shown on the current desktop/workspace.
+.It Ic tag
+Tag the selected window with the corresponding tag.  This has the effect of sending the window
+to the desktop/workspace corresponding to the tag.
+.It Ic toggletag
+Toggle the corresponding tag on the selected window.  This affects on which desktops/workspaces
+the window is displayed.
+.It Ic taketo
+Tag the selected window with the corresponding tag and switch the view on the current monitor to
+that of the tag.  This has the effect of taking the window to the desktop/workspace
+corresponding to the tag.
+.El
+.Pp
+The optional
+.Ic <suffix>
+is one of the following:
+.Pp
+.Bl -tag -width Ds -compact
+.It none
+.It Ic #
+The tag index number,
+.Ic # Ns ,
+starting at 1.
+.It Ic next
+The next tag.
+.It Ic prev
+The previous tag.
+.It Ic last
+The previously selected tag.
+.It Ic up
+The tag above (w/o wrapping).
+.It Ic down
+The tag below (w/o wrapping).
+.It Ic left
+The tag to the left (w/o wrapping).
+.It Ic right
+The tag to the right (w/o wrapping).
+.It Ic NW
+The upper-left tag (wrapping).
+.It Ic N
+The upper tag (wrapping).
+.It Ic NE
+The upper-right tag (wrapping).
+.It Ic W
+The left tag (wrapping).
+.It Ic E
+The right tag (wrapping).
+.It Ic SW
+The lower-left tag (wrapping).
+.It Ic S
+The lower tag (wrapping).
+.It Ic SE
+The lower-right tag (wrapping).
+.El
+.Pp
+.It Ic [<prefix>]<cycle>[<suffix>][<range>]
+.Pp
+.Ic <cycle>
+specifies the action to perform and the range of windows on which the action may be performed
+and is one of the following:
+.Pp
+.Bl -tag -width Ds -compact
+.It Ic focus
+Select
+client, tiled order.
+.It Ic client
+Select
+client, client list order.
+.It Ic stack
+Select
+client, stacking order.
+.It Ic group
+Select
+client of same class, tiled order.
+.It Ic tab
+Select
+client tab, tab order.
+.It Ic panel
+Select
+panels, tiled order.
+.It Ic dock
+Select
+dock applications, tiled order.
+.It Ic swap
+Swap with other
+client, tiled order.
+.El
+.Pp
+The optional
+.Ic <prefix>
+indicates the form of cycling and can be one of the following:
+.Pp
+.Bl -tag -width Ds -compact
+.It none
+The window is selected immediately once the key is pressed and the cycle completes.
+.It Ic cycle
+The window is selected immediately once the key is pressed, however, the cycle does not complete
+until a modifier key is pressed or released or a new key is pressed.  This form also displays a
+cycle window (available window list) while the cycle is active.
+.El
+.Pp
+The optional
+.Ic <suffix>
+indicates which client to select and is one of the following:
+.Pp
+.Bl -tag -width Ds -compact
+.It none
+Select window by tag argument (beginning at 1).
+.It Ic #
+Select window by index (beginning at 0).
+.It Ic icon
+Select next iconified window in order.
+.It Ic next
+Select next window in order.
+.It Ic prev
+Select previous window in order.
+.It Ic last
+Select last selected window.
+.It Ic up
+Select window above.
+.It Ic down
+Select window below.
+.It Ic left
+Select window to the left.
+.It Ic right
+Select window to the right.
+.It Ic NW
+Select window above and to the left.
+.It Ic N
+Select window above.
+.It Ic NE
+Select window above and to the right.
+.It Ic W
+Select window to the left.
+.It Ic E
+Select window to the right.
+.It Ic SW
+Select window below and to the left.
+.It Ic S
+Select window below.
+.It Ic SE
+Select window below and to the right.
+.El
+.Pp
+A optional
+.Ic <range>
+indicates the range of clients to make available for selection and is one of the following:
+.Pp
+.Bl -tag -width Ds -compact
+.It none
+All focusable windows displayed on the current monitor.
+.It Ic act
+All windows on the current monitor that can be activated regarless of whether they can be
+focused or not and regardless of whether they are iconified or hidden or not.
+.It Ic all
+All windows on the current monitor.
+.It Ic all
+All windows on any monitor.
+.It Ic every
+All windows in any view.
+.El
+.Pp
+Examples:
+.Dl Adwm*focusnext: A + j
+.Dl Adwm*focusprev: A + k
+.Dl Adwm*cyclefocusnextevery: WAC + j
+.Dl Adwm*cyclefocusprevevery: WAC + k
+.Pp
+.It Ic spawn<n> <command>
+Spawns the n'th command argument.
+.Ic <n>
+can be from 0 to 63.
+.Pp
+.El
+.Sh EXAMPLES
+.Sh SEE ALSO
+.Sh BUGS
+.Sh AUTHORS
+.An Brian Bidulock Aq bidulock@openss7.org

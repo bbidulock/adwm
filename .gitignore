@@ -2,6 +2,7 @@
 aclocal.m4
 adwm
 adwm.man
+adwm-keys.man
 AUTHORS
 autoconf.h
 autoconf.h.in

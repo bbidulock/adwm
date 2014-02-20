@@ -123,6 +123,8 @@ pkgconfdir='${datadir}/adwm'
 AC_SUBST([pkgconfdir])
 
 AC_OUTPUT([Makefile
-	   tests/Makefile])
+	   tests/Makefile
+	   doc/Makefile
+	   data/Makefile])
 
 # vim: set ft=config:

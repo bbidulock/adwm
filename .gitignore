@@ -33,5 +33,5 @@ stamp-h1
 .*.sw[nop]
 *.tar.*
 _test/
-tests/ewmhpanel
+ewmhpanel
 adwm.1.man

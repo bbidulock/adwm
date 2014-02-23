@@ -654,13 +654,11 @@ initstyle_BLACKBOX(void)
 	readtexture("window.grip.unfocus", "Window.Grip.Unfocus",
 		    &style->window.grip.unfocus, "black", "white");
 
-	res =
-	    readres("window.frame.focus.borderColor", "Window.Frame.Focus.BorderColor",
-		    "white");
+	res = readres("window.frame.focus.borderColor",
+		      "Window.Frame.Focus.BorderColor", "white");
 	getxcolor(res, "white", &style->window.frame.focus.borderColor);
-	res =
-	    readres("window.frame.unfocus.borderColor",
-		    "Window.Frame.Unfocus.BorderColor", "black");
+	res = readres("window.frame.unfocus.borderColor",
+		      "Window.Frame.Unfocus.BorderColor", "black");
 	getxcolor(res, "black", &style->window.frame.unfocus.borderColor);
 	res = readres("borderWidth", "BorderWidth", "1");
 	res = readres("window.frame.borderWidth", "Window.Frame.BorderWidth", res);

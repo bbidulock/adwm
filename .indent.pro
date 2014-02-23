@@ -31,6 +31,7 @@
 -TAppearance
 -TTexture
 -TAdwmFont
+-TAdwmPixmap
 -TFluxboxBitmap
 -TFluxboxStyle
 -TBlackboxBitmap

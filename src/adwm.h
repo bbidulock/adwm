@@ -279,6 +279,7 @@ typedef enum { GradientDiagonal, GradientCrossDiagonal, GradientRectangle, Gradi
 	GradientSplitVertical, GradientVertical } Gradient;
 typedef enum { ReliefRaised, ReliefFlat, ReliefSunken } Relief;
 typedef enum { Bevel1, Bevel2 } Bevel;
+typedef enum { JustifyLeft, JustifyCenter, JustifyRight } Justify;
 
 typedef struct {
 	Pattern pattern;		/* default solid */
@@ -321,6 +322,13 @@ typedef struct {
 	unsigned red:8;
 	unsigned alpha:8;
 } ARGB;
+
+typedef struct {
+	Bool shadow;
+	XftColor color;
+	unsigned transparency;
+	int offset;
+} TextShadow;
 
 typedef struct {
 	Pixmap pixmap;
@@ -880,16 +888,20 @@ void sunkenBevel(Texture *t, unsigned width, unsigned height, ARGB *data);
 
 /* resource.c */
 const char *readres(const char *name, const char *clas, const char *defval);
-void getbitmap(const unsigned char *bits, int width, int height, AdwmBitmap *bitmap);
+void getbitmap(const unsigned char *bits, int width, int height, AdwmBitmap * bitmap);
 void getappearance(const char *descrip, Appearance *appear);
 void getxcolor(const char *color, const char *defcol, XColor *xcol);
 void getxftcolor(const char *color, const char *defcol, XftColor *xftcol);
 void freexftcolor(XftColor *xftcol);
-void getbool(const char *name, const char *clas, const char *true_val, Bool defval, Bool *result);
+void getbool(const char *name, const char *clas, const char *true_val, Bool defval,
+	     Bool *result);
 void getfont(const char *font, const char *deffont, AdwmFont *afont);
 void freefont(AdwmFont *afont);
-void readtexture(const char *name, const char *clas, Texture *t, const char *defcol, const char *oppcol);
+void readtexture(const char *name, const char *clas, Texture *t, const char *defcol,
+		 const char *oppcol);
 void freetexture(Texture *t);
+void getpixmap(const char *file, AdwmPixmap *p);
+void getshadow(const char *descrip, TextShadow *shadow);
 
 
 #define LENGTH(x)		(sizeof(x)/sizeof(*x))
@@ -942,3 +954,5 @@ extern SnMonitorContext *sn_ctx;
 extern Notify *notifies;
 #endif
 extern XrmDatabase xresdb;
+extern int cargc;
+extern char **cargv;

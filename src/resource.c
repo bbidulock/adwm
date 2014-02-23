@@ -23,17 +23,21 @@
 
 XrmDatabase xresdb;
 
-const char *readres(const char *name, const char *clas, const char *defval):
-void getbitmap(const unsigned char *bits, int width, int height, AdwmBitmap *bitmap);
+const char *readres(const char *name, const char *clas, const char *defval);
+void getbitmap(const unsigned char *bits, int width, int height, AdwmBitmap * bitmap);
 void getappearance(const char *descrip, Appearance *appear);
 void getxcolor(const char *color, const char *defcol, XColor *xcol);
 void getxftcolor(const char *color, const char *defcol, XftColor *xftcol);
 void freexftcolor(XftColor *xftcol);
-void getbool(const char *name, const char *clas, const char *true_val, Bool defval, Bool *result);
+void getbool(const char *name, const char *clas, const char *true_val, Bool defval,
+	     Bool *result);
 void getfont(const char *font, const char *deffont, AdwmFont *afont);
 void freefont(AdwmFont *afont);
-void readtexture(const char *name, const char *clas, Texture *t, const char *defcol, const char *oppcol);
+void readtexture(const char *name, const char *clas, Texture *t, const char *defcol,
+		 const char *oppcol);
 void freetexture(Texture *t);
+void getpixmap(const char *file, AdwmPixmap *p);
+void getshadow(const char *descrip, TextShadow *shadow);
 
 const char *
 readres(const char *name, const char *clas, const char *defval)
@@ -48,7 +52,7 @@ readres(const char *name, const char *clas, const char *defval)
 }
 
 void
-getbitmap(const unsigned char *bits, int width, int height, AdwmBitmap *bitmap)
+getbitmap(const unsigned char *bits, int width, int height, AdwmBitmap * bitmap)
 {
 	bitmap->width = width;
 	bitmap->height = height;
@@ -195,7 +199,7 @@ freefont(AdwmFont *afont)
 }
 
 void
-getpixmap(const char *file, AdwmPixmap * p)
+getpixmap(const char *file, AdwmPixmap *p)
 {
 	if (!file)
 		goto done;
@@ -255,6 +259,33 @@ getpixmap(const char *file, AdwmPixmap * p)
 	p->pixmap = p->mask = None;
 	p->depth = p->width = p->height = 0;
 	p->x = p->y = 0;
+}
+
+void
+getshadow(const char *descrip, TextShadow * s)
+{
+	s->shadow = False;
+	if (descrip) {
+		const char *p;
+
+		s->shadow = strcasestr(descrip, "shadow=y") ? True : False;
+		if (!s->shadow)
+			return;
+		if ((p = strcasestr(descrip, "shadowtint="))) {
+			int tint;
+
+			tint = atoi(p + 11);
+			s->tranparency = abs(tint);
+			if (tint < 0)
+				getxftcolor("black", "black", &s->color);
+			else
+				getxftcolor("white", "white", &s->color);
+		}
+		if ((p = strcasestr(descrip, "shadowoffset="))) {
+			s->offset = atoi(p + 13);
+		}
+		return;
+	}
 }
 
 void

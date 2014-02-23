@@ -1,5 +1,14 @@
 /* enums */
 
+#include <X11/cursorfont.h>
+#include <X11/keysym.h>
+#include <X11/XKBlib.h>
+#include <X11/Xatom.h>
+#include <X11/Xlib.h>
+#include <X11/Xproto.h>
+#include <X11/Xutil.h>
+#include <X11/Xresource.h>
+#include <X11/Xft/Xft.h>
 #ifdef SYNC
 #include <X11/extensions/sync.h>
 #endif
@@ -264,6 +273,59 @@ typedef enum { IncCount, DecCount, SetCount } ActionCount;
 typedef enum { FocusClient, ActiveClient, PointerClient, AnyClient, AllClients, EveryClient } WhichClient;
 enum { _NET_WM_ORIENTATION_HORZ, _NET_WM_ORIENTATION_VERT };
 enum { _NET_WM_TOPLEFT, _NET_WM_TOPRIGHT, _NET_WM_BOTTOMRIGHT, _NET_WM_BOTTOMLEFT };
+typedef enum { PatternSolid, PatternParent, PatternGradient } Pattern;
+typedef enum { GradientDiagonal, GradientCrossDiagonal, GradientRectangle, GradientPyramid,
+	GradientPipeCross, GradientElliptic, GradientMirrorHorizontal, GradientHorizontal,
+	GradientSplitVertical, GradientVertical } Gradient;
+typedef enum { ReliefRaised, ReliefFlat, ReliefSunken } Relief;
+typedef enum { Bevel1, Bevel2 } Bevel;
+
+typedef struct {
+	Pattern pattern;		/* default solid */
+	Gradient gradient;		/* default none */
+	Relief relief;			/* default raised */
+	Bevel bevel;			/* default bevel1 */
+	Bool interlaced;		/* default False */
+	Bool border;			/* default False */
+} Appearance;
+
+typedef struct {
+	Pixmap pixmap, mask;
+	int x, y;
+	unsigned depth, width, height;
+} AdwmPixmap;
+
+typedef struct {
+	Appearance appearance;		/* default 'flat solid' */
+	XColor color;			/* color1 => color => default color */
+	XColor colorTo;			/* color2 => colorTo => default color */
+	XColor picColor;		/* picColor => color => default color */
+	AdwmPixmap pixmap;
+	XftColor textColor;		/* textColor => black */
+	XColor borderColor;		/* borderColor => black */
+	unsigned borderWidth;		/* borderWidth => 1 */
+	XColor backgroundColor;		/* backgroundColor => color => default color */
+	XColor foregroundColor;		/* foregroundColor => picColor => opposite color */
+} Texture;
+
+typedef struct {
+	XftFont *font;
+	XGlyphInfo extents;
+	unsigned ascent, descent, width, height;
+} AdwmFont;
+
+typedef struct {
+	/* ordered for imlib DATA32 */
+	unsigned blue:8;
+	unsigned green:8;
+	unsigned red:8;
+	unsigned alpha:8;
+} ARGB;
+
+typedef struct {
+	Pixmap pixmap;
+	unsigned width, height;
+} AdwmBitmap;
 
 #define GIVE_FOCUS (1<<0)
 #define TAKE_FOCUS (1<<1)
@@ -542,6 +604,7 @@ typedef struct {
 	unsigned spacing;
 	unsigned titleheight;
 	unsigned gripsheight;
+	unsigned gripswidth;
 	unsigned opacity;
 	char titlelayout[32];
 	XftFont *font[2];
@@ -628,6 +691,16 @@ struct Notify {
 	Bool assigned;
 };
 #endif
+
+typedef struct {
+	const char *name;
+	void (*initconfig)(void);
+	void (*initkeys)(void);
+	void (*initstyle)(void);
+	void (*deinitstyle)(void);
+	void (*drawclient)(Client *);
+} AdwmOperations;
+
 
 /* ewmh.c */
 Bool checkatom(Window win, Atom bigatom, Atom smallatom);
@@ -790,6 +863,35 @@ void drawclient(Client * c);
 void deinitstyle();
 void initstyle();
 
+/* texture.c */
+void dgradient(Texture *t, unsigned width, unsigned height, ARGB *data);
+void egradient(Texture *t, unsigned width, unsigned height, ARGB *data);
+void hgradient(Texture *t, unsigned width, unsigned height, ARGB *data);
+void pgradient(Texture *t, unsigned width, unsigned height, ARGB *data);
+void rgradient(Texture *t, unsigned width, unsigned height, ARGB *data);
+void vgradient(Texture *t, XColor color, XColor colorTo, unsigned width,
+	       unsigned height, ARGB *data, unsigned fromHeight, unsigned toHeight);
+void cdgradient(Texture *t, unsigned width, unsigned height, ARGB *data);
+void pcgradient(Texture *t, unsigned width, unsigned height, ARGB *data);
+void svgradient(Texture *t, unsigned width, unsigned height, ARGB *data);
+void mhgradient(Texture *t, unsigned width, unsigned height, ARGB *data);
+void raisedBevel(Texture *t, unsigned width, unsigned height, ARGB *data);
+void sunkenBevel(Texture *t, unsigned width, unsigned height, ARGB *data);
+
+/* resource.c */
+const char *readres(const char *name, const char *clas, const char *defval);
+void getbitmap(const unsigned char *bits, int width, int height, AdwmBitmap *bitmap);
+void getappearance(const char *descrip, Appearance *appear);
+void getxcolor(const char *color, const char *defcol, XColor *xcol);
+void getxftcolor(const char *color, const char *defcol, XftColor *xftcol);
+void freexftcolor(XftColor *xftcol);
+void getbool(const char *name, const char *clas, const char *true_val, Bool defval, Bool *result);
+void getfont(const char *font, const char *deffont, AdwmFont *afont);
+void freefont(AdwmFont *afont);
+void readtexture(const char *name, const char *clas, Texture *t, const char *defcol, const char *oppcol);
+void freetexture(Texture *t);
+
+
 #define LENGTH(x)		(sizeof(x)/sizeof(*x))
 #ifdef DEBUG
 #define DPRINT			do { fprintf(stderr, "%s %s() %d\n",__FILE__,__func__, __LINE__); fflush(stderr); } while(0)
@@ -839,3 +941,4 @@ extern SnDisplay *sn_dpy;
 extern SnMonitorContext *sn_ctx;
 extern Notify *notifies;
 #endif
+extern XrmDatabase xresdb;

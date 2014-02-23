@@ -27,7 +27,7 @@ drawtext(AScreen *ds, const char *text, Drawable drawable, XftDraw *xftdrawable,
 	int w, h;
 	char buf[256];
 	unsigned int len, olen;
-	int drop;
+	int drop, status;
 
 	if (!text)
 		return 0;
@@ -57,8 +57,11 @@ drawtext(AScreen *ds, const char *text, Drawable drawable, XftDraw *xftdrawable,
 	while (x <= 0)
 		x = ds->dc.x++;
 	XSetForeground(dpy, ds->dc.gc, col[ColBG]);
-	XFillRectangle(dpy, drawable, ds->dc.gc, x - ds->dc.font[hilite].height / 2, 0,
+	XSetFillStyle(dpy, ds->dc.gc, FillSolid);
+	status = XFillRectangle(dpy, drawable, ds->dc.gc, x - ds->dc.font[hilite].height / 2, 0,
 	    w + ds->dc.font[hilite].height, h);
+	if (!status)
+		DPRINTF("Could not fill rectangle, error %d\n", status);
 	if ((drop = ds->style.drop[hilite]))
 		XftDrawStringUtf8(xftdrawable, ds->style.color.shadow[hilite], ds->style.font[hilite],
 		    x + drop, y + drop, (unsigned char *) buf, len);
@@ -207,6 +210,7 @@ drawbutton(AScreen *ds, Client *c, ElementType type, unsigned long col[ColLast],
 	ElementClient *ec = &c->element[type];
 	Drawable d = ds->dc.draw.pixmap;
 	ButtonImage *bi;
+	int status;
 
 	if (!(bi = buttonimage(ds, c, type)) || !bi->present) {
 		XPRINTF("button %d has no button image\n", type);
@@ -228,7 +232,10 @@ drawbutton(AScreen *ds, Client *c, ElementType type, unsigned long col[ColLast],
 #endif
 	if (bi->bitmap) {
 		XSetForeground(dpy, ds->dc.gc, col[ColBG]);
-		XFillRectangle(dpy, d, ds->dc.gc, ec->g.x, 0, ds->dc.h, ds->dc.h);
+		XSetFillStyle(dpy, ds->dc.gc, FillSolid);
+		status = XFillRectangle(dpy, d, ds->dc.gc, ec->g.x, 0, ds->dc.h, ds->dc.h);
+		if (!status)
+			DPRINTF("Could not fill rectangle, error %d\n", status);
 		XSetForeground(dpy, ds->dc.gc, ec->pressed ? col[ColFG] : col[ColButton]);
 		XSetBackground(dpy, ds->dc.gc, col[ColBG]);
 		XCopyPlane(dpy, bi->bitmap, d, ds->dc.gc, 0, 0, ec->g.w, ec->g.h, ec->g.x, ec->g.y + bi->y, 1);
@@ -362,6 +369,8 @@ elementw(AScreen *ds, Client *c, char which)
 void
 drawdockapp(Client *c, AScreen *ds)
 {
+	int status;
+
 	ds->dc.x = ds->dc.y = 0;
 	if (!(ds->dc.w = c->c.w))
 		return;
@@ -369,14 +378,19 @@ drawdockapp(Client *c, AScreen *ds)
 		return;
 	XSetForeground(dpy, ds->dc.gc, c == sel ? ds->style.color.sel[ColBG] : ds->style.color.norm[ColBG]);
 	XSetLineAttributes(dpy, ds->dc.gc, ds->style.border, LineSolid, CapNotLast, JoinMiter);
-	XFillRectangle(dpy, c->frame, ds->dc.gc, ds->dc.x, ds->dc.y, ds->dc.w, ds->dc.h);
+	XSetFillStyle(dpy, ds->dc.gc, FillSolid);
+	status = XFillRectangle(dpy, c->frame, ds->dc.gc, ds->dc.x, ds->dc.y, ds->dc.w, ds->dc.h);
+	if (!status)
+		DPRINTF("Could not fill rectangle, error %d\n", status);
 	CPRINTF(c, "Filled dockapp frame %dx%d+%d+%d\n", ds->dc.w, ds->dc.h, ds->dc.x, ds->dc.y);
+	// XClearArea(dpy, c->icon ? : c->win, 0, 0, 0, 0, True);
 }
 
 void
 drawclient(Client *c) {
 	size_t i;
 	AScreen *ds;
+	int status;
 
 	/* might be drawing a client that is not on the current screen */
 	if (!(ds = getscreen(c->win))) {
@@ -404,7 +418,10 @@ drawclient(Client *c) {
 	}
 	XSetForeground(dpy, ds->dc.gc, c == sel ? ds->style.color.sel[ColBG] : ds->style.color.norm[ColBG]);
 	XSetLineAttributes(dpy, ds->dc.gc, ds->style.border, LineSolid, CapNotLast, JoinMiter);
-	XFillRectangle(dpy, ds->dc.draw.pixmap, ds->dc.gc, ds->dc.x, ds->dc.y, ds->dc.w, ds->dc.h);
+	XSetFillStyle(dpy, ds->dc.gc, FillSolid);
+	status = XFillRectangle(dpy, ds->dc.draw.pixmap, ds->dc.gc, ds->dc.x, ds->dc.y, ds->dc.w, ds->dc.h);
+	if (!status)
+		DPRINTF("Could not fill rectangle, error %d\n", status);
 	/* Don't know about this... */
 	if (ds->dc.w < textw(ds, c->name, (c == sel) ? Selected : Normal)) {
 		ds->dc.w -= elementw(ds, c, CloseBtn);
@@ -458,11 +475,15 @@ drawclient(Client *c) {
 	ds->dc.h = ds->style.gripsheight;
 	XSetForeground(dpy, ds->dc.gc, c == sel ? ds->style.color.sel[ColBG] : ds->style.color.norm[ColBG]);
 	XSetLineAttributes(dpy, ds->dc.gc, ds->style.border, LineSolid, CapNotLast, JoinMiter);
-	XFillRectangle(dpy, ds->dc.draw.pixmap, ds->dc.gc, ds->dc.x, ds->dc.y, ds->dc.w, ds->dc.h);
+	XSetFillStyle(dpy, ds->dc.gc, FillSolid);
+	status = XFillRectangle(dpy, ds->dc.draw.pixmap, ds->dc.gc, ds->dc.x, ds->dc.y, ds->dc.w, ds->dc.h);
+	if (!status)
+		DPRINTF("Could not fill rectangle, error %d\n", status);
 	if (ds->style.outline) {
 		XSetForeground(dpy, ds->dc.gc,
 		    c == sel ? ds->style.color.sel[ColBorder] : ds->style.color.norm[ColBorder]);
 		XDrawLine(dpy, ds->dc.draw.pixmap, ds->dc.gc, 0, 0, ds->dc.w, 0);
+		/* needs to be adjusted to do ds->style.gripswidth instead */
 		ds->dc.x = ds->dc.w / 2 - ds->dc.w / 5;
 		XDrawLine(dpy, ds->dc.draw.pixmap, ds->dc.gc, ds->dc.x, 0, ds->dc.x, ds->dc.h);
 		ds->dc.x = ds->dc.w / 2 + ds->dc.w / 5;
@@ -515,8 +536,8 @@ initpixmap(const char *file, ButtonImage *bi)
 			}
 		}
 		if (image) {
-			imlib_context_set_mask(None);
 			imlib_context_set_image(image);
+			imlib_context_set_mask(None);
 			bi->w = imlib_image_get_width();
 			bi->h = imlib_image_get_height();
 			if (bi->h > scr->style.titleheight)

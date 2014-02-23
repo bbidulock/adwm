@@ -24,6 +24,17 @@
 -ss
 -hnl
 -nbc
+-TXColor
+-TXftColor
+-TXftFont
+-TARGB
+-TAppearance
+-TTexture
+-TAdwmFont
+-TFluxboxBitmap
+-TFluxboxStyle
+-TBlackboxBitmap
+-TBlackboxStyle
 -TRelativeDirection
 -TKey
 -TView
@@ -32,7 +43,7 @@
 -TButton
 -TButtonImage
 -TXWindowAttributes
--TEScreen
+-TAScreen
 -TXEvent
 -TDisplay
 -TAtom

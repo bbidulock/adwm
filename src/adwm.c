@@ -4494,6 +4494,7 @@ findcorner(Client *c, int x_root, int y_root)
 	int cx, cy, from;
 	float dx, dy;
 
+	/* TODO: if we are on the resize handles we need to consider grip width */
 	cx = c->c.x + c->c.w / 2;
 	cy = c->c.y + c->c.h / 2;
 	dx = (float) abs(cx - x_root)/ (float) c->c.w;
@@ -9198,6 +9199,9 @@ main(int argc, char *argv[])
 		imlib_context_set_colormap(DefaultColormap(dpy, scr->screen));
 		imlib_context_set_visual(DefaultVisual(dpy, scr->screen));
 		imlib_context_set_anti_alias(1);
+		imlib_context_set_dither(1);
+		imlib_context_set_blend(1);
+		imlib_context_set_mask(None);
 		imlib_context_pop();
 #endif
 	}

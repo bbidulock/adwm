@@ -1,4 +1,6 @@
 /* See COPYING file for copyright and license details. */
+#include <unistd.h>
+#include <errno.h>
 #include <regex.h>
 #include <ctype.h>
 #include <assert.h>
@@ -118,12 +120,1022 @@ typedef struct {
 	unsigned handleWidth;
 } FluxboxStyle;
 
+typedef enum {
+	PlaceBottomLeft,
+	PlaceBottomCenter,
+	PlaceBottomRight,
+	PlaceLeftBottom,
+	PlaceLeftCenter,
+	PlaceLeftTop,
+	PlaceRightBottom,
+	PlaceRightCenter,
+	PlaceRightTop,
+	PlaceTopLeft,
+	PlaceTopCenter,
+	PlaceTopRight,
+} FluxboxPlace;
+
+typedef enum {
+	AlignLeft,
+	AlignRelative,
+	AlignRight,
+} FluxboxAlign;
+
+typedef enum {
+	PlacementRowSmart,
+	PlacementColSmart,
+	PlacementCascade,
+	PlacementUnderMouse,
+} FluxboxPlacement;
+
+typedef enum {
+	PlaceLeftToRight,
+	PlaceRightToLeft,
+	PlaceTopToBottom = PlaceLeftToRight,
+	PlaceBottomToTop = PlaceRightToLeft,
+} FluxboxPlaceDir;
+
+typedef enum {
+	AttachAreaWindow,
+	AttachAreaTitlebar,
+} FluxboxAttachArea;
+
+typedef enum {
+	DirectionHorizontal,
+	DirectionVertical,
+} FluxboxDirection;
+
+typedef enum {
+	FocusModelClickToFocus,
+	FocusModelMouseFocus,
+	FocusModelStrictMouseFocus,
+} FluxboxFocusModel;
+
+typedef enum {
+	LayerAboveDock,
+	LayerDock,
+	LayerTop,
+	LayerNormal,
+	LayerBottom,
+	LayerDesktop,
+} FluxboxLayer;
+
+typedef enum {
+	DecoNormal,
+	DecoNone,
+	DecoBorder,
+	DecoTab,
+	DecoTiny,
+	DecoTool,
+} FluxboxDeco;
+
+typedef struct {
+	struct {
+		struct {
+			unsigned alpha;	/* 255 */
+		} focus, unfocus;
+	} window;
+	struct {
+		unsigned alpha;		/* 255 *//* undocumented */
+	} menu;
+	struct {
+		Bool autoHide;		/* False */
+		FluxboxLayer layer;	/* Dock */
+		FluxboxPlace placement;	/* RightBottom */
+		Bool maxOver;		/* False */
+		unsigned onhead;	/* 0 */
+		Bool acceptKdeDockapps;	/* undocumented */
+		unsigned alpha;		/* 255 *//* undocumented */
+		FluxboxDirection direction;	/* undocumented */
+		Bool onTop;		/* undocumented */
+	} slit;
+	struct {
+		unsigned alpha;		/* 255 */
+		Bool autoHide;		/* False */
+		FluxboxLayer layer;	/* Dock */
+		FluxboxPlace placement;	/* BottomCenter */
+		Bool maxOver;		/* False */
+		unsigned height;	/* 0 */
+		Bool visible;		/* True */
+		unsigned widthPercent;	/* 100 */
+		const char *tools;	/* workspacename, prevworkspace, nextworkspace,
+					   iconbar, prevwindow, nextwindow, systemtray,
+					   clock */
+		unsigned onhead;	/* 1 */
+		Bool onTop;
+	} toolbar;
+	struct {
+		Bool maxOver;		/* False */
+		Bool intitlebar;	/* True */
+		Bool usePixmap;
+	} tabs;
+	struct {
+		const char *pattern;
+		const char *mode;	/* {static groups} (workspace) */
+		Bool usePixmap;		/* True */
+		unsigned iconTextPadding;	/* 10 */
+		FluxboxAlign alignment;	/* Relative */
+		unsigned iconWidth;	/* 128 */
+		const char *wheelMode;	/* Screen *//* undocumented */
+	} iconbar;
+	struct {
+		const char *capStyle;	/* undocumented */
+		const char *joinStyle;	/* undocumented */
+		const char *lineStyle;	/* undocumented */
+		const char *lineWidth;	/* undocumented */
+	} overlay;
+	struct {
+		FluxboxPlace placement;	/* TopLeft */
+		unsigned width;		/* 64 */
+		unsigned height;
+	} tab;
+	struct {
+		const char *left;	/* mis-documented as session resource */
+		const char *right;	/* mis-documented as session resource */
+	} titlebar;
+	const char *strftimeFormat;	/* %k:%M */
+	Bool autoRaise;			/* True */
+	Bool clickRaises;		/* True */
+	Bool workspacewarping;		/* True */
+	Bool showwindowposition;	/* False */
+	FluxboxDeco defaultDeco;	/* NORMAL */
+	unsigned menuDelay;		/* 200 */
+	unsigned menuDelayClose;	/* undocumented */
+	const char *menuMode;		/* undocumented */
+	Bool focusNewWindows;		/* True */
+	const char *workspaceNames;	/* Workspace 1, Workspace 2, Workspace 3,
+					   Workspace 4 */
+	unsigned edgeSnapThreshold;	/* 10 */
+	FluxboxPlacement windowPlacement;	/* RowSmartPlacement */
+	FluxboxPlaceDir rowPlacementDirection;	/* LeftToRight */
+	FluxboxPlaceDir colPlacementDirection;	/* TopToBottom */
+	Bool fullMaximization;		/* False */
+	Bool opaqueMove;		/* True */
+	unsigned workspaces;		/* 4 */
+	const char *windowMenu;		/* ~/.fluxbox/windowmenu */
+	/* not documented */
+	Bool allowRemoteActions;	/* False */
+	struct {
+		Bool usePixmap;		/* True *//* undocumented */
+	} clientMenu;
+	Bool decorateTransient;		/* True */
+	unsigned demandsAttentionTimeout;	/* 500 */
+	Bool desktopwheeling;		/* True */
+	Bool focusLastWindow;		/* True */
+	FluxboxFocusModel focusModel;	/* ClickToFocus */
+	Bool focusSameHead;		/* False */
+	const char *followModel;
+	Bool imageDither;		/* True *//* undocumented */
+	Bool maxDisableMove;		/* False *//* undocumented */
+	Bool maxDisableResize;		/* False *//* undocumented */
+	Bool maxIgnoreIncrement;	/* False *//* undocumented */
+	unsigned noFocusWhileTypingDelay;	/* 0 *//* undocumented */
+	const char *resizeMode;		/* Bottom *//* undocumented */
+	Bool reversewheeling;		/* False *//* undocumented */
+	const char *rootCommand;	/* "" *//* undocumented */
+	const char *tabFocusModel;	/* SloppyTabFocus *//* undocumented */
+	unsigned tooltipDelay;		/* 500 *//* undocumented */
+	const char *userFollowModel;	/* Follow *//* undocumented */
+	const char *windowScrollAction;	/* "" *//* undocumented */
+	Bool windowScrollReverse;	/* False *//* undocumented */
+} FluxboxScreen;
+
+/*
+ 
+session.screen0.allowRemoteActions:	true
+session.screen0.autoRaise:	false
+session.screen0.clickRaises:	true
+session.screen0.clientMenu.usePixmap:	true
+session.screen0.colPlacementDirection:	TopToBottom
+session.screen0.decorateTransient:	true
+session.screen0.defaultDeco:	NORMAL
+session.screen0.demandsAttentionTimeout:	500
+session.screen0.desktopwheeling:	true
+session.screen0.edgeSnapThreshold:	0
+session.screen0.focusLastWindow:	True
+session.screen0.focusModel:	StrictMouseFocus
+session.screen0.focusNewWindows:	true
+session.screen0.focusSameHead:	false
+session.screen0.followModel:	Ignore
+session.screen0.fullMaximization:	false
+session.screen0.iconbar.alignment:	Relative
+session.screen0.iconbar.iconTextPadding:	10
+session.screen0.iconbar.iconWidth:	70
+session.screen0.iconbar.mode:	{static groups}
+session.screen0.iconbar.usePixmap:	true
+session.screen0.iconbar.wheelMode:	Screen
+session.screen0.imageDither:	true
+session.screen0.maxDisableMove:	false
+session.screen0.maxDisableResize:	false
+session.screen0.maxIgnoreIncrement:	false
+session.screen0.menu.alpha:	224
+session.screen0.menuDelay:	0
+session.screen0.menuDelayClose:	0
+session.screen0.menuMode:	Delay
+session.screen0.noFocusWhileTypingDelay:	0
+session.screen0.opaqueMove:	true
+session.screen0.overlay.capStyle:	CapNotLast
+session.screen0.overlay.joinStyle:	JoinMiter
+session.screen0.overlay.lineStyle:	LineSolid
+session.screen0.overlay.lineWidth:	1
+session.screen0.resizeMode:	Bottom
+session.screen0.reversewheeling:	false
+session.screen0.rootCommand:	xprop -root -format _BLACKBOX_PID 32c -set _BLACKBOX_PID $$
+session.screen0.rowPlacementDirection:	LeftToRight
+session.screen0.showwindowposition:	true
+session.screen0.slit.acceptKdeDockapps:	true
+session.screen0.slit.alpha:	255
+session.screen0.slit.autoHide:	true
+session.screen0.slit.direction:	Vertical
+session.screen0.slit.layer:	AboveDock
+session.screen0.slit.maxOver:	false
+session.screen0.slit.onhead:	0
+session.screen0.slit.onTop:	False
+session.screen0.slit.placement:	RightCenter
+session.screen0.strftimeFormat:	%Y-%m-%d %H:%M
+session.screen0.tabFocusModel:	SloppyTabFocus
+session.screen0.tab.height:	16
+session.screen0.tab.placement:	TopLeft
+session.screen0.tabs.intitlebar:	true
+session.screen0.tabs.maxOver:	true
+session.screen0.tabs.usePixmap:	true
+session.screen0.tab.width:	120
+session.screen0.titlebar.left:	MenuIcon Stick Shade LHalf 
+session.screen0.titlebar.right:	RHalf Minimize Maximize Close 
+session.screen0.toolbar.alpha:	255
+session.screen0.toolbar.autoHide:	false
+session.screen0.toolbar.height:	0
+session.screen0.toolbar.layer:	Dock
+session.screen0.toolbar.maxOver:	false
+session.screen0.toolbar.onhead:	0
+session.screen0.toolbar.onTop:	False
+session.screen0.toolbar.placement:	BottomCenter
+session.screen0.toolbar.tools:	systemtray, workspacename, prevworkspace, nextworkspace, iconbar, prevwindow, nextwindow, clock
+session.screen0.toolbar.visible:	true
+session.screen0.toolbar.widthPercent:	100
+session.screen0.tooltipDelay:	500
+session.screen0.userFollowModel:	Follow
+session.screen0.window.focus.alpha:	255
+session.screen0.windowMenu:	
+session.screen0.windowPlacement:	RowSmartPlacement
+session.screen0.windowScrollAction:	
+session.screen0.windowScrollReverse:	false
+session.screen0.window.unfocus.alpha:	237
+session.screen0.workspaceNames:	1,2,3,4,5,6,7,8,
+session.screen0.workspaces:	8
+session.screen0.workspacewarping:	true
+
+ */
+
+typedef struct {
+	unsigned autoRaiseDelay;	/* 250 */
+	unsigned cacheLife;		/* 5 */
+	unsigned cacheMax;		/* 200 */
+	unsigned colorsPerChannel;	/* 4 */
+	unsigned doubleClickInterval;	/* 250 */
+	Bool forcePseudoTransparency;	/* False */
+	Bool ignoreBorder;		/* False */
+	unsigned tabPadding;		/* 0 */
+	FluxboxAttachArea tabsAttachArea;	/* Window */
+	const char *appsFile;		/* ~/.fluxbox/apps */
+	const char *groupFile;		/* ~/.fluxbox/groups */
+	const char *keyFile;		/* ~/.fluxbox/keys */
+	const char *menuFile;		/* ~/.fluxbox/menu */
+	const char *slitlistFile;	/* ~/.fluxbox/slitlist */
+	const char *styleFile;		/* */
+	const char *styleOverlay;	/* ~/.fluxbox/overlay */
+
+	unsigned modKey;		/* Mod1 *//* undocumented */
+	Bool imageDither;		/* ?? *//* undocumented */
+	const char *configVersion;	/* 13 *//* undocumented */
+	Bool opaqueMove;		/* True *//* undocumented *//* screen resource? */
+	FluxboxScreen *screens;
+} FluxboxSession;
+
+/*
+
+session.appsFile:	~/.fluxbox/apps
+session.autoRaiseDelay:	250
+session.cacheLife:	5
+session.cacheMax:	200
+session.colorsPerChannel:	4
+session.configVersion:	13
+session.doubleClickInterval:	250
+session.forcePseudoTransparency:	false
+session.groupFile:	~/.fluxbox/groups
+session.ignoreBorder:	false
+session.imageDither:	True
+session.keyFile:	~/.fluxbox/keys
+session.menuFile:	~/.fluxbox/menu
+session.modKey:	Mod1
+session.opaqueMove:	False
+session.slitlistFile:	~/.fluxbox/slitlist
+session.styleFile:	/usr/share/fluxbox/styles/Penguins
+session.styleOverlay:	~/.fluxbox/overlay
+session.tabPadding:	0
+session.tabsAttachArea:	Window
+
+ */
+
+typedef struct {
+	char *rcfile;			/* rcfile */
+	char *udir;			/* user directory */
+	char *pdir;			/* private directory */
+	char *sdir;			/* system directory */
+} FluxboxConfig;
+
+static FluxboxStyle *styles = NULL;
+static FluxboxConfig config;
+
+static void
+initrcfile_FLUXBOX()
+{
+	const char *home = getenv("HOME") ? : ".";
+	const char *file = NULL;
+	char *pos;
+	int i, len;
+	struct stat st;
+
+	for (i = 0; i < cargc - 1; i++)
+		if (!strcmp(cargv[i], "-rc"))
+			file = cargv[i + 1];
+
+	free(config.rcfile);
+	if (file) {
+		if (*file == '/')
+			config.rcfile = strdup(file);
+		else {
+			len = strlen(home) + strlen(file) + 2;
+			config.rcfile = ecalloc(len, sizeof(*config.rcfile));
+			strcpy(config.rcfile, home);
+			strcat(config.rcfile, "/");
+			strcat(config.rcfile, file);
+		}
+	} else {
+		len = strlen(home) + strlen("/.fluxbox/init") + 1;
+		config.rcfile = ecalloc(len, sizeof(*config.rcfile));
+		strcpy(config.rcfile, home);
+		strcat(config.rcfile, "/.fluxbox/init");
+		if (!lstat(config.rcfile, &st) && S_ISLNK(st.st_mode)) {
+			char *buf = ecalloc(PATH_MAX + 1, sizeof(*buf));
+			if (readlink(config.rcfile, buf, PATH_MAX) == -1)
+				eprint("%s: %s\n", config.rcfile, strerror(errno));
+			if (*buf == '/') {
+				free(config.rcfile);
+				config.rcfile = strdup(buf);
+			} else if (*buf) {
+				free(config.rcfile);
+				len = strlen(home) + strlen(buf) + 2;
+				config.rcfile = ecalloc(len, sizeof(*config.rcfile));
+				strcpy(config.rcfile, home);
+				strcat(config.rcfile, "/");
+				strcat(config.rcfile, buf);
+			}
+			free(buf);
+		}
+	}
+	free(config.pdir);
+	config.pdir = strdup(config.rcfile);
+	if ((pos = strrchr(config.pdir, '/')))
+		*pos = '\0';
+	free(config.udir);
+	config.udir =
+	    ecalloc(strlen(home) + strlen("/.fluxbox") + 1, sizeof(*config.udir));
+	strcpy(config.udir, home);
+	strcat(config.udir, "/.fluxbox");
+	free(config.sdir);
+	config.sdir = strdup("/usr/share/fluxbox");
+	if (!strncmp(home, config.pdir, strlen(home))) {
+		free(config.pdir);
+		config.pdir = strdup(config.udir);
+	}
+
+	styles = ecalloc(nscr, sizeof(*styles));
+}
+
+static XrmDatabase xconfigdb;
+static XrmDatabase xstyledb;
+
+static FluxboxSession session;
+
+static void
+initconfig_FLUXBOX(void)
+{
+	const char *res;
+	FluxboxScreen *screen;
+	char name[256], clas[256], *n, *c;
+	size_t nlen, clen;
+
+	/* Note: called once for each managed screen */
+	xresdb = xconfigdb;
+
+	if (!session.screens) {
+		res = readres("session.autoRaiseDelay", "Session.AutoRaiseDelay", "250");
+		session.autoRaiseDelay = strtoul(res, NULL, 0);
+		res = readres("session.cacheLife", "Session.CacheLife", "5");
+		session.cacheLife = strtoul(res, NULL, 0);
+		res = readres("session.cacheMax", "Session.CacheMax", "200");
+		session.cacheMax = strtoul(res, NULL, 0);
+		res = readres("session.colorsPerChannel", "Session.ColorsPerChannel", "4");
+		session.colorsPerChannel = strtoul(res, NULL, 0);
+		res = readres("session.doubleClickInterval", "Session.DoubleClickInterval", "250");
+		session.doubleClickInterval = strtoul(res, NULL, 0);
+		getbool("session.forcePseudoTransparency",
+				"Session.ForcePseudoTransparency", NULL, False,
+				&session.forcePseudoTransparency);
+		getbool("session.ignoreBorder", "Session.IgnoreBorder", NULL,
+				False, &session.ignoreBorder);
+		res = readres("session.tabPadding", "Session.TabPadding", "0");
+		session.tabPadding = strtoul(res, NULL, 0);
+		res = readres("session.tabsAttachArea", "Session.TabsAttachArea", "Window");
+		session.tabsAttachArea = AttachAreaWindow;
+		if (strcasestr(res, "window"))
+			session.tabsAttachArea = AttachAreaWindow;
+		if (strcasestr(res, "titlebar"))
+			session.tabsAttachArea = AttachAreaTitlebar;
+#if 0
+		/* TODO: do more with these */
+		res = readres("session.titlebar.left",
+				"Session.Titlebar.Left", "stick");
+		session.titlebar.left = res;
+		res = readres("session.titlebar.right",
+				"Session.Titlebar.Right", "shade minimize maximize close");
+		session.titlebar.right = res;
+#endif
+		res = readres("session.appsFile", "Session.AppsFile", "~/.fluxbox/apps");
+		session.appsFile = res;
+		res = readres("session.groupFile", "Session.GroupFile", "~/.fluxbox/groups");
+		session.groupFile = res;
+		res = readres("session.keyFile", "Session.KeyFile", "~/.fluxbox/keys");
+		session.keyFile = res;
+		res = readres("session.menuFile", "Session.MenuFile", "~/.fluxbox/menu");
+		session.menuFile = res;
+		res = readres("session.slitlistFile", "Session.SlitlistFile", "~/.fluxbox/slitlist");
+		session.slitlistFile = res;
+		res = readres("session.styleFile", "Session.StyleFile", "/usr/share/fluxbox/styles/bloe");
+		session.styleFile = res;
+		res = readres("session.styleOverlay", "Session.StyleOverlay", "~/.fluxbox/overlay");
+		session.styleOverlay = res;
+
+		res = readres("session.modKey", "Session.ModKey", "Mod1");
+		session.modKey = Mod1Mask;
+		if (!strcasecmp(res, "mod1"))
+			session.modKey = Mod1Mask;
+		if (!strcasecmp(res, "mod4"))
+			session.modKey = Mod4Mask;
+		if (!strcasecmp(res, "shift"))
+			session.modKey = ShiftMask;
+		if (!strcasecmp(res, "control"))
+			session.modKey = ControlMask;
+		getbool("session.imageDither", "Session.ImageDither", NULL, False, &session.imageDither);
+		res = readres("session.configVersion", "Session.ConfigVersion", "13");
+		session.configVersion = res;
+		getbool("session.opaqueMove", "Session.OpaqueMove", NULL, True, &session.opaqueMove);
+	}
+
+	session.screens =
+		erealloc(session.screens, (scr->screen + 1) * sizeof(*session.screens));
+	screen = session.screens + scr->screen;
+	memset(screen, 0, sizeof(*screen));
+	snprintf(name, sizeof(name), "session.screen%d.", scr->screen);
+	n = name + strlen(name);
+	nlen = sizeof(name) - strlen(name);
+	snprintf(clas, sizeof(clas), "Session.Screen%d.", scr->screen);
+	c = clas + strlen(clas);
+	clen = sizeof(clas) - strlen(clas);
+
+	snprintf(n, nlen, "window.focus.alpha");
+	snprintf(c, clen, "Window.Focus.Alpha");
+	res = readres(n, c, "255");
+	screen->window.focus.alpha = strtoul(res, NULL, 0);
+
+	snprintf(n, nlen, "window.unfocus.alpha");
+	snprintf(c, clen, "Window.Unfocus.Alpha");
+	res = readres(n, c, "255");
+	screen->window.unfocus.alpha = strtoul(res, NULL, 0);
+
+	snprintf(n, nlen, "menu.alpha");
+	snprintf(c, clen, "Menu.Alpha");
+	res = readres(n, c, "255");
+	screen->menu.alpha = strtoul(res, NULL, 0);
+
+	snprintf(n, nlen, "slit.autoHide");
+	snprintf(c, clen, "Slit.AutoHide");
+	getbool(n, c, NULL, False, &screen->slit.autoHide);
+
+	snprintf(n, nlen, "slit.layer");
+	snprintf(c, clen, "Slit.Layer");
+	res = readres(n, c, "Dock");
+	screen->slit.layer = LayerDock;
+	if (!strcasecmp(res, "above dock"))
+		screen->slit.layer = LayerAboveDock;
+	if (!strcasecmp(res, "dock"))
+		screen->slit.layer = LayerDock;
+	if (!strcasecmp(res, "top"))
+		screen->slit.layer = LayerTop;
+	if (!strcasecmp(res, "normal"))
+		screen->slit.layer = LayerNormal;
+	if (!strcasecmp(res, "bottom"))
+		screen->slit.layer = LayerBottom;
+	if (!strcasecmp(res, "desktop"))
+		screen->slit.layer = LayerDesktop;
+
+	snprintf(n, nlen, "slit.placement");
+	snprintf(c, clen, "Slit.Placement");
+	res = readres(n, c, "RightBottom");
+	screen->slit.placement = PlaceRightBottom;
+	if (strcasestr(res, "bottomleft"))
+		screen->slit.placement = PlaceBottomLeft;
+	if (strcasestr(res, "bottomcenter"))
+		screen->slit.placement = PlaceBottomCenter;
+	if (strcasestr(res, "bottomright"))
+		screen->slit.placement = PlaceBottomRight;
+	if (strcasestr(res, "leftbottom"))
+		screen->slit.placement = PlaceLeftBottom;
+	if (strcasestr(res, "leftcenter"))
+		screen->slit.placement = PlaceLeftCenter;
+	if (strcasestr(res, "lefttop"))
+		screen->slit.placement = PlaceLeftTop;
+	if (strcasestr(res, "rightbottom"))
+		screen->slit.placement = PlaceRightBottom;
+	if (strcasestr(res, "rightcenter"))
+		screen->slit.placement = PlaceRightCenter;
+	if (strcasestr(res, "righttop"))
+		screen->slit.placement = PlaceRightTop;
+	if (strcasestr(res, "topleft"))
+		screen->slit.placement = PlaceTopLeft;
+	if (strcasestr(res, "topcenter"))
+		screen->slit.placement = PlaceTopCenter;
+	if (strcasestr(res, "topright"))
+		screen->slit.placement = PlaceTopRight;
+
+	snprintf(n, nlen, "slit.maxOver");
+	snprintf(c, clen, "Slit.MaxOver");
+	getbool(n, c, NULL, False, &screen->slit.maxOver);
+
+	snprintf(n, nlen, "slit.onhead");
+	snprintf(c, clen, "Slit.Onhead");
+	res = readres(n, c, "0");
+	screen->slit.onhead = strtoul(res, NULL, 0);
+
+	snprintf(n, nlen, "slit.acceptKdeDockapps");
+	snprintf(c, clen, "Slit.AcceptKdeDockapps");
+	getbool(n, c, NULL, False, &screen->slit.acceptKdeDockapps);
+
+	snprintf(n, nlen, "slit.alpha");
+	snprintf(c, clen, "Slit.Alpha");
+	res = readres(n, c, "255");
+	screen->slit.alpha = strtoul(res, NULL, 0);
+
+	snprintf(n, nlen, "slit.direction");
+	snprintf(c, clen, "Slit.Direction");
+	res = readres(n, c, "Vertical");
+	screen->slit.direction = DirectionVertical;
+	if (strcasestr(res, "vertical"))
+		screen->slit.direction = DirectionVertical;
+	if (strcasestr(res, "horizontal"))
+		screen->slit.direction = DirectionHorizontal;
+
+	snprintf(n, nlen, "slit.onTop");
+	snprintf(c, clen, "Slit.OnTop");
+	getbool(n, c, NULL, False, &screen->slit.onTop);
+
+
+	snprintf(n, nlen, "toolbar.alpha");
+	snprintf(c, clen, "Toolbar.Alpha");
+	res = readres(n, c, "255");
+	screen->toolbar.alpha = strtoul(res, NULL, 0);
+
+	snprintf(n, nlen, "toolbar.autoHide");
+	snprintf(c, clen, "Toolbar.AutoHide");
+	getbool(n, c, NULL, False, &screen->toolbar.autoHide);
+
+	snprintf(n, nlen, "toolbar.layer");
+	snprintf(c, clen, "Toolbar.Layer");
+	res = readres(n, c, "Dock");
+	screen->toolbar.layer = LayerDock;
+	if (!strcasecmp(res, "above dock"))
+		screen->toolbar.layer = LayerAboveDock;
+	if (!strcasecmp(res, "dock"))
+		screen->toolbar.layer = LayerDock;
+	if (!strcasecmp(res, "top"))
+		screen->toolbar.layer = LayerTop;
+	if (!strcasecmp(res, "normal"))
+		screen->toolbar.layer = LayerNormal;
+	if (!strcasecmp(res, "bottom"))
+		screen->toolbar.layer = LayerBottom;
+	if (!strcasecmp(res, "desktop"))
+		screen->toolbar.layer = LayerDesktop;
+
+	snprintf(n, nlen, "toolbar.placement");
+	snprintf(c, clen, "Toolbar.Placement");
+	res = readres(n, c, "BottomCenter");
+	screen->toolbar.placement = PlaceBottomCenter;
+	if (strcasestr(res, "bottomleft"))
+		screen->toolbar.placement = PlaceBottomLeft;
+	if (strcasestr(res, "bottomcenter"))
+		screen->toolbar.placement = PlaceBottomCenter;
+	if (strcasestr(res, "bottomright"))
+		screen->toolbar.placement = PlaceBottomRight;
+	if (strcasestr(res, "leftbottom"))
+		screen->toolbar.placement = PlaceLeftBottom;
+	if (strcasestr(res, "leftcenter"))
+		screen->toolbar.placement = PlaceLeftCenter;
+	if (strcasestr(res, "lefttop"))
+		screen->toolbar.placement = PlaceLeftTop;
+	if (strcasestr(res, "rightbottom"))
+		screen->toolbar.placement = PlaceRightBottom;
+	if (strcasestr(res, "rightcenter"))
+		screen->toolbar.placement = PlaceRightCenter;
+	if (strcasestr(res, "righttop"))
+		screen->toolbar.placement = PlaceRightTop;
+	if (strcasestr(res, "topleft"))
+		screen->toolbar.placement = PlaceTopLeft;
+	if (strcasestr(res, "topcenter"))
+		screen->toolbar.placement = PlaceTopCenter;
+	if (strcasestr(res, "topright"))
+		screen->toolbar.placement = PlaceTopRight;
+
+	snprintf(n, nlen, "toolbar.maxOver");
+	snprintf(c, clen, "Toolbar.MaxOver");
+	getbool(n, c, NULL, False, &screen->toolbar.maxOver);
+
+	snprintf(n, nlen, "toolbar.height");
+	snprintf(c, clen, "Toolbar.Height");
+	res = readres(n, c, "0");
+	screen->toolbar.height = strtoul(res, NULL, 0);
+
+	snprintf(n, nlen, "toolbar.visible");
+	snprintf(c, clen, "Toolbar.Visible");
+	getbool(n, c, NULL, True, &screen->toolbar.visible);
+
+	snprintf(n, nlen, "toolbar.widthPercent");
+	snprintf(c, clen, "Toolbar.WidthPercent");
+	res = readres(n, c, "100");
+	screen->toolbar.widthPercent = strtoul(res, NULL, 0);
+
+	snprintf(n, nlen, "toolbar.tools");
+	snprintf(c, clen, "Toolbar.Tools");
+	res = readres(n, c, "workspacename, prevworkspace, nextworkspace, iconbar, prevwindow, nextwindow, systemtray, clock");
+	screen->toolbar.tools = res;
+
+	snprintf(n, nlen, "toolbar.onhead");
+	snprintf(c, clen, "Toolbar.Onhead");
+	res = readres(n, c, "1");
+	screen->toolbar.onhead = strtoul(res, NULL, 0);
+
+	snprintf(n, nlen, "toolbar.onTop");
+	snprintf(c, clen, "Toolbar.OnTop");
+	getbool(n, c, NULL, True, &screen->toolbar.onTop);
+
+	snprintf(n, nlen, "tabs.maxOver");
+	snprintf(c, clen, "Tabs.MaxOver");
+	getbool(n, c, NULL, True, &screen->tabs.maxOver);
+
+	snprintf(n, nlen, "tabs.intitlebar");
+	snprintf(c, clen, "Tabs.Intitlebar");
+	getbool(n, c, NULL, True, &screen->tabs.intitlebar);
+
+	snprintf(n, nlen, "tabs.usePixmap");
+	snprintf(c, clen, "Tabs.UsePixmap");
+	getbool(n, c, NULL, True, &screen->tabs.usePixmap);
+
+	snprintf(n, nlen, "iconbar.pattern");
+	snprintf(c, clen, "Iconbar.Pattern");
+	res = readres(n, c, "");
+	screen->iconbar.pattern = res;
+
+	snprintf(n, nlen, "iconbar.mode");
+	snprintf(c, clen, "Iconbar.Mode");
+	res = readres(n, c, "{static groups} (workspace)");
+	screen->iconbar.mode = res;
+
+	snprintf(n, nlen, "iconbar.usePixmap");
+	snprintf(c, clen, "Iconbar.UsePixmap");
+	getbool(n, c, NULL, True, &screen->iconbar.usePixmap);
+
+	snprintf(n, nlen, "iconbar.iconTextPadding");
+	snprintf(c, clen, "Iconbar.IconTextPadding");
+	res = readres(n, c, "10");
+	screen->iconbar.iconTextPadding = strtoul(res, NULL, 0);
+
+	snprintf(n, nlen, "iconbar.alignment");
+	snprintf(c, clen, "Iconbar.Alignment");
+	res = readres(n, c, "AlignLeft");
+	screen->iconbar.alignment = AlignRelative;
+	if (strcasestr(res, "left"))
+		screen->iconbar.alignment = AlignLeft;
+	if (strcasestr(res, "relative"))
+		screen->iconbar.alignment = AlignRelative;
+	if (strcasestr(res, "right"))
+		screen->iconbar.alignment = AlignRight;
+
+	snprintf(n, nlen, "iconbar.iconWidth");
+	snprintf(c, clen, "Iconbar.IconWidth");
+	res = readres(n, c, "128");
+	screen->iconbar.iconWidth = strtoul(res, NULL, 0);
+
+	snprintf(n, nlen, "iconbar.wheelMode");
+	snprintf(c, clen, "Iconbar.WheelMode");
+	res = readres(n, c, "Screen");
+	screen->iconbar.wheelMode = res;
+
+	snprintf(n, nlen, "overlay.capStyle");
+	snprintf(c, clen, "Overlay.CapStyle");
+	res = readres(n, c, "");
+	screen->overlay.capStyle = res;
+
+	snprintf(n, nlen, "overlay.joinStyle");
+	snprintf(c, clen, "Overlay.JoinStyle");
+	res = readres(n, c, "");
+	screen->overlay.joinStyle = res;
+
+	snprintf(n, nlen, "overlay.lineStyle");
+	snprintf(c, clen, "Overlay.LineStyle");
+	res = readres(n, c, "");
+	screen->overlay.lineStyle = res;
+
+	snprintf(n, nlen, "overlay.lineWidth");
+	snprintf(c, clen, "Overlay.LineWidth");
+	res = readres(n, c, "");
+	screen->overlay.lineWidth = res;
+
+	snprintf(n, nlen, "tab.placement");
+	snprintf(c, clen, "Tab.Placement");
+	res = readres(n, c, "TopLeft");
+	screen->tab.placement = PlaceTopLeft;
+	if (strcasestr(res, "bottomleft"))
+		screen->tab.placement = PlaceBottomLeft;
+	if (strcasestr(res, "bottomcenter"))
+		screen->tab.placement = PlaceBottomCenter;
+	if (strcasestr(res, "bottomright"))
+		screen->tab.placement = PlaceBottomRight;
+	if (strcasestr(res, "leftbottom"))
+		screen->tab.placement = PlaceLeftBottom;
+	if (strcasestr(res, "leftcenter"))
+		screen->tab.placement = PlaceLeftCenter;
+	if (strcasestr(res, "lefttop"))
+		screen->tab.placement = PlaceLeftTop;
+	if (strcasestr(res, "rightbottom"))
+		screen->tab.placement = PlaceRightBottom;
+	if (strcasestr(res, "rightcenter"))
+		screen->tab.placement = PlaceRightCenter;
+	if (strcasestr(res, "righttop"))
+		screen->tab.placement = PlaceRightTop;
+	if (strcasestr(res, "topleft"))
+		screen->tab.placement = PlaceTopLeft;
+	if (strcasestr(res, "topcenter"))
+		screen->tab.placement = PlaceTopCenter;
+	if (strcasestr(res, "topright"))
+		screen->tab.placement = PlaceTopRight;
+
+	snprintf(n, nlen, "tab.width");
+	snprintf(c, clen, "Tab.Width");
+	res = readres(n, c, "64");
+	screen->tab.width = strtoul(res, NULL, 0);
+
+	snprintf(n, nlen, "tab.height");
+	snprintf(c, clen, "Tab.Height");
+	res = readres(n, c, "0");
+	screen->tab.height = strtoul(res, NULL, 0);
+
+	snprintf(n, nlen, "titlebar.left");
+	snprintf(c, clen, "Titlebar.Left");
+	res = readres(n, c, "FIXME");
+	screen->titlebar.left = res;
+
+	snprintf(n, nlen, "titlebar.right");
+	snprintf(c, clen, "Titlebar.Right");
+	res = readres(n, c, "FIXME");
+	screen->titlebar.right = res;
+
+	snprintf(n, nlen, "strftimeFormat");
+	snprintf(c, clen, "StrftimeFormat");
+	res = readres(n, c, "%k:%M");
+	screen->strftimeFormat = res;
+
+	snprintf(n, nlen, "autoRaise");
+	snprintf(c, clen, "AutoRaise");
+	getbool(n, c, NULL, True, &screen->autoRaise);
+
+	snprintf(n, nlen, "clickRaises");
+	snprintf(c, clen, "ClickRaises");
+	getbool(n, c, NULL, True, &screen->clickRaises);
+
+	snprintf(n, nlen, "workspacewarping");
+	snprintf(c, clen, "Workspacewarping");
+	getbool(n, c, NULL, True, &screen->workspacewarping);
+
+	snprintf(n, nlen, "showwindowposition");
+	snprintf(c, clen, "Showwindowposition");
+	getbool(n, c, NULL, False, &screen->showwindowposition);
+
+	snprintf(n, nlen, "defaultDeco");
+	snprintf(c, clen, "DefaultDeco");
+	res = readres(n, c, "NORMAL");
+	screen->defaultDeco = DecoNormal;
+	if (!strcasecmp(res, "normal"))
+		screen->defaultDeco = DecoNormal;
+	if (!strcasecmp(res, "none"))
+		screen->defaultDeco = DecoNone;
+	if (!strcasecmp(res, "border"))
+		screen->defaultDeco = DecoBorder;
+	if (!strcasecmp(res, "tab"))
+		screen->defaultDeco = DecoTab;
+	if (!strcasecmp(res, "tiny"))
+		screen->defaultDeco = DecoTiny;
+	if (!strcasecmp(res, "tool"))
+		screen->defaultDeco = DecoTool;
+
+	snprintf(n, nlen, "menuDelay");
+	snprintf(c, clen, "MenuDelay");
+	res = readres(n, c, "200");
+	screen->menuDelay = strtoul(res, NULL, 0);
+
+	snprintf(n, nlen, "menuDelayClose");
+	snprintf(c, clen, "MenuDelayClose");
+	res = readres(n, c, NULL);
+	if (res)
+		screen->menuDelayClose = strtoul(res, NULL, 0);
+	else
+		screen->menuDelayClose = screen->menuDelay;
+
+	snprintf(n, nlen, "menuMode");
+	snprintf(c, clen, "MenuMode");
+	res = readres(n, c, "FIXME");
+	screen->menuMode = res;
+
+	snprintf(n, nlen, "focusNewWindows");
+	snprintf(c, clen, "FocusNewWindows");
+	getbool(n, c, NULL, True, &screen->focusNewWindows);
+
+	snprintf(n, nlen, "workspaceNames");
+	snprintf(c, clen, "WorkspaceNames");
+	res = readres(n, c, "Workspace 1, Workspace 2, Workspace 3, Workspace 4");
+	screen->workspaceNames = res;
+
+	snprintf(n, nlen, "edgeSnapThreshold");
+	snprintf(c, clen, "EdgeSnapThreshold");
+	res = readres(n, c, "10");
+	screen->edgeSnapThreshold = strtoul(res, NULL, 0);
+
+	snprintf(n, nlen, "windowPlacement");
+	snprintf(c, clen, "WindowPlacement");
+	res = readres(n, c, "RowSmartPlacement");
+	screen->windowPlacement = PlacementRowSmart;
+	if (strcasestr(res, "rowsmartplacement"))
+		screen->windowPlacement = PlacementRowSmart;
+	if (strcasestr(res, "colsmartplacement"))
+		screen->windowPlacement = PlacementColSmart;
+	if (strcasestr(res, "cascadeplacement"))
+		screen->windowPlacement = PlacementCascade;
+	if (strcasestr(res, "undermouseplacement"))
+		screen->windowPlacement = PlacementUnderMouse;
+
+	snprintf(n, nlen, "rowPlacementDirection");
+	snprintf(c, clen, "RowPlacementDirection");
+	res = readres(n, c, "LeftToRight");
+	screen->rowPlacementDirection = PlaceLeftToRight;
+	if (strcasestr(res, "lefttoright"))
+		screen->rowPlacementDirection = PlaceLeftToRight;
+	if (strcasestr(res, "righttoleft"))
+		screen->rowPlacementDirection = PlaceRightToLeft;
+
+	snprintf(n, nlen, "colPlacementDirection");
+	snprintf(c, clen, "ColPlacementDirection");
+	res = readres(n, c, "TopToBottom");
+	screen->colPlacementDirection = PlaceTopToBottom;
+	if (strcasestr(res, "toptobottom"))
+		screen->colPlacementDirection = PlaceTopToBottom;
+	if (strcasestr(res, "bottomtotop"))
+		screen->colPlacementDirection = PlaceBottomToTop;
+
+	snprintf(n, nlen, "fullMaximization");
+	snprintf(c, clen, "FullMaximization");
+	getbool(n, c, NULL, False, &screen->fullMaximization);
+
+	snprintf(n, nlen, "opaqueMove");
+	snprintf(c, clen, "OpaqueMove");
+	getbool(n, c, NULL, True, &screen->opaqueMove);
+
+	snprintf(n, nlen, "workspaces");
+	snprintf(c, clen, "Workspaces");
+	res = readres(n, c, "4");
+	screen->workspaces = strtoul(res, NULL, 0);
+
+	snprintf(n, nlen, "windowMenu");
+	snprintf(c, clen, "WindowMenu");
+	res = readres(n, c, "~/.fluxbox/windowmenu");
+	screen->windowMenu = res;
+
+	snprintf(n, nlen, "allowRemoteActions");
+	snprintf(c, clen, "AllowRemoteActions");
+	getbool(n, c, NULL, False, &screen->allowRemoteActions);
+
+	snprintf(n, nlen, "clientMenu.usePixmap");
+	snprintf(c, clen, "ClientMenu.UsePixmap");
+	getbool(n, c, NULL, True, &screen->clientMenu.usePixmap);
+
+	snprintf(n, nlen, "decorateTransient");
+	snprintf(c, clen, "DecorateTransient");
+	getbool(n, c, NULL, True, &screen->decorateTransient);
+
+	snprintf(n, nlen, "demandsAttentionTimeout");
+	snprintf(c, clen, "DemandsAttentionTimeout");
+	res = readres(n, c, "500");
+	screen->demandsAttentionTimeout = strtoul(res, NULL, 0);
+
+	snprintf(n, nlen, "desktopwheeling");
+	snprintf(c, clen, "Desktopwheeling");
+	getbool(n, c, NULL, True, &screen->desktopwheeling);
+
+	snprintf(n, nlen, "focusLastWindow");
+	snprintf(c, clen, "FocusLastWindow");
+	getbool(n, c, NULL, True, &screen->focusLastWindow);
+
+	snprintf(n, nlen, "focusModel");
+	snprintf(c, clen, "FocusModel");
+	res = readres(n, c, "ClickToFocus");
+	screen->focusModel = FocusModelClickToFocus;
+	if (strcasestr(res, "clicktofocus"))
+		screen->focusModel = FocusModelClickToFocus;
+	if (strcasestr(res, "mousefocus"))
+		screen->focusModel = FocusModelMouseFocus;
+	if (strcasestr(res, "strictmousefocus"))
+		screen->focusModel = FocusModelStrictMouseFocus;
+
+	snprintf(n, nlen, "focusSameHead");
+	snprintf(c, clen, "FocusSameHead");
+	getbool(n, c, NULL, False, &screen->focusSameHead);
+
+	snprintf(n, nlen, "imageDither");
+	snprintf(c, clen, "ImageDither");
+	getbool(n, c, NULL, True, &screen->imageDither);
+
+	snprintf(n, nlen, "maxDisableMove");
+	snprintf(c, clen, "MaxDisableMove");
+	getbool(n, c, NULL, False, &screen->maxDisableMove);
+
+	snprintf(n, nlen, "maxDisableResize");
+	snprintf(c, clen, "MaxDisableResize");
+	getbool(n, c, NULL, False, &screen->maxDisableResize);
+
+	snprintf(n, nlen, "maxIgnoreIncrement");
+	snprintf(c, clen, "MaxIgnoreIncrement");
+	getbool(n, c, NULL, False, &screen->maxIgnoreIncrement);
+
+	snprintf(n, nlen, "noFocusWhileTypingDelay");
+	snprintf(c, clen, "NoFocusWhileTypingDelay");
+	res = readres(n, c, "0");
+	screen->noFocusWhileTypingDelay = strtoul(res, NULL, 0);
+
+	snprintf(n, nlen, "resizeMode");
+	snprintf(c, clen, "ResizeMode");
+	res = readres(n, c, "Bottom");
+	screen->resizeMode = res;
+
+	snprintf(n, nlen, "reversewheeling");
+	snprintf(c, clen, "Reversewheeling");
+	getbool(n, c, NULL, False, &screen->reversewheeling);
+
+	snprintf(n, nlen, "rootCommand");
+	snprintf(c, clen, "RootCommand");
+	res = readres(n, c, "");
+	screen->rootCommand = res;
+
+	snprintf(n, nlen, "tabFocusModel");
+	snprintf(c, clen, "TabFocusModel");
+	res = readres(n, c, "SloppyTabFocus");
+	screen->tabFocusModel = res;
+
+	snprintf(n, nlen, "tooltipDelay");
+	snprintf(c, clen, "TooltipDelay");
+	res = readres(n, c, "500");
+	screen->tooltipDelay = strtoul(res, NULL, 0);
+
+	snprintf(n, nlen, "userFollowModel");
+	snprintf(c, clen, "UserFollowModel");
+	res = readres(n, c, "Follow");
+	screen->userFollowModel = res;
+
+	snprintf(n, nlen, "windowScrollAction");
+	snprintf(c, clen, "WindowScrollAction");
+	res = readres(n, c, "");
+	screen->windowScrollAction = res;
+
+	snprintf(n, nlen, "windowScrollReverse");
+	snprintf(c, clen, "WindowScrollReverse");
+	getbool(n, c, NULL, False, &screen->windowScrollReverse);
+
+
+
+
+}
+
 static void
 initkeys_FLUXBOX(void)
 {
 }
-
-static FluxboxStyle *styles = NULL;
 
 static void
 initstyle_FLUXBOX(void)
@@ -131,6 +1143,7 @@ initstyle_FLUXBOX(void)
 	const char *res;
 	FluxboxStyle *style;
 
+	xresdb = xstyledb;
 	if (!styles)
 		styles = ecalloc(nscr, sizeof(*styles));
 	style = styles + scr->screen;
@@ -293,6 +1306,9 @@ drawclient_FLUXBOX(Client *c)
 
 AdwmOperations adwm_ops = {
 	.name = "fluxbox",
+	.clas = "Fluxbox",
+	.initrcfile = &initrcfile_FLUXBOX,
+	.initconfig = &initconfig_FLUXBOX,
 	.initkeys = &initkeys_FLUXBOX,
 	.initstyle = &initstyle_FLUXBOX,
 	.deinitstyle = &deinitstyle_FLUXBOX,

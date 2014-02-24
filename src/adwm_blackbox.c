@@ -1,4 +1,6 @@
 /* See COPYING file for copyright and license details. */
+#include <unistd.h>
+#include <errno.h>
 #include <regex.h>
 #include <ctype.h>
 #include <assert.h>
@@ -374,7 +376,15 @@ static const unsigned char close_bits[] = {
  *
  */
 
+typedef struct {
+	char *rcfile;			/* rcfile */
+	char *udir;			/* user directory */
+	char *pdir;			/* private directory */
+	char *sdir;			/* system directory */
+} BlackboxConfig;
+
 static BlackboxStyle *styles = NULL;
+static BlackboxConfig config;
 
 static void
 initkeys_BLACKBOX(void)
@@ -382,6 +392,9 @@ initkeys_BLACKBOX(void)
 }
 
 BlackboxSession session;
+
+static XrmDatabase xconfigdb;
+static XrmDatabase xstyledb;
 
 static void
 initconfig_BLACKBOX(void)
@@ -392,6 +405,7 @@ initconfig_BLACKBOX(void)
 	size_t nlen, clen;
 
 	/* NOTE: called once for each managed screen */
+	xresdb = xconfigdb;
 
 	if (!session.screens) {
 		getbool("session.imageDither", "Session.ImageDither", NULL, False,
@@ -430,6 +444,7 @@ initconfig_BLACKBOX(void)
 	session.screens =
 	    erealloc(session.screens, (scr->screen + 1) * sizeof(*session.screens));
 	screen = session.screens + scr->screen;
+	memset(screen, 0, sizeof(*screen));
 	snprintf(name, sizeof(name), "session.screen%d.", scr->screen);
 	n = name + strlen(name);
 	nlen = sizeof(name) - strlen(name);
@@ -605,12 +620,77 @@ initconfig_BLACKBOX(void)
 }
 
 static void
+initrcfile_BLACKBOX()
+{
+	const char *home = getenv("HOME") ? : ".";
+	const char *file = NULL;
+	char *pos;
+	int i, len;
+	struct stat st;
+
+	for (i = 0; i < cargc - 1; i++)
+		if (!strcmp(cargv[i], "-rc"))
+			file = cargv[i + 1];
+	free(config.rcfile);
+	if (file) {
+		if (*file == '/')
+			config.rcfile = strdup(file);
+		else {
+			len = strlen(home) + strlen(file) + 2;
+			config.rcfile = ecalloc(len, sizeof(*config.rcfile));
+			strcpy(config.rcfile, home);
+			strcat(config.rcfile, "/");
+			strcat(config.rcfile, file);
+		}
+	} else {
+		len = strlen(home) + strlen("/.blackboxrc") + 1;
+		config.rcfile = ecalloc(len, sizeof(*config.rcfile));
+		strcpy(config.rcfile, home);
+		strcat(config.rcfile, "/.blackboxrc");
+		if (!lstat(config.rcfile, &st) && S_ISLNK(st.st_mode)) {
+			char *buf = ecalloc(PATH_MAX + 1, sizeof(*buf));
+
+			if (readlink(config.rcfile, buf, PATH_MAX) == -1)
+				eprint("%s: %s\n", config.rcfile, strerror(errno));
+			if (*buf == '/') {
+				free(config.rcfile);
+				config.rcfile = strdup(buf);
+			} else if (*buf) {
+				free(config.rcfile);
+				len = strlen(home) + strlen(buf) + 2;
+				config.rcfile = ecalloc(len, sizeof(*config.rcfile));
+				strcpy(config.rcfile, home);
+				strcat(config.rcfile, "/");
+				strcat(config.rcfile, buf);
+			}
+			free(buf);
+		}
+	}
+	free(config.pdir);
+	config.pdir = strdup(config.rcfile);
+	if ((pos = strrchr(config.pdir, '/')))
+		*pos = '\0';
+	free(config.udir);
+	config.udir =
+	    ecalloc(strlen(home) + strlen("/.blackbox") + 1, sizeof(*config.udir));
+	strcpy(config.udir, home);
+	strcat(config.udir, "/.blackbox");
+	free(config.sdir);
+	config.sdir = strdup("/usr/share/blackbox");
+	if (!strncmp(home, config.pdir, strlen(home))) {
+		free(config.pdir);
+		config.pdir = strdup(config.udir);
+	}
+}
+
+static void
 initstyle_BLACKBOX(void)
 {
 	const char *res;
 	BlackboxStyle *style;
 
 	/* NOTE: called once for each managed screen */
+	xresdb = xstyledb;
 	if (!styles)
 		styles = ecalloc(nscr, sizeof(*styles));
 	style = styles + scr->screen;
@@ -760,6 +840,8 @@ drawclient_BLACKBOX(Client *c)
 
 AdwmOperations adwm_ops = {
 	.name = "blackbox",
+	.clas = "Blackbox",
+	.initrcfile = &initrcfile_BLACKBOX,
 	.initconfig = &initconfig_BLACKBOX,
 	.initkeys = &initkeys_BLACKBOX,
 	.initstyle = &initstyle_BLACKBOX,

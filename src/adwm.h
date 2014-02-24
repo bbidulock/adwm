@@ -702,6 +702,8 @@ struct Notify {
 
 typedef struct {
 	const char *name;
+	const char *clas;
+	void (*initrcfile)(void);
 	void (*initconfig)(void);
 	void (*initkeys)(void);
 	void (*initstyle)(void);

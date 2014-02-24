@@ -443,7 +443,7 @@ static OpenboxConfig config;
   * /usr/share/themes.
   */
 static void
-initconfig_OPENBOX()
+initrcfile_OPENBOX()
 {
 	const char *home = getenv("HOME") ? : ".";
 	const char *cnfg = getenv("XDG_CONFIG_HOME");
@@ -499,6 +499,11 @@ initconfig_OPENBOX()
 	*strrchr(config.udir, '/') = '\0';
 	free(config.sdir);
 	config.sdir = strdup("/usr/share/openbox");
+}
+
+static void
+initconfig_OPENBOX(void)
+{
 }
 
 static void
@@ -802,6 +807,8 @@ drawclient_OPENBOX(Client *c)
 
 AdwmOperations adwm_ops = {
 	.name = "openbox",
+	.clas = "Openbox",
+	.initrcfile = &initrcfile_OPENBOX,
 	.initconfig = &initconfig_OPENBOX,
 	.initkeys = &initkeys_OPENBOX,
 	.initstyle = &initstyle_OPENBOX,

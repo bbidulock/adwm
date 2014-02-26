@@ -7,7 +7,7 @@ bin_PROGRAMS = adwm
 adwm_SOURCES = draw.c adwm.c ewmh.c parse.c texture.c config.h adwm.h
 adwm_LDADD = $(IMLIB2_LIBS) $(XPM_LIBS) $(SN_LIBS) $(XINERAMA_LIBS) $(XSYNC_LIBS) $(XRANDR_LIBS) $(XFT_LIBS) $(X11_LIBS) -lm
 adwm_CPPFLAGS = $(AM_CPPFLAGS) -DSYSCONFPATH=\"$(pkgconfdir)\"
-adwm_LDFLAGS = -R $(adwmmoddir)
+adwm_LDFLAGS = -export-dynamic -R $(adwmmoddir) -ldl
 
 noinst_PROGRAMS = ewmhpanel
 

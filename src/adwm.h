@@ -307,6 +307,7 @@ typedef struct {
 	unsigned borderWidth;		/* borderWidth => 1 */
 	XColor backgroundColor;		/* backgroundColor => color => default color */
 	XColor foregroundColor;		/* foregroundColor => picColor => opposite color */
+	unsigned alpha;
 } Texture;
 
 typedef struct {
@@ -679,6 +680,18 @@ struct AScreen {
 	Style style;
 #ifdef IMLIB2
 	Imlib_Context context;
+#else
+	Visual *visual;
+	Colormap colormap;
+	unsigned int depth;
+	Bool dither;
+	unsigned int bpp;
+	unsigned char *rctab; /* red color table */
+	unsigned char *gctab; /* green color table */
+	unsigned char *bctab; /* blue color table */
+	XColor *colors;	/* colormap */
+	int ncolors; /* number of colors in colormap */
+	int cpc;
 #endif
 };
 
@@ -874,19 +887,6 @@ void deinitstyle();
 void initstyle();
 
 /* texture.c */
-void dgradient(Texture *t, unsigned width, unsigned height, ARGB *data);
-void egradient(Texture *t, unsigned width, unsigned height, ARGB *data);
-void hgradient(Texture *t, unsigned width, unsigned height, ARGB *data);
-void pgradient(Texture *t, unsigned width, unsigned height, ARGB *data);
-void rgradient(Texture *t, unsigned width, unsigned height, ARGB *data);
-void vgradient(Texture *t, XColor color, XColor colorTo, unsigned width,
-	       unsigned height, ARGB *data, unsigned fromHeight, unsigned toHeight);
-void cdgradient(Texture *t, unsigned width, unsigned height, ARGB *data);
-void pcgradient(Texture *t, unsigned width, unsigned height, ARGB *data);
-void svgradient(Texture *t, unsigned width, unsigned height, ARGB *data);
-void mhgradient(Texture *t, unsigned width, unsigned height, ARGB *data);
-void raisedBevel(Texture *t, unsigned width, unsigned height, ARGB *data);
-void sunkenBevel(Texture *t, unsigned width, unsigned height, ARGB *data);
 
 /* resource.c */
 const char *readres(const char *name, const char *clas, const char *defval);

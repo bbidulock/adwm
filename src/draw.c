@@ -18,56 +18,16 @@
 enum { Normal, Selected };
 enum { AlignLeft, AlignCenter, AlignRight };	/* title position */
 
-static unsigned int textnw(AScreen *ds, const char *text, unsigned int len, int hilite);
-static unsigned int textw(AScreen *ds, const char *text, int hilite);
+static unsigned int
+textnw(AScreen *ds, const char *text, unsigned int len, int hilite) {
+	XftTextExtentsUtf8(dpy, ds->style.font[hilite],
+	    (const unsigned char *) text, len, ds->dc.font[hilite].extents);
+	return ds->dc.font[hilite].extents->xOff;
+}
 
-static int
-drawtext(AScreen *ds, const char *text, Drawable drawable, XftDraw *xftdrawable,
-    unsigned long col[ColLast], int hilite, int x, int y, int mw) {
-	int w, h;
-	char buf[256];
-	unsigned int len, olen;
-	int drop, status;
-
-	if (!text)
-		return 0;
-	olen = len = strlen(text);
-	w = 0;
-	if (len >= sizeof buf)
-		len = sizeof buf - 1;
-	memcpy(buf, text, len);
-	buf[len] = 0;
-	h = ds->style.titleheight;
-	y = ds->dc.h / 2 + ds->dc.font[hilite].ascent / 2 - 1 - ds->style.outline;
-	x += ds->dc.font[hilite].height / 2;
-	/* shorten text if necessary */
-	while (len && (w = textnw(ds, buf, len, hilite)) > mw) {
-		buf[--len] = 0;
-	}
-	if (len < olen) {
-		if (len > 1)
-			buf[len - 1] = '.';
-		if (len > 2)
-			buf[len - 2] = '.';
-		if (len > 3)
-			buf[len - 3] = '.';
-	}
-	if (w > mw)
-		return 0;	/* too long */
-	while (x <= 0)
-		x = ds->dc.x++;
-	XSetForeground(dpy, ds->dc.gc, col[ColBG]);
-	XSetFillStyle(dpy, ds->dc.gc, FillSolid);
-	status = XFillRectangle(dpy, drawable, ds->dc.gc, x - ds->dc.font[hilite].height / 2, 0,
-	    w + ds->dc.font[hilite].height, h);
-	if (!status)
-		DPRINTF("Could not fill rectangle, error %d\n", status);
-	if ((drop = ds->style.drop[hilite]))
-		XftDrawStringUtf8(xftdrawable, ds->style.color.shadow[hilite], ds->style.font[hilite],
-		    x + drop, y + drop, (unsigned char *) buf, len);
-	XftDrawStringUtf8(xftdrawable, ds->style.color.font[hilite], ds->style.font[hilite],
-	    x, y, (unsigned char *) buf, len);
-	return w + ds->dc.font[hilite].height;
+static unsigned int
+textw(AScreen *ds, const char *text, int hilite) {
+	return textnw(ds, text, strlen(text), hilite) + ds->dc.font[hilite].height;
 }
 
 static ButtonImage *
@@ -205,6 +165,119 @@ buttonimage(AScreen *ds, Client *c, ElementType type)
 }
 
 static int
+buttonw(AScreen *ds, Client *c, ElementType type)
+{
+	ButtonImage *bi;
+
+	if (!(bi = buttonimage(ds, c, type)) || !bi->present)
+		return 0;
+	return bi->w + 2 * bi->b;
+}
+
+static ElementType
+elementtype(char which)
+{
+	switch (which) {
+	case 'I': return IconifyBtn;
+	case 'M': return MaximizeBtn;
+	case 'C': return CloseBtn;
+	case 'S': return ShadeBtn;
+	case 'A': return StickBtn;
+	case 'L': return LHalfBtn;
+	case 'R': return RHalfBtn;
+	case 'X': return FillBtn;
+	case 'F': return FloatBtn;
+	case 'Z': return SizeBtn;
+	case 'T': return TitleTags;
+	case 'N': return TitleName;
+	case '|': return TitleSep;
+	default:  return LastElement;
+	}
+}
+
+static int
+elementw(AScreen *ds, Client *c, char which)
+{
+	int w = 0;
+	ElementType type = elementtype(which);
+	int hilite = (c == sel) ? Selected : Normal;
+
+	if (0 > type || type >= LastElement)
+		return 0;
+
+	switch (type) {
+		unsigned int j;
+
+	case TitleName:
+		w = textw(ds, c->name, hilite);
+		break;
+	case TitleTags:
+		for (j = 0; j < ds->ntags; j++) {
+			if (c->tags & (1ULL<<j))
+				w += textw(ds, ds->tags[j], hilite);
+		}
+		break;
+	case TitleSep:
+		w = ds->dc.h / 2;
+		break;
+	default:
+		if (0 <= type && type < LastBtn)
+			w = buttonw(ds, c, type);
+		break;
+	}
+	return w;
+}
+
+static int
+drawtext(AScreen *ds, const char *text, Drawable drawable, XftDraw *xftdrawable,
+    unsigned long col[ColLast], int hilite, int x, int y, int mw) {
+	int w, h;
+	char buf[256];
+	unsigned int len, olen;
+	int drop, status;
+
+	if (!text)
+		return 0;
+	olen = len = strlen(text);
+	w = 0;
+	if (len >= sizeof buf)
+		len = sizeof buf - 1;
+	memcpy(buf, text, len);
+	buf[len] = 0;
+	h = ds->style.titleheight;
+	y = ds->dc.h / 2 + ds->dc.font[hilite].ascent / 2 - 1 - ds->style.outline;
+	x += ds->dc.font[hilite].height / 2;
+	/* shorten text if necessary */
+	while (len && (w = textnw(ds, buf, len, hilite)) > mw) {
+		buf[--len] = 0;
+	}
+	if (len < olen) {
+		if (len > 1)
+			buf[len - 1] = '.';
+		if (len > 2)
+			buf[len - 2] = '.';
+		if (len > 3)
+			buf[len - 3] = '.';
+	}
+	if (w > mw)
+		return 0;	/* too long */
+	while (x <= 0)
+		x = ds->dc.x++;
+	XSetForeground(dpy, ds->dc.gc, col[ColBG]);
+	XSetFillStyle(dpy, ds->dc.gc, FillSolid);
+	status = XFillRectangle(dpy, drawable, ds->dc.gc, x - ds->dc.font[hilite].height / 2, 0,
+	    w + ds->dc.font[hilite].height, h);
+	if (!status)
+		DPRINTF("Could not fill rectangle, error %d\n", status);
+	if ((drop = ds->style.drop[hilite]))
+		XftDrawStringUtf8(xftdrawable, ds->style.color.shadow[hilite], ds->style.font[hilite],
+		    x + drop, y + drop, (unsigned char *) buf, len);
+	XftDrawStringUtf8(xftdrawable, ds->style.color.font[hilite], ds->style.font[hilite],
+	    x, y, (unsigned char *) buf, len);
+	return w + ds->dc.font[hilite].height;
+}
+
+static int
 drawbutton(AScreen *ds, Client *c, ElementType type, unsigned long col[ColLast], int x)
 {
 	ElementClient *ec = &c->element[type];
@@ -243,27 +316,6 @@ drawbutton(AScreen *ds, Client *c, ElementType type, unsigned long col[ColLast],
 	}
 	XPRINTF("button %d has no pixmap or bitmap\n", type);
 	return 0;
-}
-
-static ElementType
-elementtype(char which)
-{
-	switch (which) {
-	case 'I': return IconifyBtn;
-	case 'M': return MaximizeBtn;
-	case 'C': return CloseBtn;
-	case 'S': return ShadeBtn;
-	case 'A': return StickBtn;
-	case 'L': return LHalfBtn;
-	case 'R': return RHalfBtn;
-	case 'X': return FillBtn;
-	case 'F': return FloatBtn;
-	case 'Z': return SizeBtn;
-	case 'T': return TitleTags;
-	case 'N': return TitleName;
-	case '|': return TitleSep;
-	default:  return LastElement;
-	}
 }
 
 static int
@@ -320,49 +372,6 @@ drawelement(AScreen *ds, char which, int x, int position, Client *c)
 				ec->g.b, c->name);
 	} else
 		XPRINTF("missing element '%c' for client %s\n", which, c->name);
-	return w;
-}
-
-static int
-buttonw(AScreen *ds, Client *c, ElementType type)
-{
-	ButtonImage *bi;
-
-	if (!(bi = buttonimage(ds, c, type)) || !bi->present)
-		return 0;
-	return bi->w + 2 * bi->b;
-}
-
-static int
-elementw(AScreen *ds, Client *c, char which)
-{
-	int w = 0;
-	ElementType type = elementtype(which);
-	int hilite = (c == sel) ? Selected : Normal;
-
-	if (0 > type || type >= LastElement)
-		return 0;
-
-	switch (type) {
-		unsigned int j;
-
-	case TitleName:
-		w = textw(ds, c->name, hilite);
-		break;
-	case TitleTags:
-		for (j = 0; j < ds->ntags; j++) {
-			if (c->tags & (1ULL<<j))
-				w += textw(ds, ds->tags[j], hilite);
-		}
-		break;
-	case TitleSep:
-		w = ds->dc.h / 2;
-		break;
-	default:
-		if (0 <= type && type < LastBtn)
-			w = buttonw(ds, c, type);
-		break;
-	}
 	return w;
 }
 
@@ -931,14 +940,3 @@ deinitstyle() {
 		XFreePixmap(dpy, scr->dc.draw.pixmap);
 }
 
-static unsigned int
-textnw(AScreen *ds, const char *text, unsigned int len, int hilite) {
-	XftTextExtentsUtf8(dpy, ds->style.font[hilite],
-	    (const unsigned char *) text, len, ds->dc.font[hilite].extents);
-	return ds->dc.font[hilite].extents->xOff;
-}
-
-static unsigned int
-textw(AScreen *ds, const char *text, int hilite) {
-	return textnw(ds, text, strlen(text), hilite) + ds->dc.font[hilite].height;
-}

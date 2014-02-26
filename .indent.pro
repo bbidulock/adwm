@@ -24,6 +24,7 @@
 -ss
 -hnl
 -nbc
+-TDrawable
 -TXColor
 -TXftColor
 -TXftFont

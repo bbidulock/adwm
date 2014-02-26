@@ -2235,7 +2235,8 @@ setfocus(Client *c)
 			ce.xclient.data.l[4] = 0l;
 			XSendEvent(dpy, c->win, False, NoEventMask, &ce);
 		}
-	}
+	} else
+		XSetInputFocus(dpy, PointerRoot, RevertToPointerRoot, CurrentTime);
 }
 
 void
@@ -8616,7 +8617,7 @@ unmanage(Client * c, WithdrawCause cause) {
 		XDeleteContext(dpy, c->grips, context[ClientGrips]);
 		XDeleteContext(dpy, c->grips, context[ClientAny]);
 		XDeleteContext(dpy, c->grips, context[ScreenContext]);
-		c->title = None;
+		c->grips = None;
 	}
 	if (cause != CauseDestroyed) {
 		XSelectInput(dpy, c->win, CLIENTMASK & ~MAPPINGMASK);

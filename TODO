@@ -4,3 +4,25 @@
 * fix focus problems
 * do code cleanup
 * ...
+
+* remove need for title and grips sub-windows and just draw these on the frame window.
+* add ability to have resize grips all the way around the window in DTWM/MWM/TWM/CTWM/VTWM fashion
+* use imlib2 to draw title and resize grips
+* use imlib2 to optimally update exposures on the frame
+* make imlib2 a prerequisite
+* convert layouts to tree format and support i3/herbstluftwm, bspwm and vim modes
+* apply tree format to floating windows and floating window placement.
+* use a freeform tree for mimic floating window placement
+* add ability to float from any layout without disturbing tree model for tiled layout
+* add a tree per layout type to the view
+* make layouts loadable modules
+* convert as many gradients as possible to use imlib2
+* display icons in title bar
+* add window menu
+* add root menu
+* add window list menu
+* add window cycle display
+* add desktop cycle display
+* add per-desktop (per-view) background
+* fixup restart behaviour
+* add session management

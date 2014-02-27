@@ -15,6 +15,7 @@ ewmhpanel_SOURCES = ewmhpanel.c util.c util.h
 ewmhpanel_LDADD = $(X11_LIBS) $(XFT_LIBS)
 
 adwmmod_LTLIBRARIES = \
+	adwm-adwm.la \
 	adwm-blackbox.la \
 	adwm-fluxbox.la \
 	adwm-icewm.la \
@@ -24,6 +25,11 @@ adwmmod_LTLIBRARIES = \
 	adwm-pekwm.la \
 	adwm-waimea.la \
 	adwm-wmaker.la
+
+adwm_adwm_la_CPPFLAGS = $(AM_CPPFLAGS) -DNAME=\"adwm-adwm\"
+adwm_adwm_la_SOURCES = adwm.h adwm_adwm.c
+adwm_adwm_la_LDFLAGS = -module -export-dynamic -release $(VERSION) -shared
+adwm_adwm_la_LIBADD = $(IMLIB2_LIBS) $(XPM_LIBS) $(XFT_LIBS) $(X11_LIBS) -lm
 
 adwm_blackbox_la_CPPFLAGS = $(AM_CPPFLAGS) -DNAME=\"adwm-blackbox\"
 adwm_blackbox_la_SOURCES = adwm.h adwm_blackbox.c

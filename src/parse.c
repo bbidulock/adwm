@@ -2044,17 +2044,19 @@ static const struct {
 };
 
 static KeyItem KeyItemsByTag[] = {
-	{"view", k_view},
-	{"toggleview", k_toggleview},
-	{"focusview", k_focusview},
-	{"tag", k_tag},
-	{"toggletag", k_toggletag},
-	{"taketo", k_taketo}
+	/* *INDENT-OFF* */
+	{"view",	k_view		},
+	{"toggleview",	k_toggleview	},
+	{"focusview",	k_focusview	},
+	{"tag",		k_tag		},
+	{"toggletag",	k_toggletag	},
+	{"taketo",	k_taketo	}
+	/* *INDENT-ON* */
 };
 
 #define CLEANMASK(mask) (mask & ~(numlockmask | LockMask))
 
-static void
+void
 k_chain(XEvent *e, Key *key)
 {
 	Key *k = NULL;
@@ -2126,7 +2128,7 @@ freekey(Key *k)
 	}
 }
 
-static void
+void
 freechain(Key *chain)
 {
 	Key *k, *knext, *c, *cnext;
@@ -2167,7 +2169,7 @@ mergechain(Key **kp, Key *k)
 		*lp = k;
 }
 
-static void
+void
 addchain(Key *k)
 {
 	Key **kp;

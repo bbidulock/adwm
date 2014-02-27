@@ -890,7 +890,10 @@ void settags(unsigned numtags);
 void initrules(void);
 void initkeys(void);
 void parsekeys(const char *s, Key *spec);
+void addchain(Key *chain);
+void freechain(Key *chain);
 
+void k_chain(XEvent *e, Key *k);
 void k_zoom(XEvent *e, Key *k);
 void k_killclient(XEvent *e, Key *k);
 void k_moveresizekb(XEvent *e, Key *k);

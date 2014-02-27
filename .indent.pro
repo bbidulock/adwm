@@ -24,6 +24,7 @@
 -ss
 -hnl
 -nbc
+-TKeyItem
 -TDrawable
 -TXColor
 -TXftColor

@@ -8030,7 +8030,10 @@ toggletag(Client *c, int index)
 	tags = c->tags;
 	tags ^= (index == -1) ? ((1ULL << scr->ntags) - 1) : (1ULL << index);
 	if (tags & ((1ULL << scr->ntags) - 1))
-		c->tags = tags;	/* at least one tag must be enabled */
+		c->tags = tags;
+	else if (c->curmon)
+		/* at least one tag must be enabled */
+		c->tags = (1ULL << c->curmon->curtag);
 	ewmh_update_net_window_desktop(c);
 	drawclient(c);
 	arrange(NULL);

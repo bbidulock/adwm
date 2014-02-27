@@ -59,7 +59,7 @@ typedef struct {
 			} focus, unfocus;
 			unsigned borderWidth;	/* => 1 */
 		} frame;
-		AdwmFont font;	/* no default? */
+		AdwmFont font;		/* no default? */
 		const char *alignment;	/* => 'left' */
 		unsigned handleHeight;	/* => 6 */
 	} window;
@@ -386,9 +386,1048 @@ typedef struct {
 static BlackboxStyle *styles = NULL;
 static BlackboxConfig config;
 
+static struct {
+	char *styleFile;
+	Bool honorModifiers;
+	Bool raiseWhileCycling;
+	Bool followWindowOnSend;
+	Bool includeIconifiedWindowsInCycle;
+	Bool showCycleMenu;
+	char *cycleMenuTitle;
+	Justify menuTextJustify;
+	Justify menuTitleJustify;
+	Bool autoConfig;
+	unsigned autoConfigCheckTimeout;
+	unsigned workspaceColumns;
+	unsigned workspaceRows;
+	unsigned cycleMenuX;
+	unsigned cycleMenuY;
+
+} keyoptions = { NULL, };
+
+static void
+o_stylefile(char *opt, char *key, char *val)
+{
+	/* Not applicable, we use the loaded blackbox style. */
+	keyoptions.styleFile = strdup(val);
+}
+
+static void
+o_honormods(char *opt, char *key, char *val)
+{
+	/* Whether or not to break if NumLock or ScrollLock is pressed.  For bbkeys to
+	   ignore your keybindings if NumLock or ScrollLock is pressed, set this to true. 
+	   (true or false) */
+	keyoptions.honorModifiers = False;
+	if (!strcasecmp(val, "true"))
+		keyoptions.honorModifiers = True;
+	if (!strcasecmp(val, "false"))
+		keyoptions.honorModifiers = False;
+}
+
+static void
+o_cycleraise(char *opt, char *key, char *val)
+{
+	/* Should bbkeys raise the windows you're cycling through while cycling through
+	   them? (true or false) */
+	keyoptions.raiseWhileCycling = False;
+	if (!strcasecmp(val, "true"))
+		keyoptions.raiseWhileCycling = True;
+	if (!strcasecmp(val, "false"))
+		keyoptions.raiseWhileCycling = False;
+}
+
+static void
+o_followsend(char *opt, char *key, char *val)
+{
+	/* Should bbkeys follows the window that you send to another workspace? This will 
+	   apply to all sendto operations such that if this is set to true, bbkeys will
+	   change workspaces to the workspace that you send the window to. (true or
+	   false) */
+	keyoptions.followWindowOnSend = False;
+	if (!strcasecmp(val, "true"))
+		keyoptions.followWindowOnSend = True;
+	if (!strcasecmp(val, "false"))
+		keyoptions.followWindowOnSend = False;
+}
+
+static void
+o_plusicons(char *opt, char *key, char *val)
+{
+	/* Should bbkeys include iconified windows in its window-cycling list? (true or
+	   false) */
+	keyoptions.includeIconifiedWindowsInCycle = False;
+	if (!strcasecmp(val, "true"))
+		keyoptions.includeIconifiedWindowsInCycle = True;
+	if (!strcasecmp(val, "false"))
+		keyoptions.includeIconifiedWindowsInCycle = False;
+}
+
+static void
+o_cyclemenu(char *opt, char *key, char *val)
+{
+	/* Show the window-cycling menu or cycle without it? (true or false) */
+	keyoptions.showCycleMenu = False;
+	if (!strcasecmp(val, "true"))
+		keyoptions.showCycleMenu = True;
+	if (!strcasecmp(val, "false"))
+		keyoptions.showCycleMenu = False;
+}
+
+static void
+o_menutitle(char *opt, char *key, char *val)
+{
+	/* Show the given string as the title of the window-cycling menu.  If an empty
+	   string is passed as the parameter to this config, then the title will not be
+	   drawn. (string value) */
+	keyoptions.cycleMenuTitle = strdup(val);
+}
+
+static void
+o_textjustify(char *opt, char *key, char *val)
+{
+	/* How should the window-cycling menu be justified? (left, center, right) */
+	keyoptions.menuTextJustify = JustifyLeft;
+	if (!strcasecmp(val, "left"))
+		keyoptions.menuTextJustify = JustifyLeft;
+	if (!strcasecmp(val, "right"))
+		keyoptions.menuTextJustify = JustifyRight;
+	if (!strcasecmp(val, "center"))
+		keyoptions.menuTextJustify = JustifyCenter;
+
+}
+
+static void
+o_titlejustify(char *opt, char *key, char *val)
+{
+	/* How should the window-cycling title be justified? (left, center, right) */
+	keyoptions.menuTitleJustify = JustifyCenter;
+	if (!strcasecmp(val, "left"))
+		keyoptions.menuTitleJustify = JustifyLeft;
+	if (!strcasecmp(val, "right"))
+		keyoptions.menuTitleJustify = JustifyRight;
+	if (!strcasecmp(val, "center"))
+		keyoptions.menuTitleJustify = JustifyCenter;
+}
+
+static void
+o_autoconfig(char *opt, char *key, char *val)
+{
+	/* Should bbkeys watch for changes to its config file? (true or false) Note: if
+	   you decide to not do this (though it should be VERY light on system
+	   resources), you can always force bbkeys to reconfigure itself by sending it a
+	   SIGHUP (killall -HUP bbkeys) */
+	keyoptions.autoConfig = False;
+	if (!strcasecmp(val, "true"))
+		keyoptions.autoConfig = True;
+	if (!strcasecmp(val, "false"))
+		keyoptions.autoConfig = False;
+}
+
+static void
+o_timeout(char *opt, char *key, char *val)
+{
+	/* How often should bbkeys check for changes made to its config file? (numeric
+	   number of seconds) */
+	keyoptions.autoConfigCheckTimeout = strtoul(val, NULL, 0);
+}
+
+static void
+o_desktopcols(char *opt, char *key, char *val)
+{
+	/* Number of columns that you have you workspaces laid out in your pager
+	   (numeric) */
+	keyoptions.workspaceColumns = strtoul(val, NULL, 0);
+}
+
+static void
+o_desktoprows(char *opt, char *key, char *val)
+{
+	/* Number of rows that you have you workspace/desktops laid out in (numeric).  As 
+	   a way of an example, if you have your pager laid out in a 4x2 grid (4 wide, 2
+	   high), then you would set workspaceColumns to 4 and workspaceRows to 2. */
+	keyoptions.workspaceRows = strtoul(val, NULL, 0);
+}
+
+static void
+o_menux(char *opt, char *key, char *val)
+{
+	/* Horizontal position that you want the window cycling menu to show up at.
+	   (numeric) */
+	keyoptions.cycleMenuX = strtoul(val, NULL, 0);
+}
+
+static void
+o_menuy(char *opt, char *key, char *val)
+{
+	/* Vertical position that you want the window cycling menu to show up at.
+	   (numeric) Note: bbkeys cannot center a menu */
+	keyoptions.cycleMenuY = strtoul(val, NULL, 0);
+}
+
+typedef struct {
+	const char *name;
+	void (*parse) (char *, char *, char *);
+} OptionItem;
+
+OptionItem OptionItems[] = {
+	/* *INDENT-OFF* */
+	{ "stylefile",				&o_stylefile	    },
+	{ "honormodifiers",			&o_honormods	    },
+	{ "raisewhilecycling",			&o_cycleraise	    },
+	{ "followwindowonsend",			&o_followsend	    },
+	{ "includeiconifiedwindowsincycle",	&o_plusicons	    },
+	{ "showcyclemenu",			&o_cyclemenu	    },
+	{ "cyclemenutitle",			&o_menutitle	    },
+	{ "menutextjustify",			&o_textjustify	    },
+	{ "menutitlejustify",			&o_titlejustify	    },
+	{ "autoconfig",				&o_autoconfig	    },
+	{ "autoconfigchecktimeout",		&o_timeout	    },
+	{ "workspacecolumns",			&o_desktopcols	    },
+	{ "workspacerows",			&o_desktoprows	    },
+	{ "cyclemenux",				&o_menux	    },
+	{ "cyclemenuy",				&o_menuy	    },
+	{ NULL,					NULL		    }
+	/* *INDENT-ON* */
+};
+
+static unsigned long
+p_mod(const char *keys)
+{
+	unsigned long mods = 0;
+	const char *p, *e;
+
+	if (strchr(keys, '-')) {
+		for (p = keys, e = strchr(p, '-'); p && e; p = e + 1, e = strchr(p, '-')) {
+			size_t len = e - p;
+
+			if (len == 4 && !strncmp(p, "Mod1", len))
+				mods |= Mod1Mask;
+			else if (len == 4 && !strncmp(p, "Mod4", len))
+				mods |= Mod4Mask;
+			else if (len == 7 && !strncmp(p, "Control", len))
+				mods |= ControlMask;
+			else if (len == 5 && !strncmp(p, "Shift", len))
+				mods |= ShiftMask;
+		}
+	}
+	return mods;
+}
+
+static KeySym
+p_sym(const char *keys)
+{
+	const char *p;
+	KeySym sym = NoSymbol;
+
+	if ((p = strrchr(keys, '-')))
+		p++;
+	else
+		p = keys;
+	DPRINTF("Parsing keysym from '%s'\n", p);
+	if (strlen(p))
+		sym = XStringToKeysym(p);
+	return sym;
+}
+
+static Key *
+p_key(const char *keys)
+{
+	unsigned long mod;
+	KeySym sym;
+	Key *k;
+
+	DPRINTF("Parsing key from '%s'\n", keys);
+	mod = p_mod(keys);
+	if ((sym = p_sym(keys)) == NoSymbol) {
+		DPRINTF("Failed to parse symbol from '%s'\n", keys);
+		return NULL;
+	}
+	k = ecalloc(1, sizeof(*k));
+	k->mod = mod;
+	k->keysym = sym;
+	return k;
+}
+
+static int
+p_line(const char *buff, char *func, char *keys, char *args)
+{
+	const char *b = buff;
+	int items = 0;
+
+	while (*b && isspace(*b))
+		b++;
+	if (!*b || *b == '#')
+		return items;
+	*func = *keys = *args = '\0';
+	/* FIXME: handle escapes within fields */
+	items = sscanf(b, "[%[a-zA-z]] (%[^)]) {%[^}]}", func, keys, args);
+	return items;
+}
+
+typedef struct _KeyItem KeyItem;
+struct _KeyItem {
+	const char *name;
+	Key *(*parse) (const KeyItem *, FILE *, char *, char *, char *, char *);
+};
+
+static Key *
+p_option(const KeyItem *item, FILE *f, char *buff, char *func, char *keys, char *args)
+{
+	OptionItem *op;
+
+	for (op = OptionItems; op->name; op++)
+		if (!strcasecmp(keys, op->name))
+			break;
+	if (op->name && op->parse)
+		(*op->parse)(func, keys, args);
+	return NULL;
+}
+
+static Key *
+p_nop(const KeyItem *item, FILE *f, char *buff, char *func, char *keys, char *args)
+{
+	return p_key(keys);
+}
+
+static Key *
+p_execute(const KeyItem *item, FILE *f, char *buff, char *func, char *keys, char *args)
+{
+	Key *k;
+
+	if ((k = p_key(keys))) {
+		k->func = k_spawn;
+		k->arg = strdup(args);
+	}
+	return k;
+}
+
+static Key *
+p_iconify(const KeyItem *item, FILE *f, char *buff, char *func, char *keys, char *args)
+{
+	Key *k;
+
+	if ((k = p_key(keys))) {
+		k->func = k_setmin;
+		k->any = FocusClient;
+	}
+	return k;
+}
+
+static Key *
+p_raise(const KeyItem *item, FILE *f, char *buff, char *func, char *keys, char *args)
+{
+	Key *k;
+
+	if ((k = p_key(keys)))
+		k->func = k_raise;
+	return k;
+}
+
+static Key *
+p_lower(const KeyItem *item, FILE *f, char *buff, char *func, char *keys, char *args)
+{
+	Key *k;
+
+	if ((k = p_key(keys)))
+		k->func = k_lower;
+	return k;
+}
+
+static Key *
+p_close(const KeyItem *item, FILE *f, char *buff, char *func, char *keys, char *args)
+{
+	Key *k;
+
+	if ((k = p_key(keys)))
+		k->func = k_killclient;
+	return k;
+}
+
+static Key *
+p_toggleshade(const KeyItem *item, FILE *f, char *buff, char *func, char *keys,
+	      char *args)
+{
+	Key *k;
+
+	if ((k = p_key(keys))) {
+		k->func = k_setshade;
+		k->set = ToggleFlagSetting;
+		k->any = FocusClient;
+	}
+	return k;
+}
+
+static Key *
+p_toggleomni(const KeyItem *item, FILE *f, char *buff, char *func, char *keys, char *args)
+{
+	Key *k;
+
+	if ((k = p_key(keys))) {
+		k->func = k_toggletag;
+		k->dir = RelativeNone;
+		k->tag = -1U;
+	}
+	return k;
+}
+
+static Key *
+p_toggledecor(const KeyItem *item, FILE *f, char *buff, char *func, char *keys,
+	      char *args)
+{
+	Key *k;
+
+	if ((k = p_key(keys))) {
+	}
+	return k;
+}
+
+static Key *
+p_moveup(const KeyItem *item, FILE *f, char *buff, char *func, char *keys, char *args)
+{
+	Key *k;
+
+	if ((k = p_key(keys))) {
+		k->func = k_moveby;
+		k->arg = strdup(args);
+		k->dir = RelativeNorth;
+	}
+	return k;
+}
+
+static Key *
+p_movedown(const KeyItem *item, FILE *f, char *buff, char *func, char *keys, char *args)
+{
+	Key *k;
+
+	if ((k = p_key(keys))) {
+		k->func = k_moveby;
+		k->arg = strdup(args);
+		k->dir = RelativeSouth;
+	}
+	return k;
+}
+
+static Key *
+p_moveleft(const KeyItem *item, FILE *f, char *buff, char *func, char *keys, char *args)
+{
+	Key *k;
+
+	if ((k = p_key(keys))) {
+		k->func = k_moveby;
+		k->arg = strdup(args);
+		k->dir = RelativeWest;
+	}
+	return k;
+}
+
+static Key *
+p_moveright(const KeyItem *item, FILE *f, char *buff, char *func, char *keys, char *args)
+{
+	Key *k;
+
+	if ((k = p_key(keys))) {
+		k->func = k_moveby;
+		k->arg = strdup(args);
+		k->dir = RelativeEast;
+	}
+	return k;
+}
+
+static Key *
+p_resizew(const KeyItem *item, FILE *f, char *buff, char *func, char *keys, char *args)
+{
+	Key *k;
+
+	if ((k = p_key(keys))) {
+		char arg[256];
+
+		snprintf(arg, sizeof(arg), "0 0 %s 0", args);
+		k->func = k_moveresizekb;
+		k->arg = strdup(arg);
+	}
+	return k;
+}
+
+static Key *
+p_resizeh(const KeyItem *item, FILE *f, char *buff, char *func, char *keys, char *args)
+{
+	Key *k;
+
+	if ((k = p_key(keys))) {
+		char arg[256];
+
+		snprintf(arg, sizeof(arg), "0 0 0 %s", args);
+		k->func = k_moveresizekb;
+		k->arg = strdup(arg);
+	}
+	return k;
+}
+
+static Key *
+p_togglemax(const KeyItem *item, FILE *f, char *buff, char *func, char *keys, char *args)
+{
+	Key *k;
+
+	if ((k = p_key(keys))) {
+		k->func = k_setmax;
+		k->set = ToggleFlagSetting;
+		k->any = FocusClient;
+	}
+	return k;
+}
+
+static Key *
+p_togglemaxv(const KeyItem *item, FILE *f, char *buff, char *func, char *keys, char *args)
+{
+	Key *k;
+
+	if ((k = p_key(keys))) {
+		k->func = k_setmaxv;
+		k->set = ToggleFlagSetting;
+		k->any = FocusClient;
+	}
+	return k;
+}
+
+static Key *
+p_togglemaxh(const KeyItem *item, FILE *f, char *buff, char *func, char *keys, char *args)
+{
+	Key *k;
+
+	if ((k = p_key(keys))) {
+		k->func = k_setmaxh;
+		k->set = ToggleFlagSetting;
+		k->any = FocusClient;
+	}
+	return k;
+}
+
+static Key *
+p_sendto(const KeyItem *item, FILE *f, char *buff, char *func, char *keys, char *args)
+{
+	Key *k;
+
+	if ((k = p_key(keys))) {
+		k->func = (keyoptions.followWindowOnSend) ? k_taketo : k_tag;
+		k->dir = RelativeNone;
+		k->tag = strtoul(args, NULL, 0);
+		if (k->tag)
+			k->tag--;
+
+	}
+	return k;
+}
+
+static Key *
+p_sendtonext(const KeyItem *item, FILE *f, char *buff, char *func, char *keys, char *args)
+{
+	Key *k;
+
+	if ((k = p_key(keys))) {
+		k->func = (keyoptions.followWindowOnSend) ? k_taketo : k_tag;
+		k->dir = RelativeNext;
+	}
+	return k;
+}
+
+static Key *
+p_sendtoprev(const KeyItem *item, FILE *f, char *buff, char *func, char *keys, char *args)
+{
+	Key *k;
+
+	if ((k = p_key(keys))) {
+		k->func = (keyoptions.followWindowOnSend) ? k_taketo : k_tag;
+		k->dir = RelativePrev;
+	}
+	return k;
+}
+
+static Key *
+p_next(const KeyItem *item, FILE *f, char *buff, char *func, char *keys, char *args)
+{
+	Key *k;
+
+	if ((k = p_key(keys))) {
+		k->func = k_stack;
+		k->any = AllClients;
+		k->dir = RelativeNext;
+		k->cyc = True;
+	}
+	return k;
+}
+
+static Key *
+p_prev(const KeyItem *item, FILE *f, char *buff, char *func, char *keys, char *args)
+{
+	Key *k;
+
+	if ((k = p_key(keys))) {
+		k->func = k_stack;
+		k->any = AllClients;
+		k->dir = RelativePrev;
+		k->cyc = True;
+	}
+	return k;
+}
+
+static Key *
+p_anynext(const KeyItem *item, FILE *f, char *buff, char *func, char *keys, char *args)
+{
+	Key *k;
+
+	if ((k = p_key(keys))) {
+		k->func = k_stack;
+		k->any = AnyClient;
+		k->dir = RelativeNext;
+		k->cyc = True;
+	}
+	return k;
+}
+
+static Key *
+p_anyprev(const KeyItem *item, FILE *f, char *buff, char *func, char *keys, char *args)
+{
+	Key *k;
+
+	if ((k = p_key(keys))) {
+		k->func = k_stack;
+		k->any = AnyClient;
+		k->dir = RelativePrev;
+		k->cyc = True;
+	}
+	return k;
+}
+
+static Key *
+p_everynext(const KeyItem *item, FILE *f, char *buff, char *func, char *keys, char *args)
+{
+	Key *k;
+
+	if ((k = p_key(keys))) {
+		k->func = k_stack;
+		k->any = EveryClient;
+		k->dir = RelativeNext;
+		k->cyc = True;
+	}
+	return k;
+}
+
+static Key *
+p_everyprev(const KeyItem *item, FILE *f, char *buff, char *func, char *keys, char *args)
+{
+	Key *k;
+
+	if ((k = p_key(keys))) {
+		k->func = k_stack;
+		k->any = EveryClient;
+		k->dir = RelativePrev;
+		k->cyc = True;
+	}
+	return k;
+}
+
+static Key *
+p_groupnext(const KeyItem *item, FILE *f, char *buff, char *func, char *keys, char *args)
+{
+	Key *k;
+
+	if ((k = p_key(keys))) {
+		k->func = k_group;
+		k->any = AllClients;
+		k->dir = RelativeNext;
+		k->cyc = True;
+	}
+	return k;
+}
+
+static Key *
+p_groupprev(const KeyItem *item, FILE *f, char *buff, char *func, char *keys, char *args)
+{
+	Key *k;
+
+	if ((k = p_key(keys))) {
+		k->func = k_group;
+		k->any = AllClients;
+		k->dir = RelativePrev;
+		k->cyc = True;
+	}
+	return k;
+}
+
+static Key *
+p_groupanynext(const KeyItem *item, FILE *f, char *buff, char *func, char *keys,
+	       char *args)
+{
+	Key *k;
+
+	if ((k = p_key(keys))) {
+		k->func = k_group;
+		k->any = AnyClient;
+		k->dir = RelativeNext;
+		k->cyc = True;
+	}
+	return k;
+}
+
+static Key *
+p_groupanyprev(const KeyItem *item, FILE *f, char *buff, char *func, char *keys,
+	       char *args)
+{
+	Key *k;
+
+	if ((k = p_key(keys))) {
+		k->func = k_group;
+		k->any = AnyClient;
+		k->dir = RelativePrev;
+		k->cyc = True;
+	}
+	return k;
+}
+
+static Key *
+p_workspace(const KeyItem *item, FILE *f, char *buff, char *func, char *keys, char *args)
+{
+	Key *k;
+
+	if ((k = p_key(keys))) {
+		k->func = k_view;
+		k->dir = RelativeNone;
+		k->tag = strtoul(args, NULL, 0);
+		if (k->tag)
+			k->tag--;
+	}
+	return k;
+}
+
+static Key *
+p_workspacenext(const KeyItem *item, FILE *f, char *buff, char *func, char *keys,
+		char *args)
+{
+	Key *k;
+
+	if ((k = p_key(keys))) {
+		k->func = k_view;
+		k->dir = RelativeNext;
+		k->wrap = True;
+	}
+	return k;
+}
+
+static Key *
+p_workspaceprev(const KeyItem *item, FILE *f, char *buff, char *func, char *keys,
+		char *args)
+{
+	Key *k;
+
+	if ((k = p_key(keys))) {
+		k->func = k_view;
+		k->dir = RelativePrev;
+		k->wrap = True;
+	}
+	return k;
+}
+
+static Key *
+p_workspaceup(const KeyItem *item, FILE *f, char *buff, char *func, char *keys,
+	      char *args)
+{
+	Key *k;
+
+	if ((k = p_key(keys))) {
+		k->func = k_view;
+		k->dir = RelativeNorth;
+		k->wrap = True;
+	}
+	return k;
+}
+
+static Key *
+p_workspacedown(const KeyItem *item, FILE *f, char *buff, char *func, char *keys,
+		char *args)
+{
+	Key *k;
+
+	if ((k = p_key(keys))) {
+		k->func = k_view;
+		k->dir = RelativeSouth;
+		k->wrap = True;
+	}
+	return k;
+}
+
+static Key *
+p_workspaceleft(const KeyItem *item, FILE *f, char *buff, char *func, char *keys,
+		char *args)
+{
+	Key *k;
+
+	if ((k = p_key(keys))) {
+		k->func = k_view;
+		k->dir = RelativeWest;
+		k->wrap = True;
+	}
+	return k;
+}
+
+static Key *
+p_workspaceright(const KeyItem *item, FILE *f, char *buff, char *func, char *keys,
+		 char *args)
+{
+	Key *k;
+
+	if ((k = p_key(keys))) {
+		k->func = k_view;
+		k->dir = RelativeEast;
+		k->wrap = True;
+	}
+	return k;
+}
+
+static Key *
+p_screennext(const KeyItem *item, FILE *f, char *buff, char *func, char *keys, char *args)
+{
+	Key *k;
+
+	if ((k = p_key(keys))) {
+	}
+	return k;
+}
+
+static Key *
+p_screenprev(const KeyItem *item, FILE *f, char *buff, char *func, char *keys, char *args)
+{
+	Key *k;
+
+	if ((k = p_key(keys))) {
+	}
+	return k;
+}
+
+static Key *
+p_showrootmenu(const KeyItem *item, FILE *f, char *buff, char *func, char *keys,
+	       char *args)
+{
+	Key *k;
+
+	if ((k = p_key(keys))) {
+	}
+	return k;
+}
+
+static Key *
+p_showwinmenu(const KeyItem *item, FILE *f, char *buff, char *func, char *keys,
+	      char *args)
+{
+	Key *k;
+
+	if ((k = p_key(keys))) {
+	}
+	return k;
+}
+
+static Key *
+p_togglegrabs(const KeyItem *item, FILE *f, char *buff, char *func, char *keys,
+	      char *args)
+{
+	Key *k;
+
+	if ((k = p_key(keys))) {
+	}
+	return k;
+}
+
+static Key *p_chain(const KeyItem *item, FILE *f, char *buff, char *func, char *keys,
+		    char *args);
+
+static const KeyItem KeyItems[] = {
+	/* *INDENT-OFF* */
+	{ "noaction",				&p_nop			},
+	{ "execute",				&p_execute		},
+	{ "iconify",				&p_iconify		},
+	{ "raise",				&p_raise		},
+	{ "lower",				&p_lower		},
+	{ "close",				&p_close		},
+	{ "toggleshade",			&p_toggleshade		},
+	{ "toggleomnipresent",			&p_toggleomni		},
+	{ "toggledecorations",			&p_toggledecor		},
+	{ "movewindowup",			&p_moveup		},
+	{ "movewindowdown",			&p_movedown		},
+	{ "movewindowleft",			&p_moveleft		},
+	{ "movewindowright",			&p_moveright		},
+	{ "resizewindowwidth",			&p_resizew		},
+	{ "resizewindowheight",			&p_resizeh		},
+	{ "togglemaximizefull",			&p_togglemax		},
+	{ "togglemaximizevertical",		&p_togglemaxv		},
+	{ "togglemaximizehorizontal",		&p_togglemaxh		},
+	{ "sendtoworkspace",			&p_sendto		},
+	{ "sendtonextworkspace",		&p_sendtonext		},
+	{ "sendtoprevworkspace",		&p_sendtoprev		},
+	{ "nextwindow",				&p_next			},
+	{ "prevwindow",				&p_prev			},
+	{ "nextwindowonallworkspaces",		&p_anynext		},
+	{ "prevwindowonallworkspaces",		&p_anyprev		},
+	{ "nextwindowonallscreens",		&p_everynext		},
+	{ "prevwindowonallscreens",		&p_everyprev		},
+	{ "nextwindowofclass",			&p_groupnext		},
+	{ "prevwindowofclass",			&p_groupprev		},
+	{ "nextwindowofclassonallworkspaces",	&p_groupanynext		},
+	{ "prevwindowofclassonallworkspaces",	&p_groupanyprev		},
+	{ "changeworkspace",			&p_workspace		},
+	{ "nextworkspace",			&p_workspacenext	},
+	{ "prevworkspace",			&p_workspaceprev	},
+	{ "upworkspace",			&p_workspaceup		},
+	{ "downworkspace",			&p_workspacedown	},
+	{ "leftworkspace",			&p_workspaceleft	},
+	{ "rightworkspace",			&p_workspaceright	},
+	{ "nextworkspacerow",			&p_workspacedown	},
+	{ "prevworkspacerow",			&p_workspaceup		},
+	{ "nextworkspacecolumn",		&p_workspaceright	},
+	{ "prevworkspacecolumn",		&p_workspaceleft	},
+	{ "nextscreen",				&p_screennext		},
+	{ "prevscreen",				&p_screenprev		},
+	{ "showrootmenu",			&p_showrootmenu		},
+	{ "showworkspacemenu",			&p_showwinmenu		},
+	{ "togglegrabs",			&p_togglegrabs		},
+	{ "stringchain",			&p_nop			},
+	{ "keychain",				&p_nop			},
+	{ "numberchain",			&p_nop			},
+	{ "cancelchain",			&p_nop			},
+	{ "chain",				&p_chain		},
+	{ NULL,					NULL			}
+	/* *INDENT-ON* */
+};
+
+static Key *
+p_chain(const KeyItem *item, FILE *f, char *buff, char *func, char *keys, char *args)
+{
+	Key *k;
+
+	if ((k = p_key(keys))) {
+		while (fgets(buff, PATH_MAX, f)) {
+			Key *c;
+
+			if (p_line(buff, func, keys, args) < 1)
+				continue;
+			if (!strcasecmp(func, "end"))
+				break;
+			for (item = KeyItems; item->name; item++)
+				if (!strcasecmp(func, item->name))
+					break;
+			if (!item->name || !item->parse)
+				continue;
+
+			if ((c = (*item->parse) (item, f, buff, func, keys, args))) {
+				if (k->chain)
+					k->chain->cnext = c;
+				else {
+					k->func = k_chain;
+					k->chain = c;
+				}
+			}
+		}
+	}
+	return k;
+}
+
+static Key *
+p_bindings(const KeyItem *item, FILE *f, char *buff, char *func, char *keys, char *args)
+{
+	Key *k = NULL;
+
+	while (fgets(buff, PATH_MAX, f)) {
+		if (p_line(buff, func, keys, args) < 1)
+			continue;
+		if (!strcasecmp(func, "end"))
+			break;
+		for (item = KeyItems; item->name; item++)
+			if (!strcasecmp(func, item->name))
+				break;
+		if (item->name && item->parse)
+			if ((k = (*item->parse) (item, f, buff, func, keys, args)))
+				addchain(k);
+	}
+	return k;
+}
+
+static Key *
+p_config(const KeyItem *item, FILE *f, char *buff, char *func, char *keys, char *args)
+{
+	Key *k = NULL;
+
+	while (fgets(buff, PATH_MAX, f)) {
+		if (p_line(buff, func, keys, args) < 1)
+			continue;
+		if (!strcasecmp(func, "end"))
+			break;
+		if (!strcasecmp(func, "option"))
+			k = p_option(item, f, buff, func, keys, args);
+	}
+	return k;
+}
+
+static Key *
+p_begin(const KeyItem *item, FILE *f, char *buff, char *func, char *keys, char *args)
+{
+	Key *k = NULL;
+
+	while (fgets(buff, PATH_MAX, f)) {
+		if (p_line(buff, func, keys, args) < 1)
+			continue;
+		if (!strcasecmp(func, "end"))
+			break;
+		if (!strcasecmp(func, "config"))
+			k = p_config(item, f, buff, func, keys, args);
+		else if (!strcasecmp(func, "keybindings"))
+			k = p_bindings(item, f, buff, func, keys, args);
+	}
+	return k;
+}
+
+static Key *
+p_file(const KeyItem *item, FILE *f, char *buff, char *func, char *keys, char *args)
+{
+	Key *k = NULL;
+
+	while (fgets(buff, PATH_MAX, f)) {
+		if (p_line(buff, func, keys, args) < 1)
+			continue;
+		if (!strcasecmp(func, "begin")) {
+			k = p_begin(NULL, f, buff, func, keys, args);
+			break;
+		}
+	}
+	return k;
+}
+
 static void
 initkeys_BLACKBOX(void)
 {
+	FILE *f;
+	const char *home = getenv("HOME") ? : ".";
+	size_t len = strlen(home) + strlen("/.bbkeysrc") + 1;
+	char *file = ecalloc(len, sizeof(*file));
+
+	strcpy(file, home);
+	strcat(file, "/.bbkeysrc");
+	if (!(f = fopen(file, "r"))) {
+		DPRINTF("%s: %s\n", file, strerror(errno));
+		free(file);
+		return;
+	}
+	{
+		char *buff = ecalloc(4 * (PATH_MAX + 1), sizeof(*buff));
+		char *func = buff + PATH_MAX + 1;
+		char *keys = func + PATH_MAX + 1;
+		char *args = keys + PATH_MAX + 1;
+
+		p_file(NULL, f, buff, func, keys, args);
+
+		free(buff);
+	}
+	fclose(f);
+	free(file);
+
 }
 
 BlackboxSession session;

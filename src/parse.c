@@ -12,30 +12,23 @@
 #include "adwm.h"
 #include "config.h"
 
-static void
-k_zoom(XEvent *e, Key *k) {
-	if (sel) zoom(sel);
+void
+k_zoom(XEvent *e, Key *k)
+{
+	if (sel)
+		zoom(sel);
 }
 
-#if 0
-static void
-k_focusnext(XEvent *e, Key *k) {
-	if (sel) focusnext(sel);
+void
+k_killclient(XEvent *e, Key *k)
+{
+	if (sel)
+		killclient(sel);
 }
 
-static void
-k_focusprev(XEvent *e, Key *k) {
-	if (sel) focusprev(sel);
-}
-#endif
-
-static void
-k_killclient(XEvent *e, Key *k) {
-	if (sel) killclient(sel);
-}
-
-static void
-k_moveresizekb(XEvent *e, Key *k) {
+void
+k_moveresizekb(XEvent *e, Key *k)
+{
 	if (sel) {
 		int dw = 0, dh = 0, dx = 0, dy = 0;
 
@@ -44,100 +37,94 @@ k_moveresizekb(XEvent *e, Key *k) {
 	}
 }
 
-static void
-k_rotateview(XEvent *e, Key *k) {
+void
+k_rotateview(XEvent *e, Key *k)
+{
 	rotateview(sel);
 }
 
-static void
-k_unrotateview(XEvent *e, Key *k) {
+void
+k_unrotateview(XEvent *e, Key *k)
+{
 	unrotateview(sel);
 }
 
-static void
-k_rotatezone(XEvent *e, Key *k) {
+void
+k_rotatezone(XEvent *e, Key *k)
+{
 	rotatezone(sel);
 }
 
-static void
-k_unrotatezone(XEvent *e, Key *k) {
+void
+k_unrotatezone(XEvent *e, Key *k)
+{
 	unrotatezone(sel);
 }
 
-static void
-k_rotatewins(XEvent *e, Key *k) {
+void
+k_rotatewins(XEvent *e, Key *k)
+{
 	rotatewins(sel);
 }
 
-static void
-k_unrotatewins(XEvent *e, Key *k) {
+void
+k_unrotatewins(XEvent *e, Key *k)
+{
 	unrotatewins(sel);
 }
 
-#if 0
-static void
-k_focusicon(XEvent *e, Key *k) {
-	focusicon();
-}
-#endif
-
-static void
-k_viewprevtag(XEvent *e, Key *k) {
+void
+k_viewprevtag(XEvent *e, Key *k)
+{
 	viewprevtag();
 }
 
-#if 0
-static void
-k_viewlefttag(XEvent *e, Key *k) {
-	viewlefttag();
-}
-
-static void
-k_viewrighttag(XEvent *e, Key *k) {
-	viewrighttag();
-}
-#endif
-
-static void
-k_togglemonitor(XEvent *e, Key *k) {
+void
+k_togglemonitor(XEvent *e, Key *k)
+{
 	togglemonitor();
 }
 
-static void
-k_appendtag(XEvent *e, Key *k) {
+void
+k_appendtag(XEvent *e, Key *k)
+{
 	appendtag();
 }
 
-static void
-k_rmlasttag(XEvent *e, Key *k) {
+void
+k_rmlasttag(XEvent *e, Key *k)
+{
 	rmlasttag();
 }
 
-static void
+void
 k_raise(XEvent *e, Key *k)
 {
-	if (sel) raiseclient(sel);
+	if (sel)
+		raiseclient(sel);
 }
 
-static void
+void
 k_lower(XEvent *e, Key *k)
 {
-	if (sel) lowerclient(sel);
+	if (sel)
+		lowerclient(sel);
 }
 
-static void
+void
 k_raiselower(XEvent *e, Key *k)
 {
-	if (sel) raiselower(sel);
+	if (sel)
+		raiselower(sel);
 }
 
-static void
+void
 k_quit(XEvent *e, Key *k)
 {
 	quit(k->arg);
 }
 
-static void
+void
 k_restart(XEvent *e, Key *k)
 {
 	restart(k->arg);
@@ -150,16 +137,7 @@ typedef struct {
 
 static KeyItem KeyItems[] = {
 	/* *INDENT-OFF* */
-#if 0
-	{ "focusicon",		k_focusicon	 },
-	{ "focusnext",		k_focusnext	 },
-	{ "focusprev",		k_focusprev	 },
-#endif
 	{ "viewprevtag",	k_viewprevtag	 },
-#if 0
-	{ "viewlefttag",	k_viewlefttag	 },
-	{ "viewrighttag",	k_viewrighttag	 },
-#endif
 	{ "quit",		k_quit		 }, /* arg is new command */
 	{ "restart", 		k_restart	 }, /* arg is new command */
 	{ "killclient",		k_killclient	 },
@@ -188,7 +166,7 @@ static KeyItem KeyItems[] = {
 };
 
 void
-k_setmwfactor(XEvent *e, Key * k)
+k_setmwfactor(XEvent *e, Key *k)
 {
 	Monitor *m;
 	View *v;
@@ -238,7 +216,7 @@ k_setmwfactor(XEvent *e, Key * k)
 }
 
 void
-k_setnmaster(XEvent *e, Key * k)
+k_setnmaster(XEvent *e, Key *k)
 {
 	const char *arg;
 	Monitor *m;
@@ -364,11 +342,12 @@ static KeyItem KeyItemsByAmt[] = {
 };
 
 static void
-k_setgeneric(XEvent *e, Key *k, void(*func)(XEvent *, Key *, Client *))
+k_setgeneric(XEvent *e, Key *k, void (*func) (XEvent *, Key *, Client *))
 {
 	switch (k->any) {
 		Monitor *m;
 		Client *c;
+
 	case FocusClient:
 		if (sel)
 			func(e, k, sel);
@@ -418,12 +397,11 @@ c_setfloating(XEvent *e, Key *k, Client *c)
 	togglefloating(c);
 }
 
-static void
+void
 k_setfloating(XEvent *e, Key *k)
 {
 	return k_setgeneric(e, k, &c_setfloating);
 }
-
 
 static void
 c_setfill(XEvent *e, Key *k, Client *c)
@@ -444,7 +422,7 @@ c_setfill(XEvent *e, Key *k, Client *c)
 	togglefill(c);
 }
 
-static void
+void
 k_setfill(XEvent *e, Key *k)
 {
 	return k_setgeneric(e, k, &c_setfill);
@@ -469,7 +447,7 @@ c_setfull(XEvent *e, Key *k, Client *c)
 	togglefull(c);
 }
 
-static void
+void
 k_setfull(XEvent *e, Key *k)
 {
 	return k_setgeneric(e, k, &c_setfull);
@@ -494,7 +472,7 @@ c_setmax(XEvent *e, Key *k, Client *c)
 	togglemax(c);
 }
 
-static void
+void
 k_setmax(XEvent *e, Key *k)
 {
 	return k_setgeneric(e, k, &c_setmax);
@@ -519,12 +497,11 @@ c_setmaxv(XEvent *e, Key *k, Client *c)
 	togglemaxv(c);
 }
 
-static void
+void
 k_setmaxv(XEvent *e, Key *k)
 {
 	return k_setgeneric(e, k, &c_setmaxv);
 }
-
 
 static void
 c_setmaxh(XEvent *e, Key *k, Client *c)
@@ -545,14 +522,14 @@ c_setmaxh(XEvent *e, Key *k, Client *c)
 	togglemaxh(c);
 }
 
-static void
+void
 k_setmaxh(XEvent *e, Key *k)
 {
 	return k_setgeneric(e, k, &c_setmaxh);
 }
 
 static void
-c_setshade(XEvent *e, Key * k, Client *c)
+c_setshade(XEvent *e, Key *k, Client *c)
 {
 	switch (k->set) {
 	case SetFlagSetting:
@@ -570,8 +547,8 @@ c_setshade(XEvent *e, Key * k, Client *c)
 	toggleshade(c);
 }
 
-static void
-k_setshade(XEvent *e, Key * k)
+void
+k_setshade(XEvent *e, Key *k)
 {
 	k_setgeneric(e, k, &c_setshade);
 }
@@ -595,7 +572,7 @@ c_sethidden(XEvent *e, Key *k, Client *c)
 	togglehidden(c);
 }
 
-static void
+void
 k_sethidden(XEvent *e, Key *k)
 {
 	k_setgeneric(e, k, &c_sethidden);
@@ -620,7 +597,7 @@ c_setmin(XEvent *e, Key *k, Client *c)
 	togglemin(c);
 }
 
-static void
+void
 k_setmin(XEvent *e, Key *k)
 {
 	k_setgeneric(e, k, &c_setmin);
@@ -645,7 +622,7 @@ c_setabove(XEvent *e, Key *k, Client *c)
 	toggleabove(c);
 }
 
-static void
+void
 k_setabove(XEvent *e, Key *k)
 {
 	k_setgeneric(e, k, &c_setabove);
@@ -670,7 +647,7 @@ c_setbelow(XEvent *e, Key *k, Client *c)
 	togglebelow(c);
 }
 
-static void
+void
 k_setbelow(XEvent *e, Key *k)
 {
 	k_setgeneric(e, k, &c_setbelow);
@@ -695,7 +672,7 @@ c_setpager(XEvent *e, Key *k, Client *c)
 	togglepager(c);
 }
 
-static void
+void
 k_setpager(XEvent *e, Key *k)
 {
 	k_setgeneric(e, k, &c_setpager);
@@ -720,14 +697,14 @@ c_settaskbar(XEvent *e, Key *k, Client *c)
 	toggletaskbar(c);
 }
 
-static void
+void
 k_settaskbar(XEvent *e, Key *k)
 {
 	k_setgeneric(e, k, &c_settaskbar);
 }
 
 static void
-k_setscrgeneric(XEvent *e, Key *k, void(*func)(XEvent *, Key *, AScreen *))
+k_setscrgeneric(XEvent *e, Key *k, void (*func) (XEvent *, Key *, AScreen *))
 {
 	switch (k->any) {
 		AScreen *s = NULL;
@@ -759,7 +736,7 @@ k_setscrgeneric(XEvent *e, Key *k, void(*func)(XEvent *, Key *, AScreen *))
 }
 
 static void
-s_setshowing(XEvent *e, Key *k, AScreen * s)
+s_setshowing(XEvent *e, Key *k, AScreen *s)
 {
 	AScreen *old;
 
@@ -783,7 +760,7 @@ s_setshowing(XEvent *e, Key *k, AScreen * s)
 	scr = old;
 }
 
-static void
+void
 k_setshowing(XEvent *e, Key *k)
 {
 	return k_setscrgeneric(e, k, &s_setshowing);
@@ -852,7 +829,7 @@ v_setstruts(XEvent *e, Key *k, Monitor *m, View *v)
 	togglestruts(m, v);
 }
 
-static void
+void
 k_setstruts(XEvent *e, Key *k)
 {
 	return k_setlaygeneric(e, k, &v_setstruts);
@@ -877,13 +854,11 @@ v_setdectiled(XEvent *e, Key *k, Monitor *m, View *v)
 	toggledectiled(m, v);
 }
 
-static void
+void
 k_setdectiled(XEvent *e, Key *k)
 {
 	return k_setlaygeneric(e, k, &v_setdectiled);
 }
-
-
 
 static const struct {
 	const char *prefix;
@@ -903,12 +878,15 @@ static const struct {
 	const char *suffix;
 	WhichClient any;
 } set_suffix[] = {
-	{ "",		FocusClient	    },
-	{ "sel",	ActiveClient	    },
-	{ "ptr",	PointerClient	    },
-	{ "all",	AllClients	    }, /* all on current monitor */
-	{ "any",	AnyClient	    }, /* clients on any monitor */
-	{ "every",	EveryClient	    }  /* clients on every workspace */
+	{
+	"", FocusClient}, {
+	"sel", ActiveClient}, {
+	"ptr", PointerClient}, {
+	"all", AllClients},	/* all on current monitor */
+	{
+	"any", AnyClient},	/* clients on any monitor */
+	{
+	"every", EveryClient}	/* clients on every workspace */
 };
 
 static KeyItem KeyItemsByState[] = {
@@ -935,28 +913,33 @@ static KeyItem KeyItemsByState[] = {
 	/* *INDENT-ON* */
 };
 
-static void
-k_moveto(XEvent *e, Key *k) {
+void
+k_moveto(XEvent *e, Key *k)
+{
 	if (sel)
 		moveto(sel, k->dir);
 }
 
-static void
-k_snapto(XEvent *e, Key *k) {
+void
+k_snapto(XEvent *e, Key *k)
+{
 	if (sel)
 		snapto(sel, k->dir);
 }
 
-static void
-k_edgeto(XEvent *e, Key *k) {
+void
+k_edgeto(XEvent *e, Key *k)
+{
 	if (sel)
 		edgeto(sel, k->dir);
 }
 
-static void
-k_moveby(XEvent *e, Key *k) {
+void
+k_moveby(XEvent *e, Key *k)
+{
 	if (sel) {
 		int amount = 1;
+
 		if (k->arg)
 			sscanf(k->arg, "%d", &amount);
 		moveby(sel, k->dir, amount);
@@ -1147,7 +1130,7 @@ k_focusable(Client *c, Monitor *m, WhichClient any, RelativeDirection dir)
 	return True;
 }
 
-static void
+void
 k_stop(XEvent *e, Key *k)
 {
 	free(k->cycle);
@@ -1157,7 +1140,7 @@ k_stop(XEvent *e, Key *k)
 }
 
 static float
-howfar(Client *c, Client *o, RelativeDirection * dir)
+howfar(Client *c, Client *o, RelativeDirection *dir)
 {
 	int dx, dy;
 	int mxc, myc, mxo, myo;
@@ -1288,7 +1271,7 @@ k_select_lst(Monitor *cm, Key *k, RelativeDirection dir)
 	case RelativeNext:
 	case RelativeCenter:
 		if (k->where) {
-			i = ((char *)k->where - (char *)k->cycle) / sizeof(*k->where);
+			i = ((char *) k->where - (char *) k->cycle) / sizeof(*k->where);
 			XPRINTF("Index of selected is %d\n", i);
 			idx = i + d;
 		} else {
@@ -1299,7 +1282,7 @@ k_select_lst(Monitor *cm, Key *k, RelativeDirection dir)
 		break;
 	case RelativePrev:
 		if (k->where) {
-			i = ((char *)k->where - (char *)k->cycle) / sizeof(*k->where);
+			i = ((char *) k->where - (char *) k->cycle) / sizeof(*k->where);
 			XPRINTF("Index of selected is %d\n", i);
 			idx = i - d;
 		} else {
@@ -1310,7 +1293,7 @@ k_select_lst(Monitor *cm, Key *k, RelativeDirection dir)
 		break;
 	case RelativeLast:
 		if (k->where) {
-			i = ((char *)k->where - (char *)k->cycle) / sizeof(*k->where);
+			i = ((char *) k->where - (char *) k->cycle) / sizeof(*k->where);
 			XPRINTF("Index of selected is %d\n", i);
 			idx = (i == 0) ? 1 : 0;
 		} else {
@@ -1327,25 +1310,6 @@ k_select_lst(Monitor *cm, Key *k, RelativeDirection dir)
 	j = idx;
 	for (; j < 0; cl = cl->prev, j++) ;
 	for (; j > 0; cl = cl->next, j--) ;
-#if 0
-	CPRINTF(k->cycle->c, "<-- cycle %d\n", 0);
-	CPRINTF(k->where->c, "<-- where %d\n", i);
-	CPRINTF(cl->c, "<-- index %d\n", idx);
-	{
-		CycleList *l = k->cycle;
-		j = 0;
-
-		XPRINTF("Client stack is:\n");
-		do {
-			CPRINTF(l->c, "<-- %d%s%s%s\n", j,
-					l == k->where ? " where" : "",
-					l == cl       ? " index" : "",
-					l->c == sel   ? " focus" : "");
-			j++;
-			l = l->next;
-		} while (l != k->cycle);
-	}
-#endif
 	k_select_cl(cm, k, cl);
 }
 
@@ -1376,7 +1340,7 @@ k_select(Monitor *cm, Key *k)
 	}
 }
 
-static void
+void
 k_focus(XEvent *e, Key *k)
 {
 	Monitor *m;
@@ -1442,7 +1406,7 @@ k_focus(XEvent *e, Key *k)
 	k_select(m, k);
 }
 
-static void
+void
 k_client(XEvent *e, Key *k)
 {
 	Monitor *m;
@@ -1481,7 +1445,7 @@ k_client(XEvent *e, Key *k)
 	k_select(m, k);
 }
 
-static void
+void
 k_stack(XEvent *e, Key *k)
 {
 	Monitor *m;
@@ -1520,7 +1484,7 @@ k_stack(XEvent *e, Key *k)
 	k_select(m, k);
 }
 
-static void
+void
 k_group(XEvent *e, Key *k)
 {
 	Monitor *m;
@@ -1560,7 +1524,7 @@ k_group(XEvent *e, Key *k)
 	k_select(m, k);
 }
 
-static void
+void
 k_tab(XEvent *e, Key *k)
 {
 	/* tag within tab group */
@@ -1568,7 +1532,7 @@ k_tab(XEvent *e, Key *k)
 	return;
 }
 
-static void
+void
 k_panel(XEvent *e, Key *k)
 {
 	Monitor *m;
@@ -1610,7 +1574,7 @@ k_panel(XEvent *e, Key *k)
 	k_select(m, k);
 }
 
-static void
+void
 k_dock(XEvent *e, Key *k)
 {
 	Monitor *m;
@@ -1652,7 +1616,7 @@ k_dock(XEvent *e, Key *k)
 	k_select(m, k);
 }
 
-static void
+void
 k_swap(XEvent *e, Key *k)
 {
 	/* TODO: swap windows */
@@ -1663,11 +1627,16 @@ static const struct {
 	const char *which;
 	WhichClient any;
 } list_which[] = {
-	{ "",		FocusClient	}, /* focusable, same monitor */
-	{ "act",	ActiveClient	}, /* activatable (incl. icons), same monitor */
-	{ "all",	AllClients	}, /* all clients (incl. icons), same mon */
-	{ "any",	AnyClient	}, /* any client on any monitor */
-	{ "every",	EveryClient	}  /* all clients, all desktops */
+	{
+	"", FocusClient},	/* focusable, same monitor */
+	{
+	"act", ActiveClient},	/* activatable (incl. icons), same monitor */
+	{
+	"all", AllClients},	/* all clients (incl. icons), same mon */
+	{
+	"any", AnyClient},	/* any client on any monitor */
+	{
+	"every", EveryClient}	/* all clients, all desktops */
 };
 
 static const struct {
@@ -1971,7 +1940,7 @@ idxoftag(View *v, Key *k)
 	return idx;
 }
 
-static void
+void
 k_toggletag(XEvent *e, Key *k)
 {
 	if (sel) {
@@ -1985,7 +1954,7 @@ k_toggletag(XEvent *e, Key *k)
 	}
 }
 
-static void
+void
 k_tag(XEvent *e, Key *k)
 {
 	if (sel) {
@@ -1999,7 +1968,7 @@ k_tag(XEvent *e, Key *k)
 	}
 }
 
-static void
+void
 k_focusview(XEvent *e, Key *k)
 {
 	Monitor *cm;
@@ -2011,7 +1980,7 @@ k_focusview(XEvent *e, Key *k)
 	focusview(cm, idxoftag(v, k));
 }
 
-static void
+void
 k_toggleview(XEvent *e, Key *k)
 {
 	Monitor *cm;
@@ -2023,7 +1992,7 @@ k_toggleview(XEvent *e, Key *k)
 	toggleview(cm, idxoftag(v, k));
 }
 
-static void
+void
 k_view(XEvent *e, Key *k)
 {
 	Monitor *cm;
@@ -2035,7 +2004,7 @@ k_view(XEvent *e, Key *k)
 	view(idxoftag(v, k));
 }
 
-static void
+void
 k_taketo(XEvent *e, Key *k)
 {
 	if (sel) {
@@ -2075,12 +2044,12 @@ static const struct {
 };
 
 static KeyItem KeyItemsByTag[] = {
-	{ "view",		k_view		},
-	{ "toggleview",		k_toggleview	},
-	{ "focusview",		k_focusview	},
-	{ "tag", 		k_tag		},
-	{ "toggletag", 		k_toggletag	},
-	{ "taketo",		k_taketo	}
+	{"view", k_view},
+	{"toggleview", k_toggleview},
+	{"focusview", k_focusview},
+	{"tag", k_tag},
+	{"toggletag", k_toggletag},
+	{"taketo", k_taketo}
 };
 
 #define CLEANMASK(mask) (mask & ~(numlockmask | LockMask))
@@ -2090,7 +2059,8 @@ k_chain(XEvent *e, Key *key)
 {
 	Key *k = NULL;
 
-	if (XGrabKeyboard(dpy, scr->root, GrabModeSync, False, GrabModeAsync, CurrentTime)) {
+	if (XGrabKeyboard
+	    (dpy, scr->root, GrabModeSync, False, GrabModeAsync, CurrentTime)) {
 		DPRINTF("Could not grab keyboard\n");
 		return;
 	}
@@ -2177,6 +2147,7 @@ mergechain(Key **kp, Key *k)
 	Key **lp;
 
 	Key *next = k->chain;
+
 	k->chain = NULL;
 	freekey(k);
 	k = next;
@@ -2275,7 +2246,7 @@ parsearg(const char *s, const char *e)
 	char *arg = NULL;
 
 	for (; s < e && isblank(*s); s++) ;
-	for (; e > s && isblank(*(e - 1)); e--);
+	for (; e > s && isblank(*(e - 1)); e--) ;
 	DPRINTF("Parsing arg from '%s'\n", s);
 	if (s < e)
 		arg = strndup(s, e - s);
@@ -2335,7 +2306,7 @@ parsechain(const char *s, const char *e, Key *spec)
 	return chain;
 }
 
-static void
+void
 parsekeys(const char *s, Key *spec)
 {
 	const char *p, *e;
@@ -2351,7 +2322,8 @@ parsekeys(const char *s, Key *spec)
 }
 
 static void
-initmodkey() {
+initmodkey()
+{
 	char tmp;
 
 	strncpy(&tmp, getresource("modkey", "A"), 1);
@@ -2370,19 +2342,19 @@ initmodkey() {
 	}
 }
 
-static void
+void
 k_setlayout(XEvent *e, Key *k)
 {
 	setlayout(k->arg);
 }
 
-static void
+void
 k_spawn(XEvent *e, Key *k)
 {
 	spawn(k->arg);
 }
 
-int
+void
 initkeys()
 {
 	unsigned int i, j, l;
@@ -2576,18 +2548,19 @@ initkeys()
 		key.arg = NULL;
 		parsekeys(tmp, &key);
 	}
-	return 0;
 }
 
 static void
-parserule(const char *s, Rule *r) {
+parserule(const char *s, Rule * r)
+{
 	r->prop = emallocz(128);
 	r->tags = emallocz(64);
 	sscanf(s, "%s %s %d %d", r->prop, r->tags, &r->isfloating, &r->hastitle);
 }
 
 static void
-compileregs(void) {
+compileregs(void)
+{
 	unsigned int i;
 	regex_t *reg;
 
@@ -2610,10 +2583,12 @@ compileregs(void) {
 }
 
 void
-initrules() {
+initrules()
+{
 	int i;
 	char t[64];
 	const char *tmp;
+
 	rules = ecalloc(64, sizeof(Rule *));
 	for (i = 0; i < 64; i++) {
 		snprintf(t, sizeof(t), "rule%d", i);

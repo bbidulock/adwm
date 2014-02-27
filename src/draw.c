@@ -375,7 +375,7 @@ drawelement(AScreen *ds, char which, int x, int position, Client *c)
 	return w;
 }
 
-void
+static void
 drawdockapp(Client *c, AScreen *ds)
 {
 	int status;

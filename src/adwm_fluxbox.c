@@ -45,15 +45,6 @@ typedef struct {
 	Bool botright;
 } FluxboxCorners;
 
-typedef struct {
-	XftFont *font;
-	XGlyphInfo extents;
-	unsigned ascent;
-	unsigned descent;
-	unsigned height;
-	unsigned width;
-} FluxboxFont;
-
 typedef enum {
 	EffectNone,
 	EffectShadow,

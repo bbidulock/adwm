@@ -37,7 +37,7 @@ void readtexture(const char *name, const char *clas, Texture *t, const char *def
 		 const char *oppcol);
 void freetexture(Texture *t);
 void getpixmap(const char *file, AdwmPixmap *p);
-void getshadow(const char *descrip, TextShadow *shadow);
+void getshadow(const char *descrip, TextShadow * shadow);
 
 const char *
 readres(const char *name, const char *clas, const char *defval)
@@ -71,32 +71,34 @@ getappearance(const char *descrip, Appearance *appear)
 	appear->interlaced = False;
 	appear->border = False;
 
-	if (strstr(descrip, "parentrelative"))
+	if (strcasestr(descrip, "parentrelative"))
 		appear->pattern = PatternParent;
-	else if (strstr(descrip, "gradient")) {
+	else if (strcasestr(descrip, "gradient")) {
 		appear->pattern = PatternGradient;
-		if (strstr(descrip, "crossdiagonal"))
+		if (strcasestr(descrip, "crossdiagonal"))
 			appear->gradient = GradientCrossDiagonal;
-		else if (strstr(descrip, "rectangle"))
+		else if (strcasestr(descrip, "rectangle"))
 			appear->gradient = GradientRectangle;
-		else if (strstr(descrip, "pyramid"))
+		else if (strcasestr(descrip, "pyramid"))
 			appear->gradient = GradientPyramid;
-		else if (strstr(descrip, "pipecross"))
+		else if (strcasestr(descrip, "pipecross"))
 			appear->gradient = GradientPipeCross;
-		else if (strstr(descrip, "elliptic"))
+		else if (strcasestr(descrip, "elliptic"))
 			appear->gradient = GradientElliptic;
-		else if (strstr(descrip, "horizontal"))
+		else if (strcasestr(descrip, "horizontal"))
 			appear->gradient = GradientHorizontal;
-		else if (strstr(descrip, "splitvertical"))
+		else if (strcasestr(descrip, "splitvertical"))
 			appear->gradient = GradientSplitVertical;
-		else if (strstr(descrip, "vertical"))
+		else if (strcasestr(descrip, "vertical"))
 			appear->gradient = GradientVertical;
-		else if (strstr(descrip, "diagonal"))
+		else if (strcasestr(descrip, "diagonal"))
 			appear->gradient = GradientDiagonal;
 		else
 			appear->gradient = GradientDiagonal;
-	} else if (strstr(descrip, "solid"))
+	} else if (strcasestr(descrip, "solid"))
 		appear->pattern = PatternSolid;
+	else if (strcasestr(descrip, "pixmap"))
+		appear->pattern = PatternPixmap;
 	else
 		appear->pattern = PatternSolid;
 	if (strcasestr(descrip, "bevel2"))
@@ -105,17 +107,17 @@ getappearance(const char *descrip, Appearance *appear)
 		appear->bevel = Bevel1;
 	else
 		appear->bevel = Bevel1;
-	if (strstr(descrip, "sunken"))
+	if (strcasestr(descrip, "sunken"))
 		appear->relief = ReliefSunken;
-	else if (strstr(descrip, "flat"))
+	else if (strcasestr(descrip, "flat"))
 		appear->relief = ReliefFlat;
-	else if (strstr(descrip, "raised"))
+	else if (strcasestr(descrip, "raised"))
 		appear->relief = ReliefRaised;
 	else
 		appear->relief = ReliefRaised;
 
-	appear->interlaced = strstr(descrip, "interlaced") ? True : False;
-	appear->border = strstr(descrip, "border") ? True : False;
+	appear->interlaced = strcasestr(descrip, "interlaced") ? True : False;
+	appear->border = strcasestr(descrip, "border") ? True : False;
 }
 
 void
@@ -209,6 +211,7 @@ getpixmap(const char *file, AdwmPixmap *p)
 
 		if (XpmReadFileToPixmap(dpy, scr->root, file, &p->pixmap, &p->mask, &xa)
 		    == Success) {
+			p->file = file;
 			p->depth = (xa.valuemask & XpmDepth) ? xa.depth : 0;
 			p->width = xa.width;
 			p->height = xa.height;
@@ -235,6 +238,7 @@ getpixmap(const char *file, AdwmPixmap *p)
 		if (image) {
 			imlib_context_set_image(image);
 			imlib_context_set_mask(None);
+			p->file = file;
 			p->width = imlib_image_get_width();
 			p->height = imlib_image_get_height();
 			p->x = p->y = 0;
@@ -249,6 +253,7 @@ getpixmap(const char *file, AdwmPixmap *p)
 		if (BitmapSuccess == XReadBitmapFile(dpy, scr->root, file, &p->width,
 						     &p->height, &p->pixmap, &p->x,
 						     &p->y)) {
+			p->file = file;
 			p->depth = 2;
 			return;
 		}
@@ -256,6 +261,7 @@ getpixmap(const char *file, AdwmPixmap *p)
 		goto done;
 	}
       done:
+	p->file = NULL;
 	p->pixmap = p->mask = None;
 	p->depth = p->width = p->height = 0;
 	p->x = p->y = 0;
@@ -332,6 +338,35 @@ readtexture(const char *name, const char *clas, Texture *t, const char *defcol,
 	res = readres(fname, fclas, oppcol);
 	getxftcolor(res, oppcol, &t->textColor);
 
+	snprintf(fname, sizeof(fname), "%s.textColor.opacity", name);
+	snprintf(fclas, sizeof(fclas), "%s.TextColor.Opacity", clas);
+	res = readres(fname, fclas, "0");
+	t->textOpacity = strtoul(res, NULL, 0);
+	if (t->textOpacity > 100)
+		t->textOpacity = 100;
+
+	snprintf(fname, sizeof(fname), "%s.textShadowColor", name);
+	snrpintf(fclas, sizeof(fclas), "%s.TextShadwoColor", clas);
+	res = readres(fname, fclas, defcol);
+	getxftcolor(res, defcol, &t->textShadowColor);
+
+	snprintf(fname, sizeof(fname), "%s.textShadowColor.opacity", name);
+	snprintf(fclas, sizeof(fclas), "%s.TextShadowColor.Opacity", clas);
+	res = readres(fname, fclas, "0");
+	t->textOpacity = strtoul(res, NULL, 0);
+	if (t->textShadowOpacity > 100)
+		t->textShadowOpacity = 100;
+
+	snprintf(fname, sizeof(fname), "%s.textShadowXOffset", name);
+	snprintf(fclas, sizeof(fclas), "%s.TextShadowXOffset", clas);
+	res = readres(fname, fclas, "0");
+	t->textShadowXOffset = strtoul(res, NULL, 0);
+
+	snprintf(fname, sizeof(fname), "%s.textShadowYOffset", name);
+	snprintf(fclas, sizeof(fclas), "%s.TextShadowYOffset", clas);
+	res = readres(fname, fclas, "0");
+	t->textShadowYOffset = strtoul(res, NULL, 0);
+
 	snprintf(fname, sizeof(fname), "%s.borderColor", name);
 	snprintf(fclas, sizeof(fclas), "%s.BorderColor", clas);
 	res = readres(fname, fclas, oppcol);
@@ -359,10 +394,23 @@ readtexture(const char *name, const char *clas, Texture *t, const char *defcol,
 	res = readres(fname, fclas, res);
 	getxcolor(res, oppcol, &t->foregroundColor);
 
+	snprintf(fname, sizeof(fname), "%s.opacity", name);
+	snprintf(fclas, sizeof(fclas), "%s.Opacity", clas);
+	res = readres(fname, fcclas, "0");
+	t->opacity = strtoul(res, NULL, 0);
+	if (t->opacity > 100)
+		t->opacity = 100;
+
 	snprintf(fname, sizeof(fname), "%s.pixmap", name);
 	snprintf(fclas, sizeof(fclas), "%s.Pixmap", clas);
 	res = readres(fname, fclas, NULL);
 	getpixmap(res, &t->pixmap);
+
+	snprintf(fname, sizeof(fname), "%s.border", name);
+	snprintf(fclas, sizeof(fclas), "%s.border", clas);
+	res = readres(fname, fclas, "{ 0, 0, 0, 0 }");
+	sscanf(res, "{ %u, %u, %u, %u }", &t->borders[0], &t->borders[1], &t->borders[2],
+	       &t->borders[3]);
 }
 
 void

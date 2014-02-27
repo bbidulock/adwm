@@ -1793,8 +1793,9 @@ drawpattern(const Texture *t, unsigned width, unsigned height, const unsigned ch
 #endif				/* USE_IMLIB2 */
 
 void
-drawtexture(AScreen *ds, Texture *t, Drawable d, int x, int y, unsigned width,
-	    unsigned height)
+drawtexture(const AScreen *ds, const Texture *t, const Drawable d, const int x,
+	    const int y, const unsigned width, const unsigned height,
+	    const unsigned char alpha)
 {
 	Imlib_Image image;
 
@@ -1809,7 +1810,7 @@ drawtexture(AScreen *ds, Texture *t, Drawable d, int x, int y, unsigned width,
 	imlib_context_set_image(image);
 	imlib_context_set_mask(None);
 
-	drawpattern(t, width, height, t->alpha);
+	drawpattern(t, width, height, alpha);
 
 	imlib_context_set_drawable(d);
 	imlib_context_set_image(image);
@@ -1897,12 +1898,13 @@ rendertexture(const AScreen *ds, const Texture *t, const Drawable d, const int x
 
 void
 drawtexture(const AScreen *ds, const Texture *t, const Drawable d, const int x,
-	    const int y, const unsigned width, const unsigned height)
+	    const int y, const unsigned width, const unsigned height,
+	    const unsigned char alpha)
 {
 	ARGB *data;
 
 	data = ecalloc(width * height, sizeof(*data));
-	drawpattern(t, width, height, data, t->alpha);
+	drawpattern(t, width, height, data, alpha);
 	rendertexture(ds, t, d, x, y, width, height);
 	free(data);
 }

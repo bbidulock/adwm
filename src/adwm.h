@@ -273,7 +273,8 @@ typedef enum { IncCount, DecCount, SetCount } ActionCount;
 typedef enum { FocusClient, ActiveClient, PointerClient, AnyClient, AllClients, EveryClient } WhichClient;
 enum { _NET_WM_ORIENTATION_HORZ, _NET_WM_ORIENTATION_VERT };
 enum { _NET_WM_TOPLEFT, _NET_WM_TOPRIGHT, _NET_WM_BOTTOMRIGHT, _NET_WM_BOTTOMLEFT };
-typedef enum { PatternSolid, PatternParent, PatternGradient } Pattern;
+typedef enum { PatternSolid, PatternParent, PatternGradient, PatternPixmap } Pattern;
+typedef enum { ResizeTiled, ResizeScaled, ResizeStretched } Resizing;
 typedef enum { GradientDiagonal, GradientCrossDiagonal, GradientRectangle, GradientPyramid,
 	GradientPipeCross, GradientElliptic, GradientMirrorHorizontal, GradientHorizontal,
 	GradientSplitVertical, GradientVertical } Gradient;
@@ -285,12 +286,14 @@ typedef struct {
 	Pattern pattern;		/* default solid */
 	Gradient gradient;		/* default none */
 	Relief relief;			/* default raised */
+	Resizing resize;		/* default tiled */
 	Bevel bevel;			/* default bevel1 */
 	Bool interlaced;		/* default False */
 	Bool border;			/* default False */
 } Appearance;
 
 typedef struct {
+	const char *file;
 	Pixmap pixmap, mask;
 	int x, y;
 	unsigned depth, width, height;
@@ -301,13 +304,19 @@ typedef struct {
 	XColor color;			/* color1 => color => default color */
 	XColor colorTo;			/* color2 => colorTo => default color */
 	XColor picColor;		/* picColor => color => default color */
-	AdwmPixmap pixmap;
+	AdwmPixmap pixmap;		/* None */
 	XftColor textColor;		/* textColor => black */
+	unsigned textOpacity;		/* 0 */
+	XftColor textShadowColor;	/* textShadowColor => default color */
+	unsigned textShadowOpacity;	/* 0 */
+	unsigned textShadowXOffset;	/* 0 */
+	unsigned textShadowYOffset;	/* 0 */
 	XColor borderColor;		/* borderColor => black */
 	unsigned borderWidth;		/* borderWidth => 1 */
 	XColor backgroundColor;		/* backgroundColor => color => default color */
 	XColor foregroundColor;		/* foregroundColor => picColor => opposite color */
-	unsigned alpha;
+	unsigned opacity;		/* 0 */
+	unsigned borders[4];		/* left, right, top, bottom pixmap borders */
 } Texture;
 
 typedef struct {

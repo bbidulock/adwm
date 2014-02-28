@@ -1155,96 +1155,139 @@ struct _KeyItem {
 static void
 p_min(Key *k)
 {
+	k->func = k_setmin;
+	k->set = ToggleFlagSetting;
+	k->any = FocusClient;
 }
 
 static void
 p_max(Key *k)
 {
+	k->func = k_setmax;
+	k->set = ToggleFlagSetting;
+	k->any = FocusClient;
 }
 
 static void
 p_maxh(Key *k)
 {
+	k->func = k_setmaxh;
+	k->set = ToggleFlagSetting;
+	k->any = FocusClient;
 }
 
 static void
 p_maxv(Key *k)
 {
+	k->func = k_setmaxv;
+	k->set = ToggleFlagSetting;
+	k->any = FocusClient;
 }
 
 static void
 p_full(Key *k)
 {
+	k->func = k_setfull;
+	k->set = ToggleFlagSetting;
+	k->any = FocusClient;
 }
 
 static void
 p_raise(Key *k)
 {
+	k->func = k_raise;
 }
 
 static void
 p_lower(Key *k)
 {
+	k->func = k_lower;
 }
 
 static void
 p_raiselayer(Key *k)
 {
+	/* FIXME: todo */
 }
 
 static void
 p_lowerlayer(Key *k)
 {
+	/* FIXME: todo */
 }
 
 static void
 p_setlayer(Key *k)
 {
+	/* FIXME: todo */
 }
 
 static void
 p_close(Key *k)
 {
+	k->func = k_killclient;
 }
 
 static void
 p_kill(Key *k)
 {
+	k->func = k_killclient;
 }
 
 static void
 p_shade(Key *k)
 {
+	k->func = k_setshade;
+	k->set = ToggleFlagSetting;
+	k->any = FocusClient;
 }
 
 static void
 p_stick(Key *k)
 {
+	k->func = k_toggletag;
+	k->dir = RelativeNone;
+	k->tag = -1U;
 }
 
 static void
 p_setdecor(Key *k)
 {
+	/* FIXME: todo */
 }
 
 static void
 p_toggledecor(Key *k)
 {
+	/* FIXME: todo */
 }
 
 static void
 p_tabnext(Key *k)
 {
+	k->func = k_tab;
+	k->any = FocusClient;
+	k->dir = RelativeNext;
 }
 
 static void
 p_tabprev(Key *k)
 {
+	k->func = k_tab;
+	k->any = FocusClient;
+	k->dir = RelativePrev;
 }
 
 static void
 p_tab(Key *k)
 {
+	if (sscanf(pctx->args, "%u", &k->tag) < 1)
+		return;
+	if (k->tag)
+		k->tag--;
+	k->func = k_tab;
+	k->any = FocusClient;
+	k->dir = RelativeNone;
 }
 
 static void
@@ -1265,21 +1308,161 @@ p_detach(Key *k)
 static void
 p_resizeto(Key *k)
 {
+	unsigned w, h;
+	char *p = pctx->args, *e = NULL;
+	char arg[64];
+
+	for (; p < e && *p && isblank(*p); p++) ;
+	w = strtoul(p, &e, 0);
+	if (!w && e == p)
+		return;
+	if (*e == '%') {
+		if (w > 100)
+			w = 100;
+		if (w < 5)
+			w = 5;
+		w = (DisplayWidth(dpy, scr->screen) * w) / 100;
+		p = e + 1;
+	} else if (isblank(*e)) {
+		if (w < 10)
+			w = 10;
+		if (w > DisplayWidth(dpy, scr->screen))
+			w = DisplayWidth(dpy, scr->screen);
+		p = e;
+	} else
+		return;
+	for (; p < e && *p && isblank(*p); p++) ;
+	h = strtoul(p, &e, 0);
+	if (!h && e == p)
+		return;
+	if (*e == '%') {
+		if (h > 100)
+			h = 100;
+		if (h < 5)
+			h = 5;
+		h = (DisplayHeight(dpy, scr->screen) * h) / 100;
+		p = e + 1;
+	} else if (!*e || isblank(*e) || *e == '\n') {
+		if (h < 10)
+			h = 10;
+		if (h > DisplayHeight(dpy, scr->screen))
+			h = DisplayHeight(dpy, scr->screen);
+	} else
+		return;
+	snprintf(arg, sizeof(arg), "0 0 %u %u", w, h);
+	k->func = k_moveresizekb;
+	k->arg = strdup(arg);
 }
 
 static void
 p_resize(Key *k)
 {
+	int dw, dh;
+	char *p = pctx->args, *e = NULL;
+	char arg[64];
+
+	for (; p < e && *p && isblank(*p); p++) ;
+	dw = strtol(p, &e, 0);
+	if (!dw && e == p)
+		return;
+	if (*e == '%') {
+		if (dw > 100)
+			dw = 100;
+		if (dw < 1)
+			dw = 1;
+		dw = (DisplayWidth(dpy, scr->screen) * dw) / 100;
+		p = e + 1;
+	} else if (isblank(*e)) {
+		if (dw < 1)
+			dw = 1;
+		if (dw > DisplayWidth(dpy, scr->screen))
+			dw = DisplayWidth(dpy, scr->screen);
+		p = e;
+	} else
+		return;
+	for (; p < e && *p && isblank(*p); p++) ;
+	dh = strtol(p, &e, 0);
+	if (!dh && e == p)
+		return;
+	if (*e == '%') {
+		if (dh > 100)
+			dh = 100;
+		if (dh < 1)
+			dh = 1;
+		dh = (DisplayHeight(dpy, scr->screen) * dh) / 100;
+		p = e + 1;
+	} else if (!*e || isblank(*e) || *e == '\n') {
+		if (dh < 1)
+			dh = 1;
+		if (dh > DisplayHeight(dpy, scr->screen))
+			dh = DisplayHeight(dpy, scr->screen);
+	} else
+		return;
+	snprintf(arg, sizeof(arg), "0 0 %s%u %s%u",
+		 dw < 0 ? "-" : (dw > 0 ? "+" : ""), (unsigned) abs(dw),
+		 dh < 0 ? "-" : (dh > 0 ? "+" : ""), (unsigned) abs(dh));
+	k->func = k_moveresizekb;
+	k->arg = strdup(arg);
 }
 
 static void
 p_resizeh(Key *k)
 {
+	int dw;
+	char *p = pctx->args, *e = NULL;
+	char arg[64];
+
+	for (; p < e && *p && isblank(*p); p++) ;
+	dw = strtol(p, &e, 0);
+	if (!dw && e == p)
+		return;
+	if (*e == '%') {
+		if (dw > 100)
+			dw = 100;
+		if (dw < 1)
+			dw = 1;
+		dw = (DisplayWidth(dpy, scr->screen) * dw) / 100;
+	} else if (!*e || isblank(*e) || *e == '\n') {
+		if (dw < 1)
+			dw = 1;
+		if (dw > DisplayWidth(dpy, scr->screen))
+			dw = DisplayWidth(dpy, scr->screen);
+	} else
+		return;
+	snprintf(arg, sizeof(arg), "0 0 %s%u 0",
+		 dw < 0 ? "-" : (dw > 0 ? "+" : ""), (unsigned) abs(dw));
+	k->func = k_moveresizekb;
+	k->arg = strdup(arg);
 }
 
 static void
 p_resizev(Key *k)
 {
+	int dh;
+	char *p = pctx->args, *e = NULL;
+	char arg[64];
+
+	for (; p < e && *p && isblank(*p); p++) ;
+	dh = strtol(p, &e, 0);
+	if (!dh && e == p)
+		return;
+	if (*e == '%') {
+		if (dh > 100)
+			dh = 100;
+		if (dh < 1)
+			dh = 1;
+		dh = (DisplayHeight(dpy, scr->screen) * dh) / 100;
+	} else if (!*e || isblank(*e) || *e == '\n') {
+		if (dh < 1)
+			dh = 1;
+		if (dh > DisplayHeight(dpy, scr->screen))
+			dh = DisplayHeight(dpy, scr->screen);
+	} else
+		return;
+	snprintf(arg, sizeof(arg), "0 0 0 %s%u",
+		 dh < 0 ? "-" : "+", (unsigned) abs(dh));
+	k->func = k_moveresizekb;
+	k->arg = strdup(arg);
 }
 
 static void
@@ -1290,56 +1473,109 @@ p_moveto(Key *k)
 static void
 p_move(Key *k)
 {
+	int dx, dy;
+	char *p = pctx->args, *e = NULL;
+	char arg[64];
+
+	for (; p < e && *p && isblank(*p); p++) ;
+	dx = strtol(p, &e, 0);
+	if (!dx && e == p)
+		return;
+	if (!isblank(*e))
+		return;
+	for (p = e; p < e && *p && isblank(*p); p++) ;
+	dy = strtol(p, &e, 0);
+	if (!dy && e == p)
+		return;
+	if (*p && !isblank(*p))
+		return;
+	snprintf(arg, sizeof(arg), "%s%u %s%u 0 0",
+		 dx < 0 ? "-" : "+", (unsigned) abs(dx),
+		 dy < 0 ? "-" : "+", (unsigned) abs(dy));
+	k->func = k_moveresizekb;
+	k->arg = strdup(arg);
 }
 
 static void
 p_moveright(Key *k)
 {
+	k->func = k_moveby;
+	k->dir = RelativeEast;
+	k->arg = strdup(pctx->args);
 }
 
 static void
 p_moveleft(Key *k)
 {
+	k->func = k_moveby;
+	k->dir = RelativeWest;
+	k->arg = strdup(pctx->args);
 }
 
 static void
 p_moveup(Key *k)
 {
+	k->func = k_moveby;
+	k->dir = RelativeNorth;
+	k->arg = strdup(pctx->args);
 }
 
 static void
 p_movedown(Key *k)
 {
+	k->func = k_moveby;
+	k->dir = RelativeSouth;
+	k->arg = strdup(pctx->args);
 }
 
 static void
 p_taketo(Key *k)
 {
+	if (sscanf(pctx->args, "%u", &k->tag) < 1)
+		return;
+	if (k->tag)
+		k->tag--;
+	k->func = k_taketo;
+	k->dir = RelativeNone;
 }
 
 static void
 p_sendto(Key *k)
 {
+	if (sscanf(pctx->args, "%u", &k->tag) < 1)
+		return;
+	if (k->tag)
+		k->tag--;
+	k->func = k_tag;
+	k->dir = RelativeNone;
 }
 
 static void
 p_takenext(Key *k)
 {
+	k->func = k_taketo;
+	k->dir = RelativeNext;
 }
 
 static void
 p_takeprev(Key *k)
 {
+	k->func = k_taketo;
+	k->dir = RelativePrev;
 }
 
 static void
 p_sendnext(Key *k)
 {
+	k->func = k_tag;
+	k->dir = RelativeNext;
 }
 
 static void
 p_sendprev(Key *k)
 {
+	k->func = k_tag;
+	k->dir = RelativePrev;
 }
 
 static void
@@ -1370,36 +1606,57 @@ p_setxprop(Key *k)
 static void
 p_deskadd(Key *k)
 {
+	k->func = k_appendtag;
 }
 
 static void
 p_deskrem(Key *k)
 {
+	k->func = k_rmlasttag;
 }
 
 static void
 p_desknext(Key *k)
 {
+	k->func = k_view;
+	k->dir = RelativeNext;
+	k->wrap = True;
 }
 
 static void
 p_deskprev(Key *k)
 {
+	k->func = k_view;
+	k->dir = RelativePrev;
+	k->wrap = True;
 }
 
 static void
 p_deskright(Key *k)
 {
+	k->func = k_view;
+	k->dir = RelativeNext;
+	k->wrap = False;
 }
 
 static void
 p_deskleft(Key *k)
 {
+	k->func = k_view;
+	k->dir = RelativePrev;
+	k->wrap = False;
 }
 
 static void
 p_desk(Key *k)
 {
+	if (sscanf(pctx->args, "%u", &k->tag) < 1)
+		return;
+	if (k->tag)
+		k->tag--;
+	k->func = k_view;
+	k->dir = RelativeNone;
+	k->wrap = True;
 }
 
 static void
@@ -1480,11 +1737,33 @@ p_arrangeh(Key *k)
 static void
 p_showing(Key *k)
 {
+	k->func = k_setshowing;
+	k->set = ToggleFlagSetting;
+	k->any = FocusClient;
 }
 
 static void
 p_deiconify(Key *k)
 {
+	const char *p = pctx->args;
+
+	k->any = FocusClient;
+	if (strcasestr(p, "allworkspace")) {
+		k->any = AllClients;
+	} else if (strcasestr(p, "all")) {
+		k->any = AnyClient;
+	} else if (strcasestr(p, "lastworkspace")) {
+		k->any = FocusClient;
+	} else if (strcasestr(p, "last")) {
+		k->any = ActiveClient;
+	}
+	if (strcasestr(p, "originquiet")) {
+	} else if (strcasestr(p, "current")) {
+	}
+	k->func = k_setmin;
+	k->set = UnsetFlagSetting;
+	k->dir = RelativeCenter;
+	k->ico = OnlyIcons;
 }
 
 static void
@@ -1535,11 +1814,19 @@ p_hidemenus(Key *k)
 static void
 p_restart(Key *k)
 {
+	char *p = pctx->args, *e = p + strlen(p);
+
+	for (; p < e && *p && isblank(*p); p++) ;
+	for (; e > p && (!*e || isspace(*e)); e--) ;
+	k->func = k_restart;
+	if (p < e)
+		k->arg = strndup(p, e - p);
 }
 
 static void
 p_quit(Key *k)
 {
+	k->func = k_quit;
 }
 
 static void
@@ -1560,6 +1847,13 @@ p_reloadstyle(Key *k)
 static void
 p_exec(Key *k)
 {
+	char *p = pctx->args, *e = p + strlen(p);
+
+	for (; p < e && *p && isblank(*p); p++) ;
+	for (; e > p && (!*e || isspace(*e)); e--) ;
+	k->func = k_spawn;
+	if (p < e)
+		k->arg = strndup(p, e - p);
 }
 
 static void
@@ -1703,38 +1997,123 @@ p_getline()
 }
 
 static unsigned long
-p_mod(const char **p)
+p_mod(const char **b, const char *e)
 {
 	unsigned long mods = 0;
+	const char *p = *b;
 
-	/* FIXME: write this function */
+	while (p < e) {
+		for (; *p && isblank(*p); p++) ;
+		if (!strncasecmp("control", p, sizeof("control"))) {
+			mods |= ControlMask;
+			p += sizeof("control");
+		} else if (!strncasecmp("shift", p, sizeof("shift"))) {
+			mods |= ShiftMask;
+			p += sizeof("shift");
+		} else if (!strncasecmp("mod1", p, sizeof("mod1"))) {
+			mods |= Mod1Mask;
+			p += sizeof("mod1");
+		} else if (!strncasecmp("mod4", p, sizeof("mod4"))) {
+			mods |= Mod4Mask;
+			p += sizeof("mod4");
+		}
+	}
+	*b = p;
 	return mods;
 }
 
 static KeySym
-p_sym(const char **p)
+p_sym(const char **b, const char *e)
 {
 	KeySym sym = NoSymbol;
+	const char *p, *f;
+	char *t;
 
-	/* FIXME: write this function */
+	for (p = *b; p < e && *p && isblank(*p); p++) ;
+	for (f = p; f < e && *f && !isblank(*f); f++) ;
+	DPRINTF("Parsing keysym from '%s'\n", p);
+	if (p < f && (t = strndup(p, f - p))) {
+		sym = XStringToKeysym(t);
+		free(t);
+	}
+	for (; f < e && *f && isblank(*f); f++) ;
+	*b = f;
 	return sym;
 }
 
 static Key *
 p_key(const char *keys)
 {
-	/* FIXME: write this function */
-	p_mod(&keys);
-	p_sym(&keys);
-	return NULL;
+	unsigned long mod;
+	KeySym sym = NoSymbol;
+	const char *p = keys;
+	const char *e = p + strlen(keys);
+	Key *k, *chain = NULL, *leaf = NULL;
+
+	while (p < e) {
+		DPRINTF("Parsing key from '%s'\n", keys);
+		mod = p_mod(&p, e);
+		if ((sym = p_sym(&p, e)) == NoSymbol) {
+			DPRINTF("Failed to parse symbol from '%s'\n", keys);
+			if (chain)
+				freechain(chain);
+			return NULL;
+		}
+		k = ecalloc(1, sizeof(*k));
+		k->mod = mod;
+		k->keysym = sym;
+		if (leaf) {
+			leaf->chain = k;
+			leaf->func = &k_chain;
+		} else {
+			chain = leaf = k;
+		}
+	}
+	pctx->leaf = leaf;
+	return chain;
 }
 
 static int
 p_line()
 {
+	const char *b = pctx->buff;
+	const char *p;
+	char *f = pctx->func;
+	char *k = pctx->keys;
+	char *a = pctx->args;
+	char *q;
 	int items = 0;
+	size_t len;
 
-	/* FIXME: write this function */
+	while (*b && isblank(*b))
+		b++;
+	if (!*b || *b == '#')
+		return items;
+	*f = *k = *a = '\0';
+	for (p = b; isalnum(*p); p++) ;
+	if (*p == ':')
+		/* can't handle keymodes yet */
+		return items;
+	if (!(p = strchr(b, ':')))
+		return items;
+	if ((len = p - b - 1) <= 0)
+		return items;
+	strncpy(k, b, len);
+	for (q = k + len - 1; q >= k && isblank(*q); *q-- = '\0') ;
+	p++;
+	if (!isalnum(*p))
+		return items;
+	for (q = f; *p && isalnum(*p); *q++ = *p++) ;
+	*q = '\0';
+	for (; *p && isblank(*p); p++) ;
+	for (q = q; *p && *p != '\n'; *q++ = *p++) ;
+	*q = '\0';
+	if (*k)
+		items++;
+	if (*f)
+		items++;
+	if (*a)
+		items++;
 	return items;
 }
 

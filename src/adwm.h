@@ -271,6 +271,7 @@ typedef enum { RelativeNone, RelativeNorthWest, RelativeNorth, RelativeNorthEast
 typedef enum { SetFlagSetting, UnsetFlagSetting, ToggleFlagSetting } FlagSetting;
 typedef enum { IncCount, DecCount, SetCount } ActionCount;
 typedef enum { FocusClient, ActiveClient, PointerClient, AnyClient, AllClients, EveryClient } WhichClient;
+typedef enum { IncludeIcons, ExcludeIcons, OnlyIcons } IconsIncluded;
 enum { _NET_WM_ORIENTATION_HORZ, _NET_WM_ORIENTATION_VERT };
 enum { _NET_WM_TOPLEFT, _NET_WM_TOPRIGHT, _NET_WM_BOTTOMRIGHT, _NET_WM_BOTTOMLEFT };
 typedef enum { PatternSolid, PatternParent, PatternGradient, PatternPixmap } Pattern;
@@ -649,6 +650,7 @@ struct _Key {
 	ActionCount act;
 	FlagSetting set;
 	WhichClient any;
+	IconsIncluded ico;
 	unsigned tag;
 	CycleList *cycle, *where;
 	unsigned num;

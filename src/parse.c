@@ -358,6 +358,18 @@ k_setgeneric(XEvent *e, Key *k, void (*func) (XEvent *, Key *, Client *))
 		for (c = scr->clients; c; c = c->next) {
 			if (c->curmon != m)
 				continue;
+			switch (k->ico) {
+			case IncludeIcons:
+				break;
+			case ExcludeIcons:
+				if (c->is.icon || c->is.hidden)
+					continue;
+				break;
+			case OnlyIcons:
+				if (c->is.icon || c->is.hidden)
+					break;
+				continue;
+			}
 			func(e, k, c);
 		}
 		break;
@@ -365,11 +377,35 @@ k_setgeneric(XEvent *e, Key *k, void (*func) (XEvent *, Key *, Client *))
 		for (c = scr->clients; c; c = c->next) {
 			if (!c->curmon)
 				continue;
+			switch (k->ico) {
+			case IncludeIcons:
+				break;
+			case ExcludeIcons:
+				if (c->is.icon || c->is.hidden)
+					continue;
+				break;
+			case OnlyIcons:
+				if (c->is.icon || c->is.hidden)
+					break;
+				continue;
+			}
 			func(e, k, c);
 		}
 		break;
 	case EveryClient:
 		for (c = scr->clients; c; c = c->next) {
+			switch (k->ico) {
+			case IncludeIcons:
+				break;
+			case ExcludeIcons:
+				if (c->is.icon || c->is.hidden)
+					continue;
+				break;
+			case OnlyIcons:
+				if (c->is.icon || c->is.hidden)
+					break;
+				continue;
+			}
 			func(e, k, c);
 		}
 		break;
@@ -878,15 +914,14 @@ static const struct {
 	const char *suffix;
 	WhichClient any;
 } set_suffix[] = {
-	{
-	"", FocusClient}, {
-	"sel", ActiveClient}, {
-	"ptr", PointerClient}, {
-	"all", AllClients},	/* all on current monitor */
-	{
-	"any", AnyClient},	/* clients on any monitor */
-	{
-	"every", EveryClient}	/* clients on every workspace */
+	/* *INDENT-OFF* */
+	{ "",		FocusClient	},
+	{ "sel",	ActiveClient	},
+	{ "ptr",	PointerClient	},
+	{ "all",	AllClients	},	/* all on current monitor */
+	{ "any",	AnyClient	},	/* clients on any monitor */
+	{ "every",	EveryClient	}	/* clients on every workspace */
+	/* *INDENT-ON* */
 };
 
 static KeyItem KeyItemsByState[] = {
@@ -1090,7 +1125,7 @@ k_tiled(Client *c, Monitor *m, WhichClient any, RelativeDirection dir)
 Bool canfocus(Client *c);
 
 static Bool
-k_focusable(Client *c, Monitor *m, WhichClient any, RelativeDirection dir)
+k_focusable(Client *c, Monitor *m, WhichClient any, RelativeDirection dir, IconsIncluded ico)
 {
 	if (dir == RelativeCenter)
 		if (!c->is.icon && !c->is.hidden)
@@ -1107,22 +1142,70 @@ k_focusable(Client *c, Monitor *m, WhichClient any, RelativeDirection dir)
 		if (dir != RelativeCenter)
 			if (c->is.icon || c->is.hidden)
 				return False;
+		switch (ico) {
+		case IncludeIcons:
+			break;
+		case ExcludeIcons:
+			if (c->is.icon || c->is.hidden)
+				return False;
+			break;
+		case OnlyIcons:
+			if (!c->is.icon && !c->is.hidden)
+				return False;
+			break;
+		}
 		break;
 	case ActiveClient:
 		if (!isvisible(c, m))
 			return False;
+		switch (ico) {
+		case IncludeIcons:
+			break;
+		case ExcludeIcons:
+			if (c->is.icon || c->is.hidden)
+				return False;
+			break;
+		case OnlyIcons:
+			if (!c->is.icon && !c->is.hidden)
+				return False;
+			break;
+		}
 		break;
 	case AllClients:
 		if (c->skip.focus)
 			return False;
 		if (!isvisible(c, m))
 			return False;
+		switch (ico) {
+		case IncludeIcons:
+			break;
+		case ExcludeIcons:
+			if (c->is.icon || c->is.hidden)
+				return False;
+			break;
+		case OnlyIcons:
+			if (!c->is.icon && !c->is.hidden)
+				return False;
+			break;
+		}
 		break;
 	case AnyClient:
 		if (c->skip.focus)
 			return False;
 		if (!isvisible(c, NULL))
 			return False;
+		switch (ico) {
+		case IncludeIcons:
+			break;
+		case ExcludeIcons:
+			if (c->is.icon || c->is.hidden)
+				return False;
+			break;
+		case OnlyIcons:
+			if (!c->is.icon && !c->is.hidden)
+				return False;
+			break;
+		}
 		break;
 	case EveryClient:
 		break;
@@ -1356,7 +1439,7 @@ k_focus(XEvent *e, Key *k)
 
 		k->where = NULL;
 		for (n = 0, c = scr->clients; c; c = c->next)
-			if (k_focusable(c, m, k->any, k->dir))
+			if (k_focusable(c, m, k->any, k->dir, k->ico))
 				if (k_tiled(c, m, k->any, k->dir)
 				    || k_floating(c, m, k->any, k->dir))
 					n++;
@@ -1367,7 +1450,7 @@ k_focus(XEvent *e, Key *k)
 		i = 0;
 		/* put tiled before floats */
 		for (c = scr->clients; c && i < n; c = c->next) {
-			if (!k_focusable(c, m, k->any, k->dir))
+			if (!k_focusable(c, m, k->any, k->dir, k->ico))
 				continue;
 			if (!k_tiled(c, m, k->any, k->dir))
 				continue;
@@ -1384,7 +1467,7 @@ k_focus(XEvent *e, Key *k)
 		DPRINTF("There are %d tiled windows of %d total\n", j, n);
 		/* put tiled before floats */
 		for (c = scr->clients; c && i < n; c = c->next) {
-			if (!k_focusable(c, m, k->any, k->dir))
+			if (!k_focusable(c, m, k->any, k->dir, k->ico))
 				continue;
 			if (k_tiled(c, m, k->any, k->dir))
 				continue;
@@ -1422,13 +1505,13 @@ k_client(XEvent *e, Key *k)
 
 		k->where = NULL;
 		for (n = 0, c = scr->clist; c; c = c->cnext)
-			if (k_focusable(c, m, k->any, k->dir))
+			if (k_focusable(c, m, k->any, k->dir, k->ico))
 				n++;
 		if (!n)
 			return;
 		cl = k->cycle = ecalloc(n, sizeof(*k->cycle));
 		for (i = 0, c = scr->clist; c && i < n; c = c->cnext) {
-			if (!k_focusable(c, m, k->any, k->dir))
+			if (!k_focusable(c, m, k->any, k->dir, k->ico))
 				continue;
 			if (c == sel)
 				k->where = cl;
@@ -1461,13 +1544,13 @@ k_stack(XEvent *e, Key *k)
 
 		k->where = NULL;
 		for (n = 0, c = scr->stack; c; c = c->snext)
-			if (k_focusable(c, m, k->any, k->dir))
+			if (k_focusable(c, m, k->any, k->dir, k->ico))
 				n++;
 		if (!n)
 			return;
 		cl = k->cycle = ecalloc(n, sizeof(*k->cycle));
 		for (i = 0, c = scr->stack; c && i < n; c = c->snext) {
-			if (!k_focusable(c, m, k->any, k->dir))
+			if (!k_focusable(c, m, k->any, k->dir, k->ico))
 				continue;
 			if (c == sel)
 				k->where = cl;
@@ -1501,13 +1584,13 @@ k_group(XEvent *e, Key *k)
 		/* FIXME: just stick within the same resource class */
 		k->where = NULL;
 		for (n = 0, c = scr->clist; c; c = c->cnext)
-			if (k_focusable(c, m, k->any, k->dir))
+			if (k_focusable(c, m, k->any, k->dir, k->ico))
 				n++;
 		if (!n)
 			return;
 		cl = k->cycle = ecalloc(n, sizeof(*k->cycle));
 		for (i = 0, c = scr->clist; c && i < n; c = c->cnext) {
-			if (!k_focusable(c, m, k->any, k->dir))
+			if (!k_focusable(c, m, k->any, k->dir, k->ico))
 				continue;
 			if (c == sel)
 				k->where = cl;
@@ -1549,7 +1632,7 @@ k_panel(XEvent *e, Key *k)
 		k->where = NULL;
 		for (n = 0, c = scr->clist; c; c = c->cnext)
 			if (WTCHECK(c, WindowTypeDock))
-				if (k_focusable(c, m, EveryClient, k->dir))
+				if (k_focusable(c, m, EveryClient, k->dir, k->ico))
 					n++;
 		if (!n)
 			return;
@@ -1557,7 +1640,7 @@ k_panel(XEvent *e, Key *k)
 		for (i = 0, c = scr->clist; c && i < n; c = c->cnext) {
 			if (!WTCHECK(c, WindowTypeDock))
 				continue;
-			if (!k_focusable(c, m, EveryClient, k->dir))
+			if (!k_focusable(c, m, EveryClient, k->dir, k->ico))
 				continue;
 			if (c == sel)
 				k->where = cl;
@@ -1591,7 +1674,7 @@ k_dock(XEvent *e, Key *k)
 		k->where = NULL;
 		for (n = 0, c = scr->clist; c; c = c->cnext)
 			if (c->is.dockapp)
-				if (k_focusable(c, m, EveryClient, k->dir))
+				if (k_focusable(c, m, EveryClient, k->dir, k->ico))
 					n++;
 		if (!n)
 			return;
@@ -1599,7 +1682,7 @@ k_dock(XEvent *e, Key *k)
 		for (i = 0, c = scr->clist; c && i < n; c = c->cnext) {
 			if (!c->is.dockapp)
 				continue;
-			if (!k_focusable(c, m, EveryClient, k->dir))
+			if (!k_focusable(c, m, EveryClient, k->dir, k->ico))
 				continue;
 			if (c == sel)
 				k->where = cl;
@@ -1627,16 +1710,13 @@ static const struct {
 	const char *which;
 	WhichClient any;
 } list_which[] = {
-	{
-	"", FocusClient},	/* focusable, same monitor */
-	{
-	"act", ActiveClient},	/* activatable (incl. icons), same monitor */
-	{
-	"all", AllClients},	/* all clients (incl. icons), same mon */
-	{
-	"any", AnyClient},	/* any client on any monitor */
-	{
-	"every", EveryClient}	/* all clients, all desktops */
+	/* *INDENT-OFF* */
+	{ "",		FocusClient	},	/* focusable, same monitor */
+	{ "act",	ActiveClient	},	/* activatable (incl. icons), same monitor */
+	{ "all",	AllClients	},	/* all clients (incl. icons), same mon */
+	{ "any",	AnyClient	},	/* any client on any monitor */
+	{ "every",	EveryClient	}	/* all clients, all desktops */
+	/* *INDENT-ON* */
 };
 
 static const struct {

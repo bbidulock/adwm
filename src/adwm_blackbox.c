@@ -671,7 +671,7 @@ p_line()
 	const char *b = pctx->buff;
 	int items = 0;
 
-	while (*b && isspace(*b))
+	while (*b && isblank(*b))
 		b++;
 	if (!*b || *b == '#')
 		return items;

@@ -26,3 +26,6 @@
 * add per-desktop (per-view) background
 * fixup restart behaviour
 * add session management
+
+* showing desktop mode in fluxbox(1) is per desktop, we should do the same and make
+  showing desktop mode only apply to a view.

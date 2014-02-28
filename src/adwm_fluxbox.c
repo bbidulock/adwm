@@ -469,6 +469,7 @@ initrcfile_FLUXBOX()
 		strcat(config.rcfile, "/.fluxbox/init");
 		if (!lstat(config.rcfile, &st) && S_ISLNK(st.st_mode)) {
 			char *buf = ecalloc(PATH_MAX + 1, sizeof(*buf));
+
 			if (readlink(config.rcfile, buf, PATH_MAX) == -1)
 				eprint("%s: %s\n", config.rcfile, strerror(errno));
 			if (*buf == '/') {
@@ -527,18 +528,22 @@ initconfig_FLUXBOX(void)
 		session.cacheLife = strtoul(res, NULL, 0);
 		res = readres("session.cacheMax", "Session.CacheMax", "200");
 		session.cacheMax = strtoul(res, NULL, 0);
-		res = readres("session.colorsPerChannel", "Session.ColorsPerChannel", "4");
+		res =
+		    readres("session.colorsPerChannel", "Session.ColorsPerChannel", "4");
 		session.colorsPerChannel = strtoul(res, NULL, 0);
-		res = readres("session.doubleClickInterval", "Session.DoubleClickInterval", "250");
+		res =
+		    readres("session.doubleClickInterval", "Session.DoubleClickInterval",
+			    "250");
 		session.doubleClickInterval = strtoul(res, NULL, 0);
 		getbool("session.forcePseudoTransparency",
-				"Session.ForcePseudoTransparency", NULL, False,
-				&session.forcePseudoTransparency);
+			"Session.ForcePseudoTransparency", NULL, False,
+			&session.forcePseudoTransparency);
 		getbool("session.ignoreBorder", "Session.IgnoreBorder", NULL,
-				False, &session.ignoreBorder);
+			False, &session.ignoreBorder);
 		res = readres("session.tabPadding", "Session.TabPadding", "0");
 		session.tabPadding = strtoul(res, NULL, 0);
-		res = readres("session.tabsAttachArea", "Session.TabsAttachArea", "Window");
+		res =
+		    readres("session.tabsAttachArea", "Session.TabsAttachArea", "Window");
 		session.tabsAttachArea = AttachAreaWindow;
 		if (strcasestr(res, "window"))
 			session.tabsAttachArea = AttachAreaWindow;
@@ -546,26 +551,33 @@ initconfig_FLUXBOX(void)
 			session.tabsAttachArea = AttachAreaTitlebar;
 #if 0
 		/* TODO: do more with these */
-		res = readres("session.titlebar.left",
-				"Session.Titlebar.Left", "stick");
+		res = readres("session.titlebar.left", "Session.Titlebar.Left", "stick");
 		session.titlebar.left = res;
 		res = readres("session.titlebar.right",
-				"Session.Titlebar.Right", "shade minimize maximize close");
+			      "Session.Titlebar.Right", "shade minimize maximize close");
 		session.titlebar.right = res;
 #endif
 		res = readres("session.appsFile", "Session.AppsFile", "~/.fluxbox/apps");
 		session.appsFile = res;
-		res = readres("session.groupFile", "Session.GroupFile", "~/.fluxbox/groups");
+		res =
+		    readres("session.groupFile", "Session.GroupFile",
+			    "~/.fluxbox/groups");
 		session.groupFile = res;
 		res = readres("session.keyFile", "Session.KeyFile", "~/.fluxbox/keys");
 		session.keyFile = res;
 		res = readres("session.menuFile", "Session.MenuFile", "~/.fluxbox/menu");
 		session.menuFile = res;
-		res = readres("session.slitlistFile", "Session.SlitlistFile", "~/.fluxbox/slitlist");
+		res =
+		    readres("session.slitlistFile", "Session.SlitlistFile",
+			    "~/.fluxbox/slitlist");
 		session.slitlistFile = res;
-		res = readres("session.styleFile", "Session.StyleFile", "/usr/share/fluxbox/styles/bloe");
+		res =
+		    readres("session.styleFile", "Session.StyleFile",
+			    "/usr/share/fluxbox/styles/bloe");
 		session.styleFile = res;
-		res = readres("session.styleOverlay", "Session.StyleOverlay", "~/.fluxbox/overlay");
+		res =
+		    readres("session.styleOverlay", "Session.StyleOverlay",
+			    "~/.fluxbox/overlay");
 		session.styleOverlay = res;
 
 		res = readres("session.modKey", "Session.ModKey", "Mod1");
@@ -578,14 +590,16 @@ initconfig_FLUXBOX(void)
 			session.modKey = ShiftMask;
 		if (!strcasecmp(res, "control"))
 			session.modKey = ControlMask;
-		getbool("session.imageDither", "Session.ImageDither", NULL, False, &session.imageDither);
+		getbool("session.imageDither", "Session.ImageDither", NULL, False,
+			&session.imageDither);
 		res = readres("session.configVersion", "Session.ConfigVersion", "13");
 		session.configVersion = res;
-		getbool("session.opaqueMove", "Session.OpaqueMove", NULL, True, &session.opaqueMove);
+		getbool("session.opaqueMove", "Session.OpaqueMove", NULL, True,
+			&session.opaqueMove);
 	}
 
 	session.screens =
-		erealloc(session.screens, (scr->screen + 1) * sizeof(*session.screens));
+	    erealloc(session.screens, (scr->screen + 1) * sizeof(*session.screens));
 	screen = session.screens + scr->screen;
 	memset(screen, 0, sizeof(*screen));
 	snprintf(name, sizeof(name), "session.screen%d.", scr->screen);
@@ -691,7 +705,6 @@ initconfig_FLUXBOX(void)
 	snprintf(c, clen, "Slit.OnTop");
 	getbool(n, c, NULL, False, &screen->slit.onTop);
 
-
 	snprintf(n, nlen, "toolbar.alpha");
 	snprintf(c, clen, "Toolbar.Alpha");
 	res = readres(n, c, "255");
@@ -767,7 +780,9 @@ initconfig_FLUXBOX(void)
 
 	snprintf(n, nlen, "toolbar.tools");
 	snprintf(c, clen, "Toolbar.Tools");
-	res = readres(n, c, "workspacename, prevworkspace, nextworkspace, iconbar, prevwindow, nextwindow, systemtray, clock");
+	res =
+	    readres(n, c,
+		    "workspacename, prevworkspace, nextworkspace, iconbar, prevwindow, nextwindow, systemtray, clock");
 	screen->toolbar.tools = res;
 
 	snprintf(n, nlen, "toolbar.onhead");
@@ -1118,14 +1133,719 @@ initconfig_FLUXBOX(void)
 	snprintf(c, clen, "WindowScrollReverse");
 	getbool(n, c, NULL, False, &screen->windowScrollReverse);
 
+}
 
+typedef struct {
+	FILE *f;
+	char *buff;
+	char *func;
+	char *keys;
+	char *args;
+	Key *leaf;
+} ParserContext;
 
+ParserContext *pctx;
 
+typedef struct _KeyItem KeyItem;
+struct _KeyItem {
+	const char *name;
+	void (*parse) (Key *);
+};
+
+static void
+p_min(Key *k)
+{
+}
+
+static void
+p_max(Key *k)
+{
+}
+
+static void
+p_maxh(Key *k)
+{
+}
+
+static void
+p_maxv(Key *k)
+{
+}
+
+static void
+p_full(Key *k)
+{
+}
+
+static void
+p_raise(Key *k)
+{
+}
+
+static void
+p_lower(Key *k)
+{
+}
+
+static void
+p_raiselayer(Key *k)
+{
+}
+
+static void
+p_lowerlayer(Key *k)
+{
+}
+
+static void
+p_setlayer(Key *k)
+{
+}
+
+static void
+p_close(Key *k)
+{
+}
+
+static void
+p_kill(Key *k)
+{
+}
+
+static void
+p_shade(Key *k)
+{
+}
+
+static void
+p_stick(Key *k)
+{
+}
+
+static void
+p_setdecor(Key *k)
+{
+}
+
+static void
+p_toggledecor(Key *k)
+{
+}
+
+static void
+p_tabnext(Key *k)
+{
+}
+
+static void
+p_tabprev(Key *k)
+{
+}
+
+static void
+p_tab(Key *k)
+{
+}
+
+static void
+p_movetabright(Key *k)
+{
+}
+
+static void
+p_movetableft(Key *k)
+{
+}
+
+static void
+p_detach(Key *k)
+{
+}
+
+static void
+p_resizeto(Key *k)
+{
+}
+
+static void
+p_resize(Key *k)
+{
+}
+
+static void
+p_resizeh(Key *k)
+{
+}
+
+static void
+p_resizev(Key *k)
+{
+}
+
+static void
+p_moveto(Key *k)
+{
+}
+
+static void
+p_move(Key *k)
+{
+}
+
+static void
+p_moveright(Key *k)
+{
+}
+
+static void
+p_moveleft(Key *k)
+{
+}
+
+static void
+p_moveup(Key *k)
+{
+}
+
+static void
+p_movedown(Key *k)
+{
+}
+
+static void
+p_taketo(Key *k)
+{
+}
+
+static void
+p_sendto(Key *k)
+{
+}
+
+static void
+p_takenext(Key *k)
+{
+}
+
+static void
+p_takeprev(Key *k)
+{
+}
+
+static void
+p_sendnext(Key *k)
+{
+}
+
+static void
+p_sendprev(Key *k)
+{
+}
+
+static void
+p_setalpha(Key *k)
+{
+}
+
+static void
+p_sethead(Key *k)
+{
+}
+
+static void
+p_headnext(Key *k)
+{
+}
+
+static void
+p_headprev(Key *k)
+{
+}
+
+static void
+p_setxprop(Key *k)
+{
+}
+
+static void
+p_deskadd(Key *k)
+{
+}
+
+static void
+p_deskrem(Key *k)
+{
+}
+
+static void
+p_desknext(Key *k)
+{
+}
+
+static void
+p_deskprev(Key *k)
+{
+}
+
+static void
+p_deskright(Key *k)
+{
+}
+
+static void
+p_deskleft(Key *k)
+{
+}
+
+static void
+p_desk(Key *k)
+{
+}
+
+static void
+p_next(Key *k)
+{
+}
+
+static void
+p_prev(Key *k)
+{
+}
+
+static void
+p_groupnext(Key *k)
+{
+}
+
+static void
+p_groupprev(Key *k)
+{
+}
+
+static void
+p_window(Key *k)
+{
+}
+
+static void
+p_activate(Key *k)
+{
+}
+
+static void
+p_focus(Key *k)
+{
+}
+
+static void
+p_attach(Key *k)
+{
+}
+
+static void
+p_focusleft(Key *k)
+{
+}
+
+static void
+p_focusright(Key *k)
+{
+}
+
+static void
+p_focusup(Key *k)
+{
+}
+
+static void
+p_focusdown(Key *k)
+{
+}
+
+static void
+p_arrange(Key *k)
+{
+}
+
+static void
+p_arrangev(Key *k)
+{
+}
+
+static void
+p_arrangeh(Key *k)
+{
+}
+
+static void
+p_showing(Key *k)
+{
+}
+
+static void
+p_deiconify(Key *k)
+{
+}
+
+static void
+p_setdeskname(Key *k)
+{
+}
+
+static void
+p_setdesknamedialog(Key *k)
+{
+}
+
+static void
+p_closeall(Key *k)
+{
+}
+
+static void
+p_rootmenu(Key *k)
+{
+}
+
+static void
+p_deskmenu(Key *k)
+{
+}
+
+static void
+p_windowmenu(Key *k)
+{
+}
+
+static void
+p_clientmenu(Key *k)
+{
+}
+
+static void
+p_custommenu(Key *k)
+{
+}
+
+static void
+p_hidemenus(Key *k)
+{
+}
+
+static void
+p_restart(Key *k)
+{
+}
+
+static void
+p_quit(Key *k)
+{
+}
+
+static void
+p_reconfig(Key *k)
+{
+}
+
+static void
+p_setstyle(Key *k)
+{
+}
+
+static void
+p_reloadstyle(Key *k)
+{
+}
+
+static void
+p_exec(Key *k)
+{
+}
+
+static void
+p_command(Key *k)
+{
+}
+
+static void
+p_setenv(Key *k)
+{
+}
+
+static void
+p_setres(Key *k)
+{
+}
+
+static void
+p_setresdialog(Key *k)
+{
+}
+
+static void
+p_macrocmd(Key *k)
+{
+}
+
+const KeyItem KeyItems[] = {
+	/* *INDENT-OFF* */
+	{ "minimize",		    &p_min		},
+	{ "minimizewindow",	    &p_min		},
+	{ "iconify",		    &p_min		},
+	{ "maximize",		    &p_max		},
+	{ "maximizewindow",	    &p_max		},
+	{ "maximizehorizontal",	    &p_maxh		},
+	{ "maximizevertical",	    &p_maxv		},
+	{ "fullscreen",		    &p_full		},
+	{ "raise",		    &p_raise		},
+	{ "lower",		    &p_lower		},
+	{ "raiselayer",		    &p_raiselayer	},
+	{ "lowerlayer",		    &p_lowerlayer	},
+	{ "setlayer",		    &p_setlayer		},
+	{ "close",		    &p_close		},
+	{ "kill",		    &p_kill		},
+	{ "killwindow",		    &p_kill		},
+	{ "shade",		    &p_shade		},
+	{ "shadewindow",	    &p_shade		},
+	{ "stick",		    &p_stick		},
+	{ "stickwindow",	    &p_stick		},
+	{ "setdecor",		    &p_setdecor		},
+	{ "toggledecor",	    &p_toggledecor	},
+	{ "nexttab",		    &p_tabnext		},
+	{ "prevtab",		    &p_tabprev		},
+	{ "tab",		    &p_tab		},
+	{ "movetabright",	    &p_movetabright	},
+	{ "movetableft",	    &p_movetableft	},
+	{ "detachclient",	    &p_detach		},
+	{ "resizeto",		    &p_resizeto		},
+	{ "resize",		    &p_resize		},
+	{ "resizehorizontal",	    &p_resizeh		},
+	{ "resizevertical",	    &p_resizev		},
+	{ "moveto",		    &p_moveto		},
+	{ "move",		    &p_move		},
+	{ "moveright",		    &p_moveright	},
+	{ "moveleft",		    &p_moveleft		},
+	{ "moveup",		    &p_moveup		},
+	{ "movedown",		    &p_movedown		},
+	{ "taketoworkspace",	    &p_taketo		},
+	{ "sendtoworkspace",	    &p_sendto		},
+	{ "taketonextworkspace",    &p_takenext		},
+	{ "taketoprevworkspace",    &p_takeprev		},
+	{ "sendtonextworkspace",    &p_sendnext		},
+	{ "sendtoprevworkspace",    &p_sendprev		},
+	{ "setalpha",		    &p_setalpha		},
+	{ "sethead",		    &p_sethead		},
+	{ "sendtonexthead",	    &p_headnext		},
+	{ "sendtoprevhead",	    &p_headprev		},
+	{ "setxprop",		    &p_setxprop		},
+
+	{ "addworkspace",	    &p_deskadd		},
+	{ "removelastworkspace",    &p_deskrem		},
+	{ "nextworkspace",	    &p_desknext		},
+	{ "prevworkspace",	    &p_deskprev		},
+	{ "rightworkspace",	    &p_deskright	},
+	{ "leftworkspace",	    &p_deskleft		},
+	{ "workspace",		    &p_desk		},
+	{ "nextwindow",		    &p_next		},
+	{ "prevwindow",		    &p_prev		},
+	{ "nextgroup",		    &p_groupnext	},
+	{ "prevgroup",		    &p_groupprev	},
+	{ "gotowindow",		    &p_window		},
+	{ "activate",		    &p_activate		},
+	{ "focus",		    &p_focus		},
+	{ "attach",		    &p_attach		},
+	{ "focusleft",		    &p_focusleft	},
+	{ "focusright",		    &p_focusright	},
+	{ "focusup",		    &p_focusup		},
+	{ "focusdown",		    &p_focusdown	},
+	{ "arrangewindows",	    &p_arrange		},
+	{ "arrangewindowsvertical", &p_arrangev		},
+	{ "arrangewindowshorizontal",&p_arrangeh	},
+	{ "showdesktop",	    &p_showing		},
+	{ "deiconify",		    &p_deiconify	},
+	{ "setworkspacename",	    &p_setdeskname	},
+	{ "setworkspacenamedialog", &p_setdesknamedialog},
+	{ "closeallwindows",	    &p_closeall		},
+
+	{ "rootmenu",		    &p_rootmenu		},
+	{ "workspacemenu",	    &p_deskmenu		},
+	{ "windowmenu",		    &p_windowmenu	},
+	{ "clienmenu",		    &p_clientmenu	},
+	{ "custommenu",		    &p_custommenu	},
+	{ "hidemenus",		    &p_hidemenus	},
+
+	{ "restart",		    &p_restart		},
+	{ "quit",		    &p_quit		},
+	{ "exit",		    &p_quit		},
+	{ "reconfig",		    &p_reconfig		},
+	{ "reconfigure",	    &p_reconfig		},
+	{ "setstyle",		    &p_setstyle		},
+	{ "reloadstyle",	    &p_reloadstyle	},
+	{ "execcommand",	    &p_exec		},
+	{ "exec",		    &p_exec		},
+	{ "execute",		    &p_exec		},
+	{ "commanddialog",	    &p_command		},
+	{ "setenv",		    &p_setenv		},
+	{ "export",		    &p_setenv		},
+	{ "setresourcevalue",	    &p_setres		},
+	{ "setresourcevaluedialog", &p_setresdialog	},
+
+	{ "macrocmd",		    &p_macrocmd		},
+
+	{ NULL, NULL }
+	/* *INDENT-ON* */
+};
+
+static char *
+p_getline()
+{
+	return fgets(pctx->buff, PATH_MAX, pctx->f);
+}
+
+static unsigned long
+p_mod(const char **p)
+{
+	unsigned long mods = 0;
+
+	/* FIXME: write this function */
+	return mods;
+}
+
+static KeySym
+p_sym(const char **p)
+{
+	KeySym sym = NoSymbol;
+
+	/* FIXME: write this function */
+	return sym;
+}
+
+static Key *
+p_key(const char *keys)
+{
+	/* FIXME: write this function */
+	p_mod(&keys);
+	p_sym(&keys);
+	return NULL;
+}
+
+static int
+p_line()
+{
+	int items = 0;
+
+	/* FIXME: write this function */
+	return items;
+}
+
+static void
+p_file()
+{
+	while (p_getline()) {
+		const KeyItem *item;
+		Key *k;
+
+		if (p_line() < 2)
+			continue;
+		for (item = KeyItems; item->name; item++)
+			if (strcasecmp(pctx->func, item->name))
+				break;
+		if (!item->name || !item->parse)
+			continue;
+		if ((k = p_key(pctx->keys))) {
+			(*item->parse) (pctx->leaf);
+			addchain(k);
+		}
+	}
 }
 
 static void
 initkeys_FLUXBOX(void)
 {
+	ParserContext ctx;
+	const char *keyFile, *home = getenv("HOME") ? : "/";
+	char *file = NULL;
+	size_t len;
+
+	keyFile = (session.keyFile && *session.keyFile) ? session.keyFile : "keys";
+	if (!ctx.f) {
+		if (*keyFile == '~') {
+			len = strlen(home) + strlen(keyFile);
+			file = ecalloc(len, sizeof(*file));
+			strcpy(file, home);
+			strcat(file, keyFile + 1);
+			if (!(ctx.f = fopen(file, "r"))) {
+				DPRINTF("%s: %s\n", file, strerror(errno));
+				free(file);
+				file = NULL;
+			}
+		}
+	}
+	if (!ctx.f) {
+		if (*keyFile == '/') {
+			len = strlen(keyFile) + 1;
+			file = ecalloc(len, sizeof(*file));
+			strcpy(file, keyFile);
+			if (!(ctx.f = fopen(file, "r"))) {
+				DPRINTF("%s: %s\n", file, strerror(errno));
+				free(file);
+				file = NULL;
+			}
+		}
+	}
+	if (!ctx.f) {
+		len = strlen(config.pdir) + 1 + strlen(keyFile) + 1;
+		file = ecalloc(len, sizeof(*file));
+		strcpy(file, config.pdir);
+		strcat(file, "/");
+		strcat(file, keyFile);
+		if (!(ctx.f = fopen(file, "r"))) {
+			DPRINTF("%s: %s\n", file, strerror(errno));
+			free(file);
+			file = NULL;
+		}
+	}
+
+	if (!ctx.f) {
+		len = strlen(config.udir) + 1 + strlen(keyFile) + 1;
+		file = ecalloc(len, sizeof(*file));
+		strcpy(file, config.udir);
+		strcat(file, "/");
+		strcat(file, keyFile);
+		if (!(ctx.f = fopen(file, "r"))) {
+			DPRINTF("%s: %s\n", file, strerror(errno));
+			free(file);
+			file = NULL;
+		}
+	}
+	if (!ctx.f) {
+		len = strlen(config.sdir) + 1 + strlen(keyFile) + 1;
+		file = ecalloc(len, sizeof(*file));
+		strcpy(file, config.sdir);
+		strcat(file, "/");
+		strcat(file, keyFile);
+		if (!(ctx.f = fopen(file, "r"))) {
+			DPRINTF("%s: %s\n", file, strerror(errno));
+			free(file);
+			return;
+		}
+	}
+	{
+		ctx.buff = ecalloc(4 * (PATH_MAX + 1), sizeof(*ctx.buff));
+		ctx.func = ctx.buff + PATH_MAX + 1;
+		ctx.keys = ctx.func + PATH_MAX + 1;
+		ctx.args = ctx.keys + PATH_MAX + 1;
+
+		pctx = &ctx;
+
+		p_file();
+
+		pctx = NULL;
+
+		free(ctx.buff);
+	}
+	fclose(ctx.f);
+	free(file);
 }
 
 static void

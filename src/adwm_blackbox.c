@@ -403,171 +403,181 @@ static struct {
 	unsigned cycleMenuX;
 	unsigned cycleMenuY;
 
-} keyoptions = { NULL, };
+} keyoptions;
+
+typedef struct {
+	FILE *f;
+	char *buff;
+	char *func;
+	char *keys;
+	char *args;
+} ParserContext;
+
+static ParserContext *pctx;
 
 static void
-o_stylefile(char *opt, char *key, char *val)
+o_stylefile()
 {
 	/* Not applicable, we use the loaded blackbox style. */
-	keyoptions.styleFile = strdup(val);
+	keyoptions.styleFile = strdup(pctx->args);
 }
 
 static void
-o_honormods(char *opt, char *key, char *val)
+o_honormods()
 {
 	/* Whether or not to break if NumLock or ScrollLock is pressed.  For bbkeys to
 	   ignore your keybindings if NumLock or ScrollLock is pressed, set this to true. 
 	   (true or false) */
 	keyoptions.honorModifiers = False;
-	if (!strcasecmp(val, "true"))
+	if (!strcasecmp(pctx->args, "true"))
 		keyoptions.honorModifiers = True;
-	if (!strcasecmp(val, "false"))
+	if (!strcasecmp(pctx->args, "false"))
 		keyoptions.honorModifiers = False;
 }
 
 static void
-o_cycleraise(char *opt, char *key, char *val)
+o_cycleraise()
 {
 	/* Should bbkeys raise the windows you're cycling through while cycling through
 	   them? (true or false) */
 	keyoptions.raiseWhileCycling = False;
-	if (!strcasecmp(val, "true"))
+	if (!strcasecmp(pctx->args, "true"))
 		keyoptions.raiseWhileCycling = True;
-	if (!strcasecmp(val, "false"))
+	if (!strcasecmp(pctx->args, "false"))
 		keyoptions.raiseWhileCycling = False;
 }
 
 static void
-o_followsend(char *opt, char *key, char *val)
+o_followsend()
 {
 	/* Should bbkeys follows the window that you send to another workspace? This will 
 	   apply to all sendto operations such that if this is set to true, bbkeys will
 	   change workspaces to the workspace that you send the window to. (true or
 	   false) */
 	keyoptions.followWindowOnSend = False;
-	if (!strcasecmp(val, "true"))
+	if (!strcasecmp(pctx->args, "true"))
 		keyoptions.followWindowOnSend = True;
-	if (!strcasecmp(val, "false"))
+	if (!strcasecmp(pctx->args, "false"))
 		keyoptions.followWindowOnSend = False;
 }
 
 static void
-o_plusicons(char *opt, char *key, char *val)
+o_plusicons()
 {
 	/* Should bbkeys include iconified windows in its window-cycling list? (true or
 	   false) */
 	keyoptions.includeIconifiedWindowsInCycle = False;
-	if (!strcasecmp(val, "true"))
+	if (!strcasecmp(pctx->args, "true"))
 		keyoptions.includeIconifiedWindowsInCycle = True;
-	if (!strcasecmp(val, "false"))
+	if (!strcasecmp(pctx->args, "false"))
 		keyoptions.includeIconifiedWindowsInCycle = False;
 }
 
 static void
-o_cyclemenu(char *opt, char *key, char *val)
+o_cyclemenu()
 {
 	/* Show the window-cycling menu or cycle without it? (true or false) */
 	keyoptions.showCycleMenu = False;
-	if (!strcasecmp(val, "true"))
+	if (!strcasecmp(pctx->args, "true"))
 		keyoptions.showCycleMenu = True;
-	if (!strcasecmp(val, "false"))
+	if (!strcasecmp(pctx->args, "false"))
 		keyoptions.showCycleMenu = False;
 }
 
 static void
-o_menutitle(char *opt, char *key, char *val)
+o_menutitle()
 {
 	/* Show the given string as the title of the window-cycling menu.  If an empty
 	   string is passed as the parameter to this config, then the title will not be
 	   drawn. (string value) */
-	keyoptions.cycleMenuTitle = strdup(val);
+	keyoptions.cycleMenuTitle = strdup(pctx->args);
 }
 
 static void
-o_textjustify(char *opt, char *key, char *val)
+o_textjustify()
 {
 	/* How should the window-cycling menu be justified? (left, center, right) */
 	keyoptions.menuTextJustify = JustifyLeft;
-	if (!strcasecmp(val, "left"))
+	if (!strcasecmp(pctx->args, "left"))
 		keyoptions.menuTextJustify = JustifyLeft;
-	if (!strcasecmp(val, "right"))
+	if (!strcasecmp(pctx->args, "right"))
 		keyoptions.menuTextJustify = JustifyRight;
-	if (!strcasecmp(val, "center"))
+	if (!strcasecmp(pctx->args, "center"))
 		keyoptions.menuTextJustify = JustifyCenter;
 
 }
 
 static void
-o_titlejustify(char *opt, char *key, char *val)
+o_titlejustify()
 {
 	/* How should the window-cycling title be justified? (left, center, right) */
 	keyoptions.menuTitleJustify = JustifyCenter;
-	if (!strcasecmp(val, "left"))
+	if (!strcasecmp(pctx->args, "left"))
 		keyoptions.menuTitleJustify = JustifyLeft;
-	if (!strcasecmp(val, "right"))
+	if (!strcasecmp(pctx->args, "right"))
 		keyoptions.menuTitleJustify = JustifyRight;
-	if (!strcasecmp(val, "center"))
+	if (!strcasecmp(pctx->args, "center"))
 		keyoptions.menuTitleJustify = JustifyCenter;
 }
 
 static void
-o_autoconfig(char *opt, char *key, char *val)
+o_autoconfig()
 {
 	/* Should bbkeys watch for changes to its config file? (true or false) Note: if
 	   you decide to not do this (though it should be VERY light on system
 	   resources), you can always force bbkeys to reconfigure itself by sending it a
 	   SIGHUP (killall -HUP bbkeys) */
 	keyoptions.autoConfig = False;
-	if (!strcasecmp(val, "true"))
+	if (!strcasecmp(pctx->args, "true"))
 		keyoptions.autoConfig = True;
-	if (!strcasecmp(val, "false"))
+	if (!strcasecmp(pctx->args, "false"))
 		keyoptions.autoConfig = False;
 }
 
 static void
-o_timeout(char *opt, char *key, char *val)
+o_timeout()
 {
 	/* How often should bbkeys check for changes made to its config file? (numeric
 	   number of seconds) */
-	keyoptions.autoConfigCheckTimeout = strtoul(val, NULL, 0);
+	keyoptions.autoConfigCheckTimeout = strtoul(pctx->args, NULL, 0);
 }
 
 static void
-o_desktopcols(char *opt, char *key, char *val)
+o_desktopcols()
 {
 	/* Number of columns that you have you workspaces laid out in your pager
 	   (numeric) */
-	keyoptions.workspaceColumns = strtoul(val, NULL, 0);
+	keyoptions.workspaceColumns = strtoul(pctx->args, NULL, 0);
 }
 
 static void
-o_desktoprows(char *opt, char *key, char *val)
+o_desktoprows()
 {
 	/* Number of rows that you have you workspace/desktops laid out in (numeric).  As 
 	   a way of an example, if you have your pager laid out in a 4x2 grid (4 wide, 2
 	   high), then you would set workspaceColumns to 4 and workspaceRows to 2. */
-	keyoptions.workspaceRows = strtoul(val, NULL, 0);
+	keyoptions.workspaceRows = strtoul(pctx->args, NULL, 0);
 }
 
 static void
-o_menux(char *opt, char *key, char *val)
+o_menux()
 {
 	/* Horizontal position that you want the window cycling menu to show up at.
 	   (numeric) */
-	keyoptions.cycleMenuX = strtoul(val, NULL, 0);
+	keyoptions.cycleMenuX = strtoul(pctx->args, NULL, 0);
 }
 
 static void
-o_menuy(char *opt, char *key, char *val)
+o_menuy()
 {
 	/* Vertical position that you want the window cycling menu to show up at.
 	   (numeric) Note: bbkeys cannot center a menu */
-	keyoptions.cycleMenuY = strtoul(val, NULL, 0);
+	keyoptions.cycleMenuY = strtoul(pctx->args, NULL, 0);
 }
 
 typedef struct {
 	const char *name;
-	void (*parse) (char *, char *, char *);
+	void (*parse) (void);
 } OptionItem;
 
 OptionItem OptionItems[] = {
@@ -590,6 +600,12 @@ OptionItem OptionItems[] = {
 	{ NULL,					NULL		    }
 	/* *INDENT-ON* */
 };
+
+static char *
+p_getline()
+{
+	return fgets(pctx->buff, PATH_MAX, pctx->f);
+}
 
 static unsigned long
 p_mod(const char *keys)
@@ -650,595 +666,372 @@ p_key(const char *keys)
 }
 
 static int
-p_line(const char *buff, char *func, char *keys, char *args)
+p_line()
 {
-	const char *b = buff;
+	const char *b = pctx->buff;
 	int items = 0;
 
 	while (*b && isspace(*b))
 		b++;
 	if (!*b || *b == '#')
 		return items;
-	*func = *keys = *args = '\0';
+	*pctx->func = *pctx->keys = *pctx->args = '\0';
 	/* FIXME: handle escapes within fields */
-	items = sscanf(b, "[%[a-zA-z]] (%[^)]) {%[^}]}", func, keys, args);
+	items =
+	    sscanf(b, "[%[a-zA-z]] (%[^)]) {%[^}]}", pctx->func, pctx->keys, pctx->args);
 	return items;
 }
 
 typedef struct _KeyItem KeyItem;
 struct _KeyItem {
 	const char *name;
-	Key *(*parse) (const KeyItem *, FILE *, char *, char *, char *, char *);
+	void (*parse) (Key *);
 };
 
-static Key *
-p_option(const KeyItem *item, FILE *f, char *buff, char *func, char *keys, char *args)
+static void
+p_option()
 {
 	OptionItem *op;
 
 	for (op = OptionItems; op->name; op++)
-		if (!strcasecmp(keys, op->name))
+		if (!strcasecmp(pctx->keys, op->name))
 			break;
 	if (op->name && op->parse)
-		(*op->parse)(func, keys, args);
-	return NULL;
+		(*op->parse) ();
 }
 
-static Key *
-p_nop(const KeyItem *item, FILE *f, char *buff, char *func, char *keys, char *args)
+static void
+p_nop(Key *k)
 {
-	return p_key(keys);
 }
 
-static Key *
-p_execute(const KeyItem *item, FILE *f, char *buff, char *func, char *keys, char *args)
+static void
+p_execute(Key *k)
 {
-	Key *k;
-
-	if ((k = p_key(keys))) {
-		k->func = k_spawn;
-		k->arg = strdup(args);
-	}
-	return k;
+	k->func = k_spawn;
+	k->arg = strdup(pctx->args);
 }
 
-static Key *
-p_iconify(const KeyItem *item, FILE *f, char *buff, char *func, char *keys, char *args)
+static void
+p_iconify(Key *k)
 {
-	Key *k;
-
-	if ((k = p_key(keys))) {
-		k->func = k_setmin;
-		k->any = FocusClient;
-	}
-	return k;
+	k->func = k_setmin;
+	k->any = FocusClient;
 }
 
-static Key *
-p_raise(const KeyItem *item, FILE *f, char *buff, char *func, char *keys, char *args)
+static void
+p_raise(Key *k)
 {
-	Key *k;
-
-	if ((k = p_key(keys)))
-		k->func = k_raise;
-	return k;
+	k->func = k_raise;
 }
 
-static Key *
-p_lower(const KeyItem *item, FILE *f, char *buff, char *func, char *keys, char *args)
+static void
+p_lower(Key *k)
 {
-	Key *k;
-
-	if ((k = p_key(keys)))
-		k->func = k_lower;
-	return k;
+	k->func = k_lower;
 }
 
-static Key *
-p_close(const KeyItem *item, FILE *f, char *buff, char *func, char *keys, char *args)
+static void
+p_close(Key *k)
 {
-	Key *k;
-
-	if ((k = p_key(keys)))
-		k->func = k_killclient;
-	return k;
+	k->func = k_killclient;
 }
 
-static Key *
-p_toggleshade(const KeyItem *item, FILE *f, char *buff, char *func, char *keys,
-	      char *args)
+static void
+p_toggleshade(Key *k)
 {
-	Key *k;
-
-	if ((k = p_key(keys))) {
-		k->func = k_setshade;
-		k->set = ToggleFlagSetting;
-		k->any = FocusClient;
-	}
-	return k;
+	k->func = k_setshade;
+	k->set = ToggleFlagSetting;
+	k->any = FocusClient;
 }
 
-static Key *
-p_toggleomni(const KeyItem *item, FILE *f, char *buff, char *func, char *keys, char *args)
+static void
+p_toggleomni(Key *k)
 {
-	Key *k;
-
-	if ((k = p_key(keys))) {
-		k->func = k_toggletag;
-		k->dir = RelativeNone;
-		k->tag = -1U;
-	}
-	return k;
+	k->func = k_toggletag;
+	k->dir = RelativeNone;
+	k->tag = -1U;
 }
 
-static Key *
-p_toggledecor(const KeyItem *item, FILE *f, char *buff, char *func, char *keys,
-	      char *args)
+static void
+p_toggledecor(Key *k)
 {
-	Key *k;
-
-	if ((k = p_key(keys))) {
-	}
-	return k;
 }
 
-static Key *
-p_moveup(const KeyItem *item, FILE *f, char *buff, char *func, char *keys, char *args)
+static void
+p_moveup(Key *k)
 {
-	Key *k;
-
-	if ((k = p_key(keys))) {
-		k->func = k_moveby;
-		k->arg = strdup(args);
-		k->dir = RelativeNorth;
-	}
-	return k;
+	k->func = k_moveby;
+	k->arg = strdup(pctx->args);
+	k->dir = RelativeNorth;
 }
 
-static Key *
-p_movedown(const KeyItem *item, FILE *f, char *buff, char *func, char *keys, char *args)
+static void
+p_movedown(Key *k)
 {
-	Key *k;
-
-	if ((k = p_key(keys))) {
-		k->func = k_moveby;
-		k->arg = strdup(args);
-		k->dir = RelativeSouth;
-	}
-	return k;
+	k->func = k_moveby;
+	k->arg = strdup(pctx->args);
+	k->dir = RelativeSouth;
 }
 
-static Key *
-p_moveleft(const KeyItem *item, FILE *f, char *buff, char *func, char *keys, char *args)
+static void
+p_moveleft(Key *k)
 {
-	Key *k;
-
-	if ((k = p_key(keys))) {
-		k->func = k_moveby;
-		k->arg = strdup(args);
-		k->dir = RelativeWest;
-	}
-	return k;
+	k->func = k_moveby;
+	k->arg = strdup(pctx->args);
+	k->dir = RelativeWest;
 }
 
-static Key *
-p_moveright(const KeyItem *item, FILE *f, char *buff, char *func, char *keys, char *args)
+static void
+p_moveright(Key *k)
 {
-	Key *k;
-
-	if ((k = p_key(keys))) {
-		k->func = k_moveby;
-		k->arg = strdup(args);
-		k->dir = RelativeEast;
-	}
-	return k;
+	k->func = k_moveby;
+	k->arg = strdup(pctx->args);
+	k->dir = RelativeEast;
 }
 
-static Key *
-p_resizew(const KeyItem *item, FILE *f, char *buff, char *func, char *keys, char *args)
+static void
+p_resizew(Key *k)
 {
-	Key *k;
+	char arg[256];
 
-	if ((k = p_key(keys))) {
-		char arg[256];
-
-		snprintf(arg, sizeof(arg), "0 0 %s 0", args);
-		k->func = k_moveresizekb;
-		k->arg = strdup(arg);
-	}
-	return k;
+	snprintf(arg, sizeof(arg), "0 0 %s 0", pctx->args);
+	k->func = k_moveresizekb;
+	k->arg = strdup(arg);
 }
 
-static Key *
-p_resizeh(const KeyItem *item, FILE *f, char *buff, char *func, char *keys, char *args)
+static void
+p_resizeh(Key *k)
 {
-	Key *k;
+	char arg[256];
 
-	if ((k = p_key(keys))) {
-		char arg[256];
-
-		snprintf(arg, sizeof(arg), "0 0 0 %s", args);
-		k->func = k_moveresizekb;
-		k->arg = strdup(arg);
-	}
-	return k;
+	snprintf(arg, sizeof(arg), "0 0 0 %s", pctx->args);
+	k->func = k_moveresizekb;
+	k->arg = strdup(arg);
 }
 
-static Key *
-p_togglemax(const KeyItem *item, FILE *f, char *buff, char *func, char *keys, char *args)
+static void
+p_togglemax(Key *k)
 {
-	Key *k;
-
-	if ((k = p_key(keys))) {
-		k->func = k_setmax;
-		k->set = ToggleFlagSetting;
-		k->any = FocusClient;
-	}
-	return k;
+	k->func = k_setmax;
+	k->set = ToggleFlagSetting;
+	k->any = FocusClient;
 }
 
-static Key *
-p_togglemaxv(const KeyItem *item, FILE *f, char *buff, char *func, char *keys, char *args)
+static void
+p_togglemaxv(Key *k)
 {
-	Key *k;
-
-	if ((k = p_key(keys))) {
-		k->func = k_setmaxv;
-		k->set = ToggleFlagSetting;
-		k->any = FocusClient;
-	}
-	return k;
+	k->func = k_setmaxv;
+	k->set = ToggleFlagSetting;
+	k->any = FocusClient;
 }
 
-static Key *
-p_togglemaxh(const KeyItem *item, FILE *f, char *buff, char *func, char *keys, char *args)
+static void
+p_togglemaxh(Key *k)
 {
-	Key *k;
-
-	if ((k = p_key(keys))) {
-		k->func = k_setmaxh;
-		k->set = ToggleFlagSetting;
-		k->any = FocusClient;
-	}
-	return k;
+	k->func = k_setmaxh;
+	k->set = ToggleFlagSetting;
+	k->any = FocusClient;
 }
 
-static Key *
-p_sendto(const KeyItem *item, FILE *f, char *buff, char *func, char *keys, char *args)
+static void
+p_sendto(Key *k)
 {
-	Key *k;
-
-	if ((k = p_key(keys))) {
-		k->func = (keyoptions.followWindowOnSend) ? k_taketo : k_tag;
-		k->dir = RelativeNone;
-		k->tag = strtoul(args, NULL, 0);
-		if (k->tag)
-			k->tag--;
-
-	}
-	return k;
+	k->func = (keyoptions.followWindowOnSend) ? k_taketo : k_tag;
+	k->dir = RelativeNone;
+	k->tag = strtoul(pctx->args, NULL, 0);
+	if (k->tag)
+		k->tag--;
 }
 
-static Key *
-p_sendtonext(const KeyItem *item, FILE *f, char *buff, char *func, char *keys, char *args)
+static void
+p_sendtonext(Key *k)
 {
-	Key *k;
-
-	if ((k = p_key(keys))) {
-		k->func = (keyoptions.followWindowOnSend) ? k_taketo : k_tag;
-		k->dir = RelativeNext;
-	}
-	return k;
+	k->func = (keyoptions.followWindowOnSend) ? k_taketo : k_tag;
+	k->dir = RelativeNext;
 }
 
-static Key *
-p_sendtoprev(const KeyItem *item, FILE *f, char *buff, char *func, char *keys, char *args)
+static void
+p_sendtoprev(Key *k)
 {
-	Key *k;
-
-	if ((k = p_key(keys))) {
-		k->func = (keyoptions.followWindowOnSend) ? k_taketo : k_tag;
-		k->dir = RelativePrev;
-	}
-	return k;
+	k->func = (keyoptions.followWindowOnSend) ? k_taketo : k_tag;
+	k->dir = RelativePrev;
 }
 
-static Key *
-p_next(const KeyItem *item, FILE *f, char *buff, char *func, char *keys, char *args)
+static void
+p_next(Key *k)
 {
-	Key *k;
-
-	if ((k = p_key(keys))) {
-		k->func = k_stack;
-		k->any = AllClients;
-		k->dir = RelativeNext;
-		k->cyc = True;
-	}
-	return k;
+	k->func = k_stack;
+	k->any = AllClients;
+	k->dir = RelativeNext;
+	k->cyc = True;
 }
 
-static Key *
-p_prev(const KeyItem *item, FILE *f, char *buff, char *func, char *keys, char *args)
+static void
+p_prev(Key *k)
 {
-	Key *k;
-
-	if ((k = p_key(keys))) {
-		k->func = k_stack;
-		k->any = AllClients;
-		k->dir = RelativePrev;
-		k->cyc = True;
-	}
-	return k;
+	k->func = k_stack;
+	k->any = AllClients;
+	k->dir = RelativePrev;
+	k->cyc = True;
 }
 
-static Key *
-p_anynext(const KeyItem *item, FILE *f, char *buff, char *func, char *keys, char *args)
+static void
+p_anynext(Key *k)
 {
-	Key *k;
-
-	if ((k = p_key(keys))) {
-		k->func = k_stack;
-		k->any = AnyClient;
-		k->dir = RelativeNext;
-		k->cyc = True;
-	}
-	return k;
+	k->func = k_stack;
+	k->any = AnyClient;
+	k->dir = RelativeNext;
+	k->cyc = True;
 }
 
-static Key *
-p_anyprev(const KeyItem *item, FILE *f, char *buff, char *func, char *keys, char *args)
+static void
+p_anyprev(Key *k)
 {
-	Key *k;
-
-	if ((k = p_key(keys))) {
-		k->func = k_stack;
-		k->any = AnyClient;
-		k->dir = RelativePrev;
-		k->cyc = True;
-	}
-	return k;
+	k->func = k_stack;
+	k->any = AnyClient;
+	k->dir = RelativePrev;
+	k->cyc = True;
 }
 
-static Key *
-p_everynext(const KeyItem *item, FILE *f, char *buff, char *func, char *keys, char *args)
+static void
+p_everynext(Key *k)
 {
-	Key *k;
-
-	if ((k = p_key(keys))) {
-		k->func = k_stack;
-		k->any = EveryClient;
-		k->dir = RelativeNext;
-		k->cyc = True;
-	}
-	return k;
+	k->func = k_stack;
+	k->any = EveryClient;
+	k->dir = RelativeNext;
+	k->cyc = True;
 }
 
-static Key *
-p_everyprev(const KeyItem *item, FILE *f, char *buff, char *func, char *keys, char *args)
+static void
+p_everyprev(Key *k)
 {
-	Key *k;
-
-	if ((k = p_key(keys))) {
-		k->func = k_stack;
-		k->any = EveryClient;
-		k->dir = RelativePrev;
-		k->cyc = True;
-	}
-	return k;
+	k->func = k_stack;
+	k->any = EveryClient;
+	k->dir = RelativePrev;
+	k->cyc = True;
 }
 
-static Key *
-p_groupnext(const KeyItem *item, FILE *f, char *buff, char *func, char *keys, char *args)
+static void
+p_groupnext(Key *k)
 {
-	Key *k;
-
-	if ((k = p_key(keys))) {
-		k->func = k_group;
-		k->any = AllClients;
-		k->dir = RelativeNext;
-		k->cyc = True;
-	}
-	return k;
+	k->func = k_group;
+	k->any = AllClients;
+	k->dir = RelativeNext;
+	k->cyc = True;
 }
 
-static Key *
-p_groupprev(const KeyItem *item, FILE *f, char *buff, char *func, char *keys, char *args)
+static void
+p_groupprev(Key *k)
 {
-	Key *k;
-
-	if ((k = p_key(keys))) {
-		k->func = k_group;
-		k->any = AllClients;
-		k->dir = RelativePrev;
-		k->cyc = True;
-	}
-	return k;
+	k->func = k_group;
+	k->any = AllClients;
+	k->dir = RelativePrev;
+	k->cyc = True;
 }
 
-static Key *
-p_groupanynext(const KeyItem *item, FILE *f, char *buff, char *func, char *keys,
-	       char *args)
+static void
+p_groupanynext(Key *k)
 {
-	Key *k;
-
-	if ((k = p_key(keys))) {
-		k->func = k_group;
-		k->any = AnyClient;
-		k->dir = RelativeNext;
-		k->cyc = True;
-	}
-	return k;
+	k->func = k_group;
+	k->any = AnyClient;
+	k->dir = RelativeNext;
+	k->cyc = True;
 }
 
-static Key *
-p_groupanyprev(const KeyItem *item, FILE *f, char *buff, char *func, char *keys,
-	       char *args)
+static void
+p_groupanyprev(Key *k)
 {
-	Key *k;
-
-	if ((k = p_key(keys))) {
-		k->func = k_group;
-		k->any = AnyClient;
-		k->dir = RelativePrev;
-		k->cyc = True;
-	}
-	return k;
+	k->func = k_group;
+	k->any = AnyClient;
+	k->dir = RelativePrev;
+	k->cyc = True;
 }
 
-static Key *
-p_workspace(const KeyItem *item, FILE *f, char *buff, char *func, char *keys, char *args)
+static void
+p_workspace(Key *k)
 {
-	Key *k;
-
-	if ((k = p_key(keys))) {
-		k->func = k_view;
-		k->dir = RelativeNone;
-		k->tag = strtoul(args, NULL, 0);
-		if (k->tag)
-			k->tag--;
-	}
-	return k;
+	k->func = k_view;
+	k->dir = RelativeNone;
+	k->tag = strtoul(pctx->args, NULL, 0);
+	if (k->tag)
+		k->tag--;
 }
 
-static Key *
-p_workspacenext(const KeyItem *item, FILE *f, char *buff, char *func, char *keys,
-		char *args)
+static void
+p_workspacenext(Key *k)
 {
-	Key *k;
-
-	if ((k = p_key(keys))) {
-		k->func = k_view;
-		k->dir = RelativeNext;
-		k->wrap = True;
-	}
-	return k;
+	k->func = k_view;
+	k->dir = RelativeNext;
+	k->wrap = True;
 }
 
-static Key *
-p_workspaceprev(const KeyItem *item, FILE *f, char *buff, char *func, char *keys,
-		char *args)
+static void
+p_workspaceprev(Key *k)
 {
-	Key *k;
-
-	if ((k = p_key(keys))) {
-		k->func = k_view;
-		k->dir = RelativePrev;
-		k->wrap = True;
-	}
-	return k;
+	k->func = k_view;
+	k->dir = RelativePrev;
+	k->wrap = True;
 }
 
-static Key *
-p_workspaceup(const KeyItem *item, FILE *f, char *buff, char *func, char *keys,
-	      char *args)
+static void
+p_workspaceup(Key *k)
 {
-	Key *k;
-
-	if ((k = p_key(keys))) {
-		k->func = k_view;
-		k->dir = RelativeNorth;
-		k->wrap = True;
-	}
-	return k;
+	k->func = k_view;
+	k->dir = RelativeNorth;
+	k->wrap = True;
 }
 
-static Key *
-p_workspacedown(const KeyItem *item, FILE *f, char *buff, char *func, char *keys,
-		char *args)
+static void
+p_workspacedown(Key *k)
 {
-	Key *k;
-
-	if ((k = p_key(keys))) {
-		k->func = k_view;
-		k->dir = RelativeSouth;
-		k->wrap = True;
-	}
-	return k;
+	k->func = k_view;
+	k->dir = RelativeSouth;
+	k->wrap = True;
 }
 
-static Key *
-p_workspaceleft(const KeyItem *item, FILE *f, char *buff, char *func, char *keys,
-		char *args)
+static void
+p_workspaceleft(Key *k)
 {
-	Key *k;
-
-	if ((k = p_key(keys))) {
-		k->func = k_view;
-		k->dir = RelativeWest;
-		k->wrap = True;
-	}
-	return k;
+	k->func = k_view;
+	k->dir = RelativeWest;
+	k->wrap = True;
 }
 
-static Key *
-p_workspaceright(const KeyItem *item, FILE *f, char *buff, char *func, char *keys,
-		 char *args)
+static void
+p_workspaceright(Key *k)
 {
-	Key *k;
-
-	if ((k = p_key(keys))) {
-		k->func = k_view;
-		k->dir = RelativeEast;
-		k->wrap = True;
-	}
-	return k;
+	k->func = k_view;
+	k->dir = RelativeEast;
+	k->wrap = True;
 }
 
-static Key *
-p_screennext(const KeyItem *item, FILE *f, char *buff, char *func, char *keys, char *args)
+static void
+p_screennext(Key *k)
 {
-	Key *k;
-
-	if ((k = p_key(keys))) {
-	}
-	return k;
 }
 
-static Key *
-p_screenprev(const KeyItem *item, FILE *f, char *buff, char *func, char *keys, char *args)
+static void
+p_screenprev(Key *k)
 {
-	Key *k;
-
-	if ((k = p_key(keys))) {
-	}
-	return k;
 }
 
-static Key *
-p_showrootmenu(const KeyItem *item, FILE *f, char *buff, char *func, char *keys,
-	       char *args)
+static void
+p_showrootmenu(Key *k)
 {
-	Key *k;
-
-	if ((k = p_key(keys))) {
-	}
-	return k;
 }
 
-static Key *
-p_showwinmenu(const KeyItem *item, FILE *f, char *buff, char *func, char *keys,
-	      char *args)
+static void
+p_showwinmenu(Key *k)
 {
-	Key *k;
-
-	if ((k = p_key(keys))) {
-	}
-	return k;
 }
 
-static Key *
-p_togglegrabs(const KeyItem *item, FILE *f, char *buff, char *func, char *keys,
-	      char *args)
+static void
+p_togglegrabs(Key *k)
 {
-	Key *k;
-
-	if ((k = p_key(keys))) {
-	}
-	return k;
 }
 
-static Key *p_chain(const KeyItem *item, FILE *f, char *buff, char *func, char *keys,
-		    char *args);
+static void p_chain(Key *k);
 
 static const KeyItem KeyItems[] = {
 	/* *INDENT-OFF* */
@@ -1298,136 +1091,132 @@ static const KeyItem KeyItems[] = {
 	/* *INDENT-ON* */
 };
 
-static Key *
-p_chain(const KeyItem *item, FILE *f, char *buff, char *func, char *keys, char *args)
+static void
+p_chain(Key *k)
 {
-	Key *k;
+	while (p_getline()) {
+		const KeyItem *item;
+		Key *c;
 
-	if ((k = p_key(keys))) {
-		while (fgets(buff, PATH_MAX, f)) {
-			Key *c;
-
-			if (p_line(buff, func, keys, args) < 1)
-				continue;
-			if (!strcasecmp(func, "end"))
+		if (p_line() < 1)
+			continue;
+		if (!strcasecmp(pctx->func, "end"))
+			break;
+		for (item = KeyItems; item->name; item++)
+			if (!strcasecmp(pctx->func, item->name))
 				break;
-			for (item = KeyItems; item->name; item++)
-				if (!strcasecmp(func, item->name))
-					break;
-			if (!item->name || !item->parse)
-				continue;
+		if (!item->name || !item->parse)
+			continue;
 
-			if ((c = (*item->parse) (item, f, buff, func, keys, args))) {
-				if (k->chain)
-					k->chain->cnext = c;
-				else {
-					k->func = k_chain;
-					k->chain = c;
-				}
+		if ((c = p_key(pctx->keys))) {
+			(*item->parse) (c);
+			if (k->chain)
+				k->chain->cnext = c;
+			else {
+				k->func = k_chain;
+				k->chain = c;
 			}
 		}
 	}
-	return k;
 }
 
-static Key *
-p_bindings(const KeyItem *item, FILE *f, char *buff, char *func, char *keys, char *args)
+static void
+p_bindings()
 {
-	Key *k = NULL;
+	while (p_getline()) {
+		const KeyItem *item;
+		Key *k;
 
-	while (fgets(buff, PATH_MAX, f)) {
-		if (p_line(buff, func, keys, args) < 1)
+		if (p_line() < 1)
 			continue;
-		if (!strcasecmp(func, "end"))
+		if (!strcasecmp(pctx->func, "end"))
 			break;
 		for (item = KeyItems; item->name; item++)
-			if (!strcasecmp(func, item->name))
+			if (!strcasecmp(pctx->func, item->name))
 				break;
-		if (item->name && item->parse)
-			if ((k = (*item->parse) (item, f, buff, func, keys, args)))
-				addchain(k);
+		if (!item->name || !item->parse)
+			continue;
+		if ((k = p_key(pctx->keys))) {
+			(*item->parse) (k);
+			addchain(k);
+		}
 	}
-	return k;
 }
 
-static Key *
-p_config(const KeyItem *item, FILE *f, char *buff, char *func, char *keys, char *args)
+static void
+p_config()
 {
-	Key *k = NULL;
-
-	while (fgets(buff, PATH_MAX, f)) {
-		if (p_line(buff, func, keys, args) < 1)
+	while (p_getline()) {
+		if (p_line() < 1)
 			continue;
-		if (!strcasecmp(func, "end"))
+		if (!strcasecmp(pctx->func, "end"))
 			break;
-		if (!strcasecmp(func, "option"))
-			k = p_option(item, f, buff, func, keys, args);
+		if (!strcasecmp(pctx->func, "option"))
+			p_option();
 	}
-	return k;
 }
 
-static Key *
-p_begin(const KeyItem *item, FILE *f, char *buff, char *func, char *keys, char *args)
+static void
+p_begin()
 {
-	Key *k = NULL;
-
-	while (fgets(buff, PATH_MAX, f)) {
-		if (p_line(buff, func, keys, args) < 1)
+	while (p_getline()) {
+		if (p_line() < 1)
 			continue;
-		if (!strcasecmp(func, "end"))
+		if (!strcasecmp(pctx->func, "end"))
 			break;
-		if (!strcasecmp(func, "config"))
-			k = p_config(item, f, buff, func, keys, args);
-		else if (!strcasecmp(func, "keybindings"))
-			k = p_bindings(item, f, buff, func, keys, args);
+		if (!strcasecmp(pctx->func, "config"))
+			p_config();
+		else if (!strcasecmp(pctx->func, "keybindings"))
+			p_bindings();
 	}
-	return k;
 }
 
-static Key *
-p_file(const KeyItem *item, FILE *f, char *buff, char *func, char *keys, char *args)
+static void
+p_file()
 {
-	Key *k = NULL;
-
-	while (fgets(buff, PATH_MAX, f)) {
-		if (p_line(buff, func, keys, args) < 1)
+	while (p_getline()) {
+		if (p_line() < 1)
 			continue;
-		if (!strcasecmp(func, "begin")) {
-			k = p_begin(NULL, f, buff, func, keys, args);
+		if (!strcasecmp(pctx->func, "begin")) {
+			p_begin();
 			break;
 		}
 	}
-	return k;
 }
 
 static void
 initkeys_BLACKBOX(void)
 {
-	FILE *f;
+	ParserContext ctx;
 	const char *home = getenv("HOME") ? : ".";
 	size_t len = strlen(home) + strlen("/.bbkeysrc") + 1;
-	char *file = ecalloc(len, sizeof(*file));
+	char *file = NULL;
 
+	file = ecalloc(len, sizeof(*file));
+	/* FIXME: search in other directories */
 	strcpy(file, home);
 	strcat(file, "/.bbkeysrc");
-	if (!(f = fopen(file, "r"))) {
+	if (!(ctx.f = fopen(file, "r"))) {
 		DPRINTF("%s: %s\n", file, strerror(errno));
 		free(file);
 		return;
 	}
 	{
-		char *buff = ecalloc(4 * (PATH_MAX + 1), sizeof(*buff));
-		char *func = buff + PATH_MAX + 1;
-		char *keys = func + PATH_MAX + 1;
-		char *args = keys + PATH_MAX + 1;
+		ctx.buff = ecalloc(4 * (PATH_MAX + 1), sizeof(*ctx.buff));
+		ctx.func = ctx.buff + PATH_MAX + 1;
+		ctx.keys = ctx.func + PATH_MAX + 1;
+		ctx.args = ctx.keys + PATH_MAX + 1;
 
-		p_file(NULL, f, buff, func, keys, args);
+		pctx = &ctx;
 
-		free(buff);
+		p_file();
+
+		pctx = NULL;
+
+		free(ctx.buff);
 	}
-	fclose(f);
+	fclose(ctx.f);
 	free(file);
-
 }
 
 BlackboxSession session;

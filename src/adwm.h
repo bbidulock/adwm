@@ -282,6 +282,10 @@ typedef enum { GradientDiagonal, GradientCrossDiagonal, GradientRectangle, Gradi
 typedef enum { ReliefRaised, ReliefFlat, ReliefSunken } Relief;
 typedef enum { Bevel1, Bevel2 } Bevel;
 typedef enum { JustifyLeft, JustifyCenter, JustifyRight } Justify;
+enum { CurResizeTopLeft, CurResizeTop, CurResizeTopRight, CurResizeRight,
+       CurResizeBottomRight, CurResizeBottom, CurResizeBottomLeft, CurResizeLeft,
+       CurMove, CurNormal, CurLast };	    /* cursor */
+enum { Clk2Focus, SloppyFloat, AllSloppy, SloppyRaise };    /* focus model */
 
 typedef struct {
 	Pattern pattern;		/* default solid */
@@ -736,6 +740,30 @@ typedef struct {
 	void (*drawclient)(Client *);
 } AdwmOperations;
 
+typedef struct {
+	void *handle;
+	const char *name;
+	void (*initlayout)(Monitor *m, View *v, char code);
+	void (*addclient)(Client *c, Bool front);
+	void (*delclient)(Client *c);
+	void (*raise)(Client *c);
+	void (*lower)(Client *c);
+	void (*raiselower)(Client *c);
+} LayoutOperations;
+
+typedef struct {
+	Bool attachaside;
+	Bool dectiled;
+	Bool decmax;
+	Bool hidebastards;
+	Bool autoroll;
+	int focus;
+	int snap;
+	char command[255];
+	DockPosition dockpos;
+	DockOrient dockori;
+	unsigned dragdist;
+} Options;
 
 /* ewmh.c */
 Bool checkatom(Window win, Atom bigatom, Atom smallatom);
@@ -797,7 +825,6 @@ Monitor *curmonitor();
 Monitor *selmonitor();
 Monitor *nearmonitor();
 void *ecalloc(size_t nmemb, size_t size);
-void edgeto(Client *c, int direction);
 void *emallocz(size_t size);
 void *erealloc(void *ptr, size_t size);
 void eprint(const char *errstr, ...);
@@ -813,11 +840,9 @@ void iconifyall(Monitor *m);
 void setborder(int px);
 void incborder(int px);
 void decborder(int px);
-void setnmaster(Monitor *m, View *v, int n);
 void setmargin(int px);
 void incmargin(int px);
 void decmargin(int px);
-Bool isfloating(Client *c, Monitor *m);
 Bool isvisible(Client *c, Monitor *m);
 Monitor *findmonbynum(int num);
 void focus(Client * c);
@@ -826,47 +851,23 @@ void focusnext(Client *c);
 void focusprev(Client *c);
 void focusview(Monitor *m, int index);
 AScreen *getscreen(Window win);
+AScreen *geteventscr(XEvent *ev);
 void killclient(Client *c);
 void applygravity(Client *c, ClientGeometry *g, int gravity);
 void reconfigure(Client *c, ClientGeometry *g);
-void restack(void);
 void restack_client(Client *c, int stack_mode, Client *sibling);
 Bool configurerequest(XEvent * e);
-void moveto(Client *c, RelativeDirection position);
-void moveby(Client *c, RelativeDirection direction, int amount);
-void moveresizekb(Client *c, int dx, int dy, int dw, int dh);
-Bool mousemove(Client *c, XEvent *e, Bool toggle);
-Bool mouseresize_from(Client *c, int from, XEvent *e, Bool toggle);
-Bool mouseresize(Client * c, XEvent *e, Bool toggle);
 void m_move(Client *c, XEvent *ev);
 void m_resize(Client *c, XEvent *ev);
 void pushtime(Time time);
 void quit(const char *arg);
-void raiseclient(Client *c);
-void lowerclient(Client *c);
-void raiselower(Client *c);
 void restart(const char *arg);
-void rotateview(Client *c);
-void unrotateview(Client *c);
-void rotatezone(Client *c);
-void unrotatezone(Client *c);
-void rotatewins(Client *c);
-void unrotatewins(Client *c);
-void setmwfact(Monitor *m, View *v, double factor);
 void setlayout(const char *arg);
-void snapto(Client *c, RelativeDirection direction);
 void spawn(const char *arg);
 void tag(Client *c, int index);
 void taketo(Client *c, int index);
 void togglestruts(Monitor *m, View *v);
 void toggledectiled(Monitor *m, View *v);
-void togglefloating(Client *c);
-void togglefill(Client *c);
-void togglefull(Client *c);
-void togglemax(Client *c);
-void togglemaxv(Client *c);
-void togglemaxh(Client *c);
-void toggleshade(Client *c);
 void togglesticky(Client *c);
 void togglemin(Client *c);
 void toggleabove(Client *c);
@@ -883,11 +884,68 @@ void view(int index);
 void viewlefttag(void);
 void viewprevtag(void);
 void viewrighttag(void);
-void zoom(Client *c);
 Bool selectionclear(XEvent *e);
 void appendtag(void);
 void rmlasttag(void);
 void settags(unsigned numtags);
+
+/* needed by layout.c */
+void restack(void);
+void getworkarea(Monitor * m, Workarea *w);
+void updategeom(Monitor *m);
+Bool constrain(Client *c, ClientGeometry *g);
+void discardenter(void);
+Bool wind_overlap(int min1, int max1, int min2, int max2);
+extern Cursor cursor[CurLast];
+extern int ebase[BaseLast];
+Bool handle_event(XEvent *ev);
+void reparentclient(Client *c, AScreen *new_scr, int x, int y);
+int segm_overlap(int min1, int max1, int min2, int max2);
+Bool place_overlap(Geometry *c, Geometry *o);
+Monitor *closestmonitor(int x, int y);
+
+/* layout.c */
+void addclient(Client *c, Bool focusme, Bool raiseme);
+void delclient(Client *c);
+void tookfocus(Client *c);
+Bool isfloating(Client *c, Monitor *m);
+Client *nextdockapp(Client *c, Monitor *m);
+Client *prevdockapp(Client *c, Monitor *m);
+Client *nexttiled(Client *c, Monitor *m);
+Client *prevtiled(Client *c, Monitor *m);
+void arrange_tile(Monitor *m);
+void arrange_grid(Monitor *m);
+void arrange_monocle(Monitor *m);
+void arrange_float(Monitor *m);
+void raiseclient(Client *c);
+void lowerclient(Client *c);
+void raiselower(Client *c);
+void setmwfact(Monitor *m, View *v, double factor);
+void setnmaster(Monitor *m, View *v, int n);
+Bool mousemove(Client *c, XEvent *e, Bool toggle);
+Bool mouseresize_from(Client *c, int from, XEvent *e, Bool toggle);
+Bool mouseresize(Client * c, XEvent *e, Bool toggle);
+void moveresizekb(Client *c, int dx, int dy, int dw, int dh, int gravity);
+void place(Client *c, WindowPlacement p);
+void moveto(Client *c, RelativeDirection position);
+void moveby(Client *c, RelativeDirection direction, int amount);
+void snapto(Client *c, RelativeDirection direction);
+void edgeto(Client *c, int direction);
+void rotateview(Client *c);
+void unrotateview(Client *c);
+void rotatezone(Client *c);
+void unrotatezone(Client *c);
+void rotatewins(Client *c);
+void unrotatewins(Client *c);
+void togglefloating(Client *c);
+void togglefill(Client *c);
+void togglefull(Client *c);
+void togglemax(Client *c);
+void togglemaxv(Client *c);
+void togglemaxh(Client *c);
+void toggleshade(Client *c);
+void zoom(Client *c);
+void zoomfloat(Client *c);
 
 /* parse.c */
 void initrules(void);
@@ -1007,7 +1065,19 @@ void getshadow(const char *descrip, TextShadow *shadow);
 #define min(_a, _b)		((_a) < (_b) ? (_a) : (_b))
 #define max(_a, _b)		((_a) > (_b) ? (_a) : (_b))
 
+/* macros */
+#define WINDOWMASK		(EnterWindowMask | LeaveWindowMask)
+#define BUTTONMASK		(ButtonPressMask | ButtonReleaseMask)
+#define CLEANMASK(mask)		(mask & ~(numlockmask | LockMask))
+#define MOUSEMASK		(BUTTONMASK | PointerMotionMask)
+#define CLIENTMASK	        (PropertyChangeMask | StructureNotifyMask)
+#define CLIENTNOPROPAGATEMASK 	(BUTTONMASK | ButtonMotionMask)
+#define FRAMEMASK               (MOUSEMASK | WINDOWMASK | SubstructureRedirectMask | SubstructureNotifyMask | FocusChangeMask)
+#define MAPPINGMASK		(StructureNotifyMask | SubstructureRedirectMask | SubstructureNotifyMask | EnterWindowMask)
+#define ROOTMASK		(BUTTONMASK | WINDOWMASK | MAPPINGMASK | FocusChangeMask)
+
 /* globals */
+extern Options options;
 extern Atom atom[NATOMS];
 extern Display *dpy;
 extern AScreen *scr;
@@ -1015,8 +1085,8 @@ extern AScreen *screens;
 extern AScreen *event_scr;
 extern void (*actions[LastOn][5][2])(Client *, XEvent *);
 extern Client *sel;
-extern Client *give;	/* gave focus last */
-extern Client *take;	/* take focus last */
+extern Client *gave;	/* gave focus last */
+extern Client *took;	/* took focus last */
 extern unsigned nscr;
 extern unsigned nrules;
 extern Rule **rules;

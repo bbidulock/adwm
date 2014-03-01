@@ -2198,26 +2198,20 @@ clientmessage(XEvent *e)
 			unsigned flags = (unsigned) ev->data.l[0];
 			unsigned source = ((flags >> 12) & 0x0f);
 			unsigned gravity = flags & 0xff;
-			ClientGeometry g;
+			int dx, dy, dw, dh;
 
 			if (!isfloating(c, NULL))
 				return False;
 			if (source != 0 && source != 2)
 				return False;
 
-			g.x = ((flags & (1 << 8)) && c->can.move) ? ev->data.l[1] : c->c.x;
-			g.y = ((flags & (1 << 9)) && c->can.move) ? ev->data.l[2] : c->c.y;
-			g.w = ((flags & (1 << 10)) && c->can.sizeh) ? ev->data.l[3] : c->c.w;
-			g.h = ((flags & (1 << 11)) && c->can.sizev) ? ev->data.l[4] : c->c.h;
-			g.b = c->c.b;
-			g.t = c->th;
-			g.g = c->gh;
+			dx = ((flags & (1 << 8)) && c->can.move) ? ev->data.l[1] - c->c.x : 0;
+			dy = ((flags & (1 << 9)) && c->can.move) ? ev->data.l[2] - c->c.y : 0;
+			dw = ((flags & (1 << 10)) && c->can.sizeh) ? ev->data.l[3] - c->c.w : 0;
+			dh = ((flags & (1 << 11)) && c->can.sizev) ? ev->data.l[4] - c->c.h : 0;
 			if (gravity == 0)
 				gravity = c->gravity;
-			applygravity(c, &g, gravity);
-			/* FIXME: this just resizes and moves the window, it does
-			 * handle changing monitors */
-			reconfigure(c, &g);
+			moveresizekb(c, dx, dy, dw, dh, gravity);
 		} else if (message_type == _XA_NET_WM_MOVERESIZE) {
 			int x_root = (int) ev->data.l[0];
 			int y_root = (int) ev->data.l[1];

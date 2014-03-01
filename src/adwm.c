@@ -20,6 +20,7 @@
 #include <signal.h>
 #include <math.h>
 #include <execinfo.h>
+#include <dlfcn.h>
 #include <X11/cursorfont.h>
 #include <X11/keysym.h>
 #include <X11/XKBlib.h>
@@ -9139,6 +9140,29 @@ m_zoom(Client *c, XEvent *e)
 		zoom(c);
 }
 
+
+AdwmOperations *
+get_adwm_ops(const char *name)
+{
+	char dlfile[128];
+	void *handle;
+	AdwmOperations *ops = NULL;
+
+	snprintf(dlfile, sizeof(dlfile), "adwm-%s.so", name);
+	DPRINTF("attempting to dlopen %s\n", dlfile);
+	if ((handle = dlopen(dlfile, RTLD_NOW | RTLD_LOCAL))) {
+		DPRINTF("dlopen of %s succeeded\n", dlfile);
+		if ((ops = dlsym(handle, "adwm_ops")))
+			ops->handle = handle;
+		else
+			DPRINTF("could not find symbol adwm_ops");
+	} else
+		DPRINTF("dlopen of %s failed: %s\n", dlfile, dlerror());
+	return ops;
+}
+
+AdwmOperations *baseops;
+
 int
 main(int argc, char *argv[])
 {
@@ -9161,6 +9185,10 @@ main(int argc, char *argv[])
 	signal(SIGQUIT, sighandler);
 	cargc = argc;
 	cargv = argv;
+
+	if (!(baseops = get_adwm_ops("adwm")))
+		eprint("could not load base operations\n");
+
 	for (i = 0; i < PartLast; i++)
 		context[i] = XUniqueContext();
 #ifdef XRANDR

@@ -725,6 +725,7 @@ struct Notify {
 #endif
 
 typedef struct {
+	void *handle;
 	const char *name;
 	const char *clas;
 	void (*initrcfile)(void);

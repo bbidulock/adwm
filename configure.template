@@ -30,7 +30,7 @@ AC_ARG_VAR([LD], [Linker loader command])
 
 AC_DISABLE_STATIC
 LT_PREREQ([2.4.2])
-LT_INIT([])
+LT_INIT([dlopen])
 LT_LANG([C])
 AC_SUBST([LIBTOOL_DEPS])
 

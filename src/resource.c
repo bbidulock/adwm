@@ -242,7 +242,7 @@ getpixmap(const char *file, AdwmPixmap *p)
 			p->width = imlib_image_get_width();
 			p->height = imlib_image_get_height();
 			p->x = p->y = 0;
-			image_render_pixmaps_for_whole_image(&p->pixmap, &p->mask);
+			imlib_render_pixmaps_for_whole_image(&p->pixmap, &p->mask);
 			return;
 		}
 		DPRINTF("could not load image file %s\n", file);
@@ -281,7 +281,7 @@ getshadow(const char *descrip, TextShadow * s)
 			int tint;
 
 			tint = atoi(p + 11);
-			s->tranparency = abs(tint);
+			s->transparency = abs(tint);
 			if (tint < 0)
 				getxftcolor("black", "black", &s->color);
 			else
@@ -346,7 +346,7 @@ readtexture(const char *name, const char *clas, Texture *t, const char *defcol,
 		t->textOpacity = 100;
 
 	snprintf(fname, sizeof(fname), "%s.textShadowColor", name);
-	snrpintf(fclas, sizeof(fclas), "%s.TextShadwoColor", clas);
+	snprintf(fclas, sizeof(fclas), "%s.TextShadwoColor", clas);
 	res = readres(fname, fclas, defcol);
 	getxftcolor(res, defcol, &t->textShadowColor);
 
@@ -396,7 +396,7 @@ readtexture(const char *name, const char *clas, Texture *t, const char *defcol,
 
 	snprintf(fname, sizeof(fname), "%s.opacity", name);
 	snprintf(fclas, sizeof(fclas), "%s.Opacity", clas);
-	res = readres(fname, fcclas, "0");
+	res = readres(fname, fclas, "0");
 	t->opacity = strtoul(res, NULL, 0);
 	if (t->opacity > 100)
 		t->opacity = 100;

@@ -2162,56 +2162,38 @@ clientmessage(XEvent *e)
 		} else if (message_type == _XA_WM_PROTOCOLS) {
 			/* TODO */
 		} else if (message_type == _XA_NET_WM_FULLSCREEN_MONITORS) {
-			if (c->is.max) {
-				Monitor *mt, *mb, *ml, *mr;
-				int t, b, l, r;
-				ClientGeometry g;
-
-				mt = findmonbynum(ev->data.l[0]);
-				mb = findmonbynum(ev->data.l[1]);
-				ml = findmonbynum(ev->data.l[2]);
-				mr = findmonbynum(ev->data.l[3]);
-				if (!mt || !mb || !ml || !mr) {
-					ewmh_update_net_window_fs_monitors(c);
-					return False;
-				}
-				t = mt->sc.y;
-				b = mb->sc.y + mb->sc.h;
-				l = ml->sc.x;
-				r = mr->sc.x + mr->sc.w;
-				if (t >= b || r >= l) {
-					ewmh_update_net_window_fs_monitors(c);
-					return False;
-				}
-				g.x = l;
-				g.y = t;
-				g.w = r - l;
-				g.h = b - t;
-				g.b = 0;
-				g.t = 0;
-				g.g = 0;
-				reconfigure(c, &g);
-			}
+			if (!configuremonitors(e, c))
+				return False;
 			XChangeProperty(dpy, c->win, _XA_NET_WM_FULLSCREEN_MONITORS, XA_CARDINAL, 32,
 					PropModeReplace, (unsigned char *)&ev->data.l[0], 4L);
 		} else if (message_type == _XA_NET_MOVERESIZE_WINDOW) {
 			unsigned flags = (unsigned) ev->data.l[0];
 			unsigned source = ((flags >> 12) & 0x0f);
 			unsigned gravity = flags & 0xff;
-			int dx, dy, dw, dh;
+			XConfigureRequestEvent cev;
 
-			if (!isfloating(c, NULL))
-				return False;
 			if (source != 0 && source != 2)
 				return False;
-
-			dx = ((flags & (1 << 8)) && c->can.move) ? ev->data.l[1] - c->c.x : 0;
-			dy = ((flags & (1 << 9)) && c->can.move) ? ev->data.l[2] - c->c.y : 0;
-			dw = ((flags & (1 << 10)) && c->can.sizeh) ? ev->data.l[3] - c->c.w : 0;
-			dh = ((flags & (1 << 11)) && c->can.sizev) ? ev->data.l[4] - c->c.h : 0;
+			cev.value_mask = 0;
+			if (flags & (1<<8)) {
+				cev.value_mask |= CWX;
+				cev.x = ev->data.l[1];
+			}
+			if (flags & (1<<9)) {
+				cev.value_mask |= CWY;
+				cev.y = ev->data.l[2];
+			}
+			if (flags & (1<<10)) {
+				cev.value_mask |= CWWidth;
+				cev.width = ev->data.l[3];
+			}
+			if (flags & (1<<11)) {
+				cev.value_mask |= CWHeight;
+				cev.height = ev->data.l[4];
+			}
 			if (gravity == 0)
 				gravity = c->gravity;
-			moveresizekb(c, dx, dy, dw, dh, gravity);
+			configureclient((XEvent *)&cev, c, gravity);
 		} else if (message_type == _XA_NET_WM_MOVERESIZE) {
 			int x_root = (int) ev->data.l[0];
 			int y_root = (int) ev->data.l[1];

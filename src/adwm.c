@@ -60,7 +60,6 @@ Bool canfocus(Client *c);
 void checkotherwm(void);
 void cleanup(WithdrawCause cause);
 void compileregs(void);
-void send_configurenotify(Client *c, Window above);
 Bool configurenotify(XEvent *e);
 Bool configurerequest(XEvent *e);
 Bool destroynotify(XEvent *e);
@@ -438,14 +437,6 @@ arrange(Monitor *om) {
 	else
 		XUnmapWindow(dpy, om->veil);
 	discardenter();
-}
-
-static void
-getgeometry(Client *c, Geometry *g, ClientGeometry *gc)
-{
-	*(Geometry *)gc = *g;
-	gc->t = c->th;
-	gc->g = c->gh;
 }
 
 void
@@ -946,58 +937,12 @@ configurerequest(XEvent *e)
 {
 	Client *c;
 	XConfigureRequestEvent *ev = &e->xconfigurerequest;
-	XWindowChanges wc;
 
 	if ((c = getclient(ev->window, ClientWindow))) {
-		Monitor *cm;
-
-		/* XXX: if c->curmon is set, we are displayed on a monitor, but
-		   c->curview should also be set.  We only need the monitor for the
-		   layout.  When there is no curmon, use one of the views to which the
-		   client is tagged? How meaningful is it moving a window not in the
-		   current view? Perhaps we should treat it a just moving the saved
-		   floating state.  This is the only function that calls
-		   findcurmonitor(). */
-
-		if (!(cm = c->curmon ?: selmonitor()))
-			return False;
-		if (!c->is.max && isfloating(c, cm)) {
-			ClientGeometry g;
-			int dx, dy, dw, dh;
-
-			getgeometry(c, &c->c, &g);
-
-			dx = ((ev->value_mask & CWX) && c->can.move) ? ev->x - g.x : 0;
-			dy = ((ev->value_mask & CWY) && c->can.move) ? ev->y - g.y : 0;
-			dw = ((ev->value_mask & CWWidth) && c->can.sizeh) ? ev->width - g.w : 0;
-			dh = ((ev->value_mask & CWHeight) && c->can.sizev) ? ev->height - (g.h - g.t - g.g) : 0;
-			g.b = (ev->value_mask & CWBorderWidth) ? ev->border_width : g.b;
-
-			moveresizekb(c, dx, dy, dw, dh, c->gravity);
-			/* TODO: check _XA_WIN_CLIENT_MOVING and handle moves between
-			   monitors */
-		} else {
-			ClientGeometry g;
-
-			getgeometry(c, &c->c, &g);
-
-			g.b = (ev->value_mask & CWBorderWidth) ? ev->border_width : g.b;
-
-			DPRINTF("CALLING reconfigure()\n");
-			reconfigure(c, &g);
-			if (ev->value_mask & (CWBorderWidth))
-				c->s.b = g.b;
-		}
-		if (ev->value_mask & CWStackMode) {
-			Client *s = NULL;
-
-			if (ev->value_mask & CWSibling)
-				if (!(s = getclient(ev->above, ClientAny)))
-					return False;
-			/* might want to make this optional */
-			restack_client(c, ev->detail, s);
-		}
+		configureclient(e, c, c->gravity);
 	} else {
+		XWindowChanges wc;
+
 		wc.x = ev->x;
 		wc.y = ev->y;
 		wc.width = ev->width;
@@ -1056,54 +1001,32 @@ erealloc(void *ptr, size_t size) {
 }
 
 Bool
-enternotify(XEvent * e) {
+enternotify(XEvent *e)
+{
 	XCrossingEvent *ev = &e->xcrossing;
+	Window win = ev->window, froot = scr->root, fparent = None, *children = NULL;
+	unsigned nchild = 0;
 	Client *c;
 
 	if (ev->mode != NotifyNormal || ev->detail == NotifyInferior)
 		return True;
+
+	while (XQueryTree(dpy, win, &froot, &fparent, &children, &nchild)) {
+		if (children)
+			XFree(children);
+		if (win == froot || fparent == froot)
+			break;
+		win = fparent;
+	}
+	XFindContext(dpy, froot, context[ScreenContext], (XPointer *) &scr);
+
 	if ((c = getclient(ev->window, ClientAny))) {
 		CPRINTF(c, "EnterNotify received\n");
-		if (c->is.bastard && !c->is.dockapp) {
-			CPRINTF(c, "FOCUS: cannot focus bastards.\n");
-			return True;
-		}
-		/* focus when switching monitors */
-		if (!isvisible(sel, c->curmon)) {
-			CPRINTF(c, "FOCUS: monitor switching focus\n");
-			focus(c);
-		}
-		switch (options.focus) {
-		case Clk2Focus:
-			break;
-		case SloppyFloat:
-			/* FIXME: incorporate isfloating() check into skip.sloppy setting */
-			if (!c->skip.sloppy && isfloating(c, c->curmon)) {
-				CPRINTF(c, "FOCUS: sloppy focus\n");
-				focus(c);
-			}
-			break;
-		case AllSloppy:
-			if (!c->skip.sloppy) {
-				CPRINTF(c, "FOCUS: sloppy focus\n");
-				focus(c);
-			}
-			break;
-		case SloppyRaise:
-			if (!c->skip.sloppy) {
-				CPRINTF(c, "FOCUS: sloppy focus\n");
-				focus(c);
-				raiseclient(c);
-			}
-			break;
-		}
+		enterclient(e, c);
 	} else if (ev->window == scr->root) {
 		DPRINTF("Not focusing root\n");
-#if 0
-		/* no no no, stay with previously focused client */
-		if (scr->managed)
-			focus(NULL);
-#endif
+		if (took)
+			focus(took);
 	} else {
 		DPRINTF("Unknown entered window 0x%08lx\n", ev->window);
 		return False;
@@ -1188,11 +1111,14 @@ Bool
 expose(XEvent * e)
 {
 	XExposeEvent *ev = &e->xexpose;
-	XEvent tmp;
 	Client *c;
 
-	while (XCheckWindowEvent(dpy, ev->window, ExposureMask, &tmp));
 	if ((c = getclient(ev->window, ClientAny))) {
+		XEvent tmp;
+
+		XSync(dpy, False);
+		/* discard all exposures for the same window */
+		while (XCheckWindowEvent(dpy, ev->window, ExposureMask, &tmp));
 		drawclient(c);
 		return True;
 	}
@@ -1270,32 +1196,19 @@ focus(Client *c)
 		   could take the focus because its child window is an icon (e.g.
 		   dockapp). */
 		setclientstate(c, NormalState);
+		/* drawclient does this does it not? */
 		XSetWindowBorder(dpy, sel->frame, scr->style.color.sel[ColBorder]);
 		drawclient(c);
 		if (c->is.shaded && options.autoroll)
 			arrange(cm);
-		if (c->is.bastard || c->is.dockapp || !isfloating(c, cm)) {
-			CPRINTF(c, "raising non-floating client on focus\n");
-			if (c->is.bastard || c->is.dockapp) {
-				c->is.below = False;
-				c->is.above = True;
-			}
-			raiseclient(c);
-		}
+		raisetiled(c);
 		ewmh_update_net_window_state(c);
 	}
 	if (o && o != sel) {
 		drawclient(o);
 		if (o->is.shaded && options.autoroll)
 			arrange(cm);
-		if (o->is.bastard || o->is.dockapp || !isfloating(o, cm)) {
-			CPRINTF(o, "lowering non-floating client on focus\n");
-			if (o->is.bastard || o->is.dockapp) {
-				o->is.below = True;
-				o->is.above = False;
-			}
-			lowerclient(o);
-		}
+		lowertiled(o);
 		ewmh_update_net_window_state(o);
 	}
 	XSync(dpy, False);
@@ -1926,7 +1839,6 @@ manage(Window w, XWindowAttributes *wa)
 	XWMHints *wmh;
 	unsigned long mask = 0;
 	Bool focusnew = True;
-	Monitor *cm;
 	int take_focus;
 
 	DPRINTF("managing window 0x%lx\n", w);
@@ -2088,42 +2000,7 @@ manage(Window w, XWindowAttributes *wa)
 		}
 	}
 
-	CPRINTF(c, "initial geometry c: %dx%d+%d+%d:%d t %d g %d\n",
-		c->c.w, c->c.h, c->c.x, c->c.y, c->c.b, c->th, c->gh);
-	CPRINTF(c, "initial geometry r: %dx%d+%d+%d:%d t %d g %d\n",
-		c->r.w, c->r.h, c->r.x, c->r.y, c->r.b, c->th, c->gh);
-	CPRINTF(c, "initial geometry s: %dx%d+%d+%d:%d t %d g %d\n",
-		c->s.w, c->s.h, c->s.x, c->s.y, c->s.b, c->th, c->gh);
-
-	if (!wa->x && !wa->y && c->can.move && !c->is.dockapp) {
-		/* put it on the monitor startup notification requested if not already
-		   placed with its group */
-		if (c->monitor && !clientmonitor(c))
-			c->tags = scr->monitors[c->monitor - 1].seltags;
-		place(c, ColSmartPlacement);
-	}
-
-	CPRINTF(c, "placed geometry c: %dx%d+%d+%d:%d t %d g %d\n",
-		c->c.w, c->c.h, c->c.x, c->c.y, c->c.b, c->th, c->gh);
-	CPRINTF(c, "placed geometry r: %dx%d+%d+%d:%d t %d g %d\n",
-		c->r.w, c->r.h, c->r.x, c->r.y, c->r.b, c->th, c->gh);
-	CPRINTF(c, "placed geometry s: %dx%d+%d+%d:%d t %d g %d\n",
-		c->s.w, c->s.h, c->s.x, c->s.y, c->s.b, c->th, c->gh);
-
 	c->with.struts = getstruts(c);
-
-	if (!c->can.move) {
-		int mx, my;
-
-		/* wnck task bars figure window is on monitor containing
-		 * center of window */
-		mx = wa->x + wa->width / 2 + wa->border_width;
-		my = wa->y + wa->height / 2 + wa->border_width;
-
-		if (!(cm = getmonitor(mx, my)))
-			cm = closestmonitor(mx, my);
-		c->tags = cm->seltags;
-	}
 
 	XGrabButton(dpy, AnyButton, AnyModifier, c->win, True,
 		    ButtonPressMask, GrabModeSync, GrabModeAsync, None, None);
@@ -2537,6 +2414,7 @@ nearmonitor() {
 }
 
 #ifdef SYNC
+
 void
 sync_request(Client *c, Time time) {
 	int overflow = 0;
@@ -2582,8 +2460,9 @@ newsize(Client *c, int w, int h, Time time)
 	if (!c->sync.alarm)
 		return True;
 	if (c->sync.waiting) {
-		DPRINTF("Deferring size request from %dx%d to %dx%d for 0x%08lx 0x%08lx %s\n",
-				c->c.w, c->c.h - c->th - c->gh, w, h, c->frame, c->win, c->name);
+		DPRINTF
+		    ("Deferring size request from %dx%d to %dx%d for 0x%08lx 0x%08lx %s\n",
+		     c->c.w, c->c.h - c->th - c->gh, w, h, c->frame, c->win, c->name);
 		return False;
 	}
 	c->sync.w = w;
@@ -2627,6 +2506,7 @@ alarmnotify(XEvent *e)
 	}
 	return True;
 }
+
 #else
 
 Bool
@@ -2636,212 +2516,6 @@ newsize(Client *c, int w, int h, Time time)
 }
 
 #endif
-
-void
-reconfigure_dockapp(Client *c, ClientGeometry * n)
-{
-	XWindowChanges wwc, fwc;
-	unsigned wmask, fmask;
-
-	wmask = fmask = 0;
-	if (c->c.x != (fwc.x = n->x)) {
-		c->c.x = n->x;
-		fmask |= CWX;
-	}
-	if (c->c.y != (fwc.y = n->y)) {
-		c->c.y = n->y;
-		fmask |= CWY;
-	}
-	if (c->c.w != (fwc.width = n->w)) {
-		c->c.w = n->w;
-		fmask |= CWWidth;
-	}
-	if (c->c.h != (fwc.height = n->h)) {
-		c->c.h = n->h;
-		fmask |= CWHeight;
-	}
-	if (c->c.b != (fwc.border_width = n->b)) {
-		c->c.b = n->b;
-		fmask |= CWBorderWidth;
-	}
-	if (c->r.x != (wwc.x = (n->w - c->r.w) / 2)) {
-		c->r.x = (n->w - c->r.w) / 2;
-		wmask |= CWX;
-	}
-	if (c->r.y != (wwc.y = (n->h - c->r.h) / 2)) {
-		c->r.y = (n->h - c->r.h) / 2;
-		wmask |= CWY;
-	}
-	XMapWindow(dpy, c->frame); /* not mapped for some reason... */
-	wwc.width = c->r.w;
-	wwc.height = c->r.h;
-	wwc.border_width = c->r.b;
-	if (fmask) {
-		DPRINTF("frame wc = %ux%u+%d+%d:%d\n", fwc.width, fwc.height, fwc.x, fwc.y,
-			fwc.border_width);
-		XConfigureWindow(dpy, c->frame,
-				 CWX | CWY | CWWidth | CWHeight | CWBorderWidth, &fwc);
-	}
-	if (wmask) {
-		DPRINTF("wind  wc = %ux%u+%d+%d:%d\n", wwc.width, wwc.height, wwc.x, wwc.y,
-			wwc.border_width);
-		XConfigureWindow(dpy, c->icon,
-				 CWX | CWY | CWWidth | CWHeight | CWBorderWidth, &wwc);
-	}
-	if ((fmask | wmask) && !(wmask & (CWWidth | CWHeight))) {
-		XConfigureEvent ce;
-
-		ce.type = ConfigureNotify;
-		ce.display = dpy;
-		ce.event = c->icon;
-		ce.window = c->icon;
-		ce.x = c->c.x + c->r.x;
-		ce.y = c->c.y + c->r.y;
-		ce.width = c->r.w;
-		ce.height = c->r.h;
-		ce.border_width = c->c.b;
-		ce.above = None;
-		ce.override_redirect = False;
-		XSendEvent(dpy, c->icon, False, StructureNotifyMask, (XEvent *) &ce);
-	}
-	XSync(dpy, False);
-	drawclient(c);
-	if (fmask & (CWWidth | CWHeight))
-		ewmh_update_net_window_extents(c);
-	XSync(dpy, False);
-}
-
-/* FIXME: this does not handle moving the window across monitor
- * or desktop boundaries. */
-
-void
-reconfigure(Client *c, ClientGeometry * n)
-{
-	XWindowChanges wwc, fwc;
-	unsigned wmask, fmask;
-	Bool tchange = False, gchange = False, shaded = False;
-
-	if (n->w <= 0 || n->h <= 0) {
-		CPRINTF(c, "zero width %d or height %d\n", n->w, n->h);
-		return;
-	}
-	/* offscreen appearance fixes */
-	if (n->x > DisplayWidth(dpy, scr->screen))
-		n->x = DisplayWidth(dpy, scr->screen) - n->w - 2 * n->b;
-	if (n->y > DisplayHeight(dpy, scr->screen))
-		n->y = DisplayHeight(dpy, scr->screen) - n->h - 2 * n->b;
-	DPRINTF("x = %d y = %d w = %d h = %d b = %d t = %d g = %d\n", n->x, n->y, n->w,
-		n->h, n->b, n->t, n->g);
-
-	if (c->is.dockapp)
-		return reconfigure_dockapp(c, n);
-
-	wmask = fmask = 0;
-	if (c->c.x != (fwc.x = n->x)) {
-		c->c.x = n->x;
-		DPRINTF("frame wc.x = %d\n", fwc.x);
-		fmask |= CWX;
-	}
-	if (c->c.y != (fwc.y = n->y)) {
-		c->c.y = n->y;
-		DPRINTF("frame wc.y = %d\n", fwc.y);
-		fmask |= CWY;
-	}
-	if (c->c.w != (fwc.width = wwc.width = n->w)) {
-		c->c.w = n->w;
-		DPRINTF("frame wc.w = %u\n", fwc.width);
-		fmask |= CWWidth;
-		DPRINTF("wind  wc.w = %u\n", wwc.width);
-		wmask |= CWWidth;
-	}
-	if (c->c.h - c->th - c->gh != (wwc.height = n->h - n->t - n->g)) {
-		DPRINTF("wind  wc.h = %u\n", wwc.height);
-		wmask |= CWHeight;
-	}
-	if (c->c.h != (fwc.height = n->h)) {
-		c->c.h = n->h;
-		DPRINTF("frame wc.h = %u\n", fwc.height);
-		fmask |= CWHeight;
-	}
-	if (n->t && !c->title)
-		n->t = 0;
-	if (c->th != (wwc.y = n->t)) {
-		c->th = n->t;
-		DPRINTF("wind  wc.y = %d\n", wwc.y);
-		wmask |= CWY;
-		tchange = True;
-	}
-	if (n->g && !c->grips)
-		n->g = 0;
-	if (c->gh != n->g) {
-		c->gh = n->g;
-		gchange = True;
-	}
-	if (n->t && (c->is.shaded && (c != sel || !options.autoroll))) {
-		fwc.height = n->t;
-		DPRINTF("frame wc.h = %u\n", fwc.height);
-		fmask |= CWHeight;
-		shaded = True;
-	} else {
-		fwc.height = n->h;
-		DPRINTF("frame wc.h = %u\n", fwc.height);
-		fmask |= CWHeight;
-		shaded = False;
-	}
-	if (c->c.b != (fwc.border_width = n->b)) {
-		c->c.b = n->b;
-		DPRINTF("frame wc.b = %u\n", fwc.border_width);
-		fmask |= CWBorderWidth;
-	}
-	if (fmask) {
-		DPRINTF("frame wc = %ux%u+%d+%d:%d\n", fwc.width, fwc.height, fwc.x,
-			fwc.y, fwc.border_width);
-		XConfigureWindow(dpy, c->frame,
-				 CWX | CWY | CWWidth | CWHeight | CWBorderWidth, &fwc);
-	}
-	wwc.x = 0;
-	wwc.border_width = 0;
-	if ((wmask & (CWWidth | CWHeight))
-	    && !newsize(c, wwc.width, wwc.height, CurrentTime))
-		wmask &= ~(CWWidth | CWHeight);
-	if (shaded)
-		XUnmapWindow(dpy, c->win);
-	else
-		XMapWindow(dpy, c->win);
-	if (wmask) {
-		DPRINTF("wind  wc = %ux%u+%d+%d:%d\n", wwc.width, wwc.height, wwc.x,
-			wwc.y, wwc.border_width);
-		XConfigureWindow(dpy, c->win, wmask | CWX | CWY | CWBorderWidth, &wwc);
-	}
-	/* ICCCM 2.0 4.1.5 */
-	if ((fmask | wmask) && !(wmask & (CWWidth | CWHeight)))
-		send_configurenotify(c, None);
-	XSync(dpy, False);
-	if (c->title && (tchange || ((wmask | fmask) & (CWWidth)))) {
-		if (tchange) {
-			if (n->t)
-				XMapWindow(dpy, c->title);
-			else
-				XUnmapWindow(dpy, c->title);
-		}
-		if (n->t && (tchange || ((wmask | fmask) & (CWWidth))))
-			XMoveResizeWindow(dpy, c->title, 0, 0, wwc.width, n->t);
-	}
-	if (c->grips) {
-		if (shaded || !n->g)
-			XUnmapWindow(dpy, c->grips);
-		else
-			XMapWindow(dpy, c->grips);
-		if (n->g && (gchange || ((wmask | fmask) & (CWWidth | CWHeight | CWY))))
-			XMoveResizeWindow(dpy, c->grips, 0, n->h - n->g, wwc.width, n->g);
-	}
-	if (((c->title && n->t) || (c->grips && n->g)) &&
-	    ((tchange && n->t) || (gchange && n->g) || (wmask & CWWidth)))
-		drawclient(c);
-	if (tchange || gchange || (fmask & CWBorderWidth))
-		ewmh_update_net_window_extents(c);
-	XSync(dpy, False);
-}
 
 void
 m_move(Client *c, XEvent *e)
@@ -3512,14 +3186,6 @@ run(void)
 			}
 		}
 	}
-}
-
-Monitor *
-findmonbynum(int num) {
-	Monitor *m;
-
-	for (m = scr->monitors; m && m->num != num; m = m->next) ;
-	return m;
 }
 
 void

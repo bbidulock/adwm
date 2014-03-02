@@ -54,7 +54,6 @@ Bool alarmnotify(XEvent *e);
 void applyatoms(Client *c);
 void applyrules(Client *c);
 void arrange(Monitor *m);
-void ban(Client *c);
 Bool buttonpress(XEvent *e);
 Bool canfocus(Client *c);
 void checkotherwm(void);
@@ -116,12 +115,10 @@ void quit(const char *arg);
 void restart(const char *arg);
 void reconfigure(Client *c, ClientGeometry *g);
 void restack_belowif(Client *c, Client *sibling);
-void restack_client(Client *c, int stack_mode, Client *sibling);
 void run(void);
 void scan(void);
 void setclientstate(Client *c, long state);
 void setfocus(Client *c);
-void setlayout(const char *arg);
 void setup(char *);
 void spawn(const char *arg);
 void tag(Client *c, int index);
@@ -129,7 +126,6 @@ void toggletag(Client *c, int index);
 void togglemonitor(void);
 void toggleshowing(void);
 void togglehidden(Client *c);
-void unban(Client *c, Monitor *m);
 void unmanage(Client *c, WithdrawCause cause);
 void updatestruts(void);
 Bool unmapnotify(XEvent *e);
@@ -151,12 +147,6 @@ int xerror(Display *dpy, XErrorEvent *ee);
 int xerrordummy(Display *dsply, XErrorEvent *ee);
 int xerrorstart(Display *dsply, XErrorEvent *ee);
 int (*xerrorxlib) (Display *, XErrorEvent *);
-
-void addtag(void);
-void appendtag(void);
-void deltag(void);
-void rmlasttag(void);
-void settags(unsigned int numtags);
 
 Bool isdockapp(Window win);
 Bool issystray(Window win);
@@ -253,21 +243,6 @@ void (*actions[LastOn][5][2])(Client *, XEvent *) = {
 		[Button4-1] =	{ NULL,		    m_prevtag	    },
 		[Button5-1] =	{ NULL,		    m_nexttag	    },
 	},
-	/* *INDENT-ON* */
-};
-
-Layout layouts[] = {
-	/* *INDENT-OFF* */
-	/* function		symbol	features				major		minor		placement		*/
-	{  arrange_float,	'i',	OVERLAP,				0,		0,		ColSmartPlacement	},
-	{  arrange_tile,	't',	MWFACT | NMASTER | ZOOM | ROTL | MMOVE,	OrientLeft,	OrientBottom,	ColSmartPlacement	},
-	{  arrange_tile,	'b',	MWFACT | NMASTER | ZOOM | ROTL | MMOVE,	OrientBottom,	OrientLeft,	ColSmartPlacement	},
-	{  arrange_tile,	'u',	MWFACT | NMASTER | ZOOM | ROTL | MMOVE,	OrientTop,	OrientRight,	ColSmartPlacement	},
-	{  arrange_tile,	'l',	MWFACT | NMASTER | ZOOM | ROTL | MMOVE,	OrientRight,	OrientTop,	ColSmartPlacement	},
-	{  arrange_monocle,	'm',	0,					0,		0,		ColSmartPlacement	},
-	{  arrange_float,	'f',	OVERLAP,				0,		0,		ColSmartPlacement	},
-	{  arrange_grid,	'g',	NCOLUMNS | ROTL | MMOVE,		OrientLeft,	OrientTop,	ColSmartPlacement	},
-	{  NULL,		'\0',	0,					0,		0,		0			}
 	/* *INDENT-ON* */
 };
 
@@ -375,68 +350,6 @@ applyrules(Client * c) {
 		XFree(ch.res_name);
 	if (!matched && cm)
 		c->tags = cm->seltags;
-}
-
-static void
-arrangemon(Monitor *m)
-{
-	Client *c;
-	int struts;
-
-	if (scr->views[m->curtag].layout->arrange)
-		scr->views[m->curtag].layout->arrange(m);
-	struts = scr->views[m->curtag].barpos;
-	for (c = scr->stack; c; c = c->snext) {
-		if ((clientmonitor(c) == m) &&
-		    ((!c->is.bastard && !c->is.dockapp && !(c->is.icon || c->is.hidden))
-		     || ((c->is.bastard || c->is.dockapp) && struts == StrutsOn))) {
-			unban(c, m);
-		}
-	}
-
-	for (c = scr->stack; c; c = c->snext) {
-		if ((clientmonitor(c) == NULL)
-		    || (!c->is.bastard && !c->is.dockapp && (c->is.icon || c->is.hidden))
-		    || ((c->is.bastard || c->is.dockapp) && struts == StrutsHide)) {
-			ban(c);
-		}
-	}
-	for (c = scr->stack; c; c = c->snext)
-		ewmh_update_net_window_state(c);
-}
-
-void
-discardenter()
-{
-	XEvent ev;
-
-	XSync(dpy, False);
-	while (XCheckMaskEvent(dpy, EnterWindowMask, &ev)) ;
-	if (sel)
-		focus(sel);	/* put focus back where it was */
-}
-
-void
-arrange(Monitor *om) {
-	Monitor *m;
-	
-	if (!om)
-		for (m = scr->monitors; m; m = m->next)
-			XMapRaised(dpy, m->veil);
-	else
-		XMapRaised(dpy, om->veil);
-	if (!om)
-		for (m = scr->monitors; m; m = m->next)
-			arrangemon(m);
-	else
-		arrangemon(om);
-	restack();
-	if (!om)
-		for (m = scr->monitors; m; m = m->next)
-			XUnmapWindow(dpy, m->veil);
-	else
-		XUnmapWindow(dpy, om->veil);
-	discardenter();
 }
 
 void
@@ -2266,7 +2179,7 @@ getmonitor(int x, int y) {
 	return NULL;
 }
 
-int
+static int
 segm_overlap(int min1, int max1, int min2, int max2) {
 	int tmp, res = 0;
 
@@ -2285,11 +2198,6 @@ segm_overlap(int min1, int max1, int min2, int max2) {
 		// (min1?) min2 (min1?) max1 max2
 		res = (min1 <= min2) ? max1 - min2 : max1 - min1;
 	return res;
-}
-
-Bool
-wind_overlap(int min1, int max1, int min2, int max2) {
-	return segm_overlap(min1, max1, min2, max2) ? True : False;
 }
 
 static int
@@ -2687,378 +2595,6 @@ restart(const char *arg) {
 }
 
 Bool
-constrain(Client *c, ClientGeometry *g)
-{
-	int w = g->w, h = g->h;
-	Bool ret = False;
-
-	CPRINTF(c, "geometry before constraint: %dx%d+%d+%d:%d[%d,%d]\n",
-			g->w, g->h, g->x, g->y, g->b, g->t, g->g);
-
-	/* remove decoration */
-	h -= g->t + g->g;
-
-	/* set minimum possible */
-	if (w < 1)
-		w = 1;
-	if (h < 1)
-		h = 1;
-
-	/* temporarily remove base dimensions */
-	w -= c->basew;
-	h -= c->baseh;
-
-	/* adjust for aspect limits */
-	if (c->minay > 0 && c->maxay > 0 && c->minax > 0 && c->maxax > 0) {
-		if (w * c->maxay > h * c->maxax)
-			w = h * c->maxax / c->maxay;
-		else if (w * c->minay < h * c->minax)
-			h = w * c->minay / c->minax;
-	}
-
-	/* adjust for increment value */
-	if (c->incw)
-		w -= w % c->incw;
-	if (c->inch)
-		h -= h % c->inch;
-
-	/* restore base dimensions */
-	w += c->basew;
-	h += c->baseh;
-
-	if (c->minw > 0 && w < c->minw)
-		w = c->minw;
-	if (c->minh > 0 && h < c->minh)
-		h = c->minh;
-	if (c->maxw > 0 && w > c->maxw)
-		w = c->maxw;
-	if (c->maxh > 0 && h > c->maxh)
-		h = c->maxh;
-
-	/* restore decoration */
-	h += g->t + g->g;
-
-	if (w <= 0 || h <= 0)
-		return ret;
-	if (w != g->w) {
-		g->w = w;
-		ret = True;
-	}
-	if (h != g->h) {
-		g->h = h;
-		ret = True;
-	}
-	CPRINTF(c, "geometry after constraints: %dx%d+%d+%d:%d[%d,%d]\n",
-			g->w, g->h, g->x, g->y, g->b, g->t, g->g);
-	return ret;
-}
-
-static Bool
-client_overlap(Client *c, Client *o)
-{
-	if (wind_overlap(c->c.x, c->c.x + c->c.w, o->c.x, o->c.x + o->c.w) &&
-	    wind_overlap(c->c.y, c->c.y + c->c.h, o->c.y, o->c.y + o->c.h))
-		return True;
-	return False;
-}
-
-Bool
-place_overlap(Geometry *c, Geometry *o)
-{
-	Bool ret = False;
-
-	if (wind_overlap(c->x, c->x + c->w, o->x, o->x + o->w) &&
-	    wind_overlap(c->y, c->y + c->h, o->y, o->y + o->h))
-		ret = True;
-	DPRINTF("%dx%d+%d+%d and %dx%d+%d+%d %s\n", c->w, c->h, c->x, c->y,
-			o->w, o->h, o->x, o->y, ret ? "overlap" : "disjoint");
-	return ret;
-}
-
-static Bool
-client_occludes(Client *c, Client *o)
-{
-	Client *s;
-
-	if (!client_overlap(c, o))
-		return False;
-	for (s = c->snext; s && s != o; s = s->snext) ;
-	return (s ? True : False);
-}
-
-static Bool
-client_occludes_any(Client *c)
-{
-	Client *s;
-
-	for (s = c->snext; s; s = s->snext)
-		if (client_overlap(c, s))
-			return True;
-	return False;
-}
-
-static Bool
-client_occluded_any(Client *c)
-{
-	Client *s;
-
-	for (s = scr->stack; s && s != c; s = s->next)
-		if (client_overlap(c, s))
-			return True;
-	return False;
-}
-
-void
-restack_client(Client *c, int stack_mode, Client *o)
-{
-	Client *s, **cp, **op, **lp;
-
-	for (lp = &scr->stack, s = scr->stack; s; lp = &s->snext, s = *lp) ;
-	for (cp = &scr->stack, s = scr->stack; s && s != c; cp = &s->snext, s = *cp) ;
-	assert(s == c);
-	for (op = &scr->stack, s = scr->stack; s && s != o; op = &s->snext, s = *op) ;
-	assert(s == o);
-
-	switch (stack_mode) {
-	case Above:
-		if (o) {
-			/* just above sibling */
-			*cp = c->snext;
-			*op = c;
-			c->snext = o;
-		} else {
-			/* top of stack */
-			*cp = c->snext;
-			c->snext = scr->stack;
-			scr->stack = c;
-		}
-		break;
-	case Below:
-		if (o) {
-			/* just below sibling */
-			*cp = c->snext;
-			c->snext = o->snext;
-			o->snext = c;
-		} else {
-			/* bottom of stack */
-			*cp = c->snext;
-			c->snext = *lp;
-			*lp = c;
-		}
-		break;
-	case TopIf:
-		if (o) {
-			if (!client_occludes(o, c))
-				return;
-		} else {
-			if (!client_occluded_any(c))
-				return;
-		}
-		/* top of stack */
-		*cp = c->snext;
-		c->snext = scr->stack;
-		scr->stack = c;
-		break;
-	case BottomIf:
-		if (o) {
-			if (!client_occludes(c, o))
-				return;
-		} else {
-			if (!client_occludes_any(c))
-				return;
-		}
-		/* bottom of stack */
-		*cp = c->snext;
-		c->snext = *lp;
-		*lp = c;
-		break;
-	case Opposite:
-		if (o) {
-			if (client_occludes(o, c)) {
-				/* top of stack */
-				*cp = c->snext;
-				c->snext = scr->stack;
-				scr->stack = c;
-			} else if (client_occludes(c, o)) {
-				/* bottom of stack */
-				*cp = c->snext;
-				c->snext = *lp;
-				*lp = c;
-			} else
-				return;
-		} else {
-			if (client_occluded_any(c)) {
-				/* top of stack */
-				*cp = c->snext;
-				c->snext = scr->stack;
-				scr->stack = c;
-			} else if (client_occludes_any(c)) {
-				/* bottom of stack */
-				*cp = c->snext;
-				c->snext = *lp;
-				*lp = c;
-			} else
-				return;
-		}
-		break;
-	default:
-		return;
-	}
-	restack();
-}
-
-void
-restack_belowif(Client *c, Client *o)
-{
-	if (o && client_occludes(c, o))
-		restack_client(c, Below, o);
-}
-
-void
-restack()
-{
-	Client *c, **ol, **cl, **sl;
-	Window *wl;
-	int i, j, n;
-
-	for (n = 0, c = scr->stack; c; c = c->snext, n++) ;
-	if (!n) {
-		ewmh_update_net_client_list();
-		return;
-	}
-	wl = ecalloc(n, sizeof(*wl));
-	ol = ecalloc(n, sizeof(*ol));
-	cl = ecalloc(n, sizeof(*cl));
-	sl = ecalloc(n, sizeof(*sl));
-	/* 
-	 * EWMH WM SPEC 1.5 Draft 1:
-	 *
-	 * Stacking order
-	 *
-	 * To obtain good interoperability betweeen different Desktop
-	 * Environments, the following layerd stacking order is
-	 * recommended, from the bottom:
-	 *
-	 * - windows of type _NET_WM_TYPE_DESKTOP
-	 * - windows having state _NET_WM_STATE_BELOW
-	 * - windows not belonging in any other layer
-	 * - windows of type _NET_WM_TYPE_DOCK (unless they have state
-	 *   _NET_WM_TYPE_BELOW) and windows having state
-	 *   _NET_WM_STATE_ABOVE
-	 * - focused windows having state _NET_WM_STATE_FULLSCREEN
-	 */
-	for (i = 0, j = 0, c = scr->stack; c; ol[i] = cl[i] = c, i++, c = c->snext) ;
-	/* focused windows having state _NET_WM_STATE_FULLSCREEN */
-	XPRINTF("%s", "LAYER: focused windows having state _NET_WM_STATE_FULLSCREEN:\n");
-	for (i = 0; i < n; i++) {
-		if (!(c = cl[i]))
-			continue;
-		if (sel == c && c->is.max) {
-			cl[i] = NULL; wl[j] = c->frame; sl[j] = c; j++;
-			XPRINTF("client 0x%08lx 0x%08lx %s\n", c->frame, c->win, c->name);
-		}
-	}
-	/* windows of type _NET_WM_TYPE_DOCK (unless they have state _NET_WM_STATE_BELOW) and
-	   windows having state _NET_WM_STATE_ABOVE. */
-	XPRINTF("%s", "LAYER: _NET_WINDOW_TYPE_DOCK not _NET_WM_STATE_BELOW and _NET_WM_STATE_ABOVE:\n");
-	for (i = 0; i < n; i++) {
-		if (!(c = cl[i]))
-			continue;
-		if ((WTCHECK(c, WindowTypeDock) && !c->is.below) || c->is.above) {
-			cl[i] = NULL; wl[j] = c->frame; sl[j] = c; j++;
-			XPRINTF("client 0x%08lx 0x%08lx %s\n", c->frame, c->win, c->name);
-		}
-	}
-	/* windows not belonging in any other layer (but we put floating above special above tiled) 
-	 */
-	XPRINTF("%s", "LAYER: floaters:\n");
-	for (i = 0; i < n; i++) {
-		if (!(c = cl[i]))
-			continue;
-		if (!c->is.bastard && (c->is.floater || c->skip.arrange) && !c->is.below && !WTCHECK(c, WindowTypeDesk)) {
-			cl[i] = NULL; wl[j] = c->frame; sl[j] = c; j++;
-			XPRINTF("client 0x%08lx 0x%08lx %s\n", c->frame, c->win, c->name);
-		}
-	}
-	XPRINTF("%s", "LAYER: bastards:\n");
-	for (i = 0; i < n; i++) {
-		if (!(c = cl[i]))
-			continue;
-		if (c->is.bastard && !c->is.below && !WTCHECK(c, WindowTypeDesk)) {
-			cl[i] = NULL; wl[j] = c->frame; sl[j] = c; j++;
-			XPRINTF("client 0x%08lx 0x%08lx %s\n", c->frame, c->win, c->name);
-		}
-	}
-	XPRINTF("%s", "LAYER: tiled:\n");
-	for (i = 0; i < n; i++) {
-		if (!(c = cl[i]))
-			continue;
-		if (!c->is.bastard && !(c->is.floater || c->skip.arrange) && !c->is.below && !WTCHECK(c, WindowTypeDesk)) {
-			cl[i] = NULL; wl[j] = c->frame; sl[j] = c; j++;
-			XPRINTF("client 0x%08lx 0x%08lx %s\n", c->frame, c->win, c->name);
-		}
-	}
-	/* windows having state _NET_WM_STATE_BELOW */
-	XPRINTF("%s", "LAYER: windows having _NET_WM_STATE_BELOW:\n");
-	for (i = 0; i < n; i++) {
-		if (!(c = cl[i]))
-			continue;
-		if (c->is.below && !WTCHECK(c, WindowTypeDesk)) {
-			cl[i] = NULL; wl[j] = c->frame; sl[j] = c; j++;
-			XPRINTF("client 0x%08lx 0x%08lx %s\n", c->frame, c->win, c->name);
-		}
-	}
-	/* windows of type _NET_WM_TYPE_DESKTOP */
-	XPRINTF("%s", "LAYER: windows having _NET_WINDOW_TYPE_DESKTOP:\n");
-	for (i = 0; i < n; i++) {
-		if (!(c = cl[i]))
-			continue;
-		if (WTCHECK(c, WindowTypeDesk)) {
-			cl[i] = NULL; wl[j] = c->frame; sl[j] = c; j++;
-			XPRINTF("client 0x%08lx 0x%08lx %s\n", c->frame, c->win, c->name);
-		}
-	}
-	assert(j == n);
-	free(cl);
-
-	if (bcmp(ol, sl, n * sizeof(*ol))) {
-		XPRINTF("%s", "Old stacking order:\n");
-		for (c = scr->stack; c; c = c->snext)
-			XPRINTF("client frame 0x%08lx win 0x%08lx name %s%s\n",
-					c->frame, c->win, c->name,
-					c->is.bastard ? " (bastard)" : "");
-		scr->stack = sl[0];
-		for (i = 0; i < n - 1; i++)
-			sl[i]->snext = sl[i + 1];
-		sl[i]->snext = NULL;
-		XPRINTF("%s", "New stacking order:\n");
-		for (c = scr->stack; c; c = c->snext)
-			XPRINTF("client frame 0x%08lx win 0x%08lx name %s%s\n",
-					c->frame, c->win, c->name,
-					c->is.bastard ? " (bastard)" : "");
-	} else {
-		XPRINTF("%s", "No new stacking order\n");
-	}
-	free(ol);
-	free(sl);
-
-	if (!window_stack.members || (window_stack.count != n) ||
-			bcmp(window_stack.members, wl, n * sizeof(*wl))) {
-		free(window_stack.members);
-		window_stack.members = wl;
-		window_stack.count = n;
-
-		XRestackWindows(dpy, wl, n);
-
-		ewmh_update_net_client_list();
-	} else {
-		XPRINTF("%s", "No new stacking order\n");
-		free(wl);
-	}
-	discardenter();
-}
-
-Bool
 handle_event(XEvent *ev)
 {
 	int i;
@@ -3305,33 +2841,7 @@ scan(void) {
 	ewmh_update_kde_splash_progress();
 }
 
-void
-setlayout(const char *arg)
-{
-	Monitor *cm;
-
-	if (!(cm = selmonitor()))
-		return;
-	if (arg) {
-		View *v;
-		Layout *l;
-
-		for (l = layouts; l->symbol; l++)
-			if (*arg == l->symbol)
-				break;
-		if (!l->symbol)
-			return;
-		v = scr->views + cm->curtag;
-		v->layout = l;
-		v->major = l->major;
-		v->minor = l->minor;
-		v->placement = l->placement;
-	}
-	arrange(cm);
-	ewmh_update_net_desktop_modes();
-}
-
-void
+static void
 initview(unsigned int i, double mwfact, double mhfact, int nmaster, int ncolumns,
 	 const char *deflayout)
 {
@@ -3367,7 +2877,7 @@ initview(unsigned int i, double mwfact, double mhfact, int nmaster, int ncolumns
 	}
 }
 
-void
+static void
 newview(unsigned int i) {
 	double mwfact, mhfact;
 	int nmaster, ncolumns;
@@ -3385,7 +2895,7 @@ newview(unsigned int i) {
 	initview(i, mwfact, mhfact, nmaster, ncolumns, deflayout);
 }
 
-void
+static void
 initlayouts() {
 	unsigned int i;
 	double mwfact, mhfact;
@@ -3758,7 +3268,7 @@ inittags() {
 	ewmh_process_net_desktop_names();
 }
 
-void
+static void
 deltag()
 {
 	Client *c;
@@ -3807,7 +3317,7 @@ rmlasttag() {
 	ewmh_update_net_number_of_desktops();
 }
 
-void
+static void
 addtag() {
 	Client *c;
 	Monitor *m;
@@ -4177,28 +3687,6 @@ togglemin(Client *c) {
 }
 
 void
-toggleabove(Client *c) {
-	if (!c || (!c->can.above && c->is.managed))
-		return;
-	c->is.above = !c->is.above;
-	if (c->is.managed) {
-		restack();
-		ewmh_update_net_window_state(c);
-	}
-}
-
-void
-togglebelow(Client *c) {
-	if (!c || (!c->can.below && c->is.managed))
-		return;
-	c->is.below = !c->is.below;
-	if (c->is.managed) {
-		restack();
-		ewmh_update_net_window_state(c);
-	}
-}
-
-void
 togglepager(Client *c) {
 	if (!c || c->is.bastard || c->is.dockapp)
 		return;
@@ -4354,7 +3842,7 @@ focusview(Monitor *cm, int index)
 			break;
 	if (c)
 		focus(c);
-	restack();
+	// restack(); /* XXX: really necessary? */
 }
 
 void

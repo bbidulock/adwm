@@ -575,6 +575,11 @@ typedef struct View {
 	int row, col;			/* row and column in desktop layout */
 } View; /* per-tag settings */
 
+typedef struct Tag {
+	Atom dt;			/* desktop atom for this tag */
+	char name[64];			/* desktop name for this tag */
+} Tag;
+
 typedef struct {
 	unsigned x, y, w, h;
 	struct {
@@ -664,10 +669,9 @@ struct AScreen {
 	Client *flist;
 	Bool showing_desktop;
 	int screen;
-	char **tags;
 	unsigned ntags;
-	Atom *dt_tags;
 	View *views;
+	Tag *tags;
 	Key **keys;
 	unsigned nkeys;
 	struct {

@@ -214,7 +214,7 @@ elementw(AScreen *ds, Client *c, char which)
 	case TitleTags:
 		for (j = 0; j < ds->ntags; j++) {
 			if (c->tags & (1ULL<<j))
-				w += textw(ds, ds->tags[j], hilite);
+				w += textw(ds, ds->tags[j].name, hilite);
 		}
 		break;
 	case TitleSep:
@@ -345,7 +345,7 @@ drawelement(AScreen *ds, char which, int x, int position, Client *c)
 
 	case TitleTags:
 		for (j = 0, x = ds->dc.x; j < ds->ntags; j++, w += tw, x += tw)
-			tw = (c->tags & (1ULL<<j)) ? drawtext(ds, ds->tags[j], ds->dc.draw.pixmap,
+			tw = (c->tags & (1ULL<<j)) ? drawtext(ds, ds->tags[j].name, ds->dc.draw.pixmap,
 						   ds->dc.draw.xft, color, hilite,
 						   x, ds->dc.y, ds->dc.w) : 0;
 		break;

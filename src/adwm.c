@@ -338,7 +338,7 @@ applyrules(Client * c) {
 			if (!(c->has.title = rules[i]->hastitle))
 				c->has.grips = False;
 			for (j = 0; rules[i]->tagregex && j < scr->ntags; j++) {
-				if (!regexec(rules[i]->tagregex, scr->tags[j], 1, &tmp, 0)) {
+				if (!regexec(rules[i]->tagregex, scr->tags[j].name, 1, &tmp, 0)) {
 					matched = True;
 					c->tags |= (1ULL<<j);
 				}
@@ -780,8 +780,6 @@ cleanup(WithdrawCause cause) {
 	}
 
 	for (scr = screens; scr < screens + nscr; scr++) {
-		free(scr->tags);
-		scr->tags = NULL;
 		free(scr->keys);
 		scr->keys = NULL;
 		freemonitors();
@@ -2826,6 +2824,25 @@ scan(void) {
 	ewmh_update_kde_splash_progress();
 }
 
+void
+inittag(unsigned i)
+{
+	char conf[32], def[8];
+
+	snprintf(conf, sizeof(conf), "tags.name%d", i);
+	snprintf(def, sizeof(def), "%u", i);
+	snprintf(scr->tags[i].name, sizeof(scr->tags[i].name), "%s",
+			getresource(conf, def));
+	scr->tags[i].dt = XInternAtom(dpy, scr->tags[i].name, False);
+	DPRINTF("Assigned name '%s' to tag %u\n", scr->tags[i].name, i);
+}
+
+static void
+newtag(unsigned i)
+{
+	inittag(i);
+}
+
 static void
 initview(unsigned int i, double mwfact, double mhfact, int nmaster, int ncolumns,
 	 const char *deflayout)
@@ -2879,6 +2896,7 @@ newview(unsigned int i) {
 		ncolumns = 1;
 	initview(i, mwfact, mhfact, nmaster, ncolumns, deflayout);
 }
+
 
 static void
 initlayouts() {
@@ -3228,28 +3246,10 @@ initmonitors(XEvent *e)
 }
 
 void
-inittag(unsigned int i) {
-	char tmp[25] = "", def[8] = "";
-
-	scr->tags[i] = emallocz(sizeof(tmp));
-	snprintf(tmp, sizeof(tmp), "tags.name%d", i);
-	snprintf(def, sizeof(def), "%u", i);
-	snprintf(scr->tags[i], sizeof(tmp), "%s", getresource(tmp, def));
-	scr->dt_tags[i] = XInternAtom(dpy, scr->tags[i], False);
-	DPRINTF("Assigned name '%s' to tag %u\n", scr->tags[i], i);
-}
-
-void
-newtag(unsigned int i) {
-	inittag(i);
-}
-
-void
 inittags() {
 	ewmh_process_net_number_of_desktops();
 	scr->views = ecalloc(scr->ntags, sizeof(*scr->views));
 	scr->tags = ecalloc(scr->ntags, sizeof(*scr->tags));
-	scr->dt_tags = ecalloc(scr->ntags, sizeof(*scr->dt_tags));
 	ewmh_process_net_desktop_names();
 }
 
@@ -3284,9 +3284,6 @@ deltag()
 			c->tags &= ~tags;
 	}
 
-	free(scr->tags[last]);
-	scr->tags[last] = NULL;
-
 	--scr->ntags;
 #if 0
 	/* caller's responsibility */
@@ -3312,9 +3309,9 @@ addtag() {
 		return; /* stop the insanity, go organic */
 
 	n = scr->ntags + 1;
-	scr->views = erealloc(scr->views, n * sizeof(scr->views[scr->ntags]));
+	scr->views = erealloc(scr->views, n * sizeof(*scr->views));
 	newview(scr->ntags);
-	scr->tags = erealloc(scr->tags, n * sizeof(scr->tags[scr->ntags]));
+	scr->tags = erealloc(scr->tags, n * sizeof(*scr->tags));
 	newtag(scr->ntags);
 
 	for (c = scr->clients; c; c = c->next)

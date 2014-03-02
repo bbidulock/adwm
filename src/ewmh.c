@@ -473,14 +473,14 @@ ewmh_update_net_desktop_names() {
 	}
 	XPRINTF("%s\n", "Updating _NET_DESKTOP_NAMES");
 	for (len = 0, i = 0; i < scr->ntags; i++)
-		if (scr->tags[i])
-			len += strlen(scr->tags[i]);
+		if (scr->tags[i].name)
+			len += strlen(scr->tags[i].name);
 	len += scr->ntags;
 	pos = buf = ecalloc(len, 1);
 	for (i = 0; i < scr->ntags; i++) {
-		if (scr->tags[i]) {
-			slen = strlen(scr->tags[i]);
-			memcpy(pos, scr->tags[i], slen);
+		if (scr->tags[i].name) {
+			slen = strlen(scr->tags[i].name);
+			memcpy(pos, scr->tags[i].name, slen);
 			pos += slen;
 		}
 		*(pos++) = '\0';
@@ -491,7 +491,7 @@ ewmh_update_net_desktop_names() {
 			PropModeReplace, (unsigned char *) buf, len);
 	data = ecalloc(scr->ntags, sizeof(*data));
 	for (i = 0; i < scr->ntags; i++)
-		data[i] = scr->dt_tags[i];
+		data[i] = scr->tags[i].dt;
 	XChangeProperty(dpy, scr->root, _XA_DT_WORKSPACE_LIST, XA_ATOM, 32,
 			PropModeReplace, (unsigned char *) data, scr->ntags);
 	XChangeProperty(dpy, scr->selwin, _XA_DT_WORKSPACE_LIST, XA_ATOM, 32,
@@ -691,7 +691,7 @@ ewmh_update_net_current_desktop() {
 	XChangeProperty(dpy, scr->root, _XA_WM_DESKTOP, _XA_WM_DESKTOP, 32,
 			PropModeReplace, (unsigned char *) data, n);
 	for (i = 0; i < n; i++)
-		data[i] = scr->dt_tags[data[i]];
+		data[i] = scr->tags[data[i]].dt;
 	XChangeProperty(dpy, scr->root, _XA_DT_WORKSPACE_CURRENT, XA_ATOM, 32,
 			PropModeReplace, (unsigned char *) data, n);
 	XChangeProperty(dpy, scr->selwin, _XA_DT_WORKSPACE_CURRENT, XA_ATOM, 32,
@@ -806,13 +806,13 @@ ewmh_process_net_window_desktop(Client *c)
 			(n >= 4 + desktops[3])) {
 			for (goodone = False, i = 4; !goodone && i < desktops[3] + 4; i++)
 				for (k = 0; !goodone && k < scr->ntags; k++)
-					if (scr->dt_tags[k] == desktops[i])
+					if (scr->tags[k].dt == desktops[i])
 						goodone = True;
 			if (goodone) {
 				c->tags = 0;
 				for (j = 4; j < desktops[3] + 4; j++)
 					for (k = 0; k < scr->ntags; k++)
-						if (scr->dt_tags[k] == desktops[j])
+						if (scr->tags[k].dt == desktops[j])
 							c->tags |= (1ULL << k);
 				XFree(desktops);
 				return True;
@@ -882,7 +882,7 @@ ewmh_update_net_window_desktop(Client *c) {
 		data = ecalloc(n, sizeof(*data));
 		for (j = 0, i = 0; i < scr->ntags; i++)
 			if (c->tags & (1ULL << i))
-				data[j++] = scr->dt_tags[i];
+				data[j++] = scr->tags[i].dt;
 		XChangeProperty(dpy, c->win, _XA_DT_WORKSPACE_PRESENCE, XA_ATOM, 32,
 				PropModeReplace, (unsigned char *) data, n);
 		free(data);
@@ -974,7 +974,7 @@ ewmh_process_net_desktop_names() {
 	int format, status;
 	Atom real;
 	unsigned long nitems = 0, extra = 0, bytes = 1;
-	char *ret = NULL, *pos, *str;
+	char *ret = NULL, *pos;
 	unsigned int i, len;
 
 	names_synced = True;
@@ -993,13 +993,9 @@ ewmh_process_net_desktop_names() {
 
 	for (pos = ret, i = 0; nitems && i < scr->ntags; i++) {
 		if ((len = strnlen(pos, nitems))) {
-			if ((str = strndup(pos, nitems))) {
-				XPRINTF("Assigning name '%s' to tag %u\n", str, i);
-				free(scr->tags[i]);
-				scr->tags[i] = str;
-			}
+			strncpy(scr->tags[i].name, pos, nitems);
+			XPRINTF("Assigning name '%s' to tag %u\n", scr->tags[i].name, i);
 		} else {
-			free(scr->tags[i]);
 			inittag(i);
 		}
 		nitems -= len;
@@ -1010,7 +1006,6 @@ ewmh_process_net_desktop_names() {
 		}
 	}
 	for (; i < scr->ntags; i++) {
-		free(scr->tags[i]);
 		inittag(i);
 		names_synced = False;
 	}

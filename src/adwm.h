@@ -392,22 +392,11 @@ struct Monitor {
 typedef struct {
 	void (*arrange) (Monitor *m);
 	char symbol;
-#define MWFACT		(1<<0)	/* adjust master factor */
-#define NMASTER		(1<<1)	/* adjust number of masters */
-#define	ZOOM		(1<<2)	/* adjust zoom */
-#define	OVERLAP		(1<<3)	/* floating layout */
-#define NCOLUMNS	(1<<4)	/* adjust number of columns */
-#define ROTL		(1<<5)	/* adjust rotation */
-#define MMOVE		(1<<6)	/* shuffle tile position with mouse */
 	int features;
 	LayoutOrientation major;	/* overall orientation */
 	LayoutOrientation minor;	/* master area orientation */
 	WindowPlacement placement;	/* float placement policy */
 } Layout;
-
-#define FEATURES(_layout, _which) (!(!((_layout)->features & (_which))))
-#define M2LT(_mon) (scr->views[(_mon)->curtag].layout)
-#define MFEATURES(_monitor, _which) ((_monitor) && FEATURES(M2LT(_monitor), (_which)))
 
 typedef struct {
 	Bool present, hovered;
@@ -920,6 +909,8 @@ void lowerclient(Client *c);
 void raiselower(Client *c);
 void setmwfact(Monitor *m, View *v, double factor);
 void setnmaster(Monitor *m, View *v, int n);
+void decnmaster(Monitor *m, View *v, int n);
+void incnmaster(Monitor *m, View *v, int n);
 Bool mousemove(Client *c, XEvent *e, Bool toggle);
 Bool mouseresize_from(Client *c, int from, XEvent *e, Bool toggle);
 Bool mouseresize(Client * c, XEvent *e, Bool toggle);

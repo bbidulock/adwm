@@ -2264,21 +2264,6 @@ clientmonitor(Client * c) {
 	return NULL;
 }
 
-Layout *
-clientlayout(Client *c) {
-	Monitor *m;
-	int i;
-
-	assert(c != NULL);
-	for (m = scr->monitors; m; m = m->next)
-		if (isvisible(c, m))
-			return M2LT(m);
-	for (i = 0; i < scr->ntags; i++)
-		if (c->tags & (1ULL<<i))
-			return scr->views[i].layout;
-	return NULL;
-}
-
 Monitor *
 curmonitor() {
 	int x, y;

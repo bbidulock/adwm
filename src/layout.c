@@ -47,6 +47,18 @@
 #include "adwm.h"
 #include "config.h"
 
+#define MWFACT		(1<<0)	/* adjust master factor */
+#define NMASTER		(1<<1)	/* adjust number of masters */
+#define	ZOOM		(1<<2)	/* adjust zoom */
+#define	OVERLAP		(1<<3)	/* floating layout */
+#define NCOLUMNS	(1<<4)	/* adjust number of columns */
+#define ROTL		(1<<5)	/* adjust rotation */
+#define MMOVE		(1<<6)	/* shuffle tile position with mouse */
+
+#define FEATURES(_layout, _which) (!(!((_layout)->features & (_which))))
+#define M2LT(_mon) (scr->views[(_mon)->curtag].layout)
+#define MFEATURES(_monitor, _which) ((_monitor) && FEATURES(M2LT(_monitor), (_which)))
+
 /*
  * This file contains layout-specific functions that must ultimately move into layout modules.
  */
@@ -2220,13 +2232,21 @@ setmwfact(Monitor *m, View *v, double factor)
 void
 setnmaster(Monitor *m, View *v, int n)
 {
-	Bool master;
+	Bool master, column;
 	int length;
 
-	if (n < 1)
+	master = FEATURES(v->layout, NMASTER) ? True : False;
+	column = FEATURES(v->layout, NCOLUMNS) ? True : False;
+
+	if (!master && !column)
 		return;
 
-	master = FEATURES(v->layout, NMASTER) ? True : False;
+	if (n < 1) {
+		if (master)
+			n = DEFNMASTER;
+		else
+			n = DEFNCOLUMNS;
+	}
 	switch (v->major) {
 	case OrientTop:
 	case OrientBottom:
@@ -2274,6 +2294,38 @@ setnmaster(Monitor *m, View *v, int n)
 			arrange(m);
 		}
 	}
+}
+
+void
+decnmaster(Monitor *m, View *v, int n)
+{
+	Bool master, column;
+
+	master = FEATURES(v->layout, NMASTER) ? True : False;
+	column = FEATURES(v->layout, NCOLUMNS) ? True : False;
+
+	if (!master && !column)
+		return;
+	if (master)
+		setnmaster(m, v, v->nmaster - n);
+	else
+		setnmaster(m, v, v->ncolumns - n);
+}
+
+void
+incnmaster(Monitor *m, View *v, int n)
+{
+	Bool master, column;
+
+	master = FEATURES(v->layout, NMASTER) ? True : False;
+	column = FEATURES(v->layout, NCOLUMNS) ? True : False;
+
+	if (!master && !column)
+		return;
+	if (master)
+		setnmaster(m, v, v->nmaster + n);
+	else
+		setnmaster(m, v, v->ncolumns + n);
 }
 
 static void

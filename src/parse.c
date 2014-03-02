@@ -222,41 +222,29 @@ k_setnmaster(XEvent *e, Key *k)
 	Monitor *m;
 	View *v;
 	int num;
-	Bool master, column;
 
 	if (!(m = selmonitor()))
 		return;
 	v = scr->views + m->curtag;
-	master = FEATURES(v->layout, NMASTER) ? True : False;
-	column = FEATURES(v->layout, NCOLUMNS) ? True : False;
 
-	if (!master && !column)
-		return;
 	switch (k->act) {
 	case IncCount:
-		arg = k->arg ? : strdup("+1");
+		arg = k->arg ? : "+1";
 		break;
 	case DecCount:
-		arg = k->arg ? : strdup("+1");
+		arg = k->arg ? : "+1";
 		break;
 	default:
 	case SetCount:
-		arg = k->arg ? : strdup(master ? STR(DEFNMASTER) : STR(DEFNCOLUMNS));
+		arg = k->arg ? : "0";
 		break;
 	}
 	if (sscanf(arg, "%d", &num) == 1) {
 		if (arg[0] == '+' || arg[0] == '-' || k->act != SetCount) {
-			if (k->act == DecCount) {
-				if (master)
-					setnmaster(m, v, v->nmaster - num);
-				else
-					setnmaster(m, v, v->ncolumns - num);
-			} else {
-				if (master)
-					setnmaster(m, v, v->nmaster + num);
-				else
-					setnmaster(m, v, v->ncolumns + num);
-			}
+			if (k->act == DecCount)
+				decnmaster(m, v, num);
+			else
+				incnmaster(m, v, num);
 		} else
 			setnmaster(m, v, num);
 	}
@@ -1009,119 +997,6 @@ static KeyItem KeyItemsByDir[] = {
 	/* *INDENT-ON* */
 };
 
-static Bool
-k_floating(Client *c, Monitor *m, WhichClient any, RelativeDirection dir)
-{
-	if (dir == RelativeCenter)
-		if (!c->is.icon && !c->is.hidden)
-			return False;
-	if (c->is.bastard)
-		return False;
-	if (c->is.dockapp)
-		return False;
-	switch (any) {
-	case PointerClient:
-		break;
-	case FocusClient:
-		if (dir != RelativeCenter)
-			if (c->is.icon || c->is.hidden)
-				return False;
-		if (!isvisible(c, m))
-			return False;
-		if (m && MFEATURES(m, OVERLAP))
-			return True;
-		break;
-	case ActiveClient:
-	case AllClients:
-		m = clientmonitor(c);
-		if (!isvisible(c, m))
-			return False;
-		if (m && MFEATURES(m, OVERLAP))
-			return True;
-		break;
-	case AnyClient:
-		m = clientmonitor(c);
-		if (!isvisible(c, NULL))
-			return False;
-		if (m && MFEATURES(m, OVERLAP))
-			return True;
-		break;
-	case EveryClient:
-	{
-		int i;
-
-		for (i = 0; i < scr->ntags; i++) {
-			if (c->tags & (1ULL << i)) {
-				View *v = scr->views + i;
-
-				if (FEATURES(v->layout, OVERLAP))
-					return True;
-
-			}
-		}
-		break;
-	}
-	}
-	if (c->is.floater)
-		return True;
-	if (c->skip.arrange)
-		return True;
-	if (c->is.full)
-		return True;
-	return False;
-}
-
-static Bool
-k_tiled(Client *c, Monitor *m, WhichClient any, RelativeDirection dir)
-{
-	if (dir == RelativeCenter)
-		if (!c->is.icon && !c->is.hidden)
-			return False;
-	if (c->is.bastard)
-		return False;
-	if (c->is.dockapp)
-		return False;
-	if (c->is.floater)
-		return False;
-	if (c->skip.arrange)
-		return False;
-	if (c->is.full)
-		return False;
-	switch (any) {
-	case PointerClient:
-		return False;
-	case FocusClient:
-		if (dir != RelativeCenter)
-			if (c->is.icon || c->is.hidden)
-				return False;
-		if (!isvisible(c, m))
-			return False;
-		if (m && MFEATURES(m, OVERLAP))
-			return False;
-		break;
-	case ActiveClient:
-	case AllClients:
-		m = clientmonitor(c);
-		if (!isvisible(c, m))
-			return False;
-		if (m && MFEATURES(m, OVERLAP))
-			return False;
-		break;
-	case AnyClient:
-		m = clientmonitor(c);
-		if (!isvisible(c, NULL))
-			return False;
-		if (m && MFEATURES(m, OVERLAP))
-			return False;
-		break;
-	case EveryClient:
-		if (c->tags & ((1ULL << scr->ntags) - 1))
-			return True;
-		break;
-	}
-	return True;
-}
-
 Bool canfocus(Client *c);
 
 static Bool
@@ -1434,25 +1309,18 @@ k_focus(XEvent *e, Key *k)
 	/* active order */
 	if (!k->cycle) {
 		Client *c;
-		int i, j, n;
+		int i, n;
 		CycleList *cl;
 
 		k->where = NULL;
 		for (n = 0, c = scr->clients; c; c = c->next)
 			if (k_focusable(c, m, k->any, k->dir, k->ico))
-				if (k_tiled(c, m, k->any, k->dir)
-				    || k_floating(c, m, k->any, k->dir))
-					n++;
+				n++;
 		if (!n)
 			return;
-		DPRINTF("There are %d focus windows to cycle\n", n);
 		cl = k->cycle = ecalloc(n, sizeof(*k->cycle));
-		i = 0;
-		/* put tiled before floats */
-		for (c = scr->clients; c && i < n; c = c->next) {
+		for (i = 0, c = scr->clients; c && i < n; c = c->next) {
 			if (!k_focusable(c, m, k->any, k->dir, k->ico))
-				continue;
-			if (!k_tiled(c, m, k->any, k->dir))
 				continue;
 			if (c == sel)
 				k->where = cl;
@@ -1462,26 +1330,6 @@ k_focus(XEvent *e, Key *k)
 			i++;
 			cl++;
 		}
-		j = i;
-		(void) j;
-		DPRINTF("There are %d tiled windows of %d total\n", j, n);
-		/* put tiled before floats */
-		for (c = scr->clients; c && i < n; c = c->next) {
-			if (!k_focusable(c, m, k->any, k->dir, k->ico))
-				continue;
-			if (k_tiled(c, m, k->any, k->dir))
-				continue;
-			if (!k_floating(c, m, k->any, k->dir))
-				continue;
-			if (c == sel)
-				k->where = cl;
-			cl->c = c;
-			cl->next = cl + 1;
-			cl->prev = cl - 1;
-			i++;
-			cl++;
-		}
-		DPRINTF("There are %d float windows of %d total\n", i - j, n);
 		k->cycle[0].prev = &k->cycle[n - 1];
 		k->cycle[n - 1].next = &k->cycle[0];
 		k->num = n;

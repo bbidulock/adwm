@@ -47,6 +47,7 @@
 #include "adwm.h"
 #include "layout.h"
 #include "draw.h"
+#include "ewmh.h"
 #include "config.h"
 
 #define MWFACT		(1<<0)	/* adjust master factor */
@@ -58,7 +59,7 @@
 #define MMOVE		(1<<6)	/* shuffle tile position with mouse */
 
 #define FEATURES(_layout, _which) (!(!((_layout)->features & (_which))))
-#define M2LT(_mon) (scr->views[(_mon)->curtag].layout)
+#define M2LT(_mon) ((_mon)->curview->layout)
 #define MFEATURES(_monitor, _which) ((_monitor) && FEATURES(M2LT(_monitor), (_which)))
 
 /*
@@ -251,7 +252,7 @@ enterclient(XEvent *e, Client *c)
 		return True;
 	}
 	/* focus when switching monitors */
-	if (!isvisible(sel, c->curmon)) {
+	if (!isvisible(sel, c->cmon)) {
 		CPRINTF(c, "FOCUS: monitor switching focus\n");
 		focus(c);
 	}
@@ -260,7 +261,7 @@ enterclient(XEvent *e, Client *c)
 		break;
 	case SloppyFloat:
 		/* FIXME: incorporate isfloating() check into skip.sloppy setting */
-		if (!c->skip.sloppy && isfloating(c, c->curmon)) {
+		if (!c->skip.sloppy && isfloating(c, c->cmon)) {
 			CPRINTF(c, "FOCUS: sloppy focus\n");
 			focus(c);
 		}
@@ -590,7 +591,7 @@ configureclient(XEvent *e, Client *c, int gravity)
 	   moving the saved floating state.  This is the only function that calls
 	   findcurmonitor(). */
 
-	if (!(cm = c->curmon ? : selmonitor()))
+	if (!(cm = c->cmon ? : selmonitor()))
 		return False;
 	if (!c->is.max && isfloating(c, cm)) {
 		ClientGeometry g;
@@ -814,7 +815,7 @@ get_decor(Client *c, Monitor *m, ClientGeometry * g)
 			}
 		}
 	} else {
-		decorate = (scr->views[m->curtag].dectiled || MFEATURES(m, OVERLAP)) ?
+		decorate = (m->curview->dectiled || MFEATURES(m, OVERLAP)) ?
 		    True : False;
 	}
 	g->t = decorate ? ((c->title && c->has.title) ? scr->style.titleheight : 0) : 0;
@@ -840,7 +841,7 @@ updatefloat(Client *c, Monitor *m)
 
 	if (c->is.dockapp)
 		return;
-	if (!m && !(m = c->curmon))
+	if (!m && !(m = c->cmon))
 		return;
 	if (!isfloating(c, m))
 		return;
@@ -917,7 +918,7 @@ static void
 arrangedock(Monitor *m)
 {
 	Client *c = nextdockapp(scr->clients, m), *cn;
-	View *v = &scr->views[m->curtag];
+	View *v = m->curview;
 	int i, num, rows, cols, margin = 4, max = 64, b = scr->style.border;
 	ClientGeometry *g = NULL, n;
 	DockPosition pos = m->dock.position;
@@ -1248,7 +1249,7 @@ tile(Monitor *cm)
 	mg = scr->style.margin;
 
 	getworkarea(cm, (Workarea *) &wa);
-	v = &scr->views[cm->curtag];
+	v = cm->curview;
 	for (wa.n = wa.s = ma.s = sa.s = 0, c = nexttiled(scr->clients, cm);
 	     c; c = nexttiled(c->next, cm), wa.n++) {
 		if (c->is.shaded && (c != sel || !scr->options.autoroll)) {
@@ -1601,7 +1602,7 @@ grid(Monitor *m)
 	if (!(c = nexttiled(scr->clients, m)))
 		return;
 
-	v = &scr->views[m->curtag];
+	v = m->curview;
 
 	getworkarea(m, &wa);
 
@@ -1688,7 +1689,7 @@ monocle(Monitor *m)
 	View *v;
 
 	getworkarea(m, &w);
-	v = &scr->views[m->curtag];
+	v = m->curview;
 	for (c = nexttiled(scr->clients, m); c; c = nexttiled(c->next, m)) {
 		ClientGeometry g;
 
@@ -1725,9 +1726,9 @@ arrangemon(Monitor *m)
 	Client *c;
 	int struts;
 
-	if (scr->views[m->curtag].layout->arrange)
-		scr->views[m->curtag].layout->arrange(m);
-	struts = scr->views[m->curtag].barpos;
+	if (m->curview->layout->arrange)
+		m->curview->layout->arrange(m);
+	struts = m->curview->barpos;
 	for (c = scr->stack; c; c = c->snext) {
 		if ((clientmonitor(c) == m) &&
 		    ((!c->is.bastard && !c->is.dockapp && !(c->is.icon || c->is.hidden))
@@ -2191,7 +2192,7 @@ setlayout(const char *arg)
 				break;
 		if (!l->symbol)
 			return;
-		v = scr->views + cm->curtag;
+		v = cm->curview;
 		v->layout = l;
 		v->major = l->major;
 		v->minor = l->minor;
@@ -2229,7 +2230,7 @@ raiselower(Client *c)
 void
 raisetiled(Client *c)
 {
-	if (c->is.bastard || c->is.dockapp || !isfloating(c, c->curmon)) {
+	if (c->is.bastard || c->is.dockapp || !isfloating(c, c->cmon)) {
 		CPRINTF(c, "raising non-floating client on focus\n");
 		if (c->is.bastard || c->is.dockapp) {
 			c->is.below = False;
@@ -2242,7 +2243,7 @@ raisetiled(Client *c)
 void
 lowertiled(Client *c)
 {
-	if (c->is.bastard || c->is.dockapp || !isfloating(c, c->curmon)) {
+	if (c->is.bastard || c->is.dockapp || !isfloating(c, c->cmon)) {
 		CPRINTF(c, "lowering non-floating client on focus\n");
 		if (c->is.bastard || c->is.dockapp) {
 			c->is.below = True;
@@ -2595,8 +2596,8 @@ mousemove(Client *c, XEvent *e, Bool toggle)
 	   is actually important because the monitor it is on might be floating and the
 	   monitor the edge was clicked on might be tiled. */
 
-	if (!(m = getmonitor(x_root, y_root)) || (c->curmon && m != c->curmon))
-		if (!(m = c->curmon)) {
+	if (!(m = getmonitor(x_root, y_root)) || (c->cmon && m != c->cmon))
+		if (!(m = c->cmon)) {
 			CPRINTF(c, "No monitor to move from!\n");
 			XUngrabPointer(dpy, CurrentTime);
 			return moved;
@@ -2739,7 +2740,7 @@ mousemove(Client *c, XEvent *e, Bool toggle)
 			if (event_scr != scr)
 				reparentclient(c, event_scr, n.x, n.y);
 			if (nm && m != nm) {
-				c->tags = nm->seltags;
+				c->tags = nm->curview->seltags;
 				ewmh_update_net_window_desktop(c);
 				drawclient(c);
 				arrange(NULL);
@@ -2995,8 +2996,8 @@ mouseresize_from(Client *c, int from, XEvent *e, Bool toggle)
 	x_root = e->xbutton.x_root;
 	y_root = e->xbutton.y_root;
 
-	if (!(m = getmonitor(x_root, y_root)) || (c->curmon && m != c->curmon))
-		if (!(m = c->curmon)) {
+	if (!(m = getmonitor(x_root, y_root)) || (c->cmon && m != c->cmon))
+		if (!(m = c->cmon)) {
 			XUngrabPointer(dpy, CurrentTime);
 			return resized;
 		}
@@ -3916,7 +3917,7 @@ addclient(Client *c, Bool focusme, Bool raiseme)
 		/* put it on the monitor startup notification requested if not already
 		   placed with its group */
 		if (c->monitor && !clientmonitor(c))
-			c->tags = scr->monitors[c->monitor - 1].seltags;
+			c->tags = scr->monitors[c->monitor - 1].curview->seltags;
 		place(c, ColSmartPlacement);
 	}
 
@@ -3938,14 +3939,16 @@ addclient(Client *c, Bool focusme, Bool raiseme)
 
 		if (!(cm = getmonitor(mx, my)))
 			cm = closestmonitor(mx, my);
-		c->tags = cm->seltags;
+		c->tags = cm->curview->seltags;
 	}
 
+	c->cscr = scr;
 	attach(c, scr->options.attachaside);
 	attachclist(c);
 	attachflist(c, focusme);
 	attachstack(c, raiseme);
 	ewmh_update_net_client_list();
+	ewmh_update_net_window_desktop(c);
 }
 
 void
@@ -3955,6 +3958,7 @@ delclient(Client *c)
 	detachclist(c);
 	detachflist(c);
 	detachstack(c);
+	c->cscr = NULL;
 }
 
 void
@@ -3964,7 +3968,7 @@ moveto(Client *c, RelativeDirection position)
 	Workarea w;
 	ClientGeometry g;
 
-	if (!c || !c->can.move || !(m = c->curmon))
+	if (!c || !c->can.move || !(m = c->cmon))
 		return;
 	if (!isfloating(c, m))
 		return;		/* for now */
@@ -4032,7 +4036,7 @@ moveby(Client *c, RelativeDirection direction, int amount)
 	Workarea w;
 	ClientGeometry g;
 
-	if (!c || !c->can.move || !(m = c->curmon))
+	if (!c || !c->can.move || !(m = c->cmon))
 		return;
 	if (!isfloating(c, m))
 		return;		/* for now */
@@ -4130,7 +4134,7 @@ snapto(Client *c, RelativeDirection direction)
 	Client *s, *ox, *oy;
 	int min1, max1, edge;
 
-	if (!c || !c->can.move || !(m = c->curmon))
+	if (!c || !c->can.move || !(m = c->cmon))
 		return;
 	if (!isfloating(c, m))
 		return;		/* for now */
@@ -4148,7 +4152,7 @@ snapto(Client *c, RelativeDirection direction)
 		max1 = g.y + g.b + g.h;
 		edge = g.x;
 		for (ox = NULL, s = scr->clients; s; s = s->next) {
-			if (s->curmon != m)
+			if (s->cmon != m)
 				continue;
 			if (s->c.x + s->c.b + s->c.w >= edge)
 				continue;
@@ -4162,7 +4166,7 @@ snapto(Client *c, RelativeDirection direction)
 		max1 = g.x + g.b + g.w;
 		edge = g.y;
 		for (oy = NULL, s = scr->clients; s; s = s->next) {
-			if (s->curmon != m)
+			if (s->cmon != m)
 				continue;
 			if (s->c.y + s->c.b + s->c.h >= edge)
 				continue;
@@ -4180,7 +4184,7 @@ snapto(Client *c, RelativeDirection direction)
 		max1 = g.x + g.b + g.w;
 		edge = g.y;
 		for (oy = NULL, s = scr->clients; s; s = s->next) {
-			if (s->curmon != m)
+			if (s->cmon != m)
 				continue;
 			if (s->c.y + s->c.b + s->c.h >= edge)
 				continue;
@@ -4197,7 +4201,7 @@ snapto(Client *c, RelativeDirection direction)
 		max1 = g.y + g.b + g.h;
 		edge = g.x + g.b + g.w;
 		for (ox = NULL, s = scr->clients; s; s = s->next) {
-			if (s->curmon != m)
+			if (s->cmon != m)
 				continue;
 			if (s->c.x < edge)
 				continue;
@@ -4210,7 +4214,7 @@ snapto(Client *c, RelativeDirection direction)
 		max1 = g.x + g.b + g.w;
 		edge = g.y;
 		for (oy = NULL, s = scr->clients; s; s = s->next) {
-			if (s->curmon != m)
+			if (s->cmon != m)
 				continue;
 			if (s->c.y + s->c.b + s->c.h >= edge)
 				continue;
@@ -4228,7 +4232,7 @@ snapto(Client *c, RelativeDirection direction)
 		max1 = g.y + g.b + g.h;
 		edge = g.x;
 		for (ox = NULL, s = scr->clients; s; s = s->next) {
-			if (s->curmon != m)
+			if (s->cmon != m)
 				continue;
 			if (s->c.x + s->c.b + s->c.w >= edge)
 				continue;
@@ -4247,7 +4251,7 @@ snapto(Client *c, RelativeDirection direction)
 		max1 = g.y + g.b + g.h;
 		edge = g.x + g.b + g.w;
 		for (ox = NULL, s = scr->clients; s; s = s->next) {
-			if (s->curmon != m)
+			if (s->cmon != m)
 				continue;
 			if (s->c.x < edge)
 				continue;
@@ -4263,7 +4267,7 @@ snapto(Client *c, RelativeDirection direction)
 		max1 = g.y + g.b + g.h;
 		edge = g.x;
 		for (ox = NULL, s = scr->clients; s; s = s->next) {
-			if (s->curmon != m)
+			if (s->cmon != m)
 				continue;
 			if (s->c.x + s->c.b + s->c.w >= edge)
 				continue;
@@ -4277,7 +4281,7 @@ snapto(Client *c, RelativeDirection direction)
 		max1 = g.x + g.b + g.w;
 		edge = g.y + g.b + g.h;
 		for (oy = NULL, s = scr->clients; s; s = s->next) {
-			if (s->curmon != m)
+			if (s->cmon != m)
 				continue;
 			if (s->c.y < edge)
 				continue;
@@ -4294,7 +4298,7 @@ snapto(Client *c, RelativeDirection direction)
 		max1 = g.x + g.b + g.w;
 		edge = g.y + g.b + g.h;
 		for (oy = NULL, s = scr->clients; s; s = s->next) {
-			if (s->curmon != m)
+			if (s->cmon != m)
 				continue;
 			if (s->c.y < edge)
 				continue;
@@ -4310,7 +4314,7 @@ snapto(Client *c, RelativeDirection direction)
 		max1 = g.y + g.b + g.h;
 		edge = g.x + g.b + g.w;
 		for (ox = NULL, s = scr->clients; s; s = s->next) {
-			if (s->curmon != m)
+			if (s->cmon != m)
 				continue;
 			if (s->c.x < edge)
 				continue;
@@ -4323,7 +4327,7 @@ snapto(Client *c, RelativeDirection direction)
 		max1 = g.x + g.b + g.w;
 		edge = g.y + g.b + g.h;
 		for (oy = NULL, s = scr->clients; s; s = s->next) {
-			if (s->curmon != m)
+			if (s->cmon != m)
 				continue;
 			if (s->c.y < edge)
 				continue;
@@ -4352,7 +4356,7 @@ edgeto(Client *c, int direction)
 	Workarea w;
 	ClientGeometry g;
 
-	if (!c || !c->can.move || !(m = c->curmon))
+	if (!c || !c->can.move || !(m = c->cmon))
 		return;
 	if (!isfloating(c, m))
 		return;		/* for now */
@@ -4415,9 +4419,9 @@ rotateview(Client *c)
 	Monitor *m;
 	View *v;
 
-	if (!c || !(m = c->curmon))
+	if (!c || !(m = c->cmon))
 		return;
-	v = scr->views + m->curtag;
+	v = m->curview;
 	if (!FEATURES(v->layout, ROTL))
 		return;
 	v->major = (v->major + 1) % OrientLast;
@@ -4431,9 +4435,9 @@ unrotateview(Client *c)
 	Monitor *m;
 	View *v;
 
-	if (!c || !(m = c->curmon))
+	if (!c || !(m = c->cmon))
 		return;
-	v = scr->views + m->curtag;
+	v = m->curview;
 	if (!FEATURES(v->layout, ROTL))
 		return;
 	v->major = (v->major + OrientLast - 1) % OrientLast;
@@ -4447,9 +4451,9 @@ rotatezone(Client *c)
 	Monitor *m;
 	View *v;
 
-	if (!c || !(m = c->curmon))
+	if (!c || !(m = c->cmon))
 		return;
-	v = scr->views + m->curtag;
+	v = m->curview;
 	if (!FEATURES(v->layout, ROTL) || !FEATURES(v->layout, NMASTER))
 		return;
 	v->minor = (v->minor + 1) % OrientLast;
@@ -4462,9 +4466,9 @@ unrotatezone(Client *c)
 	Monitor *m;
 	View *v;
 
-	if (!c || !(m = c->curmon))
+	if (!c || !(m = c->cmon))
 		return;
-	v = scr->views + m->curtag;
+	v = m->curview;
 	if (!FEATURES(v->layout, ROTL) || !FEATURES(v->layout, NMASTER))
 		return;
 	v->minor = (v->minor + OrientLast - 1) % OrientLast;
@@ -4478,9 +4482,9 @@ rotatewins(Client *c)
 	View *v;
 	Client *s;
 
-	if (!c || !(m = c->curmon))
+	if (!c || !(m = c->cmon))
 		return;
-	v = scr->views + m->curtag;
+	v = m->curview;
 	if (!FEATURES(v->layout, ROTL))
 		return;
 	if ((s = nexttiled(scr->clients, m))) {
@@ -4498,9 +4502,9 @@ unrotatewins(Client *c)
 	View *v;
 	Client *last, *s;
 
-	if (!c || !(m = c->curmon))
+	if (!c || !(m = c->cmon))
 		return;
-	v = scr->views + m->curtag;
+	v = m->curview;
 	if (!FEATURES(v->layout, ROTL) || !FEATURES(v->layout, NMASTER))
 		return;
 	for (last = scr->clients; last && last->next; last = last->next) ;
@@ -4517,7 +4521,7 @@ togglefloating(Client *c)
 {
 	Monitor *m;
 
-	if (!c || c->is.floater || !c->can.floats || !(m = c->curmon))
+	if (!c || c->is.floater || !c->can.floats || !(m = c->cmon))
 		return;
 	c->skip.arrange = !c->skip.arrange;
 	if (c->is.managed) {
@@ -4532,7 +4536,7 @@ togglefill(Client *c)
 {
 	Monitor *m;
 
-	if (!c || (!c->can.fill && c->is.managed) || !(m = c->curmon))
+	if (!c || (!c->can.fill && c->is.managed) || !(m = c->cmon))
 		return;
 	c->is.fill = !c->is.fill;
 	if (c->is.managed) {
@@ -4547,7 +4551,7 @@ togglefull(Client *c)
 {
 	Monitor *m;
 
-	if (!c || (!c->can.full && c->is.managed) || !(m = c->curmon))
+	if (!c || (!c->can.full && c->is.managed) || !(m = c->cmon))
 		return;
 	if (!c->is.full) {
 		c->wasfloating = c->skip.arrange;
@@ -4570,7 +4574,7 @@ togglemax(Client *c)
 {
 	Monitor *m;
 
-	if (!c || (!c->can.max && c->is.managed) || !(m = c->curmon))
+	if (!c || (!c->can.max && c->is.managed) || !(m = c->cmon))
 		return;
 	c->is.max = !c->is.max;
 	if (c->is.managed) {
@@ -4585,7 +4589,7 @@ togglemaxv(Client *c)
 {
 	Monitor *m;
 
-	if (!c || (!c->can.maxv && c->is.managed) || !(m = c->curmon))
+	if (!c || (!c->can.maxv && c->is.managed) || !(m = c->cmon))
 		return;
 	c->is.maxv = !c->is.maxv;
 	if (c->is.managed) {
@@ -4599,7 +4603,7 @@ togglemaxh(Client *c)
 {
 	Monitor *m;
 
-	if (!c || (!c->can.maxh && c->is.managed) || !(m = c->curmon))
+	if (!c || (!c->can.maxh && c->is.managed) || !(m = c->cmon))
 		return;
 	c->is.maxh = !c->is.maxh;
 	ewmh_update_net_window_state(c);
@@ -4611,7 +4615,7 @@ toggleshade(Client *c)
 {
 	Monitor *m;
 
-	if (!c || (!c->can.shade && c->is.managed) || !(m = c->curmon))
+	if (!c || (!c->can.shade && c->is.managed) || !(m = c->cmon))
 		return;
 	c->was.shaded = c->is.shaded;
 	c->is.shaded = !c->is.shaded;
@@ -4624,7 +4628,7 @@ toggleshade(Client *c)
 void
 toggledectiled(Monitor *m, View *v)
 {
-	v = scr->views + m->curtag;
+	v = m->curview;
 	v->dectiled = v->dectiled ? False : True;
 	if (m)
 		arrange(m);
@@ -4637,7 +4641,7 @@ zoom(Client *c)
 
 	if (!c)
 		return;
-	if (!(m = c->curmon))
+	if (!(m = c->cmon))
 		return;
 	if (!MFEATURES(m, ZOOM) || c->skip.arrange)
 		return;
@@ -4655,7 +4659,7 @@ zoomfloat(Client *c)
 {
 	Monitor *m;
 
-	if (!(m = c->curmon))
+	if (!(m = c->cmon))
 		return;
 	if (isfloating(c, m))
 		togglefloating(c);

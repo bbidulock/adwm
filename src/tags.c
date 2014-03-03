@@ -47,6 +47,7 @@
 #include "adwm.h"
 #include "layout.h"
 #include "draw.h"
+#include "ewmh.h"
 #include "config.h"
 
 static void
@@ -71,7 +72,7 @@ togglesticky(Client *c)
 {
 	Monitor *m;
 
-	if (!c || (!c->can.stick && c->is.managed) || !(m = c->curmon))
+	if (!c || (!c->can.stick && c->is.managed) || !(m = c->cmon))
 		return;
 
 	c->is.sticky = !c->is.sticky;
@@ -79,7 +80,7 @@ togglesticky(Client *c)
 		if (c->is.sticky)
 			tag(c, -1);
 		else
-			tag(c, m->curtag);
+			tag(c, m->curview->index);
 		ewmh_update_net_window_state(c);
 	}
 }
@@ -95,9 +96,9 @@ toggletag(Client *c, int index)
 	tags ^= (index == -1) ? ((1ULL << scr->ntags) - 1) : (1ULL << index);
 	if (tags & ((1ULL << scr->ntags) - 1))
 		c->tags = tags;
-	else if (c->curmon)
+	else if (c->cmon)
 		/* at least one tag must be enabled */
-		c->tags = (1ULL << c->curmon->curtag);
+		c->tags = (1ULL << c->cmon->curview->index);
 	ewmh_update_net_window_desktop(c);
 	drawclient(c);
 	arrange(NULL);
@@ -106,33 +107,23 @@ toggletag(Client *c, int index)
 void
 toggleview(Monitor *cm, int index)
 {
-	unsigned int i, j;
 	Monitor *m;
 	unsigned long long tags;
 
 	/* Typically from a keyboard command.  Again, we should use the monitor with the
 	   keyboard focus before the monitor with the pointer in it. */
 
-	i = (index == -1) ? 0 : index;
-	tags = (1ULL << i);
-	cm->prevtags = cm->seltags;
-	cm->seltags ^= tags;
-	for (m = scr->monitors; m; m = m->next) {
-		if ((m->seltags & tags) && m != cm) {
-			m->prevtags = m->seltags;
-			m->seltags &= ~tags;
-			for (j = 0; j < scr->ntags && !(m->seltags & (1ULL << j)); j++) ;
-			if (j == scr->ntags) {
-				m->seltags |= tags;	/* at least one tag must be
-							   viewed */
-				cm->seltags &= ~tags;	/* can't toggle */
-				j = i;
-			}
-			if (m->curtag == i)
-				m->curtag = j;
+	/* This function used to worry about having a selected tag for each monitor, but
+	   this has now been moved to the view.  We don't care if there exists views that 
+	   have no selected tag because they can still be assigned to a monitor and tags
+	   toggled from there. */
+	if (-1 > index || index >= scr->ntags)
+		return;
+	tags = (index == -1) ? ((1ULL << scr->ntags) - 1) : (1ULL << index);
+	cm->curview->seltags ^= tags;
+	for (m = scr->monitors; m; m = m->next)
+		if ((m->curview->seltags & tags) && m != cm)
 			arrange(m);
-		}
-	}
 	arrange(cm);
 	focus(NULL);
 	ewmh_update_net_current_desktop();
@@ -142,49 +133,41 @@ void
 focusview(Monitor *cm, int index)
 {
 	unsigned long long tags;
-	unsigned int i;
 	Client *c;
 
-	i = (index == -1) ? 0 : index;
-	tags = (1ULL << i);
-	if (!(cm->seltags & tags))
-		toggleview(cm, i);
-	if (!(cm->seltags & tags))
+	if (-1 > index || index >= scr->ntags)
 		return;
+	tags = (index == -1) ? ((1ULL << scr->ntags) - 1) : (1ULL << index);
+	if (!(cm->curview->seltags & tags))
+		toggleview(cm, index);
 	for (c = scr->stack; c; c = c->snext)
-		if ((c->tags & tags) && !c->is.bastard && !c->is.dockapp)
-			/* XXX: c->can.focus? */
+		if ((c->tags & tags) && !c->is.bastard && !c->is.dockapp && c->can.focus)
 			break;
-	if (c)
-		focus(c);
-	// restack(); /* XXX: really necessary? */
+	focus(c);
 }
 
 void
-view(int index)
+view(Monitor *cm, int index)
 {
-	unsigned long long tags;
-	int i;
-	Monitor *m, *cm;
-	int prevtag;
+	Monitor *m;
 
-	i = (index == -1) ? 0 : index;
-	tags = (1ULL << i);
-	if (!(cm = selmonitor()))
-		cm = nearmonitor();
-
-	if (cm->seltags & tags)
+	if (0 > index || index >= scr->ntags)
 		return;
 
-	cm->prevtags = cm->seltags;
-	cm->seltags = tags;
-	prevtag = cm->curtag;
-	cm->curtag = i;
+	if (cm->curview->index == index)
+		return;
+
+	/* FIXME: this is a swapping arrangment, we should follow the desktop layout and
+	   shift all of the view on all of the monitors of this screen */
+	cm->preview = cm->curview;
+	cm->curview = scr->views + index;
+
 	for (m = scr->monitors; m; m = m->next) {
-		if ((m->seltags & tags) && m != cm) {
-			m->curtag = prevtag;
-			m->prevtags = m->seltags;
-			m->seltags = cm->prevtags;
+		if (m == cm)
+			continue;
+		if (m->curview == cm->curview) {
+			m->preview = m->curview;
+			m->curview = cm->preview;
 			updategeom(m);
 			arrange(m);
 		}
@@ -195,23 +178,30 @@ view(int index)
 	ewmh_update_net_current_desktop();
 }
 
-void
-viewprev(Monitor *m)
+static void
+viewprev(Monitor *cm)
 {
-	unsigned long long tmptags, tag;
-	unsigned int i;
-	int prevcurtag;
+	View *preview;
+	Monitor *m;
 
-	for (tag = 1, i = 0; i < scr->ntags - 1 && !(m->prevtags & tag); i++, tag <<= 1) ;
-	prevcurtag = m->curtag;
-	m->curtag = i;
+	preview = cm->curview;
+	cm->curview = cm->preview;
+	cm->preview = preview;
 
-	tmptags = m->seltags;
-	m->seltags = m->prevtags;
-	m->prevtags = tmptags;
-	if (scr->views[prevcurtag].barpos != scr->views[m->curtag].barpos)
-		updategeom(m);
-	arrange(NULL);
+	/* FIXME: this is a swapping arrangment, we should follow the desktop layout and
+	   shift all of the view on all of the monitors of this screen */
+	for (m = scr->monitors; m; m = m->next) {
+		if (m == cm)
+			continue;
+		if (m->curview == cm->curview) {
+			m->curview = m->preview;
+			m->preview = cm->curview;
+			updategeom(m);
+			arrange(m);
+		}
+	}
+	updategeom(cm);
+	arrange(cm);
 	focus(NULL);
 	ewmh_update_net_current_desktop();
 }
@@ -226,23 +216,14 @@ viewprevtag()
 	return viewprev(cm);
 }
 
-void
+static void
 viewleft(Monitor *m)
 {
-	unsigned long long tag;
-	unsigned int i;
-
 	/* wrap around: TODO: do full _NET_DESKTOP_LAYOUT */
-	if (m->seltags & 1ULL) {
-		view(scr->ntags - 1);
-		return;
-	}
-	for (tag = 2ULL, i = 1; i < scr->ntags; i++, tag <<= 1) {
-		if (m->seltags & tag) {
-			view(i - 1);
-			return;
-		}
-	}
+	if (m->curview->index == 0)
+		view(m, scr->ntags - 1);
+	else
+		view(m, m->curview->index - 1);
 }
 
 void
@@ -255,23 +236,14 @@ viewlefttag()
 	return viewleft(cm);
 }
 
-void
+static void
 viewright(Monitor *m)
 {
-	unsigned long long tags;
-	unsigned int i;
-
-	for (tags = 1ULL, i = 0; i < scr->ntags - 1; i++, tags <<= 1) {
-		if (m->seltags & tags) {
-			view(i + 1);
-			return;
-		}
-	}
 	/* wrap around: TODO: do full _NET_DESKTOP_LAYOUT */
-	if (i == scr->ntags - 1) {
-		view(0);
-		return;
-	}
+	if (m->curview->index == scr->ntags - 1)
+		view(m, 0);
+	else
+		view(m, m->curview->index + 1);
 }
 
 void
@@ -290,7 +262,7 @@ taketo(Client *c, int index)
 	if (!c || (!c->can.tag && c->is.managed))
 		return;
 	with_transients(c, &_tag, index);
-	view(index);
+	view(c->cmon, index);
 }
 
 void
@@ -298,10 +270,10 @@ taketoprev(Client *c)
 {
 	Monitor *m;
 
-	if (!c || !(m = c->curmon))
+	if (!c || !(m = c->cmon))
 		return;
 	viewprev(m);
-	taketo(c, m->curtag);
+	taketo(c, m->curview->index);
 }
 
 void
@@ -309,10 +281,10 @@ taketoleft(Client *c)
 {
 	Monitor *m;
 
-	if (!c || !(m = c->curmon))
+	if (!c || !(m = c->cmon))
 		return;
 	viewleft(m);
-	taketo(c, m->curtag);
+	taketo(c, m->curview->index);
 }
 
 void
@@ -320,12 +292,11 @@ taketoright(Client *c)
 {
 	Monitor *m;
 
-	if (!c || !(m = c->curmon))
+	if (!c || !(m = c->cmon))
 		return;
 	viewright(m);
-	taketo(c, m->curtag);
+	taketo(c, m->curview->index);
 }
-
 
 static void
 initview(unsigned int i)
@@ -353,6 +324,7 @@ initview(unsigned int i)
 	v->minor = l->minor;
 	v->placement = l->placement;
 	v->index = i;
+	v->seltags = (1ULL << i);
 	if (scr->d.rows && scr->d.cols) {
 		v->row = i / scr->d.cols;
 		v->col = i - v->row * scr->d.cols;
@@ -432,8 +404,8 @@ deltag()
 	tags = (1ULL << last);
 
 	/* move off the desktop being deleted */
-	if (cm->curtag == last)
-		view(last - 1);
+	if (cm->curview->index == last)
+		view(cm, last - 1);
 
 	/* move windows off the desktop being deleted */
 	for (c = scr->clients; c; c = c->next) {
@@ -454,11 +426,12 @@ static void
 addtag()
 {
 	Client *c;
-	Monitor *m;
 	unsigned int n;
+	unsigned long long alltags;
 
-	if (scr->ntags >= sizeof(c->tags) * 8)
-		return;		/* stop the insanity, go organic */
+	if (scr->ntags >= MAXTAGS)
+		/* stop the insanity, go organic */
+		return;
 
 	n = scr->ntags + 1;
 	scr->views = erealloc(scr->views, n * sizeof(*scr->views));
@@ -466,17 +439,10 @@ addtag()
 	scr->tags = erealloc(scr->tags, n * sizeof(*scr->tags));
 	newtag(scr->ntags);
 
+	alltags = ((1ULL << scr->ntags) - 1);
 	for (c = scr->clients; c; c = c->next)
-		if ((c->tags & ((1ULL << scr->ntags) - 1)) == ((1ULL << scr->ntags) - 1)
-		    || c->is.sticky)
+		if (((c->tags & alltags) == alltags) || c->is.sticky)
 			c->tags |= (1ULL << scr->ntags);
-
-	for (m = scr->monitors; m; m = m->next) {
-		/* probably unnecessary */
-		m->prevtags &= ~(1ULL << scr->ntags);
-		m->seltags &= ~(1ULL << scr->ntags);
-	}
-
 	scr->ntags++;
 }
 

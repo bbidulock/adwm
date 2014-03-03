@@ -46,6 +46,7 @@
 #endif
 #include "adwm.h"
 #include "draw.h"
+#include "ewmh.h"
 #include "layout.h"
 #include "parse.h"
 #include "tags.h"
@@ -54,98 +55,40 @@
 #define EXTRANGE    16		/* all X11 extension event must fit in this range */
 
 /* function declarations */
-Bool alarmnotify(XEvent *e);
-void applyatoms(Client *c);
-void applyrules(Client *c);
 void arrange(Monitor *m);
-Bool buttonpress(XEvent *e);
 Bool canfocus(Client *c);
-void checkotherwm(void);
-void cleanup(WithdrawCause cause);
 void compileregs(void);
-Bool configurenotify(XEvent *e);
-Bool configurerequest(XEvent *e);
-Bool destroynotify(XEvent *e);
-void *ecalloc(size_t nmemb, size_t size);
-void *emallocz(size_t size);
-void *erealloc(void *ptr, size_t size);
-Bool enternotify(XEvent *e);
-void eprint(const char *errstr, ...);
-Bool expose(XEvent *e);
 Group *getleader(Window leader, int group);
-void iconify(Client *c);
 Monitor *findcurmonitor(Client *c);
-void focus(Client *c);
 Client *focusforw(Client *c);
 Client *focusback(Client *c);
 Client *focuslast(Client *c);
-void focusnext(Client *c);
-void focusprev(Client *c);
-Client *getclient(Window w, int part);
-const char *getresource(const char *resource, const char *defval);
 long getstate(Window w);
-Bool gettextprop(Window w, Atom atom, char **text);
-void getpointer(int *x, int *y);
-Monitor *getmonitor(int x, int y);
-Monitor *curmonitor();
-Monitor *selmonitor();
-Monitor *clientmonitor(Client *c);
-Bool isvisible(Client *c, Monitor *m);
 void incmodal(Client *c, Group *g);
 void decmodal(Client *c, Group *g);
-Bool initmonitors(XEvent *e);
 void freemonitors(void);
 void updatemonitors(XEvent *e, int n, Bool size, Bool full);
-Bool keypress(XEvent *e);
-Bool keyrelease(XEvent *e);
-void killclient(Client *c);
-Bool leavenotify(XEvent *e);
-Bool focuschange(XEvent *e);
 void manage(Window w, XWindowAttributes *wa);
-Bool mappingnotify(XEvent *e);
-Bool maprequest(XEvent *e);
-void m_move(Client *c, XEvent *ev);
 void m_shade(Client *c, XEvent *ev);
 void m_zoom(Client *c, XEvent *ev);
-void m_resize(Client *c, XEvent *ev);
 void m_spawn(Client *c, XEvent *ev);
 void m_prevtag(Client *c, XEvent *ev);
 void m_nexttag(Client *c, XEvent *ev);
-Monitor *nearmonitor(void);
-Bool propertynotify(XEvent *e);
-void pushtime(Time time);
-Bool reparentnotify(XEvent *e);
-void quit(const char *arg);
-void restart(const char *arg);
 void reconfigure(Client *c, ClientGeometry * g);
 void restack_belowif(Client *c, Client *sibling);
 void run(void);
 void scan(void);
-void setclientstate(Client *c, long state);
 void setfocus(Client *c);
 void setup(char *);
-void spawn(const char *arg);
 void tag(Client *c, int index);
-void togglemonitor(void);
-void toggleshowing(void);
-void togglehidden(Client *c);
 void unmanage(Client *c, WithdrawCause cause);
 void updatestruts(void);
-Bool unmapnotify(XEvent *e);
 void updatesizehints(Client *c);
 void updatetitle(Client *c);
 void updategroup(Client *c, Window leader, int group, int *nonmodal);
 Window *getgroup(Client *c, Window leader, int group, unsigned int *count);
 void removegroup(Client *c, Window leader, int group);
 void updateiconname(Client *c);
-void view(int index);
-void viewnext(Monitor *m);
-void viewprev(Monitor *m);
-void viewleft(Monitor *m);
-void viewright(Monitor *m);
-void viewprevtag(void);			/* views previous selected tags */
-void viewlefttag(void);
-void viewrighttag(void);
 int xerror(Display *dpy, XErrorEvent *ee);
 int xerrordummy(Display *dsply, XErrorEvent *ee);
 int xerrorstart(Display *dsply, XErrorEvent *ee);
@@ -249,12 +192,32 @@ void (*actions[LastOn][5][2]) (Client *, XEvent *) = {
 	/* *INDENT-ON* */
 };
 
-Bool
+static Bool
 IGNOREEVENT(XEvent *e)
 {
 	XPRINTF("Got ignored event %d\n", e->type);
 	return False;
 }
+
+static Bool keypress(XEvent *e);
+static Bool keyrelease(XEvent *e);
+static Bool buttonpress(XEvent *e);
+static Bool enternotify(XEvent *e);
+static Bool leavenotify(XEvent *e);
+static Bool focuschange(XEvent *e);
+static Bool expose(XEvent *e);
+static Bool destroynotify(XEvent *e);
+static Bool unmapnotify(XEvent *e);
+static Bool maprequest(XEvent *e);
+static Bool reparentnotify(XEvent *e);
+static Bool configurenotify(XEvent *e);
+Bool configurerequest(XEvent *e);
+static Bool propertynotify(XEvent *e);
+Bool selectionclear(XEvent *e);
+Bool clientmessage(XEvent *e);
+static Bool mappingnotify(XEvent *e);
+static Bool initmonitors(XEvent *e);
+static Bool alarmnotify(XEvent *e);
 
 Bool (*handler[LASTEvent + (EXTRANGE * BaseLast)]) (XEvent *) = {
 	[KeyPress] = keypress,
@@ -299,7 +262,7 @@ Bool (*handler[LASTEvent + (EXTRANGE * BaseLast)]) (XEvent *) = {
 };
 
 /* function implementations */
-void
+static void
 applyatoms(Client *c)
 {
 	long *t;
@@ -321,7 +284,7 @@ applyatoms(Client *c)
 	}
 }
 
-void
+static void
 applyrules(Client *c)
 {
 	static char buf[512];
@@ -329,7 +292,7 @@ applyrules(Client *c)
 	regmatch_t tmp;
 	Bool matched = False;
 	XClassHint ch = { 0 };
-	Monitor *cm = c->curmon ? : selmonitor();
+	Monitor *cm = c->cmon ? : selmonitor();  /* XXX: is cmon ever not NULL? */
 
 	/* rule matching */
 	XGetClassHint(dpy, c->win, &ch);
@@ -355,10 +318,10 @@ applyrules(Client *c)
 	if (ch.res_name)
 		XFree(ch.res_name);
 	if (!matched && cm)
-		c->tags = cm->seltags;
+		c->tags = cm->curview->seltags;
 }
 
-void
+static void
 setwmstate(Window win, long state, Window icon)
 {
 	if (state == WithdrawnState)
@@ -384,7 +347,7 @@ setwmstate(Window win, long state, Window icon)
 	}
 }
 
-void
+static void
 applystate(Client *c, XWMHints * wmh)
 {
 	int state = NormalState;
@@ -440,7 +403,7 @@ applystate(Client *c, XWMHints * wmh)
 	c->winstate = state;
 }
 
-void
+static void
 setclientstate(Client *c, long state)
 {
 	if (c->is.dockapp && state == NormalState)
@@ -472,7 +435,7 @@ setclientstate(Client *c, long state)
 void
 ban(Client *c)
 {
-	c->curmon = NULL;
+	c->cmon = NULL;
 
 	setclientstate(c, c->is.icon ? IconicState : NormalState);
 	if (!c->is.banned) {
@@ -484,7 +447,8 @@ ban(Client *c)
 void
 unban(Client *c, Monitor *m)
 {
-	c->curmon = m;
+	c->cmon = m;
+	c->cview = m->curview;
 	if (c->is.banned) {
 		XMapWindow(dpy, c->frame);
 		c->is.banned = False;
@@ -492,7 +456,7 @@ unban(Client *c, Monitor *m)
 	}
 }
 
-Bool
+static Bool
 buttonpress(XEvent *e)
 {
 	Client *c;
@@ -670,7 +634,7 @@ selectionclear(XEvent *e)
 	return ret;
 }
 
-void
+static void
 checkotherwm(void)
 {
 	Atom wm_sn, wm_protocols, manager;
@@ -778,7 +742,7 @@ checkotherwm(void)
 	XSync(dpy, False);
 }
 
-void
+static void
 cleanup(WithdrawCause cause)
 {
 
@@ -842,7 +806,7 @@ send_configurenotify(Client *c, Window above)
 	XSendEvent(dpy, c->win, False, StructureNotifyMask, (XEvent *) &ce);
 }
 
-Bool
+static Bool
 configurenotify(XEvent *e)
 {
 	XConfigureEvent *ev = &e->xconfigure;
@@ -878,7 +842,7 @@ configurerequest(XEvent *e)
 	return True;
 }
 
-Bool
+static Bool
 destroynotify(XEvent *e)
 {
 	Client *c;
@@ -925,7 +889,7 @@ erealloc(void *ptr, size_t size)
 	return res;
 }
 
-Bool
+static Bool
 enternotify(XEvent *e)
 {
 	XCrossingEvent *ev = &e->xcrossing;
@@ -985,7 +949,7 @@ eprint(const char *errstr, ...)
 	exit(EXIT_FAILURE);
 }
 
-Bool
+static Bool
 focuschange(XEvent *e)
 {
 	XEvent ev;
@@ -1033,7 +997,7 @@ focuschange(XEvent *e)
 	return True;
 }
 
-Bool
+static Bool
 expose(XEvent *e)
 {
 	XExposeEvent *ev = &e->xexpose;
@@ -1091,7 +1055,7 @@ focus(Client *c)
 	Client *o;
 	Monitor *cm;
 
-	cm = c ? c->curmon : selmonitor();
+	cm = c ? c->cmon : selmonitor();
 
 	o = sel;
 	if ((!c && scr->managed)
@@ -1169,7 +1133,7 @@ focusforw(Client *c)
 
 	if (!c)
 		return (c);
-	if (!(m = c->curmon))
+	if (!(m = c->cmon))
 		return NULL;
 	for (c = c->next;
 	     c && (!canfocus(c) || c->skip.focus || (c->is.icon || c->is.hidden)
@@ -1190,7 +1154,7 @@ focusback(Client *c)
 
 	if (!c)
 		return (c);
-	if (!(m = c->curmon))
+	if (!(m = c->cmon))
 		return NULL;
 	for (c = c->prev;
 	     c && (!canfocus(c) || c->skip.focus || (c->is.icon || c->is.hidden)
@@ -1213,7 +1177,7 @@ focuslast(Client *c)
 
 	if (!c || c != sel)
 		return (sel);
-	if (!(m = c->curmon))
+	if (!(m = c->cmon))
 		return (NULL);
 	for (s = scr->flist; s &&
 	     (s == c
@@ -1539,10 +1503,10 @@ isvisible(Client *c, Monitor *m)
 		return False;
 	if (!m) {
 		for (m = scr->monitors; m; m = m->next)
-			if (c->tags & m->seltags)
+			if (c->tags & m->curview->seltags)
 				return True;
 	} else {
-		if (c->tags & m->seltags)
+		if (c->tags & m->curview->seltags)
 			return True;
 	}
 	return False;
@@ -1565,14 +1529,14 @@ grabkeys(void)
 	}
 }
 
-Bool
+static Bool
 keyrelease(XEvent *e)
 {
 	pushtime(e->xkey.time);
 	return True;
 }
 
-Bool
+static Bool
 keypress(XEvent *e)
 {
 	Key *k = NULL;
@@ -1714,7 +1678,7 @@ killclient(Client *c)
 	XKillClient(dpy, c->win);
 }
 
-Bool
+static Bool
 leavenotify(XEvent *e)
 {
 	XCrossingEvent *ev = &e->xcrossing;
@@ -1755,7 +1719,7 @@ reparentclient(Client *c, AScreen *new_scr, int x, int y)
 		if (!(m = getmonitor(x, y)))
 			if (!(m = curmonitor()))
 				m = nearmonitor();
-		c->tags = m->seltags;
+		c->tags = m->curview->seltags;
 		addclient(c, True, True);
 		XReparentWindow(dpy, c->frame, scr->root, x, y);
 		XMoveWindow(dpy, c->frame, x, y);
@@ -2140,7 +2104,7 @@ manage(Window w, XWindowAttributes *wa)
 	}
 }
 
-Bool
+static Bool
 mappingnotify(XEvent *e)
 {
 	XMappingEvent *ev = &e->xmapping;
@@ -2151,7 +2115,7 @@ mappingnotify(XEvent *e)
 	return True;
 }
 
-Bool
+static Bool
 maprequest(XEvent *e)
 {
 	static XWindowAttributes wa;
@@ -2178,7 +2142,7 @@ getworkarea(Monitor *m, Workarea *w)
 {
 	Workarea *wa;
 
-	switch (scr->views[m->curtag].barpos) {
+	switch (m->curview->barpos) {
 	case StrutsOn:
 	default:
 		if (m->dock.position)
@@ -2329,7 +2293,7 @@ curmonitor()
 Monitor *
 selmonitor()
 {
-	return (sel ? sel->curmon : curmonitor());
+	return (sel ? sel->cmon : curmonitor());
 }
 
 Monitor *
@@ -2423,7 +2387,7 @@ newsize(Client *c, int w, int h, Time time)
 	return True;
 }
 
-Bool
+static Bool
 alarmnotify(XEvent *e)
 {
 	XSyncAlarmNotifyEvent *ae = (typeof(ae)) e;
@@ -2486,7 +2450,7 @@ m_resize(Client *c, XEvent *e)
 		raiselower(c);
 }
 
-Bool
+static Bool
 reparentnotify(XEvent *e)
 {
 	Client *c;
@@ -2502,7 +2466,7 @@ reparentnotify(XEvent *e)
 	return False;
 }
 
-Bool
+static Bool
 propertynotify(XEvent *e)
 {
 	Client *c;
@@ -2934,12 +2898,12 @@ updatemonitors(XEvent *e, int n, Bool size_update, Bool full_update)
 				if (!(m = findmonitor(c)))
 					if (!(m = curmonitor()))
 						m = scr->monitors;
-				c->tags = m->seltags;
+				c->tags = m->curview->seltags;
+				ewmh_update_net_window_desktop(c);
 			}
 			for (i = 0; i < scr->nmons; i++) {
 				m = scr->monitors + i;
-				m->curtag = i % scr->ntags;
-				m->seltags = (1ULL << (i % scr->ntags));
+				m->curview = scr->views + (i % scr->ntags);
 			}
 		}
 		if (size_update) {
@@ -2987,7 +2951,7 @@ updatemonitors(XEvent *e, int n, Bool size_update, Bool full_update)
 	ewmh_update_net_desktop_geometry();
 }
 
-Bool
+static Bool
 initmonitors(XEvent *e)
 {
 	int n;
@@ -3065,8 +3029,7 @@ initmonitors(XEvent *e)
 				m->mx = m->sc.x + m->sc.w / 2;
 				m->my = m->sc.y + m->sc.h / 2;
 				m->num = si[i].screen_number;
-				m->curtag = m->num % scr->ntags;
-				m->prevtags = m->seltags = (1ULL << m->curtag);
+				m->curview = scr->views + (m->num % scr->ntags);
 				m->veil =
 				    XCreateSimpleWindow(dpy, scr->root, m->sc.x, m->sc.y,
 							m->sc.w, m->sc.h, 0, 0, 0);
@@ -3153,8 +3116,7 @@ initmonitors(XEvent *e)
 				m->mx = m->sc.x + m->sc.w / 2;
 				m->my = m->sc.y + m->sc.h / 2;
 				m->num = i;
-				m->curtag = m->num % scr->ntags;
-				m->prevtags = m->seltags = (1ULL << m->curtag);
+				m->curview = scr->views + (m->num % scr->ntags);
 				m->veil =
 				    XCreateSimpleWindow(dpy, scr->root, m->sc.x, m->sc.y,
 							m->sc.w, m->sc.h, 0, 0, 0);
@@ -3216,8 +3178,7 @@ initmonitors(XEvent *e)
 		m->mx = m->sc.x + m->sc.w / 2;
 		m->my = m->sc.y + m->sc.h / 2;
 		m->num = 0;
-		m->curtag = m->num % scr->ntags;
-		m->prevtags = m->seltags = (1ULL << m->curtag);
+		m->curview = scr->views + (m->num % scr->ntags);
 		m->veil = XCreateSimpleWindow(dpy, scr->root, m->sc.x, m->sc.y,
 					      m->sc.w, m->sc.h, 0, 0, 0);
 		wa.background_pixmap = None;
@@ -3678,7 +3639,7 @@ static void
 updategeommon(Monitor *m)
 {
 	m->wa = m->sc;
-	switch (scr->views[m->curtag].barpos) {
+	switch (m->curview->barpos) {
 	default:
 		m->wa.x += m->struts[LeftStrut];
 		m->wa.y += m->struts[TopStrut];
@@ -3722,7 +3683,7 @@ updatestruts()
 	arrange(NULL);
 }
 
-Bool
+static Bool
 unmapnotify(XEvent *e)
 {
 	Client *c;

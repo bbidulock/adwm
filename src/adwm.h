@@ -516,6 +516,17 @@ enum {
 	SloppyRaise
 };					/* focus model */
 
+typedef struct Tag Tag;
+typedef struct View View;
+typedef struct Monitor Monitor;
+typedef struct Client Client;
+typedef struct AScreen AScreen;
+typedef struct Group Group;
+
+#ifdef STARTUP_NOTIFICATION
+typedef struct Notify Notify;
+#endif
+
 typedef struct {
 	Pattern pattern;		/* default solid */
 	Gradient gradient;		/* default none */
@@ -599,15 +610,15 @@ typedef struct {
 	int x, y, w, h;
 } Workarea;
 
-typedef struct Monitor Monitor;
 struct Monitor {
 	Workarea sc, wa;
 	unsigned long struts[LastStrut];
-	unsigned long long seltags;
-	unsigned long long prevtags;
+//	unsigned long long seltags;
+//	unsigned long long prevtags;
 	Monitor *next;
 	int mx, my;
-	unsigned curtag;
+	View *curview;	    /* current view */
+	View *preview;	    /* previous view */
 	unsigned num, index;
 	Window veil;
 	struct {
@@ -635,7 +646,6 @@ typedef struct {
 	} g;
 } ElementClient;
 
-typedef struct Client Client;
 struct Client {
 	char *name;
 	char *icon_name;
@@ -744,7 +754,9 @@ struct Client {
 		};
 		unsigned can;
 	} can;
-	Monitor *curmon;
+	AScreen *cscr;
+	Monitor *cmon;
+	View *cview;
 	Client *next;
 	Client *prev;
 	Client *snext;
@@ -782,14 +794,13 @@ struct _CycleList {
 	CycleList *prev;
 };
 
-typedef struct Group Group;
 struct Group {
 	Window *members;
 	unsigned count;
 	int modal_transients;
 };
 
-typedef struct View {
+struct View {
 	StrutsPosition barpos;		/* show struts? */
 	Bool dectiled;			/* decorate tiled? */
 	int nmaster;
@@ -799,15 +810,17 @@ typedef struct View {
 	LayoutOrientation major;	/* overall orientation */
 	LayoutOrientation minor;	/* master area orientation */
 	WindowPlacement placement;	/* float placement policy */
+//	Monitor *curmon;		/* monitor currently displaying this view */
 	Layout *layout;
 	int index;
+	unsigned long long seltags;	/* tags selected for this view */
 	int row, col;			/* row and column in desktop layout */
-} View;					/* per-tag settings */
+};					/* per-tag settings */
 
-typedef struct Tag {
+struct Tag {
 	Atom dt;			/* desktop atom for this tag */
 	char name[64];			/* desktop name for this tag */
-} Tag;
+};
 
 typedef struct {
 	unsigned x, y, w, h;
@@ -904,7 +917,6 @@ typedef struct {
 	unsigned ntags;
 } Options;
 
-typedef struct AScreen AScreen;
 struct AScreen {
 	Bool managed;
 	Window root;
@@ -963,7 +975,6 @@ typedef struct {
 } Rule;					/* window matching rules */
 
 #ifdef STARTUP_NOTIFICATION
-typedef struct Notify Notify;
 struct Notify {
 	Notify *next;
 	SnStartupSequence *seq;
@@ -993,58 +1004,6 @@ typedef struct {
 	void (*lower) (Client *c);
 	void (*raiselower) (Client *c);
 } LayoutOperations;
-
-/* ewmh.c */
-Bool checkatom(Window win, Atom bigatom, Atom smallatom);
-unsigned getwintype(Window win);
-Bool checkwintype(Window win, int wintype);
-Bool clientmessage(XEvent *e);
-void ewmh_release_user_time_window(Client *c);
-Atom *getatom(Window win, Atom atom, unsigned long *nitems);
-long *getcard(Window win, Atom atom, unsigned long *nitems);
-void initewmh(Window w);
-void exitewmh(WithdrawCause cause);
-void ewmh_add_client(Client *c);
-void ewmh_del_client(Client *c, WithdrawCause cause);
-void setopacity(Client *c, unsigned opacity);
-int getstruts(Client *c);
-
-void ewmh_process_net_desktop_names(void);
-void ewmh_process_net_number_of_desktops(void);
-void ewmh_process_net_showing_desktop(void);
-void ewmh_process_net_desktop_layout(void);
-void ewmh_update_kde_splash_progress(void);
-void ewmh_update_net_active_window(void);
-void ewmh_update_net_client_list(void);
-void ewmh_update_net_current_desktop(void);
-void ewmh_update_net_desktop_geometry(void);
-void ewmh_update_net_desktop_modes(void);
-void ewmh_update_net_number_of_desktops(void);
-void ewmh_update_net_showing_desktop(void);
-void ewmh_update_net_virtual_roots(void);
-void ewmh_update_net_work_area(void);
-void ewmh_update_net_desktop_layout(void);
-
-void mwmh_process_motif_wm_hints(Client *);
-
-Bool ewmh_process_net_window_desktop(Client *);
-Bool ewmh_process_net_window_desktop_mask(Client *);
-
-void ewmh_process_net_window_type(Client *);
-void ewmh_process_kde_net_window_type_override(Client *);
-void ewmh_process_net_startup_id(Client *);
-void ewmh_process_net_window_state(Client *c);
-void ewmh_process_net_window_sync_request_counter(Client *);
-void ewmh_process_net_window_user_time(Client *);
-void ewmh_process_net_window_user_time_window(Client *);
-void ewmh_update_net_window_desktop(Client *);
-void ewmh_update_net_window_extents(Client *);
-void ewmh_update_net_window_fs_monitors(Client *);
-void ewmh_update_net_window_state(Client *);
-void ewmh_update_net_window_visible_icon_name(Client *);
-void ewmh_update_net_window_visible_name(Client *);
-void wmh_process_win_window_hints(Client *);
-void wmh_process_win_layer(Client *);
 
 /* main */
 Monitor *clientmonitor(Client *c);
@@ -1078,7 +1037,6 @@ void focusprev(Client *c);
 AScreen *getscreen(Window win);
 AScreen *geteventscr(XEvent *ev);
 void killclient(Client *c);
-void applygravity(Client *c, ClientGeometry * g, int gravity);
 Bool configurerequest(XEvent *e);
 void m_move(Client *c, XEvent *ev);
 void m_resize(Client *c, XEvent *ev);

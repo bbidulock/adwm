@@ -176,7 +176,7 @@ k_setmwfactor(XEvent *e, Key *k)
 
 	if (!(m = selmonitor()))
 		return;
-	v = scr->views + m->curtag;
+	v = m->curview;
 
 	switch (k->act) {
 	case IncCount:
@@ -226,7 +226,7 @@ k_setnmaster(XEvent *e, Key *k)
 
 	if (!(m = selmonitor()))
 		return;
-	v = scr->views + m->curtag;
+	v = m->curview;
 
 	switch (k->act) {
 	case IncCount:
@@ -345,7 +345,7 @@ k_setgeneric(XEvent *e, Key *k, void (*func) (XEvent *, Key *, Client *))
 		if (!(m = selmonitor()))
 			return;
 		for (c = scr->clients; c; c = c->next) {
-			if (c->curmon != m)
+			if (c->cmon != m)
 				continue;
 			switch (k->ico) {
 			case IncludeIcons:
@@ -364,7 +364,7 @@ k_setgeneric(XEvent *e, Key *k, void (*func) (XEvent *, Key *, Client *))
 		break;
 	case AnyClient:
 		for (c = scr->clients; c; c = c->next) {
-			if (!c->curmon)
+			if (!c->cmon)
 				continue;
 			switch (k->ico) {
 			case IncludeIcons:
@@ -801,31 +801,31 @@ k_setlaygeneric(XEvent *e, Key *k, void (*func) (XEvent *, Key *, Monitor *, Vie
 	case FocusClient:
 		if (!(m = selmonitor()))
 			return;
-		v = scr->views + m->curtag;
+		v = m->curview;
 		func(e, k, m, v);
 		break;
 	case PointerClient:
 		if (!(m = curmonitor()))
 			m = nearmonitor();
-		v = scr->views + m->curtag;
+		v = m->curview;
 		func(e, k, m, v);
 		break;
 	case AllClients:
 		for (m = scr->monitors; m; m = m->next) {
-			v = scr->views + m->curtag;
+			v = m->curview;
 			func(e, k, m, v);
 		}
 		break;
 	case AnyClient:
 		if (!(m = selmonitor()))
 			m = nearmonitor();
-		v = scr->views + m->curtag;
+		v = m->curview;
 		func(e, k, m, v);
 		break;
 	case EveryClient:
 		for (v = scr->views; v < scr->views + scr->ntags; v++) {
 			for (m = scr->monitors; m; m = m->next)
-				if (v == scr->views + m->curtag)
+				if (v == m->curview)
 					break;
 			func(e, k, m, v);
 		}
@@ -1162,11 +1162,11 @@ k_select_cl(Monitor *cm, Key *k, CycleList * cl)
 		c->is.icon = c->was.icon;
 		c->is.hidden = c->was.hidden;
 		if (c->was.icon || c->was.hidden)
-			arrange(c->curmon);
+			arrange(c->cmon);
 		c->was.is = 0;
 	}
 	c = cl->c;
-	if (!(m = c->curmon) && !(m = clientmonitor(c))) {
+	if (!(m = c->cmon) && !(m = clientmonitor(c))) {
 		if (!(c->tags & ((1ULL << scr->ntags) - 1))) {
 			k_stop(NULL, k);
 			return;
@@ -1175,7 +1175,7 @@ k_select_cl(Monitor *cm, Key *k, CycleList * cl)
 		for (i = 0; i < scr->ntags; i++)
 			if (c->tags & (1ULL << i))
 				break;
-		view(i);
+		view(cm, i);
 		m = cm;
 	}
 	if (cl != k->where) {
@@ -1877,9 +1877,9 @@ k_toggletag(XEvent *e, Key *k)
 		Monitor *m;
 		View *v;
 
-		if (!(m = sel->curmon))
+		if (!(m = sel->cmon))
 			return;
-		v = scr->views + m->curtag;
+		v = m->curview;
 		toggletag(sel, idxoftag(v, k));
 	}
 }
@@ -1891,9 +1891,9 @@ k_tag(XEvent *e, Key *k)
 		Monitor *m;
 		View *v;
 
-		if (!(m = sel->curmon))
+		if (!(m = sel->cmon))
 			return;
-		v = scr->views + m->curtag;
+		v = m->curview;
 		tag(sel, idxoftag(v, k));
 	}
 }
@@ -1906,7 +1906,7 @@ k_focusview(XEvent *e, Key *k)
 
 	if (!(cm = selmonitor()))
 		cm = nearmonitor();
-	v = scr->views + cm->curtag;
+	v = cm->curview;
 	focusview(cm, idxoftag(v, k));
 }
 
@@ -1918,7 +1918,7 @@ k_toggleview(XEvent *e, Key *k)
 
 	if (!(cm = selmonitor()))
 		cm = nearmonitor();
-	v = scr->views + cm->curtag;
+	v = cm->curview;
 	toggleview(cm, idxoftag(v, k));
 }
 
@@ -1930,8 +1930,8 @@ k_view(XEvent *e, Key *k)
 
 	if (!(cm = selmonitor()))
 		cm = nearmonitor();
-	v = scr->views + cm->curtag;
-	view(idxoftag(v, k));
+	v = cm->curview;
+	view(cm, idxoftag(v, k));
 }
 
 void
@@ -1941,9 +1941,9 @@ k_taketo(XEvent *e, Key *k)
 		Monitor *m;
 		View *v;
 
-		if (!(m = sel->curmon))
+		if (!(m = sel->cmon))
 			return;
-		v = scr->views + m->curtag;
+		v = m->curview;
 		taketo(sel, idxoftag(v, k));
 	}
 }

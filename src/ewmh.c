@@ -19,6 +19,7 @@
 #include "adwm.h"
 #include "layout.h"
 #include "draw.h"
+#include "ewmh.h"
 #include "tags.h"
 
 Atom atom[NATOMS];
@@ -404,7 +405,7 @@ ewmh_update_echinus_layout_name()
 
 	if (!(cm = selmonitor()))
 		return;
-	v = scr->views + cm->curtag;
+	v = cm->curview;
 	XChangeProperty(dpy, scr->root, _XA_ECHINUS_LAYOUT, XA_STRING, 8, PropModeReplace,
 			(const unsigned char *) &v->layout->symbol, 1L);
 }
@@ -519,7 +520,7 @@ ewmh_update_echinus_seltags()
 	seltags = ecalloc(scr->ntags, sizeof(seltags[0]));
 	for (m = scr->monitors; m != NULL; m = m->next)
 		for (tags = 1, i = 0; i < scr->ntags; i++, tags <<= 1)
-			if (m->seltags & tags)
+			if (m->curview->seltags & tags)
 				seltags[i] = True;
 	XChangeProperty(dpy, scr->root, _XA_ECHINUS_SELTAGS, XA_CARDINAL, 32,
 			PropModeReplace, (unsigned char *) seltags, scr->ntags);
@@ -697,7 +698,7 @@ ewmh_update_net_current_desktop()
 	XPRINTF("%s\n", "Updating _NET_CURRENT_DESKTOP");
 	for (n = 0, m = scr->monitors; m; m = m->next, n++) ;
 	data = ecalloc(n, sizeof(*data));
-	for (i = 0, m = scr->monitors; m; data[i++] = m->curtag, m = m->next) ;
+	for (i = 0, m = scr->monitors; m; data[i++] = m->curview->index, m = m->next) ;
 	XChangeProperty(dpy, scr->root, _XA_NET_CURRENT_DESKTOP, XA_CARDINAL, 32,
 			PropModeReplace, (unsigned char *) data, n);
 	XChangeProperty(dpy, scr->root, _XA_WIN_WORKSPACE, XA_CARDINAL, 32,
@@ -725,7 +726,7 @@ ewmh_update_net_visible_desktops()
 	XPRINTF("%s\n", "Updating _NET_VISIBLE_DESKTOPS");
 	for (n = 0, m = scr->monitors; m; m = m->next, n++) ;
 	data = ecalloc(n, sizeof(*data));
-	for (i = 0, m = scr->monitors; m; data[i++] = m->curtag, m = m->next) ;
+	for (i = 0, m = scr->monitors; m; data[i++] = m->curview->index, m = m->next) ;
 	XChangeProperty(dpy, scr->root, _XA_NET_VISIBLE_DESKTOPS, XA_CARDINAL, 32,
 			PropModeReplace, (unsigned char *) data, n);
 	free(data);
@@ -2327,9 +2328,13 @@ clientmessage(XEvent *e)
 		} else if (message_type == _XA_NET_CURRENT_DESKTOP ||
 			   message_type == _XA_WIN_WORKSPACE) {
 			int tag = ev->data.l[0];
+			Monitor *cm;
+
+			if (!(cm = selmonitor()))
+				cm = nearmonitor();
 
 			if (0 <= tag && tag < scr->ntags)
-				view(tag);
+				view(cm, tag);
 		} else if (message_type == _XA_NET_SHOWING_DESKTOP) {
 			if (!ev->data.l[0] != !scr->showing_desktop)
 				toggleshowing();
@@ -2400,16 +2405,22 @@ clientmessage(XEvent *e)
 void
 setopacity(Client *c, unsigned int opacity)
 {
-	/* TODO: This is not quite right: the client is responsible for setting opacity
-	   on the client window, the WM should only propagate that opacity to the frame. */
-	if (opacity == OPAQUE) {
-		XDeleteProperty(dpy, c->win, _XA_NET_WM_WINDOW_OPACITY);
-		XDeleteProperty(dpy, c->frame, _XA_NET_WM_WINDOW_OPACITY);
-	} else {
-		long data = opacity;
+	long data = opacity;
 
-		XChangeProperty(dpy, c->win, _XA_NET_WM_WINDOW_OPACITY, XA_CARDINAL, 32,
+	if (opacity == OPAQUE) {
+		XChangeProperty(dpy, c->frame, _XA_NET_WM_WINDOW_OPACITY, XA_CARDINAL, 32,
 				PropModeReplace, (unsigned char *) &data, 1L);
+	} else {
+		long *card;
+		unsigned long n;
+
+		if ((card = getcard(c->win, _XA_NET_WM_WINDOW_OPACITY, &n))) {
+			if (n > 0)
+				data = card[0];
+			XFree(card);
+		}
+		if (!data)
+			return;
 		XChangeProperty(dpy, c->frame, _XA_NET_WM_WINDOW_OPACITY, XA_CARDINAL, 32,
 				PropModeReplace, (unsigned char *) &data, 1L);
 	}

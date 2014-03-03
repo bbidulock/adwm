@@ -16,6 +16,8 @@
 #include "layout.h"
 #include "tags.h"
 
+void setopacity(Client *c, unsigned int opacity);
+
 enum { Normal, Selected };
 enum { AlignLeft, AlignCenter, AlignRight };	/* title position */
 
@@ -443,9 +445,7 @@ drawclient(Client *c)
 		DPRINTF("What? no screen for window 0x%lx???\n", c->win);
 		return;
 	}
-	if (ds->style.opacity) {
-		setopacity(c, c == sel ? OPAQUE : ds->style.opacity);
-	}
+	setopacity(c, (c == sel) ? OPAQUE : ds->style.opacity);
 	if (!isvisible(c, NULL))
 		return;
 	if (c->is.dockapp)

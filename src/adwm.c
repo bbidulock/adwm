@@ -2899,7 +2899,8 @@ updatemonitors(XEvent *e, int n, Bool size_update, Bool full_update)
 					if (!(m = curmonitor()))
 						m = scr->monitors;
 				c->tags = m->curview->seltags;
-				ewmh_update_net_window_desktop(c);
+				if (c->is.managed)
+					ewmh_update_net_window_desktop(c);
 			}
 			for (i = 0; i < scr->nmons; i++) {
 				m = scr->monitors + i;

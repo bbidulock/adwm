@@ -3948,7 +3948,8 @@ addclient(Client *c, Bool focusme, Bool raiseme)
 	attachflist(c, focusme);
 	attachstack(c, raiseme);
 	ewmh_update_net_client_list();
-	ewmh_update_net_window_desktop(c);
+	if (c->is.managed)
+		ewmh_update_net_window_desktop(c);
 }
 
 void

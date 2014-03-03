@@ -861,7 +861,7 @@ ewmh_update_net_window_desktop_mask(Client *c)
 void
 ewmh_update_net_window_desktop(Client *c)
 {
-	XPRINTF("Updating _NET_WM_DESKTOP for 0x%lx\n", c->win);
+	XPRINTF(c, "Updating _NET_WM_DESKTOP\n");
 	if (isomni(c)) {
 		long i = -1;
 
@@ -2201,7 +2201,8 @@ clientmessage(XEvent *e)
 						c->tags &= ~(1ULL << j);
 			else {
 				/* what toggletag does */
-				ewmh_update_net_window_desktop(c);
+				if (c->is.managed)
+					ewmh_update_net_window_desktop(c);
 				drawclient(c);
 				arrange(NULL);
 			}

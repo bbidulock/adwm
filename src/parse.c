@@ -1019,6 +1019,8 @@ k_focusable(Client *c, Monitor *m, WhichClient any, RelativeDirection dir,
 		if (dir != RelativeCenter)
 			if (c->is.icon || c->is.hidden)
 				return False;
+		if (!isvisible(c, m))
+			return False;
 		switch (ico) {
 		case IncludeIcons:
 			break;

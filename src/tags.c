@@ -54,7 +54,8 @@ static void
 _tag(Client *c, int index)
 {
 	c->tags |= (index == -1) ? ((1ULL << scr->ntags) - 1) : (1ULL << index);
-	ewmh_update_net_window_desktop(c);
+	if (c->is.managed)
+		ewmh_update_net_window_desktop(c);
 	arrange(NULL);
 	focus(NULL);
 }
@@ -99,7 +100,8 @@ toggletag(Client *c, int index)
 	else if (c->cmon)
 		/* at least one tag must be enabled */
 		c->tags = (1ULL << c->cmon->curview->index);
-	ewmh_update_net_window_desktop(c);
+	if (c->is.managed)
+		ewmh_update_net_window_desktop(c);
 	drawclient(c);
 	arrange(NULL);
 }

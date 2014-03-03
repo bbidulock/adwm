@@ -50,6 +50,7 @@
 #include "layout.h"
 #include "parse.h"
 #include "tags.h"
+#include "config.h"
 
 #define EXTRANGE    16		/* all X11 extension event must fit in this range */
 
@@ -192,8 +193,6 @@ Time take_time;
 Group systray = { NULL, 0, 0 };
 
 /* configuration, allows nested code to access above variables */
-
-Options options;
 
 void (*actions[LastOn][5][2]) (Client *, XEvent *) = {
 	/* *INDENT-OFF* */
@@ -3318,20 +3317,7 @@ setup(char *conf)
 
 	initrules();
 
-	/* init appearance */
-	options.attachaside = atoi(getresource("attachaside", "1")) ? True : False;
-	strncpy(options.command, getresource("command", COMMAND),
-		LENGTH(options.command));
-	options.command[LENGTH(options.command) - 1] = '\0';
-	options.dectiled = atoi(getresource("decoratetiled", STR(DECORATETILED)));
-	options.decmax = atoi(getresource("decoratemax", STR(DECORATEMAX)));
-	options.hidebastards = atoi(getresource("hidebastards", "0")) ? True : False;
-	options.autoroll = atoi(getresource("autoroll", "0")) ? True : False;
-	options.focus = atoi(getresource("sloppy", "0"));
-	options.snap = atoi(getresource("snap", STR(SNAP)));
-	options.dockpos = atoi(getresource("dock.position", "1"));
-	options.dockori = atoi(getresource("dock.orient", "1"));
-	options.dragdist = atoi(getresource("dragdistance", "5"));
+	initconfig();
 
 	for (scr = screens; scr < screens + nscr; scr++) {
 		if (!scr->managed)

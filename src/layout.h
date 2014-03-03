@@ -1,4 +1,8 @@
 /* layout.c */
+
+#ifndef __LOCAL_LAYOUT_H__
+#define __LOCAL_LAYOUT_H__
+
 void addclient(Client *c, Bool focusme, Bool raiseme);
 void delclient(Client *c);
 void tookfocus(Client *c);
@@ -48,3 +52,5 @@ void toggleshade(Client *c);
 void toggledectiled(Monitor *m, View *v);
 void zoom(Client *c);
 void zoomfloat(Client *c);
+
+#endif				/* __LOCAL_LAYOUT_H__ */

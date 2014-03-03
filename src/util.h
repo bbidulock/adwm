@@ -1,3 +1,6 @@
+#ifndef __LOCAL_UTIL_H__
+#define __LOCAL_UTIL_H__
+
 /* forward declarations */
 char *estrdup(const char *str);
 int xerrordummy(Display *dpy, XErrorEvent *ee);
@@ -26,3 +29,5 @@ extern Display *dpy;
 extern int screen;
 extern Window root;
 extern void *emallocz(unsigned int size);
+
+#endif				/* __LOCAL_UTIL_H__ */

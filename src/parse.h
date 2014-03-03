@@ -1,4 +1,8 @@
 /* parse.c */
+
+#ifndef __LOCAL_PARSE_H__
+#define __LOCAL_PARSE_H__
+
 void initrules(void);
 void initkeys(void);
 void parsekeys(const char *s, Key *spec);
@@ -65,3 +69,5 @@ void k_view(XEvent *e, Key *k);
 void k_taketo(XEvent *e, Key *k);
 void k_setlayout(XEvent *e, Key *k);
 void k_spawn(XEvent *e, Key *k);
+
+#endif				/* __LOCAL_PARSE_H__ */

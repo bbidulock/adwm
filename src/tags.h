@@ -1,4 +1,8 @@
 /* tags.c */
+
+#ifndef __LOCAL_TAGS_H__
+#define __LOCAL_TAGS_H__
+
 void inittags(void);
 void initlayouts(void);
 void settags(unsigned numtags);
@@ -17,3 +21,5 @@ void view(int index);
 void viewlefttag(void);
 void viewprevtag(void);
 void viewrighttag(void);
+
+#endif				/* __LOCAL_TAGS_H__ */

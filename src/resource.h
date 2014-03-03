@@ -1,4 +1,8 @@
 /* resource.c */
+
+#ifndef __LOCAL_RESOURCE_H__
+#define __LOCAL_RESOURCE_H__
+
 const char *readres(const char *name, const char *clas, const char *defval);
 void getbitmap(const unsigned char *bits, int width, int height, AdwmBitmap * bitmap);
 void getappearance(const char *descrip, Appearance *appear);
@@ -14,3 +18,5 @@ void readtexture(const char *name, const char *clas, Texture *t, const char *def
 void freetexture(Texture *t);
 void getpixmap(const char *file, AdwmPixmap *p);
 void getshadow(const char *descrip, TextShadow *shadow);
+
+#endif				/* __LOCAL_RESOURCE_H__ */

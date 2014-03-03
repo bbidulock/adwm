@@ -1,4 +1,5 @@
-/* enums */
+#ifndef __LOCAL_ADWM_H__
+#define __LOCAL_ADWM_H__
 
 #include <X11/cursorfont.h>
 #include <X11/keysym.h>
@@ -21,6 +22,7 @@
 #include <Imlib2.h>
 #endif
 
+/* enums */
 enum {
 	Manager, Utf8String, WMProto, WMDelete, WMSaveYourself, WMState, WMChangeState,
 	WMTakeFocus, ELayout, ESelTags, WMRestart, WMShutdown, DeskLayout,
@@ -971,20 +973,6 @@ typedef struct {
 	void (*raiselower) (Client *c);
 } LayoutOperations;
 
-typedef struct {
-	Bool attachaside;
-	Bool dectiled;
-	Bool decmax;
-	Bool hidebastards;
-	Bool autoroll;
-	int focus;
-	int snap;
-	char command[255];
-	DockPosition dockpos;
-	DockOrient dockori;
-	unsigned dragdist;
-} Options;
-
 /* ewmh.c */
 Bool checkatom(Window win, Atom bigatom, Atom smallatom);
 unsigned getwintype(Window win);
@@ -1141,7 +1129,6 @@ extern Group window_stack;
 #define ROOTMASK		(BUTTONMASK | WINDOWMASK | MAPPINGMASK | FocusChangeMask)
 
 /* globals */
-extern Options options;
 extern Atom atom[NATOMS];
 extern Display *dpy;
 extern AScreen *scr;
@@ -1169,3 +1156,5 @@ extern Notify *notifies;
 extern XrmDatabase xresdb;
 extern int cargc;
 extern char **cargv;
+
+#endif				/* __LOCAL_ADWM_H__ */

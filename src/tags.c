@@ -47,6 +47,7 @@
 #include "adwm.h"
 #include "layout.h"
 #include "draw.h"
+#include "config.h"
 
 static void
 _tag(Client *c, int index)
@@ -403,6 +404,7 @@ newtag(unsigned i)
 void
 inittags()
 {
+	scr->ntags = atoi(getresource("tags.number", "5"));
 	ewmh_process_net_number_of_desktops();
 	scr->views = ecalloc(scr->ntags, sizeof(*scr->views));
 	scr->tags = ecalloc(scr->ntags, sizeof(*scr->tags));

@@ -28,7 +28,6 @@
  * floating version.
  */
 
-
 static void
 initlayout_TILE(Monitor *m, View *v, char code)
 {
@@ -448,8 +447,8 @@ arrange_TILE(Monitor *cm)
 			ClientGeometry C = g;
 
 			/* center it where it was before */
-			C.x = (c->c.x + c->c.w/2) - C.w / 2;
-			C.y = (c->c.y + c->c.h/2) - C.h / 2;
+			C.x = (c->c.x + c->c.w / 2) - C.w / 2;
+			C.y = (c->c.y + c->c.h / 2) - C.h / 2;
 			DPRINTF("CALLING reconfigure()\n");
 			reconfigure(c, &C);
 		}
@@ -542,8 +541,8 @@ arrange_TILE(Monitor *cm)
 			ClientGeometry C = g;
 
 			/* center it where it was before */
-			C.x = (c->c.x + c->c.w/2) - C.w / 2;
-			C.y = (c->c.y + c->c.h/2) - C.h / 2;
+			C.x = (c->c.x + c->c.w / 2) - C.w / 2;
+			C.y = (c->c.y + c->c.h / 2) - C.h / 2;
 			DPRINTF("CALLING reconfigure()\n");
 			reconfigure(c, &C);
 		}
@@ -633,37 +632,37 @@ arrange_TILE(Monitor *cm)
 Bool
 begin_move_TILE(Client *c, Monitor *m, Bool toggle, int move)
 {
-	return True; /* FIXME */
+	return True;		/* FIXME */
 }
 
 Bool
-cancel_move_TILE(Client *c, Monitor *m, ClientGeometry *orig)
+cancel_move_TILE(Client *c, Monitor *m, ClientGeometry * orig)
 {
-	return True; /* FIXME */
+	return True;		/* FIXME */
 }
 
 Bool
 finish_move_TILE(Client *c, Monitor *m)
 {
-	return True; /* FIXME */
+	return True;		/* FIXME */
 }
 
 Bool
 begin_resize_TILE(Client *c, Monitor *m, Bool toggle, int from)
 {
-	return True; /* FIXME */
+	return True;		/* FIXME */
 }
 
 Bool
-cancel_resize_TILE(Client *c, Monitor *m, ClientGeometry *orig)
+cancel_resize_TILE(Client *c, Monitor *m, ClientGeometry * orig)
 {
-	return True; /* FIXME */
+	return True;		/* FIXME */
 }
 
 Bool
 finish_resize_TILE(Client *c, Monitor *m)
 {
-	return True; /* FIXME */
+	return True;		/* FIXME */
 }
 
 void
@@ -710,7 +709,6 @@ void
 init_TILE(void)
 {
 }
-
 
 Layout adwm_layouts[] = {
 	/* *INDENT-OFF* */

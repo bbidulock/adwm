@@ -45,6 +45,8 @@
 #include <libsn/sn.h>
 #endif
 #include "adwm.h"
+#include "layout.h"
+#include "draw.h"
 #include "config.h"
 
 #define MWFACT		(1<<0)	/* adjust master factor */
@@ -487,13 +489,13 @@ reconfigure(Client *c, ClientGeometry * n)
 }
 
 static Bool
-constrain(Client *c, ClientGeometry *g)
+constrain(Client *c, ClientGeometry * g)
 {
 	int w = g->w, h = g->h;
 	Bool ret = False;
 
 	CPRINTF(c, "geometry before constraint: %dx%d+%d+%d:%d[%d,%d]\n",
-			g->w, g->h, g->x, g->y, g->b, g->t, g->g);
+		g->w, g->h, g->x, g->y, g->b, g->t, g->g);
 
 	/* remove decoration */
 	h -= g->t + g->g;
@@ -549,7 +551,7 @@ constrain(Client *c, ClientGeometry *g)
 		ret = True;
 	}
 	CPRINTF(c, "geometry after constraints: %dx%d+%d+%d:%d[%d,%d]\n",
-			g->w, g->h, g->x, g->y, g->b, g->t, g->g);
+		g->w, g->h, g->x, g->y, g->b, g->t, g->g);
 	return ret;
 }
 
@@ -630,7 +632,8 @@ configureclient(XEvent *e, Client *c, int gravity)
 }
 
 static Monitor *
-findmonbynum(int num) {
+findmonbynum(int num)
+{
 	Monitor *m;
 
 	for (m = scr->monitors; m && m->num != num; m = m->next) ;
@@ -1788,29 +1791,40 @@ restack()
 		if (!(c = cl[i]))
 			continue;
 		if (sel == c && c->is.max) {
-			cl[i] = NULL; wl[j] = c->frame; sl[j] = c; j++;
+			cl[i] = NULL;
+			wl[j] = c->frame;
+			sl[j] = c;
+			j++;
 			XPRINTF("client 0x%08lx 0x%08lx %s\n", c->frame, c->win, c->name);
 		}
 	}
-	/* windows of type _NET_WM_TYPE_DOCK (unless they have state _NET_WM_STATE_BELOW) and
-	   windows having state _NET_WM_STATE_ABOVE. */
-	XPRINTF("%s", "LAYER: _NET_WINDOW_TYPE_DOCK not _NET_WM_STATE_BELOW and _NET_WM_STATE_ABOVE:\n");
+	/* windows of type _NET_WM_TYPE_DOCK (unless they have state _NET_WM_STATE_BELOW) 
+	   and windows having state _NET_WM_STATE_ABOVE. */
+	XPRINTF("%s",
+		"LAYER: _NET_WINDOW_TYPE_DOCK not _NET_WM_STATE_BELOW and _NET_WM_STATE_ABOVE:\n");
 	for (i = 0; i < n; i++) {
 		if (!(c = cl[i]))
 			continue;
 		if ((WTCHECK(c, WindowTypeDock) && !c->is.below) || c->is.above) {
-			cl[i] = NULL; wl[j] = c->frame; sl[j] = c; j++;
+			cl[i] = NULL;
+			wl[j] = c->frame;
+			sl[j] = c;
+			j++;
 			XPRINTF("client 0x%08lx 0x%08lx %s\n", c->frame, c->win, c->name);
 		}
 	}
-	/* windows not belonging in any other layer (but we put floating above special above tiled) 
-	 */
+	/* windows not belonging in any other layer (but we put floating above special
+	   above tiled) */
 	XPRINTF("%s", "LAYER: floaters:\n");
 	for (i = 0; i < n; i++) {
 		if (!(c = cl[i]))
 			continue;
-		if (!c->is.bastard && (c->is.floater || c->skip.arrange) && !c->is.below && !WTCHECK(c, WindowTypeDesk)) {
-			cl[i] = NULL; wl[j] = c->frame; sl[j] = c; j++;
+		if (!c->is.bastard && (c->is.floater || c->skip.arrange) && !c->is.below
+		    && !WTCHECK(c, WindowTypeDesk)) {
+			cl[i] = NULL;
+			wl[j] = c->frame;
+			sl[j] = c;
+			j++;
 			XPRINTF("client 0x%08lx 0x%08lx %s\n", c->frame, c->win, c->name);
 		}
 	}
@@ -1819,7 +1833,10 @@ restack()
 		if (!(c = cl[i]))
 			continue;
 		if (c->is.bastard && !c->is.below && !WTCHECK(c, WindowTypeDesk)) {
-			cl[i] = NULL; wl[j] = c->frame; sl[j] = c; j++;
+			cl[i] = NULL;
+			wl[j] = c->frame;
+			sl[j] = c;
+			j++;
 			XPRINTF("client 0x%08lx 0x%08lx %s\n", c->frame, c->win, c->name);
 		}
 	}
@@ -1827,8 +1844,12 @@ restack()
 	for (i = 0; i < n; i++) {
 		if (!(c = cl[i]))
 			continue;
-		if (!c->is.bastard && !(c->is.floater || c->skip.arrange) && !c->is.below && !WTCHECK(c, WindowTypeDesk)) {
-			cl[i] = NULL; wl[j] = c->frame; sl[j] = c; j++;
+		if (!c->is.bastard && !(c->is.floater || c->skip.arrange) && !c->is.below
+		    && !WTCHECK(c, WindowTypeDesk)) {
+			cl[i] = NULL;
+			wl[j] = c->frame;
+			sl[j] = c;
+			j++;
 			XPRINTF("client 0x%08lx 0x%08lx %s\n", c->frame, c->win, c->name);
 		}
 	}
@@ -1838,7 +1859,10 @@ restack()
 		if (!(c = cl[i]))
 			continue;
 		if (c->is.below && !WTCHECK(c, WindowTypeDesk)) {
-			cl[i] = NULL; wl[j] = c->frame; sl[j] = c; j++;
+			cl[i] = NULL;
+			wl[j] = c->frame;
+			sl[j] = c;
+			j++;
 			XPRINTF("client 0x%08lx 0x%08lx %s\n", c->frame, c->win, c->name);
 		}
 	}
@@ -1848,7 +1872,10 @@ restack()
 		if (!(c = cl[i]))
 			continue;
 		if (WTCHECK(c, WindowTypeDesk)) {
-			cl[i] = NULL; wl[j] = c->frame; sl[j] = c; j++;
+			cl[i] = NULL;
+			wl[j] = c->frame;
+			sl[j] = c;
+			j++;
 			XPRINTF("client 0x%08lx 0x%08lx %s\n", c->frame, c->win, c->name);
 		}
 	}
@@ -1859,8 +1886,8 @@ restack()
 		XPRINTF("%s", "Old stacking order:\n");
 		for (c = scr->stack; c; c = c->snext)
 			XPRINTF("client frame 0x%08lx win 0x%08lx name %s%s\n",
-					c->frame, c->win, c->name,
-					c->is.bastard ? " (bastard)" : "");
+				c->frame, c->win, c->name,
+				c->is.bastard ? " (bastard)" : "");
 		scr->stack = sl[0];
 		for (i = 0; i < n - 1; i++)
 			sl[i]->snext = sl[i + 1];
@@ -1868,8 +1895,8 @@ restack()
 		XPRINTF("%s", "New stacking order:\n");
 		for (c = scr->stack; c; c = c->snext)
 			XPRINTF("client frame 0x%08lx win 0x%08lx name %s%s\n",
-					c->frame, c->win, c->name,
-					c->is.bastard ? " (bastard)" : "");
+				c->frame, c->win, c->name,
+				c->is.bastard ? " (bastard)" : "");
 	} else {
 		XPRINTF("%s", "No new stacking order\n");
 	}
@@ -1877,7 +1904,7 @@ restack()
 	free(sl);
 
 	if (!window_stack.members || (window_stack.count != n) ||
-			bcmp(window_stack.members, wl, n * sizeof(*wl))) {
+	    bcmp(window_stack.members, wl, n * sizeof(*wl))) {
 		free(window_stack.members);
 		window_stack.members = wl;
 		window_stack.count = n;
@@ -1893,12 +1920,21 @@ restack()
 }
 
 static int
-segm_overlap(int min1, int max1, int min2, int max2) {
+segm_overlap(int min1, int max1, int min2, int max2)
+{
 	int tmp, res = 0;
 
-	if (min1 > max1) { tmp = min1; min1 = max1; max1 = tmp; }
-	if (min2 > max2) { tmp = min2; min2 = max2; max2 = tmp; }
-	     if (min1 <= min2 && max1 >= min2)
+	if (min1 > max1) {
+		tmp = min1;
+		min1 = max1;
+		max1 = tmp;
+	}
+	if (min2 > max2) {
+		tmp = min2;
+		min2 = max2;
+		max2 = tmp;
+	}
+	if (min1 <= min2 && max1 >= min2)
 		// min1 min2 (max2?) max1 (max2?)
 		res = (max2 <= max1) ? max2 - min2 : max1 - min2;
 	else if (min1 <= max2 && max1 >= max2)
@@ -1914,7 +1950,8 @@ segm_overlap(int min1, int max1, int min2, int max2) {
 }
 
 static Bool
-wind_overlap(int min1, int max1, int min2, int max2) {
+wind_overlap(int min1, int max1, int min2, int max2)
+{
 	return segm_overlap(min1, max1, min2, max2) ? True : False;
 }
 
@@ -1927,7 +1964,7 @@ place_overlap(Geometry *c, Geometry *o)
 	    wind_overlap(c->y, c->y + c->h, o->y, o->y + o->h))
 		ret = True;
 	DPRINTF("%dx%d+%d+%d and %dx%d+%d+%d %s\n", c->w, c->h, c->x, c->y,
-			o->w, o->h, o->x, o->y, ret ? "overlap" : "disjoint");
+		o->w, o->h, o->x, o->y, ret ? "overlap" : "disjoint");
 	return ret;
 }
 
@@ -2080,7 +2117,8 @@ restack_belowif(Client *c, Client *o)
 }
 
 void
-toggleabove(Client *c) {
+toggleabove(Client *c)
+{
 	if (!c || (!c->can.above && c->is.managed))
 		return;
 	c->is.above = !c->is.above;
@@ -2091,7 +2129,8 @@ toggleabove(Client *c) {
 }
 
 void
-togglebelow(Client *c) {
+togglebelow(Client *c)
+{
 	if (!c || (!c->can.below && c->is.managed))
 		return;
 	c->is.below = !c->is.below;
@@ -2102,9 +2141,10 @@ togglebelow(Client *c) {
 }
 
 void
-arrange(Monitor *om) {
+arrange(Monitor *om)
+{
 	Monitor *m;
-	
+
 	if (!om)
 		for (m = scr->monitors; m; m = m->next)
 			XMapRaised(dpy, m->veil);
@@ -3895,8 +3935,8 @@ addclient(Client *c, Bool focusme, Bool raiseme)
 		int mx, my;
 		Monitor *cm;
 
-		/* wnck task bars figure window is on monitor containing
-		 * center of window */
+		/* wnck task bars figure window is on monitor containing center of window 
+		 */
 		mx = c->s.x + c->s.w / 2 + c->s.b;
 		my = c->s.y + c->s.h / 2 + c->s.b;
 

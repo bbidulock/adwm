@@ -10,6 +10,7 @@
 #include <X11/Xutil.h>
 #include <X11/Xft/Xft.h>
 #include "adwm.h"
+#include "layout.h"
 #include "config.h"
 
 void
@@ -1000,7 +1001,8 @@ static KeyItem KeyItemsByDir[] = {
 Bool canfocus(Client *c);
 
 static Bool
-k_focusable(Client *c, Monitor *m, WhichClient any, RelativeDirection dir, IconsIncluded ico)
+k_focusable(Client *c, Monitor *m, WhichClient any, RelativeDirection dir,
+	    IconsIncluded ico)
 {
 	if (dir == RelativeCenter)
 		if (!c->is.icon && !c->is.hidden)

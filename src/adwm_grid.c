@@ -28,7 +28,8 @@
  */
 
 static void
-arrange_GRID(Monitor *m) {
+arrange_GRID(Monitor *m)
+{
 	Client *c;
 	Workarea wa;
 	View *v;
@@ -67,7 +68,9 @@ arrange_GRID(Monitor *m) {
 	/* width of last column */
 	cl = wa.w - (cols - 1) * cw;
 
-	gap = scr->style.margin > scr->style.border ? scr->style.margin - scr->style.border : 0;
+	gap =
+	    scr->style.margin >
+	    scr->style.border ? scr->style.margin - scr->style.border : 0;
 
 	for (i = 0, col = 0, row = 0, c = nexttiled(scr->clients, m); c && i < n;
 	     c = nexttiled(c->next, m), i++, col = i % cols, row = i / cols) {
@@ -97,8 +100,8 @@ arrange_GRID(Monitor *m) {
 			ClientGeometry C = n;
 
 			/* center it where it was before */
-			C.x = (c->c.x + c->c.w/2) - C.w / 2;
-			C.y = (c->c.y + c->c.h/2) - C.h / 2;
+			C.x = (c->c.x + c->c.w / 2) - C.w / 2;
+			C.y = (c->c.y + c->c.h / 2) - C.h / 2;
 			DPRINTF("CALLING reconfigure()\n");
 			reconfigure(c, &C);
 		}

@@ -16,14 +16,16 @@
 #include <X11/Xutil.h>
 #include <X11/Xresource.h>
 #include <X11/Xft/Xft.h>
-#include "adwm.h"
-#include "config.h"
 #ifdef IMLIB2
 #include <Imlib2.h>
 #endif
 #ifdef XPM
 #include <X11/xpm.h>
 #endif
+#include "adwm.h"
+#include "resource.h"
+#include "parse.h"
+#include "config.h"
 
 /*
  * The purpose of this file is to provide a loadable modules that provides
@@ -522,7 +524,9 @@ initstyles(const char *stylename)
 	} else {
 		home = getenv("HOME");
 		hdir = "/.local/share";
-		dirs = ecalloc(strlen(home) + strlen(hdir) + strlen(ddir) + 2, sizeof(*dirs));
+		dirs =
+		    ecalloc(strlen(home) + strlen(hdir) + strlen(ddir) + 2,
+			    sizeof(*dirs));
 		strcpy(dirs, home);
 		strcat(dirs, hdir);
 	}

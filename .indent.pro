@@ -24,6 +24,7 @@
 -ss
 -hnl
 -nbc
+-TTextShadow
 -TKeyItem
 -TDrawable
 -TXColor

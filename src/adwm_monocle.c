@@ -24,7 +24,8 @@
 #endif
 
 static void
-monocle(Monitor * m) {
+monocle(Monitor *m)
+{
 	Client *c;
 	Workarea w;
 	View *v;

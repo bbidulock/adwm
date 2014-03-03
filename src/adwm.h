@@ -23,25 +23,24 @@
 
 enum {
 	Manager, Utf8String, WMProto, WMDelete, WMSaveYourself, WMState, WMChangeState,
-	WMTakeFocus,
-	ELayout, ESelTags, WMRestart, WMShutdown, DeskLayout,
+	WMTakeFocus, ELayout, ESelTags, WMRestart, WMShutdown, DeskLayout,
 	/* MWM/DTWM properties follow */
-	WMDesktop, MWMBindings, MWMDefaultBindings, MWMMessages, MWMOffset, MWMHints, MWMMenu,
-	MWMInfo, DTWorkspaceHints, DTWorkspacePresence, DTWorkspaceList, DTWorkspaceCurrent,
-	DTWorkspaceInfo, DTWMHints, DTWMRequest, DTWMEmbedded, DTWMSaveHint,
+	WMDesktop, MWMBindings, MWMDefaultBindings, MWMMessages, MWMOffset, MWMHints,
+	MWMMenu, MWMInfo, DTWorkspaceHints, DTWorkspacePresence, DTWorkspaceList,
+	DTWorkspaceCurrent, DTWorkspaceInfo, DTWMHints, DTWMRequest, DTWMEmbedded,
+	DTWMSaveHint,
 	/* _WIN_PROTOCOLS following */
 	WinAppState, WinAreaCount, WinArea, WinClientList, WinClientMoving,
-	WinButtonProxy, WinExpandedSize, WinFocus, WinHints, WinIcons, WinLayer, WinMaxGeom,
-	WinProtocols, WinResize, WinState, WinCheck, WinWorkarea, WinWorkCount, WinWorkNames,
-	WinWorkspace, WinWorkspaces, SwmVroot,
+	WinButtonProxy, WinExpandedSize, WinFocus, WinHints, WinIcons, WinLayer,
+	WinMaxGeom, WinProtocols, WinResize, WinState, WinCheck, WinWorkarea,
+	WinWorkCount, WinWorkNames, WinWorkspace, WinWorkspaces, SwmVroot,
 	/* _NET_SUPPORTED following */
 	ClientList, ActiveWindow, WindowDesk, WindowDeskMask, NumberOfDesk, DeskNames,
 	CurDesk, WorkArea, DeskViewport, ShowingDesktop, DeskGeometry, DesksVisible,
-	MonitorGeometry,
-	DeskModes, DeskModeFloating, DeskModeTiled, DeskModeBottomTiled, DeskModeMonocle,
-	DeskModeTopTiled, DeskModeLeftTiled,
-	ClientListStacking, WindowOpacity, MoveResizeWindow, RestackWindow, WindowMoveResize,
-	WindowExtents, HandledIcons, RequestFrameExt, VirtualRoots,
+	MonitorGeometry, DeskModes, DeskModeFloating, DeskModeTiled,
+	DeskModeBottomTiled, DeskModeMonocle, DeskModeTopTiled, DeskModeLeftTiled,
+	ClientListStacking, WindowOpacity, MoveResizeWindow, RestackWindow,
+	WindowMoveResize, WindowExtents, HandledIcons, RequestFrameExt, VirtualRoots,
 	WindowType, WindowTypeDesk, WindowTypeDock, WindowTypeToolbar, WindowTypeMenu,
 	WindowTypeUtil, WindowTypeSplash, WindowTypeDialog, WindowTypeDrop,
 	WindowTypePopup, WindowTypeTooltip, WindowTypeNotify, WindowTypeCombo,
@@ -63,7 +62,7 @@ enum {
 	SystemTrayWindows, WindowFrameStrut, WindowForSysTray, WindowTypeOverride,
 	KdeSplashProgress, WindowChangeState,
 	NATOMS
-}; /* keep in sync with atomnames[] in ewmh.c */
+};					/* keep in sync with atomnames[] in ewmh.c */
 
 #define WTFLAG(_type) (1<<((_type)-WindowTypeDesk))
 #define WTTEST(_wintype, _type) (((_wintype) & WTFLAG(_type)) ? True : False)
@@ -234,58 +233,286 @@ enum {
 #define _XA_KDE_SPLASH_PROGRESS			atom[KdeSplashProgress]
 #define _XA_KDE_WM_CHANGE_STATE			atom[WindowChangeState]
 
-enum { XrandrBase, XineramaBase, XsyncBase, BaseLast };  /* X11 extensions */
-enum { LeftStrut, RightStrut, TopStrut, BotStrut, LastStrut }; /* ewmh struts */
-enum { ColFG, ColBG, ColBorder, ColButton, ColLast };	/* colors */
-enum { ClientWindow, ClientIcon, ClientTitle, ClientGrips, ClientFrame, ClientTimeWindow, ClientGroup,
-       ClientTransFor, ClientTransForGroup, ClientLeader, ClientAny, SysTrayWindows,
-       ClientPing, ClientDead, ClientSync, ScreenContext, PartLast }; /* client parts */
-typedef enum { IconifyBtn, MaximizeBtn, CloseBtn, ShadeBtn, StickBtn, LHalfBtn, RHalfBtn,
-	FillBtn, FloatBtn, SizeBtn, TitleTags, TitleName, TitleSep, LastElement,
-	LastBtn = TitleTags } ElementType;
-typedef enum { OnClientTitle, OnClientGrips, OnClientFrame, OnClientDock, OnClientWindow,
-	OnClientIcon, OnRoot, LastOn } OnWhere;
-typedef enum { ButtonImageDefault,
-	ButtonImagePressed, ButtonImageToggledPressed,
-	ButtonImageHover, ButtonImageFocus, ButtonImageUnfocus,
-	ButtonImageToggledHover, ButtonImageToggledFocus, ButtonImageToggledUnfocus,
-	ButtonImageDisabledHover, ButtonImageDisabledFocus, ButtonImageDisabledUnfocus,
-	ButtonImageToggledDisabledHover, ButtonImageToggledDisabledFocus, ButtonImageToggledDisabledUnfocus,
-	LastButtonImageType } ButtonImageType;
-typedef enum { CauseDestroyed, CauseUnmapped, CauseReparented,
-	       CauseQuitting, CauseSwitching, CauseRestarting } WithdrawCause;
-typedef enum { ColSmartPlacement, RowSmartPlacement, MinOverlapPlacement,
-	       UnderMousePlacement, CascadePlacement, RandomPlacement } WindowPlacement;
-typedef enum { ModalModeless, ModalPrimary, ModalSystem, ModalGroup } Modality;
-typedef enum { NoInputModel, PassiveInputModel, GloballyActiveModel, LocallyActiveModel } InputModel;
-typedef enum { OrientLeft, OrientTop, OrientRight, OrientBottom, OrientLast } LayoutOrientation;
-typedef enum { StrutsOn, StrutsOff, StrutsHide } StrutsPosition;
-typedef enum { DockNone, DockEast, DockNorthEast, DockNorth, DockNorthWest, DockWest,
-	DockSouthWest, DockSouth, DockSouthEast } DockPosition;
-typedef enum { DockSideEast, DockSideNorth, DockSideWest, DockSideSouth } DockSide;
-typedef enum { DockHorz, DockVert } DockOrient;
-typedef enum { RelativeNone, RelativeNorthWest, RelativeNorth, RelativeNorthEast,
-	RelativeWest, RelativeCenter, RelativeEast, RelativeSouthWest, RelativeSouth,
-	RelativeSouthEast, RelativeStatic, RelativeNext, RelativePrev, RelativeLast }
-	RelativeDirection;
-typedef enum { SetFlagSetting, UnsetFlagSetting, ToggleFlagSetting } FlagSetting;
-typedef enum { IncCount, DecCount, SetCount } ActionCount;
-typedef enum { FocusClient, ActiveClient, PointerClient, AnyClient, AllClients, EveryClient } WhichClient;
-typedef enum { IncludeIcons, ExcludeIcons, OnlyIcons } IconsIncluded;
-enum { _NET_WM_ORIENTATION_HORZ, _NET_WM_ORIENTATION_VERT };
-enum { _NET_WM_TOPLEFT, _NET_WM_TOPRIGHT, _NET_WM_BOTTOMRIGHT, _NET_WM_BOTTOMLEFT };
-typedef enum { PatternSolid, PatternParent, PatternGradient, PatternPixmap } Pattern;
-typedef enum { ResizeTiled, ResizeScaled, ResizeStretched } Resizing;
-typedef enum { GradientDiagonal, GradientCrossDiagonal, GradientRectangle, GradientPyramid,
-	GradientPipeCross, GradientElliptic, GradientMirrorHorizontal, GradientHorizontal,
-	GradientSplitVertical, GradientVertical } Gradient;
-typedef enum { ReliefRaised, ReliefFlat, ReliefSunken } Relief;
-typedef enum { Bevel1, Bevel2 } Bevel;
-typedef enum { JustifyLeft, JustifyCenter, JustifyRight } Justify;
-enum { CurResizeTopLeft, CurResizeTop, CurResizeTopRight, CurResizeRight,
-       CurResizeBottomRight, CurResizeBottom, CurResizeBottomLeft, CurResizeLeft,
-       CurMove, CurNormal, CurLast };	    /* cursor */
-enum { Clk2Focus, SloppyFloat, AllSloppy, SloppyRaise };    /* focus model */
+enum {
+	XrandrBase,
+	XineramaBase,
+	XsyncBase,
+	BaseLast
+};					/* X11 extensions */
+
+enum {
+	LeftStrut,
+	RightStrut,
+	TopStrut,
+	BotStrut,
+	LastStrut
+};					/* ewmh struts */
+
+enum {
+	ColFG,
+	ColBG,
+	ColBorder,
+	ColButton,
+	ColLast
+};					/* colors */
+
+enum {
+	ClientWindow,
+	ClientIcon,
+	ClientTitle,
+	ClientGrips,
+	ClientFrame,
+	ClientTimeWindow,
+	ClientGroup,
+	ClientTransFor,
+	ClientTransForGroup,
+	ClientLeader,
+	ClientAny,
+	SysTrayWindows,
+	ClientPing,
+	ClientDead,
+	ClientSync,
+	ScreenContext,
+	PartLast
+};					/* client parts */
+
+typedef enum {
+	IconifyBtn,
+	MaximizeBtn,
+	CloseBtn,
+	ShadeBtn,
+	StickBtn,
+	LHalfBtn,
+	RHalfBtn,
+	FillBtn,
+	FloatBtn,
+	SizeBtn,
+	TitleTags,
+	TitleName,
+	TitleSep,
+	LastElement,
+	LastBtn = TitleTags
+} ElementType;
+
+typedef enum {
+	OnClientTitle,
+	OnClientGrips,
+	OnClientFrame,
+	OnClientDock,
+	OnClientWindow,
+	OnClientIcon,
+	OnRoot,
+	LastOn
+} OnWhere;
+
+typedef enum {
+	ButtonImageDefault,
+	ButtonImagePressed,
+	ButtonImageToggledPressed,
+	ButtonImageHover,
+	ButtonImageFocus,
+	ButtonImageUnfocus,
+	ButtonImageToggledHover,
+	ButtonImageToggledFocus,
+	ButtonImageToggledUnfocus,
+	ButtonImageDisabledHover,
+	ButtonImageDisabledFocus,
+	ButtonImageDisabledUnfocus,
+	ButtonImageToggledDisabledHover,
+	ButtonImageToggledDisabledFocus,
+	ButtonImageToggledDisabledUnfocus,
+	LastButtonImageType
+} ButtonImageType;
+
+typedef enum {
+	CauseDestroyed,
+	CauseUnmapped,
+	CauseReparented,
+	CauseQuitting,
+	CauseSwitching,
+	CauseRestarting
+} WithdrawCause;
+
+typedef enum {
+	ColSmartPlacement,
+	RowSmartPlacement,
+	MinOverlapPlacement,
+	UnderMousePlacement,
+	CascadePlacement,
+	RandomPlacement
+} WindowPlacement;
+
+typedef enum {
+	ModalModeless,
+	ModalPrimary,
+	ModalSystem,
+	ModalGroup
+} Modality;
+
+typedef enum {
+	NoInputModel,
+	PassiveInputModel,
+	GloballyActiveModel,
+	LocallyActiveModel
+} InputModel;
+
+typedef enum {
+	OrientLeft,
+	OrientTop,
+	OrientRight,
+	OrientBottom,
+	OrientLast
+} LayoutOrientation;
+
+typedef enum {
+	StrutsOn,
+	StrutsOff,
+	StrutsHide
+} StrutsPosition;
+
+typedef enum {
+	DockNone,
+	DockEast,
+	DockNorthEast,
+	DockNorth,
+	DockNorthWest,
+	DockWest,
+	DockSouthWest,
+	DockSouth,
+	DockSouthEast
+} DockPosition;
+
+typedef enum {
+	DockSideEast,
+	DockSideNorth,
+	DockSideWest,
+	DockSideSouth
+} DockSide;
+
+typedef enum {
+	DockHorz,
+	DockVert
+} DockOrient;
+
+typedef enum {
+	RelativeNone,
+	RelativeNorthWest,
+	RelativeNorth,
+	RelativeNorthEast,
+	RelativeWest,
+	RelativeCenter,
+	RelativeEast,
+	RelativeSouthWest,
+	RelativeSouth,
+	RelativeSouthEast,
+	RelativeStatic,
+	RelativeNext,
+	RelativePrev,
+	RelativeLast
+} RelativeDirection;
+
+typedef enum {
+	SetFlagSetting,
+	UnsetFlagSetting,
+	ToggleFlagSetting
+} FlagSetting;
+
+typedef enum {
+	IncCount,
+	DecCount,
+	SetCount
+} ActionCount;
+
+typedef enum {
+	FocusClient,
+	ActiveClient,
+	PointerClient,
+	AnyClient,
+	AllClients,
+	EveryClient
+} WhichClient;
+
+typedef enum {
+	IncludeIcons,
+	ExcludeIcons,
+	OnlyIcons
+} IconsIncluded;
+
+enum {
+	_NET_WM_ORIENTATION_HORZ,
+	_NET_WM_ORIENTATION_VERT
+};
+
+enum {
+	_NET_WM_TOPLEFT,
+	_NET_WM_TOPRIGHT,
+	_NET_WM_BOTTOMRIGHT,
+	_NET_WM_BOTTOMLEFT
+};
+
+typedef enum {
+	PatternSolid,
+	PatternParent,
+	PatternGradient,
+	PatternPixmap
+} Pattern;
+
+typedef enum {
+	ResizeTiled,
+	ResizeScaled,
+	ResizeStretched
+} Resizing;
+
+typedef enum {
+	GradientDiagonal,
+	GradientCrossDiagonal,
+	GradientRectangle,
+	GradientPyramid,
+	GradientPipeCross,
+	GradientElliptic,
+	GradientMirrorHorizontal,
+	GradientHorizontal,
+	GradientSplitVertical,
+	GradientVertical
+} Gradient;
+
+typedef enum {
+	ReliefRaised,
+	ReliefFlat,
+	ReliefSunken
+} Relief;
+
+typedef enum {
+	Bevel1,
+	Bevel2
+} Bevel;
+
+typedef enum {
+	JustifyLeft,
+	JustifyCenter,
+	JustifyRight
+} Justify;
+
+enum {
+	CurResizeTopLeft,
+	CurResizeTop,
+	CurResizeTopRight,
+	CurResizeRight,
+	CurResizeBottomRight,
+	CurResizeBottom,
+	CurResizeBottomLeft,
+	CurResizeLeft,
+	CurMove,
+	CurNormal,
+	CurLast
+};					/* cursor */
+
+enum {
+	Clk2Focus,
+	SloppyFloat,
+	AllSloppy,
+	SloppyRaise
+};					/* focus model */
 
 typedef struct {
 	Pattern pattern;		/* default solid */
@@ -456,7 +683,7 @@ struct Client {
 			unsigned bastard:1;
 			unsigned full:1;
 			unsigned focused:1;
-                        unsigned dockapp:1;
+			unsigned dockapp:1;
 			unsigned moveresize:1;
 			unsigned managed:1;
 		};
@@ -522,7 +749,7 @@ struct Client {
 	Client *cnext;
 	Client *fnext;
 	Window win;
-        Window icon;
+	Window icon;
 	Window title;
 	Window grips;
 	Window frame;
@@ -573,7 +800,7 @@ typedef struct View {
 	Layout *layout;
 	int index;
 	int row, col;			/* row and column in desktop layout */
-} View; /* per-tag settings */
+} View;					/* per-tag settings */
 
 typedef struct Tag {
 	Atom dt;			/* desktop atom for this tag */
@@ -596,7 +823,7 @@ typedef struct {
 		int w;
 		int h;
 	} draw;
-} DC;				/* draw context */
+} DC;					/* draw context */
 
 typedef struct {
 #if defined IMLIB2 || defined XPM
@@ -653,7 +880,7 @@ struct _Key {
 	CycleList *cycle, *where;
 	unsigned num;
 	Bool cyc;
-}; /* keyboard shortcuts */
+};					/* keyboard shortcuts */
 
 typedef struct AScreen AScreen;
 struct AScreen {
@@ -694,11 +921,11 @@ struct AScreen {
 	unsigned int depth;
 	Bool dither;
 	unsigned int bpp;
-	unsigned char *rctab; /* red color table */
-	unsigned char *gctab; /* green color table */
-	unsigned char *bctab; /* blue color table */
-	XColor *colors;	/* colormap */
-	int ncolors; /* number of colors in colormap */
+	unsigned char *rctab;		/* red color table */
+	unsigned char *gctab;		/* green color table */
+	unsigned char *bctab;		/* blue color table */
+	XColor *colors;			/* colormap */
+	int ncolors;			/* number of colors in colormap */
 	int cpc;
 #endif
 };
@@ -710,7 +937,7 @@ typedef struct {
 	Bool hastitle;
 	regex_t *propregex;
 	regex_t *tagregex;
-} Rule; /* window matching rules */
+} Rule;					/* window matching rules */
 
 #ifdef STARTUP_NOTIFICATION
 typedef struct Notify Notify;
@@ -725,23 +952,23 @@ typedef struct {
 	void *handle;
 	const char *name;
 	const char *clas;
-	void (*initrcfile)(void);
-	void (*initconfig)(void);
-	void (*initkeys)(void);
-	void (*initstyle)(void);
-	void (*deinitstyle)(void);
-	void (*drawclient)(Client *);
+	void (*initrcfile) (void);
+	void (*initconfig) (void);
+	void (*initkeys) (void);
+	void (*initstyle) (void);
+	void (*deinitstyle) (void);
+	void (*drawclient) (Client *);
 } AdwmOperations;
 
 typedef struct {
 	void *handle;
 	const char *name;
-	void (*initlayout)(Monitor *m, View *v, char code);
-	void (*addclient)(Client *c, Bool front);
-	void (*delclient)(Client *c);
-	void (*raise)(Client *c);
-	void (*lower)(Client *c);
-	void (*raiselower)(Client *c);
+	void (*initlayout) (Monitor *m, View *v, char code);
+	void (*addclient) (Client *c, Bool front);
+	void (*delclient) (Client *c);
+	void (*raise) (Client *c);
+	void (*lower) (Client *c);
+	void (*raiselower) (Client *c);
 } LayoutOperations;
 
 typedef struct {
@@ -762,7 +989,7 @@ typedef struct {
 Bool checkatom(Window win, Atom bigatom, Atom smallatom);
 unsigned getwintype(Window win);
 Bool checkwintype(Window win, int wintype);
-Bool clientmessage(XEvent * e);
+Bool clientmessage(XEvent *e);
 void ewmh_release_user_time_window(Client *c);
 Atom *getatom(Window win, Atom atom, unsigned long *nitems);
 long *getcard(Window win, Atom atom, unsigned long *nitems);
@@ -770,8 +997,8 @@ void initewmh(Window w);
 void exitewmh(WithdrawCause cause);
 void ewmh_add_client(Client *c);
 void ewmh_del_client(Client *c, WithdrawCause cause);
-void setopacity(Client * c, unsigned opacity);
-int getstruts(Client * c);
+void setopacity(Client *c, unsigned opacity);
+int getstruts(Client *c);
 
 void ewmh_process_net_desktop_names(void);
 void ewmh_process_net_number_of_desktops(void);
@@ -812,7 +1039,7 @@ void wmh_process_win_layer(Client *);
 
 /* main */
 void inittag(unsigned i);
-Monitor *clientmonitor(Client * c);
+Monitor *clientmonitor(Client *c);
 Monitor *curmonitor();
 Monitor *selmonitor();
 Monitor *nearmonitor();
@@ -836,7 +1063,7 @@ void setmargin(int px);
 void incmargin(int px);
 void decmargin(int px);
 Bool isvisible(Client *c, Monitor *m);
-void focus(Client * c);
+void focus(Client *c);
 void focusicon(void);
 void focusnext(Client *c);
 void focusprev(Client *c);
@@ -844,8 +1071,8 @@ void focusview(Monitor *m, int index);
 AScreen *getscreen(Window win);
 AScreen *geteventscr(XEvent *ev);
 void killclient(Client *c);
-void applygravity(Client *c, ClientGeometry *g, int gravity);
-Bool configurerequest(XEvent * e);
+void applygravity(Client *c, ClientGeometry * g, int gravity);
+Bool configurerequest(XEvent *e);
 void m_move(Client *c, XEvent *ev);
 void m_resize(Client *c, XEvent *ev);
 void pushtime(Time time);
@@ -876,7 +1103,7 @@ void rmlasttag(void);
 void settags(unsigned numtags);
 
 /* needed by layout.c */
-void getworkarea(Monitor * m, Workarea *w);
+void getworkarea(Monitor *m, Workarea *w);
 void updategeom(Monitor *m);
 extern Cursor cursor[CurLast];
 extern int ebase[BaseLast];
@@ -888,149 +1115,6 @@ void send_configurenotify(Client *c, Window above);
 void ban(Client *c);
 void unban(Client *c, Monitor *m);
 extern Group window_stack;
-
-/* layout.c */
-void addclient(Client *c, Bool focusme, Bool raiseme);
-void delclient(Client *c);
-void tookfocus(Client *c);
-Bool isfloating(Client *c, Monitor *m);
-Bool enterclient(XEvent *e, Client *c);
-Bool configureclient(XEvent *e, Client *c, int gravity);
-Bool configuremonitors(XEvent *e, Client *c);
-Client *nextdockapp(Client *c, Monitor *m);
-Client *prevdockapp(Client *c, Monitor *m);
-Client *nexttiled(Client *c, Monitor *m);
-Client *prevtiled(Client *c, Monitor *m);
-void restack_client(Client *c, int stack_mode, Client *sibling);
-void toggleabove(Client *c);
-void togglebelow(Client *c);
-void arrange(Monitor * m);
-void setlayout(const char *arg);
-void raisetiled(Client *c);
-void lowertiled(Client *c);
-void raiseclient(Client *c);
-void lowerclient(Client *c);
-void raiselower(Client *c);
-void setmwfact(Monitor *m, View *v, double factor);
-void setnmaster(Monitor *m, View *v, int n);
-void decnmaster(Monitor *m, View *v, int n);
-void incnmaster(Monitor *m, View *v, int n);
-Bool mousemove(Client *c, XEvent *e, Bool toggle);
-Bool mouseresize_from(Client *c, int from, XEvent *e, Bool toggle);
-Bool mouseresize(Client * c, XEvent *e, Bool toggle);
-void moveresizekb(Client *c, int dx, int dy, int dw, int dh, int gravity);
-void moveto(Client *c, RelativeDirection position);
-void moveby(Client *c, RelativeDirection direction, int amount);
-void snapto(Client *c, RelativeDirection direction);
-void edgeto(Client *c, int direction);
-void rotateview(Client *c);
-void unrotateview(Client *c);
-void rotatezone(Client *c);
-void unrotatezone(Client *c);
-void rotatewins(Client *c);
-void unrotatewins(Client *c);
-void togglefloating(Client *c);
-void togglefill(Client *c);
-void togglefull(Client *c);
-void togglemax(Client *c);
-void togglemaxv(Client *c);
-void togglemaxh(Client *c);
-void toggleshade(Client *c);
-void zoom(Client *c);
-void zoomfloat(Client *c);
-
-/* parse.c */
-void initrules(void);
-void initkeys(void);
-void parsekeys(const char *s, Key *spec);
-void addchain(Key *chain);
-void freechain(Key *chain);
-
-void k_chain(XEvent *e, Key *k);
-void k_zoom(XEvent *e, Key *k);
-void k_killclient(XEvent *e, Key *k);
-void k_moveresizekb(XEvent *e, Key *k);
-void k_rotateview(XEvent *e, Key *k);
-void k_unrotateview(XEvent *e, Key *k);
-void k_rotatezone(XEvent *e, Key *k);
-void k_unrotatezone(XEvent *e, Key *k);
-void k_rotatewins(XEvent *e, Key *k);
-void k_unrotatewins(XEvent *e, Key *k);
-void k_viewprevtag(XEvent *e, Key *k);
-void k_togglemonitor(XEvent *e, Key *k);
-void k_appendtag(XEvent *e, Key *k);
-void k_rmlasttag(XEvent *e, Key *k);
-void k_raise(XEvent *e, Key *k);
-void k_lower(XEvent *e, Key *k);
-void k_raiselower(XEvent *e, Key *k);
-void k_quit(XEvent *e, Key *k);
-void k_restart(XEvent *e, Key *k);
-void k_setmwfactor(XEvent *e, Key *k);
-void k_setnmaster(XEvent *e, Key *k);
-void k_setmargin(XEvent *e, Key *k);
-void k_setborder(XEvent *e, Key *k);
-void k_setfloating(XEvent *e, Key *k);
-void k_setfill(XEvent *e, Key *k);
-void k_setfull(XEvent *e, Key *k);
-void k_setmax(XEvent *e, Key *k);
-void k_setmaxv(XEvent *e, Key *k);
-void k_setmaxh(XEvent *e, Key *k);
-void k_setshade(XEvent *e, Key *k);
-void k_sethidden(XEvent *e, Key *k);
-void k_setmin(XEvent *e, Key *k);
-void k_setabove(XEvent *e, Key *k);
-void k_setbelow(XEvent *e, Key *k);
-void k_setpager(XEvent *e, Key *k);
-void k_settaskbar(XEvent *e, Key *k);
-void k_setshowing(XEvent *e, Key *k);
-void k_setstruts(XEvent *e, Key *k);
-void k_setdectiled(XEvent *e, Key *k);
-void k_moveto(XEvent *e, Key *k);
-void k_snapto(XEvent *e, Key *k);
-void k_edgeto(XEvent *e, Key *k);
-void k_moveby(XEvent *e, Key *k);
-void k_stop(XEvent *e, Key *k);
-void k_focus(XEvent *e, Key *k);
-void k_client(XEvent *e, Key *k);
-void k_stack(XEvent *e, Key *k);
-void k_group(XEvent *e, Key *k);
-void k_tab(XEvent *e, Key *k);
-void k_panel(XEvent *e, Key *k);
-void k_dock(XEvent *e, Key *k);
-void k_swap(XEvent *e, Key *k);
-void k_toggletag(XEvent *e, Key *k);
-void k_tag(XEvent *e, Key *k);
-void k_focusview(XEvent *e, Key *k);
-void k_toggleview(XEvent *e, Key *k);
-void k_view(XEvent *e, Key *k);
-void k_taketo(XEvent *e, Key *k);
-void k_setlayout(XEvent *e, Key *k);
-void k_spawn(XEvent *e, Key *k);
-
-/* draw.c */
-void drawclient(Client * c);
-void deinitstyle();
-void initstyle();
-
-/* texture.c */
-
-/* resource.c */
-const char *readres(const char *name, const char *clas, const char *defval);
-void getbitmap(const unsigned char *bits, int width, int height, AdwmBitmap * bitmap);
-void getappearance(const char *descrip, Appearance *appear);
-void getxcolor(const char *color, const char *defcol, XColor *xcol);
-void getxftcolor(const char *color, const char *defcol, XftColor *xftcol);
-void freexftcolor(XftColor *xftcol);
-void getbool(const char *name, const char *clas, const char *true_val, Bool defval,
-	     Bool *result);
-void getfont(const char *font, const char *deffont, AdwmFont *afont);
-void freefont(AdwmFont *afont);
-void readtexture(const char *name, const char *clas, Texture *t, const char *defcol,
-		 const char *oppcol);
-void freetexture(Texture *t);
-void getpixmap(const char *file, AdwmPixmap *p);
-void getshadow(const char *descrip, TextShadow *shadow);
-
 
 #define LENGTH(x)		(sizeof(x)/sizeof(*x))
 #ifdef DEBUG
@@ -1075,10 +1159,10 @@ extern Display *dpy;
 extern AScreen *scr;
 extern AScreen *screens;
 extern AScreen *event_scr;
-extern void (*actions[LastOn][5][2])(Client *, XEvent *);
+extern void (*actions[LastOn][5][2]) (Client *, XEvent *);
 extern Client *sel;
-extern Client *gave;	/* gave focus last */
-extern Client *took;	/* took focus last */
+extern Client *gave;			/* gave focus last */
+extern Client *took;			/* took focus last */
 extern unsigned nscr;
 extern unsigned nrules;
 extern Rule **rules;
@@ -1088,6 +1172,7 @@ extern unsigned numlockmask;
 extern XContext context[];
 extern Time user_time;
 extern Bool haveext[];
+
 #ifdef STARTUP_NOTIFICATION
 extern SnDisplay *sn_dpy;
 extern SnMonitorContext *sn_ctx;

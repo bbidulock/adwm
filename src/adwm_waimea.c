@@ -14,14 +14,16 @@
 #include <X11/Xutil.h>
 #include <X11/Xresource.h>
 #include <X11/Xft/Xft.h>
-#include "adwm.h"
-#include "config.h"
 #ifdef IMLIB2
 #include <Imlib2.h>
 #endif
 #ifdef XPM
 #include <X11/xpm.h>
 #endif
+#include "adwm.h"
+#include "resource.h"
+#include "parse.h"
+#include "config.h"
 
 typedef enum {
 	ButtonStateNone,
@@ -302,7 +304,8 @@ initstyle_WAIMEA(void)
 		readtexture(name, clas, &style->window.buttons[i].false.pressed, "white",
 			    "black");
 	}
-	readtexture("menu.title", "Menu.Title", &style->menu.title.appearance, "white", "black");
+	readtexture("menu.title", "Menu.Title", &style->menu.title.appearance, "white",
+		    "black");
 	res = readres("menu.title.justify", "Menu.Title.Justify", "center");
 	style->menu.title.justify = JustifyCenter;
 	if (strcasestr(res, "center"))
@@ -316,7 +319,8 @@ initstyle_WAIMEA(void)
 	res = readres("menu.title.height", "Menu.Title.Height", "0");
 	style->menu.title.height = strtoul(res, NULL, 0);
 
-	readtexture("menu.frame", "Menu.Frame", &style->menu.frame.appearance, "white", "black");
+	readtexture("menu.frame", "Menu.Frame", &style->menu.frame.appearance, "white",
+		    "black");
 	res = readres("menu.frame.justify", "Menu.Frame.Justify", "center");
 	style->menu.frame.justify = JustifyCenter;
 	if (strcasestr(res, "center"))
@@ -330,7 +334,8 @@ initstyle_WAIMEA(void)
 	res = readres("menu.frame.height", "Menu.Frame.Height", "0");
 	style->menu.frame.height = strtoul(res, NULL, 0);
 
-	readtexture("menu.hilite", "Menu.Hilite", &style->menu.hilite.appearance, "white", "black");
+	readtexture("menu.hilite", "Menu.Hilite", &style->menu.hilite.appearance, "white",
+		    "black");
 	res = readres("menu.hilite.justify", "Menu.Hilite.Justify", "center");
 	style->menu.hilite.justify = JustifyCenter;
 	if (strcasestr(res, "center"))
@@ -355,10 +360,11 @@ initstyle_WAIMEA(void)
 	res = readres("menu.item.height", "Menu.Item.Height", "0");
 	style->menu.item.height = strtoul(res, NULL, 0);
 
-	for(i = 0; i < 4; i++) {
+	for (i = 0; i < 4; i++) {
 		snprintf(name, sizeof(name), "dockappholder.dock%d.frame", i);
 		snprintf(clas, sizeof(clas), "Dockappholder.Dock%d.Frame", i);
-		readtexture(name, clas, &style->dockappholder.dock[i].frame, "white", "black");
+		readtexture(name, clas, &style->dockappholder.dock[i].frame, "white",
+			    "black");
 		snprintf(name, sizeof(name), "dockappholder.dock%d.borderWidth", i);
 		snprintf(clas, sizeof(clas), "Dockappholder.Dock%d.BorderWidth", i);
 		res = readres(name, clas, "0");

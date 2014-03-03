@@ -51,7 +51,9 @@ renderimage(AScreen *ds, const ARGB *argb, const unsigned width, const unsigned 
 	unsigned x, y;
 	ARGB *c;
 
-	image = XCreateImage(dpy, ds->visual, ds->bpp, ZPixmap, 0, NULL, width, height, 32, 0);
+	image =
+	    XCreateImage(dpy, ds->visual, ds->bpp, ZPixmap, 0, NULL, width, height, 32,
+			 0);
 	if (!image) {
 		DPRINTF("Could not create image\n");
 		return;
@@ -82,35 +84,36 @@ renderimage(AScreen *ds, const ARGB *argb, const unsigned width, const unsigned 
 				b = ds->bctab[c->blue];
 
 				pixel = (r << roff) | (g << goff) | (b << boff);
-				switch (ds->bpp + ((image->byte_order == MSBFirst) ? 1 : 0)) {
-				case 8: /* 8bpp */
+				switch (ds->bpp +
+					((image->byte_order == MSBFirst) ? 1 : 0)) {
+				case 8:	/* 8bpp */
 					*p++ = pixel;
 					break;
-				case 16: /* 16bpp LSB */
+				case 16:	/* 16bpp LSB */
 					*p++ = pixel;
 					*p++ = pixel >> 8;
 					break;
-				case 17: /* 16bpp MSB */
+				case 17:	/* 16bpp MSB */
 					*p++ = pixel >> 8;
 					*p++ = pixel;
 					break;
-				case 24: /* 24bpp LSB */
+				case 24:	/* 24bpp LSB */
 					*p++ = pixel;
 					*p++ = pixel >> 8;
 					*p++ = pixel >> 16;
 					break;
-				case 25: /* 24bpp MSB */
+				case 25:	/* 24bpp MSB */
 					*p++ = pixel >> 16;
 					*p++ = pixel >> 8;
 					*p++ = pixel;
 					break;
-				case 32: /* 32bpp LSB */
+				case 32:	/* 32bpp LSB */
 					*p++ = pixel;
 					*p++ = pixel >> 8;
 					*p++ = pixel >> 16;
 					*p++ = pixel >> 24;
 					break;
-				case 33: /* 32bpp MSB */
+				case 33:	/* 32bpp MSB */
 					*p++ = pixel >> 24;
 					*p++ = pixel >> 16;
 					*p++ = pixel >> 8;
@@ -239,9 +242,12 @@ initimage()
 		for (r = 0, i = 0; r < scr->cpc; r++) {
 			for (g = 0; g < scr->cpc; g++) {
 				for (b = 0; b < scr->cpc; b++) {
-					scr->colors[i].red = (r * 0xffff) / (scr->cpc - 1);
-					scr->colors[i].green = (g * 0xffff) / (scr->cpc - 1);
-					scr->colors[i].blue = (b * 0xffff) / (scr->cpc - 1);
+					scr->colors[i].red =
+					    (r * 0xffff) / (scr->cpc - 1);
+					scr->colors[i].green =
+					    (g * 0xffff) / (scr->cpc - 1);
+					scr->colors[i].blue =
+					    (b * 0xffff) / (scr->cpc - 1);
 					scr->colors[i].flags = DoRed | DoGreen | DoBlue;
 				}
 			}

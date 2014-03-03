@@ -14,14 +14,16 @@
 #include <X11/Xutil.h>
 #include <X11/Xresource.h>
 #include <X11/Xft/Xft.h>
-#include "adwm.h"
-#include "config.h"
 #ifdef IMLIB2
 #include <Imlib2.h>
 #endif
 #ifdef XPM
 #include <X11/xpm.h>
 #endif
+#include "adwm.h"
+#include "resource.h"
+#include "parse.h"
+#include "config.h"
 
 /*
  * The purpose of this file is to provide a loadable module that provides
@@ -384,12 +386,14 @@ static const struct {
 	const char *suffix;
 	WhichClient any;
 } set_suffix[] = {
-	{ "",		FocusClient	    },
-	{ "sel",	ActiveClient	    },
-	{ "ptr",	PointerClient	    },
-	{ "all",	AllClients	    }, /* all on current monitor */
-	{ "any",	AnyClient	    }, /* clients on any monitor */
-	{ "every",	EveryClient	    }  /* clients on every workspace */
+	/* *INDENT-OFF* */
+	{ "",		FocusClient	},
+	{ "sel",	ActiveClient	},
+	{ "ptr",	PointerClient	},
+	{ "all",	AllClients	}, /* all on current monitor */
+	{ "any",	AnyClient	}, /* clients on any monitor */
+	{ "every",	EveryClient	}  /* clients on every workspace */
+	/* *INDENT-ON* */
 };
 
 static KeyItem KeyItemsByState[] = {
@@ -448,11 +452,13 @@ static const struct {
 	const char *which;
 	WhichClient any;
 } list_which[] = {
+	/* *INDENT-OFF* */
 	{ "",		FocusClient	}, /* focusable, same monitor */
 	{ "act",	ActiveClient	}, /* activatable (incl. icons), same monitor */
 	{ "all",	AllClients	}, /* all clients (incl. icons), same mon */
 	{ "any",	AnyClient	}, /* any client on any monitor */
 	{ "every",	EveryClient	}  /* all clients, all desktops */
+	/* *INDENT-ON* */
 };
 
 static const struct {
@@ -493,14 +499,14 @@ static const struct {
 
 static KeyItem KeyItemsByList[] = {
 	/* *INDENT-OFF* */
-	{ "focus",	k_focus		},
-	{ "client",	k_client	},
-	{ "stack",	k_stack		},
-	{ "group",	k_group		},
-	{ "tab",	k_tab		},
-	{ "panel",	k_panel		},
-	{ "dock",	k_dock		},
-	{ "swap",	k_swap		}
+	{ "focus",		k_focus		},
+	{ "client",		k_client	},
+	{ "stack",		k_stack		},
+	{ "group",		k_group		},
+	{ "tab",		k_tab		},
+	{ "panel",		k_panel		},
+	{ "dock",		k_dock		},
+	{ "swap",		k_swap		}
 	/* *INDENT-ON* */
 };
 
@@ -530,12 +536,14 @@ static const struct {
 };
 
 static KeyItem KeyItemsByTag[] = {
-	{ "view",		k_view		},
-	{ "toggleview",		k_toggleview	},
-	{ "focusview",		k_focusview	},
-	{ "tag", 		k_tag		},
-	{ "toggletag", 		k_toggletag	},
-	{ "taketo",		k_taketo	}
+	/* *INDENT-OFF* */
+	{"view",		k_view		},
+	{"toggleview",		k_toggleview	},
+	{"focusview",		k_focusview	},
+	{"tag",			k_tag		},
+	{"toggletag",		k_toggletag	},
+	{"taketo",		k_taketo	}
+	/* *INDENT-ON* */
 };
 
 static void

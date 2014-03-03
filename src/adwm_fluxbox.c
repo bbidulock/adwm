@@ -14,14 +14,16 @@
 #include <X11/Xutil.h>
 #include <X11/Xresource.h>
 #include <X11/Xft/Xft.h>
-#include "adwm.h"
-#include "config.h"
 #ifdef IMLIB2
 #include <Imlib2.h>
 #endif
 #ifdef XPM
 #include <X11/xpm.h>
 #endif
+#include "adwm.h"
+#include "resource.h"
+#include "parse.h"
+#include "config.h"
 
 /*
  * The purpose of this file is to provide a loadable module that provides
@@ -1459,8 +1461,7 @@ p_resizev(Key *k)
 			dh = DisplayHeight(dpy, scr->screen);
 	} else
 		return;
-	snprintf(arg, sizeof(arg), "0 0 0 %s%u",
-		 dh < 0 ? "-" : "+", (unsigned) abs(dh));
+	snprintf(arg, sizeof(arg), "0 0 0 %s%u", dh < 0 ? "-" : "+", (unsigned) abs(dh));
 	k->func = k_moveresizekb;
 	k->arg = strdup(arg);
 }

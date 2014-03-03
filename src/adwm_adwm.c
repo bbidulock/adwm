@@ -277,10 +277,8 @@ initconfig_ADWM(void)
 		num = strtoul(res, NULL, 0);
 		if (num < 1)
 			num = 1;
-		if (num > 64)
-			num = 64;
-		if (num > sizeof(unsigned long long) * 8)
-			num = sizeof(unsigned long long) * 8;
+		if (num > MAXTAGS)
+			num = MAXTAGS;
 		session.tags.number = num;
 
 		strncpy(name, "adwm.session.tags.", sizeof(name));
@@ -292,9 +290,7 @@ initconfig_ADWM(void)
 		c = clas + clen;
 		clen = sizeof(clas) - clen;
 
-		num = sizeof(unsigned long long) * 8;
-		if (num > 64)
-			num = 64;
+		num = MAXTAGS;
 		session.views = calloc(num, sizeof(*session.views));
 
 		for (i = 0; i < num; i++) {
@@ -661,7 +657,7 @@ initkeys_ADWM(void)
 	}
 	/* per tag functions */
 	for (j = 0; j < LENGTH(KeyItemsByTag); j++) {
-		for (i = 0; i < sizeof(unsigned long long) * 8; i++) {
+		for (i = 0; i < MAXTAGS; i++) {
 			Key key = { 0, };
 
 			snprintf(name, sizeof(name), "%s%d", KeyItemsByTag[j].name, i);

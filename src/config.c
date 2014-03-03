@@ -60,7 +60,7 @@ initconfig(void)
 		options.deflayout = "i";
 
 	options.ntags = strtoul(getresource("tags.number", "5"), NULL, 0);
-	if (options.ntags < 1 || options.ntags > 64)
+	if (options.ntags < 1 || options.ntags > MAXTAGS)
 		options.ntags = 5;
 
 	for (i = 0, scr = screens; i < nscr; i++, scr++) {

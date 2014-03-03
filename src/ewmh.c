@@ -613,7 +613,7 @@ ewmh_process_net_number_of_desktops()
 
 	card = getcard(scr->root, _XA_NET_NUMBER_OF_DESKTOPS, &n);
 	if (n > 0) {
-		if (0 < card[0] && card[0] <= 64)
+		if (0 < card[0] && card[0] <= MAXTAGS)
 			scr->ntags = card[0];
 		XFree(card);
 	}

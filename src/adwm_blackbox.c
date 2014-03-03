@@ -1423,8 +1423,8 @@ initconfig_BLACKBOX(void)
 	screen->workspaces = strtoul(res, NULL, 0);
 	if (screen->workspaces < 1)
 		screen->workspaces = 1;
-	if (screen->workspaces > sizeof(unsigned long long) * 8)
-		screen->workspaces = sizeof(unsigned long long) * 8;
+	if (screen->workspaces > MAXTAGS)
+		screen->workspaces = MAXTAGS;
 
 	snprintf(n, nlen, "workspaceNames");
 	snprintf(c, clen, "WorkspaceNames");

@@ -2364,7 +2364,7 @@ initkeys()
 	}
 	/* per tag functions */
 	for (j = 0; j < LENGTH(KeyItemsByTag); j++) {
-		for (i = 0; i < sizeof(unsigned long long) * 8; i++) {
+		for (i = 0; i < MAXTAGS; i++) {
 			Key key = { 0, };
 
 			snprintf(t, sizeof(t), "%s%d", KeyItemsByTag[j].name, i);

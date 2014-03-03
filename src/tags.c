@@ -483,7 +483,7 @@ addtag()
 void
 settags(unsigned int numtags)
 {
-	if (1 > numtags || numtags > 64)
+	if (1 > numtags || numtags > MAXTAGS)
 		return;
 	while (scr->ntags < numtags)
 		addtag();

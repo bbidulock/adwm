@@ -49,6 +49,7 @@
 #include "draw.h"
 #include "layout.h"
 #include "parse.h"
+#include "tags.h"
 
 #define EXTRANGE    16		/* all X11 extension event must fit in this range */
 
@@ -125,7 +126,6 @@ void setfocus(Client *c);
 void setup(char *);
 void spawn(const char *arg);
 void tag(Client *c, int index);
-void toggletag(Client *c, int index);
 void togglemonitor(void);
 void toggleshowing(void);
 void togglehidden(Client *c);
@@ -1240,7 +1240,7 @@ focusprev(Client *c)
 		raiseclient(c);
 }
 
-static void
+void
 with_transients(Client *c, void (*each) (Client *, int), int data)
 {
 	Client *t;
@@ -2892,103 +2892,6 @@ scan(void)
 	ewmh_update_kde_splash_progress();
 }
 
-void
-inittag(unsigned i)
-{
-	char conf[32], def[8];
-
-	snprintf(conf, sizeof(conf), "tags.name%d", i);
-	snprintf(def, sizeof(def), "%u", i);
-	snprintf(scr->tags[i].name, sizeof(scr->tags[i].name), "%s",
-		 getresource(conf, def));
-	scr->tags[i].dt = XInternAtom(dpy, scr->tags[i].name, False);
-	DPRINTF("Assigned name '%s' to tag %u\n", scr->tags[i].name, i);
-}
-
-static void
-newtag(unsigned i)
-{
-	inittag(i);
-}
-
-static void
-initview(unsigned int i, double mwfact, double mhfact, int nmaster, int ncolumns,
-	 const char *deflayout)
-{
-	char conf[32], ltname;
-	Layout *l;
-	View *v = scr->views + i;
-
-	v->layout = layouts;
-	snprintf(conf, sizeof(conf), "tags.layout%d", i);
-	strncpy(&ltname, getresource(conf, deflayout), 1);
-	for (l = layouts; l->symbol; l++)
-		if (l->symbol == ltname) {
-			v->layout = l;
-			break;
-		}
-	l = v->layout;
-	v->barpos = StrutsOn;
-	v->dectiled = options.dectiled;
-	v->nmaster = nmaster;
-	v->ncolumns = ncolumns;
-	v->mwfact = mwfact;
-	v->mhfact = mhfact;
-	v->major = l->major;
-	v->minor = l->minor;
-	v->placement = l->placement;
-	v->index = i;
-	if (scr->d.rows && scr->d.cols) {
-		v->row = i / scr->d.cols;
-		v->col = i - v->row * scr->d.cols;
-	} else {
-		v->row = -1;
-		v->col = -1;
-	}
-}
-
-static void
-newview(unsigned int i)
-{
-	double mwfact, mhfact;
-	int nmaster, ncolumns;
-	const char *deflayout;
-
-	mwfact = atof(getresource("mwfact", STR(DEFMWFACT)));
-	mhfact = atof(getresource("mhfact", STR(DEFMHFACT)));
-	nmaster = atoi(getresource("nmaster", STR(DEFNMASTER)));
-	ncolumns = atoi(getresource("ncolumns", STR(DEFNCOLUMNS)));
-	deflayout = getresource("deflayout", "i");
-	if (nmaster < 1)
-		nmaster = 1;
-	if (ncolumns < 1)
-		ncolumns = 1;
-	initview(i, mwfact, mhfact, nmaster, ncolumns, deflayout);
-}
-
-static void
-initlayouts()
-{
-	unsigned int i;
-	double mwfact, mhfact;
-	int nmaster, ncolumns;
-	const char *deflayout;
-
-	/* init layouts */
-	mwfact = atof(getresource("mwfact", STR(DEFMWFACT)));
-	mhfact = atof(getresource("mhfact", STR(DEFMHFACT)));
-	nmaster = atoi(getresource("nmaster", STR(DEFNMASTER)));
-	ncolumns = atoi(getresource("ncolumns", STR(DEFNCOLUMNS)));
-	deflayout = getresource("deflayout", "i");
-	if (nmaster < 1)
-		nmaster = 1;
-	if (ncolumns < 1)
-		ncolumns = 1;
-	for (i = 0; i < scr->ntags; i++)
-		initview(i, mwfact, mhfact, nmaster, ncolumns, deflayout);
-	ewmh_update_net_desktop_modes();
-}
-
 static Bool
 isomni(Client *c)
 {
@@ -3329,119 +3232,6 @@ initmonitors(XEvent *e)
 }
 
 void
-inittags()
-{
-	ewmh_process_net_number_of_desktops();
-	scr->views = ecalloc(scr->ntags, sizeof(*scr->views));
-	scr->tags = ecalloc(scr->ntags, sizeof(*scr->tags));
-	ewmh_process_net_desktop_names();
-}
-
-static void
-deltag()
-{
-	Client *c;
-	unsigned long long tags;
-	unsigned int last;
-	Monitor *cm;
-
-	if (!(cm = selmonitor()))
-		return;
-	if (scr->ntags < 2)
-		return;
-	last = scr->ntags - 1;
-	tags = (1ULL << last);
-
-	/* move off the desktop being deleted */
-	if (cm->curtag == last)
-		view(last - 1);
-
-	/* move windows off the desktop being deleted */
-	for (c = scr->clients; c; c = c->next) {
-		if (isomni(c)) {
-			c->tags &= ~tags;
-			continue;
-		}
-		if (!(c->tags & (tags - 1)))
-			tag(c, last - 1);
-		else
-			c->tags &= ~tags;
-	}
-
-	--scr->ntags;
-#if 0
-	/* caller's responsibility */
-	ewmh_update_net_number_of_desktops();
-#endif
-
-}
-
-void
-rmlasttag()
-{
-	deltag();
-	ewmh_process_net_desktop_names();
-	ewmh_update_net_number_of_desktops();
-}
-
-static void
-addtag()
-{
-	Client *c;
-	Monitor *m;
-	unsigned int n;
-
-	if (scr->ntags >= sizeof(c->tags) * 8)
-		return;		/* stop the insanity, go organic */
-
-	n = scr->ntags + 1;
-	scr->views = erealloc(scr->views, n * sizeof(*scr->views));
-	newview(scr->ntags);
-	scr->tags = erealloc(scr->tags, n * sizeof(*scr->tags));
-	newtag(scr->ntags);
-
-	for (c = scr->clients; c; c = c->next)
-		if ((c->tags & ((1ULL << scr->ntags) - 1)) == ((1ULL << scr->ntags) - 1)
-		    || c->is.sticky)
-			c->tags |= (1ULL << scr->ntags);
-
-	for (m = scr->monitors; m; m = m->next) {
-		/* probably unnecessary */
-		m->prevtags &= ~(1ULL << scr->ntags);
-		m->seltags &= ~(1ULL << scr->ntags);
-	}
-
-	scr->ntags++;
-#if 0
-	/* caller's responsibility */
-	ewmh_update_net_number_of_desktops();
-#endif
-}
-
-void
-appendtag()
-{
-	addtag();
-	ewmh_process_net_desktop_names();
-	ewmh_update_net_number_of_desktops();
-}
-
-void
-settags(unsigned int numtags)
-{
-	if (1 > numtags || numtags > 64)
-		return;
-	while (scr->ntags < numtags) {
-		addtag();
-	}
-	while (scr->ntags > numtags) {
-		deltag();
-	}
-	ewmh_process_net_desktop_names();
-	ewmh_update_net_number_of_desktops();
-}
-
-void
 sighandler(int sig)
 {
 	if (sig)
@@ -3636,65 +3426,6 @@ m_spawn(Client *c, XEvent *e)
 	spawn(options.command);
 }
 
-static void
-_tag(Client *c, int index)
-{
-	c->tags |= (index == -1) ? ((1ULL << scr->ntags) - 1) : (1ULL << index);
-	ewmh_update_net_window_desktop(c);
-	arrange(NULL);
-	focus(NULL);
-}
-
-void
-tag(Client *c, int index)
-{
-	if (!c || (!c->can.tag && c->is.managed))
-		return;
-	return with_transients(c, &_tag, index);
-}
-
-void
-taketo(Client *c, int index)
-{
-	if (!c || (!c->can.tag && c->is.managed))
-		return;
-	with_transients(c, &_tag, index);
-	view(index);
-}
-
-void
-taketoprev(Client *c)
-{
-	Monitor *m;
-
-	if (!c || !(m = c->curmon))
-		return;
-	viewprev(m);
-	taketo(c, m->curtag);
-}
-
-void
-taketoleft(Client *c)
-{
-	Monitor *m;
-
-	if (!c || !(m = c->curmon))
-		return;
-	viewleft(m);
-	taketo(c, m->curtag);
-}
-
-void
-taketoright(Client *c)
-{
-	Monitor *m;
-
-	if (!c || !(m = c->curmon))
-		return;
-	viewright(m);
-	taketo(c, m->curtag);
-}
-
 void
 togglestruts(Monitor *m, View *v)
 {
@@ -3704,15 +3435,6 @@ togglestruts(Monitor *m, View *v)
 		updategeom(m);
 		arrange(m);
 	}
-}
-
-void
-toggledectiled(Monitor *m, View *v)
-{
-	v = scr->views + m->curtag;
-	v->dectiled = v->dectiled ? False : True;
-	if (m)
-		arrange(m);
 }
 
 void
@@ -3731,24 +3453,6 @@ m_shade(Client *c, XEvent *e)
 		if (c->is.shaded)
 			toggleshade(c);
 		break;
-	}
-}
-
-void
-togglesticky(Client *c)
-{
-	Monitor *m;
-
-	if (!c || (!c->can.stick && c->is.managed) || !(m = c->curmon))
-		return;
-
-	c->is.sticky = !c->is.sticky;
-	if (c->is.managed) {
-		if (c->is.sticky)
-			tag(c, -1);
-		else
-			tag(c, m->curtag);
-		ewmh_update_net_window_state(c);
 	}
 }
 
@@ -3834,25 +3538,6 @@ togglemodal(Client *c)
 }
 
 void
-toggletag(Client *c, int index)
-{
-	unsigned long long tags;
-
-	if (!c || (!c->can.tag && c->is.managed))
-		return;
-	tags = c->tags;
-	tags ^= (index == -1) ? ((1ULL << scr->ntags) - 1) : (1ULL << index);
-	if (tags & ((1ULL << scr->ntags) - 1))
-		c->tags = tags;
-	else if (c->curmon)
-		/* at least one tag must be enabled */
-		c->tags = (1ULL << c->curmon->curtag);
-	ewmh_update_net_window_desktop(c);
-	drawclient(c);
-	arrange(NULL);
-}
-
-void
 togglemonitor()
 {
 	Monitor *m, *cm;
@@ -3872,63 +3557,6 @@ togglemonitor()
 		return;
 	XWarpPointer(dpy, None, scr->root, 0, 0, 0, 0, m->mx, m->my);
 	focus(NULL);
-}
-
-void
-toggleview(Monitor *cm, int index)
-{
-	unsigned int i, j;
-	Monitor *m;
-	unsigned long long tags;
-
-	/* Typically from a keyboard command.  Again, we should use the monitor with the
-	   keyboard focus before the monitor with the pointer in it. */
-
-	i = (index == -1) ? 0 : index;
-	tags = (1ULL << i);
-	cm->prevtags = cm->seltags;
-	cm->seltags ^= tags;
-	for (m = scr->monitors; m; m = m->next) {
-		if ((m->seltags & tags) && m != cm) {
-			m->prevtags = m->seltags;
-			m->seltags &= ~tags;
-			for (j = 0; j < scr->ntags && !(m->seltags & (1ULL << j)); j++) ;
-			if (j == scr->ntags) {
-				m->seltags |= tags;	/* at least one tag must be
-							   viewed */
-				cm->seltags &= ~tags;	/* can't toggle */
-				j = i;
-			}
-			if (m->curtag == i)
-				m->curtag = j;
-			arrange(m);
-		}
-	}
-	arrange(cm);
-	focus(NULL);
-	ewmh_update_net_current_desktop();
-}
-
-void
-focusview(Monitor *cm, int index)
-{
-	unsigned long long tags;
-	unsigned int i;
-	Client *c;
-
-	i = (index == -1) ? 0 : index;
-	tags = (1ULL << i);
-	if (!(cm->seltags & tags))
-		toggleview(cm, i);
-	if (!(cm->seltags & tags))
-		return;
-	for (c = scr->stack; c; c = c->snext)
-		if ((c->tags & tags) && !c->is.bastard && !c->is.dockapp)
-			/* XXX: c->can.focus? */
-			break;
-	if (c)
-		focus(c);
-	// restack(); /* XXX: really necessary? */
 }
 
 void
@@ -4342,130 +3970,6 @@ xerrorstart(Display *dsply, XErrorEvent *ee)
 {
 	otherwm = True;
 	return -1;
-}
-
-void
-view(int index)
-{
-	unsigned long long tags;
-	int i;
-	Monitor *m, *cm;
-	int prevtag;
-
-	i = (index == -1) ? 0 : index;
-	tags = (1ULL << i);
-	if (!(cm = selmonitor()))
-		cm = nearmonitor();
-
-	if (cm->seltags & tags)
-		return;
-
-	cm->prevtags = cm->seltags;
-	cm->seltags = tags;
-	prevtag = cm->curtag;
-	cm->curtag = i;
-	for (m = scr->monitors; m; m = m->next) {
-		if ((m->seltags & tags) && m != cm) {
-			m->curtag = prevtag;
-			m->prevtags = m->seltags;
-			m->seltags = cm->prevtags;
-			updategeom(m);
-			arrange(m);
-		}
-	}
-	updategeom(cm);
-	arrange(cm);
-	focus(NULL);
-	ewmh_update_net_current_desktop();
-}
-
-void
-viewprev(Monitor *m)
-{
-	unsigned long long tmptags, tag;
-	unsigned int i;
-	int prevcurtag;
-
-	for (tag = 1, i = 0; i < scr->ntags - 1 && !(m->prevtags & tag); i++, tag <<= 1) ;
-	prevcurtag = m->curtag;
-	m->curtag = i;
-
-	tmptags = m->seltags;
-	m->seltags = m->prevtags;
-	m->prevtags = tmptags;
-	if (scr->views[prevcurtag].barpos != scr->views[m->curtag].barpos)
-		updategeom(m);
-	arrange(NULL);
-	focus(NULL);
-	ewmh_update_net_current_desktop();
-}
-
-void
-viewprevtag()
-{
-	Monitor *cm;
-
-	if (!(cm = selmonitor()))
-		return;
-	return viewprev(cm);
-}
-
-void
-viewleft(Monitor *m)
-{
-	unsigned long long tag;
-	unsigned int i;
-
-	/* wrap around: TODO: do full _NET_DESKTOP_LAYOUT */
-	if (m->seltags & 1ULL) {
-		view(scr->ntags - 1);
-		return;
-	}
-	for (tag = 2ULL, i = 1; i < scr->ntags; i++, tag <<= 1) {
-		if (m->seltags & tag) {
-			view(i - 1);
-			return;
-		}
-	}
-}
-
-void
-viewlefttag()
-{
-	Monitor *cm;
-
-	if (!(cm = selmonitor()))
-		return;
-	return viewleft(cm);
-}
-
-void
-viewright(Monitor *m)
-{
-	unsigned long long tags;
-	unsigned int i;
-
-	for (tags = 1ULL, i = 0; i < scr->ntags - 1; i++, tags <<= 1) {
-		if (m->seltags & tags) {
-			view(i + 1);
-			return;
-		}
-	}
-	/* wrap around: TODO: do full _NET_DESKTOP_LAYOUT */
-	if (i == scr->ntags - 1) {
-		view(0);
-		return;
-	}
-}
-
-void
-viewrighttag()
-{
-	Monitor *cm;
-
-	if (!(cm = selmonitor()))
-		return;
-	return viewright(cm);
 }
 
 void

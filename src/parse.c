@@ -11,6 +11,7 @@
 #include <X11/Xft/Xft.h>
 #include "adwm.h"
 #include "layout.h"
+#include "tags.h"
 
 void
 k_zoom(XEvent *e, Key *k)

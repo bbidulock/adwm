@@ -45,5 +45,6 @@ void togglemax(Client *c);
 void togglemaxv(Client *c);
 void togglemaxh(Client *c);
 void toggleshade(Client *c);
+void toggledectiled(Monitor *m, View *v);
 void zoom(Client *c);
 void zoomfloat(Client *c);

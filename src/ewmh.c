@@ -19,6 +19,7 @@
 #include "adwm.h"
 #include "layout.h"
 #include "draw.h"
+#include "tags.h"
 
 Atom atom[NATOMS];
 
@@ -1016,9 +1017,8 @@ ewmh_process_net_desktop_names()
 		if ((len = strnlen(pos, nitems))) {
 			strncpy(scr->tags[i].name, pos, nitems);
 			XPRINTF("Assigning name '%s' to tag %u\n", scr->tags[i].name, i);
-		} else {
-			inittag(i);
-		}
+		} else
+			names_synced = False;
 		nitems -= len;
 		pos += len;
 		if (nitems) {
@@ -1026,10 +1026,8 @@ ewmh_process_net_desktop_names()
 			++pos;
 		}
 	}
-	for (; i < scr->ntags; i++) {
-		inittag(i);
+	if (i < scr->ntags)
 		names_synced = False;
-	}
 	if (ret)
 		XFree(ret);
 	ewmh_update_net_desktop_names();

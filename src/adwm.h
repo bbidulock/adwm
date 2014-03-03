@@ -1038,7 +1038,6 @@ void wmh_process_win_window_hints(Client *);
 void wmh_process_win_layer(Client *);
 
 /* main */
-void inittag(unsigned i);
 Monitor *clientmonitor(Client *c);
 Monitor *curmonitor();
 Monitor *selmonitor();
@@ -1067,7 +1066,6 @@ void focus(Client *c);
 void focusicon(void);
 void focusnext(Client *c);
 void focusprev(Client *c);
-void focusview(Monitor *m, int index);
 AScreen *getscreen(Window win);
 AScreen *geteventscr(XEvent *ev);
 void killclient(Client *c);
@@ -1079,28 +1077,18 @@ void pushtime(Time time);
 void quit(const char *arg);
 void restart(const char *arg);
 void spawn(const char *arg);
-void tag(Client *c, int index);
-void taketo(Client *c, int index);
 void togglestruts(Monitor *m, View *v);
-void toggledectiled(Monitor *m, View *v);
-void togglesticky(Client *c);
 void togglemin(Client *c);
 void togglepager(Client *c);
 void toggletaskbar(Client *c);
 void togglemodal(Client *c);
 void togglemonitor(void);
-void toggletag(Client *c, int index);
-void toggleview(Monitor *cm, int index);
 void toggleshowing(void);
 void togglehidden(Client *c);
-void view(int index);
-void viewlefttag(void);
-void viewprevtag(void);
-void viewrighttag(void);
 Bool selectionclear(XEvent *e);
-void appendtag(void);
-void rmlasttag(void);
-void settags(unsigned numtags);
+
+/* needed by tags.c */
+void with_transients(Client *c, void (*each) (Client *, int), int data);
 
 /* needed by layout.c */
 void getworkarea(Monitor *m, Workarea *w);

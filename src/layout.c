@@ -1276,10 +1276,6 @@ tile(Monitor *cm)
 	stdec = (v->dectiled || sa.s) ? True : False;
 	mgdec = v->dectiled ? True : False;
 	sgdec = v->dectiled ? True : False;
-#if 0
-	if (!v->dectiled && (mdec || sdec))
-		v->dectiled = True;
-#endif
 
 	/* master and slave work area dimensions */
 	switch (v->major) {
@@ -4522,11 +4518,6 @@ togglefloating(Client *c)
 
 	if (!c || c->is.floater || !c->can.floats || !(m = c->curmon))
 		return;
-#if 0
-	if (MFEATURES(m, OVERLAP))	/* XXX: why? */
-		return;
-#endif
-
 	c->skip.arrange = !c->skip.arrange;
 	if (c->is.managed) {
 		ewmh_update_net_window_state(c);
@@ -4627,6 +4618,15 @@ toggleshade(Client *c)
 		ewmh_update_net_window_state(c);
 		updatefloat(c, m);
 	}
+}
+
+void
+toggledectiled(Monitor *m, View *v)
+{
+	v = scr->views + m->curtag;
+	v->dectiled = v->dectiled ? False : True;
+	if (m)
+		arrange(m);
 }
 
 void

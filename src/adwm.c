@@ -1,5 +1,4 @@
-/* See COPYING file for copyright and license details.
- */
+/* See COPYING file for copyright and license details.  */
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/select.h>
@@ -1126,14 +1125,14 @@ focus(Client *c)
 		/* drawclient does this does it not? */
 		XSetWindowBorder(dpy, sel->frame, scr->style.color.sel[ColBorder]);
 		drawclient(c);
-		if (c->is.shaded && options.autoroll)
+		if (c->is.shaded && scr->options.autoroll)
 			arrange(cm);
 		raisetiled(c);
 		ewmh_update_net_window_state(c);
 	}
 	if (o && o != sel) {
 		drawclient(o);
-		if (o->is.shaded && options.autoroll)
+		if (o->is.shaded && scr->options.autoroll)
 			arrange(cm);
 		lowertiled(o);
 		ewmh_update_net_window_state(o);
@@ -3061,8 +3060,8 @@ initmonitors(XEvent *e)
 				m->sc.y = m->wa.y = m->dock.wa.y = si[i].y_org;
 				m->sc.w = m->wa.w = m->dock.wa.w = si[i].width;
 				m->sc.h = m->wa.h = m->dock.wa.h = si[i].height;
-				m->dock.position = options.dockpos;
-				m->dock.orient = options.dockori;
+				m->dock.position = scr->options.dockpos;
+				m->dock.orient = scr->options.dockori;
 				m->mx = m->sc.x + m->sc.w / 2;
 				m->my = m->sc.y + m->sc.h / 2;
 				m->num = si[i].screen_number;
@@ -3145,8 +3144,8 @@ initmonitors(XEvent *e)
 				m = &scr->monitors[n];
 				full_update = True;
 				m->index = n;
-				m->dock.position = options.dockpos;
-				m->dock.orient = options.dockori;
+				m->dock.position = scr->options.dockpos;
+				m->dock.orient = scr->options.dockori;
 				m->sc.x = m->wa.x = m->dock.wa.x = ci->x;
 				m->sc.y = m->wa.y = m->dock.wa.y = ci->y;
 				m->sc.w = m->wa.w = m->dock.wa.w = ci->width;
@@ -3208,8 +3207,8 @@ initmonitors(XEvent *e)
 		m = &scr->monitors[0];
 		full_update = True;
 		m->index = 0;
-		m->dock.position = options.dockpos;
-		m->dock.orient = options.dockori;
+		m->dock.position = scr->options.dockpos;
+		m->dock.orient = scr->options.dockori;
 		m->sc.x = m->wa.x = m->dock.wa.x = 0;
 		m->sc.y = m->wa.y = m->dock.wa.y = 0;
 		m->sc.w = m->wa.w = m->dock.wa.w = DisplayWidth(dpy, scr->screen);
@@ -3409,14 +3408,14 @@ spawn(const char *arg)
 void
 m_spawn(Client *c, XEvent *e)
 {
-	spawn(options.command);
+	spawn(scr->options.command);
 }
 
 void
 togglestruts(Monitor *m, View *v)
 {
 	v->barpos = (v->barpos == StrutsOn)
-	    ? (options.hidebastards ? StrutsHide : StrutsOff) : StrutsOn;
+	    ? (scr->options.hidebastards ? StrutsHide : StrutsOff) : StrutsOn;
 	if (m) {
 		updategeom(m);
 		arrange(m);

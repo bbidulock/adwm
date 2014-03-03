@@ -255,7 +255,7 @@ enterclient(XEvent *e, Client *c)
 		CPRINTF(c, "FOCUS: monitor switching focus\n");
 		focus(c);
 	}
-	switch (options.focus) {
+	switch (scr->options.focus) {
 	case Clk2Focus:
 		break;
 	case SloppyFloat:
@@ -422,7 +422,7 @@ reconfigure(Client *c, ClientGeometry * n)
 		c->gh = n->g;
 		gchange = True;
 	}
-	if (n->t && (c->is.shaded && (c != sel || !options.autoroll))) {
+	if (n->t && (c->is.shaded && (c != sel || !scr->options.autoroll))) {
 		fwc.height = n->t;
 		DPRINTF("frame wc.h = %u\n", fwc.height);
 		fmask |= CWHeight;
@@ -759,7 +759,7 @@ calc_max(Client *c, Workarea *wa, ClientGeometry * g)
 	g->y = wa->y;
 	g->w = wa->w;
 	g->h = wa->h;
-	if (!options.decmax)
+	if (!scr->options.decmax)
 		g->t = 0;
 	g->b = 0;
 }
@@ -801,7 +801,7 @@ get_decor(Client *c, Monitor *m, ClientGeometry * g)
 		return;
 	if (c->is.floater || c->skip.arrange)
 		decorate = True;
-	else if (c->is.shaded && (c != sel || !options.autoroll))
+	else if (c->is.shaded && (c != sel || !scr->options.autoroll))
 		decorate = True;
 	else if (!m && !(m = clientmonitor(c))) {
 		decorate = False;
@@ -1251,7 +1251,7 @@ tile(Monitor *cm)
 	v = &scr->views[cm->curtag];
 	for (wa.n = wa.s = ma.s = sa.s = 0, c = nexttiled(scr->clients, cm);
 	     c; c = nexttiled(c->next, cm), wa.n++) {
-		if (c->is.shaded && (c != sel || !options.autoroll)) {
+		if (c->is.shaded && (c != sel || !scr->options.autoroll)) {
 			wa.s++;
 			if (wa.n < v->nmaster)
 				ma.s++;
@@ -1424,7 +1424,7 @@ tile(Monitor *cm)
 		g = n;
 		g.t = c->has.title ? g.t : 0;
 		g.g = c->has.grips ? g.g : 0;
-		if ((c->was.shaded = c->is.shaded) && (c != sel || !options.autoroll))
+		if ((c->was.shaded = c->is.shaded) && (c != sel || !scr->options.autoroll))
 			if (!ma.s)
 				c->is.shaded = False;
 		g.x += ma.g;
@@ -1443,7 +1443,7 @@ tile(Monitor *cm)
 			DPRINTF("CALLING reconfigure()\n");
 			reconfigure(c, &C);
 		}
-		if (c->is.shaded && (c != sel || !options.autoroll))
+		if (c->is.shaded && (c != sel || !scr->options.autoroll))
 			if (ma.s)
 				n.h = ma.th;
 		i++;
@@ -1474,7 +1474,7 @@ tile(Monitor *cm)
 			}
 			break;
 		}
-		if (ma.s && c->is.shaded && (c != sel || !options.autoroll)) {
+		if (ma.s && c->is.shaded && (c != sel || !scr->options.autoroll)) {
 			n.h = m.h;
 			ma.s--;
 		}
@@ -1518,7 +1518,7 @@ tile(Monitor *cm)
 		g = n;
 		g.t = c->has.title ? g.t : 0;
 		g.g = c->has.grips ? g.g : 0;
-		if ((c->was.shaded = c->is.shaded) && (c != sel || !options.autoroll))
+		if ((c->was.shaded = c->is.shaded) && (c != sel || !scr->options.autoroll))
 			if (!sa.s)
 				c->is.shaded = False;
 		g.x += sa.g;
@@ -1537,7 +1537,7 @@ tile(Monitor *cm)
 			DPRINTF("CALLING reconfigure()\n");
 			reconfigure(c, &C);
 		}
-		if (c->is.shaded && (c != sel || !options.autoroll))
+		if (c->is.shaded && (c != sel || !scr->options.autoroll))
 			if (sa.s)
 				n.h = sa.th;
 		i++;
@@ -1572,7 +1572,7 @@ tile(Monitor *cm)
 				n.h = sa.h - (n.y - sa.y);
 			break;
 		}
-		if (sa.s && c->is.shaded && (c != sel || !options.autoroll)) {
+		if (sa.s && c->is.shaded && (c != sel || !scr->options.autoroll)) {
 			n.h = s.h;
 			sa.s--;
 		}
@@ -2651,8 +2651,8 @@ mousemove(Client *c, XEvent *e, Bool toggle)
 			dy = (ev.xmotion.y_root - y_root);
 			pushtime(ev.xmotion.time);
 			if (!moved) {
-				if (abs(dx) < options.dragdist
-				    && abs(dy) < options.dragdist)
+				if (abs(dx) < scr->options.dragdist
+				    && abs(dy) < scr->options.dragdist)
 					continue;
 				if (!(moved = move_begin(c, m, toggle, move))) {
 					CPRINTF(c, "Couldn't move client!\n");
@@ -2685,15 +2685,15 @@ mousemove(Client *c, XEvent *e, Bool toggle)
 			}
 			n.x = o.x + dx;
 			n.y = o.y + dy;
-			if (nm && options.snap && !(ev.xmotion.state & ControlMask)) {
+			if (nm && scr->options.snap && !(ev.xmotion.state & ControlMask)) {
 				Workarea w;
 				int nx2 = n.x + c->c.w + 2 * c->c.b;
 				int ny2 = n.y + c->c.h + 2 * c->c.b;
 
 				getworkarea(nm, &w);
-				if (abs(n.x - w.x) < options.snap)
+				if (abs(n.x - w.x) < scr->options.snap)
 					n.x += w.x - n.x;
-				else if (abs(nx2 - (w.x + w.w)) < options.snap)
+				else if (abs(nx2 - (w.x + w.w)) < scr->options.snap)
 					n.x += (w.x + w.w) - nx2;
 				else
 					for (s = event_scr->stack; s; s = s->snext) {
@@ -2703,19 +2703,19 @@ mousemove(Client *c, XEvent *e, Bool toggle)
 						int sy2 = s->c.y + s->c.h + 2 * s->c.b;
 
 						if (wind_overlap(n.y, ny2, sy, sy2)) {
-							if (abs(n.x - sx) < options.snap)
+							if (abs(n.x - sx) < scr->options.snap)
 								n.x += sx - n.x;
 							else if (abs(nx2 - sx2) <
-								 options.snap)
+								 scr->options.snap)
 								n.x += sx2 - nx2;
 							else
 								continue;
 							break;
 						}
 					}
-				if (abs(n.y - w.y) < options.snap)
+				if (abs(n.y - w.y) < scr->options.snap)
 					n.y += w.y - n.y;
-				else if (abs(ny2 - (w.y + w.h)) < options.snap)
+				else if (abs(ny2 - (w.y + w.h)) < scr->options.snap)
 					n.y += (w.y + w.h) - ny2;
 				else
 					for (s = event_scr->stack; s; s = s->snext) {
@@ -2725,10 +2725,10 @@ mousemove(Client *c, XEvent *e, Bool toggle)
 						int sy2 = s->c.y + s->c.h + 2 * s->c.b;
 
 						if (wind_overlap(n.x, nx2, sx, sx2)) {
-							if (abs(n.y - sy) < options.snap)
+							if (abs(n.y - sy) < scr->options.snap)
 								n.y += sy - n.y;
 							else if (abs(ny2 - sy2) <
-								 options.snap)
+								 scr->options.snap)
 								n.y += sy2 - ny2;
 							else
 								continue;
@@ -3051,8 +3051,8 @@ mouseresize_from(Client *c, int from, XEvent *e, Bool toggle)
 			dy = (y_root - ev.xmotion.y_root);
 			pushtime(ev.xmotion.time);
 			if (!resized) {
-				if (abs(dx) < options.dragdist
-				    && abs(dy) < options.dragdist)
+				if (abs(dx) < scr->options.dragdist
+				    && abs(dy) < scr->options.dragdist)
 					continue;
 				if (!(resized = resize_begin(c, m, toggle, from)))
 					break;
@@ -3149,7 +3149,7 @@ mouseresize_from(Client *c, int from, XEvent *e, Bool toggle)
 				ry = n.y + n.h / 2 + c->c.b;
 				break;
 			}
-			if ((snap = (ev.xmotion.state & ControlMask) ? 0 : options.snap)) {
+			if ((snap = (ev.xmotion.state & ControlMask) ? 0 : scr->options.snap)) {
 				if ((nm = getmonitor(rx, ry))) {
 					getworkarea(nm, &w);
 					if (abs(rx - w.x) < snap)
@@ -3941,7 +3941,7 @@ addclient(Client *c, Bool focusme, Bool raiseme)
 		c->tags = cm->seltags;
 	}
 
-	attach(c, options.attachaside);
+	attach(c, scr->options.attachaside);
 	attachclist(c);
 	attachflist(c, focusme);
 	attachstack(c, raiseme);

@@ -129,15 +129,18 @@ fi
 AC_MSG_CHECKING([for debug support])
 AC_MSG_RESULT([${enable_debug:-no}])
 
-pkgconfdir='${datadir}/adwm'
-AC_SUBST([pkgconfdir])
-
 test "x$prefix" = xNONE && prefix="$ac_default_prefix"
 sharedir="$datadir"
 eval "sharedir=\"$sharedir\""
 eval "sharedir=\"$sharedir\""
 eval "sharedir=\"$sharedir\""
 AC_SUBST([sharedir])
+
+pkgconfdir="$datadir/adwm"
+eval "pkgconfdir=\"$pkgconfdir\""
+eval "pkgconfdir=\"$pkgconfdir\""
+eval "pkgconfdir=\"$pkgconfdir\""
+AC_SUBST([pkgconfdir])
 
 adwmmoddir='${libdir}/adwm/modules'
 AC_SUBST([adwmmoddir])
@@ -177,6 +180,9 @@ AC_DEFINE([DEFNCOLUMNS],[3],[Number of columns in grid layout.])
 AC_DEFINE([SNAP],[5],[Snap pixel distance.])
 AC_DEFINE([DECORATETILED],[0],[Set to 1 to draw titles (by default) in tiled layouts.])
 AC_DEFINE([DECORATEMAX],[1],[Set to 1 to draw titles (by default) on maximized windows.])
+
+AC_DEFINE_UNQUOTED([MAxTAGS],[(sizeof(unsigned long long) * 8)],[Maximum number of tags.])
+AC_DEFINE_UNQUOTED([SYSCONFPATH],["$pkgconfdir"],[System configuration path.])
 
 AC_OUTPUT([Makefile
 	   src/Makefile

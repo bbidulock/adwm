@@ -884,6 +884,26 @@ struct _Key {
 	Bool cyc;
 };					/* keyboard shortcuts */
 
+typedef struct {
+	Bool attachaside;
+	Bool dectiled;
+	Bool decmax;
+	Bool hidebastards;
+	Bool autoroll;
+	int focus;
+	int snap;
+	const char *command;
+	DockPosition dockpos;
+	DockOrient dockori;
+	unsigned dragdist;
+	double mwfact;
+	double mhfact;
+	unsigned nmaster;
+	unsigned ncolumns;
+	const char *deflayout;
+	unsigned ntags;
+} Options;
+
 typedef struct AScreen AScreen;
 struct AScreen {
 	Bool managed;
@@ -930,6 +950,7 @@ struct AScreen {
 	int ncolors;			/* number of colors in colormap */
 	int cpc;
 #endif
+	Options options;		/* screen-specific options */
 };
 
 typedef struct {

@@ -328,8 +328,7 @@ taketoright(Client *c)
 
 
 static void
-initview(unsigned int i, double mwfact, double mhfact, int nmaster, int ncolumns,
-	 const char *deflayout)
+initview(unsigned int i)
 {
 	char conf[32], ltname;
 	Layout *l;
@@ -337,7 +336,7 @@ initview(unsigned int i, double mwfact, double mhfact, int nmaster, int ncolumns
 
 	v->layout = layouts;
 	snprintf(conf, sizeof(conf), "tags.layout%d", i);
-	strncpy(&ltname, getresource(conf, deflayout), 1);
+	strncpy(&ltname, getresource(conf, scr->options.deflayout), 1);
 	for (l = layouts; l->symbol; l++)
 		if (l->symbol == ltname) {
 			v->layout = l;
@@ -345,11 +344,11 @@ initview(unsigned int i, double mwfact, double mhfact, int nmaster, int ncolumns
 		}
 	l = v->layout;
 	v->barpos = StrutsOn;
-	v->dectiled = options.dectiled;
-	v->nmaster = nmaster;
-	v->ncolumns = ncolumns;
-	v->mwfact = mwfact;
-	v->mhfact = mhfact;
+	v->dectiled = scr->options.dectiled;
+	v->nmaster = scr->options.nmaster;
+	v->ncolumns = scr->options.ncolumns;
+	v->mwfact = scr->options.mwfact;
+	v->mhfact = scr->options.mhfact;
 	v->major = l->major;
 	v->minor = l->minor;
 	v->placement = l->placement;
@@ -366,20 +365,7 @@ initview(unsigned int i, double mwfact, double mhfact, int nmaster, int ncolumns
 static void
 newview(unsigned int i)
 {
-	double mwfact, mhfact;
-	int nmaster, ncolumns;
-	const char *deflayout;
-
-	mwfact = atof(getresource("mwfact", STR(DEFMWFACT)));
-	mhfact = atof(getresource("mhfact", STR(DEFMHFACT)));
-	nmaster = atoi(getresource("nmaster", STR(DEFNMASTER)));
-	ncolumns = atoi(getresource("ncolumns", STR(DEFNCOLUMNS)));
-	deflayout = getresource("deflayout", "i");
-	if (nmaster < 1)
-		nmaster = 1;
-	if (ncolumns < 1)
-		ncolumns = 1;
-	initview(i, mwfact, mhfact, nmaster, ncolumns, deflayout);
+	initview(i);
 }
 
 static void
@@ -404,7 +390,7 @@ newtag(unsigned i)
 void
 inittags()
 {
-	scr->ntags = atoi(getresource("tags.number", "5"));
+	scr->ntags = scr->options.ntags;
 	ewmh_process_net_number_of_desktops();
 	scr->views = ecalloc(scr->ntags, sizeof(*scr->views));
 	scr->tags = ecalloc(scr->ntags, sizeof(*scr->tags));
@@ -414,23 +400,10 @@ inittags()
 void
 initlayouts()
 {
-	unsigned int i;
-	double mwfact, mhfact;
-	int nmaster, ncolumns;
-	const char *deflayout;
+	unsigned i;
 
-	/* init layouts */
-	mwfact = atof(getresource("mwfact", STR(DEFMWFACT)));
-	mhfact = atof(getresource("mhfact", STR(DEFMHFACT)));
-	nmaster = atoi(getresource("nmaster", STR(DEFNMASTER)));
-	ncolumns = atoi(getresource("ncolumns", STR(DEFNCOLUMNS)));
-	deflayout = getresource("deflayout", "i");
-	if (nmaster < 1)
-		nmaster = 1;
-	if (ncolumns < 1)
-		ncolumns = 1;
 	for (i = 0; i < scr->ntags; i++)
-		initview(i, mwfact, mhfact, nmaster, ncolumns, deflayout);
+		initview(i);
 	ewmh_update_net_desktop_modes();
 }
 

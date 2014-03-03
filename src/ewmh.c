@@ -19,7 +19,6 @@
 #include "adwm.h"
 #include "layout.h"
 #include "draw.h"
-#include "config.h"
 
 Atom atom[NATOMS];
 

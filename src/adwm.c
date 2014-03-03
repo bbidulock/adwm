@@ -192,7 +192,6 @@ Time take_time;
 Group systray = { NULL, 0, 0 };
 
 /* configuration, allows nested code to access above variables */
-#include "config.h"
 
 Options options;
 

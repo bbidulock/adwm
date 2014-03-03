@@ -13,7 +13,6 @@
 #include <X11/Xresource.h>
 #include <X11/Xft/Xft.h>
 #include "adwm.h"
-#include "config.h"
 #ifdef IMLIB2
 #include <Imlib2.h>
 #endif

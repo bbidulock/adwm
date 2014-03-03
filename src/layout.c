@@ -47,7 +47,6 @@
 #include "adwm.h"
 #include "layout.h"
 #include "draw.h"
-#include "config.h"
 
 #define MWFACT		(1<<0)	/* adjust master factor */
 #define NMASTER		(1<<1)	/* adjust number of masters */

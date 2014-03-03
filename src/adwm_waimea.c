@@ -23,7 +23,6 @@
 #include "adwm.h"
 #include "resource.h"
 #include "parse.h"
-#include "config.h"
 
 typedef enum {
 	ButtonStateNone,

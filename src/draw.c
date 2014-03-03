@@ -14,7 +14,6 @@
 #endif
 #include "adwm.h"
 #include "layout.h"
-#include "config.h"
 
 enum { Normal, Selected };
 enum { AlignLeft, AlignCenter, AlignRight };	/* title position */

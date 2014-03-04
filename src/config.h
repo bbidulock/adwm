@@ -7,5 +7,6 @@ void inittags(void);
 void initlayouts(void);
 void initscreen(void);
 void initconfig(void);
+void initrcfile(void);
 
 #endif				/* __LOCAL_CONFIG_H__ */

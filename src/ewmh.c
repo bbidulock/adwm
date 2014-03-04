@@ -239,11 +239,11 @@ sn_handler(SnMonitorEvent * event, void *dummy)
 #endif
 
 void
-initewmh(Window win)
+initewmh(char *name)
 {
-	char name[] = "adwm";
 	long data[2];
 	static Bool atoms_interned = False;
+	Window win = scr->selwin;
 
 #ifdef STARTUP_NOTIFICATION
 	scr->ctx = sn_monitor_context_new(sn_dpy, scr->screen, &sn_handler, NULL, NULL);
@@ -519,6 +519,7 @@ ewmh_update_net_desktop_names()
 	char *buf, *pos;
 	unsigned int i, len, slen;
 	long *data;
+	Atom dt;
 
 	if (names_synced) {
 		XPRINTF("%s\n", "Updating _NET_DESKTOP_NAMES: NOT!");
@@ -543,8 +544,12 @@ ewmh_update_net_desktop_names()
 	XChangeProperty(dpy, scr->root, _XA_WIN_WORKSPACE_NAMES, XA_STRING, 8,
 			PropModeReplace, (unsigned char *) buf, len);
 	data = ecalloc(scr->ntags, sizeof(*data));
-	for (i = 0; i < scr->ntags; i++)
-		data[i] = scr->tags[i].dt;
+	for (i = 0; i < scr->ntags; i++) {
+		/* don't intern more than we need */
+		if (!(dt = scr->tags[i].dt))
+			dt = scr->tags[i].dt = XInternAtom(dpy, scr->tags[i].name, False);
+		data[i] = dt;
+	}
 	XChangeProperty(dpy, scr->root, _XA_DT_WORKSPACE_LIST, XA_ATOM, 32,
 			PropModeReplace, (unsigned char *) data, scr->ntags);
 	XChangeProperty(dpy, scr->selwin, _XA_DT_WORKSPACE_LIST, XA_ATOM, 32,
@@ -657,13 +662,18 @@ ewmh_process_net_number_of_desktops()
 {
 	long *card;
 	unsigned long n = 0;
+	unsigned i;
 
 	card = getcard(scr->root, _XA_NET_NUMBER_OF_DESKTOPS, &n);
 	if (n > 0) {
-		if (0 < card[0] && card[0] <= MAXTAGS)
+		if (0 < card[0] && card[0] <= MAXTAGS) {
 			scr->ntags = card[0];
+		}
 		XFree(card);
 	}
+	for (i = 0; i < scr->ntags; i++)
+		if (!scr->tags[i].dt)
+			scr->tags[i].dt = XInternAtom(dpy, scr->tags[i].name, False);
 }
 
 void
@@ -740,6 +750,7 @@ ewmh_update_net_current_desktop()
 	long *data;
 	unsigned int i, n;
 	Monitor *m;
+	Atom dt;
 
 	XPRINTF("%s\n", "Updating _NET_CURRENT_DESKTOP");
 	for (n = 0, m = scr->monitors; m; m = m->next, n++) ;
@@ -751,8 +762,13 @@ ewmh_update_net_current_desktop()
 			PropModeReplace, (unsigned char *) data, n);
 	XChangeProperty(dpy, scr->root, _XA_WM_DESKTOP, _XA_WM_DESKTOP, 32,
 			PropModeReplace, (unsigned char *) data, n);
-	for (i = 0; i < n; i++)
-		data[i] = scr->tags[data[i]].dt;
+	for (i = 0; i < n; i++) {
+		/* don't intern more than we need */
+		if (!(dt = scr->tags[data[i]].dt))
+			dt = scr->tags[data[i]].dt =
+			    XInternAtom(dpy, scr->tags[data[i]].name, False);
+		data[i] = dt;
+	}
 	XChangeProperty(dpy, scr->root, _XA_DT_WORKSPACE_CURRENT, XA_ATOM, 32,
 			PropModeReplace, (unsigned char *) data, n);
 	XChangeProperty(dpy, scr->selwin, _XA_DT_WORKSPACE_CURRENT, XA_ATOM, 32,
@@ -866,6 +882,11 @@ ewmh_process_net_window_desktop(Client *c)
 		} else
 		    if ((desktops[1] & DT_WORKSPACE_HINTS_WORKSPACES) &&
 			(n >= 4 + desktops[3])) {
+			/* don't intern more than we need */
+			for (k = 0; k < scr->ntags; k++)
+				if (!scr->tags[k].dt)
+					scr->tags[k].dt =
+					    XInternAtom(dpy, scr->tags[k].name, False);
 			for (goodone = False, i = 4; !goodone && i < desktops[3] + 4; i++)
 				for (k = 0; !goodone && k < scr->ntags; k++)
 					if (scr->tags[k].dt == desktops[i])
@@ -939,14 +960,20 @@ ewmh_update_net_window_desktop(Client *c)
 	{
 		unsigned int i, j, n;
 		long *data;
+		Atom dt;
 
 		for (n = 0, i = 0; i < scr->ntags; i++)
 			if (c->tags & (1ULL << i))
 				n++;
 		data = ecalloc(n, sizeof(*data));
 		for (j = 0, i = 0; i < scr->ntags; i++)
-			if (c->tags & (1ULL << i))
-				data[j++] = scr->tags[i].dt;
+			if (c->tags & (1ULL << i)) {
+				/* don't intern more than we need */
+				if (!(dt = scr->tags[i].dt))
+					dt = scr->tags[i].dt =
+					    XInternAtom(dpy, scr->tags[i].name, False);
+				data[j++] = dt;
+			}
 		XChangeProperty(dpy, c->win, _XA_DT_WORKSPACE_PRESENCE, XA_ATOM, 32,
 				PropModeReplace, (unsigned char *) data, n);
 		free(data);

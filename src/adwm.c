@@ -79,7 +79,6 @@ void restack_belowif(Client *c, Client *sibling);
 void run(void);
 void scan(void);
 void setfocus(Client *c);
-void setup(char *);
 void tag(Client *c, int index);
 void unmanage(Client *c, WithdrawCause cause);
 void updatestruts(void);
@@ -633,7 +632,7 @@ selectionclear(XEvent *e)
 }
 
 static void
-checkotherwm(void)
+checkotherwm(AdwmOperations *ops)
 {
 	Atom wm_sn, wm_protocols, manager;
 	Window wm_sn_owner;
@@ -699,8 +698,8 @@ checkotherwm(void)
 	hname.format = 8;
 	hname.nitems = strnlen(hostname, 64);
 
-	class_hint.res_name = NULL;
-	class_hint.res_class = "adwm";
+	class_hint.res_name = ops->name;
+	class_hint.res_class = ops->clas;
 
 	Xutf8SetWMProperties(dpy, scr->selwin, "Adwm version: " VERSION,
 			     "adwm " VERSION, cargv, cargc, NULL, NULL, &class_hint);
@@ -3160,7 +3159,7 @@ sighandler(int sig)
 }
 
 void
-setup(char *conf)
+setup(char *conf, AdwmOperations *ops)
 {
 	int d;
 	int i, j;
@@ -3169,16 +3168,6 @@ setup(char *conf)
 	Monitor *m;
 	XModifierKeymap *modmap;
 	XSetWindowAttributes wa;
-	char oldcwd[256], path[256] = "/";
-	char *home, *slash;
-
-	/* configuration files to open (%s gets converted to $HOME) */
-	const char *confs[] = {
-		conf,
-		"%s/.adwm/adwmrc",
-		SYSCONFPATH "/adwmrc",
-		NULL
-	};
 
 	/* init cursors */
 	cursor[CurResizeTopLeft] = XCreateFontCursor(dpy, XC_top_left_corner);
@@ -3213,32 +3202,7 @@ setup(char *conf)
 	sn_dpy = sn_display_new(dpy, NULL, NULL);
 #endif
 
-	/* init resource database */
-	XrmInitialize();
-
-	home = getenv("HOME");
-	if (!home)
-		*home = '/';
-	if (!getcwd(oldcwd, sizeof(oldcwd)))
-		eprint("adwm: getcwd error: %s\n", strerror(errno));
-
-	for (i = 0; confs[i] != NULL; i++) {
-		if (*confs[i] == '\0')
-			continue;
-		snprintf(conf, 255, confs[i], home);
-		/* retrieve path to chdir(2) to it */
-		slash = strrchr(conf, '/');
-		if (slash)
-			snprintf(path, slash - conf + 1, "%s", conf);
-		if (chdir(path) != 0)
-			fprintf(stderr, "adwm: cannot change directory\n");
-		xrdb = XrmGetFileDatabase(conf);
-		/* configuration file loaded successfully; break out */
-		if (xrdb)
-			break;
-	}
-	if (!xrdb)
-		fprintf(stderr, "adwm: no configuration file found, using defaults\n");
+	initrcfile();
 
 	initrules();
 
@@ -3248,20 +3212,25 @@ setup(char *conf)
 		if (!scr->managed)
 			continue;
 
+		/* init per-screen configuration */
 		initscreen();
 
-		/* init EWMH atom */
-		initewmh(scr->selwin);
+		/* init EWMH atoms */
+		initewmh(ops->name);
 
-		/* init tags */
+		/* init tags before initializing monitors */
 		inittags();
+		ewmh_process_net_number_of_desktops();
+		ewmh_process_net_desktop_names();
+
 		/* init geometry */
 		initmonitors(NULL);
 
-		/* init modkey */
+		/* init key bindings */
 		initkeys();
 
 		initlayouts();
+		ewmh_update_net_desktop_modes();
 
 		ewmh_process_net_desktop_layout();
 		ewmh_update_net_desktop_layout();
@@ -3283,9 +3252,6 @@ setup(char *conf)
 		ewmh_process_net_showing_desktop();
 		ewmh_update_net_showing_desktop();
 	}
-
-	if (chdir(oldcwd) != 0)
-		fprintf(stderr, "adwm: cannot change directory\n");
 
 	/* multihead support */
 	XQueryPointer(dpy, scr->root, &proot, &w, &d, &d, &d, &d, &mask);
@@ -3927,7 +3893,7 @@ main(int argc, char *argv[])
 	if (argc == 3 && !strcmp("-f", argv[1]))
 		snprintf(conf, sizeof(conf), "%s", argv[2]);
 	else if (argc == 2 && !strcmp("-v", argv[1]))
-		eprint("adwm-" VERSION " (c) 2011 Alexander Polakov\n");
+		eprint("adwm-" VERSION " (c) 2014 Brian Bidulock\n");
 	else if (argc != 1)
 		eprint("usage: adwm [-v] [-f conf]\n");
 
@@ -4002,13 +3968,13 @@ main(int argc, char *argv[])
 	for (scr = screens; scr < screens + nscr; scr++)
 		if (scr->managed) {
 			DPRINTF("checking screen %d\n", scr->screen);
-			checkotherwm();
+			checkotherwm(baseops);
 		}
 	for (scr = screens; scr < screens + nscr && !scr->managed; scr++) ;
 	if (scr == screens + nscr)
 		eprint
 		    ("adwm: another window manager is already running on each screen\n");
-	setup(conf);
+	setup(conf, baseops);
 	for (scr = screens; scr < screens + nscr; scr++)
 		if (scr->managed) {
 			DPRINTF("scanning screen %d\n", scr->screen);

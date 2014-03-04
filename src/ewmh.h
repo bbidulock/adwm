@@ -9,7 +9,7 @@ Bool clientmessage(XEvent *e);
 void ewmh_release_user_time_window(Client *c);
 Atom *getatom(Window win, Atom atom, unsigned long *nitems);
 long *getcard(Window win, Atom atom, unsigned long *nitems);
-void initewmh(Window w);
+void initewmh(char *name);
 void exitewmh(WithdrawCause cause);
 void ewmh_add_client(Client *c);
 void ewmh_del_client(Client *c, WithdrawCause cause);

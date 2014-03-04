@@ -987,12 +987,15 @@ struct Notify {
 
 typedef struct {
 	void *handle;
-	const char *name;
-	const char *clas;
-	void (*initrcfile) (void);
-	void (*initconfig) (void);
-	void (*initkeys) (void);
-	void (*initstyle) (void);
+	char *name;
+	char *clas;
+	void (*initrcfile) (void);  /* locate and read primary rc databases */
+	void (*initconfig) (void);  /* perform global configuration */
+	void (*initscreen) (void);  /* perform per-screen configuration */
+	void (*inittags) (void);    /* initialize per-screen tags */
+	void (*initkeys) (void);    /* initialize per-screen key bindings */
+	void (*initlayouts) (void); /* initialize views and layouts */
+	void (*initstyle) (void);   /* initialize per-screen style */
 	void (*deinitstyle) (void);
 	void (*drawclient) (Client *);
 } AdwmOperations;
@@ -1130,7 +1133,7 @@ extern XContext context[];
 extern Time user_time;
 extern Bool haveext[];
 
-extern XrmDatabase xresdb;
+extern XrmDatabase xresdb, xrdb;
 extern int cargc;
 extern char **cargv;
 #ifdef STARTUP_NOTIFICATION

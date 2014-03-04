@@ -21,6 +21,7 @@
 #include <X11/xpm.h>
 #endif
 #include "adwm.h"
+#include "config.h"
 #include "resource.h"
 #include "parse.h"
 
@@ -43,42 +44,13 @@ typedef struct {
 	char *sdir;			/* system directory */
 } AdwmConfig;
 
+Options options;
+
 static AdwmConfig config;
 
 static XrmDatabase xconfigdb;
 static XrmDatabase xstyledb;
 static XrmDatabase xkeysdb;
-
-typedef struct {
-	const char *layout;
-	const char *name;
-} AdwmView;
-
-typedef struct {
-	Bool attachaside;
-	const char *command;
-	Bool decoratetiled;
-	Bool decoratemax;
-	Bool hidebastards;
-	Bool autoroll;
-	Bool sloppy;
-	unsigned snap;
-	struct {
-		unsigned position;
-		unsigned orient;
-	} dock;
-	unsigned dragdistance;
-	double mwfact;
-	double mhfact;
-	unsigned ncolumns;
-	const char *deflayout;
-	struct {
-		unsigned number;
-	} tags;
-	AdwmView *views;
-} AdwmSession;
-
-static AdwmSession session;
 
 typedef struct {
 	struct {
@@ -107,6 +79,9 @@ typedef struct {
 
 static AdwmStyle *styles;
 
+/** @brief initrcfile_ADWM: locate and load runtime configuration file
+  *
+  * @{ */
 static void
 initrcfile_ADWM(void)
 {
@@ -210,102 +185,235 @@ initrcfile_ADWM(void)
 
 	styles = calloc(nscr, sizeof(*styles));
 }
+/** @} */
 
+
+/** @brief initconfig_ADWM: perform global configuration
+  *
+  * @{ */
 static void
 initconfig_ADWM(void)
 {
 	const char *res;
 	char name[256], clas[256], *n, *c;
 	size_t nlen, clen;
-	int i;
-	unsigned num;
-
-	static const char *def[] = {
-		"1", "2", "3", "4", "5", "6", "7", "8", "9", "10",
-		"11", "12", "13", "14", "15", "16", "17", "18", "19", "20",
-		"21", "22", "23", "24", "25", "26", "27", "28", "29", "30",
-		"31", "32", "33", "34", "35", "36", "37", "38", "39", "40",
-		"41", "42", "43", "44", "45", "46", "47", "48", "49", "50",
-		"51", "52", "53", "54", "55", "56", "57", "58", "59", "60",
-		"61", "62", "63", "64"
-	};
 
 	xresdb = xconfigdb;
-	if (!session.views) {
-		getbool("adwm.session.attachaside", "Adwm.Session.AttachASide", "1", True,
-			&session.attachaside);
-		res = readres("adwm.session.command", "Adwm.Session.Command", COMMAND);
-		session.command = res;
-		getbool("adwm.session.decoratetiled", "Adwm.Session.DecorateTiled", "1",
-			False, &session.decoratetiled);
-		getbool("adwm.session.decoratemax", "Adwm.Session.DecorateMax", "1", True,
-			&session.decoratemax);
-		getbool("adwm.session.hidebastards", "Adwm.Session.HideBastards", "1",
-			False, &session.hidebastards);
-		getbool("adwm.session.autoroll", "Adwm.Session.AutoRoll", "1", False,
-			&session.autoroll);
-		getbool("adwm.session.sloppy", "Adwm.Session.Sloppy", "1", False,
-			&session.sloppy);
-		res = readres("adwm.session.snap", "Adwm.Session.Snap", STR(SNAP));
-		session.snap = strtoul(res, NULL, 0);
-		res = readres("adwm.session.dock.position", "Adwm.Session.Dock.Position",
-			      "1");
-		session.dock.position = strtoul(res, NULL, 0);
-		res = readres("adwm.session.dock.orient", "Adwm.Session.Dock.Orient",
-			      "1");
-		session.dock.orient = strtoul(res, NULL, 0);
-		res = readres("adwm.session.dragdistance", "Adwm.Session.DragDistance",
-			      "5");
-		session.dragdistance = strtoul(res, NULL, 0);
-		res = readres("adwm.session.mwfact", "Adwm.Session.Mwfact",
-			      STR(DEFMWFACT));
-		session.mwfact = strtod(res, NULL);
-		res = readres("adwm.session.mhfact", "Adwm.Session.Mhfact",
-			      STR(DEFMHFACT));
-		session.mhfact = strtod(res, NULL);
-		res = readres("adwm.session.ncolumns", "Adwm.Session.NColumns",
-			      STR(DEFNCOLUMNS));
-		session.ncolumns = strtoul(res, NULL, 0);
-		res = readres("adwm.session.deflayout", "Adwm.Session.DefLayout", "i");
-		session.deflayout = res;
-		res =
-		    readres("adwm.session.tags.number", "Adwm.Session.Tags.number", "5");
-		session.tags.number = strtoul(res, NULL, 0);
 
-		res =
-		    readres("adwm.session.tags.number", "Adwm.Session.Tags.number", "5");
-		num = strtoul(res, NULL, 0);
-		if (num < 1)
-			num = 1;
-		if (num > MAXTAGS)
-			num = MAXTAGS;
-		session.tags.number = num;
+	strcpy(name, "adwm.session.");
+	strcpy(clas, "Adwm.Session.");
+	nlen = strlen(name);
+	clen = strlen(clas);
+	n = name + nlen;
+	c = clas + clen;
+	nlen = sizeof(name) - nlen;
+	clen = sizeof(clas) - clen;
 
-		strncpy(name, "adwm.session.tags.", sizeof(name));
-		nlen = strlen(name);
-		n = name + nlen;
-		nlen = sizeof(name) - nlen;
-		strncpy(clas, "Adwm.Session.Tags.", sizeof(clas));
-		clen = strlen(clas);
-		c = clas + clen;
-		clen = sizeof(clas) - clen;
+	strncpy(n, "attachaside", nlen);
+	strncpy(c, "Attachaside", clen);
+	options.attachaside  = atoi(readres(name, clas, "1")) ? True : False;
+	strncpy(n, "command", nlen);
+	strncpy(c, "Command", clen);
+	options.command = readres(name, clas, COMMAND);
+	strncpy(n, "decoratetiled", nlen);
+	strncpy(c, "Decoratetiled", clen);
+	options.dectiled = atoi(readres(name, clas, STR(DECORATETILED)));
+	strncpy(n, "decoratemax", nlen);
+	strncpy(c, "Decoratemax", clen);
+	options.decmax = atoi(readres(name, clas, STR(DECORATEMAX)));
+	strncpy(n, "hidebastards", nlen);
+	strncpy(c, "Hidebastards", clen);
+	options.hidebastards = atoi(readres(name, clas, "0")) ? True : False;
+	strncpy(n, "autoroll", nlen);
+	strncpy(c, "Autoroll", clen);
+	options.autoroll = atoi(readres(name, clas, "0")) ? True : False;
+	strncpy(n, "sloppy", nlen);
+	strncpy(c, "Sloppy", clen);
+	options.focus = atoi(readres(name, clas, "0"));
+	strncpy(n, "snap", nlen);
+	strncpy(c, "Snap", clen);
+	options.snap = atoi(readres(name, clas, STR(SNAP)));
+	strncpy(n, "dock.position", nlen);
+	strncpy(c, "Dock.Position", clen);
+	options.dockpos = atoi(readres(name, clas, "1"));
+	strncpy(n, "dock.orient", nlen);
+	strncpy(c, "Dock.Orient", clen);
+	options.dockori = atoi(readres(name, clas, "1"));
+	strncpy(n, "dragdistance", nlen);
+	strncpy(c, "Dragdistance", clen);
+	options.dragdist = atoi(readres(name, clas, "5"));
 
-		num = MAXTAGS;
-		session.views = calloc(num, sizeof(*session.views));
+	strncpy(n, "mwfact", nlen);
+	strncpy(c, "Mwfact", clen);
+	options.mwfact = atof(readres(name, clas, STR(DEFMWFACT)));
+	if (options.mwfact < 0.10 || options.mwfact > 0.90)
+		options.mwfact = DEFMWFACT;
 
-		for (i = 0; i < num; i++) {
-			snprintf(n, nlen, "layout%d", i);
-			snprintf(c, clen, "Layout%d", i);
-			res = readres(name, clas, session.deflayout);
-			session.views[i].layout = res;
+	strncpy(n, "mhfact", nlen);
+	strncpy(c, "Mhfact", clen);
+	options.mhfact = atof(readres(name, clas, STR(DEFMHFACT)));
+	if (options.mhfact < 0.10 || options.mhfact > 0.90)
+		options.mhfact = DEFMHFACT;
 
-			snprintf(n, nlen, "name%d", i);
-			snprintf(n, clen, "Name%d", i);
-			res = readres(name, clas, def[i]);
-			session.views[i].name = res;
-		}
+	strncpy(n, "nmaster", nlen);
+	strncpy(c, "Nmaster", clen);
+	options.nmaster = atof(readres(name, clas, STR(DEFNMASTER)));
+	if (options.nmaster < 1 || options.nmaster > 10)
+		options.nmaster = DEFNMASTER;
+
+	strncpy(n, "ncolumns", nlen);
+	strncpy(c, "Ncolumns", clen);
+	options.ncolumns = atof(readres(name, clas, STR(DEFNCOLUMNS)));
+	if (options.ncolumns < 1 || options.ncolumns > 10)
+		options.ncolumns = DEFNCOLUMNS;
+
+	strncpy(n, "deflayout", nlen);
+	strncpy(c, "Deflayout", clen);
+	res = readres(name, clas, "i");
+	if (strlen(res) == 1)
+		options.deflayout = res;
+	else
+		options.deflayout = "i";
+
+	strncpy(n, "tags.number", nlen);
+	strncpy(c, "Tags.Number", clen);
+	options.ntags = atoi(readres(name, clas, "5"));
+	if (options.ntags < 1 || options.ntags > MAXTAGS)
+		options.ntags = 5;
+}
+/** @} */
+
+/** @brief initscreen_ADWM: perform per-screen configuration
+  *
+  * @{ */
+static void
+initscreen_ADWM(void)
+{
+	const char *res;
+	char name[256], clas[256], *n, *c;
+	size_t nlen, clen;
+	unsigned s = scr->screen;
+
+	xresdb = xconfigdb;
+
+	snprintf(name, sizeof(name), "adwm.screen%u.", s);
+	snprintf(clas, sizeof(clas), "Adwm.Screen%u.", s);
+	nlen = strnlen(name, sizeof(name));
+	clen = strnlen(clas, sizeof(clas));
+	n = name + nlen;
+	c = clas + clen;
+	nlen = sizeof(name) - nlen;
+	clen = sizeof(clas) - clen;
+
+	scr->options = options;
+
+	strncpy(n, "attachaside", nlen);
+	strncpy(c, "Attachaside", clen);
+	if ((res = readres(name, clas, NULL)))
+		scr->options.attachaside = atoi(res) ? True : False;
+	strncpy(n, "command", nlen);
+	strncpy(c, "Command", clen);
+	if ((res = readres(name, clas, NULL)))
+		scr->options.command = res;
+	strncpy(n, "decoratetiled", nlen);
+	strncpy(c, "Decoratetiled", clen);
+	if ((res = readres(name, clas, NULL)))
+		scr->options.dectiled = atoi(res);
+	strncpy(n, "decoratemax", nlen);
+	strncpy(c, "Decoratemax", clen);
+	if ((res = readres(name, clas, NULL)))
+		scr->options.decmax = atoi(res) ? True : False;
+	strncpy(n, "hidebastards", nlen);
+	strncpy(c, "Hidebastards", clen);
+	if ((res = readres(name, clas, NULL)))
+		scr->options.hidebastards = atoi(res) ? True : False;
+	strncpy(n, "autoroll", nlen);
+	strncpy(c, "Autoroll", clen);
+	if ((res = readres(name, clas, NULL)))
+		scr->options.autoroll = atoi(res) ? True : False;
+	strncpy(n, "sloppy", nlen);
+	strncpy(c, "Sloppy", clen);
+	if ((res = readres(name, clas, NULL)))
+		scr->options.focus = atoi(res);
+	strncpy(n, "snap", nlen);
+	strncpy(c, "Snap", clen);
+	if ((res = readres(name, clas, NULL)))
+		scr->options.snap = atoi(res);
+	strncpy(n, "dock.position", nlen);
+	strncpy(c, "Dock.Position", clen);
+	if ((res = readres(name, clas, NULL)))
+		scr->options.dockpos = atoi(res);
+	strncpy(n, "dock.orient", nlen);
+	strncpy(c, "Dock.Orient", clen);
+	if ((res = readres(name, clas, NULL)))
+		scr->options.dockori = atoi(res);
+	strncpy(n, "dragdistance", nlen);
+	strncpy(c, "Dragdistance", clen);
+	if ((res = readres(name, clas, NULL)))
+		scr->options.dragdist = atoi(res);
+	strncpy(n, "mwfact", nlen);
+	strncpy(c, "Mwfact", clen);
+	if ((res = readres(name, clas, NULL))) {
+		scr->options.mwfact = atof(res);
+		if (scr->options.mwfact < 0.10 || scr->options.mwfact > 0.90)
+			scr->options.mwfact = options.mwfact;
+	}
+	strncpy(n, "mhfact", nlen);
+	strncpy(c, "Mhfact", clen);
+	if ((res = readres(name, clas, NULL))) {
+		scr->options.mhfact = atof(res);
+		if (scr->options.mhfact < 0.10 || scr->options.mhfact > 0.90)
+			scr->options.mhfact = options.mhfact;
+	}
+	strncpy(n, "nmaster", nlen);
+	strncpy(c, "Nmaster", clen);
+	if ((res = readres(name, clas, NULL))) {
+		scr->options.nmaster = atoi(res);
+		if (scr->options.nmaster < 1 || scr->options.nmaster > 10)
+			scr->options.nmaster = options.nmaster;
+	}
+	strncpy(n, "ncolumns", nlen);
+	strncpy(c, "Ncolumns", clen);
+	if ((res = readres(name, clas, NULL))) {
+		scr->options.ncolumns = atoi(res);
+		if (scr->options.ncolumns < 1 || scr->options.ncolumns > 10)
+			scr->options.ncolumns = options.ncolumns;
+	}
+	strncpy(n, "deflayout", nlen);
+	strncpy(c, "Deflayout", clen);
+	if ((res = readres(name, clas, NULL))) {
+		if (strnlen(res, 2) == 1)
+			scr->options.deflayout = res;
 	}
 }
+/** @} */
+
+/** @brief inittags_ADWM: initialize tags
+  *
+  * Set each tag to the default name
+  *
+  * @{ */
+static void
+inittags_ADWM(void)
+{
+	unsigned i, s = scr->screen;
+
+	xresdb = xconfigdb;
+
+	for (i = 0; i < MAXTAGS; i++) {
+		const char *res;
+		char name[256], clas[256], def[8];
+		Tag *t = scr->tags + i;
+
+		snprintf(def, sizeof(def), "%u", i);
+		snprintf(name, sizeof(name), "adwm.screen%u.tags.name%u", s, i);
+		snprintf(clas, sizeof(clas), "Adwm.Screen%u.Tags.Name%u", s, i);
+		res = readres(name, clas, def);
+		snprintf(t->name, sizeof(t->name), res);
+	}
+	scr->ntags = scr->options.ntags;
+}
+/** @} */
 
 typedef struct {
 	const char *name;
@@ -780,6 +888,56 @@ initkeys_ADWM(void)
 	}
 }
 
+/** @brief initlayouts_ADWM: perform per-screen view and layout initialization
+  *
+  * @{ */
+static void
+initlayouts_ADWM(void)
+{
+	unsigned i, s = scr->screen;
+
+	xresdb = xconfigdb;
+
+	for (i = 0; i < MAXTAGS; i++) {
+		const char *res;
+		char name[256], clas[256];
+		Layout *l;
+		View *v = scr->views + i;
+
+		snprintf(name, sizeof(name), "adwm.screen%u.tags.layout%u", s, i);
+		snprintf(clas, sizeof(clas), "Adwm.Screen%u.Tags.Layout%u", s, i);
+		res = readres(name, clas, scr->options.deflayout);
+		v->layout = layouts;
+		for (l = layouts; l->symbol; l++)
+			if (l->symbol == *res) {
+				v->layout = l;
+				break;
+			}
+		l = v->layout;
+		v->barpos = StrutsOn;
+		v->dectiled = scr->options.dectiled;
+		v->nmaster = scr->options.nmaster;
+		v->ncolumns = scr->options.ncolumns;
+		v->mwfact = scr->options.mwfact;
+		v->mhfact = scr->options.mhfact;
+		v->major = l->major;
+		v->minor = l->minor;
+		v->placement = l->placement;
+		v->index = i;
+		v->seltags = (1ULL << i);
+		/* probably unnecessary: will be done by
+		   ewmh_process_net_desktop_layout() */
+		if (scr->d.rows && scr->d.cols) {
+			v->row = i / scr->d.cols;
+			v->col = i - v->row * scr->d.cols;
+		} else {
+			v->row = -1;
+			v->col = -1;
+		}
+	}
+}
+/** @} */
+
 static void
 initstyle_ADWM(void)
 {
@@ -787,6 +945,7 @@ initstyle_ADWM(void)
 	AdwmStyle *style;
 
 	xresdb = xstyledb;
+
 	if (!styles)
 		styles = ecalloc(nscr, sizeof(*styles));
 	style = styles + scr->screen;
@@ -931,7 +1090,10 @@ AdwmOperations adwm_ops = {
 	.clas = "Adwm",
 	.initrcfile = &initrcfile_ADWM,
 	.initconfig = &initconfig_ADWM,
+	.initscreen = &initscreen_ADWM,
+	.inittags = &inittags_ADWM,
 	.initkeys = &initkeys_ADWM,
+	.initlayouts = &initlayouts_ADWM,
 	.initstyle = &initstyle_ADWM,
 	.deinitstyle = &deinitstyle_ADWM,
 	.drawclient = &drawclient_ADWM,

@@ -1,3 +1,5 @@
+#include <unistd.h>
+#include <errno.h>
 #include <regex.h>
 #include <ctype.h>
 #include <assert.h>
@@ -8,14 +10,29 @@
 #include <X11/Xlib.h>
 #include <X11/Xproto.h>
 #include <X11/Xutil.h>
+#include <X11/Xresource.h>
 #include <X11/Xft/Xft.h>
+#ifdef IMLIB2
+#include <Imlib2.h>
+#endif
+#ifdef XPM
+#include <X11/xpm.h>
+#endif
 #include "adwm.h"
-#include "ewmh.h"
 #include "layout.h"
 #include "tags.h"
 #include "config.h"
 
 Options options;
+
+typedef struct {
+	char *rcfile;			/* rcfile */
+	char *udir;			/* user directory */
+	char *pdir;			/* private directory */
+	char *sdir;			/* system directory */
+} AdwmConfig;
+
+static AdwmConfig config;
 
 void
 inittags(void)
@@ -33,8 +50,6 @@ inittags(void)
 		snprintf(t->name, sizeof(t->name), res);
 	}
 	scr->ntags = scr->options.ntags;
-	ewmh_process_net_number_of_desktops();
-	ewmh_process_net_desktop_names();
 }
 
 void
@@ -68,6 +83,8 @@ initlayouts(void)
 		v->placement = l->placement;
 		v->index = i;
 		v->seltags = (1ULL << i);
+		/* probably unnecessary: will be done by
+		   ewmh_process_net_desktop_layout() */
 		if (scr->d.rows && scr->d.cols) {
 			v->row = i / scr->d.cols;
 			v->col = i - v->row * scr->d.cols;
@@ -76,7 +93,6 @@ initlayouts(void)
 			v->col = -1;
 		}
 	}
-	ewmh_update_net_desktop_modes();
 }
 
 void
@@ -200,4 +216,109 @@ initconfig(void)
 	options.ntags = strtoul(getresource("tags.number", "5"), NULL, 0);
 	if (options.ntags < 1 || options.ntags > MAXTAGS)
 		options.ntags = 5;
+}
+
+void
+initrcfile(void)
+{
+	const char *home = getenv("HOME") ? : ".";
+	const char *file = NULL;
+	char *pos;
+	int i, len;
+	char *owd;
+	struct stat st;
+
+	/* init resource database */
+	XrmInitialize();
+
+	owd = calloc(PATH_MAX, sizeof(*owd));
+	if (!getcwd(owd, PATH_MAX))
+		strcpy(owd, "/");
+
+	for (i = 0; i < cargc - 1; i++)
+		if (!strcmp(cargv[i], "-f"))
+			file = cargv[i + 1];
+	free(config.rcfile);
+	if (file) {
+		if (*file == '/')
+			config.rcfile = strdup(file);
+		else {
+			len = strlen(home) + strlen(file) + 2;
+			config.rcfile = ecalloc(len, sizeof(*config.rcfile));
+			strcpy(config.rcfile, home);
+			strcat(config.rcfile, "/");
+			strcat(config.rcfile, file);
+		}
+	} else {
+		len = strlen(home) + strlen("/.adwm/adwmrc") + 1;
+		config.rcfile = ecalloc(len, sizeof(*config.rcfile));
+		strcpy(config.rcfile, home);
+		strcat(config.rcfile, "/.adwm/adwmrc");
+		if (!lstat(config.rcfile, &st) && S_ISLNK(st.st_mode)) {
+			char *buf = ecalloc(PATH_MAX + 1, sizeof(*buf));
+
+			if (readlink(config.rcfile, buf, PATH_MAX) == -1)
+				eprint("%s: %s\n", config.rcfile, strerror(errno));
+			if (*buf == '/') {
+				free(config.rcfile);
+				config.rcfile = strdup(buf);
+			} else if (*buf) {
+				free(config.rcfile);
+				len = strlen(home) + strlen(buf) + 2;
+				config.rcfile = ecalloc(len, sizeof(*config.rcfile));
+				strcpy(config.rcfile, home);
+				strcat(config.rcfile, "/");
+				strcat(config.rcfile, buf);
+			}
+			free(buf);
+		}
+
+	}
+	free(config.pdir);
+	config.pdir = strdup(config.rcfile);
+	if ((pos = strrchr(config.pdir, '/')))
+		*pos = '\0';
+	free(config.udir);
+	config.udir = ecalloc(strlen(home) + strlen("/.adwm") + 1, sizeof(*config.udir));
+	strcpy(config.udir, home);
+	strcat(config.udir, "/.adwm");
+	free(config.sdir);
+	config.sdir = strdup("/usr/share/adwm");
+	if (!strncmp(home, config.pdir, strlen(home))) {
+		free(config.pdir);
+		config.pdir = strdup(config.udir);
+	}
+
+	xrdb = XrmGetFileDatabase(config.rcfile);
+	if (!xrdb) {
+		DPRINTF("Couldn't find database file '%s'\n", config.rcfile);
+		free(config.rcfile);
+		len = strlen(config.pdir) + strlen("/adwmrc") + 2;
+		config.rcfile = ecalloc(len, sizeof(*config.rcfile));
+		strcpy(config.rcfile, config.pdir);
+		strcat(config.rcfile, "/adwmrc");
+		xrdb = XrmGetFileDatabase(config.rcfile);
+	}
+	if (!xrdb) {
+		DPRINTF("Couldn't find database file '%s'\n", config.rcfile);
+		free(config.rcfile);
+		len = strlen(config.udir) + strlen("/adwmrc") + 2;
+		config.rcfile = ecalloc(len, sizeof(*config.rcfile));
+		strcpy(config.rcfile, config.udir);
+		strcat(config.rcfile, "/adwmrc");
+		xrdb = XrmGetFileDatabase(config.rcfile);
+	}
+	if (!xrdb) {
+		DPRINTF("Couldn't find database file '%s'\n", config.rcfile);
+		free(config.rcfile);
+		len = strlen(config.sdir) + strlen("/adwmrc") + 2;
+		config.rcfile = ecalloc(len, sizeof(*config.rcfile));
+		strcpy(config.rcfile, config.sdir);
+		strcat(config.rcfile, "/adwmrc");
+		xrdb = XrmGetFileDatabase(config.rcfile);
+	}
+	if (!xrdb) {
+		DPRINTF("Couldn't find database file '%s'\n", config.rcfile);
+		fprintf(stderr, "adwm: Could not find usable database, using defaults\n");
+	}
 }

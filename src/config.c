@@ -21,6 +21,7 @@
 #include "adwm.h"
 #include "layout.h"
 #include "tags.h"
+#include "resource.h"
 #include "config.h"
 
 Options options;
@@ -37,16 +38,19 @@ static AdwmConfig config;
 void
 inittags(void)
 {
-	unsigned i;
+	unsigned i, s = scr->screen;
+
+	xresdb = xrdb;
 
 	for (i = 0; i < MAXTAGS; i++) {
 		const char *res;
-		char name[256], def[8];
+		char name[256], clas[256], def[8];
 		Tag *t = scr->tags + i;
 
 		snprintf(def, sizeof(def), "%u", i);
-		snprintf(name, sizeof(name), "screen%d.tags.name%u", scr->screen, i);
-		res = getresource(name, def);
+		snprintf(name, sizeof(name), "adwm.screen%u.tags.name%u", s, i);
+		snprintf(clas, sizeof(clas), "Adwm.Screen%u.Tags.Name%u", s, i);
+		res = readres(name, clas, def);
 		snprintf(t->name, sizeof(t->name), res);
 	}
 	scr->ntags = scr->options.ntags;
@@ -55,16 +59,19 @@ inittags(void)
 void
 initlayouts(void)
 {
-	unsigned i;
+	unsigned i, s = scr->screen;;
+
+	xresdb = xrdb;
 
 	for (i = 0; i < MAXTAGS; i++) {
 		const char *res;
-		char name[256];
+		char name[256], clas[256];
 		Layout *l;
 		View *v = scr->views + i;
 
-		snprintf(name, sizeof(name), "screen%d.tags.layout%u", scr->screen, i);
-		res = getresource(name, scr->options.deflayout);
+		snprintf(name, sizeof(name), "adwm.screen%u.tags.layout%u", s, i);
+		snprintf(clas, sizeof(clas), "Adwm.Screen%u.Tags.Layout%u", s, i);
+		res = readres(name, clas, scr->options.deflayout);
 		v->layout = layouts;
 		for (l = layouts; l->symbol; l++)
 			if (l->symbol == *res) {
@@ -99,75 +106,98 @@ void
 initscreen(void)
 {
 	const char *res;
-	char name[256], *n;
-	size_t nlen;
+	char name[256], clas[256], *n, *c;
+	size_t nlen, clen;
+	unsigned s = scr->screen;
 
-	snprintf(name, sizeof(name), "screen%d.", scr->screen);
+	xresdb = xrdb;
+
+	snprintf(name, sizeof(name), "adwm.screen%u.", s);
+	snprintf(clas, sizeof(clas), "Adwm.Screen%u.", s);
 	nlen = strnlen(name, sizeof(name));
+	clen = strnlen(clas, sizeof(clas));
 	n = name + nlen;
+	c = clas + clen;
 	nlen = sizeof(name) - nlen;
+	clen = sizeof(clas) - clen;
 
 	scr->options = options;
 
 	strncpy(n, "attachside", nlen);
-	if ((res = getresource(name, NULL)))
+	strncpy(c, "Attachside", clen);
+	if ((res = readres(name, clas, NULL)))
 		scr->options.attachaside = atoi(res) ? True : False;
 	strncpy(n, "command", nlen);
-	if ((res = getresource(name, NULL)))
+	strncpy(c, "Command", clen);
+	if ((res = readres(name, clas, NULL)))
 		scr->options.command = res;
 	strncpy(n, "decoratetiled", nlen);
-	if ((res = getresource(name, NULL)))
+	strncpy(c, "Decoratetiled", clen);
+	if ((res = readres(name, clas, NULL)))
 		scr->options.dectiled = atoi(res);
 	strncpy(n, "decoratemax", nlen);
-	if ((res = getresource(name, NULL)))
+	strncpy(c, "Decoratemax", clen);
+	if ((res = readres(name, clas, NULL)))
 		scr->options.decmax = atoi(res) ? True : False;
 	strncpy(n, "hidebastards", nlen);
-	if ((res = getresource(name, NULL)))
+	strncpy(c, "Hidebastards", clen);
+	if ((res = readres(name, clas, NULL)))
 		scr->options.hidebastards = atoi(res) ? True : False;
 	strncpy(n, "autoroll", nlen);
-	if ((res = getresource(name, NULL)))
+	strncpy(c, "Autoroll", clen);
+	if ((res = readres(name, clas, NULL)))
 		scr->options.autoroll = atoi(res) ? True : False;
 	strncpy(n, "sloppy", nlen);
-	if ((res = getresource(name, NULL)))
+	strncpy(c, "Sloppy", clen);
+	if ((res = readres(name, clas, NULL)))
 		scr->options.focus = atoi(res);
 	strncpy(n, "snap", nlen);
-	if ((res = getresource(name, NULL)))
+	strncpy(c, "Snap", clen);
+	if ((res = readres(name, clas, NULL)))
 		scr->options.snap = atoi(res);
 	strncpy(n, "dock.position", nlen);
-	if ((res = getresource(name, NULL)))
+	strncpy(c, "Dock.Position", clen);
+	if ((res = readres(name, clas, NULL)))
 		scr->options.dockpos = atoi(res);
 	strncpy(n, "dock.orient", nlen);
-	if ((res = getresource(name, NULL)))
+	strncpy(c, "Dock.Orient", clen);
+	if ((res = readres(name, clas, NULL)))
 		scr->options.dockori = atoi(res);
 	strncpy(n, "dragdistance", nlen);
-	if ((res = getresource(name, NULL)))
+	strncpy(c, "Dragdistance", clen);
+	if ((res = readres(name, clas, NULL)))
 		scr->options.dragdist = atoi(res);
 	strncpy(n, "mwfact", nlen);
-	if ((res = getresource(name, NULL))) {
+	strncpy(c, "Mwfact", clen);
+	if ((res = readres(name, clas, NULL))) {
 		scr->options.mwfact = atof(res);
 		if (scr->options.mwfact < 0.10 || scr->options.mwfact > 0.90)
 			scr->options.mwfact = options.mwfact;
 	}
 	strncpy(n, "mhfact", nlen);
-	if ((res = getresource(name, NULL))) {
+	strncpy(c, "Mhfact", clen);
+	if ((res = readres(name, clas, NULL))) {
 		scr->options.mhfact = atof(res);
 		if (scr->options.mhfact < 0.10 || scr->options.mhfact > 0.90)
 			scr->options.mhfact = options.mhfact;
 	}
 	strncpy(n, "nmaster", nlen);
-	if ((res = getresource(name, NULL))) {
+	strncpy(c, "Nmaster", clen);
+	if ((res = readres(name, clas, NULL))) {
 		scr->options.nmaster = atoi(res);
 		if (scr->options.nmaster < 1 || scr->options.nmaster > 10)
 			scr->options.nmaster = options.nmaster;
 	}
 	strncpy(n, "ncolumns", nlen);
-	if ((res = getresource(name, NULL))) {
+	strncpy(c, "Ncolumns", clen);
+	if ((res = readres(name, clas, NULL))) {
 		scr->options.ncolumns = atoi(res);
 		if (scr->options.ncolumns < 1 || scr->options.ncolumns > 10)
 			scr->options.ncolumns = options.ncolumns;
 	}
 	strncpy(n, "deflayout", nlen);
-	if ((res = getresource(name, NULL))) {
+	strncpy(c, "Deflayout", clen);
+	if ((res = readres(name, clas, NULL))) {
 		if (strnlen(res, 2) == 1)
 			scr->options.deflayout = res;
 	}
@@ -177,43 +207,90 @@ void
 initconfig(void)
 {
 	const char *res;
+	char name[256], clas[256], *n, *c;
+	size_t nlen, clen;
+
+	xresdb = xrdb;
+
+	strcpy(name, "adwm.session.");
+	strcpy(clas, "Adwm.Session.");
+	nlen = strlen(name);
+	clen = strlen(clas);
+	n = name + nlen;
+	c = clas + clen;
+	nlen = sizeof(name) - nlen;
+	clen = sizeof(clas) - clen;
 
 	/* init appearance */
-	options.attachaside = atoi(getresource("attachaside", "1")) ? True : False;
-	options.command = getresource("command", COMMAND);
-	options.dectiled = atoi(getresource("decoratetiled", STR(DECORATETILED)));
-	options.decmax = atoi(getresource("decoratemax", STR(DECORATEMAX)));
-	options.hidebastards = atoi(getresource("hidebastards", "0")) ? True : False;
-	options.autoroll = atoi(getresource("autoroll", "0")) ? True : False;
-	options.focus = atoi(getresource("sloppy", "0"));
-	options.snap = atoi(getresource("snap", STR(SNAP)));
-	options.dockpos = atoi(getresource("dock.position", "1"));
-	options.dockori = atoi(getresource("dock.orient", "1"));
-	options.dragdist = atoi(getresource("dragdistance", "5"));
+	strcpy(n, "attachaside");
+	strcpy(c, "Attachaside");
+	options.attachaside = atoi(readres(name, clas, "1")) ? True : False;
+	strcpy(n, "command");
+	strcpy(c, "Command");
+	options.command = readres(name, clas, COMMAND);
+	strcpy(n, "decoratetiled");
+	strcpy(c, "Decoratetiled");
+	options.dectiled = atoi(readres(name, clas, STR(DECORATETILED)));
+	strcpy(n, "decoratemax");
+	strcpy(c, "Decoratemax");
+	options.decmax = atoi(readres(name, clas, STR(DECORATEMAX)));
+	strcpy(n, "hidebastards");
+	strcpy(c, "Hidebastards");
+	options.hidebastards = atoi(readres(name, clas, "0")) ? True : False;
+	strcpy(n, "autoroll");
+	strcpy(c, "Autoroll");
+	options.autoroll = atoi(readres(name, clas, "0")) ? True : False;
+	strcpy(n, "sloppy");
+	strcpy(c, "Sloppy");
+	options.focus = atoi(readres(name, clas, "0"));
+	strcpy(n, "snap");
+	strcpy(c, "Snap");
+	options.snap = atoi(readres(name, clas, STR(SNAP)));
+	strcpy(n, "dock.position");
+	strcpy(c, "Dock.Position");
+	options.dockpos = atoi(readres(name, clas, "1"));
+	strcpy(n, "dock.orient");
+	strcpy(c, "Dock.Orient");
+	options.dockori = atoi(readres(name, clas, "1"));
+	strcpy(n, "dragdistance");
+	strcpy(c, "Dragdistance");
+	options.dragdist = atoi(readres(name, clas, "5"));
 
-	options.mwfact = atof(getresource("mwfact", STR(DEFMWFACT)));
+	strcpy(n, "mwfact");
+	strcpy(c, "Mwfact");
+	options.mwfact = atof(readres(name, clas, STR(DEFMWFACT)));
 	if (options.mwfact < 0.10 || options.mwfact > 0.90)
 		options.mwfact = DEFMWFACT;
 
-	options.mhfact = atof(getresource("mhfact", STR(DEFMHFACT)));
+	strcpy(n, "mhfact");
+	strcpy(c, "Mhfact");
+	options.mhfact = atof(readres(name, clas, STR(DEFMHFACT)));
 	if (options.mhfact < 0.10 || options.mwfact > 0.90)
 		options.mhfact = DEFMHFACT;
 
-	options.nmaster = atoi(getresource("nmaster", STR(DEFNMASTER)));
+	strcpy(n, "nmaster");
+	strcpy(c, "Nmaster");
+	options.nmaster = atoi(readres(name, clas, STR(DEFNMASTER)));
 	if (options.nmaster < 1 || options.nmaster > 10)
 		options.nmaster = DEFNMASTER;
 
-	options.ncolumns = atoi(getresource("ncolumns", STR(DEFNCOLUMNS)));
+	strcpy(n, "ncolumns");
+	strcpy(c, "Ncolumns");
+	options.ncolumns = atoi(readres(name, clas, STR(DEFNCOLUMNS)));
 	if (options.ncolumns < 1 || options.ncolumns > 10)
 		options.ncolumns = DEFNCOLUMNS;
 
-	res = getresource("deflayout", "i");
+	strcpy(n, "deflayout");
+	strcpy(c, "Deflayout");
+	res = readres(name, clas, "i");
 	if (strlen(res) == 1)
 		options.deflayout = res;
 	else
 		options.deflayout = "i";
 
-	options.ntags = strtoul(getresource("tags.number", "5"), NULL, 0);
+	strcpy(n, "tags.number");
+	strcpy(c, "Tags.number");
+	options.ntags = strtoul(readres(name, clas, "5"), NULL, 0);
 	if (options.ntags < 1 || options.ntags > MAXTAGS)
 		options.ntags = 5;
 }
@@ -223,7 +300,7 @@ initrcfile(void)
 {
 	const char *home = getenv("HOME") ? : ".";
 	const char *file = NULL;
-	char *pos;
+	char *pos, *dir;
 	int i, len;
 	char *owd;
 	struct stat st;
@@ -289,7 +366,14 @@ initrcfile(void)
 		config.pdir = strdup(config.udir);
 	}
 
-	xrdb = XrmGetFileDatabase(config.rcfile);
+	if ((xrdb = XrmGetFileDatabase(config.rcfile))) {
+		dir = strdup(config.rcfile);
+		if (strrchr(dir, '/'))
+			*strrchr(dir, '/') = '\0';
+		if (chdir(dir))
+			DPRINTF("Could not change directory to %s: %s\n", dir, strerror(errno));
+		free(dir);
+	}
 	if (!xrdb) {
 		DPRINTF("Couldn't find database file '%s'\n", config.rcfile);
 		free(config.rcfile);
@@ -297,7 +381,14 @@ initrcfile(void)
 		config.rcfile = ecalloc(len, sizeof(*config.rcfile));
 		strcpy(config.rcfile, config.pdir);
 		strcat(config.rcfile, "/adwmrc");
-		xrdb = XrmGetFileDatabase(config.rcfile);
+		if ((xrdb = XrmGetFileDatabase(config.rcfile))) {
+			dir = strdup(config.rcfile);
+			if (strrchr(dir, '/'))
+				*strrchr(dir, '/') = '\0';
+			if (chdir(dir))
+				DPRINTF("Could not change directory to %s: %s\n", dir, strerror(errno));
+			free(dir);
+		}
 	}
 	if (!xrdb) {
 		DPRINTF("Couldn't find database file '%s'\n", config.rcfile);
@@ -306,7 +397,14 @@ initrcfile(void)
 		config.rcfile = ecalloc(len, sizeof(*config.rcfile));
 		strcpy(config.rcfile, config.udir);
 		strcat(config.rcfile, "/adwmrc");
-		xrdb = XrmGetFileDatabase(config.rcfile);
+		if ((xrdb = XrmGetFileDatabase(config.rcfile))) {
+			dir = strdup(config.rcfile);
+			if (strrchr(dir, '/'))
+				*strrchr(dir, '/') = '\0';
+			if (chdir(dir))
+				DPRINTF("Could not change directory to %s: %s\n", dir, strerror(errno));
+			free(dir);
+		}
 	}
 	if (!xrdb) {
 		DPRINTF("Couldn't find database file '%s'\n", config.rcfile);
@@ -315,10 +413,19 @@ initrcfile(void)
 		config.rcfile = ecalloc(len, sizeof(*config.rcfile));
 		strcpy(config.rcfile, config.sdir);
 		strcat(config.rcfile, "/adwmrc");
-		xrdb = XrmGetFileDatabase(config.rcfile);
+		if ((xrdb = XrmGetFileDatabase(config.rcfile))) {
+			dir = strdup(config.rcfile);
+			if (strrchr(dir, '/'))
+				*strrchr(dir, '/') = '\0';
+			if (chdir(dir))
+				DPRINTF("Could not change directory to %s: %s\n", dir, strerror(errno));
+			free(dir);
+		}
 	}
 	if (!xrdb) {
 		DPRINTF("Couldn't find database file '%s'\n", config.rcfile);
 		fprintf(stderr, "adwm: Could not find usable database, using defaults\n");
+		if (chdir(config.udir))
+			DPRINTF("Could not change directory to %s: %s\n", config.udir, strerror(errno));
 	}
 }

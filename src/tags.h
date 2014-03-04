@@ -3,8 +3,6 @@
 #ifndef __LOCAL_TAGS_H__
 #define __LOCAL_TAGS_H__
 
-void inittags(void);
-void initlayouts(void);
 void settags(unsigned numtags);
 void appendtag(void);
 void rmlasttag(void);

@@ -300,87 +300,6 @@ taketoright(Client *c)
 	taketo(c, m->curview->index);
 }
 
-static void
-initview(unsigned int i)
-{
-	char conf[32], ltname;
-	Layout *l;
-	View *v = scr->views + i;
-
-	v->layout = layouts;
-	snprintf(conf, sizeof(conf), "tags.layout%d", i);
-	strncpy(&ltname, getresource(conf, scr->options.deflayout), 1);
-	for (l = layouts; l->symbol; l++)
-		if (l->symbol == ltname) {
-			v->layout = l;
-			break;
-		}
-	l = v->layout;
-	v->barpos = StrutsOn;
-	v->dectiled = scr->options.dectiled;
-	v->nmaster = scr->options.nmaster;
-	v->ncolumns = scr->options.ncolumns;
-	v->mwfact = scr->options.mwfact;
-	v->mhfact = scr->options.mhfact;
-	v->major = l->major;
-	v->minor = l->minor;
-	v->placement = l->placement;
-	v->index = i;
-	v->seltags = (1ULL << i);
-	if (scr->d.rows && scr->d.cols) {
-		v->row = i / scr->d.cols;
-		v->col = i - v->row * scr->d.cols;
-	} else {
-		v->row = -1;
-		v->col = -1;
-	}
-}
-
-static void
-newview(unsigned int i)
-{
-	initview(i);
-}
-
-static void
-inittag(unsigned i)
-{
-	char conf[32], def[8];
-
-	snprintf(conf, sizeof(conf), "tags.name%d", i);
-	snprintf(def, sizeof(def), "%u", i);
-	snprintf(scr->tags[i].name, sizeof(scr->tags[i].name), "%s",
-		 getresource(conf, def));
-	scr->tags[i].dt = XInternAtom(dpy, scr->tags[i].name, False);
-	DPRINTF("Assigned name '%s' to tag %u\n", scr->tags[i].name, i);
-}
-
-static void
-newtag(unsigned i)
-{
-	inittag(i);
-}
-
-void
-inittags()
-{
-	scr->ntags = scr->options.ntags;
-	ewmh_process_net_number_of_desktops();
-	scr->views = ecalloc(scr->ntags, sizeof(*scr->views));
-	scr->tags = ecalloc(scr->ntags, sizeof(*scr->tags));
-	ewmh_process_net_desktop_names();
-}
-
-void
-initlayouts()
-{
-	unsigned i;
-
-	for (i = 0; i < scr->ntags; i++)
-		initview(i);
-	ewmh_update_net_desktop_modes();
-}
-
 static Bool
 isomni(Client *c)
 {
@@ -428,19 +347,11 @@ static void
 addtag()
 {
 	Client *c;
-	unsigned int n;
 	unsigned long long alltags;
 
 	if (scr->ntags >= MAXTAGS)
 		/* stop the insanity, go organic */
 		return;
-
-	n = scr->ntags + 1;
-	scr->views = erealloc(scr->views, n * sizeof(*scr->views));
-	newview(scr->ntags);
-	scr->tags = erealloc(scr->tags, n * sizeof(*scr->tags));
-	newtag(scr->ntags);
-
 	alltags = ((1ULL << scr->ntags) - 1);
 	for (c = scr->clients; c; c = c->next)
 		if (((c->tags & alltags) == alltags) || c->is.sticky)

@@ -3,6 +3,9 @@
 #ifndef __LOCAL_CONFIG_H__
 #define __LOCAL_CONFIG_H__
 
+void inittags(void);
+void initlayouts(void);
+void initscreen(void);
 void initconfig(void);
 
 #endif				/* __LOCAL_CONFIG_H__ */

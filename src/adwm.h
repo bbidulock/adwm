@@ -931,8 +931,8 @@ struct AScreen {
 	Bool showing_desktop;
 	int screen;
 	unsigned ntags;
-	View *views;
-	Tag *tags;
+	View views[MAXTAGS];
+	Tag tags[MAXTAGS];
 	Key **keys;
 	unsigned nkeys;
 	struct {
@@ -961,6 +961,9 @@ struct AScreen {
 	XColor *colors;			/* colormap */
 	int ncolors;			/* number of colors in colormap */
 	int cpc;
+#endif
+#ifdef STARTUP_NOTIFICATION
+	SnMonitorContext *ctx;
 #endif
 	Options options;		/* screen-specific options */
 };
@@ -1127,13 +1130,11 @@ extern XContext context[];
 extern Time user_time;
 extern Bool haveext[];
 
-#ifdef STARTUP_NOTIFICATION
-extern SnDisplay *sn_dpy;
-extern SnMonitorContext *sn_ctx;
-extern Notify *notifies;
-#endif
 extern XrmDatabase xresdb;
 extern int cargc;
 extern char **cargv;
+#ifdef STARTUP_NOTIFICATION
+extern SnDisplay *sn_dpy;
+#endif
 
 #endif				/* __LOCAL_ADWM_H__ */

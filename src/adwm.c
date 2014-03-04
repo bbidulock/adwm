@@ -110,8 +110,6 @@ unsigned int nscr;
 
 #ifdef STARTUP_NOTIFICATION
 SnDisplay *sn_dpy;
-SnMonitorContext *sn_ctx;
-Notify *notifies;
 #endif
 XrmDatabase xrdb;
 Bool otherwm;
@@ -2625,43 +2623,6 @@ handle_event(XEvent *ev)
 	return False;
 }
 
-#ifdef STARTUP_NOTIFICATION
-void
-sn_handler(SnMonitorEvent * event, void *dummy)
-{
-	Notify *n, **np;
-	SnStartupSequence *seq = NULL;
-
-	seq = sn_monitor_event_get_startup_sequence(event);
-
-	switch (sn_monitor_event_get_type(event)) {
-	case SN_MONITOR_EVENT_INITIATED:
-		n = emallocz(sizeof(*n));
-		n->seq = sn_monitor_event_get_startup_sequence(event);
-		n->assigned = False;
-		n->next = notifies;
-		notifies = n;
-		break;
-	case SN_MONITOR_EVENT_CHANGED:
-		break;
-	case SN_MONITOR_EVENT_COMPLETED:
-	case SN_MONITOR_EVENT_CANCELED:
-		seq = sn_monitor_event_get_startup_sequence(event);
-		for (n = notifies, np = &notifies; n; np = &n->next, n = *np) {
-			if (n->seq == seq) {
-				sn_startup_sequence_unref(n->seq);
-				*np = n->next;
-				free(n);
-			}
-		}
-		break;
-	}
-	if (seq)
-		sn_startup_sequence_unref(seq);
-	sn_monitor_event_unref(event);
-}
-#endif
-
 AScreen *
 getscreen(Window win)
 {
@@ -3248,6 +3209,9 @@ setup(char *conf)
 		XChangeWindowAttributes(dpy, scr->root, CWEventMask | CWCursor, &wa);
 		XSelectInput(dpy, scr->root, wa.event_mask);
 	}
+#ifdef STARTUP_NOTIFICATION
+	sn_dpy = sn_display_new(dpy, NULL, NULL);
+#endif
 
 	/* init resource database */
 	XrmInitialize();
@@ -3284,14 +3248,8 @@ setup(char *conf)
 		if (!scr->managed)
 			continue;
 
-#ifdef STARTUP_NOTIFICATION
-		sn_dpy = sn_display_new(dpy, NULL, NULL);
-		sn_ctx =
-		    sn_monitor_context_new(sn_dpy, scr->screen, &sn_handler, NULL, NULL);
-		DPRINTF("startup notification on screen %d\n", scr->screen);
-#else
-		DPRINTF("startup notification not supported screen %d\n", scr->screen);
-#endif
+		initscreen();
+
 		/* init EWMH atom */
 		initewmh(scr->selwin);
 
@@ -3302,6 +3260,7 @@ setup(char *conf)
 
 		/* init modkey */
 		initkeys();
+
 		initlayouts();
 
 		ewmh_process_net_desktop_layout();

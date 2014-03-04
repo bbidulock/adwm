@@ -199,12 +199,58 @@ char *atomnames[NATOMS] = {
 #define MWM_STARTUP_STANDARD	(1<<0)
 #define MWM_STARTUP_CUSTOM	(1<<1)
 
+#ifdef STARTUP_NOTIFICATION
+static Notify *notifies;
+
+static void
+sn_handler(SnMonitorEvent * event, void *dummy)
+{
+	Notify *n, **np;
+	SnStartupSequence *seq = NULL;
+
+	seq = sn_monitor_event_get_startup_sequence(event);
+
+	switch (sn_monitor_event_get_type(event)) {
+	case SN_MONITOR_EVENT_INITIATED:
+		n = emallocz(sizeof(*n));
+		n->seq = sn_monitor_event_get_startup_sequence(event);
+		n->assigned = False;
+		n->next = notifies;
+		notifies = n;
+		break;
+	case SN_MONITOR_EVENT_CHANGED:
+		break;
+	case SN_MONITOR_EVENT_COMPLETED:
+	case SN_MONITOR_EVENT_CANCELED:
+		seq = sn_monitor_event_get_startup_sequence(event);
+		for (n = notifies, np = &notifies; n; np = &n->next, n = *np) {
+			if (n->seq == seq) {
+				sn_startup_sequence_unref(n->seq);
+				*np = n->next;
+				free(n);
+			}
+		}
+		break;
+	}
+	if (seq)
+		sn_startup_sequence_unref(seq);
+	sn_monitor_event_unref(event);
+}
+#endif
+
 void
 initewmh(Window win)
 {
 	char name[] = "adwm";
 	long data[2];
 	static Bool atoms_interned = False;
+
+#ifdef STARTUP_NOTIFICATION
+	scr->ctx = sn_monitor_context_new(sn_dpy, scr->screen, &sn_handler, NULL, NULL);
+	DPRINTF("startup notification on screen %d\n", scr->screen);
+#else
+	DPRINTF("startup notification not supported screen %d\n", scr->screen);
+#endif
 
 	if (!atoms_interned) {
 		XInternAtoms(dpy, atomnames, NATOMS, False, atom);

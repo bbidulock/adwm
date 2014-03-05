@@ -15,6 +15,7 @@
 #include "adwm.h"
 #include "layout.h"
 #include "tags.h"
+#include "draw.h" /* verification */
 
 void setopacity(Client *c, unsigned int opacity);
 

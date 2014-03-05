@@ -49,6 +49,7 @@
 #include "draw.h"
 #include "ewmh.h"
 #include "config.h"
+#include "layout.h" /* verification */
 
 #define MWFACT		(1<<0)	/* adjust master factor */
 #define NMASTER		(1<<1)	/* adjust number of masters */
@@ -233,13 +234,13 @@ getgeometry(Client *c, Geometry *g, ClientGeometry * gc)
 
 /* can be static soon */
 Bool
-isfloating(Client *c, Monitor *m)
+isfloating(Client *c, View *v)
 {
 	if ((c->is.floater && !c->is.dockapp) || c->skip.arrange)
 		return True;
 	if (c->is.full)
 		return True;
-	if (m && MFEATURES(m, OVERLAP))
+	if (v && FEATURES(v->layout, OVERLAP))
 		return True;
 	return False;
 }
@@ -252,7 +253,7 @@ enterclient(XEvent *e, Client *c)
 		return True;
 	}
 	/* focus when switching monitors */
-	if (!isvisible(sel, c->cmon)) {
+	if (!isvisible(sel, c->cview)) {
 		CPRINTF(c, "FOCUS: monitor switching focus\n");
 		focus(c);
 	}
@@ -261,7 +262,7 @@ enterclient(XEvent *e, Client *c)
 		break;
 	case SloppyFloat:
 		/* FIXME: incorporate isfloating() check into skip.sloppy setting */
-		if (!c->skip.sloppy && isfloating(c, c->cmon)) {
+		if (!c->skip.sloppy && isfloating(c, c->cview)) {
 			CPRINTF(c, "FOCUS: sloppy focus\n");
 			focus(c);
 		}
@@ -582,18 +583,18 @@ Bool
 configureclient(XEvent *e, Client *c, int gravity)
 {
 	XConfigureRequestEvent *ev = &e->xconfigurerequest;
-	Monitor *cm;
+	View *v;
 
-	/* XXX: if c->curmon is set, we are displayed on a monitor, but c->curview should 
+	/* XXX: if c->cmon is set, we are displayed on a monitor, but c->curview should 
 	   also be set.  We only need the monitor for the layout.  When there is no
-	   curmon, use one of the views to which the client is tagged? How meaningful is
+	   cmon, use one of the views to which the client is tagged? How meaningful is
 	   it moving a window not in the current view? Perhaps we should treat it a just
 	   moving the saved floating state.  This is the only function that calls
 	   findcurmonitor(). */
 
-	if (!(cm = c->cmon ? : selmonitor()))
+	if (!(v = c->cview ? : selview()))
 		return False;
-	if (!c->is.max && isfloating(c, cm)) {
+	if (!c->is.max && isfloating(c, v)) {
 		ClientGeometry g;
 		int dx, dy, dw, dh;
 
@@ -680,8 +681,9 @@ configuremonitors(XEvent *e, Client *c)
 }
 
 static void
-calc_full(Client *c, Monitor *m, ClientGeometry * g)
+calc_full(Client *c, View *v, ClientGeometry * g)
 {
+	Monitor *m = v->curmon;
 	Monitor *fsmons[4] = { m, m, m, m };
 	long *mons;
 	unsigned long n = 0;
@@ -689,14 +691,21 @@ calc_full(Client *c, Monitor *m, ClientGeometry * g)
 
 	mons = getcard(c->win, _XA_NET_WM_FULLSCREEN_MONITORS, &n);
 	if (n >= 4) {
+		Monitor *fsm[4] = { NULL, NULL, NULL, NULL };
+
 		for (i = 0; i < 4; i++)
-			if (!(fsmons[i] = findmonbynum(mons[i])))
+			if (!(fsm[i] = findmonbynum(mons[i])))
 				break;
-		if (i < 4 || (fsmons[0]->sc.y >= fsmons[1]->sc.y + fsmons[1]->sc.h) ||
-		    (fsmons[1]->sc.x >= fsmons[3]->sc.x + fsmons[3]->sc.w))
-			fsmons[0] = fsmons[1] = fsmons[2] = fsmons[3] = m;
+		if (i == 4 &&
+		    fsm[0]->sc.y < fsm[1]->sc.y + fsm[1]->sc.h &&
+		    fsm[2]->sc.x < fsm[3]->sc.x + fsm[3]->sc.w) {
+			fsmons[0] = fsm[0];
+			fsmons[1] = fsm[1];
+			fsmons[2] = fsm[2];
+			fsmons[3] = fsm[3];
+		}
+		XFree(mons);
 	}
-	free(mons);
 	g->x = fsmons[2]->sc.x;
 	g->y = fsmons[0]->sc.y;
 	g->w = fsmons[3]->sc.x + fsmons[3]->sc.w - g->x;
@@ -707,7 +716,7 @@ calc_full(Client *c, Monitor *m, ClientGeometry * g)
 }
 
 static void
-calc_fill(Client *c, Monitor *m, Workarea *wa, ClientGeometry * g)
+calc_fill(Client *c, View *v, Workarea *wa, ClientGeometry * g)
 {
 	int x1, x2, y1, y2, w, h;
 	Client *o;
@@ -718,7 +727,7 @@ calc_fill(Client *c, Monitor *m, Workarea *wa, ClientGeometry * g)
 	y2 = wa->y + wa->h;
 
 	for (o = scr->clients; o; o = o->next) {
-		if (!(isvisible(o, m)))
+		if (!(isvisible(o, v)))
 			continue;
 		if (o == c)
 			continue;
@@ -782,7 +791,7 @@ calc_maxh(Client *c, Workarea *wa, ClientGeometry * g)
 }
 
 static void
-get_decor(Client *c, Monitor *m, ClientGeometry * g)
+get_decor(Client *c, View *v, ClientGeometry * g)
 {
 	int i;
 	Bool decorate;
@@ -804,7 +813,7 @@ get_decor(Client *c, Monitor *m, ClientGeometry * g)
 		decorate = True;
 	else if (c->is.shaded && (c != sel || !scr->options.autoroll))
 		decorate = True;
-	else if (!m && !(m = clientmonitor(c))) {
+	else if (!v && !(v = clientview(c))) {
 		decorate = False;
 		for (i = 0; i < scr->ntags; i++) {
 			if ((c->tags & (1ULL << i)) && (scr->views[i].dectiled ||
@@ -815,7 +824,7 @@ get_decor(Client *c, Monitor *m, ClientGeometry * g)
 			}
 		}
 	} else {
-		decorate = (m->curview->dectiled || MFEATURES(m, OVERLAP)) ?
+		decorate = (v->dectiled || FEATURES(v->layout, OVERLAP)) ?
 		    True : False;
 	}
 	g->t = decorate ? ((c->title && c->has.title) ? scr->style.titleheight : 0) : 0;
@@ -834,34 +843,58 @@ discardenter()
 }
 
 static void
-updatefloat(Client *c, Monitor *m)
+getworkarea(Monitor *m, Workarea *w)
+{
+	Workarea *wa;
+
+	switch (m->curview->barpos) {
+	case StrutsOn:
+	default:
+		if (m->dock.position)
+			wa = &m->dock.wa;
+		else
+			wa = &m->wa;
+		break;
+	case StrutsHide:
+	case StrutsOff:
+		wa = &m->sc;
+		break;
+	}
+	w->x = max(wa->x, 1);
+	w->y = max(wa->y, 1);
+	w->w = min(wa->x + wa->w, DisplayWidth(dpy, scr->screen) - 1) - w->x;
+	w->h = min(wa->y + wa->h, DisplayHeight(dpy, scr->screen) - 1) - w->y;
+}
+
+static void
+updatefloat(Client *c, View *v)
 {
 	ClientGeometry g;
 	Workarea wa;
 
 	if (c->is.dockapp)
 		return;
-	if (!m && !(m = c->cmon))
+	if ((!v && !(v = c->cview)) || !v->curmon)
 		return;
-	if (!isfloating(c, m))
+	if (!isfloating(c, v))
 		return;
-	getworkarea(m, &wa);
+	getworkarea(v->curmon, &wa);
 	CPRINTF(c, "r: %dx%d+%d+%d:%d\n", c->r.w, c->r.h, c->r.x, c->r.y, c->r.b);
 	getgeometry(c, &c->r, &g);
 	CPRINTF(c, "g: %dx%d+%d+%d:%d\n", g.w, g.h, g.x, g.y, g.b);
 	g.b = scr->style.border;
 	CPRINTF(c, "g: %dx%d+%d+%d:%d\n", g.w, g.h, g.x, g.y, g.b);
-	get_decor(c, m, &g);
+	get_decor(c, v, &g);
 	CPRINTF(c, "g: %dx%d+%d+%d:%d\n", g.w, g.h, g.x, g.y, g.b);
 	if (c->is.full) {
-		calc_full(c, m, &g);
+		calc_full(c, v, &g);
 		CPRINTF(c, "g: %dx%d+%d+%d:%d\n", g.w, g.h, g.x, g.y, g.b);
 	} else {
 		if (c->is.max) {
 			calc_max(c, &wa, &g);
 			CPRINTF(c, "g: %dx%d+%d+%d:%d\n", g.w, g.h, g.x, g.y, g.b);
 		} else if (c->is.fill) {
-			calc_fill(c, m, &wa, &g);
+			calc_fill(c, v, &wa, &g);
 			CPRINTF(c, "g: %dx%d+%d+%d:%d\n", g.w, g.h, g.x, g.y, g.b);
 		} else {
 			if (c->is.maxv) {
@@ -890,37 +923,37 @@ updatefloat(Client *c, Monitor *m)
 }
 
 static void
-arrangefloats(Monitor *m)
+arrangefloats(View *v)
 {
 	Client *c;
 
 	for (c = scr->stack; c; c = c->snext)
-		if (isvisible(c, m) && !c->is.bastard && !c->is.dockapp)
+		if (isvisible(c, v) && !c->is.bastard && !c->is.dockapp)
 			/* XXX: can.move? can.tag? */
-			updatefloat(c, m);
+			updatefloat(c, v);
 }
 
 Client *
-nextdockapp(Client *c, Monitor *m)
+nextdockapp(Client *c, View *v)
 {
-	for (; c && (!c->is.dockapp || !isvisible(c, m) || c->is.hidden); c = c->next) ;
+	for (; c && (!c->is.dockapp || !isvisible(c, v) || c->is.hidden); c = c->next) ;
 	return c;
 }
 
 Client *
-prevdockapp(Client *c, Monitor *m)
+prevdockapp(Client *c, View *v)
 {
-	for (; c && (!c->is.dockapp || !isvisible(c, m) || c->is.hidden); c = c->prev) ;
+	for (; c && (!c->is.dockapp || !isvisible(c, v) || c->is.hidden); c = c->prev) ;
 	return c;
 }
 
 static void
-arrangedock(Monitor *m)
+arrangedock(View *v)
 {
-	Client *c = nextdockapp(scr->clients, m), *cn;
-	View *v = m->curview;
+	Client *c = nextdockapp(scr->clients, v), *cn;
 	int i, num, rows, cols, margin = 4, max = 64, b = scr->style.border;
 	ClientGeometry *g = NULL, n;
+	Monitor *m = v->curmon;
 	DockPosition pos = m->dock.position;
 	DockSide side;
 	Bool overlap = FEATURES(v->layout, OVERLAP) ? True : False;
@@ -931,8 +964,8 @@ arrangedock(Monitor *m)
 	if (!c || pos == DockNone)
 		return;
 
-	for (num = 0, c = nextdockapp(scr->clients, m); c;
-	     c = nextdockapp(c->next, m), num++) ;
+	for (num = 0, c = nextdockapp(scr->clients, v); c;
+	     c = nextdockapp(c->next, v), num++) ;
 
 	DPRINTF("there are %d dock apps\n", num);
 
@@ -1028,8 +1061,8 @@ arrangedock(Monitor *m)
 		if (overlap) {
 			int h;
 
-			for (i = 0, cn = nextdockapp(scr->clients, m); (c = cn);) {
-				cn = nextdockapp(c->next, m);
+			for (i = 0, cn = nextdockapp(scr->clients, v); (c = cn);) {
+				cn = nextdockapp(c->next, v);
 
 				h = c->r.h + 2 * margin;
 				if (h > max)
@@ -1105,8 +1138,8 @@ arrangedock(Monitor *m)
 		if (overlap) {
 			int w;
 
-			for (i = 0, cn = nextdockapp(scr->clients, m); (c = cn);) {
-				cn = nextdockapp(c->next, m);
+			for (i = 0, cn = nextdockapp(scr->clients, v); (c = cn);) {
+				cn = nextdockapp(c->next, v);
 
 				w = c->r.w + 2 * margin;
 				if (w > max)
@@ -1153,8 +1186,8 @@ arrangedock(Monitor *m)
 		}
 		break;
 	}
-	for (i = 0, cn = nextdockapp(scr->clients, m); (c = cn);) {
-		cn = nextdockapp(c->next, m);
+	for (i = 0, cn = nextdockapp(scr->clients, v); (c = cn);) {
+		cn = nextdockapp(c->next, v);
 		switch (m->dock.orient) {
 		case DockVert:
 			if (overlap) {
@@ -1216,32 +1249,32 @@ arrangedock(Monitor *m)
 }
 
 Client *
-nexttiled(Client *c, Monitor *m)
+nexttiled(Client *c, View *v)
 {
-	for (; c && (c->is.dockapp || c->is.floater || c->skip.arrange || !isvisible(c, m)
+	for (; c && (c->is.dockapp || c->is.floater || c->skip.arrange || !isvisible(c, v)
 		     || c->is.bastard || (c->is.icon || c->is.hidden)); c = c->next) ;
 	return c;
 }
 
 Client *
-prevtiled(Client *c, Monitor *m)
+prevtiled(Client *c, View *v)
 {
-	for (; c && (c->is.dockapp || c->is.floater || c->skip.arrange || !isvisible(c, m)
+	for (; c && (c->is.dockapp || c->is.floater || c->skip.arrange || !isvisible(c, v)
 		     || c->is.bastard || (c->is.icon || c->is.hidden)); c = c->prev) ;
 	return c;
 }
 
 static void
-tile(Monitor *cm)
+tile(View *v)
 {
 	LayoutArgs wa, ma, sa;
 	ClientGeometry n, m, s, g;
 	Client *c, *mc;
-	View *v;
+	Monitor *cm = v->curmon;
 	int i, overlap, th, gh, mg;
 	Bool mtdec, stdec, mgdec, sgdec;
 
-	if (!(c = nexttiled(scr->clients, cm)))
+	if (!(c = nexttiled(scr->clients, v)))
 		return;
 
 	th = scr->style.titleheight;
@@ -1249,9 +1282,8 @@ tile(Monitor *cm)
 	mg = scr->style.margin;
 
 	getworkarea(cm, (Workarea *) &wa);
-	v = cm->curview;
-	for (wa.n = wa.s = ma.s = sa.s = 0, c = nexttiled(scr->clients, cm);
-	     c; c = nexttiled(c->next, cm), wa.n++) {
+	for (wa.n = wa.s = ma.s = sa.s = 0, c = nexttiled(scr->clients, v);
+	     c; c = nexttiled(c->next, v), wa.n++) {
 		if (c->is.shaded && (c != sel || !scr->options.autoroll)) {
 			wa.s++;
 			if (wa.n < v->nmaster)
@@ -1412,12 +1444,12 @@ tile(Monitor *cm)
 	DPRINTF("initial master %dx%d+%d+%d:%d\n", m.w, m.h, m.x, m.y, m.b);
 
 	i = 0;
-	c = mc = nexttiled(scr->clients, cm);
+	c = mc = nexttiled(scr->clients, v);
 
 	/* lay out the master area */
 	n = m;
 
-	for (; c && i < ma.n; c = nexttiled(c->next, cm)) {
+	for (; c && i < ma.n; c = nexttiled(c->next, v)) {
 		if (c->is.max) {
 			c->is.max = False;
 			ewmh_update_net_window_state(c);
@@ -1511,7 +1543,7 @@ tile(Monitor *cm)
 	/* lay out the slave area - always top->bot, left->right */
 	n = s;
 
-	for (; c && i < wa.n; c = nexttiled(c->next, cm)) {
+	for (; c && i < wa.n; c = nexttiled(c->next, v)) {
 		if (c->is.max) {
 			c->is.max = False;
 			ewmh_update_net_window_state(c);
@@ -1582,31 +1614,28 @@ tile(Monitor *cm)
 }
 
 static void
-arrange_tile(Monitor *m)
+arrange_tile(View *v)
 {
-	arrangedock(m);
-	tile(m);
-	arrangefloats(m);
+	arrangedock(v);
+	tile(v);
+	arrangefloats(v);
 }
 
 static void
-grid(Monitor *m)
+grid(View *v)
 {
 	Client *c;
 	Workarea wa;
-	View *v;
 	int rows, cols, n, i, *rc, *rh, col, row;
 	int cw, cl, *rl;
 	int gap;
 
-	if (!(c = nexttiled(scr->clients, m)))
+	if (!(c = nexttiled(scr->clients, v)))
 		return;
 
-	v = m->curview;
+	getworkarea(v->curmon, &wa);
 
-	getworkarea(m, &wa);
-
-	for (n = 0, c = nexttiled(scr->clients, m); c; c = nexttiled(c->next, m), n++) ;
+	for (n = 0, c = nexttiled(scr->clients, v); c; c = nexttiled(c->next, v), n++) ;
 
 	for (cols = 1; cols < n && cols < v->ncolumns; cols++) ;
 
@@ -1634,8 +1663,8 @@ grid(Monitor *m)
 	    scr->style.margin >
 	    scr->style.border ? scr->style.margin - scr->style.border : 0;
 
-	for (i = 0, col = 0, row = 0, c = nexttiled(scr->clients, m); c && i < n;
-	     c = nexttiled(c->next, m), i++, col = i % cols, row = i / cols) {
+	for (i = 0, col = 0, row = 0, c = nexttiled(scr->clients, v); c && i < n;
+	     c = nexttiled(c->next, v), i++, col = i % cols, row = i / cols) {
 		ClientGeometry n;
 
 		n.x = gap + wa.x + (col * cw);
@@ -1674,23 +1703,21 @@ grid(Monitor *m)
 }
 
 static void
-arrange_grid(Monitor *m)
+arrange_grid(View *v)
 {
-	arrangedock(m);
-	grid(m);
-	arrangefloats(m);
+	arrangedock(v);
+	grid(v);
+	arrangefloats(v);
 }
 
 static void
-monocle(Monitor *m)
+monocle(View *v)
 {
 	Client *c;
 	Workarea w;
-	View *v;
 
-	getworkarea(m, &w);
-	v = m->curview;
-	for (c = nexttiled(scr->clients, m); c; c = nexttiled(c->next, m)) {
+	getworkarea(v->curmon, &w);
+	for (c = nexttiled(scr->clients, v); c; c = nexttiled(c->next, v)) {
 		ClientGeometry g;
 
 		memcpy(&g, &w, sizeof(w));
@@ -1706,39 +1733,39 @@ monocle(Monitor *m)
 }
 
 static void
-arrange_monocle(Monitor *m)
+arrange_monocle(View *v)
 {
-	arrangedock(m);
-	monocle(m);
-	arrangefloats(m);
+	arrangedock(v);
+	monocle(v);
+	arrangefloats(v);
 }
 
 static void
-arrange_float(Monitor *m)
+arrange_float(View *v)
 {
-	arrangedock(m);
-	arrangefloats(m);
+	arrangedock(v);
+	arrangefloats(v);
 }
 
 static void
-arrangemon(Monitor *m)
+arrangeview(View *v)
 {
 	Client *c;
 	int struts;
 
-	if (m->curview->layout->arrange)
-		m->curview->layout->arrange(m);
-	struts = m->curview->barpos;
+	if (v->layout->arrange)
+		v->layout->arrange(v);
+	struts = v->barpos;
 	for (c = scr->stack; c; c = c->snext) {
-		if ((clientmonitor(c) == m) &&
+		if ((clientview(c) == v) &&
 		    ((!c->is.bastard && !c->is.dockapp && !(c->is.icon || c->is.hidden))
 		     || ((c->is.bastard || c->is.dockapp) && struts == StrutsOn))) {
-			unban(c, m);
+			unban(c, v);
 		}
 	}
 
 	for (c = scr->stack; c; c = c->snext) {
-		if ((clientmonitor(c) == NULL)
+		if ((clientview(c) == NULL)
 		    || (!c->is.bastard && !c->is.dockapp && (c->is.icon || c->is.hidden))
 		    || ((c->is.bastard || c->is.dockapp) && struts == StrutsHide)) {
 			ban(c);
@@ -2138,27 +2165,22 @@ togglebelow(Client *c)
 }
 
 void
-arrange(Monitor *om)
+arrange(View *ov)
 {
 	Monitor *m;
 
-	if (!om)
-		for (m = scr->monitors; m; m = m->next)
-			XMapRaised(dpy, m->veil);
-	else
-		XMapRaised(dpy, om->veil);
-	if (!om)
-		for (m = scr->monitors; m; m = m->next)
-			arrangemon(m);
-	else
-		arrangemon(om);
-	restack();
-	if (!om)
-		for (m = scr->monitors; m; m = m->next)
-			XUnmapWindow(dpy, m->veil);
-	else
-		XUnmapWindow(dpy, om->veil);
-	discardenter();
+	if (!ov) {
+		for (m = scr->monitors; m; m = m->next) {
+			assert(m->curview != NULL);
+			arrange(m->curview);
+		}
+	} else if ((m = ov->curmon)) {
+		XMapRaised(dpy, m->veil);
+		arrangeview(ov);
+		restack();
+		XUnmapWindow(dpy, m->veil);
+		discardenter();
+	}
 }
 
 Layout layouts[] = {
@@ -2179,12 +2201,11 @@ Layout layouts[] = {
 void
 setlayout(const char *arg)
 {
-	Monitor *cm;
+	View *v;
 
-	if (!(cm = selmonitor()))
+	if (!(v = selview()))
 		return;
 	if (arg) {
-		View *v;
 		Layout *l;
 
 		for (l = layouts; l->symbol; l++)
@@ -2192,13 +2213,12 @@ setlayout(const char *arg)
 				break;
 		if (!l->symbol)
 			return;
-		v = cm->curview;
 		v->layout = l;
 		v->major = l->major;
 		v->minor = l->minor;
 		v->placement = l->placement;
 	}
-	arrange(cm);
+	arrange(v);
 	ewmh_update_net_desktop_modes();
 }
 
@@ -2230,7 +2250,7 @@ raiselower(Client *c)
 void
 raisetiled(Client *c)
 {
-	if (c->is.bastard || c->is.dockapp || !isfloating(c, c->cmon)) {
+	if (c->is.bastard || c->is.dockapp || !isfloating(c, c->cview)) {
 		CPRINTF(c, "raising non-floating client on focus\n");
 		if (c->is.bastard || c->is.dockapp) {
 			c->is.below = False;
@@ -2243,7 +2263,7 @@ raisetiled(Client *c)
 void
 lowertiled(Client *c)
 {
-	if (c->is.bastard || c->is.dockapp || !isfloating(c, c->cmon)) {
+	if (c->is.bastard || c->is.dockapp || !isfloating(c, c->cview)) {
 		CPRINTF(c, "lowering non-floating client on focus\n");
 		if (c->is.bastard || c->is.dockapp) {
 			c->is.below = True;
@@ -2254,7 +2274,7 @@ lowertiled(Client *c)
 }
 
 void
-setmwfact(Monitor *m, View *v, double factor)
+setmwfact(View *v, double factor)
 {
 	if (factor < 0.1)
 		factor = 0.1;
@@ -2262,15 +2282,16 @@ setmwfact(Monitor *m, View *v, double factor)
 		factor = 0.9;
 	if (v->mwfact != factor) {
 		v->mwfact = factor;
-		arrange(m);
+		arrange(v);
 	}
 }
 
 void
-setnmaster(Monitor *m, View *v, int n)
+setnmaster(View *v, int n)
 {
 	Bool master, column;
 	int length;
+	Monitor *m = v->curmon;
 
 	master = FEATURES(v->layout, NMASTER) ? True : False;
 	column = FEATURES(v->layout, NCOLUMNS) ? True : False;
@@ -2287,35 +2308,39 @@ setnmaster(Monitor *m, View *v, int n)
 	switch (v->major) {
 	case OrientTop:
 	case OrientBottom:
-		length = m->wa.h;
-		if (master) {
-			switch (v->minor) {
-			case OrientTop:
-			case OrientBottom:
-				length = (double) m->wa.h * v->mwfact;
-				break;
-			default:
-				break;
+		if (m) {
+			length = m->wa.h;
+			if (master) {
+				switch (v->minor) {
+				case OrientTop:
+				case OrientBottom:
+					length = (double) m->wa.h * v->mwfact;
+					break;
+				default:
+					break;
+				}
 			}
+			if (length / n < 2 * (scr->style.titleheight + scr->style.border))
+				return;
 		}
-		if (length / n < 2 * (scr->style.titleheight + scr->style.border))
-			return;
 		break;
 	case OrientLeft:
 	case OrientRight:
-		length = m->wa.w;
-		if (master) {
-			switch (v->minor) {
-			case OrientLeft:
-			case OrientRight:
-				length = (double) m->wa.w * v->mwfact;
-				break;
-			default:
-				break;
+		if (m) {
+			length = m->wa.w;
+			if (master) {
+				switch (v->minor) {
+				case OrientLeft:
+				case OrientRight:
+					length = (double) m->wa.w * v->mwfact;
+					break;
+				default:
+					break;
+				}
 			}
+			if (length / n < 2 * (6 * scr->style.titleheight + scr->style.border))
+				return;
 		}
-		if (length / n < 2 * (6 * scr->style.titleheight + scr->style.border))
-			return;
 		break;
 	case OrientLast:
 		return;
@@ -2323,18 +2348,18 @@ setnmaster(Monitor *m, View *v, int n)
 	if (master) {
 		if (v->nmaster != n) {
 			v->nmaster = n;
-			arrange(m);
+			arrange(v);
 		}
 	} else {
 		if (v->ncolumns != n) {
 			v->ncolumns = n;
-			arrange(m);
+			arrange(v);
 		}
 	}
 }
 
 void
-decnmaster(Monitor *m, View *v, int n)
+decnmaster(View *v, int n)
 {
 	Bool master, column;
 
@@ -2344,13 +2369,13 @@ decnmaster(Monitor *m, View *v, int n)
 	if (!master && !column)
 		return;
 	if (master)
-		setnmaster(m, v, v->nmaster - n);
+		setnmaster(v, v->nmaster - n);
 	else
-		setnmaster(m, v, v->ncolumns - n);
+		setnmaster(v, v->ncolumns - n);
 }
 
 void
-incnmaster(Monitor *m, View *v, int n)
+incnmaster(View *v, int n)
 {
 	Bool master, column;
 
@@ -2360,9 +2385,9 @@ incnmaster(Monitor *m, View *v, int n)
 	if (!master && !column)
 		return;
 	if (master)
-		setnmaster(m, v, v->nmaster + n);
+		setnmaster(v, v->nmaster + n);
 	else
-		setnmaster(m, v, v->ncolumns + n);
+		setnmaster(v, v->ncolumns + n);
 }
 
 static void
@@ -2410,34 +2435,82 @@ swapstacked(Client *c, Client *s)
 #endif
 }
 
+static void
+reparentclient(Client *c, AScreen *new_scr, int x, int y)
+{
+	if (new_scr == scr)
+		return;
+	if (new_scr->managed) {
+		View *v;
+
+		/* screens must have the same default depth, visuals and colormaps */
+
+		/* some of what unmanage() does */
+		delclient(c);
+		ewmh_del_client(c, CauseReparented);
+		XDeleteContext(dpy, c->title, context[ScreenContext]);
+		XDeleteContext(dpy, c->grips, context[ScreenContext]);
+		XDeleteContext(dpy, c->frame, context[ScreenContext]);
+		XDeleteContext(dpy, c->win, context[ScreenContext]);
+		XUnmapWindow(dpy, c->frame);
+		c->is.managed = False;
+		scr = new_scr;
+		/* some of what manage() does */
+		XSaveContext(dpy, c->title, context[ScreenContext], (XPointer) scr);
+		XSaveContext(dpy, c->grips, context[ScreenContext], (XPointer) scr);
+		XSaveContext(dpy, c->frame, context[ScreenContext], (XPointer) scr);
+		XSaveContext(dpy, c->win, context[ScreenContext], (XPointer) scr);
+		if (!(v = getview(x, y)))
+			v = nearview();
+		c->tags = v->seltags;
+		addclient(c, True, True);
+		XReparentWindow(dpy, c->frame, scr->root, x, y);
+		XMoveWindow(dpy, c->frame, x, y);
+		XMapWindow(dpy, c->frame);
+		c->is.managed = True;
+		ewmh_update_net_window_desktop(c);
+		if (c->with.struts) {
+			ewmh_update_net_work_area();
+			updategeom(NULL);
+		}
+		/* caller must reconfigure client */
+	} else {
+		Window win = c->win;
+
+		unmanage(c, CauseReparented);
+		XReparentWindow(dpy, win, new_scr->root, x, y);
+		XMapWindow(dpy, win);
+	}
+}
+
 static Client *
-ontiled(Client *c, Monitor *m, int cx, int cy)
+ontiled(Client *c, View *v, int cx, int cy)
 {
 	Client *s;
 
-	for (s = nexttiled(scr->clients, m);
+	for (s = nexttiled(scr->clients, v);
 	     s && (s == c ||
 		   s->c.x > cx || cx > s->c.x + s->c.w ||
-		   s->c.y > cy || cy > s->c.y + s->c.h); s = nexttiled(s->next, m)) ;
+		   s->c.y > cy || cy > s->c.y + s->c.h); s = nexttiled(s->next, v)) ;
 	return s;
 }
 
 static Client *
-ondockapp(Client *c, Monitor *m, int cx, int cy)
+ondockapp(Client *c, View *v, int cx, int cy)
 {
 	Client *s;
 
-	for (s = nextdockapp(scr->clients, m);
+	for (s = nextdockapp(scr->clients, v);
 	     s && (s == c ||
 		   s->c.x > cx || cx > s->c.x + s->c.w ||
-		   s->c.y > cy || cy > s->c.y + s->c.h); s = nextdockapp(s->next, m)) ;
+		   s->c.y > cy || cy > s->c.y + s->c.h); s = nextdockapp(s->next, v)) ;
 	return s;
 }
 
 static Client *
-onstacked(Client *c, Monitor *m, int cx, int cy)
+onstacked(Client *c, View *v, int cx, int cy)
 {
-	return (c->is.dockapp ? ondockapp(c, m, cx, cy) : ontiled(c, m, cx, cy));
+	return (c->is.dockapp ? ondockapp(c, v, cx, cy) : ontiled(c, v, cx, cy));
 }
 
 static Bool
@@ -2460,7 +2533,7 @@ ismoveevent(Display *display, XEvent *event, XPointer arg)
 }
 
 static Bool
-move_begin(Client *c, Monitor *m, Bool toggle, int move)
+move_begin(Client *c, View *v, Bool toggle, int move)
 {
 	Bool isfloater;
 
@@ -2496,13 +2569,13 @@ move_begin(Client *c, Monitor *m, Bool toggle, int move)
 			togglefloating(c);
 		} else if (c->was.is) {
 			c->was.floater = isfloater;
-			updatefloat(c, m);
+			updatefloat(c, v);
 			raiseclient(c);
 		} else
 			raiseclient(c);
 	} else {
 		/* can't move tiled in monocle mode */
-		if (!c->is.dockapp && !MFEATURES(m, MMOVE)) {
+		if (!c->is.dockapp && !FEATURES(v->layout, MMOVE)) {
 			c->is.moveresize = False;
 			return False;
 		}
@@ -2511,7 +2584,7 @@ move_begin(Client *c, Monitor *m, Bool toggle, int move)
 }
 
 static Bool
-move_cancel(Client *c, Monitor *m, ClientGeometry * orig)
+move_cancel(Client *c, View *v, ClientGeometry * orig)
 {
 	Bool wasfloating;
 
@@ -2535,16 +2608,16 @@ move_cancel(Client *c, Monitor *m, ClientGeometry * orig)
 			DPRINTF("CALLING reconfigure()\n");
 			reconfigure(c, orig);
 			save(c);
-			updatefloat(c, m);
+			updatefloat(c, v);
 		} else
 			togglefloating(c);
 	} else
-		arrange(m);
+		arrange(v);
 	return True;
 }
 
 static Bool
-move_finish(Client *c, Monitor *m)
+move_finish(Client *c, View *v)
 {
 	Bool wasfloating;
 
@@ -2555,7 +2628,7 @@ move_finish(Client *c, Monitor *m)
 	wasfloating = c->was.floater;
 	c->was.floater = False;
 
-	if (isfloating(c, m)) {
+	if (isfloating(c, v)) {
 		if (c->was.is) {
 			c->is.full = c->was.full;
 			c->is.max = c->was.max;
@@ -2565,11 +2638,11 @@ move_finish(Client *c, Monitor *m)
 			c->is.shaded = c->was.shaded;
 		}
 		if (wasfloating)
-			updatefloat(c, m);
+			updatefloat(c, v);
 		else
-			arrange(m);
+			arrange(v);
 	} else
-		arrange(m);
+		arrange(v);
 	return True;
 }
 
@@ -2580,7 +2653,7 @@ mousemove(Client *c, XEvent *e, Bool toggle)
 {
 	int dx, dy;
 	int x_root, y_root;
-	Monitor *m, *nm;
+	View *v, *nv;
 	ClientGeometry n, o;
 	Bool moved = False, isfloater;
 	int move = CurMove;
@@ -2596,8 +2669,8 @@ mousemove(Client *c, XEvent *e, Bool toggle)
 	   is actually important because the monitor it is on might be floating and the
 	   monitor the edge was clicked on might be tiled. */
 
-	if (!(m = getmonitor(x_root, y_root)) || (c->cmon && m != c->cmon))
-		if (!(m = c->cmon)) {
+	if (!(v = getview(x_root, y_root)) || (c->cview && v != c->cview))
+		if (!(v = c->cview)) {
 			CPRINTF(c, "No monitor to move from!\n");
 			XUngrabPointer(dpy, CurrentTime);
 			return moved;
@@ -2633,7 +2706,7 @@ mousemove(Client *c, XEvent *e, Bool toggle)
 				if (ev.xclient.data.l[2] == 11) {
 					/* _NET_WM_MOVERESIZE_CANCEL */
 					CPRINTF(c, "Move cancelled!\n");
-					moved = move_cancel(c, m, &o);
+					moved = move_cancel(c, v, &o);
 					break;
 				}
 				continue;
@@ -2655,26 +2728,25 @@ mousemove(Client *c, XEvent *e, Bool toggle)
 				if (abs(dx) < scr->options.dragdist
 				    && abs(dy) < scr->options.dragdist)
 					continue;
-				if (!(moved = move_begin(c, m, toggle, move))) {
+				if (!(moved = move_begin(c, v, toggle, move))) {
 					CPRINTF(c, "Couldn't move client!\n");
 					break;
 				}
 				getgeometry(c, &c->c, &n);
 			}
-			nm = getmonitor(ev.xmotion.x_root, ev.xmotion.y_root);
+			nv = getview(ev.xmotion.x_root, ev.xmotion.y_root);
 			if (c->is.dockapp || !isfloater) {
 				Client *s;
 
 				/* cannot move off monitor when shuffling tiled */
-				if (event_scr != scr || nm != m) {
+				if (event_scr != scr || nv != v) {
 					CPRINTF(c, "Cannot move off monitor!\n");
 					continue;
 				}
-				if ((s =
-				     onstacked(c, m, ev.xmotion.x_root,
+				if ((s = onstacked(c, v, ev.xmotion.x_root,
 					       ev.xmotion.y_root))) {
 					swapstacked(c, s);
-					arrange(m);
+					arrange(v);
 				}
 				/* move center to new position */
 				getgeometry(c, &c->c, &n);
@@ -2686,12 +2758,12 @@ mousemove(Client *c, XEvent *e, Bool toggle)
 			}
 			n.x = o.x + dx;
 			n.y = o.y + dy;
-			if (nm && scr->options.snap && !(ev.xmotion.state & ControlMask)) {
+			if (nv && scr->options.snap && !(ev.xmotion.state & ControlMask)) {
 				Workarea w;
 				int nx2 = n.x + c->c.w + 2 * c->c.b;
 				int ny2 = n.y + c->c.h + 2 * c->c.b;
 
-				getworkarea(nm, &w);
+				getworkarea(nv->curmon, &w);
 				if (abs(n.x - w.x) < scr->options.snap)
 					n.x += w.x - n.x;
 				else if (abs(nx2 - (w.x + w.w)) < scr->options.snap)
@@ -2739,12 +2811,12 @@ mousemove(Client *c, XEvent *e, Bool toggle)
 			}
 			if (event_scr != scr)
 				reparentclient(c, event_scr, n.x, n.y);
-			if (nm && m != nm) {
-				c->tags = nm->curview->seltags;
+			if (nv && v != nv) {
+				c->tags = nv->seltags;
 				ewmh_update_net_window_desktop(c);
 				drawclient(c);
 				arrange(NULL);
-				m = nm;
+				v = nv;
 			}
 			DPRINTF("CALLING reconfigure()\n");
 			reconfigure(c, &n);
@@ -2754,7 +2826,7 @@ mousemove(Client *c, XEvent *e, Bool toggle)
 		XUngrabPointer(dpy, CurrentTime);
 		break;
 	}
-	if (move_finish(c, m))
+	if (move_finish(c, v))
 		moved = True;
 	discardenter();
 	ewmh_update_net_window_state(c);
@@ -2863,7 +2935,7 @@ isresizeevent(Display *display, XEvent *event, XPointer arg)
 }
 
 static Bool
-resize_begin(Client *c, Monitor *m, Bool toggle, int from)
+resize_begin(Client *c, View *v, Bool toggle, int from)
 {
 	Bool isfloater;
 
@@ -2889,7 +2961,7 @@ resize_begin(Client *c, Monitor *m, Bool toggle, int from)
 	XGrabPointer(dpy, scr->root, False, MOUSEMASK, GrabModeAsync,
 		     GrabModeAsync, None, cursor[from], CurrentTime);
 
-	isfloater = isfloating(c, m) ? True : False;
+	isfloater = isfloating(c, v) ? True : False;
 
 	c->is.moveresize = True;
 	c->was.is = 0;
@@ -2914,7 +2986,7 @@ resize_begin(Client *c, Monitor *m, Bool toggle, int from)
 			togglefloating(c);
 		} else if (c->was.is) {
 			c->was.floater = isfloater;
-			updatefloat(c, m);
+			updatefloat(c, v);
 			raiseclient(c);
 		} else
 			raiseclient(c);
@@ -2927,7 +2999,7 @@ resize_begin(Client *c, Monitor *m, Bool toggle, int from)
 }
 
 static Bool
-resize_cancel(Client *c, Monitor *m, ClientGeometry * orig)
+resize_cancel(Client *c, View *v, ClientGeometry * orig)
 {
 	Bool wasfloating;
 
@@ -2938,7 +3010,7 @@ resize_cancel(Client *c, Monitor *m, ClientGeometry * orig)
 	wasfloating = c->was.floater;
 	c->was.floater = False;
 
-	if (isfloating(c, m)) {
+	if (isfloating(c, v)) {
 		if (c->was.is) {
 			c->is.full = c->was.full;
 			c->is.max = c->was.max;
@@ -2951,16 +3023,16 @@ resize_cancel(Client *c, Monitor *m, ClientGeometry * orig)
 			DPRINTF("CALLING reconfigure()\n");
 			reconfigure(c, orig);
 			save(c);
-			updatefloat(c, m);
+			updatefloat(c, v);
 		} else
 			togglefloating(c);
 	} else
-		arrange(m);
+		arrange(v);
 	return True;
 }
 
 static Bool
-resize_finish(Client *c, Monitor *m)
+resize_finish(Client *c, View *v)
 {
 	Bool wasfloating;
 
@@ -2971,16 +3043,16 @@ resize_finish(Client *c, Monitor *m)
 	wasfloating = c->was.floater;
 	c->was.floater = False;
 
-	if (isfloating(c, m)) {
+	if (isfloating(c, v)) {
 		if (c->was.is) {
 			c->is.shaded = c->was.shaded;
 		}
 		if (wasfloating)
-			updatefloat(c, m);
+			updatefloat(c, v);
 		else
-			arrange(m);
+			arrange(v);
 	} else
-		arrange(m);
+		arrange(v);
 	return True;
 }
 
@@ -2989,15 +3061,15 @@ mouseresize_from(Client *c, int from, XEvent *e, Bool toggle)
 {
 	int dx, dy;
 	int x_root, y_root;
-	Monitor *m, *nm;
+	View *v, *nv;
 	ClientGeometry n, o;
 	Bool resized = False;
 
 	x_root = e->xbutton.x_root;
 	y_root = e->xbutton.y_root;
 
-	if (!(m = getmonitor(x_root, y_root)) || (c->cmon && m != c->cmon))
-		if (!(m = c->cmon)) {
+	if (!(v = getview(x_root, y_root)) || (c->cview && v != c->cview))
+		if (!(v = c->cview)) {
 			XUngrabPointer(dpy, CurrentTime);
 			return resized;
 		}
@@ -3031,7 +3103,7 @@ mouseresize_from(Client *c, int from, XEvent *e, Bool toggle)
 			if (ev.xclient.message_type == _XA_NET_WM_MOVERESIZE) {
 				if (ev.xclient.data.l[2] == 11) {
 					/* _NET_WM_MOVERESIZE_CANCEL */
-					resized = resize_cancel(c, m, &o);
+					resized = resize_cancel(c, v, &o);
 					break;
 				}
 				continue;
@@ -3055,7 +3127,7 @@ mouseresize_from(Client *c, int from, XEvent *e, Bool toggle)
 				if (abs(dx) < scr->options.dragdist
 				    && abs(dy) < scr->options.dragdist)
 					continue;
-				if (!(resized = resize_begin(c, m, toggle, from)))
+				if (!(resized = resize_begin(c, v, toggle, from)))
 					break;
 				getgeometry(c, &c->c, &n);
 			}
@@ -3151,8 +3223,8 @@ mouseresize_from(Client *c, int from, XEvent *e, Bool toggle)
 				break;
 			}
 			if ((snap = (ev.xmotion.state & ControlMask) ? 0 : scr->options.snap)) {
-				if ((nm = getmonitor(rx, ry))) {
-					getworkarea(nm, &w);
+				if ((nv = getview(rx, ry))) {
+					getworkarea(nv->curmon, &w);
 					if (abs(rx - w.x) < snap)
 						n.x += w.x - rx;
 					else
@@ -3205,14 +3277,14 @@ mouseresize_from(Client *c, int from, XEvent *e, Bool toggle)
 				n.h = MINHEIGHT;
 			DPRINTF("CALLING reconfigure()\n");
 			reconfigure(c, &n);
-			if (isfloating(c, m))
+			if (isfloating(c, v))
 				save(c);
 			continue;
 		}
 		XUngrabPointer(dpy, CurrentTime);
 		break;
 	}
-	if (resize_finish(c, m))
+	if (resize_finish(c, v))
 		resized = True;
 	discardenter();
 	ewmh_update_net_window_state(c);
@@ -3333,7 +3405,7 @@ putreference(int xr, int yr, Geometry *g, int gravity)
 void
 moveresizekb(Client *c, int dx, int dy, int dw, int dh, int gravity)
 {
-	Monitor *m;
+	View *v;
 
 	/* FIXME: this just resizes and moves the window, it does handle changing
 	   monitors */
@@ -3349,9 +3421,9 @@ moveresizekb(Client *c, int dx, int dy, int dw, int dh, int gravity)
 		dh = 0;
 	if (!(dx || dy || dw || dh))
 		return;
-	if (!(m = clientmonitor(c)))
+	if (!(v = clientview(c)))
 		return;
-	if (!isfloating(c, m))
+	if (!isfloating(c, v))
 		return;
 	if (dw || dh) {
 		ClientGeometry g;
@@ -3396,22 +3468,24 @@ getplace(Client *c, ClientGeometry * g)
 	long *s = NULL;
 	unsigned long n;
 
-	s = getcard(c->win, _XA_WIN_EXPANDED_SIZE, &n);
-	if (n >= 4) {
-		g->x = s[0];
-		g->y = s[1];
-		g->w = s[2];
-		g->h = s[3];
-	} else {
-		/* original static geometry */
-		g->x = c->s.x;
-		g->y = c->s.y;
-		g->w = c->s.w;
-		g->h = c->s.h;
+	if ((s = getcard(c->win, _XA_WIN_EXPANDED_SIZE, &n))) {
+		if (n >= 4) {
+			g->x = s[0];
+			g->y = s[1];
+			g->w = s[2];
+			g->h = s[3];
+		} else {
+			/* original static geometry */
+			g->x = c->s.x;
+			g->y = c->s.y;
+			g->w = c->s.w;
+			g->h = c->s.h;
+		}
+		g->b = c->c.b;
+		g->t = c->th;
+		g->g = c->gh;
+		XFree(s);
 	}
-	g->b = c->c.b;
-	g->t = c->th;
-	g->g = c->gh;
 }
 
 static int
@@ -3427,7 +3501,7 @@ area_overlap(int xmin1, int ymin1, int xmax1, int ymax1,
 }
 
 static int
-total_overlap(Client *c, Monitor *m, Geometry *g)
+total_overlap(Client *c, View *v, Geometry *g)
 {
 	Client *o;
 	int x1, x2, y1, y2, a;
@@ -3440,7 +3514,7 @@ total_overlap(Client *c, Monitor *m, Geometry *g)
 
 	for (o = scr->clients; o; o = o->next)
 		if (o != c && !o->is.bastard && !c->is.dockapp && o->can.floats
-		    && isvisible(o, m))
+		    && isvisible(o, v))
 			a += area_overlap(x1, y1, x2, y2, o->r.x, o->r.y,
 					  o->r.x + o->r.w + 2 * o->r.b,
 					  o->r.y + o->r.h + 2 * o->r.b);
@@ -3448,10 +3522,10 @@ total_overlap(Client *c, Monitor *m, Geometry *g)
 }
 
 static Client *
-nextplaced(Client *x, Client *c, Monitor *m)
+nextplaced(Client *x, Client *c, View *v)
 {
 	for (; c && (c == x || c->is.bastard || c->is.dockapp || !c->can.floats
-		     || !isvisible(c, m)); c = c->snext) ;
+		     || !isvisible(c, v)); c = c->snext) ;
 	return c;
 }
 
@@ -3500,7 +3574,7 @@ place_geom(Client *c)
 }
 
 static void
-place_smart(Client *c, WindowPlacement p, ClientGeometry * g, Monitor *m, Workarea *w)
+place_smart(Client *c, WindowPlacement p, ClientGeometry * g, View *v, Workarea *w)
 {
 	Client *s;
 	Geometry **stack = NULL, **unobs, *e, *o;
@@ -3517,8 +3591,8 @@ place_smart(Client *c, WindowPlacement p, ClientGeometry * g, Monitor *m, Workar
 	   again.  If either row or column fail it reverts to cascade. */
 
 	/* find all placeable windows in stacking order */
-	for (num = 0, s = nextplaced(c, scr->stack, m); s;
-	     num++, s = nextplaced(c, s->snext, m)) {
+	for (num = 0, s = nextplaced(c, scr->stack, v); s;
+	     num++, s = nextplaced(c, s->snext, v)) {
 		stack = erealloc(stack, (num + 1) * sizeof(*stack));
 		stack[num] = place_geom(s);
 	}
@@ -3703,7 +3777,7 @@ place_smart(Client *c, WindowPlacement p, ClientGeometry * g, Monitor *m, Workar
 
 /* unused */
 void
-old_place_smart(Client *c, WindowPlacement p, ClientGeometry * g, Monitor *m, Workarea *w)
+old_place_smart(Client *c, WindowPlacement p, ClientGeometry * g, View *v, Workarea *w)
 {
 	int t_b, l_r, xl, xr, yt, yb, x_beg, x_end, xd, y_beg, y_end, yd;
 	int best_x, best_y, best_a;
@@ -3770,7 +3844,7 @@ old_place_smart(Client *c, WindowPlacement p, ClientGeometry * g, Monitor *m, Wo
 			     g->y += yd) {
 				int a;
 
-				if ((a = total_overlap(c, m, (Geometry *) g)) == 0)
+				if ((a = total_overlap(c, v, (Geometry *) g)) == 0)
 					return;
 				if (a < best_a) {
 					best_x = g->x;
@@ -3785,7 +3859,7 @@ old_place_smart(Client *c, WindowPlacement p, ClientGeometry * g, Monitor *m, Wo
 			     g->x += xd) {
 				int a;
 
-				if ((a = total_overlap(c, m, (Geometry *) g)) == 0)
+				if ((a = total_overlap(c, v, (Geometry *) g)) == 0)
 					return;
 				if (a < best_a) {
 					best_x = g->x;
@@ -3800,26 +3874,26 @@ old_place_smart(Client *c, WindowPlacement p, ClientGeometry * g, Monitor *m, Wo
 }
 
 static void
-place_minoverlap(Client *c, WindowPlacement p, ClientGeometry * g, Monitor *m,
+place_minoverlap(Client *c, WindowPlacement p, ClientGeometry * g, View *v,
 		 Workarea *w)
 {
 	/* TODO: write this */
 }
 
 static void
-place_undermouse(Client *c, WindowPlacement p, ClientGeometry * g, Monitor *m,
+place_undermouse(Client *c, WindowPlacement p, ClientGeometry * g, View *v,
 		 Workarea *w)
 {
 	int mx, my;
 
 	/* pick a different monitor than the default */
 	getpointer(&g->x, &g->y);
-	if (!(m = getmonitor(g->x, g->y))) {
-		m = closestmonitor(g->x, g->y);
-		g->x = m->mx;
-		g->y = m->my;
+	if (!(v = getview(g->x, g->y))) {
+		v = closestview(g->x, g->y);
+		g->x = v->curmon->mx;
+		g->y = v->curmon->my;
 	}
-	getworkarea(m, w);
+	getworkarea(v->curmon, w);
 
 	putreference(g->x, g->y, (Geometry *) g, c->gravity);
 
@@ -3840,7 +3914,7 @@ place_undermouse(Client *c, WindowPlacement p, ClientGeometry * g, Monitor *m,
 }
 
 static void
-place_random(Client *c, WindowPlacement p, ClientGeometry * g, Monitor *m, Workarea *w)
+place_random(Client *c, WindowPlacement p, ClientGeometry * g, View *v, Workarea *w)
 {
 	int x_min, x_max, y_min, y_max, x_off, y_off;
 	int d = scr->style.titleheight;
@@ -3866,14 +3940,15 @@ place(Client *c, WindowPlacement p)
 {
 	ClientGeometry g;
 	Workarea w;
+	View *v;
 	Monitor *m;
 
 	getplace(c, &g);
 
 	/* FIXME: use initial location considering gravity */
-	if (!(m = clientmonitor(c)))
-		if (!(m = curmonitor()))
-			m = nearmonitor();
+	if (!(v = clientview(c)) || !v->curmon)
+		v = nearview();
+	m = v->curmon;
 	g.x += m->sc.x;
 	g.y += m->sc.y;
 
@@ -3881,22 +3956,22 @@ place(Client *c, WindowPlacement p)
 
 	switch (p) {
 	case ColSmartPlacement:
-		place_smart(c, p, &g, m, &w);
+		place_smart(c, p, &g, v, &w);
 		break;
 	case RowSmartPlacement:
-		place_smart(c, p, &g, m, &w);
+		place_smart(c, p, &g, v, &w);
 		break;
 	case MinOverlapPlacement:
-		place_minoverlap(c, p, &g, m, &w);
+		place_minoverlap(c, p, &g, v, &w);
 		break;
 	case UnderMousePlacement:
-		place_undermouse(c, p, &g, m, &w);
+		place_undermouse(c, p, &g, v, &w);
 		break;
 	case CascadePlacement:
-		place_smart(c, p, &g, m, &w);
+		place_smart(c, p, &g, v, &w);
 		break;
 	case RandomPlacement:
-		place_random(c, p, &g, m, &w);
+		place_random(c, p, &g, v, &w);
 		break;
 	}
 	c->r.x = g.x;
@@ -3916,7 +3991,7 @@ addclient(Client *c, Bool focusme, Bool raiseme)
 	if (!c->s.x && !c->s.y && c->can.move && !c->is.dockapp) {
 		/* put it on the monitor startup notification requested if not already
 		   placed with its group */
-		if (c->monitor && !clientmonitor(c))
+		if (c->monitor && !clientview(c))
 			c->tags = scr->monitors[c->monitor - 1].curview->seltags;
 		place(c, ColSmartPlacement);
 	}
@@ -3930,19 +4005,18 @@ addclient(Client *c, Bool focusme, Bool raiseme)
 
 	if (!c->can.move) {
 		int mx, my;
-		Monitor *cm;
+		View *cv;
 
 		/* wnck task bars figure window is on monitor containing center of window 
 		 */
 		mx = c->s.x + c->s.w / 2 + c->s.b;
 		my = c->s.y + c->s.h / 2 + c->s.b;
 
-		if (!(cm = getmonitor(mx, my)))
-			cm = closestmonitor(mx, my);
-		c->tags = cm->curview->seltags;
+		if (!(cv = getview(mx, my)))
+			cv = closestview(mx, my);
+		c->tags = cv->seltags;
 	}
 
-	c->cscr = scr;
 	attach(c, scr->options.attachaside);
 	attachclist(c);
 	attachflist(c, focusme);
@@ -3959,19 +4033,21 @@ delclient(Client *c)
 	detachclist(c);
 	detachflist(c);
 	detachstack(c);
-	c->cscr = NULL;
 }
 
 void
 moveto(Client *c, RelativeDirection position)
 {
 	Monitor *m;
+	View *v;
 	Workarea w;
 	ClientGeometry g;
 
-	if (!c || !c->can.move || !(m = c->cmon))
+	if (!c || !c->can.move || !(v = c->cview))
 		return;
-	if (!isfloating(c, m))
+	if (!(m = v->curmon))
+		return;
+	if (!isfloating(c, v))
 		return;		/* for now */
 
 	getworkarea(m, &w);
@@ -4034,12 +4110,15 @@ void
 moveby(Client *c, RelativeDirection direction, int amount)
 {
 	Monitor *m;
+	View *v;
 	Workarea w;
 	ClientGeometry g;
 
-	if (!c || !c->can.move || !(m = c->cmon))
+	if (!c || !c->can.move || !(v = c->cview))
 		return;
-	if (!isfloating(c, m))
+	if (!(m = v->curmon))
+		return;
+	if (!isfloating(c, v))
 		return;		/* for now */
 
 	getworkarea(m, &w);
@@ -4130,14 +4209,17 @@ void
 snapto(Client *c, RelativeDirection direction)
 {
 	Monitor *m;
+	View *v;
 	Workarea w;
 	ClientGeometry g;
 	Client *s, *ox, *oy;
 	int min1, max1, edge;
 
-	if (!c || !c->can.move || !(m = c->cmon))
+	if (!c || !c->can.move || !(v = c->cview))
 		return;
-	if (!isfloating(c, m))
+	if (!(m = v->curmon))
+		return;
+	if (!isfloating(c, v))
 		return;		/* for now */
 
 	getworkarea(m, &w);
@@ -4153,7 +4235,7 @@ snapto(Client *c, RelativeDirection direction)
 		max1 = g.y + g.b + g.h;
 		edge = g.x;
 		for (ox = NULL, s = scr->clients; s; s = s->next) {
-			if (s->cmon != m)
+			if (s->cview != v)
 				continue;
 			if (s->c.x + s->c.b + s->c.w >= edge)
 				continue;
@@ -4167,7 +4249,7 @@ snapto(Client *c, RelativeDirection direction)
 		max1 = g.x + g.b + g.w;
 		edge = g.y;
 		for (oy = NULL, s = scr->clients; s; s = s->next) {
-			if (s->cmon != m)
+			if (s->cview != v)
 				continue;
 			if (s->c.y + s->c.b + s->c.h >= edge)
 				continue;
@@ -4185,7 +4267,7 @@ snapto(Client *c, RelativeDirection direction)
 		max1 = g.x + g.b + g.w;
 		edge = g.y;
 		for (oy = NULL, s = scr->clients; s; s = s->next) {
-			if (s->cmon != m)
+			if (s->cview != v)
 				continue;
 			if (s->c.y + s->c.b + s->c.h >= edge)
 				continue;
@@ -4202,7 +4284,7 @@ snapto(Client *c, RelativeDirection direction)
 		max1 = g.y + g.b + g.h;
 		edge = g.x + g.b + g.w;
 		for (ox = NULL, s = scr->clients; s; s = s->next) {
-			if (s->cmon != m)
+			if (s->cview != v)
 				continue;
 			if (s->c.x < edge)
 				continue;
@@ -4215,7 +4297,7 @@ snapto(Client *c, RelativeDirection direction)
 		max1 = g.x + g.b + g.w;
 		edge = g.y;
 		for (oy = NULL, s = scr->clients; s; s = s->next) {
-			if (s->cmon != m)
+			if (s->cview != v)
 				continue;
 			if (s->c.y + s->c.b + s->c.h >= edge)
 				continue;
@@ -4233,7 +4315,7 @@ snapto(Client *c, RelativeDirection direction)
 		max1 = g.y + g.b + g.h;
 		edge = g.x;
 		for (ox = NULL, s = scr->clients; s; s = s->next) {
-			if (s->cmon != m)
+			if (s->cview != v)
 				continue;
 			if (s->c.x + s->c.b + s->c.w >= edge)
 				continue;
@@ -4252,7 +4334,7 @@ snapto(Client *c, RelativeDirection direction)
 		max1 = g.y + g.b + g.h;
 		edge = g.x + g.b + g.w;
 		for (ox = NULL, s = scr->clients; s; s = s->next) {
-			if (s->cmon != m)
+			if (s->cview != v)
 				continue;
 			if (s->c.x < edge)
 				continue;
@@ -4268,7 +4350,7 @@ snapto(Client *c, RelativeDirection direction)
 		max1 = g.y + g.b + g.h;
 		edge = g.x;
 		for (ox = NULL, s = scr->clients; s; s = s->next) {
-			if (s->cmon != m)
+			if (s->cview != v)
 				continue;
 			if (s->c.x + s->c.b + s->c.w >= edge)
 				continue;
@@ -4282,7 +4364,7 @@ snapto(Client *c, RelativeDirection direction)
 		max1 = g.x + g.b + g.w;
 		edge = g.y + g.b + g.h;
 		for (oy = NULL, s = scr->clients; s; s = s->next) {
-			if (s->cmon != m)
+			if (s->cview != v)
 				continue;
 			if (s->c.y < edge)
 				continue;
@@ -4299,7 +4381,7 @@ snapto(Client *c, RelativeDirection direction)
 		max1 = g.x + g.b + g.w;
 		edge = g.y + g.b + g.h;
 		for (oy = NULL, s = scr->clients; s; s = s->next) {
-			if (s->cmon != m)
+			if (s->cview != v)
 				continue;
 			if (s->c.y < edge)
 				continue;
@@ -4315,7 +4397,7 @@ snapto(Client *c, RelativeDirection direction)
 		max1 = g.y + g.b + g.h;
 		edge = g.x + g.b + g.w;
 		for (ox = NULL, s = scr->clients; s; s = s->next) {
-			if (s->cmon != m)
+			if (s->cview != v)
 				continue;
 			if (s->c.x < edge)
 				continue;
@@ -4328,7 +4410,7 @@ snapto(Client *c, RelativeDirection direction)
 		max1 = g.x + g.b + g.w;
 		edge = g.y + g.b + g.h;
 		for (oy = NULL, s = scr->clients; s; s = s->next) {
-			if (s->cmon != m)
+			if (s->cview != v)
 				continue;
 			if (s->c.y < edge)
 				continue;
@@ -4354,12 +4436,15 @@ void
 edgeto(Client *c, int direction)
 {
 	Monitor *m;
+	View *v;
 	Workarea w;
 	ClientGeometry g;
 
-	if (!c || !c->can.move || !(m = c->cmon))
+	if (!c || !c->can.move || !(v = c->cview))
 		return;
-	if (!isfloating(c, m))
+	if (!(m = v->curmon))
+		return;
+	if (!isfloating(c, v))
 		return;		/* for now */
 
 	getworkarea(m, &w);
@@ -4417,81 +4502,71 @@ edgeto(Client *c, int direction)
 void
 rotateview(Client *c)
 {
-	Monitor *m;
 	View *v;
 
-	if (!c || !(m = c->cmon))
+	if (!c || !(v = c->cview))
 		return;
-	v = m->curview;
 	if (!FEATURES(v->layout, ROTL))
 		return;
 	v->major = (v->major + 1) % OrientLast;
 	v->minor = (v->minor + 1) % OrientLast;
-	arrange(m);
+	arrange(v);
 }
 
 void
 unrotateview(Client *c)
 {
-	Monitor *m;
 	View *v;
 
-	if (!c || !(m = c->cmon))
+	if (!c || !(v = c->cview))
 		return;
-	v = m->curview;
 	if (!FEATURES(v->layout, ROTL))
 		return;
 	v->major = (v->major + OrientLast - 1) % OrientLast;
 	v->minor = (v->minor + OrientLast - 1) % OrientLast;
-	arrange(m);
+	arrange(v);
 }
 
 void
 rotatezone(Client *c)
 {
-	Monitor *m;
 	View *v;
 
-	if (!c || !(m = c->cmon))
+	if (!c || !(v = c->cview))
 		return;
-	v = m->curview;
 	if (!FEATURES(v->layout, ROTL) || !FEATURES(v->layout, NMASTER))
 		return;
 	v->minor = (v->minor + 1) % OrientLast;
-	arrange(m);
+	arrange(v);
 }
 
 void
 unrotatezone(Client *c)
 {
-	Monitor *m;
 	View *v;
 
-	if (!c || !(m = c->cmon))
+	if (!c || !(v = c->cview))
 		return;
-	v = m->curview;
 	if (!FEATURES(v->layout, ROTL) || !FEATURES(v->layout, NMASTER))
 		return;
 	v->minor = (v->minor + OrientLast - 1) % OrientLast;
-	arrange(m);
+	arrange(v);
 }
 
 void
 rotatewins(Client *c)
 {
-	Monitor *m;
 	View *v;
 	Client *s;
 
-	if (!c || !(m = c->cmon))
+	if (!c || !(v = c->cview))
 		return;
-	v = m->curview;
 	if (!FEATURES(v->layout, ROTL))
 		return;
-	if ((s = nexttiled(scr->clients, m))) {
+	if ((s = nexttiled(scr->clients, v))) {
 		detach(s);
 		attach(s, True);
-		arrange(m);
+		arrange(v);
 		focus(s);
 	}
 }
@@ -4499,20 +4574,18 @@ rotatewins(Client *c)
 void
 unrotatewins(Client *c)
 {
-	Monitor *m;
 	View *v;
 	Client *last, *s;
 
-	if (!c || !(m = c->cmon))
+	if (!c || !(v = c->cview))
 		return;
-	v = m->curview;
 	if (!FEATURES(v->layout, ROTL) || !FEATURES(v->layout, NMASTER))
 		return;
 	for (last = scr->clients; last && last->next; last = last->next) ;
-	if ((s = prevtiled(last, m))) {
+	if ((s = prevtiled(last, v))) {
 		detach(s);
 		attach(s, False);
-		arrange(m);
+		arrange(v);
 		focus(s);
 	}
 }
@@ -4520,29 +4593,29 @@ unrotatewins(Client *c)
 void
 togglefloating(Client *c)
 {
-	Monitor *m;
+	View *v;
 
-	if (!c || c->is.floater || !c->can.floats || !(m = c->cmon))
+	if (!c || c->is.floater || !c->can.floats || !(v = c->cview))
 		return;
 	c->skip.arrange = !c->skip.arrange;
 	if (c->is.managed) {
 		ewmh_update_net_window_state(c);
-		updatefloat(c, m);
-		arrange(m);
+		updatefloat(c, v);
+		arrange(v);
 	}
 }
 
 void
 togglefill(Client *c)
 {
-	Monitor *m;
+	View *v;
 
-	if (!c || (!c->can.fill && c->is.managed) || !(m = c->cmon))
+	if (!c || (!c->can.fill && c->is.managed) || !(v = c->cview))
 		return;
 	c->is.fill = !c->is.fill;
 	if (c->is.managed) {
 		ewmh_update_net_window_state(c);
-		updatefloat(c, m);
+		updatefloat(c, v);
 	}
 
 }
@@ -4550,9 +4623,9 @@ togglefill(Client *c)
 void
 togglefull(Client *c)
 {
-	Monitor *m;
+	View *v;
 
-	if (!c || (!c->can.full && c->is.managed) || !(m = c->cmon))
+	if (!c || (!c->can.full && c->is.managed) || !(v = c->cview))
 		return;
 	if (!c->is.full) {
 		c->wasfloating = c->skip.arrange;
@@ -4565,7 +4638,7 @@ togglefull(Client *c)
 	c->is.full = !c->is.full;
 	if (c->is.managed) {
 		ewmh_update_net_window_state(c);
-		updatefloat(c, m);
+		updatefloat(c, v);
 		restack();
 	}
 }
@@ -4573,14 +4646,14 @@ togglefull(Client *c)
 void
 togglemax(Client *c)
 {
-	Monitor *m;
+	View *v;
 
-	if (!c || (!c->can.max && c->is.managed) || !(m = c->cmon))
+	if (!c || (!c->can.max && c->is.managed) || !(v = c->cview))
 		return;
 	c->is.max = !c->is.max;
 	if (c->is.managed) {
 		ewmh_update_net_window_state(c);
-		updatefloat(c, m);
+		updatefloat(c, v);
 		restack();
 	}
 }
@@ -4588,81 +4661,79 @@ togglemax(Client *c)
 void
 togglemaxv(Client *c)
 {
-	Monitor *m;
+	View *v;
 
-	if (!c || (!c->can.maxv && c->is.managed) || !(m = c->cmon))
+	if (!c || (!c->can.maxv && c->is.managed) || !(v = c->cview))
 		return;
 	c->is.maxv = !c->is.maxv;
 	if (c->is.managed) {
 		ewmh_update_net_window_state(c);
-		updatefloat(c, m);
+		updatefloat(c, v);
 	}
 }
 
 void
 togglemaxh(Client *c)
 {
-	Monitor *m;
+	View *v;
 
-	if (!c || (!c->can.maxh && c->is.managed) || !(m = c->cmon))
+	if (!c || (!c->can.maxh && c->is.managed) || !(v = c->cview))
 		return;
 	c->is.maxh = !c->is.maxh;
 	ewmh_update_net_window_state(c);
-	updatefloat(c, m);
+	updatefloat(c, v);
 }
 
 void
 toggleshade(Client *c)
 {
-	Monitor *m;
+	View *v;
 
-	if (!c || (!c->can.shade && c->is.managed) || !(m = c->cmon))
+	if (!c || (!c->can.shade && c->is.managed) || !(v = c->cview))
 		return;
 	c->was.shaded = c->is.shaded;
 	c->is.shaded = !c->is.shaded;
 	if (c->is.managed) {
 		ewmh_update_net_window_state(c);
-		updatefloat(c, m);
+		updatefloat(c, v);
 	}
 }
 
 void
-toggledectiled(Monitor *m, View *v)
+toggledectiled(View *v)
 {
-	v = m->curview;
 	v->dectiled = v->dectiled ? False : True;
-	if (m)
-		arrange(m);
+	arrange(v);
 }
 
 void
 zoom(Client *c)
 {
-	Monitor *m;
+	View *v;
 
 	if (!c)
 		return;
-	if (!(m = c->cmon))
+	if (!(v = c->cview))
 		return;
-	if (!MFEATURES(m, ZOOM) || c->skip.arrange)
+	if (!FEATURES(v->layout, ZOOM) || c->skip.arrange)
 		return;
-	if (c == nexttiled(scr->clients, m))
-		if (!(c = nexttiled(c->next, m)))
+	if (c == nexttiled(scr->clients, v))
+		if (!(c = nexttiled(c->next, v)))
 			return;
 	detach(c);
 	attach(c, False);
-	arrange(m);
+	arrange(v);
 	focus(c);
 }
 
 void
 zoomfloat(Client *c)
 {
-	Monitor *m;
+	View *v;
 
-	if (!(m = c->cmon))
+	if (!(v = c->cview))
 		return;
-	if (isfloating(c, m))
+	if (isfloating(c, v))
 		togglefloating(c);
 	else
 		zoom(c);

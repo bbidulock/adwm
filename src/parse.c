@@ -12,6 +12,7 @@
 #include "adwm.h"
 #include "layout.h"
 #include "tags.h"
+#include "parse.h" /* verification */
 
 void
 k_zoom(XEvent *e, Key *k)
@@ -169,14 +170,12 @@ static KeyItem KeyItems[] = {
 void
 k_setmwfactor(XEvent *e, Key *k)
 {
-	Monitor *m;
 	View *v;
 	const char *arg;
 	double factor;
 
-	if (!(m = selmonitor()))
+	if (!(v = selview()))
 		return;
-	v = m->curview;
 
 	switch (k->act) {
 	case IncCount:
@@ -198,21 +197,21 @@ k_setmwfactor(XEvent *e, Key *k)
 			case OrientTop:
 			case OrientRight:
 				if (k->act == DecCount)
-					setmwfact(m, v, v->mwfact + factor);
+					setmwfact(v, v->mwfact + factor);
 				else
-					setmwfact(m, v, v->mwfact - factor);
+					setmwfact(v, v->mwfact - factor);
 				break;
 			case OrientBottom:
 			case OrientLeft:
 			case OrientLast:
 				if (k->act == DecCount)
-					setmwfact(m, v, v->mwfact - factor);
+					setmwfact(v, v->mwfact - factor);
 				else
-					setmwfact(m, v, v->mwfact + factor);
+					setmwfact(v, v->mwfact + factor);
 				break;
 			}
 		} else
-			setmwfact(m, v, factor);
+			setmwfact(v, factor);
 	}
 }
 
@@ -220,13 +219,11 @@ void
 k_setnmaster(XEvent *e, Key *k)
 {
 	const char *arg;
-	Monitor *m;
 	View *v;
 	int num;
 
-	if (!(m = selmonitor()))
+	if (!(v = selview()))
 		return;
-	v = m->curview;
 
 	switch (k->act) {
 	case IncCount:
@@ -243,11 +240,11 @@ k_setnmaster(XEvent *e, Key *k)
 	if (sscanf(arg, "%d", &num) == 1) {
 		if (arg[0] == '+' || arg[0] == '-' || k->act != SetCount) {
 			if (k->act == DecCount)
-				decnmaster(m, v, num);
+				decnmaster(v, num);
 			else
-				incnmaster(m, v, num);
+				incnmaster(v, num);
 		} else
-			setnmaster(m, v, num);
+			setnmaster(v, num);
 	}
 }
 
@@ -334,7 +331,7 @@ static void
 k_setgeneric(XEvent *e, Key *k, void (*func) (XEvent *, Key *, Client *))
 {
 	switch (k->any) {
-		Monitor *m;
+		View *v;
 		Client *c;
 
 	case FocusClient:
@@ -342,10 +339,10 @@ k_setgeneric(XEvent *e, Key *k, void (*func) (XEvent *, Key *, Client *))
 			func(e, k, sel);
 		break;
 	case AllClients:
-		if (!(m = selmonitor()))
+		if (!(v = selview()))
 			return;
 		for (c = scr->clients; c; c = c->next) {
-			if (c->cmon != m)
+			if (!c->cview || c->cview != v)
 				continue;
 			switch (k->ico) {
 			case IncludeIcons:
@@ -364,7 +361,7 @@ k_setgeneric(XEvent *e, Key *k, void (*func) (XEvent *, Key *, Client *))
 		break;
 	case AnyClient:
 		for (c = scr->clients; c; c = c->next) {
-			if (!c->cmon)
+			if (!c->cview || !c->cview->curmon)
 				continue;
 			switch (k->ico) {
 			case IncludeIcons:
@@ -792,42 +789,39 @@ k_setshowing(XEvent *e, Key *k)
 }
 
 static void
-k_setlaygeneric(XEvent *e, Key *k, void (*func) (XEvent *, Key *, Monitor *, View *))
+k_setlaygeneric(XEvent *e, Key *k, void (*func) (XEvent *, Key *, View *))
 {
 	switch (k->any) {
 		Monitor *m;
 		View *v;
 
 	case FocusClient:
-		if (!(m = selmonitor()))
+		if (!(v = selview()))
 			return;
-		v = m->curview;
-		func(e, k, m, v);
+		func(e, k, v);
 		break;
 	case PointerClient:
-		if (!(m = curmonitor()))
-			m = nearmonitor();
-		v = m->curview;
-		func(e, k, m, v);
+		if (!(v = nearview()))
+			return;
+		func(e, k, v);
 		break;
 	case AllClients:
-		for (m = scr->monitors; m; m = m->next) {
-			v = m->curview;
-			func(e, k, m, v);
-		}
+		for (m = scr->monitors; m; m = m->next)
+			func(e, k, m->curview);
 		break;
 	case AnyClient:
-		if (!(m = selmonitor()))
-			m = nearmonitor();
-		v = m->curview;
-		func(e, k, m, v);
+		if (!(v = selview()))
+			return;
+		if (!v)
+			return;
+		func(e, k, v);
 		break;
 	case EveryClient:
 		for (v = scr->views; v < scr->views + scr->ntags; v++) {
 			for (m = scr->monitors; m; m = m->next)
 				if (v == m->curview)
 					break;
-			func(e, k, m, v);
+			func(e, k, v);
 		}
 		break;
 	default:
@@ -836,7 +830,7 @@ k_setlaygeneric(XEvent *e, Key *k, void (*func) (XEvent *, Key *, Monitor *, Vie
 }
 
 static void
-v_setstruts(XEvent *e, Key *k, Monitor *m, View *v)
+v_setstruts(XEvent *e, Key *k, View *v)
 {
 	switch (k->set) {
 	case SetFlagSetting:
@@ -851,7 +845,7 @@ v_setstruts(XEvent *e, Key *k, Monitor *m, View *v)
 	case ToggleFlagSetting:
 		break;
 	}
-	togglestruts(m, v);
+	togglestruts(v);
 }
 
 void
@@ -861,7 +855,7 @@ k_setstruts(XEvent *e, Key *k)
 }
 
 static void
-v_setdectiled(XEvent *e, Key *k, Monitor *m, View *v)
+v_setdectiled(XEvent *e, Key *k, View *v)
 {
 	switch (k->set) {
 	case SetFlagSetting:
@@ -876,7 +870,7 @@ v_setdectiled(XEvent *e, Key *k, Monitor *m, View *v)
 	case ToggleFlagSetting:
 		break;
 	}
-	toggledectiled(m, v);
+	toggledectiled(v);
 }
 
 void
@@ -1001,7 +995,7 @@ static KeyItem KeyItemsByDir[] = {
 Bool canfocus(Client *c);
 
 static Bool
-k_focusable(Client *c, Monitor *m, WhichClient any, RelativeDirection dir,
+k_focusable(Client *c, View *v, WhichClient any, RelativeDirection dir,
 	    IconsIncluded ico)
 {
 	if (dir == RelativeCenter)
@@ -1019,7 +1013,7 @@ k_focusable(Client *c, Monitor *m, WhichClient any, RelativeDirection dir,
 		if (dir != RelativeCenter)
 			if (c->is.icon || c->is.hidden)
 				return False;
-		if (!isvisible(c, m))
+		if (!isvisible(c, v))
 			return False;
 		switch (ico) {
 		case IncludeIcons:
@@ -1035,7 +1029,7 @@ k_focusable(Client *c, Monitor *m, WhichClient any, RelativeDirection dir,
 		}
 		break;
 	case ActiveClient:
-		if (!isvisible(c, m))
+		if (!isvisible(c, v))
 			return False;
 		switch (ico) {
 		case IncludeIcons:
@@ -1053,7 +1047,7 @@ k_focusable(Client *c, Monitor *m, WhichClient any, RelativeDirection dir,
 	case AllClients:
 		if (c->skip.focus)
 			return False;
-		if (!isvisible(c, m))
+		if (!isvisible(c, v))
 			return False;
 		switch (ico) {
 		case IncludeIcons:
@@ -1153,10 +1147,9 @@ findclosest(Key *k, RelativeDirection dir)
 }
 
 static void
-k_select_cl(Monitor *cm, Key *k, CycleList * cl)
+k_select_cl(View *v, Key *k, CycleList * cl)
 {
 	Client *c;
-	Monitor *m;
 	int i;
 
 	if (cl != k->where) {
@@ -1164,21 +1157,20 @@ k_select_cl(Monitor *cm, Key *k, CycleList * cl)
 		c->is.icon = c->was.icon;
 		c->is.hidden = c->was.hidden;
 		if (c->was.icon || c->was.hidden)
-			arrange(c->cmon);
+			arrange(c->cview);
 		c->was.is = 0;
 	}
 	c = cl->c;
-	if (!(m = c->cmon) && !(m = clientmonitor(c))) {
+	if (!(v = c->cview) && !(v = clientview(c))) {
 		if (!(c->tags & ((1ULL << scr->ntags) - 1))) {
 			k_stop(NULL, k);
 			return;
 		}
-		/* have to switch views on monitor cm */
+		/* have to switch views on monitor v->curmon */
 		for (i = 0; i < scr->ntags; i++)
 			if (c->tags & (1ULL << i))
 				break;
-		view(cm, i);
-		m = cm;
+		view(v, i);
 	}
 	if (cl != k->where) {
 		c->was.is = 0;
@@ -1201,7 +1193,7 @@ k_select_cl(Monitor *cm, Key *k, CycleList * cl)
 }
 
 static void
-k_select_dir(Monitor *cm, Key *k, RelativeDirection dir)
+k_select_dir(View *v, Key *k, RelativeDirection dir)
 {
 	CycleList *cl;
 
@@ -1209,11 +1201,11 @@ k_select_dir(Monitor *cm, Key *k, RelativeDirection dir)
 		k_stop(NULL, k);
 		return;
 	}
-	k_select_cl(cm, k, cl);
+	k_select_cl(v, k, cl);
 }
 
 static void
-k_select_lst(Monitor *cm, Key *k, RelativeDirection dir)
+k_select_lst(View *v, Key *k, RelativeDirection dir)
 {
 	const char *arg = k->arg;
 	CycleList *cl;
@@ -1272,11 +1264,11 @@ k_select_lst(Monitor *cm, Key *k, RelativeDirection dir)
 	j = idx;
 	for (; j < 0; cl = cl->prev, j++) ;
 	for (; j > 0; cl = cl->next, j--) ;
-	k_select_cl(cm, k, cl);
+	k_select_cl(v, k, cl);
 }
 
 static void
-k_select(Monitor *cm, Key *k)
+k_select(View *v, Key *k)
 {
 	switch (k->dir) {
 	case RelativeNone:
@@ -1284,7 +1276,7 @@ k_select(Monitor *cm, Key *k)
 	case RelativePrev:
 	case RelativeLast:
 	case RelativeCenter:
-		k_select_lst(cm, k, k->dir);
+		k_select_lst(v, k, k->dir);
 		break;
 	case RelativeNorthWest:
 	case RelativeNorth:
@@ -1294,7 +1286,7 @@ k_select(Monitor *cm, Key *k)
 	case RelativeSouthWest:
 	case RelativeSouth:
 	case RelativeSouthEast:
-		k_select_dir(cm, k, k->dir);
+		k_select_dir(v, k, k->dir);
 		break;
 	default:
 		k_stop(NULL, k);
@@ -1305,11 +1297,10 @@ k_select(Monitor *cm, Key *k)
 void
 k_focus(XEvent *e, Key *k)
 {
-	Monitor *m;
+	View *v;
 
-	if (!(m = selmonitor()))
-		m = nearmonitor();
-
+	if (!(v = selview()))
+		return;
 	/* active order */
 	if (!k->cycle) {
 		Client *c;
@@ -1318,13 +1309,13 @@ k_focus(XEvent *e, Key *k)
 
 		k->where = NULL;
 		for (n = 0, c = scr->clients; c; c = c->next)
-			if (k_focusable(c, m, k->any, k->dir, k->ico))
+			if (k_focusable(c, v, k->any, k->dir, k->ico))
 				n++;
 		if (!n)
 			return;
 		cl = k->cycle = ecalloc(n, sizeof(*k->cycle));
 		for (i = 0, c = scr->clients; c && i < n; c = c->next) {
-			if (!k_focusable(c, m, k->any, k->dir, k->ico))
+			if (!k_focusable(c, v, k->any, k->dir, k->ico))
 				continue;
 			if (c == sel)
 				k->where = cl;
@@ -1338,17 +1329,16 @@ k_focus(XEvent *e, Key *k)
 		k->cycle[n - 1].next = &k->cycle[0];
 		k->num = n;
 	}
-	k_select(m, k);
+	k_select(v, k);
 }
 
 void
 k_client(XEvent *e, Key *k)
 {
-	Monitor *m;
+	View *v;
 
-	if (!(m = selmonitor()))
-		m = nearmonitor();
-
+	if (!(v = selview()))
+		return;
 	/* client order */
 	if (!k->cycle) {
 		Client *c;
@@ -1357,13 +1347,13 @@ k_client(XEvent *e, Key *k)
 
 		k->where = NULL;
 		for (n = 0, c = scr->clist; c; c = c->cnext)
-			if (k_focusable(c, m, k->any, k->dir, k->ico))
+			if (k_focusable(c, v, k->any, k->dir, k->ico))
 				n++;
 		if (!n)
 			return;
 		cl = k->cycle = ecalloc(n, sizeof(*k->cycle));
 		for (i = 0, c = scr->clist; c && i < n; c = c->cnext) {
-			if (!k_focusable(c, m, k->any, k->dir, k->ico))
+			if (!k_focusable(c, v, k->any, k->dir, k->ico))
 				continue;
 			if (c == sel)
 				k->where = cl;
@@ -1377,17 +1367,16 @@ k_client(XEvent *e, Key *k)
 		k->cycle[n - 1].next = &k->cycle[0];
 		k->num = n;
 	}
-	k_select(m, k);
+	k_select(v, k);
 }
 
 void
 k_stack(XEvent *e, Key *k)
 {
-	Monitor *m;
+	View *v;
 
-	if (!(m = selmonitor()))
-		m = nearmonitor();
-
+	if (!(v = selview()))
+		return;
 	/* stacking order */
 	if (!k->cycle) {
 		Client *c;
@@ -1396,13 +1385,13 @@ k_stack(XEvent *e, Key *k)
 
 		k->where = NULL;
 		for (n = 0, c = scr->stack; c; c = c->snext)
-			if (k_focusable(c, m, k->any, k->dir, k->ico))
+			if (k_focusable(c, v, k->any, k->dir, k->ico))
 				n++;
 		if (!n)
 			return;
 		cl = k->cycle = ecalloc(n, sizeof(*k->cycle));
 		for (i = 0, c = scr->stack; c && i < n; c = c->snext) {
-			if (!k_focusable(c, m, k->any, k->dir, k->ico))
+			if (!k_focusable(c, v, k->any, k->dir, k->ico))
 				continue;
 			if (c == sel)
 				k->where = cl;
@@ -1416,17 +1405,16 @@ k_stack(XEvent *e, Key *k)
 		k->cycle[n - 1].next = &k->cycle[0];
 		k->num = n;
 	}
-	k_select(m, k);
+	k_select(v, k);
 }
 
 void
 k_group(XEvent *e, Key *k)
 {
-	Monitor *m;
+	View *v;
 
-	if (!(m = selmonitor()))
-		m = nearmonitor();
-
+	if (!(v = selview()))
+		return;
 	/* client order same WM_CLASS */
 	if (!k->cycle) {
 		Client *c;
@@ -1436,13 +1424,13 @@ k_group(XEvent *e, Key *k)
 		/* FIXME: just stick within the same resource class */
 		k->where = NULL;
 		for (n = 0, c = scr->clist; c; c = c->cnext)
-			if (k_focusable(c, m, k->any, k->dir, k->ico))
+			if (k_focusable(c, v, k->any, k->dir, k->ico))
 				n++;
 		if (!n)
 			return;
 		cl = k->cycle = ecalloc(n, sizeof(*k->cycle));
 		for (i = 0, c = scr->clist; c && i < n; c = c->cnext) {
-			if (!k_focusable(c, m, k->any, k->dir, k->ico))
+			if (!k_focusable(c, v, k->any, k->dir, k->ico))
 				continue;
 			if (c == sel)
 				k->where = cl;
@@ -1456,7 +1444,7 @@ k_group(XEvent *e, Key *k)
 		k->cycle[n - 1].next = &k->cycle[0];
 		k->num = n;
 	}
-	k_select(m, k);
+	k_select(v, k);
 }
 
 void
@@ -1470,11 +1458,10 @@ k_tab(XEvent *e, Key *k)
 void
 k_panel(XEvent *e, Key *k)
 {
-	Monitor *m;
+	View *v;
 
-	if (!(m = selmonitor()))
-		m = nearmonitor();
-
+	if (!(v = selview()))
+		return;
 	/* panel (app with struts) */
 	if (!k->cycle) {
 		Client *c;
@@ -1484,7 +1471,7 @@ k_panel(XEvent *e, Key *k)
 		k->where = NULL;
 		for (n = 0, c = scr->clist; c; c = c->cnext)
 			if (WTCHECK(c, WindowTypeDock))
-				if (k_focusable(c, m, EveryClient, k->dir, k->ico))
+				if (k_focusable(c, v, EveryClient, k->dir, k->ico))
 					n++;
 		if (!n)
 			return;
@@ -1492,7 +1479,7 @@ k_panel(XEvent *e, Key *k)
 		for (i = 0, c = scr->clist; c && i < n; c = c->cnext) {
 			if (!WTCHECK(c, WindowTypeDock))
 				continue;
-			if (!k_focusable(c, m, EveryClient, k->dir, k->ico))
+			if (!k_focusable(c, v, EveryClient, k->dir, k->ico))
 				continue;
 			if (c == sel)
 				k->where = cl;
@@ -1506,17 +1493,16 @@ k_panel(XEvent *e, Key *k)
 		k->cycle[n - 1].next = &k->cycle[0];
 		k->num = n;
 	}
-	k_select(m, k);
+	k_select(v, k);
 }
 
 void
 k_dock(XEvent *e, Key *k)
 {
-	Monitor *m;
+	View *v;
 
-	if (!(m = selmonitor()))
-		m = nearmonitor();
-
+	if (!(v = selview()))
+		return;
 	/* dock apps */
 	if (!k->cycle) {
 		Client *c;
@@ -1526,7 +1512,7 @@ k_dock(XEvent *e, Key *k)
 		k->where = NULL;
 		for (n = 0, c = scr->clist; c; c = c->cnext)
 			if (c->is.dockapp)
-				if (k_focusable(c, m, EveryClient, k->dir, k->ico))
+				if (k_focusable(c, v, EveryClient, k->dir, k->ico))
 					n++;
 		if (!n)
 			return;
@@ -1534,7 +1520,7 @@ k_dock(XEvent *e, Key *k)
 		for (i = 0, c = scr->clist; c && i < n; c = c->cnext) {
 			if (!c->is.dockapp)
 				continue;
-			if (!k_focusable(c, m, EveryClient, k->dir, k->ico))
+			if (!k_focusable(c, v, EveryClient, k->dir, k->ico))
 				continue;
 			if (c == sel)
 				k->where = cl;
@@ -1548,7 +1534,7 @@ k_dock(XEvent *e, Key *k)
 		k->cycle[n - 1].next = &k->cycle[0];
 		k->num = n;
 	}
-	k_select(m, k);
+	k_select(v, k);
 }
 
 void
@@ -1875,79 +1861,59 @@ idxoftag(View *v, Key *k)
 void
 k_toggletag(XEvent *e, Key *k)
 {
-	if (sel) {
-		Monitor *m;
-		View *v;
-
-		if (!(m = sel->cmon))
-			return;
-		v = m->curview;
-		toggletag(sel, idxoftag(v, k));
-	}
+	if (sel)
+		toggletag(sel, idxoftag(sel->cview, k));
+	else
+		DPRINTF("WARNING: no selected client\n");
 }
 
 void
 k_tag(XEvent *e, Key *k)
 {
-	if (sel) {
-		Monitor *m;
-		View *v;
-
-		if (!(m = sel->cmon))
-			return;
-		v = m->curview;
-		tag(sel, idxoftag(v, k));
-	}
+	if (sel)
+		tag(sel, idxoftag(sel->cview, k));
+	else
+		DPRINTF("WARNING: no selected client\n");
 }
 
 void
 k_focusview(XEvent *e, Key *k)
 {
-	Monitor *cm;
 	View *v;
 
-	if (!(cm = selmonitor()))
-		cm = nearmonitor();
-	v = cm->curview;
-	focusview(cm, idxoftag(v, k));
+	if ((v = selview()))
+		focusview(v, idxoftag(v, k));
+	else
+		DPRINTF("WARNING: no selected view\n");
 }
 
 void
 k_toggleview(XEvent *e, Key *k)
 {
-	Monitor *cm;
 	View *v;
 
-	if (!(cm = selmonitor()))
-		cm = nearmonitor();
-	v = cm->curview;
-	toggleview(cm, idxoftag(v, k));
+	if ((v = selview()))
+		toggleview(v, idxoftag(v, k));
+	else
+		DPRINTF("WARNING: no selected view\n");
 }
 
 void
 k_view(XEvent *e, Key *k)
 {
-	Monitor *cm;
 	View *v;
 
-	if (!(cm = selmonitor()))
-		cm = nearmonitor();
-	v = cm->curview;
-	view(cm, idxoftag(v, k));
+	if ((v = selview()))
+		view(v, idxoftag(v, k));
+	else
+		DPRINTF("WARNING: no selected view\n");
 }
 
 void
 k_taketo(XEvent *e, Key *k)
 {
-	if (sel) {
-		Monitor *m;
-		View *v;
-
-		if (!(m = sel->cmon))
-			return;
-		v = m->curview;
-		taketo(sel, idxoftag(v, k));
-	}
+	if (sel)
+		taketo(sel, idxoftag(sel->cview, k));
 }
 
 static const struct {

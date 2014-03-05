@@ -22,7 +22,7 @@
 #include "layout.h"
 #include "tags.h"
 #include "resource.h"
-#include "config.h"
+#include "config.h" /* verification */
 
 Options options;
 
@@ -427,5 +427,10 @@ initrcfile(void)
 		fprintf(stderr, "adwm: Could not find usable database, using defaults\n");
 		if (chdir(config.udir))
 			DPRINTF("Could not change directory to %s: %s\n", config.udir, strerror(errno));
+	}
+	if (owd) {
+		if (chdir(owd))
+			DPRINTF("Could not change directory to %s: %s\n", owd, strerror(errno));
+		free(owd);
 	}
 }

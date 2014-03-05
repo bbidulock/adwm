@@ -613,8 +613,6 @@ typedef struct {
 struct Monitor {
 	Workarea sc, wa;
 	unsigned long struts[LastStrut];
-//	unsigned long long seltags;
-//	unsigned long long prevtags;
 	Monitor *next;
 	int mx, my;
 	View *curview;	    /* current view */
@@ -630,7 +628,7 @@ struct Monitor {
 };
 
 typedef struct {
-	void (*arrange) (Monitor *m);
+	void (*arrange) (View *v);
 	char symbol;
 	int features;
 	LayoutOrientation major;	/* overall orientation */
@@ -754,9 +752,8 @@ struct Client {
 		};
 		unsigned can;
 	} can;
-	AScreen *cscr;
-	Monitor *cmon;
-	View *cview;
+//	Monitor *cmon;			/* current monitor */
+	View *cview;			/* current view */
 	Client *next;
 	Client *prev;
 	Client *snext;
@@ -810,7 +807,7 @@ struct View {
 	LayoutOrientation major;	/* overall orientation */
 	LayoutOrientation minor;	/* master area orientation */
 	WindowPlacement placement;	/* float placement policy */
-//	Monitor *curmon;		/* monitor currently displaying this view */
+	Monitor *curmon;		/* monitor currently displaying this view */
 	Layout *layout;
 	int index;
 	unsigned long long seltags;	/* tags selected for this view */
@@ -1012,30 +1009,29 @@ typedef struct {
 } LayoutOperations;
 
 /* main */
-Monitor *clientmonitor(Client *c);
-Monitor *curmonitor();
-Monitor *selmonitor();
-Monitor *nearmonitor();
+View *clientview(Client *c);
+View *selview();
+View *nearview();
 void *ecalloc(size_t nmemb, size_t size);
 void *emallocz(size_t size);
 void *erealloc(void *ptr, size_t size);
 void eprint(const char *errstr, ...);
 const char *getresource(const char *resource, const char *defval);
 Client *getclient(Window w, int part);
-Monitor *getmonitor(int x, int y);
+View *getview(int x, int y);
 Bool gettextprop(Window w, Atom atom, char **text);
 void getpointer(int *x, int *y);
 void hide(Client *c);
-void hideall(Monitor *m);
+void hideall(View *v);
 void iconify(Client *c);
-void iconifyall(Monitor *m);
+void iconifyall(View *v);
+
 void setborder(int px);
 void incborder(int px);
 void decborder(int px);
 void setmargin(int px);
 void incmargin(int px);
 void decmargin(int px);
-Bool isvisible(Client *c, Monitor *m);
 void focus(Client *c);
 void focusicon(void);
 void focusnext(Client *c);
@@ -1050,7 +1046,7 @@ void pushtime(Time time);
 void quit(const char *arg);
 void restart(const char *arg);
 void spawn(const char *arg);
-void togglestruts(Monitor *m, View *v);
+void togglestruts(View *v);
 void togglemin(Client *c);
 void togglepager(Client *c);
 void toggletaskbar(Client *c);
@@ -1064,18 +1060,17 @@ Bool selectionclear(XEvent *e);
 void with_transients(Client *c, void (*each) (Client *, int), int data);
 
 /* needed by layout.c */
-void getworkarea(Monitor *m, Workarea *w);
 void updategeom(Monitor *m);
 extern Cursor cursor[CurLast];
 extern int ebase[BaseLast];
 Bool handle_event(XEvent *ev);
-void reparentclient(Client *c, AScreen *new_scr, int x, int y);
-Monitor *closestmonitor(int x, int y);
+View *closestview(int x, int y);
 Bool newsize(Client *c, int w, int h, Time time);
 void send_configurenotify(Client *c, Window above);
 void ban(Client *c);
-void unban(Client *c, Monitor *m);
+void unban(Client *c, View *v);
 extern Group window_stack;
+void unmanage(Client *c, WithdrawCause cause);
 
 #define LENGTH(x)		(sizeof(x)/sizeof(*x))
 #ifdef DEBUG

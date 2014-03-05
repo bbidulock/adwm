@@ -19,6 +19,7 @@
 #ifdef XPM
 #include <X11/xpm.h>
 #endif
+#include "texture.h" /* verification */
 
 #if !defined(IMLIB2) || !defined(USE_IMLIB2)
 static void solid(const Texture *t, const unsigned width, const unsigned height,

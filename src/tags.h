@@ -12,10 +12,10 @@ void taketo(Client *c, int index);
 
 void togglesticky(Client *c);
 void toggletag(Client *c, int index);
-void toggleview(Monitor *cm, int index);
-void focusview(Monitor *cm, int index);
+void toggleview(View *v, int index);
+void focusview(View *v, int index);
 
-void view(Monitor *cm, int index);
+void view(View *ov, int index);
 void viewlefttag(void);
 void viewprevtag(void);
 void viewrighttag(void);

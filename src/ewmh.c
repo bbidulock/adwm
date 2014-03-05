@@ -19,8 +19,8 @@
 #include "adwm.h"
 #include "layout.h"
 #include "draw.h"
-#include "ewmh.h"
 #include "tags.h"
+#include "ewmh.h" /* verification */
 
 Atom atom[NATOMS];
 
@@ -446,12 +446,10 @@ ewmh_del_client(Client *c, WithdrawCause cause)
 void
 ewmh_update_echinus_layout_name()
 {
-	Monitor *cm;
 	View *v;
 
-	if (!(cm = selmonitor()))
+	if (!(v = selview()))
 		return;
-	v = cm->curview;
 	XChangeProperty(dpy, scr->root, _XA_ECHINUS_LAYOUT, XA_STRING, 8, PropModeReplace,
 			(const unsigned char *) &v->layout->symbol, 1L);
 }
@@ -998,9 +996,8 @@ ewmh_process_net_window_desktop_mask(Client *c)
 				if (desktops[j] & (1 << i))
 					c->tags |= (1ULL << l);
 		for (i = 0; i < scr->ntags && !(c->tags & (1ULL << i)); i++) ;
-		if (i < scr->ntags) {
+		if (i < scr->ntags)
 			return True;
-		}
 		c->tags = prev;
 	} else {
 		if (desktops)
@@ -1606,7 +1603,7 @@ ewmh_process_state_atom(Client *c, Atom state, int set)
 			togglefull(c);
 		}
 		DPRINT;
-		arrange(curmonitor());
+		arrange(nearview());
 		XPRINTF("%s: x%d y%d w%d h%d\n", c->name, c->c.x, c->c.y, c->c.w, c->c.h);
 	} else if (state == _XA_NET_WM_STATE_ABOVE) {
 		if ((set == _NET_WM_STATE_ADD && !c->is.above) ||
@@ -1940,14 +1937,12 @@ ewmh_process_net_window_user_time_window(Client *c)
 	Window *wins = NULL, win = None;
 	unsigned long n = 0;
 
-	wins = getwind(c->win, _XA_NET_WM_USER_TIME_WINDOW, &n);
-	if (n > 0) {
+	if ((wins = getwind(c->win, _XA_NET_WM_USER_TIME_WINDOW, &n))) {
 		Window other = wins[0];
 
 		XFree(wins);
 		/* check recursive */
-		wins = getwind(other, _XA_NET_WM_USER_TIME_WINDOW, &n);
-		if (n > 0) {
+		if ((wins = getwind(other, _XA_NET_WM_USER_TIME_WINDOW, &n))) {
 			Window again = wins[0];
 
 			XFree(wins);
@@ -1993,6 +1988,7 @@ wmh_process_win_window_hints(Client *c)
 		    (state[0] & WIN_HINTS_FOCUS_ON_CLICK) ? True : c->skip.sloppy;
 		c->is.grptrans =
 		    (state[0] & WIN_HINTS_GROUP_TRANSIENT) ? True : c->is.grptrans;
+		XFree(state);
 	}
 }
 
@@ -2045,10 +2041,10 @@ wmh_process_win_layer(Client *c)
 	unsigned long n;
 
 	layer = getcard(c->win, _XA_WIN_LAYER, &n);
-	if (n)
+	if (n > 0) {
 		wmh_process_layer(c, layer[0]);
-	if (layer)
 		XFree(layer);
+	}
 }
 
 void
@@ -2058,10 +2054,10 @@ wmh_process_win_state(Client *c)
 	unsigned long n = 0;
 
 	state = getcard(c->win, _XA_WIN_STATE, &n);
-	if (n)
+	if (n > 0) {
 		wmh_process_state_mask(c, 0xffffffff, state[0]);
-	if (state)
 		XFree(state);
+	}
 }
 
 void
@@ -2080,11 +2076,11 @@ ewmh_process_net_window_state(Client *c)
 
 	wmh_process_win_window_state(c);
 
-	state = getatom(c->win, _XA_NET_WM_STATE, &n);
-	for (i = 0; i < n; i++)
-		ewmh_process_state_atom(c, state[i], _NET_WM_STATE_ADD);
-	if (state)
+	if ((state = getatom(c->win, _XA_NET_WM_STATE, &n))) {
+		for (i = 0; i < n; i++)
+			ewmh_process_state_atom(c, state[i], _NET_WM_STATE_ADD);
 		XFree(state);
+	}
 }
 
 void
@@ -2226,7 +2222,7 @@ clientmessage(XEvent *e)
 			c->is.icon = False;
 			c->is.hidden = False;
 			focus(c);
-			arrange(clientmonitor(c));
+			arrange(clientview(c));
 		} else if (message_type == _XA_NET_WM_STATE) {
 			ewmh_process_state_atom(c, (Atom) ev->data.l[1], ev->data.l[0]);
 			if (ev->data.l[2])
@@ -2402,13 +2398,9 @@ clientmessage(XEvent *e)
 		} else if (message_type == _XA_NET_CURRENT_DESKTOP ||
 			   message_type == _XA_WIN_WORKSPACE) {
 			int tag = ev->data.l[0];
-			Monitor *cm;
-
-			if (!(cm = selmonitor()))
-				cm = nearmonitor();
 
 			if (0 <= tag && tag < scr->ntags)
-				view(cm, tag);
+				view(selview(), tag);
 		} else if (message_type == _XA_NET_SHOWING_DESKTOP) {
 			if (!ev->data.l[0] != !scr->showing_desktop)
 				toggleshowing();
@@ -2489,8 +2481,7 @@ setopacity(Client *c, unsigned int opacity)
 		unsigned long n;
 
 		if ((card = getcard(c->win, _XA_NET_WM_WINDOW_OPACITY, &n))) {
-			if (n > 0)
-				data = card[0];
+			data = card[0];
 			XFree(card);
 		}
 		if (!data)
@@ -2561,15 +2552,14 @@ checkatom(Window win, Atom bigatom, Atom smallatom)
 	unsigned long i, n;
 	Bool ret = False;
 
-	state = getatom(win, bigatom, &n);
-	for (i = 0; i < n; i++) {
-		if (state[i] == smallatom) {
-			ret = True;
-			break;
-		}
-	}
-	if (state)
+	if ((state = getatom(win, bigatom, &n))) {
+		for (i = 0; i < n; i++)
+			if (state[i] == smallatom) {
+				ret = True;
+				break;
+			}
 		XFree(state);
+	}
 	return ret;
 }
 
@@ -2581,13 +2571,14 @@ getwintype(Window win)
 	unsigned int ret = 0;
 	long *layer;
 
-	state = getatom(win, _XA_NET_WM_WINDOW_TYPE, &n);
-	for (i = 0; i < n; i++)
-		for (j = WindowTypeDesk; j <= WindowTypeNormal; j++)
-			if (state[i] == atom[j])
-				ret |= WTFLAG(j);
-	layer = getcard(win, _XA_WIN_LAYER, &n);
-	if (n) {
+	if ((state = getatom(win, _XA_NET_WM_WINDOW_TYPE, &n))) {
+		for (i = 0; i < n; i++)
+			for (j = WindowTypeDesk; j <= WindowTypeNormal; j++)
+				if (state[i] == atom[j])
+					ret |= WTFLAG(j);
+		XFree(state);
+	}
+	if ((layer = getcard(win, _XA_WIN_LAYER, &n))) {
 		switch ((unsigned int) layer[0]) {
 		case WIN_LAYER_DESKTOP:
 			ret |= WTFLAG(WindowTypeDesk);
@@ -2615,13 +2606,10 @@ getwintype(Window win)
 			ret |= WTFLAG(WindowTypePopup);
 			break;
 		}
+		XFree(layer);
 	}
 	if (ret == 0)
 		ret = WTFLAG(WindowTypeNormal);
-	if (state)
-		XFree(state);
-	if (layer)
-		XFree(layer);
 	return ret;
 }
 
@@ -2665,20 +2653,15 @@ checkwintype(Window win, int wintype)
 	unsigned long i, n = 0;
 	Bool ret = False;
 
-	state = getatom(win, _XA_NET_WM_WINDOW_TYPE, &n);
-	if (n == 0) {
-		if (wintype == WindowTypeNormal)
-			ret = True;
-	} else {
-		for (i = 0; i < n; i++) {
+	if ((state = getatom(win, _XA_NET_WM_WINDOW_TYPE, &n))) {
+		for (i = 0; i < n; i++)
 			if (state[i] == atom[wintype]) {
 				ret = True;
 				break;
 			}
-		}
-	}
-	if (state)
 		XFree(state);
+	} else if (wintype == WindowTypeNormal)
+		ret = True;
 	return ret;
 }
 
@@ -2727,10 +2710,10 @@ getstrut(Client *c, Atom atom)
 	s.tx1 = s.bx1 = 0;
 	s.tx2 = s.bx2 = dw;
 
-	prop = getcard(c->win, atom, &n);
-	if (n == 0)
-		return n;
-
+	if (!(prop = getcard(c->win, atom, &n)))
+		return 0;
+	if (n > 12)
+		n = 12;
 	memcpy(&s, prop, n * sizeof(long));
 	XFree(prop);
 

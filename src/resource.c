@@ -19,6 +19,7 @@
 #ifdef XPM
 #include <X11/xpm.h>
 #endif
+#include "resource.h" /* verification */
 
 XrmDatabase xresdb;
 

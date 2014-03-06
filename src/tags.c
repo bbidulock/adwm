@@ -156,44 +156,44 @@ view(View *ov, int index)
 	View *cv;
 
 	if (0 > index || index >= scr->ntags) {
-		DPRINTF("WARNING: bad index %d\n", index);
+		XPRINTF("WARNING: bad index %d\n", index);
 		return;
 	}
 	if (ov->index == index) {
-		DPRINTF("WARNING: view already index %d\n", index);
+		XPRINTF("WARNING: view already index %d\n", index);
 		return;
 	}
 	if (!(cm = ov->curmon)) {
-		DPRINTF("WARNING: view %d has no monitor\n", ov->index);
+		XPRINTF("WARNING: view %d has no monitor\n", ov->index);
 		return;
 	}
-	DPRINTF("VIEW: disassociating monitor %d from view %d\n", cm->num, ov->index);
+	XPRINTF("VIEW: disassociating monitor %d from view %d\n", cm->num, ov->index);
 	ov->curmon = NULL;
-	DPRINTF("VIEW: setting previous view for monitor %d to view %d\n", cm->num, ov->index);
+	XPRINTF("VIEW: setting previous view for monitor %d to view %d\n", cm->num, ov->index);
 	cm->preview = ov;
-	DPRINTF("VIEW: new view is %d\n", index);
+	XPRINTF("VIEW: new view is %d\n", index);
 	cv = scr->views + index;
-	DPRINTF("VIEW: associating monitor %d with view %d\n", cm->num, cv->index);
+	XPRINTF("VIEW: associating monitor %d with view %d\n", cm->num, cv->index);
 	cv->curmon = cm;
-	DPRINTF("VIEW: associating view %d with monitor %d\n", cv->index, cm->num);
+	XPRINTF("VIEW: associating view %d with monitor %d\n", cv->index, cm->num);
 	cm->curview = cv;
 	for (om = scr->monitors; om; om = om->next) {
 		if (om == cm)
 			continue;
 		if (om->curview == cv) {
-			DPRINTF("VIEW: switching monitor %d from view %d to %d\n",
+			XPRINTF("VIEW: switching monitor %d from view %d to %d\n",
 					om->num, om->curview->index, ov->index);
 			om->curview = ov;
 			ov->curmon = om;
 			updategeom(om);
-			DPRINTF("VIEW: arranging view %d\n", ov->index);
+			XPRINTF("VIEW: arranging view %d\n", ov->index);
 			arrange(ov);
 			/* only one can match */
 			break;
 		}
 	}
 	updategeom(cm);
-	DPRINTF("VIEW: arranging view %d\n", cv->index);
+	XPRINTF("VIEW: arranging view %d\n", cv->index);
 	arrange(cv);
 	focus(NULL);
 	ewmh_update_net_current_desktop();

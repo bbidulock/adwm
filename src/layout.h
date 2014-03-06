@@ -3,9 +3,55 @@
 #ifndef __LOCAL_LAYOUT_H__
 #define __LOCAL_LAYOUT_H__
 
+typedef enum {
+	RotateAreaView,
+	RotateAreaZone,
+	RotateAreaWins
+} RotateArea;
+
+typedef enum {
+	RotateDirectionCW,
+	RotateDirectionCCW
+} RotateDirection;
+
+typedef enum {
+	SetValueAbsolute,
+	SetValueIncrement,
+	SetValueDecrement
+} SetValue;
+
+typedef struct {
+	void *handle;
+	const char *name;
+	Tree *trees[MAXTAGS];
+	void (*initlayout) (Monitor *m, View *v, char code);
+	void (*addclient) (Client *c, Bool front);
+	void (*delclient) (Client *c);
+	void (*raise) (Client *c);
+	void (*lower) (Client *c);
+	void (*raiselower) (Client *c);
+	Bool (*isfloating)(Client *c, View *v);
+	void (*getdecor)(Client *c, View *v, ClientGeometry *g);
+	void (*arrange)(View *v);
+	void (*setnmaster)(View *v, SetValue how, int n);
+	void (*rotate)(Client *c, View *v, RotateDirection dir, RotateArea area);
+	void (*zoom)(Client *c);
+	void (*zoomfloat)(Client *c);
+	void (*togglefloating)(Client *c);
+	void (*togglefill)(Client *c);
+	void (*togglefull)(Client *c);
+	void (*togglemax)(Client *c);
+	void (*togglemaxv)(Client *c);
+	void (*togglemaxh)(Client *c);
+	void (*toggleshade)(Client *c);
+	void (*toggledectiled)(Client *c);
+} Arrangement;
+
 Bool isvisible(Client *c, View *v);
 void addclient(Client *c, Bool focusme, Bool raiseme);
 void delclient(Client *c);
+void setfocused(Client *c);
+void setselected(Client *c);
 void tookfocus(Client *c);
 Bool isfloating(Client *c, View *v);
 Bool enterclient(XEvent *e, Client *c);

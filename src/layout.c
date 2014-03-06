@@ -60,8 +60,7 @@
 #define MMOVE		(1<<6)	/* shuffle tile position with mouse */
 
 #define FEATURES(_layout, _which) (!(!((_layout)->features & (_which))))
-#define M2LT(_mon) ((_mon)->curview->layout)
-#define MFEATURES(_monitor, _which) ((_monitor) && FEATURES(M2LT(_monitor), (_which)))
+#define VFEATURES(_view, _which) FEATURES(((_view)->layout),(_which))
 
 /*
  * This file contains layout-specific functions that must ultimately move into layout modules.
@@ -202,6 +201,60 @@ detachstack(Client *c)
 }
 
 void
+setfocused(Client *c)
+{
+	Leaf *l;
+	View *v;
+	Container *x, *y;
+	int index;
+
+	if (!c)
+		return;
+	if (!(v = c->cview)) {
+		if (!(v = clientview(c))) {
+			CPRINTF(c, "No view for focused client!\n");
+			assert(v != NULL);
+			return;
+		}
+	}
+	index = v->index;
+	for (l = c->leaves; l; l = l->cnext) {
+		if (l->view == index) {
+			for (x = (Container *) l; x->type && (y = x->parent); x = y)
+				y->node.focused = x;
+			break;
+		}
+	}
+}
+
+void
+setselected(Client *c)
+{
+	Leaf *l;
+	View *v;
+	Container *x, *y;
+	int index;
+
+	if (!c)
+		return;
+	if (!(v = c->cview)) {
+		if (!(v = clientview(c))) {
+			CPRINTF(c, "No view for selected client!\n");
+			assert(v != NULL);
+			return;
+		}
+	}
+	index = v->index;
+	for (l = c->leaves; l; l = l->cnext) {
+		if (l->view == index) {
+			for (x = (Container *) l; x->type && (y = x->parent); x = y)
+				y->node.selected = x;
+			break;
+		}
+	}
+}
+
+void
 tookfocus(Client *next)
 {
 	Client *last = took;
@@ -222,6 +275,7 @@ tookfocus(Client *next)
 		attachflist(next, True);
 	}
 	gave = next;
+	setfocused(took);
 }
 
 static void
@@ -240,7 +294,7 @@ isfloating(Client *c, View *v)
 		return True;
 	if (c->is.full)
 		return True;
-	if (v && FEATURES(v->layout, OVERLAP))
+	if (v && VFEATURES(v, OVERLAP))
 		return True;
 	return False;
 }
@@ -817,14 +871,14 @@ get_decor(Client *c, View *v, ClientGeometry * g)
 		decorate = False;
 		for (i = 0; i < scr->ntags; i++) {
 			if ((c->tags & (1ULL << i)) && (scr->views[i].dectiled ||
-							FEATURES(scr->views[i].layout,
+							VFEATURES(scr->views + i,
 								 OVERLAP))) {
 				decorate = True;
 				break;
 			}
 		}
 	} else {
-		decorate = (v->dectiled || FEATURES(v->layout, OVERLAP)) ?
+		decorate = (v->dectiled || VFEATURES(v, OVERLAP)) ?
 		    True : False;
 	}
 	g->t = decorate ? ((c->title && c->has.title) ? scr->style.titleheight : 0) : 0;
@@ -956,7 +1010,7 @@ arrangedock(View *v)
 	Monitor *m = v->curmon;
 	DockPosition pos = m->dock.position;
 	DockSide side;
-	Bool overlap = FEATURES(v->layout, OVERLAP) ? True : False;
+	Bool overlap = VFEATURES(v, OVERLAP) ? True : False;
 
 	updategeom(m);
 	m->dock.wa = m->wa;
@@ -2293,8 +2347,8 @@ setnmaster(View *v, int n)
 	int length;
 	Monitor *m = v->curmon;
 
-	master = FEATURES(v->layout, NMASTER) ? True : False;
-	column = FEATURES(v->layout, NCOLUMNS) ? True : False;
+	master = VFEATURES(v, NMASTER) ? True : False;
+	column = VFEATURES(v, NCOLUMNS) ? True : False;
 
 	if (!master && !column)
 		return;
@@ -2363,8 +2417,8 @@ decnmaster(View *v, int n)
 {
 	Bool master, column;
 
-	master = FEATURES(v->layout, NMASTER) ? True : False;
-	column = FEATURES(v->layout, NCOLUMNS) ? True : False;
+	master = VFEATURES(v, NMASTER) ? True : False;
+	column = VFEATURES(v, NCOLUMNS) ? True : False;
 
 	if (!master && !column)
 		return;
@@ -2379,8 +2433,8 @@ incnmaster(View *v, int n)
 {
 	Bool master, column;
 
-	master = FEATURES(v->layout, NMASTER) ? True : False;
-	column = FEATURES(v->layout, NCOLUMNS) ? True : False;
+	master = VFEATURES(v, NMASTER) ? True : False;
+	column = VFEATURES(v, NCOLUMNS) ? True : False;
 
 	if (!master && !column)
 		return;
@@ -2575,7 +2629,7 @@ move_begin(Client *c, View *v, Bool toggle, int move)
 			raiseclient(c);
 	} else {
 		/* can't move tiled in monocle mode */
-		if (!c->is.dockapp && !FEATURES(v->layout, MMOVE)) {
+		if (!c->is.dockapp && !VFEATURES(v, MMOVE)) {
 			c->is.moveresize = False;
 			return False;
 		}
@@ -4506,7 +4560,7 @@ rotateview(Client *c)
 
 	if (!c || !(v = c->cview))
 		return;
-	if (!FEATURES(v->layout, ROTL))
+	if (!VFEATURES(v, ROTL))
 		return;
 	v->major = (v->major + 1) % OrientLast;
 	v->minor = (v->minor + 1) % OrientLast;
@@ -4520,7 +4574,7 @@ unrotateview(Client *c)
 
 	if (!c || !(v = c->cview))
 		return;
-	if (!FEATURES(v->layout, ROTL))
+	if (!VFEATURES(v, ROTL))
 		return;
 	v->major = (v->major + OrientLast - 1) % OrientLast;
 	v->minor = (v->minor + OrientLast - 1) % OrientLast;
@@ -4534,7 +4588,7 @@ rotatezone(Client *c)
 
 	if (!c || !(v = c->cview))
 		return;
-	if (!FEATURES(v->layout, ROTL) || !FEATURES(v->layout, NMASTER))
+	if (!VFEATURES(v, ROTL) || !VFEATURES(v, NMASTER))
 		return;
 	v->minor = (v->minor + 1) % OrientLast;
 	arrange(v);
@@ -4547,7 +4601,7 @@ unrotatezone(Client *c)
 
 	if (!c || !(v = c->cview))
 		return;
-	if (!FEATURES(v->layout, ROTL) || !FEATURES(v->layout, NMASTER))
+	if (!VFEATURES(v, ROTL) || !VFEATURES(v, NMASTER))
 		return;
 	v->minor = (v->minor + OrientLast - 1) % OrientLast;
 	arrange(v);
@@ -4561,7 +4615,7 @@ rotatewins(Client *c)
 
 	if (!c || !(v = c->cview))
 		return;
-	if (!FEATURES(v->layout, ROTL))
+	if (!VFEATURES(v, ROTL))
 		return;
 	if ((s = nexttiled(scr->clients, v))) {
 		detach(s);
@@ -4579,7 +4633,7 @@ unrotatewins(Client *c)
 
 	if (!c || !(v = c->cview))
 		return;
-	if (!FEATURES(v->layout, ROTL) || !FEATURES(v->layout, NMASTER))
+	if (!VFEATURES(v, ROTL) || !VFEATURES(v, NMASTER))
 		return;
 	for (last = scr->clients; last && last->next; last = last->next) ;
 	if ((s = prevtiled(last, v))) {
@@ -4715,7 +4769,7 @@ zoom(Client *c)
 		return;
 	if (!(v = c->cview))
 		return;
-	if (!FEATURES(v->layout, ZOOM) || c->skip.arrange)
+	if (!VFEATURES(v, ZOOM) || c->skip.arrange)
 		return;
 	if (c == nexttiled(scr->clients, v))
 		if (!(c = nexttiled(c->next, v)))

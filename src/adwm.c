@@ -1076,6 +1076,7 @@ focus(Client *c)
 		return;
 	ewmh_update_net_active_window();
 	setfocus(sel);
+	setselected(sel);
 	if (c && c != o) {
 		if (c->is.attn)
 			c->is.attn = False;

@@ -522,6 +522,12 @@ typedef struct Monitor Monitor;
 typedef struct Client Client;
 typedef struct AScreen AScreen;
 typedef struct Group Group;
+typedef struct CycleList CycleList;
+typedef struct Key Key;
+typedef struct Tree Tree;
+typedef struct Node Node;
+typedef struct Leaf Leaf;
+typedef struct Container Container;
 
 #ifdef STARTUP_NOTIFICATION
 typedef struct Notify Notify;
@@ -644,6 +650,103 @@ typedef struct {
 	} g;
 } ElementClient;
 
+typedef union {
+	struct {
+		unsigned taskbar:1;
+		unsigned pager:1;
+		unsigned winlist:1;
+		unsigned cycle:1;
+		unsigned focus:1;
+		unsigned arrange:1;
+		unsigned sloppy:1;
+	};
+	unsigned skip;
+} SkipUnion;
+
+typedef union {
+	struct {
+		unsigned border:1;
+		unsigned grips:1;
+		unsigned title:1;
+		struct {
+			unsigned menu:1;
+			unsigned min:1;
+			unsigned max:1;
+			unsigned close:1;
+			unsigned size:1;
+			unsigned shade:1;
+			unsigned stick:1;
+			unsigned fill:1;
+			unsigned floats:1;
+		} but __attribute__ ((packed));
+	};
+	unsigned has;
+} HasUnion;
+
+typedef union {
+	struct {
+		unsigned transient:1;
+		unsigned grptrans:1;
+		unsigned banned:1;
+		unsigned max:1;
+		unsigned floater:1;
+		unsigned maxv:1;
+		unsigned maxh:1;
+		unsigned shaded:1;
+		unsigned icon:1;
+		unsigned fill:1;
+		unsigned modal:2;
+		unsigned above:1;
+		unsigned below:1;
+		unsigned attn:1;
+		unsigned sticky:1;
+		unsigned hidden:1;
+		unsigned bastard:1;
+		unsigned full:1;
+		unsigned focused:1;
+		unsigned dockapp:1;
+		unsigned moveresize:1;
+		unsigned managed:1;
+	};
+	unsigned is;
+} IsUnion;
+
+typedef union {
+	struct {
+		unsigned move:1;
+		unsigned size:1;
+		unsigned sizev:1;
+		unsigned sizeh:1;
+		unsigned min:1;
+		unsigned max:1;
+		unsigned maxv:1;
+		unsigned maxh:1;
+		unsigned close:1;
+		unsigned shade:1;
+		unsigned stick:1;
+		unsigned full:1;
+		unsigned above:1;
+		unsigned below:1;
+		unsigned fill:1;
+		unsigned fillh:1;
+		unsigned fillv:1;
+		unsigned floats:1;
+		unsigned hide:1;
+		unsigned tag:1;
+		unsigned arrange:1;
+		unsigned focus:2;
+	};
+	unsigned can;
+} CanUnion;
+
+typedef union {
+	struct {
+		unsigned struts:1;
+		unsigned time:1;
+	};
+	unsigned with;
+} WithUnion;
+
 struct Client {
 	char *name;
 	char *icon_name;
@@ -660,100 +763,13 @@ struct Client {
 	Bool wasfloating;
 	unsigned long long tags;
 	int nonmodal;
-	union {
-		struct {
-			unsigned taskbar:1;
-			unsigned pager:1;
-			unsigned winlist:1;
-			unsigned cycle:1;
-			unsigned focus:1;
-			unsigned arrange:1;
-			unsigned sloppy:1;
-		};
-		unsigned skip;
-	} skip;
-	union {
-		struct {
-			unsigned transient:1;
-			unsigned grptrans:1;
-			unsigned banned:1;
-			unsigned max:1;
-			unsigned floater:1;
-			unsigned maxv:1;
-			unsigned maxh:1;
-			unsigned shaded:1;
-			unsigned icon:1;
-			unsigned fill:1;
-			unsigned modal:2;
-			unsigned above:1;
-			unsigned below:1;
-			unsigned attn:1;
-			unsigned sticky:1;
-			unsigned hidden:1;
-			unsigned bastard:1;
-			unsigned full:1;
-			unsigned focused:1;
-			unsigned dockapp:1;
-			unsigned moveresize:1;
-			unsigned managed:1;
-		};
-		unsigned is;
-	} is, was;
-	union {
-		struct {
-			unsigned border:1;
-			unsigned grips:1;
-			unsigned title:1;
-			struct {
-				unsigned menu:1;
-				unsigned min:1;
-				unsigned max:1;
-				unsigned close:1;
-				unsigned size:1;
-				unsigned shade:1;
-				unsigned stick:1;
-				unsigned fill:1;
-				unsigned floats:1;
-			} but __attribute__ ((packed));
-		};
-		unsigned has;
-	} has;
-	union {
-		struct {
-			unsigned struts:1;
-			unsigned time:1;
-		};
-		unsigned with;
-	} with;
-	union {
-		struct {
-			unsigned move:1;
-			unsigned size:1;
-			unsigned sizev:1;
-			unsigned sizeh:1;
-			unsigned min:1;
-			unsigned max:1;
-			unsigned maxv:1;
-			unsigned maxh:1;
-			unsigned close:1;
-			unsigned shade:1;
-			unsigned stick:1;
-			unsigned full:1;
-			unsigned above:1;
-			unsigned below:1;
-			unsigned fill:1;
-			unsigned fillh:1;
-			unsigned fillv:1;
-			unsigned floats:1;
-			unsigned hide:1;
-			unsigned tag:1;
-			unsigned arrange:1;
-			unsigned focus:2;
-		};
-		unsigned can;
-	} can;
-//	Monitor *cmon;			/* current monitor */
-	View *cview;			/* current view */
+	SkipUnion skip;
+	IsUnion is, was;
+	HasUnion has;
+	WithUnion with;
+	CanUnion can;
+	View *cview;
+	Leaf *leaves;
 	Client *next;
 	Client *prev;
 	Client *snext;
@@ -784,8 +800,7 @@ struct Client {
 #endif
 };
 
-typedef struct _CycleList CycleList;
-struct _CycleList {
+struct CycleList {
 	Client *c;
 	CycleList *next;
 	CycleList *prev;
@@ -817,6 +832,102 @@ struct View {
 struct Tag {
 	Atom dt;			/* desktop atom for this tag */
 	char name[64];			/* desktop name for this tag */
+};
+
+typedef enum {
+	TreeTypeTree,
+	TreeTypeNode,
+	TreeTypeLeaf
+} TreeType;
+
+struct Tree {
+	TreeType type;			/* always TreeTypeTree */
+	int view;			/* view number */
+	int layout;			/* layout number */
+	LayoutOrientation orient;
+	Geometry c, r, s;		/* current, restore, static */
+	int th, gh;			/* title/grip height */
+	SkipUnion skip;
+	IsUnion is, was;
+	HasUnion has;
+	WithUnion with;
+	CanUnion can;
+	View *parent;
+	Tree *next;			/* next sibling tree */
+
+	unsigned nchild;
+	Container *children;
+
+	Container *selected;		/* last selected child */
+	Container *focused;		/* last focused child */
+
+};
+
+struct Node {
+	TreeType type;			/* always TreeTypeNode */
+	int view;			/* view number */
+	int layout;			/* layout number */
+	LayoutOrientation orient;
+	Geometry c, r, s;		/* current, restore, static */
+	int th, gh;			/* title/grip height */
+	SkipUnion skip;
+	IsUnion is, was;
+	HasUnion has;
+	WithUnion with;
+	CanUnion can;
+	Container *parent;
+	Node *next;			/* next sibling node */
+
+	unsigned nchild;
+	Container *children;		/* all leaves or all nodes */
+
+	Container *selected;		/* last selected child */
+	Container *focused;		/* last focused child */
+
+};
+
+struct Leaf {
+	TreeType type;			/* always TreeTypeLeaf */
+	int view;			/* view number */
+	int layout;			/* layout number */
+	LayoutOrientation orient;
+	Geometry c, r, s;		/* current, restore, static */
+	int th, gh;			/* title/grip height */
+	SkipUnion skip;
+	IsUnion is, was;
+	HasUnion has;
+	WithUnion with;
+	CanUnion can;
+	Container *parent;
+	Leaf *next;			/* next sibling leaf */
+
+	Leaf *cnext;			/* next leaf for same client */
+
+	Client *client;
+
+};
+
+struct Container {
+	struct {
+		TreeType type;
+		int view;		/* view number */
+		int layout;		/* layout number */
+		LayoutOrientation orient;
+		Geometry c, r, s;	/* current, restore, static */
+		int th, gh;		/* title/grip height */
+		SkipUnion skip;
+		IsUnion is, was;
+		HasUnion has;
+		WithUnion with;
+		CanUnion can;
+		Container *parent;
+		Container *next;	/* next sibling */
+	};
+	union {
+		Tree tree;
+		Node node;
+		Leaf leaf;
+	};
 };
 
 typedef struct {
@@ -873,8 +984,7 @@ typedef struct {
 	} color;
 } Style;
 
-typedef struct _Key Key;
-struct _Key {
+struct Key {
 	unsigned long mod;
 	KeySym keysym;
 	void (*func) (XEvent *, Key *);
@@ -996,17 +1106,6 @@ typedef struct {
 	void (*deinitstyle) (void);
 	void (*drawclient) (Client *);
 } AdwmOperations;
-
-typedef struct {
-	void *handle;
-	const char *name;
-	void (*initlayout) (Monitor *m, View *v, char code);
-	void (*addclient) (Client *c, Bool front);
-	void (*delclient) (Client *c);
-	void (*raise) (Client *c);
-	void (*lower) (Client *c);
-	void (*raiselower) (Client *c);
-} LayoutOperations;
 
 /* main */
 View *clientview(Client *c);

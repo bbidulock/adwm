@@ -632,7 +632,7 @@ checkotherwm(AdwmOperations *ops)
 {
 	Atom wm_sn, wm_protocols, manager;
 	Window wm_sn_owner;
-	XTextProperty hname;
+	XTextProperty hname = { NULL, };
 	XClassHint class_hint;
 	XClientMessageEvent manager_event;
 	char name[32], hostname[64] = { 0, };
@@ -1452,7 +1452,7 @@ gettextprop(Window w, Atom atom, char **text)
 {
 	char **list = NULL, *str;
 	int n;
-	XTextProperty name;
+	XTextProperty name = { NULL, };
 
 	XGetTextProperty(dpy, w, &name, atom);
 	if (!name.nitems)
@@ -1463,13 +1463,14 @@ gettextprop(Window w, Atom atom, char **text)
 			*text = str;
 		}
 	} else {
-		if (XmbTextPropertyToTextList(dpy, &name, &list, &n) >= Success
+		if (Xutf8TextPropertyToTextList(dpy, &name, &list, &n) >= Success
 		    && n > 0 && *list) {
 			if ((str = strdup(*list))) {
 				free(*text);
 				*text = str;
 			}
-			XFreeStringList(list);
+			if (list)
+				XFreeStringList(list);
 		}
 	}
 	if (name.value)

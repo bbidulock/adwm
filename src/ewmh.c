@@ -1673,12 +1673,14 @@ wmh_update_win_maximized_geometry(Client *c)
 void
 ewmh_update_net_window_visible_name(Client *c)
 {
-	XTextProperty prop;
+	XTextProperty prop = { NULL, };
 
 	if (c->name) {
-		if (XmbTextListToTextProperty(dpy, &c->name, 1, XUTF8StringStyle, &prop)
+		if (Xutf8TextListToTextProperty(dpy, &c->name, 1, XUTF8StringStyle, &prop)
 		    == Success)
 			XSetTextProperty(dpy, c->win, &prop, _XA_NET_WM_VISIBLE_NAME);
+		if (prop.value)
+			XFree(prop.value);
 	} else {
 		XDeleteProperty(dpy, c->win, _XA_NET_WM_VISIBLE_NAME);
 	}
@@ -1687,13 +1689,16 @@ ewmh_update_net_window_visible_name(Client *c)
 void
 ewmh_update_net_window_visible_icon_name(Client *c)
 {
-	XTextProperty prop;
+	XTextProperty prop = { NULL, };
 
 	if (c->icon_name) {
-		if (XmbTextListToTextProperty
-		    (dpy, &c->icon_name, 1, XUTF8StringStyle, &prop) == Success)
+		if (Xutf8TextListToTextProperty(dpy, &c->icon_name, 1, XUTF8StringStyle,
+						&prop) == Success)
 			XSetTextProperty(dpy, c->win, &prop,
 					 _XA_NET_WM_VISIBLE_ICON_NAME);
+		if (prop.value)
+			XFree(prop.value);
+
 	} else {
 		XDeleteProperty(dpy, c->win, _XA_NET_WM_VISIBLE_ICON_NAME);
 	}

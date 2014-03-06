@@ -22,6 +22,7 @@
 #endif
 #include "adwm.h"
 #include "resource.h"
+#include "actions.h"
 #include "parse.h"
 
 /*

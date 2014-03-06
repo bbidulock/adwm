@@ -23,6 +23,7 @@
 #include "adwm.h"
 #include "config.h"
 #include "resource.h"
+#include "actions.h"
 #include "parse.h"
 
 /*

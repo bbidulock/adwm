@@ -4,7 +4,7 @@ AM_CPPFLAGS = -include autoconf.h
 
 bin_PROGRAMS = adwm
 
-adwm_SOURCES = adwm.h config.h draw.h ewmh.h layout.h parse.h tags.h adwm.c config.c draw.c ewmh.c layout.c parse.c resource.c tags.c texture.c
+adwm_SOURCES = adwm.h actions.h config.h draw.h ewmh.h layout.h parse.h tags.h adwm.c actions.c config.c draw.c ewmh.c layout.c parse.c resource.c tags.c texture.c
 adwm_LDADD = $(IMLIB2_LIBS) $(XPM_LIBS) $(SN_LIBS) $(XINERAMA_LIBS) $(XSYNC_LIBS) $(XRANDR_LIBS) $(XFT_LIBS) $(X11_LIBS) -lm
 adwm_LDFLAGS = -export-dynamic -R $(adwmmoddir) -ldl -dlpreopen adwm-adwm.la
 

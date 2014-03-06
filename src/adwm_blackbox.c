@@ -21,6 +21,7 @@
 #include <X11/xpm.h>
 #endif
 #include "adwm.h"
+#include "actions.h"
 #include "parse.h"
 #include "resource.h"
 

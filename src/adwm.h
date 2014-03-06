@@ -1139,8 +1139,6 @@ AScreen *getscreen(Window win);
 AScreen *geteventscr(XEvent *ev);
 void killclient(Client *c);
 Bool configurerequest(XEvent *e);
-void m_move(Client *c, XEvent *ev);
-void m_resize(Client *c, XEvent *ev);
 void pushtime(Time time);
 void quit(const char *arg);
 void restart(const char *arg);

@@ -50,6 +50,7 @@
 #include "layout.h"
 #include "parse.h"
 #include "tags.h"
+#include "actions.h"
 #include "config.h"
 
 #define EXTRANGE    16		/* all X11 extension event must fit in this range */
@@ -67,11 +68,6 @@ void decmodal(Client *c, Group *g);
 void freemonitors(void);
 void updatemonitors(XEvent *e, int n, Bool size, Bool full);
 void manage(Window w, XWindowAttributes *wa);
-void m_shade(Client *c, XEvent *ev);
-void m_zoom(Client *c, XEvent *ev);
-void m_spawn(Client *c, XEvent *ev);
-void m_prevtag(Client *c, XEvent *ev);
-void m_nexttag(Client *c, XEvent *ev);
 void reconfigure(Client *c, ClientGeometry * g);
 void restack_belowif(Client *c, Client *sibling);
 void run(void);
@@ -2375,23 +2371,6 @@ newsize(Client *c, int w, int h, Time time)
 
 #endif
 
-void
-m_move(Client *c, XEvent *e)
-{
-	DPRINT;
-	focus(c);
-	if (!mousemove(c, e, (e->xbutton.state & ControlMask) ? False : True))
-		raiselower(c);
-}
-
-void
-m_resize(Client *c, XEvent *e)
-{
-	focus(c);
-	if (!mouseresize(c, e, (e->xbutton.state & ControlMask) ? False : True))
-		raiselower(c);
-}
-
 static Bool
 reparentnotify(XEvent *e)
 {
@@ -3246,37 +3225,12 @@ spawn(const char *arg)
 }
 
 void
-m_spawn(Client *c, XEvent *e)
-{
-	spawn(scr->options.command);
-}
-
-void
 togglestruts(View *v)
 {
 	v->barpos = (v->barpos == StrutsOn)
 	    ? (scr->options.hidebastards ? StrutsHide : StrutsOff) : StrutsOn;
 	updategeom(v->curmon);	/* XXX: necessary? */
 	arrange(v);
-}
-
-void
-m_shade(Client *c, XEvent *e)
-{
-	if (!c)
-		return;
-	switch (e->xbutton.button) {
-	case Button4:
-		/* up */
-		if (!c->is.shaded)
-			toggleshade(c);
-		break;
-	case Button5:
-		/* down */
-		if (c->is.shaded)
-			toggleshade(c);
-		break;
-	}
 }
 
 void
@@ -3793,24 +3747,6 @@ xerrorstart(Display *dsply, XErrorEvent *ee)
 {
 	otherwm = True;
 	return -1;
-}
-
-void
-m_prevtag(Client *c, XEvent *e)
-{
-	viewlefttag();
-}
-
-void
-m_nexttag(Client *c, XEvent *e)
-{
-	viewrighttag();
-}
-
-void
-m_zoom(Client *c, XEvent *e)
-{
-	zoomfloat(c);
 }
 
 AdwmOperations *

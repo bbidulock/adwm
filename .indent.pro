@@ -24,6 +24,7 @@
 -ss
 -hnl
 -nbc
+-TClientGeometry
 -TTextShadow
 -TKeyItem
 -TDrawable

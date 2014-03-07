@@ -790,8 +790,8 @@ send_configurenotify(Client *c, Window above)
 		ce.width = c->sync.w;
 		ce.height = c->sync.h;
 	} else {
-		ce.width = c->c.w;
-		ce.height = c->c.h - c->th - c->gh;
+		ce.width = c->c.w - 2 * c->hh;
+		ce.height = c->c.h - c->th - c->gh - c->hh;
 	}
 	ce.border_width = c->c.b;	/* ICCCM 2.0 4.1.5 */
 	ce.above = above;
@@ -1832,14 +1832,16 @@ manage(Window w, XWindowAttributes *wa)
 		c->can.shade = False;
 		c->has.grips = False;
 	}
-	if (c->has.grips)
+	if (c->has.grips) {
 		if (!(c->gh = scr->style.gripsheight))
 			c->has.grips = False;
-
+		else if (scr->style.fullgrips)
+			c->hh = c->gh;
+	}
 	c->c.x = c->r.x = wa->x;
 	c->c.y = c->r.y = wa->y;
-	c->c.w = c->r.w = wa->width;
-	c->c.h = c->r.h = wa->height + c->th + c->gh;
+	c->c.w = c->r.w = wa->width + 2 * c->hh;;
+	c->c.h = c->r.h = wa->height + c->th + c->gh + c->hh;
 
 	c->s.x = wa->x;
 	c->s.y = wa->y;
@@ -2213,6 +2215,18 @@ clientview(Client *c)
 	return NULL;
 }
 
+View *
+onview(Client *c)
+{
+	View *v;
+	unsigned i;
+
+	for (i = 0, v = scr->views; i < scr->ntags; i++, v++)
+		if (isvisible(c, v))
+			return v;
+      return NULL;
+}
+
 static Monitor *
 closestmonitor(int x, int y)
 {
@@ -2315,7 +2329,7 @@ newsize(Client *c, int w, int h, Time time)
 	if (c->sync.waiting) {
 		DPRINTF
 		    ("Deferring size request from %dx%d to %dx%d for 0x%08lx 0x%08lx %s\n",
-		     c->c.w, c->c.h - c->th - c->gh, w, h, c->frame, c->win, c->name);
+		     c->c.w - 2 * c->hh, c->c.h - c->th - c->gh - c->hh, w, h, c->frame, c->win, c->name);
 		return False;
 	}
 	c->sync.w = w;
@@ -2345,12 +2359,12 @@ alarmnotify(XEvent *e)
 	}
 	c->sync.waiting = False;
 
-	if ((wc.width = c->c.w) != c->sync.w) {
+	if ((wc.width = c->c.w - 2 * c->hh) != c->sync.w) {
 		XPRINTF("Width changed from %d to %u since last request\n", c->sync.w,
 			wc.width);
 		mask |= CWWidth;
 	}
-	if ((wc.height = c->c.h - c->th - c->gh) != c->sync.h) {
+	if ((wc.height = c->c.h - c->th - c->gh - c->hh) != c->sync.h) {
 		XPRINTF("Height changed from %d to %u since last request\n", c->sync.h,
 			wc.height);
 		mask |= CWHeight;

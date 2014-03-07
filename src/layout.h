@@ -20,12 +20,13 @@ typedef enum {
 	SetValueDecrement
 } SetValue;
 
-typedef struct {
+typedef struct Arrangement Arrangement;
+struct Arrangement {
 	void *handle;
 	const char *name;
-	Tree *trees[MAXTAGS];
+	Tree **trees;
 	void (*initlayout) (Monitor *m, View *v, char code);
-	void (*addclient) (Client *c, Bool front);
+	void (*addclient) (Client *c, Bool focusme, Bool raisme);
 	void (*delclient) (Client *c);
 	void (*raise) (Client *c);
 	void (*lower) (Client *c);
@@ -45,7 +46,7 @@ typedef struct {
 	void (*togglemaxh)(Client *c);
 	void (*toggleshade)(Client *c);
 	void (*toggledectiled)(Client *c);
-} Arrangement;
+};
 
 Bool isvisible(Client *c, View *v);
 void addclient(Client *c, Bool focusme, Bool raiseme);

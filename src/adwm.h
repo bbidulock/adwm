@@ -609,7 +609,7 @@ typedef struct {
 } Geometry;
 
 typedef struct {
-	int x, y, w, h, b, t, g;
+	int x, y, w, h, b, t, g, v;
 } ClientGeometry;
 
 typedef struct {
@@ -753,7 +753,7 @@ struct Client {
 	char *startup_id;
 	int monitor;			/* initial monitor */
 	Geometry c, r, s;		/* current, restore, static */
-	int th, gh;			/* title/grip height and width */
+	int th, gh, hh;			/* title/grip height and handle width */
 	int basew, baseh, incw, inch, maxw, maxh, minw, minh;
 	int minax, maxax, minay, maxay, gravity;
 	int ignoreunmap;
@@ -764,7 +764,7 @@ struct Client {
 	unsigned long long tags;
 	int nonmodal;
 	SkipUnion skip;
-	IsUnion is, was;
+	IsUnion is;
 	HasUnion has;
 	WithUnion with;
 	CanUnion can;
@@ -846,9 +846,9 @@ struct Tree {
 	int layout;			/* layout number */
 	LayoutOrientation orient;
 	Geometry c, r, s;		/* current, restore, static */
-	int th, gh;			/* title/grip height */
+	int th, gh, hh;			/* title/grip height */
 	SkipUnion skip;
-	IsUnion is, was;
+	IsUnion is;
 	HasUnion has;
 	WithUnion with;
 	CanUnion can;
@@ -869,9 +869,9 @@ struct Node {
 	int layout;			/* layout number */
 	LayoutOrientation orient;
 	Geometry c, r, s;		/* current, restore, static */
-	int th, gh;			/* title/grip height */
+	int th, gh, hh;			/* title/grip height */
 	SkipUnion skip;
-	IsUnion is, was;
+	IsUnion is;
 	HasUnion has;
 	WithUnion with;
 	CanUnion can;
@@ -892,9 +892,9 @@ struct Leaf {
 	int layout;			/* layout number */
 	LayoutOrientation orient;
 	Geometry c, r, s;		/* current, restore, static */
-	int th, gh;			/* title/grip height */
+	int th, gh, hh;			/* title/grip height */
 	SkipUnion skip;
-	IsUnion is, was;
+	IsUnion is;
 	HasUnion has;
 	WithUnion with;
 	CanUnion can;
@@ -914,9 +914,9 @@ struct Container {
 		int layout;		/* layout number */
 		LayoutOrientation orient;
 		Geometry c, r, s;	/* current, restore, static */
-		int th, gh;		/* title/grip height */
+		int th, gh, hh;		/* title/grip height */
 		SkipUnion skip;
-		IsUnion is, was;
+		IsUnion is;
 		HasUnion has;
 		WithUnion with;
 		CanUnion can;
@@ -972,6 +972,7 @@ typedef struct {
 	unsigned titleheight;
 	unsigned gripsheight;
 	unsigned gripswidth;
+	Bool fullgrips;
 	unsigned opacity;
 	char titlelayout[32];
 	XftFont *font[2];
@@ -1108,6 +1109,7 @@ typedef struct {
 } AdwmOperations;
 
 /* main */
+View *onview(Client *c);
 View *clientview(Client *c);
 View *selview();
 View *nearview();
@@ -1183,8 +1185,8 @@ void unmanage(Client *c, WithdrawCause cause);
 #define CPRINTF(c,args...)	do { } while(0)
 #define XPRINTF(args...)	do { } while(0)
 #endif
-#define DPRINTCLIENT(c) DPRINTF("%s: x: %d y: %d w: %d h: %d th: %d gh: %d f: %d b: %d m: %d\n", \
-				    c->name, c->x, c->y, c->w, c->h, c->th, c->gh, c->skip.arrange, c->is.bastard, c->is.max)
+#define DPRINTCLIENT(c) DPRINTF("%s: x: %d y: %d w: %d h: %d th: %d gh: %d hh: %d f: %d b: %d m: %d\n", \
+				    c->name, c->x, c->y, c->w, c->h, c->th, c->gh, c->hh, c->skip.arrange, c->is.bastard, c->is.max)
 
 #define OPAQUE			0xffffffff
 #define RESNAME		       "adwm"

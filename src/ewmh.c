@@ -1647,10 +1647,10 @@ void
 ewmh_update_net_window_extents(Client *c)
 {
 	long data[4] = {
-		c->c.b,		/* left */
-		c->c.b,		/* right */
-		c->c.b + c->th,	/* top */
-		c->c.b + c->gh,	/* bottom */
+		c->c.b + c->hh,	/* left */
+		c->c.b + c->hh,	/* right */
+		c->c.b + c->th + c->hh,	/* top */
+		c->c.b + c->gh + c->hh,	/* bottom */
 	};
 
 	XPRINTF("Updating _NET_WM_FRAME_EXTENTS for 0x%lx\n", c->win);
@@ -2439,7 +2439,7 @@ clientmessage(XEvent *e)
 			unsigned int wintype;
 			Bool title = True;
 			Bool grips = True;
-			int th, gh, border = scr->style.border;
+			int th, gh, hw, border = scr->style.border;
 			long data[4];
 
 			if (win == None)
@@ -2461,10 +2461,11 @@ clientmessage(XEvent *e)
 			getmwmhints(win, &title, &grips, &border);
 			th = title ? scr->style.titleheight : 0;
 			gh = grips ? scr->style.gripsheight : 0;
-			data[0] = border;
-			data[1] = border;
-			data[2] = border + th;
-			data[3] = border + gh;
+			hw = scr->style.fullgrips ? gh : 0;
+			data[0] = border + hw;
+			data[1] = border + hw;
+			data[2] = border + th + hw;
+			data[3] = border + gh + hw;
 			XChangeProperty(dpy, win, _XA_NET_FRAME_EXTENTS, XA_CARDINAL, 32,
 					PropModeReplace, (unsigned char *) &data, 4L);
 		} else

@@ -21,6 +21,56 @@
 #ifdef XPM
 #include <X11/xpm.h>
 #endif
+#include "layout.h"
+
+static void initlayout_TILE(Arrangement * a, Monitor *m, View *v, char code);
+static void addclient_TILE(Arrangement * a, Client *c, Bool focusme, Bool raiseme);
+static void delclient_TILE(Arrangement * a, Client *c);
+static void raise_TILE(Arrangement * a, Client *c);
+static void lower_TILE(Arrangement * a, Client *c);
+static void raiselower_TILE(Arrangement * a, Client *c);
+static Bool isfloating_TILE(Arrangement * a, Client *c, View *v);
+static void getdecor_TILE(Arrangement * a, Client *c, View *v, ClientGeometry * g);
+static void arrange_TILE(Arrangement * a, View *v);
+static void setnmaster_TILE(Arrangement * a, View *v, SetValue how, int n);
+static void rotate_TILE(Arrangement * a, Client *c, View *v, RotateDirection dir,
+			RotateArea area);
+static void zoom_TILE(Arrangement * a, Client *c);
+static void zoomfloat_TILE(Arrangement * a, Client *c);
+static void togglefloating_TILE(Arrangement * a, Client *c);
+static void togglefill_TILE(Arrangement * a, Client *c);
+static void togglefull_TILE(Arrangement * a, Client *c);
+static void togglemax_TILE(Arrangement * a, Client *c);
+static void togglemaxv_TILE(Arrangement * a, Client *c);
+static void togglemaxh_TILE(Arrangement * a, Client *c);
+static void toggleshade_TILE(Arrangement * a, Client *c);
+static void toggledectiled_TILE(Arrangement * a, Client *c);
+
+Arangement adwm_arrangement = {
+	.name = "tile",
+	.initlayout = &initlayout_TILE,
+	.addclient = &addclient_TILE,
+	.delclient = &delclient_TILE,
+	.raise = &raise_TILE,
+	.lower = &lower_TILE,
+	.raiselower = &raiselower_TILE,
+	.isfloating = &isfloating_TILE,
+	.getdecor = &getdecor_TILE,
+	.arrange = &arrange_TILE,
+	.setnmaster = &setnmaster_TILE,
+	.rotate = &rotate_TILE,
+	.zoom = &zoom_TILE,
+	.zoomfloat = &zoomfloat_TILE,
+	.togglefloating = &togglefloating_TILE,
+	.togglefill = &togglefill_TILE,
+	.togglefull = &togglefull_TILE,
+	.togglemax = &togglemax_TILE,
+	.togglemaxv = &togglemaxv_TILE,
+	.togglemaxh = &togglemaxh_TILE,
+	.toggleshade = &toggleshade_TILE,
+	.toggledectiled = &toggledectiled_TILE,
+};
+
 
 /*
  * This is a master/stacking area tile layout ala dwm, both in a tiled an
@@ -30,6 +80,66 @@
 static void
 initlayout_TILE(Monitor *m, View *v, char code)
 {
+}
+
+static void
+inittrees_TILE(void)
+{
+	if (adwm_arrangement.trees)
+		return;
+	adwm_arrangement.trees =
+		calloc(nscr * MAXTAGS, sizeof(*adwm_arrangement.trees));
+	return;
+}
+
+static Tree *
+inittree_TILE(View *v)
+{
+	Tree *t, **slot;
+	Monitor *m;
+	Workarea wa;
+	int b;
+
+	inittrees_TILE();
+	slot = adwm_arrangement.trees + scr->screen * MAXTAGS + v->index;
+	if ((t = *slot))
+		return t;
+	if (!(m = v->curmon))
+		m = nearmonitor();
+	t = *slot = calloc(1, sizeof(*t));
+	t->type = TreeTypeTree;
+	t->view = v->index;
+	t->orient = FIXME;
+	getworkarea(m, &wa);
+	b = scr->style.border;
+	t->c.b = t->r.b = t->s.b = b;
+	t->c.x = t->r.x = t->s.x = wa.x;
+	t->c.y = t->r.y = t->s.y = wa.y;
+	t->c.w = t->r.w = t->s.w = wa.w - 2 * b;
+	t->c.h = t->r.h = t->s.h = wa.h - 2 * b;
+
+
+
+}
+
+static void
+initview_TILE(Client *c, View **view, Tree **tree)
+{
+	View *v;
+	Tree *t;
+
+	/* current visible view and monitor */
+	if (!(v = clientview(c)))  {
+		/* current view, no monitor */
+		if (!(v = onview(c))) {
+			/* monitor nearest pointer */
+			v = nearview(c);
+			c->tags = v->seltags;
+		}
+	}
+	t = inittree_TILE(v);
+	*view = v;
+	*tree = t;
 }
 
 /*
@@ -44,8 +154,29 @@ initlayout_TILE(Monitor *m, View *v, char code)
  * tree.
  */
 static void
-addclient_TILE(Client *c, Bool front)
+addclient_TILE(Client *c, Bool focusme, Bool raiseme)
 {
+	if (!c->can.move) {
+		int mx, my;
+		View *cv;
+
+		/* double check the monitor: wnck task bars figure the window is on the
+		   monitor containing the center of the window. */
+		mx = c->s.x + c->s.w / 2 + c->s.b;
+		my = c->s.y + c->s.h / 2 + c->s.b;
+
+		if (!(cv = getview(mx, my)))
+			cv = closestview(mx, my);
+		c->tags = cv->seltags;
+	}
+	attach(c, scr->options.attachaside);
+	attachclist(c);
+	attachflist(c, focusme);
+	attachstack(c, raiseme);
+	ewmh_update_net_client_list();
+	if (c->is.managed)
+		ewmh_update_net_window_desktop(c);
+	initview_TILE(c);
 }
 
 static void
@@ -629,83 +760,145 @@ arrange_TILE(Monitor *cm)
  */
 
 Bool
-begin_move_TILE(Client *c, Monitor *m, Bool toggle, int move)
+move_begin_TILE(Client *c, Monitor *m, Bool toggle, int move)
 {
 	return True;		/* FIXME */
 }
 
 Bool
-cancel_move_TILE(Client *c, Monitor *m, ClientGeometry * orig)
+move_cancel_TILE(Client *c, Monitor *m, ClientGeometry * orig)
 {
 	return True;		/* FIXME */
 }
 
 Bool
-finish_move_TILE(Client *c, Monitor *m)
+move_finish_TILE(Client *c, Monitor *m)
 {
 	return True;		/* FIXME */
 }
 
 Bool
-begin_resize_TILE(Client *c, Monitor *m, Bool toggle, int from)
+resize_begin_TILE(Client *c, Monitor *m, Bool toggle, int from)
 {
 	return True;		/* FIXME */
 }
 
 Bool
-cancel_resize_TILE(Client *c, Monitor *m, ClientGeometry * orig)
+resize_cancel_TILE(Client *c, Monitor *m, ClientGeometry * orig)
 {
 	return True;		/* FIXME */
 }
 
 Bool
-finish_resize_TILE(Client *c, Monitor *m)
+resize_finish_TILE(Client *c, Monitor *m)
 {
 	return True;		/* FIXME */
 }
 
-void
-rotateview_TILE(Client *c)
+static void
+initlayout_TILE(Monitor *m, View *v, char code)
 {
 }
 
-void
-unrotateview_TILE(Client *c)
+static void
+addclient_TILE(Client *c)
 {
 }
 
-void
-rotatezone_TILE(Client *c)
+static void
+delclient_TILE(Client *c)
 {
 }
 
-void
-unrotatezone_TILE(Client *c)
+static void
+raise_TILE(Client *c)
 {
 }
 
-void
-rotatewins_TILE(Client *c)
+static void
+lower_TILE(Client *c)
 {
 }
 
-void
-unrotatewins_TILE(Client *c)
+static void
+raiselower_TILE(Client *c)
 {
 }
 
-void
-setnmaster_TILE(Monitor *m, View *v, int num)
+static Bool
+isfloating_TILE(Client *c, View *v)
+{
+	return False;
+}
+
+static void
+getdecor_TILE(Client *c, View *v, ClientGeometry *g)
 {
 }
 
-void
+static void
+arrange_TILE(View *v)
+{
+}
+
+
+static void
+setnmaster_TILE(View *v, SetValue how, int num)
+{
+}
+
+static void
+rotate(Client *c, View *v, RotateDirection dir, RotateArea area)
+{
+}
+
+static void
 zoom_TILE(Client *c)
 {
 }
 
-void
-init_TILE(void)
+static void
+zoomfloat_TILE(Client *c)
+{
+}
+
+static void
+togglefloating_TILE(Client *c)
+{
+}
+
+static void
+togglefill_TILE(Client *c)
+{
+}
+
+static void
+togglefull_TILE(Client *c)
+{
+}
+
+static void
+togglemax_TILE(Client *c)
+{
+}
+
+static void
+togglemaxv_TILE(Client *c)
+{
+}
+
+static void
+togglemaxh_TILE(Client *c)
+{
+}
+
+static void
+toggleshade_TILE(Client *c)
+{
+}
+
+static void
+togglesdectiled_TILE(Client *c)
 {
 }
 

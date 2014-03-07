@@ -1138,14 +1138,15 @@ k_select_cl(View *v, Key *k, CycleList * cl)
 {
 	Client *c;
 	int i;
+	static IsUnion is = { .is = 0 };
 
 	if (cl != k->where) {
 		c = k->where->c;
-		c->is.icon = c->was.icon;
-		c->is.hidden = c->was.hidden;
-		if (c->was.icon || c->was.hidden)
+		c->is.icon = is.icon;
+		c->is.hidden = is.hidden;
+		if (is.icon || is.hidden)
 			arrange(c->cview);
-		c->was.is = 0;
+		is.is = 0;
 	}
 	c = cl->c;
 	if (!(v = c->cview) && !(v = clientview(c))) {
@@ -1160,11 +1161,11 @@ k_select_cl(View *v, Key *k, CycleList * cl)
 		view(v, i);
 	}
 	if (cl != k->where) {
-		c->was.is = 0;
+		is.is = 0;
 		if (c->is.icon || c->is.hidden) {
-			if ((c->was.icon = c->is.icon))
+			if ((is.icon = c->is.icon))
 				c->is.icon = False;
-			if ((c->was.hidden = c->is.hidden))
+			if ((is.hidden = c->is.hidden))
 				c->is.hidden = False;
 		}
 	}

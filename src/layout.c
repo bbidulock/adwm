@@ -213,17 +213,20 @@ setfocused(Client *c)
 	if (!(v = c->cview)) {
 		if (!(v = clientview(c))) {
 			CPRINTF(c, "No view for focused client!\n");
-			assert(v != NULL);
+			// assert(v != NULL);
 			return;
 		}
 	}
 	index = v->index;
 	for (l = c->leaves; l; l = l->cnext) {
-		if (l->view == index) {
-			for (x = (Container *) l; x->type && (y = x->parent); x = y)
-				y->node.focused = x;
-			break;
-		}
+		if (l->view != index)
+			continue;
+		for (x = (Container *) l; x->type && (y = x->parent); x = y)
+			for (; x->type != TreeTypeLeaf && (y = x->node.focused); x = y)
+				x->node.focused = NULL;
+		for (x = (Container *) l; x->type && (y = x->parent); x = y)
+			y->node.focused = x;
+		break;
 	}
 }
 
@@ -240,17 +243,20 @@ setselected(Client *c)
 	if (!(v = c->cview)) {
 		if (!(v = clientview(c))) {
 			CPRINTF(c, "No view for selected client!\n");
-			assert(v != NULL);
+			// assert(v != NULL);
 			return;
 		}
 	}
 	index = v->index;
 	for (l = c->leaves; l; l = l->cnext) {
-		if (l->view == index) {
-			for (x = (Container *) l; x->type && (y = x->parent); x = y)
-				y->node.selected = x;
-			break;
-		}
+		if (l->view != index)
+			continue;
+		for (x = (Container *) l; x->type && (y = x->parent); x = y)
+			for (; x->type != TreeTypeLeaf && (y = x->node.selected); x = y)
+				x->node.selected = NULL;
+		for (x = (Container *) l; x->type && (y = x->parent); x = y)
+			y->node.selected = x;
+		break;
 	}
 }
 
@@ -279,11 +285,12 @@ tookfocus(Client *next)
 }
 
 static void
-getgeometry(Client *c, Geometry *g, ClientGeometry * gc)
+getgeometry(Client *c, Geometry *g, ClientGeometry *gc)
 {
 	*(Geometry *) gc = *g;
 	gc->t = c->th;
 	gc->g = c->gh;
+	gc->v = c->hh;
 }
 
 /* can be static soon */
@@ -416,11 +423,11 @@ reconfigure_dockapp(Client *c, ClientGeometry * n)
  * or desktop boundaries. */
 
 static void
-reconfigure(Client *c, ClientGeometry * n)
+reconfigure(Client *c, ClientGeometry *n)
 {
 	XWindowChanges wwc, fwc;
 	unsigned wmask, fmask;
-	Bool tchange = False, gchange = False, shaded = False;
+	Bool tchange = False, gchange = False, hchange = False, shaded = False;
 
 	if (n->w <= 0 || n->h <= 0) {
 		CPRINTF(c, "zero width %d or height %d\n", n->w, n->h);
@@ -431,8 +438,8 @@ reconfigure(Client *c, ClientGeometry * n)
 		n->x = DisplayWidth(dpy, scr->screen) - n->w - 2 * n->b;
 	if (n->y > DisplayHeight(dpy, scr->screen))
 		n->y = DisplayHeight(dpy, scr->screen) - n->h - 2 * n->b;
-	DPRINTF("x = %d y = %d w = %d h = %d b = %d t = %d g = %d\n", n->x, n->y, n->w,
-		n->h, n->b, n->t, n->g);
+	DPRINTF("x = %d y = %d w = %d h = %d b = %d t = %d g = %d v = %d\n", n->x, n->y,
+		n->w, n->h, n->b, n->t, n->g, n->v);
 
 	if (c->is.dockapp)
 		return reconfigure_dockapp(c, n);
@@ -448,14 +455,16 @@ reconfigure(Client *c, ClientGeometry * n)
 		DPRINTF("frame wc.y = %d\n", fwc.y);
 		fmask |= CWY;
 	}
-	if (c->c.w != (fwc.width = wwc.width = n->w)) {
-		c->c.w = n->w;
-		DPRINTF("frame wc.w = %u\n", fwc.width);
-		fmask |= CWWidth;
+	if (c->c.w - 2 * c->hh != (wwc.width = n->w - 2 * n->v)) {
 		DPRINTF("wind  wc.w = %u\n", wwc.width);
 		wmask |= CWWidth;
 	}
-	if (c->c.h - c->th - c->gh != (wwc.height = n->h - n->t - n->g)) {
+	if (c->c.w != (fwc.width = n->w)) {
+		c->c.w = n->w;
+		DPRINTF("frame wc.w = %u\n", fwc.width);
+		fmask |= CWWidth;
+	}
+	if (c->c.h - c->th - c->gh - c->hh != (wwc.height = n->h - n->t - n->g - n->v)) {
 		DPRINTF("wind  wc.h = %u\n", wwc.height);
 		wmask |= CWHeight;
 	}
@@ -478,8 +487,14 @@ reconfigure(Client *c, ClientGeometry * n)
 		c->gh = n->g;
 		gchange = True;
 	}
-	if (n->t && (c->is.shaded && (c != sel || !scr->options.autoroll))) {
-		fwc.height = n->t;
+	if (n->v && !c->grips)
+		n->v = 0;
+	if (c->hh != n->v) {
+		c->hh = n->v;
+		hchange = True;
+	}
+	if ((n->t || n->v) && (c->is.shaded && (c != sel || !scr->options.autoroll))) {
+		fwc.height = n->t + 2 * n->v;
 		DPRINTF("frame wc.h = %u\n", fwc.height);
 		fmask |= CWHeight;
 		shaded = True;
@@ -537,9 +552,10 @@ reconfigure(Client *c, ClientGeometry * n)
 			XMoveResizeWindow(dpy, c->grips, 0, n->h - n->g, wwc.width, n->g);
 	}
 	if (((c->title && n->t) || (c->grips && n->g)) &&
-	    ((tchange && n->t) || (gchange && n->g) || (wmask & CWWidth)))
+	    ((tchange && n->t) || (gchange && n->g) || (hchange && n->v)
+	     || (wmask & CWWidth)))
 		drawclient(c);
-	if (tchange || gchange || (fmask & CWBorderWidth))
+	if (tchange || gchange || hchange || (fmask & CWBorderWidth))
 		ewmh_update_net_window_extents(c);
 	XSync(dpy, False);
 }
@@ -857,10 +873,13 @@ get_decor(Client *c, View *v, ClientGeometry * g)
 	}
 	g->t = c->th;
 	g->g = c->gh;
+	g->v = c->hh;
 	if (c->is.max || !c->has.title)
 		g->t = 0;
 	if (c->is.max || !c->has.grips)
 		g->g = 0;
+	if (c->is.max || !c->has.grips)
+		g->v = 0;
 	if (c->is.max || (!c->has.title && !c->has.grips))
 		return;
 	if (c->is.floater || c->skip.arrange)
@@ -870,19 +889,20 @@ get_decor(Client *c, View *v, ClientGeometry * g)
 	else if (!v && !(v = clientview(c))) {
 		decorate = False;
 		for (i = 0; i < scr->ntags; i++) {
-			if ((c->tags & (1ULL << i)) && (scr->views[i].dectiled ||
-							VFEATURES(scr->views + i,
-								 OVERLAP))) {
+			View *v = scr->views + i;
+
+			if ((c->tags & (1ULL << i))
+			    && (v->dectiled || VFEATURES(v, OVERLAP))) {
 				decorate = True;
 				break;
 			}
 		}
 	} else {
-		decorate = (v->dectiled || VFEATURES(v, OVERLAP)) ?
-		    True : False;
+		decorate = (v->dectiled || VFEATURES(v, OVERLAP)) ? True : False;
 	}
 	g->t = decorate ? ((c->title && c->has.title) ? scr->style.titleheight : 0) : 0;
 	g->g = decorate ? ((c->grips && c->has.grips) ? scr->style.gripsheight : 0) : 0;
+	g->v = decorate ? ((c->grips && c->has.grips && scr->style.fullgrips) ? g->g : 0) : 0;
 }
 
 static void
@@ -1325,14 +1345,15 @@ tile(View *v)
 	ClientGeometry n, m, s, g;
 	Client *c, *mc;
 	Monitor *cm = v->curmon;
-	int i, overlap, th, gh, mg;
-	Bool mtdec, stdec, mgdec, sgdec;
+	int i, overlap, th, gh, hh, mg;
+	Bool mtdec, stdec, mgdec, sgdec, mvdec, svdec;
 
 	if (!(c = nexttiled(scr->clients, v)))
 		return;
 
 	th = scr->style.titleheight;
 	gh = scr->style.gripsheight;
+	hh = scr->style.fullgrips ? gh : 0;
 	mg = scr->style.margin;
 
 	getworkarea(cm, (Workarea *) &wa);
@@ -1364,6 +1385,8 @@ tile(View *v)
 	stdec = (v->dectiled || sa.s) ? True : False;
 	mgdec = v->dectiled ? True : False;
 	sgdec = v->dectiled ? True : False;
+	mvdec = v->dectiled ? True : False;
+	svdec = v->dectiled ? True : False;
 
 	/* master and slave work area dimensions */
 	switch (v->major) {
@@ -1452,6 +1475,7 @@ tile(View *v)
 	m.b = ma.b;
 	m.t = mtdec ? th : 0;
 	m.g = mgdec ? gh : 0;
+	m.v = mvdec ? hh : 0;
 
 	/* slave tile dimensions */
 	switch (v->major) {
@@ -1470,6 +1494,7 @@ tile(View *v)
 	s.b = sa.b;
 	s.t = stdec ? th : 0;
 	s.g = sgdec ? gh : 0;
+	s.v = svdec ? hh : 0;
 
 	/* position of first master */
 	switch (v->minor) {
@@ -1504,6 +1529,8 @@ tile(View *v)
 	n = m;
 
 	for (; c && i < ma.n; c = nexttiled(c->next, v)) {
+		IsUnion is = { .is = 0 };
+
 		if (c->is.max) {
 			c->is.max = False;
 			ewmh_update_net_window_state(c);
@@ -1511,7 +1538,7 @@ tile(View *v)
 		g = n;
 		g.t = c->has.title ? g.t : 0;
 		g.g = c->has.grips ? g.g : 0;
-		if ((c->was.shaded = c->is.shaded) && (c != sel || !scr->options.autoroll))
+		if ((is.shaded = c->is.shaded) && (c != sel || !scr->options.autoroll))
 			if (!ma.s)
 				c->is.shaded = False;
 		g.x += ma.g;
@@ -1565,7 +1592,7 @@ tile(View *v)
 			n.h = m.h;
 			ma.s--;
 		}
-		c->is.shaded = c->was.shaded;
+		c->is.shaded = is.shaded;
 	}
 
 	/* position of first slave */
@@ -1598,6 +1625,8 @@ tile(View *v)
 	n = s;
 
 	for (; c && i < wa.n; c = nexttiled(c->next, v)) {
+		IsUnion is = { .is = 0 };
+
 		if (c->is.max) {
 			c->is.max = False;
 			ewmh_update_net_window_state(c);
@@ -1605,7 +1634,7 @@ tile(View *v)
 		g = n;
 		g.t = c->has.title ? g.t : 0;
 		g.g = c->has.grips ? g.g : 0;
-		if ((c->was.shaded = c->is.shaded) && (c != sel || !scr->options.autoroll))
+		if ((is.shaded = c->is.shaded) && (c != sel || !scr->options.autoroll))
 			if (!sa.s)
 				c->is.shaded = False;
 		g.x += sa.g;
@@ -1663,7 +1692,7 @@ tile(View *v)
 			n.h = s.h;
 			sa.s--;
 		}
-		c->is.shaded = c->was.shaded;
+		c->is.shaded = is.shaded;
 	}
 }
 
@@ -2587,7 +2616,7 @@ ismoveevent(Display *display, XEvent *event, XPointer arg)
 }
 
 static Bool
-move_begin(Client *c, View *v, Bool toggle, int move)
+move_begin(Client *c, View *v, Bool toggle, int move, IsUnion *was)
 {
 	Bool isfloater;
 
@@ -2601,19 +2630,19 @@ move_begin(Client *c, View *v, Bool toggle, int move)
 	isfloater = isfloating(c, NULL) ? True : False;
 
 	c->is.moveresize = True;
-	c->was.is = 0;
+	was->is = 0;
 	if (toggle || isfloater) {
-		if ((c->was.full = c->is.full))
+		if ((was->full = c->is.full))
 			c->is.full = False;
-		if ((c->was.max = c->is.max))
+		if ((was->max = c->is.max))
 			c->is.max = False;
-		if ((c->was.maxv = c->is.maxv))
+		if ((was->maxv = c->is.maxv))
 			c->is.maxv = False;
-		if ((c->was.maxh = c->is.maxh))
+		if ((was->maxh = c->is.maxh))
 			c->is.maxh = False;
-		if ((c->was.fill = c->is.fill))
+		if ((was->fill = c->is.fill))
 			c->is.fill = False;
-		if ((c->was.shaded = c->is.shaded))
+		if ((was->shaded = c->is.shaded))
 			c->is.shaded = False;
 		if (!isfloater) {
 			save(c);	/* tear out at current geometry */
@@ -2621,8 +2650,8 @@ move_begin(Client *c, View *v, Bool toggle, int move)
 			detachstack(c);
 			attachstack(c, True);
 			togglefloating(c);
-		} else if (c->was.is) {
-			c->was.floater = isfloater;
+		} else if (was->is) {
+			was->floater = isfloater;
 			updatefloat(c, v);
 			raiseclient(c);
 		} else
@@ -2638,7 +2667,7 @@ move_begin(Client *c, View *v, Bool toggle, int move)
 }
 
 static Bool
-move_cancel(Client *c, View *v, ClientGeometry * orig)
+move_cancel(Client *c, View *v, ClientGeometry * orig, IsUnion *was)
 {
 	Bool wasfloating;
 
@@ -2646,17 +2675,17 @@ move_cancel(Client *c, View *v, ClientGeometry * orig)
 		return False;	/* nothing to cancel */
 
 	c->is.moveresize = False;
-	wasfloating = c->was.floater;
-	c->was.floater = False;
+	wasfloating = was->floater;
+	was->floater = False;
 
 	if (isfloating(c, NULL)) {
-		if (c->was.is) {
-			c->is.full = c->was.full;
-			c->is.max = c->was.max;
-			c->is.maxv = c->was.maxv;
-			c->is.maxh = c->was.maxh;
-			c->is.fill = c->was.fill;
-			c->is.shaded = c->was.shaded;
+		if (was->is) {
+			c->is.full = was->full;
+			c->is.max = was->max;
+			c->is.maxv = was->maxv;
+			c->is.maxh = was->maxh;
+			c->is.fill = was->fill;
+			c->is.shaded = was->shaded;
 		}
 		if (wasfloating) {
 			DPRINTF("CALLING reconfigure()\n");
@@ -2671,7 +2700,7 @@ move_cancel(Client *c, View *v, ClientGeometry * orig)
 }
 
 static Bool
-move_finish(Client *c, View *v)
+move_finish(Client *c, View *v, IsUnion *was)
 {
 	Bool wasfloating;
 
@@ -2679,17 +2708,17 @@ move_finish(Client *c, View *v)
 		return False;	/* didn't start or was cancelled */
 
 	c->is.moveresize = False;
-	wasfloating = c->was.floater;
-	c->was.floater = False;
+	wasfloating = was->floater;
+	was->floater = False;
 
 	if (isfloating(c, v)) {
-		if (c->was.is) {
-			c->is.full = c->was.full;
-			c->is.max = c->was.max;
-			c->is.maxv = c->was.maxv;
-			c->is.maxh = c->was.maxh;
-			c->is.fill = c->was.fill;
-			c->is.shaded = c->was.shaded;
+		if (was->is) {
+			c->is.full = was->full;
+			c->is.max = was->max;
+			c->is.maxv = was->maxv;
+			c->is.maxh = was->maxh;
+			c->is.fill = was->fill;
+			c->is.shaded = was->shaded;
 		}
 		if (wasfloating)
 			updatefloat(c, v);
@@ -2711,6 +2740,7 @@ mousemove(Client *c, XEvent *e, Bool toggle)
 	ClientGeometry n, o;
 	Bool moved = False, isfloater;
 	int move = CurMove;
+	IsUnion was = { .is = 0 };
 
 	x_root = e->xbutton.x_root;
 	y_root = e->xbutton.y_root;
@@ -2760,7 +2790,7 @@ mousemove(Client *c, XEvent *e, Bool toggle)
 				if (ev.xclient.data.l[2] == 11) {
 					/* _NET_WM_MOVERESIZE_CANCEL */
 					CPRINTF(c, "Move cancelled!\n");
-					moved = move_cancel(c, v, &o);
+					moved = move_cancel(c, v, &o, &was);
 					break;
 				}
 				continue;
@@ -2782,7 +2812,7 @@ mousemove(Client *c, XEvent *e, Bool toggle)
 				if (abs(dx) < scr->options.dragdist
 				    && abs(dy) < scr->options.dragdist)
 					continue;
-				if (!(moved = move_begin(c, v, toggle, move))) {
+				if (!(moved = move_begin(c, v, toggle, move, &was))) {
 					CPRINTF(c, "Couldn't move client!\n");
 					break;
 				}
@@ -2880,7 +2910,7 @@ mousemove(Client *c, XEvent *e, Bool toggle)
 		XUngrabPointer(dpy, CurrentTime);
 		break;
 	}
-	if (move_finish(c, v))
+	if (move_finish(c, v, &was))
 		moved = True;
 	discardenter();
 	ewmh_update_net_window_state(c);
@@ -2989,7 +3019,7 @@ isresizeevent(Display *display, XEvent *event, XPointer arg)
 }
 
 static Bool
-resize_begin(Client *c, View *v, Bool toggle, int from)
+resize_begin(Client *c, View *v, Bool toggle, int from, IsUnion *was)
 {
 	Bool isfloater;
 
@@ -3018,19 +3048,19 @@ resize_begin(Client *c, View *v, Bool toggle, int from)
 	isfloater = isfloating(c, v) ? True : False;
 
 	c->is.moveresize = True;
-	c->was.is = 0;
+	was->is = 0;
 	if (toggle || isfloater) {
-		if ((c->was.full = c->is.full))
+		if ((was->full = c->is.full))
 			c->is.full = False;
-		if ((c->was.max = c->is.max))
+		if ((was->max = c->is.max))
 			c->is.max = False;
-		if ((c->was.maxv = c->is.maxv))
+		if ((was->maxv = c->is.maxv))
 			c->is.maxv = False;
-		if ((c->was.maxh = c->is.maxh))
+		if ((was->maxh = c->is.maxh))
 			c->is.maxh = False;
-		if ((c->was.fill = c->is.fill))
+		if ((was->fill = c->is.fill))
 			c->is.fill = False;
-		if ((c->was.shaded = c->is.shaded))
+		if ((was->shaded = c->is.shaded))
 			c->is.shaded = False;
 		if (!isfloater) {
 			save(c);	/* tear out at current geometry */
@@ -3038,8 +3068,8 @@ resize_begin(Client *c, View *v, Bool toggle, int from)
 			detachstack(c);
 			attachstack(c, True);
 			togglefloating(c);
-		} else if (c->was.is) {
-			c->was.floater = isfloater;
+		} else if (was->is) {
+			was->floater = isfloater;
 			updatefloat(c, v);
 			raiseclient(c);
 		} else
@@ -3053,7 +3083,7 @@ resize_begin(Client *c, View *v, Bool toggle, int from)
 }
 
 static Bool
-resize_cancel(Client *c, View *v, ClientGeometry * orig)
+resize_cancel(Client *c, View *v, ClientGeometry * orig, IsUnion *was)
 {
 	Bool wasfloating;
 
@@ -3061,17 +3091,17 @@ resize_cancel(Client *c, View *v, ClientGeometry * orig)
 		return False;	/* nothing to cancel */
 
 	c->is.moveresize = False;
-	wasfloating = c->was.floater;
-	c->was.floater = False;
+	wasfloating = was->floater;
+	was->floater = False;
 
 	if (isfloating(c, v)) {
-		if (c->was.is) {
-			c->is.full = c->was.full;
-			c->is.max = c->was.max;
-			c->is.maxv = c->was.maxv;
-			c->is.maxh = c->was.maxh;
-			c->is.fill = c->was.fill;
-			c->is.shaded = c->was.shaded;
+		if (was->is) {
+			c->is.full = was->full;
+			c->is.max = was->max;
+			c->is.maxv = was->maxv;
+			c->is.maxh = was->maxh;
+			c->is.fill = was->fill;
+			c->is.shaded = was->shaded;
 		}
 		if (wasfloating) {
 			DPRINTF("CALLING reconfigure()\n");
@@ -3086,7 +3116,7 @@ resize_cancel(Client *c, View *v, ClientGeometry * orig)
 }
 
 static Bool
-resize_finish(Client *c, View *v)
+resize_finish(Client *c, View *v, IsUnion *was)
 {
 	Bool wasfloating;
 
@@ -3094,12 +3124,12 @@ resize_finish(Client *c, View *v)
 		return False;	/* didn't start or was cancelled */
 
 	c->is.moveresize = False;
-	wasfloating = c->was.floater;
-	c->was.floater = False;
+	wasfloating = was->floater;
+	was->floater = False;
 
 	if (isfloating(c, v)) {
-		if (c->was.is) {
-			c->is.shaded = c->was.shaded;
+		if (was->is) {
+			c->is.shaded = was->shaded;
 		}
 		if (wasfloating)
 			updatefloat(c, v);
@@ -3118,6 +3148,7 @@ mouseresize_from(Client *c, int from, XEvent *e, Bool toggle)
 	View *v, *nv;
 	ClientGeometry n, o;
 	Bool resized = False;
+	IsUnion was = { .is = 0 };
 
 	x_root = e->xbutton.x_root;
 	y_root = e->xbutton.y_root;
@@ -3157,7 +3188,7 @@ mouseresize_from(Client *c, int from, XEvent *e, Bool toggle)
 			if (ev.xclient.message_type == _XA_NET_WM_MOVERESIZE) {
 				if (ev.xclient.data.l[2] == 11) {
 					/* _NET_WM_MOVERESIZE_CANCEL */
-					resized = resize_cancel(c, v, &o);
+					resized = resize_cancel(c, v, &o, &was);
 					break;
 				}
 				continue;
@@ -3181,7 +3212,7 @@ mouseresize_from(Client *c, int from, XEvent *e, Bool toggle)
 				if (abs(dx) < scr->options.dragdist
 				    && abs(dy) < scr->options.dragdist)
 					continue;
-				if (!(resized = resize_begin(c, v, toggle, from)))
+				if (!(resized = resize_begin(c, v, toggle, from, &was)))
 					break;
 				getgeometry(c, &c->c, &n);
 			}
@@ -3338,7 +3369,7 @@ mouseresize_from(Client *c, int from, XEvent *e, Bool toggle)
 		XUngrabPointer(dpy, CurrentTime);
 		break;
 	}
-	if (resize_finish(c, v))
+	if (resize_finish(c, v, &was))
 		resized = True;
 	discardenter();
 	ewmh_update_net_window_state(c);
@@ -3538,6 +3569,7 @@ getplace(Client *c, ClientGeometry * g)
 		g->b = c->c.b;
 		g->t = c->th;
 		g->g = c->gh;
+		g->v = c->hh;
 		XFree(s);
 	}
 }
@@ -3561,9 +3593,9 @@ total_overlap(Client *c, View *v, Geometry *g)
 	int x1, x2, y1, y2, a;
 
 	x1 = g->x;
-	x2 = g->x + g->w + 2 * g->b;
+	x2 = g->x + g->w + 2 * c->hh + 2 * g->b;
 	y1 = g->y;
-	y2 = g->y + g->h + 2 * g->b + c->th + c->gh;
+	y2 = g->y + g->h + 2 * g->b + c->th + c->gh + c->hh;
 	a = 0;
 
 	for (o = scr->clients; o; o = o->next)
@@ -4035,12 +4067,12 @@ place(Client *c, WindowPlacement p)
 void
 addclient(Client *c, Bool focusme, Bool raiseme)
 {
-	CPRINTF(c, "initial geometry c: %dx%d+%d+%d:%d t %d g %d\n",
-		c->c.w, c->c.h, c->c.x, c->c.y, c->c.b, c->th, c->gh);
-	CPRINTF(c, "initial geometry r: %dx%d+%d+%d:%d t %d g %d\n",
-		c->r.w, c->r.h, c->r.x, c->r.y, c->r.b, c->th, c->gh);
-	CPRINTF(c, "initial geometry s: %dx%d+%d+%d:%d t %d g %d\n",
-		c->s.w, c->s.h, c->s.x, c->s.y, c->s.b, c->th, c->gh);
+	CPRINTF(c, "initial geometry c: %dx%d+%d+%d:%d t %d g %d v %d\n",
+		c->c.w, c->c.h, c->c.x, c->c.y, c->c.b, c->th, c->gh, c->hh);
+	CPRINTF(c, "initial geometry r: %dx%d+%d+%d:%d t %d g %d v %d\n",
+		c->r.w, c->r.h, c->r.x, c->r.y, c->r.b, c->th, c->gh, c->hh);
+	CPRINTF(c, "initial geometry s: %dx%d+%d+%d:%d t %d g %d v %d\n",
+		c->s.w, c->s.h, c->s.x, c->s.y, c->s.b, c->th, c->gh, c->hh);
 
 	if (!c->s.x && !c->s.y && c->can.move && !c->is.dockapp) {
 		/* put it on the monitor startup notification requested if not already
@@ -4050,12 +4082,12 @@ addclient(Client *c, Bool focusme, Bool raiseme)
 		place(c, ColSmartPlacement);
 	}
 
-	CPRINTF(c, "placed geometry c: %dx%d+%d+%d:%d t %d g %d\n",
-		c->c.w, c->c.h, c->c.x, c->c.y, c->c.b, c->th, c->gh);
-	CPRINTF(c, "placed geometry r: %dx%d+%d+%d:%d t %d g %d\n",
-		c->r.w, c->r.h, c->r.x, c->r.y, c->r.b, c->th, c->gh);
-	CPRINTF(c, "placed geometry s: %dx%d+%d+%d:%d t %d g %d\n",
-		c->s.w, c->s.h, c->s.x, c->s.y, c->s.b, c->th, c->gh);
+	CPRINTF(c, "placed geometry c: %dx%d+%d+%d:%d t %d g %d v %d\n",
+		c->c.w, c->c.h, c->c.x, c->c.y, c->c.b, c->th, c->gh, c->hh);
+	CPRINTF(c, "placed geometry r: %dx%d+%d+%d:%d t %d g %d v %d\n",
+		c->r.w, c->r.h, c->r.x, c->r.y, c->r.b, c->th, c->gh, c->hh);
+	CPRINTF(c, "placed geometry s: %dx%d+%d+%d:%d t %d g %d v %d\n",
+		c->s.w, c->s.h, c->s.x, c->s.y, c->s.b, c->th, c->gh, c->hh);
 
 	if (!c->can.move) {
 		int mx, my;
@@ -4745,7 +4777,6 @@ toggleshade(Client *c)
 
 	if (!c || (!c->can.shade && c->is.managed) || !(v = c->cview))
 		return;
-	c->was.shaded = c->is.shaded;
 	c->is.shaded = !c->is.shaded;
 	if (c->is.managed) {
 		ewmh_update_net_window_state(c);

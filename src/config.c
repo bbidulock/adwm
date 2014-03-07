@@ -302,15 +302,10 @@ initrcfile(void)
 	const char *file = NULL;
 	char *pos, *dir;
 	int i, len;
-	char *owd;
 	struct stat st;
 
 	/* init resource database */
 	XrmInitialize();
-
-	owd = calloc(PATH_MAX, sizeof(*owd));
-	if (!getcwd(owd, PATH_MAX))
-		strcpy(owd, "/");
 
 	for (i = 0; i < cargc - 1; i++)
 		if (!strcmp(cargv[i], "-f"))
@@ -427,10 +422,5 @@ initrcfile(void)
 		fprintf(stderr, "adwm: Could not find usable database, using defaults\n");
 		if (chdir(config.udir))
 			DPRINTF("Could not change directory to %s: %s\n", config.udir, strerror(errno));
-	}
-	if (owd) {
-		if (chdir(owd))
-			DPRINTF("Could not change directory to %s: %s\n", owd, strerror(errno));
-		free(owd);
 	}
 }

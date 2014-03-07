@@ -3115,6 +3115,7 @@ setup(char *conf, AdwmOperations *ops)
 	Monitor *m;
 	XModifierKeymap *modmap;
 	XSetWindowAttributes wa;
+	char *owd;
 
 	/* init cursors */
 	cursor[CurResizeTopLeft] = XCreateFontCursor(dpy, XC_top_left_corner);
@@ -3148,6 +3149,10 @@ setup(char *conf, AdwmOperations *ops)
 #ifdef STARTUP_NOTIFICATION
 	sn_dpy = sn_display_new(dpy, NULL, NULL);
 #endif
+
+	owd = calloc(PATH_MAX, sizeof(*owd));
+	if (!getcwd(owd, PATH_MAX))
+		strcpy(owd, "/");
 
 	initrcfile();
 
@@ -3198,6 +3203,12 @@ setup(char *conf, AdwmOperations *ops)
 		ewmh_update_net_work_area();
 		ewmh_process_net_showing_desktop();
 		ewmh_update_net_showing_desktop();
+	}
+
+	if (owd) {
+		if (chdir(owd))
+			DPRINTF("Could not change directory to %s: %s\n", owd, strerror(errno));
+		free(owd);
 	}
 
 	/* multihead support */

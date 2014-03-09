@@ -528,6 +528,7 @@ typedef struct Tree Tree;
 typedef struct Node Node;
 typedef struct Leaf Leaf;
 typedef struct Container Container;
+typedef struct Arrangement Arrangement;
 
 #ifdef STARTUP_NOTIFICATION
 typedef struct Notify Notify;
@@ -634,7 +635,8 @@ struct Monitor {
 };
 
 typedef struct {
-	void (*arrange) (View *v);
+	// void (*arrange) (View *v);
+	Arrangement *arrange;
 	char symbol;
 	int features;
 	LayoutOrientation major;	/* overall orientation */
@@ -752,8 +754,7 @@ struct Client {
 	char *icon_name;
 	char *startup_id;
 	int monitor;			/* initial monitor */
-	Geometry c, r, s;		/* current, restore, static */
-	int th, gh, hh;			/* title/grip height and handle width */
+	ClientGeometry c, r, s;		/* current, restore, static */
 	int basew, baseh, incw, inch, maxw, maxh, minw, minh;
 	int minax, maxax, minay, maxay, gravity;
 	int ignoreunmap;
@@ -824,6 +825,7 @@ struct View {
 	WindowPlacement placement;	/* float placement policy */
 	Monitor *curmon;		/* monitor currently displaying this view */
 	Layout *layout;
+	Tree *tree;			/* layout tree */
 	int index;
 	unsigned long long seltags;	/* tags selected for this view */
 	int row, col;			/* row and column in desktop layout */
@@ -854,9 +856,11 @@ struct Tree {
 	CanUnion can;
 	View *parent;
 	Tree *next;			/* next sibling tree */
+	Tree *prev;			/* prev sibling tree */
 
 	unsigned nchild;
-	Container *children;
+	Container *head;
+	Container *tail;
 
 	Container *selected;		/* last selected child */
 	Container *focused;		/* last focused child */
@@ -877,9 +881,11 @@ struct Node {
 	CanUnion can;
 	Container *parent;
 	Node *next;			/* next sibling node */
+	Node *prev;			/* prev sibling node */
 
 	unsigned nchild;
-	Container *children;		/* all leaves or all nodes */
+	Container *head;		/* all leaves or all nodes */
+	Container *tail;
 
 	Container *selected;		/* last selected child */
 	Container *focused;		/* last focused child */
@@ -900,10 +906,14 @@ struct Leaf {
 	CanUnion can;
 	Container *parent;
 	Leaf *next;			/* next sibling leaf */
+	Leaf *prev;			/* prev sibling leaf */
 
 	Leaf *cnext;			/* next leaf for same client */
 
 	Client *client;
+	char *name;
+	char *clas;
+	char *command;
 
 };
 
@@ -1016,6 +1026,7 @@ typedef struct {
 	const char *command;
 	DockPosition dockpos;
 	DockOrient dockori;
+	unsigned dockmon;
 	unsigned dragdist;
 	double mwfact;
 	double mhfact;
@@ -1039,6 +1050,10 @@ struct AScreen {
 	Bool showing_desktop;
 	int screen;
 	unsigned ntags;
+	struct {
+		Tree *tree;		/* only one dock per screen for now... */
+		Monitor *monitor;	/* monitor on which dock appears */
+	} dock;
 	View views[MAXTAGS];
 	Tag tags[MAXTAGS];
 	Key **keys;
@@ -1220,7 +1235,6 @@ extern Client *took;			/* took focus last */
 extern unsigned nscr;
 extern unsigned nrules;
 extern Rule **rules;
-extern Layout layouts[];
 extern unsigned modkey;
 extern unsigned numlockmask;
 extern XContext context[];

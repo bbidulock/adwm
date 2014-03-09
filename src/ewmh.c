@@ -795,16 +795,23 @@ ewmh_update_net_visible_desktops()
 static Bool
 isomni(Client *c)
 {
-	if (!c->is.sticky)
-		if ((c->tags & ((1ULL << scr->ntags) - 1)) != ((1ULL << scr->ntags) - 1))
+	if (!c->is.sticky) {
+		unsigned long long alltags = (1ULL << scr->ntags) - 1;
+
+		if ((c->tags & alltags) != alltags)
 			return False;
+	}
 	return True;
 }
 
 static Bool
 islost(Client *c)
 {
-	return (c->tags & ((1ULL << scr->ntags) - 1)) ? False : True;
+	if (c->is.sticky)
+		return False;
+	if (c->tags & ((1ULL << scr->ntags) - 1))
+		return True;
+	return False;
 }
 
 #define DT_WORKSPACE_HINTS_WSFLAGS	(1<<0)
@@ -1647,10 +1654,10 @@ void
 ewmh_update_net_window_extents(Client *c)
 {
 	long data[4] = {
-		c->c.b + c->hh,	/* left */
-		c->c.b + c->hh,	/* right */
-		c->c.b + c->th + c->hh,	/* top */
-		c->c.b + c->gh + c->hh,	/* bottom */
+		c->c.b + c->c.v,	/* left */
+		c->c.b + c->c.v,	/* right */
+		c->c.b + c->c.t + c->c.v,	/* top */
+		c->c.b + c->c.g + c->c.v,	/* bottom */
 	};
 
 	XPRINTF("Updating _NET_WM_FRAME_EXTENTS for 0x%lx\n", c->win);

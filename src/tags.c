@@ -80,8 +80,15 @@ togglesticky(Client *c)
 	if (c->is.managed) {
 		if (c->is.sticky)
 			tag(c, -1);
-		else
+		else {
+			View *v;
+
+			if (!(v = c->cview))
+				if (!(v = clientview(c)))
+					if (!(v = onview(c)))
+						v = nearview();
 			tag(c, v->index);
+		}
 		ewmh_update_net_window_state(c);
 	}
 }
@@ -95,7 +102,7 @@ toggletag(Client *c, int index)
 		return;
 	tags = c->tags;
 	tags ^= (index == -1) ? ((1ULL << scr->ntags) - 1) : (1ULL << index);
-	if (tags & ((1ULL << scr->ntags) - 1))
+	if ((tags & ((1ULL << scr->ntags) - 1)) || c->is.sticky)
 		c->tags = tags;
 	else if (c->cview)
 		/* at least one tag must be enabled */
@@ -144,7 +151,8 @@ focusview(View *v, int index)
 	if (!(v->seltags & tags))
 		toggleview(v, index);
 	for (c = scr->stack; c; c = c->snext)
-		if ((c->tags & tags) && !c->is.bastard && !c->is.dockapp && c->can.focus)
+		if (((c->tags & tags) || c->is.sticky) &&
+		    !c->is.bastard && !c->is.dockapp && c->can.focus)
 			break;
 	focus(c);
 }
@@ -301,9 +309,12 @@ taketoright(Client *c)
 static Bool
 isomni(Client *c)
 {
-	if (!c->is.sticky)
-		if ((c->tags & ((1ULL << scr->ntags) - 1)) != ((1ULL << scr->ntags) - 1))
+	if (!c->is.sticky) {
+		unsigned long long alltags = (1ULL << scr->ntags) - 1;
+
+		if ((c->tags & alltags) != alltags)
 			return False;
+	}
 	return True;
 }
 
@@ -333,7 +344,7 @@ deltag()
 			c->tags &= ~tags;
 			continue;
 		}
-		if (!(c->tags & (tags - 1)))
+		if (!(c->tags & (tags - 1)) && !c->is.sticky)
 			tag(c, last - 1);
 		else
 			c->tags &= ~tags;
@@ -346,14 +357,12 @@ static void
 addtag()
 {
 	Client *c;
-	unsigned long long alltags;
 
 	if (scr->ntags >= MAXTAGS)
 		/* stop the insanity, go organic */
 		return;
-	alltags = ((1ULL << scr->ntags) - 1);
 	for (c = scr->clients; c; c = c->next)
-		if (((c->tags & alltags) == alltags) || c->is.sticky)
+		if (isomni(c))
 			c->tags |= (1ULL << scr->ntags);
 	scr->ntags++;
 }

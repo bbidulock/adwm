@@ -257,20 +257,27 @@ applyatoms(Client *c)
 {
 	long *t;
 	unsigned long n;
-	unsigned int i, tag;
 
 	/* restore tag number from atom */
-	t = getcard(c->win, _XA_NET_WM_DESKTOP, &n);
-	if (n > 0) {
-		tag = *t;
+	if ((t = getcard(c->win, _XA_NET_WM_DESKTOP, &n))) {
+		unsigned long long oldtags = c->tags;
+		unsigned long i;
+		unsigned tag;
+
+		c->tags = 0;
+		for (i = 0; i < n; i++) {
+			tag = t[i];
+			if (tag == 0xffffffff) {
+				c->tags = ((1ULL << scr->ntags) - 1);
+				break;
+			}
+			if (tag >= MAXTAGS)
+				continue;
+			c->tags |= (1ULL << tag);
+		}
 		XFree(t);
-		if (tag >= scr->ntags)
-			return;
-		for (i = 0; i < scr->ntags; i++)
-			if (i == tag)
-				c->tags |= (1ULL << i);
-			else
-				c->tags &= ~(1ULL << i);
+		if (!c->tags && !c->is.sticky)
+			c->tags = oldtags;
 	}
 }
 
@@ -376,6 +383,8 @@ applystate(Client *c, XWMHints * wmh)
 		c->can.move = True;
 		c->has.has = 0;
 		c->is.floater = True;
+		c->is.sticky = True;
+		c->tags = ((1ULL << scr->ntags) - 1);
 		c->icon = ((wmh->flags & IconWindowHint) && wmh->icon_window) ?
 		    wmh->icon_window : c->win;
 		/* fall through */
@@ -785,13 +794,13 @@ send_configurenotify(Client *c, Window above)
 	ce.event = c->win;
 	ce.window = c->win;
 	ce.x = c->c.x;
-	ce.y = c->c.y + c->th;
+	ce.y = c->c.y + c->c.t;
 	if (c->sync.waiting) {
 		ce.width = c->sync.w;
 		ce.height = c->sync.h;
 	} else {
-		ce.width = c->c.w - 2 * c->hh;
-		ce.height = c->c.h - c->th - c->gh - c->hh;
+		ce.width = c->c.w - 2 * c->c.v;
+		ce.height = c->c.h - c->c.t - c->c.g - c->c.v;
 	}
 	ce.border_width = c->c.b;	/* ICCCM 2.0 4.1.5 */
 	ce.above = above;
@@ -1495,6 +1504,8 @@ isvisible(Client *c, View *v)
 {
 	if (!c)
 		return False;
+	if (c->is.sticky)
+		return True;
 	if (!v) {
 		unsigned i;
 
@@ -1827,21 +1838,21 @@ manage(Window w, XWindowAttributes *wa)
 		c->is.floater = (!c->can.sizeh || !c->can.sizev);
 
 	if (c->has.title)
-		c->th = scr->style.titleheight;
+		c->c.t = c->r.t = scr->style.titleheight;
 	else {
 		c->can.shade = False;
 		c->has.grips = False;
 	}
 	if (c->has.grips) {
-		if (!(c->gh = scr->style.gripsheight))
+		if (!(c->c.g = c->r.g = scr->style.gripsheight))
 			c->has.grips = False;
 		else if (scr->style.fullgrips)
-			c->hh = c->gh;
+			c->c.v = c->r.v = c->c.g;
 	}
 	c->c.x = c->r.x = wa->x;
 	c->c.y = c->r.y = wa->y;
-	c->c.w = c->r.w = wa->width + 2 * c->hh;;
-	c->c.h = c->r.h = wa->height + c->th + c->gh + c->hh;
+	c->c.w = c->r.w = wa->width + 2 * c->c.v;;
+	c->c.h = c->r.h = wa->height + c->c.t + c->c.g + c->c.v;
 
 	c->s.x = wa->x;
 	c->s.y = wa->y;
@@ -1900,7 +1911,7 @@ manage(Window w, XWindowAttributes *wa)
 	/* we create title as root's child as a workaround for 32bit visuals */
 	if (c->has.title) {
 		c->element = ecalloc(LastElement, sizeof(*c->element));
-		c->title = XCreateWindow(dpy, scr->root, 0, 0, c->c.w, c->th,
+		c->title = XCreateWindow(dpy, scr->root, 0, 0, c->c.w, c->c.t,
 					 0, DefaultDepth(dpy, scr->screen),
 					 CopyFromParent, DefaultVisual(dpy, scr->screen),
 					 CWEventMask, &twa);
@@ -1909,7 +1920,7 @@ manage(Window w, XWindowAttributes *wa)
 		XSaveContext(dpy, c->title, context[ScreenContext], (XPointer) scr);
 	}
 	if (c->has.grips) {
-		c->grips = XCreateWindow(dpy, scr->root, 0, 0, c->c.w, c->gh,
+		c->grips = XCreateWindow(dpy, scr->root, 0, 0, c->c.w, c->c.g,
 					 0, DefaultDepth(dpy, scr->screen),
 					 CopyFromParent, DefaultVisual(dpy, scr->screen),
 					 CWEventMask, &twa);
@@ -1938,9 +1949,9 @@ manage(Window w, XWindowAttributes *wa)
 		XChangeWindowAttributes(dpy, c->win, CWEventMask | CWDontPropagate, &twa);
 		XSelectInput(dpy, c->win, CLIENTMASK);
 
-		XReparentWindow(dpy, c->win, c->frame, 0, c->th);
+		XReparentWindow(dpy, c->win, c->frame, 0, c->c.t);
 		if (c->grips)
-			XReparentWindow(dpy, c->grips, c->frame, 0, c->c.h - c->gh);
+			XReparentWindow(dpy, c->grips, c->frame, 0, c->c.h - c->c.g);
 		if (c->title)
 			XReparentWindow(dpy, c->title, c->frame, 0, 0);
 		XAddToSaveSet(dpy, c->win);
@@ -1959,15 +1970,15 @@ manage(Window w, XWindowAttributes *wa)
 	ewmh_update_net_window_state(c);
 	ewmh_update_net_window_desktop(c);
 
-	if (c->grips && c->gh) {
-		XMoveResizeWindow(dpy, c->grips, 0, c->c.h - c->gh, c->c.w, c->gh);
+	if (c->grips && c->c.g) {
+		XMoveResizeWindow(dpy, c->grips, 0, c->c.h - c->c.g, c->c.w, c->c.g);
 		XMapWindow(dpy, c->grips);
 	}
-	if (c->title && c->th) {
-		XMoveResizeWindow(dpy, c->title, 0, 0, c->c.w, c->th);
+	if (c->title && c->c.t) {
+		XMoveResizeWindow(dpy, c->title, 0, 0, c->c.w, c->c.t);
 		XMapWindow(dpy, c->title);
 	}
-	if ((c->grips && c->gh) || (c->title && c->th))
+	if ((c->grips && c->c.g) || (c->title && c->c.t))
 		drawclient(c);
 
 	if (c->with.struts) {
@@ -2224,7 +2235,7 @@ onview(Client *c)
 	for (i = 0, v = scr->views; i < scr->ntags; i++, v++)
 		if (isvisible(c, v))
 			return v;
-      return NULL;
+	return NULL;
 }
 
 static Monitor *
@@ -2329,7 +2340,7 @@ newsize(Client *c, int w, int h, Time time)
 	if (c->sync.waiting) {
 		DPRINTF
 		    ("Deferring size request from %dx%d to %dx%d for 0x%08lx 0x%08lx %s\n",
-		     c->c.w - 2 * c->hh, c->c.h - c->th - c->gh - c->hh, w, h, c->frame, c->win, c->name);
+		     c->c.w - 2 * c->c.v, c->c.h - c->c.t - c->c.g - c->c.v, w, h, c->frame, c->win, c->name);
 		return False;
 	}
 	c->sync.w = w;
@@ -2359,12 +2370,12 @@ alarmnotify(XEvent *e)
 	}
 	c->sync.waiting = False;
 
-	if ((wc.width = c->c.w - 2 * c->hh) != c->sync.w) {
+	if ((wc.width = c->c.w - 2 * c->c.v) != c->sync.w) {
 		XPRINTF("Width changed from %d to %u since last request\n", c->sync.w,
 			wc.width);
 		mask |= CWWidth;
 	}
-	if ((wc.height = c->c.h - c->th - c->gh - c->hh) != c->sync.h) {
+	if ((wc.height = c->c.h - c->c.t - c->c.g - c->c.v) != c->sync.h) {
 		XPRINTF("Height changed from %d to %u since last request\n", c->sync.h,
 			wc.height);
 		mask |= CWHeight;
@@ -2756,9 +2767,12 @@ scan(void)
 static Bool
 isomni(Client *c)
 {
-	if (!c->is.sticky)
-		if ((c->tags & ((1ULL << scr->ntags) - 1)) != ((1ULL << scr->ntags) - 1))
+	if (!c->is.sticky) {
+		unsigned long long alltags = (1ULL << scr->ntags) - 1;
+
+		if ((c->tags & alltags) != alltags)
 			return False;
+	}
 	return True;
 }
 
@@ -2772,6 +2786,27 @@ freemonitors()
 	free(scr->monitors);
 }
 
+static Monitor *
+findmonitornear(int row, int col)
+{
+	int w = scr->sw / scr->m.cols;
+	int h = scr->sh / scr->m.rows;
+	float dist = hypotf((scr->m.rows + 1) * h, (scr->m.cols + 1) * w);
+	Monitor *m, *best = NULL;
+
+	for (m = scr->monitors; m; m = m->next) {
+		float test = hypotf((m->row - row) * h, (m->col - col) * w);
+
+		if (test < dist) {
+			dist = test;
+			best = m;
+		}
+		if (dist == 0)
+			break;
+	}
+	return best;
+}
+
 void
 updatemonitors(XEvent *e, int n, Bool size_update, Bool full_update)
 {
@@ -2781,6 +2816,7 @@ updatemonitors(XEvent *e, int n, Bool size_update, Bool full_update)
 	int w, h;
 	Bool changed;
 	View *v;
+	int dockmon;
 
 	for (i = 0; i < n; i++)
 		scr->monitors[i].next = &scr->monitors[i + 1];
@@ -2855,6 +2891,71 @@ updatemonitors(XEvent *e, int n, Bool size_update, Bool full_update)
 	for (m = scr->monitors, i = 0; i < n; i++, m++) {
 		DPRINTF("Setting view %d to monitor %d\n", m->curview->index, m->num);
 		m->curview->curmon = m;
+		m->dock.position = DockNone;
+		m->dock.wa = m->wa;
+	}
+	scr->dock.monitor = NULL;
+	dockmon = (int) scr->options.dockmon - 1;
+	if (dockmon > n - 1)
+		dockmon = n - 1;
+	/* find the monitor if dock position is screen relative */
+	if (dockmon < 0) {
+		DockPosition pos = scr->options.dockpos;
+		int row, col;
+		Monitor *dm;
+
+		switch (pos) {
+		default:
+			pos = DockNone;
+		case DockNone:
+			row = 0;
+			col = 0;
+			break;
+		case DockEast:
+			row = (scr->m.rows + 1) / 2 - 1;	/* Center */
+			col = scr->m.cols - 1;	/* East */
+			break;
+		case DockNorthEast:
+			row = 0;	/* North */
+			col = scr->m.cols - 1;	/* East */
+			break;
+		case DockNorth:
+			row = 0;	/* North */
+			col = (scr->m.cols + 1) / 2 - 1;	/* Center */
+			break;
+		case DockNorthWest:
+			row = 0;	/* North */
+			col = 0;	/* West */
+			break;
+		case DockWest:
+			row = (scr->m.rows + 1) / 2 - 1;	/* Center */
+			col = 0;	/* West */
+			break;
+		case DockSouthWest:
+			row = scr->m.rows - 1;	/* South */
+			col = 0;	/* West */
+			break;
+		case DockSouth:
+			row = scr->m.rows - 1;	/* South */
+			col = (scr->m.cols + 1) / 2 - 1;	/* Center */
+			break;
+		case DockSouthEast:
+			row = scr->m.rows - 1;	/* South */
+			col = scr->m.cols - 1;	/* East */
+			break;
+		}
+		if (pos != DockNone && (dm = findmonitornear(row, col)))
+			dockmon = dm->num;
+	}
+	if (dockmon >= 0) {
+		for (m = scr->monitors; m; m = m->next) {
+			if (m->num == dockmon) {
+				m->dock.position = scr->options.dockpos;
+				m->dock.orient = scr->options.dockori;
+				scr->dock.monitor = m;
+				break;
+			}
+		}
 	}
 	ewmh_update_net_desktop_geometry();
 }
@@ -2932,8 +3033,8 @@ initmonitors(XEvent *e)
 				m->sc.y = m->wa.y = m->dock.wa.y = si[i].y_org;
 				m->sc.w = m->wa.w = m->dock.wa.w = si[i].width;
 				m->sc.h = m->wa.h = m->dock.wa.h = si[i].height;
-				m->dock.position = scr->options.dockpos;
-				m->dock.orient = scr->options.dockori;
+				// m->dock.position = scr->options.dockpos;
+				// m->dock.orient = scr->options.dockori;
 				m->mx = m->sc.x + m->sc.w / 2;
 				m->my = m->sc.y + m->sc.h / 2;
 				m->num = si[i].screen_number;
@@ -3015,8 +3116,8 @@ initmonitors(XEvent *e)
 				m = &scr->monitors[n];
 				full_update = True;
 				m->index = n;
-				m->dock.position = scr->options.dockpos;
-				m->dock.orient = scr->options.dockori;
+				// m->dock.position = scr->options.dockpos;
+				// m->dock.orient = scr->options.dockori;
 				m->sc.x = m->wa.x = m->dock.wa.x = ci->x;
 				m->sc.y = m->wa.y = m->dock.wa.y = ci->y;
 				m->sc.w = m->wa.w = m->dock.wa.w = ci->width;
@@ -3077,8 +3178,8 @@ initmonitors(XEvent *e)
 		m = &scr->monitors[0];
 		full_update = True;
 		m->index = 0;
-		m->dock.position = scr->options.dockpos;
-		m->dock.orient = scr->options.dockori;
+		// m->dock.position = scr->options.dockpos;
+		// m->dock.orient = scr->options.dockori;
 		m->sc.x = m->wa.x = m->dock.wa.x = 0;
 		m->sc.y = m->wa.y = m->dock.wa.y = 0;
 		m->sc.w = m->wa.w = m->dock.wa.w = DisplayWidth(dpy, scr->screen);
@@ -3181,6 +3282,7 @@ setup(char *conf, AdwmOperations *ops)
 		/* init key bindings */
 		initkeys();
 
+		initdock();
 		initlayouts();
 		ewmh_update_net_desktop_modes();
 

@@ -23,28 +23,27 @@
 #endif
 #include "layout.h"
 
-static void initlayout_TILE(Arrangement * a, Monitor *m, View *v, char code);
-static void addclient_TILE(Arrangement * a, Client *c, Bool focusme, Bool raiseme);
-static void delclient_TILE(Arrangement * a, Client *c);
-static void raise_TILE(Arrangement * a, Client *c);
-static void lower_TILE(Arrangement * a, Client *c);
-static void raiselower_TILE(Arrangement * a, Client *c);
-static Bool isfloating_TILE(Arrangement * a, Client *c, View *v);
-static void getdecor_TILE(Arrangement * a, Client *c, View *v, ClientGeometry * g);
-static void arrange_TILE(Arrangement * a, View *v);
-static void setnmaster_TILE(Arrangement * a, View *v, SetValue how, int n);
-static void rotate_TILE(Arrangement * a, Client *c, View *v, RotateDirection dir,
-			RotateArea area);
-static void zoom_TILE(Arrangement * a, Client *c);
-static void zoomfloat_TILE(Arrangement * a, Client *c);
-static void togglefloating_TILE(Arrangement * a, Client *c);
-static void togglefill_TILE(Arrangement * a, Client *c);
-static void togglefull_TILE(Arrangement * a, Client *c);
-static void togglemax_TILE(Arrangement * a, Client *c);
-static void togglemaxv_TILE(Arrangement * a, Client *c);
-static void togglemaxh_TILE(Arrangement * a, Client *c);
-static void toggleshade_TILE(Arrangement * a, Client *c);
-static void toggledectiled_TILE(Arrangement * a, Client *c);
+static void initlayout_TILE(Monitor *m, View *v, char code);
+static void addclient_TILE(Client *c, Bool focusme, Bool raiseme);
+static void delclient_TILE(Client *c);
+static void raise_TILE(Client *c);
+static void lower_TILE(Client *c);
+static void raiselower_TILE(Client *c);
+static Bool isfloating_TILE(Client *c, View *v);
+static void getdecor_TILE(Client *c, View *v, ClientGeometry * g);
+static void arrange_TILE(View *v);
+static void setnmaster_TILE(View *v, SetValue how, int n);
+static void rotate_TILE(Client *c, View *v, RotateDirection dir, RotateArea area);
+static void zoom_TILE(Client *c);
+static void zoomfloat_TILE(Client *c);
+static void togglefloating_TILE(Client *c);
+static void togglefill_TILE(Client *c);
+static void togglefull_TILE(Client *c);
+static void togglemax_TILE(Client *c);
+static void togglemaxv_TILE(Client *c);
+static void togglemaxh_TILE(Client *c);
+static void toggleshade_TILE(Client *c);
+static void toggledectiled_TILE(Client *c);
 
 Arangement adwm_arrangement = {
 	.name = "tile",
@@ -104,6 +103,8 @@ inittree_TILE(View *v)
 	slot = adwm_arrangement.trees + scr->screen * MAXTAGS + v->index;
 	if ((t = *slot))
 		return t;
+
+	/* initialize tree for view v on screen scr->screen */
 	if (!(m = v->curmon))
 		m = nearmonitor();
 	t = *slot = calloc(1, sizeof(*t));
@@ -120,6 +121,55 @@ inittree_TILE(View *v)
 
 
 
+}
+
+static void
+initdocks_TILE(void)
+{
+	unsigned i, nmons = 0;
+	AScreen *s;
+
+	if (adwm_arrangement.docks)
+		return;
+	for (s = screens, i = 0; i < nscr; i++, s++) {
+		if (!s->managed)
+			continue;
+		nmons = max(nmons, s->nmons);
+	}
+	nmons = max(nmons, 8);
+	adwm_arrangement.docks =
+		calloc(nscr * nmons, sizeof(*adwm_arrangement.docks));
+	adwm_arrangement.nmons = nmons;
+}
+
+static Tree *
+initdock_TILE(View *v)
+{
+	Tree *t, **slot;
+	Monitor *m;
+	Workarea wa;
+	int b;
+
+	inittrees_TILE();
+	if (!(m = v->curmon))
+		return NULL;
+	slot = adwm_arrangement.tree + scr->screen * adwm_arrangement.nmons + m->num;
+	if ((t = slot))
+		return t;
+	t = *slot = calloc(1, sizeof(*t));
+	t->type = TreeTypeTree;
+	t->view = -1;
+	t->orient = FIXME;
+	getworksarea(m, &wa);
+	b = scr->style.border;
+	t->c.b = t->r.b = t->s.b = b;
+	t->c.x = t->r.x = t->s.x = wa.x;
+	t->c.y = t->r.y = t->s.y = wa.y;
+	t->c.w = t->r.w = t->s.w = wa.w - 2 * b;
+	t->c.h = t->r.h = t->s.h = wa.h - 2 * b;
+
+
+	/* initialize tree for dock on screen scr->screen */
 }
 
 static void

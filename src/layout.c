@@ -49,7 +49,7 @@
 #include "draw.h"
 #include "ewmh.h"
 #include "config.h"
-#include "layout.h" /* verification */
+#include "layout.h"		/* verification */
 
 #define MWFACT		(1<<0)	/* adjust master factor */
 #define NMASTER		(1<<1)	/* adjust number of masters */
@@ -284,15 +284,6 @@ tookfocus(Client *next)
 	setfocused(took);
 }
 
-static void
-getgeometry(Client *c, Geometry *g, ClientGeometry *gc)
-{
-	*(Geometry *) gc = *g;
-	gc->t = c->th;
-	gc->g = c->gh;
-	gc->v = c->hh;
-}
-
 /* can be static soon */
 Bool
 isfloating(Client *c, View *v)
@@ -346,7 +337,7 @@ enterclient(XEvent *e, Client *c)
 }
 
 static void
-reconfigure_dockapp(Client *c, ClientGeometry * n)
+reconfigure_dockapp(Client *c, ClientGeometry *n)
 {
 	XWindowChanges wwc, fwc;
 	unsigned wmask, fmask;
@@ -455,7 +446,7 @@ reconfigure(Client *c, ClientGeometry *n)
 		DPRINTF("frame wc.y = %d\n", fwc.y);
 		fmask |= CWY;
 	}
-	if (c->c.w - 2 * c->hh != (wwc.width = n->w - 2 * n->v)) {
+	if (c->c.w - 2 * c->c.v != (wwc.width = n->w - 2 * n->v)) {
 		DPRINTF("wind  wc.w = %u\n", wwc.width);
 		wmask |= CWWidth;
 	}
@@ -464,7 +455,7 @@ reconfigure(Client *c, ClientGeometry *n)
 		DPRINTF("frame wc.w = %u\n", fwc.width);
 		fmask |= CWWidth;
 	}
-	if (c->c.h - c->th - c->gh - c->hh != (wwc.height = n->h - n->t - n->g - n->v)) {
+	if (c->c.h - c->c.t - c->c.g - c->c.v != (wwc.height = n->h - n->t - n->g - n->v)) {
 		DPRINTF("wind  wc.h = %u\n", wwc.height);
 		wmask |= CWHeight;
 	}
@@ -475,22 +466,22 @@ reconfigure(Client *c, ClientGeometry *n)
 	}
 	if (n->t && !c->title)
 		n->t = 0;
-	if (c->th != (wwc.y = n->t)) {
-		c->th = n->t;
+	if (c->c.t != (wwc.y = n->t)) {
+		c->c.t = n->t;
 		DPRINTF("wind  wc.y = %d\n", wwc.y);
 		wmask |= CWY;
 		tchange = True;
 	}
 	if (n->g && !c->grips)
 		n->g = 0;
-	if (c->gh != n->g) {
-		c->gh = n->g;
+	if (c->c.g != n->g) {
+		c->c.g = n->g;
 		gchange = True;
 	}
 	if (n->v && !c->grips)
 		n->v = 0;
-	if (c->hh != n->v) {
-		c->hh = n->v;
+	if (c->c.v != n->v) {
+		c->c.v = n->v;
 		hchange = True;
 	}
 	if ((n->t || n->v) && (c->is.shaded && (c != sel || !scr->options.autoroll))) {
@@ -561,7 +552,7 @@ reconfigure(Client *c, ClientGeometry *n)
 }
 
 static Bool
-constrain(Client *c, ClientGeometry * g)
+constrain(Client *c, ClientGeometry *g)
 {
 	int w = g->w, h = g->h;
 	Bool ret = False;
@@ -642,7 +633,7 @@ restore(Client *c)
 {
 	ClientGeometry g;
 
-	getgeometry(c, &c->r, &g);
+	g = c->r;
 	DPRINTF("CALLING: constrain()\n");
 	constrain(c, &g);
 	DPRINTF("CALLING reconfigure()\n");
@@ -655,10 +646,10 @@ configureclient(XEvent *e, Client *c, int gravity)
 	XConfigureRequestEvent *ev = &e->xconfigurerequest;
 	View *v;
 
-	/* XXX: if c->cmon is set, we are displayed on a monitor, but c->curview should 
-	   also be set.  We only need the monitor for the layout.  When there is no
-	   cmon, use one of the views to which the client is tagged? How meaningful is
-	   it moving a window not in the current view? Perhaps we should treat it a just
+	/* XXX: if c->cmon is set, we are displayed on a monitor, but c->curview should
+	   also be set.  We only need the monitor for the layout.  When there is no cmon, 
+	   use one of the views to which the client is tagged? How meaningful is it
+	   moving a window not in the current view? Perhaps we should treat it a just
 	   moving the saved floating state.  This is the only function that calls
 	   findcurmonitor(). */
 
@@ -668,7 +659,7 @@ configureclient(XEvent *e, Client *c, int gravity)
 		ClientGeometry g;
 		int dx, dy, dw, dh;
 
-		getgeometry(c, &c->c, &g);
+		g = c->c;
 
 		dx = ((ev->value_mask & CWX) && c->can.move) ? ev->x - g.x : 0;
 		dy = ((ev->value_mask & CWY) && c->can.move) ? ev->y - g.y : 0;
@@ -682,7 +673,7 @@ configureclient(XEvent *e, Client *c, int gravity)
 	} else {
 		ClientGeometry g;
 
-		getgeometry(c, &c->c, &g);
+		g = c->c;
 
 		g.b = (ev->value_mask & CWBorderWidth) ? ev->border_width : g.b;
 
@@ -751,7 +742,7 @@ configuremonitors(XEvent *e, Client *c)
 }
 
 static void
-calc_full(Client *c, View *v, ClientGeometry * g)
+calc_full(Client *c, View *v, ClientGeometry *g)
 {
 	Monitor *m = v->curmon;
 	Monitor *fsmons[4] = { m, m, m, m };
@@ -786,7 +777,7 @@ calc_full(Client *c, View *v, ClientGeometry * g)
 }
 
 static void
-calc_fill(Client *c, View *v, Workarea *wa, ClientGeometry * g)
+calc_fill(Client *c, View *v, Workarea *wa, ClientGeometry *g)
 {
 	int x1, x2, y1, y2, w, h;
 	Client *o;
@@ -833,7 +824,7 @@ calc_fill(Client *c, View *v, Workarea *wa, ClientGeometry * g)
 }
 
 static void
-calc_max(Client *c, Workarea *wa, ClientGeometry * g)
+calc_max(Client *c, Workarea *wa, ClientGeometry *g)
 {
 	g->x = wa->x;
 	g->y = wa->y;
@@ -845,7 +836,7 @@ calc_max(Client *c, Workarea *wa, ClientGeometry * g)
 }
 
 static void
-calc_maxv(Client *c, Workarea *wa, ClientGeometry * g)
+calc_maxv(Client *c, Workarea *wa, ClientGeometry *g)
 {
 	g->y = wa->y;
 	g->h = wa->h;
@@ -853,7 +844,7 @@ calc_maxv(Client *c, Workarea *wa, ClientGeometry * g)
 }
 
 static void
-calc_maxh(Client *c, Workarea *wa, ClientGeometry * g)
+calc_maxh(Client *c, Workarea *wa, ClientGeometry *g)
 {
 	g->x = wa->x;
 	g->w = wa->w;
@@ -861,9 +852,8 @@ calc_maxh(Client *c, Workarea *wa, ClientGeometry * g)
 }
 
 static void
-get_decor(Client *c, View *v, ClientGeometry * g)
+get_decor(Client *c, View *v, ClientGeometry *g)
 {
-	int i;
 	Bool decorate;
 
 	if (c->is.dockapp) {
@@ -871,9 +861,9 @@ get_decor(Client *c, View *v, ClientGeometry * g)
 		g->g = 0;
 		return;
 	}
-	g->t = c->th;
-	g->g = c->gh;
-	g->v = c->hh;
+	g->t = c->c.t;
+	g->g = c->c.g;
+	g->v = c->c.v;
 	if (c->is.max || !c->has.title)
 		g->t = 0;
 	if (c->is.max || !c->has.grips)
@@ -887,22 +877,16 @@ get_decor(Client *c, View *v, ClientGeometry * g)
 	else if (c->is.shaded && (c != sel || !scr->options.autoroll))
 		decorate = True;
 	else if (!v && !(v = clientview(c))) {
-		decorate = False;
-		for (i = 0; i < scr->ntags; i++) {
-			View *v = scr->views + i;
-
-			if ((c->tags & (1ULL << i))
-			    && (v->dectiled || VFEATURES(v, OVERLAP))) {
-				decorate = True;
-				break;
-			}
-		}
+		/* should never happen */
+		decorate = ((v = onview(c)) && (v->dectiled || VFEATURES(v, OVERLAP))) ?
+		    True : False;
 	} else {
 		decorate = (v->dectiled || VFEATURES(v, OVERLAP)) ? True : False;
 	}
 	g->t = decorate ? ((c->title && c->has.title) ? scr->style.titleheight : 0) : 0;
 	g->g = decorate ? ((c->grips && c->has.grips) ? scr->style.gripsheight : 0) : 0;
-	g->v = decorate ? ((c->grips && c->has.grips && scr->style.fullgrips) ? g->g : 0) : 0;
+	g->v = decorate ? ((c->grips && c->has.grips && scr->style.fullgrips) ?
+			   g->g : 0) : 0;
 }
 
 static void
@@ -954,7 +938,7 @@ updatefloat(Client *c, View *v)
 		return;
 	getworkarea(v->curmon, &wa);
 	CPRINTF(c, "r: %dx%d+%d+%d:%d\n", c->r.w, c->r.h, c->r.x, c->r.y, c->r.b);
-	getgeometry(c, &c->r, &g);
+	g = c->r;
 	CPRINTF(c, "g: %dx%d+%d+%d:%d\n", g.w, g.h, g.x, g.y, g.b);
 	g.b = scr->style.border;
 	CPRINTF(c, "g: %dx%d+%d+%d:%d\n", g.w, g.h, g.x, g.y, g.b);
@@ -1021,7 +1005,7 @@ prevdockapp(Client *c, View *v)
 	return c;
 }
 
-static void
+void
 arrangedock(View *v)
 {
 	Client *c = nextdockapp(scr->clients, v), *cn;
@@ -1067,7 +1051,7 @@ arrangedock(View *v)
 		break;
 	case DockWest:
 		side = DockSideWest;
-		DPRINTF("Dock position South\n");
+		DPRINTF("Dock position West\n");
 		break;
 	case DockNorthEast:
 		side = (m->dock.orient == DockHorz) ? DockSideNorth : DockSideEast;
@@ -1322,6 +1306,248 @@ arrangedock(View *v)
 	free(g);
 }
 
+static Leaf *
+next_dockapp(Leaf *l)
+{
+	for (; l; l = l->next) {
+		if (!l->client) {
+			DPRINTF("skipping dock app with no client '%s' '%s' '%s'\n",
+					l->name ? : "",
+					l->clas ? : "",
+					l->command ? : "");
+			continue;
+		}
+		if (l->is.hidden) {
+			DPRINTF("skipping dock app marked hidden '%s' '%s' '%s'\n",
+					l->name ? : "",
+					l->clas ? : "",
+					l->command ? : "");
+			continue;
+		}
+		break;
+	}
+	return l;
+}
+
+Leaf *
+prev_dockapp(Leaf *l)
+{
+	for (; l; l = l->prev)
+		if (l->client && !l->is.hidden)
+			break;
+	return l;
+}
+
+static void
+arrangedock_tile(View *v)
+{
+	Monitor *m;
+	Tree *t;
+	DockPosition pos;
+	DockOrient ori;
+	DockSide side;
+	Leaf *l, *ln;
+	int i, num, rows, cols, max, b;
+	ClientGeometry *g, *gx;
+
+	if (!(m = v->curmon))
+		return;
+
+	updategeom(m);
+	m->dock.wa = m->wa;
+
+	if ((pos = m->dock.position) == DockNone)
+		return;
+	if (!(t = scr->dock.tree))
+		return;
+
+	for (num = 0, l = next_dockapp((Leaf *) t->head); l;
+	     l = next_dockapp(l->next), num++) ;
+
+	DPRINTF("there are %d dock apps\n", num);
+
+	if (num == 0)
+		return;
+
+	switch ((ori = m->dock.orient)) {
+	case DockHorz:
+		DPRINTF("dock oriented horizontal\n");
+		break;
+	case DockVert:
+		DPRINTF("dock oriented vertical\n");
+		break;
+	}
+	switch (pos) {
+	case DockNorth:
+		side = DockSideNorth;
+		DPRINTF("dock position North\n");
+		break;
+	case DockEast:
+		side = DockSideEast;
+		DPRINTF("dock position East\n");
+		break;
+	case DockSouth:
+		side = DockSideSouth;
+		DPRINTF("dock position South\n");
+		break;
+	case DockWest:
+		side = DockSideWest;
+		DPRINTF("dock position West\n");
+		break;
+	case DockNorthEast:
+		side = (ori == DockHorz) ? DockSideNorth : DockSideEast;
+		DPRINTF("dock position NorthEast\n");
+		break;
+	case DockNorthWest:
+		side = (ori == DockHorz) ? DockSideNorth : DockSideWest;
+		DPRINTF("dock position NorthWest\n");
+		break;
+	case DockSouthWest:
+		side = (ori == DockHorz) ? DockSideSouth : DockSideWest;
+		DPRINTF("dock position SouthWest\n");
+		break;
+	case DockSouthEast:
+		side = (ori == DockHorz) ? DockSideSouth : DockSideEast;
+		DPRINTF("dock position SouthEast\n");
+		break;
+	default:
+		return;
+	}
+	switch (side) {
+	case DockSideEast:
+		DPRINTF("dock side East\n");
+		break;
+	case DockSideWest:
+		DPRINTF("dock side West\n");
+		break;
+	case DockSideNorth:
+		DPRINTF("dock side North\n");
+		break;
+	case DockSideSouth:
+		DPRINTF("dock side South\n");
+		break;
+	}
+
+	max = 64;
+	b = scr->style.border;
+
+	switch (side) {
+	case DockSideEast:
+	case DockSideWest:
+		rows = (m->wa.h - b) / (max + b);
+		cols = (num - 1) / rows + 1;
+		DPRINTF("dock columns %d, rows %d\n", cols, rows);
+		if (rows > num)
+			rows = num;
+		g = calloc(cols, sizeof(*g));
+		for (i = 0, gx = g; i < cols; i++, gx++) {
+			gx->b = b;
+			gx->w = max;
+			gx->h = (m->wa.h - b) / rows - b;
+			gx->y = m->wa.y;
+			switch ((int) side) {
+			case DockSideEast:
+				gx->x = m->wa.x + m->wa.w - (i + 1) * (gx->w + b);
+				break;
+			case DockSideWest:
+				gx->x = m->wa.x + i * (gx->w + b);
+				break;
+			}
+			DPRINTF("geometry col %d is %dx%d+%d+%d:%d\n", i,
+				gx->w, gx->h, gx->x, gx->y, gx->b);
+			num -= rows;
+			if (rows > num)
+				rows = num;
+		}
+		switch ((int) side) {
+		case DockSideEast:
+			break;
+		case DockSideWest:
+			m->dock.wa.x += cols * (max + b) + b;
+			break;
+		}
+		m->dock.wa.w -= cols * (max + b) + b;
+		break;
+	case DockSideNorth:
+	case DockSideSouth:
+		cols = (m->wa.w - b) / (max + b);
+		rows = (num - 1) / cols + 1;
+		if (cols > num)
+			cols = num;
+		DPRINTF("dock columns %d, rows %d\n", cols, rows);
+		g = calloc(rows, sizeof(*g));
+		for (i = 0, gx = g; i < rows; i++, gx++) {
+			gx->b = b;
+			gx->w = (m->wa.w - b) / cols - b;
+			gx->h = max;
+			gx->x = m->wa.x;
+			switch ((int) side) {
+			case DockSideNorth:
+				gx->y = m->wa.y + i * (gx->h + b);
+				break;
+			case DockSideSouth:
+				gx->y = m->wa.y + m->wa.h - (i + 1) * (gx->h + b);
+				break;
+			}
+			DPRINTF("geometry row %d is %dx%d+%d+%d:%d\n", i,
+				gx->w, gx->h, gx->x, gx->y, gx->b);
+			num -= cols;
+			if (cols > num)
+				cols = num;
+		}
+		switch ((int) side) {
+		case DockSideNorth:
+			m->dock.wa.y += rows * (max + b) + b;
+			break;
+		case DockSideSouth:
+			break;
+		}
+		m->dock.wa.h -= rows * (max + b) + b;
+		break;
+	}
+	XResizeWindow(dpy, m->veil, m->dock.wa.w, m->dock.wa.h);
+	XMoveWindow(dpy, m->veil, m->dock.wa.x, m->dock.wa.y);
+	for (gx = g, ln = next_dockapp((Leaf *) t->head); (l = ln);) {
+		Client *c = l->client;
+		ClientGeometry ng;
+
+		ln = next_dockapp(l->next);
+		switch (ori) {
+		case DockVert:
+		{
+			ng = *gx;
+			gx->y += gx->h + b;
+			if (!ln || gx->y > m->wa.y + m->wa.h) {
+				ng.h = m->wa.y + m->wa.h - ng.y - 2 * b;
+				gx++;
+			}
+			break;
+		}
+		case DockHorz:
+		{
+			ng = *gx;
+			gx->x = gx->w + b;
+			if (!ln || gx->x > m->wa.x + m->wa.w) {
+				ng.w = m->wa.x + m->wa.h - ng.x - 2 * b;
+				gx++;
+			}
+			break;
+		}
+		}
+		if (!c->is.moveresize) {
+			DPRINTF("CALLING reconfigure()\n");
+			reconfigure(c, &ng);
+		} else {
+			/* center it where it was before */
+			ng.x = (c->c.x + c->c.w / 2) - ng.w / 2;
+			ng.y = (c->c.y + c->c.h / 2) - ng.h / 2;
+			DPRINTF("CALLING reconfigure()\n");
+			reconfigure(c, &ng);
+		}
+	}
+	free(g);
+}
+
 Client *
 nexttiled(Client *c, View *v)
 {
@@ -1529,7 +1755,7 @@ tile(View *v)
 	n = m;
 
 	for (; c && i < ma.n; c = nexttiled(c->next, v)) {
-		IsUnion is = { .is = 0 };
+		IsUnion is = {.is = 0 };
 
 		if (c->is.max) {
 			c->is.max = False;
@@ -1625,7 +1851,7 @@ tile(View *v)
 	n = s;
 
 	for (; c && i < wa.n; c = nexttiled(c->next, v)) {
-		IsUnion is = { .is = 0 };
+		IsUnion is = {.is = 0 };
 
 		if (c->is.max) {
 			c->is.max = False;
@@ -1699,9 +1925,29 @@ tile(View *v)
 static void
 arrange_tile(View *v)
 {
-	arrangedock(v);
+	// arrangedock(v);
+	arrangedock_tile(v);
 	tile(v);
 	arrangefloats(v);
+}
+
+static void
+create_tile(View *v)
+{
+}
+
+static void
+convert_tile(View *v)
+{
+}
+
+static void
+initlayout_tile(View *v)
+{
+	if (v->tree)
+		convert_tile(v);
+	else
+		create_tile(v);
 }
 
 static void
@@ -1788,9 +2034,29 @@ grid(View *v)
 static void
 arrange_grid(View *v)
 {
-	arrangedock(v);
+	// arrangedock(v);
+	arrangedock_tile(v);
 	grid(v);
 	arrangefloats(v);
+}
+
+static void
+create_grid(View *v)
+{
+}
+
+static void
+convert_grid(View *v)
+{
+}
+
+static void
+initlayout_grid(View *v)
+{
+	if (v->tree)
+		convert_grid(v);
+	else
+		create_grid(v);
 }
 
 static void
@@ -1818,16 +2084,347 @@ monocle(View *v)
 static void
 arrange_monocle(View *v)
 {
-	arrangedock(v);
+	// arrangedock(v);
+	arrangedock_tile(v);
 	monocle(v);
 	arrangefloats(v);
 }
 
 static void
+create_monocle(View *v)
+{
+}
+
+static void
+convert_monocle(View *v)
+{
+}
+
+static void
+initlayout_monocle(View *v)
+{
+	if (v->tree)
+		convert_monocle(v);
+	else
+		create_monocle(v);
+}
+
+static void
+arrangedock_float(View *v)
+{
+	Monitor *m;
+	Tree *t;
+	DockPosition pos;
+	DockOrient ori;
+	DockSide side;
+	Leaf *l, *ln;
+	int i, num, rows, cols, margin, max, b;
+	ClientGeometry *g, *gx;
+
+	if (!(m = v->curmon))
+		return;
+
+	updategeom(m);
+	m->dock.wa = m->wa;
+
+	if ((pos = m->dock.position) == DockNone)
+		return;
+	if (!(t = scr->dock.tree))
+		return;
+
+	for (num = 0, l = next_dockapp((Leaf *) t->head); l;
+	     l = next_dockapp(l->next), num++) ;
+
+	DPRINTF("there are %d dock apps\n", num);
+
+	switch ((ori = m->dock.orient)) {
+	case DockHorz:
+		DPRINTF("dock oriented horizontal\n");
+		break;
+	case DockVert:
+		DPRINTF("dock oriented vertical\n");
+		break;
+	}
+	switch (pos) {
+	case DockNorth:
+		side = DockSideNorth;
+		DPRINTF("dock position North\n");
+		break;
+	case DockEast:
+		side = DockSideEast;
+		DPRINTF("dock position East\n");
+		break;
+	case DockSouth:
+		side = DockSideSouth;
+		DPRINTF("dock position South\n");
+		break;
+	case DockWest:
+		side = DockSideWest;
+		DPRINTF("dock position West\n");
+		break;
+	case DockNorthEast:
+		side = (ori == DockHorz) ? DockSideNorth : DockSideEast;
+		DPRINTF("dock position NorthEast\n");
+		break;
+	case DockNorthWest:
+		side = (ori == DockHorz) ? DockSideNorth : DockSideWest;
+		DPRINTF("dock position NorthWest\n");
+		break;
+	case DockSouthWest:
+		side = (ori == DockHorz) ? DockSideSouth : DockSideWest;
+		DPRINTF("dock position SouthWest\n");
+		break;
+	case DockSouthEast:
+		side = (ori == DockHorz) ? DockSideSouth : DockSideEast;
+		DPRINTF("dock position SouthEast\n");
+		break;
+	default:
+		return;
+	}
+	switch (side) {
+	case DockSideEast:
+		DPRINTF("dock side East\n");
+		break;
+	case DockSideWest:
+		DPRINTF("dock side West\n");
+		break;
+	case DockSideNorth:
+		DPRINTF("dock side North\n");
+		break;
+	case DockSideSouth:
+		DPRINTF("dock side South\n");
+		break;
+	}
+
+	margin = 4;
+	max = 64;
+	b = scr->style.border;
+
+	switch (side) {
+	case DockSideEast:
+	case DockSideWest:
+		rows = (m->wa.h - b) / (max + b);
+		cols = (num - 1) / rows + 1;
+		DPRINTF("dock columns %d, rows %d\n", cols, rows);
+		if (rows > num)
+			rows = num;
+		g = calloc(cols, sizeof(*g));
+		for (i = 0, gx = g; i < cols; i++, gx++) {
+			gx->b = b;
+			gx->w = max;
+			gx->h = (m->wa.h - b) / rows - b;
+			gx->y = m->wa.y;
+			switch ((int) side) {
+			case DockSideEast:
+				gx->x = m->wa.x + m->wa.w - (i + 1) * (gx->w + b);
+				break;
+			case DockSideWest:
+				gx->x = m->wa.x + i * (gx->w + b);
+				break;
+			}
+			DPRINTF("geometry col %d is %dx%d+%d+%d:%d\n", i,
+				gx->w, gx->h, gx->x, gx->y, gx->b);
+			num -= rows;
+			if (rows > num)
+				rows = num;
+		}
+		{
+			int h;
+
+			for (i = 0, gx = g, ln = next_dockapp((Leaf *) t->head); (l = ln);) {
+				Client *c = l->client;
+
+				ln = next_dockapp(l->next);
+				h = c->r.h + 2 * margin;
+				if (h > max)
+					h = max;
+				h += b;
+				if (!ln || gx->y + h + b <= m->wa.y + m->wa.h) {
+					gx->y += h + b;
+					if (ln)
+						continue;
+				}
+				switch ((int) pos) {
+				case DockNorthEast:
+				case DockNorthWest:
+					gx->y = m->wa.y;
+					break;
+				case DockEast:
+				case DockWest:
+					gx->y = m->wa.y +
+					    (m->wa.h - (gx->y + b - m->wa.y)) / 2;
+					break;
+				case DockSouthEast:
+				case DockSouthWest:
+					gx->y = m->wa.y +
+					    (m->wa.h - (gx->y + b - m->wa.y));
+					break;
+				}
+				DPRINTF("geometry col %d is %dx%d+%d+%d:%d\n", i,
+					gx->w, gx->h, gx->x, gx->y, gx->b);
+				i++;
+				gx++;
+			}
+			cols = i;
+		}
+		switch ((int) side) {
+		case DockSideEast:
+			break;
+		case DockSideWest:
+			m->dock.wa.x += cols * (max + b) + b;
+			break;
+		}
+		m->dock.wa.w -= cols * (max + b) + b;
+		break;
+	case DockSideNorth:
+	case DockSideSouth:
+		cols = (m->wa.w - b) / (max + b);
+		rows = (num - 1) / cols + 1;
+		if (cols > num)
+			cols = num;
+		DPRINTF("dock columns %d, rows %d\n", cols, rows);
+		g = calloc(rows, sizeof(*g));
+		for (i = 0, gx = g; i < rows; i++, gx++) {
+			gx->b = b;
+			gx->w = (m->wa.w - b) / cols - b;
+			gx->h = max;
+			gx->x = m->wa.x;
+			switch ((int) side) {
+			case DockSideNorth:
+				gx->y = m->wa.y + i * (gx->h + b);
+				break;
+			case DockSideSouth:
+				gx->y = m->wa.y + m->wa.h - (i + 1) * (gx->h + b);
+				break;
+			}
+			DPRINTF("geometry row %d is %dx%d+%d+%d:%d\n", i,
+				gx->w, gx->h, gx->x, gx->y, gx->b);
+			num -= cols;
+			if (cols > num)
+				cols = num;
+		}
+		{
+			int w;
+
+			for (i = 0, gx = g, ln = next_dockapp((Leaf *) t->head);
+			     (l = ln);) {
+				Client *c = l->client;
+
+				ln = next_dockapp(l->next);
+				w = c->r.w + 2 * margin;
+				if (w > max)
+					w = max;
+				w += b;
+				if (!ln || gx->x + w + b <= m->wa.x + m->wa.w) {
+					gx->x += w + b;
+					if (ln)
+						continue;
+				}
+				switch ((int) pos) {
+				case DockNorthWest:
+				case DockSouthWest:
+					gx->x = m->wa.x;
+					break;
+				case DockNorth:
+				case DockSouth:
+					gx->x = m->wa.x +
+					    (m->wa.w - (gx->x + b - m->wa.x)) / 2;
+					break;
+				case DockNorthEast:
+				case DockSouthEast:
+					gx->x = m->wa.x +
+					    (m->wa.w - (gx->x + b - m->wa.x));
+					break;
+				}
+				DPRINTF("geometry row %d is %dx%d+%d+%d:%d\n", i,
+					gx->w, gx->h, gx->x, gx->y, gx->b);
+				i++;
+				gx++;
+			}
+			cols = i;
+		}
+		switch ((int) side) {
+		case DockSideNorth:
+			m->dock.wa.y += rows * (max + b) + b;
+			break;
+		case DockSideSouth:
+			break;
+		}
+		m->dock.wa.h -= rows * (max + b) + b;
+		break;
+	}
+	XResizeWindow(dpy, m->veil, m->dock.wa.w, m->dock.wa.h);
+	XMoveWindow(dpy, m->veil, m->dock.wa.x, m->dock.wa.y);
+	for (gx = g, ln = next_dockapp((Leaf *) t->head); (l = ln);) {
+		Client *c = l->client;
+		ClientGeometry ng;
+
+		ln = next_dockapp(l->next);
+		switch (ori) {
+		case DockVert:
+			gx->h = c->r.h + 2 * margin;
+			if (gx->h > max)
+				gx->h = max;
+			gx->h += b;
+			if (gx->y + gx->h + b > m->wa.y + m->wa.h) {
+				(gx + 1)->h = gx->h;
+				gx++;
+			}
+			ng = *gx;
+			gx->y += gx->h + b;
+			break;
+		case DockHorz:
+			gx->w = c->r.w + 2 * margin;
+			if (gx->w > max)
+				gx->w = max;
+			gx->w += b;
+			if (gx->x + gx->w + b > m->wa.x + m->wa.w) {
+				(gx + 1)->w = gx->w;
+				gx++;
+			}
+			ng = *gx;
+			gx->x += gx->w + b;
+			break;
+		}
+		if (!c->is.moveresize) {
+			DPRINTF("CALLING reconfigure()\n");
+			reconfigure(c, &ng);
+		} else {
+			/* center it where it was before */
+			ng.x = (c->c.x + c->c.w / 2) - ng.w / 2;
+			ng.y = (c->c.y + c->c.h / 2) - ng.h / 2;
+			DPRINTF("CALLING reconfigure()\n");
+			reconfigure(c, &ng);
+		}
+	}
+	free(g);
+}
+
+static void
 arrange_float(View *v)
 {
-	arrangedock(v);
+	// arrangedock(v);
+	arrangedock_float(v);
 	arrangefloats(v);
+}
+
+static void
+create_float(View *v)
+{
+}
+
+static void
+convert_float(View *v)
+{
+}
+
+static void
+initlayout_float(View *v)
+{
+	if (v->tree)
+		convert_float(v);
+	else
+		create_float(v);
 }
 
 static void
@@ -1836,8 +2433,8 @@ arrangeview(View *v)
 	Client *c;
 	int struts;
 
-	if (v->layout->arrange)
-		v->layout->arrange(v);
+	if (v->layout && v->layout->arrange && v->layout->arrange->arrange)
+		v->layout->arrange->arrange(v);
 	struts = v->barpos;
 	for (c = scr->stack; c; c = c->snext) {
 		if ((clientview(c) == v) &&
@@ -2063,7 +2660,7 @@ wind_overlap(int min1, int max1, int min2, int max2)
 }
 
 static Bool
-place_overlap(Geometry *c, Geometry *o)
+place_overlap(ClientGeometry *c, ClientGeometry *o)
 {
 	Bool ret = False;
 
@@ -2266,17 +2863,45 @@ arrange(View *ov)
 	}
 }
 
+Arrangement arrangement_FLOAT = {
+	.name = "float",
+	.initlayout = initlayout_float,
+	.arrange = arrange_float,
+	.arrangedock = arrangedock_float,
+};
+
+Arrangement arrangement_TILE = {
+	.name = "tile",
+	.initlayout = initlayout_tile,
+	.arrange = arrange_tile,
+	.arrangedock = arrangedock_tile,
+};
+
+Arrangement arrangement_GRID = {
+	.name = "grid",
+	.initlayout = initlayout_grid,
+	.arrange = arrange_grid,
+	.arrangedock = arrangedock_tile,
+};
+
+Arrangement arrangement_MONO = {
+	.name = "monocle",
+	.initlayout = initlayout_monocle,
+	.arrange = arrange_monocle,
+	.arrangedock = arrangedock_tile,
+};
+
 Layout layouts[] = {
 	/* *INDENT-OFF* */
-	/* function		symbol	features				major		minor		placement		*/
-	{  arrange_float,	'i',	OVERLAP,				0,		0,		ColSmartPlacement	},
-	{  arrange_tile,	't',	MWFACT | NMASTER | ZOOM | ROTL | MMOVE,	OrientLeft,	OrientBottom,	ColSmartPlacement	},
-	{  arrange_tile,	'b',	MWFACT | NMASTER | ZOOM | ROTL | MMOVE,	OrientBottom,	OrientLeft,	ColSmartPlacement	},
-	{  arrange_tile,	'u',	MWFACT | NMASTER | ZOOM | ROTL | MMOVE,	OrientTop,	OrientRight,	ColSmartPlacement	},
-	{  arrange_tile,	'l',	MWFACT | NMASTER | ZOOM | ROTL | MMOVE,	OrientRight,	OrientTop,	ColSmartPlacement	},
-	{  arrange_monocle,	'm',	0,					0,		0,		ColSmartPlacement	},
-	{  arrange_float,	'f',	OVERLAP,				0,		0,		ColSmartPlacement	},
-	{  arrange_grid,	'g',	NCOLUMNS | ROTL | MMOVE,		OrientLeft,	OrientTop,	ColSmartPlacement	},
+	/* arrangement		symbol	features				major		minor		placement		*/
+	{  &arrangement_FLOAT,	'i',	OVERLAP,				0,		0,		ColSmartPlacement	},
+	{  &arrangement_TILE,	't',	MWFACT | NMASTER | ZOOM | ROTL | MMOVE,	OrientLeft,	OrientBottom,	ColSmartPlacement	},
+	{  &arrangement_TILE,	'b',	MWFACT | NMASTER | ZOOM | ROTL | MMOVE,	OrientBottom,	OrientLeft,	ColSmartPlacement	},
+	{  &arrangement_TILE,	'u',	MWFACT | NMASTER | ZOOM | ROTL | MMOVE,	OrientTop,	OrientRight,	ColSmartPlacement	},
+	{  &arrangement_TILE,	'l',	MWFACT | NMASTER | ZOOM | ROTL | MMOVE,	OrientRight,	OrientTop,	ColSmartPlacement	},
+	{  &arrangement_MONO,	'm',	0,					0,		0,		ColSmartPlacement	},
+	{  &arrangement_FLOAT,	'f',	OVERLAP,				0,		0,		ColSmartPlacement	},
+	{  &arrangement_GRID,	'g',	NCOLUMNS | ROTL | MMOVE,		OrientLeft,	OrientTop,	ColSmartPlacement	},
 	{  NULL,		'\0',	0,					0,		0,		0			}
 	/* *INDENT-ON* */
 };
@@ -2285,22 +2910,21 @@ void
 setlayout(const char *arg)
 {
 	View *v;
+	Layout *l;
 
-	if (!(v = selview()))
+	if (!(v = selview()) || !arg)
 		return;
-	if (arg) {
-		Layout *l;
-
-		for (l = layouts; l->symbol; l++)
-			if (*arg == l->symbol)
-				break;
-		if (!l->symbol)
-			return;
-		v->layout = l;
-		v->major = l->major;
-		v->minor = l->minor;
-		v->placement = l->placement;
-	}
+	for (l = layouts; l->symbol; l++)
+		if (*arg == l->symbol)
+			break;
+	if (!l->symbol || v->layout == l)
+		return;
+	v->layout = l;
+	v->major = l->major;
+	v->minor = l->minor;
+	v->placement = l->placement;
+	if (l->arrange && l->arrange->initlayout)
+		l->arrange->initlayout(v);
 	arrange(v);
 	ewmh_update_net_desktop_modes();
 }
@@ -2421,7 +3045,8 @@ setnmaster(View *v, int n)
 					break;
 				}
 			}
-			if (length / n < 2 * (6 * scr->style.titleheight + scr->style.border))
+			if (length / n <
+			    2 * (6 * scr->style.titleheight + scr->style.border))
 				return;
 		}
 		break;
@@ -2616,7 +3241,7 @@ ismoveevent(Display *display, XEvent *event, XPointer arg)
 }
 
 static Bool
-move_begin(Client *c, View *v, Bool toggle, int move, IsUnion *was)
+move_begin(Client *c, View *v, Bool toggle, int move, IsUnion * was)
 {
 	Bool isfloater;
 
@@ -2667,7 +3292,7 @@ move_begin(Client *c, View *v, Bool toggle, int move, IsUnion *was)
 }
 
 static Bool
-move_cancel(Client *c, View *v, ClientGeometry * orig, IsUnion *was)
+move_cancel(Client *c, View *v, ClientGeometry *orig, IsUnion * was)
 {
 	Bool wasfloating;
 
@@ -2700,7 +3325,7 @@ move_cancel(Client *c, View *v, ClientGeometry * orig, IsUnion *was)
 }
 
 static Bool
-move_finish(Client *c, View *v, IsUnion *was)
+move_finish(Client *c, View *v, IsUnion * was)
 {
 	Bool wasfloating;
 
@@ -2740,7 +3365,7 @@ mousemove(Client *c, XEvent *e, Bool toggle)
 	ClientGeometry n, o;
 	Bool moved = False, isfloater;
 	int move = CurMove;
-	IsUnion was = { .is = 0 };
+	IsUnion was = {.is = 0 };
 
 	x_root = e->xbutton.x_root;
 	y_root = e->xbutton.y_root;
@@ -2772,8 +3397,8 @@ mousemove(Client *c, XEvent *e, Bool toggle)
 		return moved;
 	}
 
-	getgeometry(c, &c->c, &n);
-	getgeometry(c, &c->c, &o);
+	n = c->c;
+	o = c->c;
 
 	for (;;) {
 		Client *s;
@@ -2816,7 +3441,7 @@ mousemove(Client *c, XEvent *e, Bool toggle)
 					CPRINTF(c, "Couldn't move client!\n");
 					break;
 				}
-				getgeometry(c, &c->c, &n);
+				n = c->c;
 			}
 			nv = getview(ev.xmotion.x_root, ev.xmotion.y_root);
 			if (c->is.dockapp || !isfloater) {
@@ -2828,12 +3453,12 @@ mousemove(Client *c, XEvent *e, Bool toggle)
 					continue;
 				}
 				if ((s = onstacked(c, v, ev.xmotion.x_root,
-					       ev.xmotion.y_root))) {
+						   ev.xmotion.y_root))) {
 					swapstacked(c, s);
 					arrange(v);
 				}
 				/* move center to new position */
-				getgeometry(c, &c->c, &n);
+				n = c->c;
 				n.x = ev.xmotion.x_root - n.w / 2;
 				n.y = ev.xmotion.y_root - n.h / 2;
 				DPRINTF("CALLING reconfigure()\n");
@@ -2860,7 +3485,8 @@ mousemove(Client *c, XEvent *e, Bool toggle)
 						int sy2 = s->c.y + s->c.h + 2 * s->c.b;
 
 						if (wind_overlap(n.y, ny2, sy, sy2)) {
-							if (abs(n.x - sx) < scr->options.snap)
+							if (abs(n.x - sx) <
+							    scr->options.snap)
 								n.x += sx - n.x;
 							else if (abs(nx2 - sx2) <
 								 scr->options.snap)
@@ -2882,7 +3508,8 @@ mousemove(Client *c, XEvent *e, Bool toggle)
 						int sy2 = s->c.y + s->c.h + 2 * s->c.b;
 
 						if (wind_overlap(n.x, nx2, sx, sx2)) {
-							if (abs(n.y - sy) < scr->options.snap)
+							if (abs(n.y - sy) <
+							    scr->options.snap)
 								n.y += sy - n.y;
 							else if (abs(ny2 - sy2) <
 								 scr->options.snap)
@@ -3019,7 +3646,7 @@ isresizeevent(Display *display, XEvent *event, XPointer arg)
 }
 
 static Bool
-resize_begin(Client *c, View *v, Bool toggle, int from, IsUnion *was)
+resize_begin(Client *c, View *v, Bool toggle, int from, IsUnion * was)
 {
 	Bool isfloater;
 
@@ -3083,7 +3710,7 @@ resize_begin(Client *c, View *v, Bool toggle, int from, IsUnion *was)
 }
 
 static Bool
-resize_cancel(Client *c, View *v, ClientGeometry * orig, IsUnion *was)
+resize_cancel(Client *c, View *v, ClientGeometry *orig, IsUnion * was)
 {
 	Bool wasfloating;
 
@@ -3116,7 +3743,7 @@ resize_cancel(Client *c, View *v, ClientGeometry * orig, IsUnion *was)
 }
 
 static Bool
-resize_finish(Client *c, View *v, IsUnion *was)
+resize_finish(Client *c, View *v, IsUnion * was)
 {
 	Bool wasfloating;
 
@@ -3148,7 +3775,7 @@ mouseresize_from(Client *c, int from, XEvent *e, Bool toggle)
 	View *v, *nv;
 	ClientGeometry n, o;
 	Bool resized = False;
-	IsUnion was = { .is = 0 };
+	IsUnion was = {.is = 0 };
 
 	x_root = e->xbutton.x_root;
 	y_root = e->xbutton.y_root;
@@ -3168,8 +3795,8 @@ mouseresize_from(Client *c, int from, XEvent *e, Bool toggle)
 		return resized;
 	}
 
-	getgeometry(c, &c->c, &o);
-	getgeometry(c, &c->c, &n);
+	o = c->c;
+	n = c->c;
 
 	for (;;) {
 		Workarea w;
@@ -3214,7 +3841,7 @@ mouseresize_from(Client *c, int from, XEvent *e, Bool toggle)
 					continue;
 				if (!(resized = resize_begin(c, v, toggle, from, &was)))
 					break;
-				getgeometry(c, &c->c, &n);
+				n = c->c;
 			}
 			switch (from) {
 			case CurResizeTopLeft:
@@ -3307,7 +3934,8 @@ mouseresize_from(Client *c, int from, XEvent *e, Bool toggle)
 				ry = n.y + n.h / 2 + c->c.b;
 				break;
 			}
-			if ((snap = (ev.xmotion.state & ControlMask) ? 0 : scr->options.snap)) {
+			if ((snap =
+			     (ev.xmotion.state & ControlMask) ? 0 : scr->options.snap)) {
 				if ((nv = getview(rx, ry))) {
 					getworkarea(nv->curmon, &w);
 					if (abs(rx - w.x) < snap)
@@ -3514,7 +4142,7 @@ moveresizekb(Client *c, int dx, int dy, int dw, int dh, int gravity)
 		ClientGeometry g;
 		int xr, yr;
 
-		getgeometry(c, &c->c, &g);
+		g = c->c;
 		getreference(&xr, &yr, (Geometry *) &g, gravity);
 
 		if (dw && (dw < c->incw))
@@ -3548,7 +4176,7 @@ moveresizekb(Client *c, int dx, int dy, int dw, int dh, int gravity)
 }
 
 static void
-getplace(Client *c, ClientGeometry * g)
+getplace(Client *c, ClientGeometry *g)
 {
 	long *s = NULL;
 	unsigned long n;
@@ -3567,44 +4195,11 @@ getplace(Client *c, ClientGeometry * g)
 			g->h = c->s.h;
 		}
 		g->b = c->c.b;
-		g->t = c->th;
-		g->g = c->gh;
-		g->v = c->hh;
+		g->t = c->c.t;
+		g->g = c->c.g;
+		g->v = c->c.v;
 		XFree(s);
 	}
-}
-
-static int
-area_overlap(int xmin1, int ymin1, int xmax1, int ymax1,
-	     int xmin2, int ymin2, int xmax2, int ymax2)
-{
-	int w = 0, h = 0;
-
-	w = segm_overlap(xmin1, xmax1, xmin2, xmax2);
-	h = segm_overlap(ymin1, ymax1, ymin2, ymax2);
-
-	return (w && h) ? (w * h) : 0;
-}
-
-static int
-total_overlap(Client *c, View *v, Geometry *g)
-{
-	Client *o;
-	int x1, x2, y1, y2, a;
-
-	x1 = g->x;
-	x2 = g->x + g->w + 2 * c->hh + 2 * g->b;
-	y1 = g->y;
-	y2 = g->y + g->h + 2 * g->b + c->th + c->gh + c->hh;
-	a = 0;
-
-	for (o = scr->clients; o; o = o->next)
-		if (o != c && !o->is.bastard && !c->is.dockapp && o->can.floats
-		    && isvisible(o, v))
-			a += area_overlap(x1, y1, x2, y2, o->r.x, o->r.y,
-					  o->r.x + o->r.w + 2 * o->r.b,
-					  o->r.y + o->r.h + 2 * o->r.b);
-	return a;
 }
 
 static Client *
@@ -3651,7 +4246,7 @@ qsort_cascade(const void *a, const void *b)
 	return 1;
 }
 
-static Geometry *
+static ClientGeometry *
 place_geom(Client *c)
 {
 	if (c->is.max || c->is.maxv || c->is.maxh || c->is.fill || c->is.full)
@@ -3660,10 +4255,10 @@ place_geom(Client *c)
 }
 
 static void
-place_smart(Client *c, WindowPlacement p, ClientGeometry * g, View *v, Workarea *w)
+place_smart(Client *c, WindowPlacement p, ClientGeometry *g, View *v, Workarea *w)
 {
 	Client *s;
-	Geometry **stack = NULL, **unobs, *e, *o;
+	ClientGeometry **stack = NULL, **unobs, *e, *o;
 	unsigned int num, i, j;
 
 	/* XXX: this algorithm is smarter than the old place_smart: it first determines
@@ -3713,7 +4308,7 @@ place_smart(Client *c, WindowPlacement p, ClientGeometry * g, View *v, Workarea 
 	g->y = w->y;
 
 	/* if northwest placement works, go with it */
-	for (i = 0; i < num && !place_overlap((Geometry *) g, stack[i]); i++) ;
+	for (i = 0; i < num && !place_overlap(g, stack[i]); i++) ;
 	if (i == num) {
 		free(stack);
 		return;
@@ -3758,7 +4353,7 @@ place_smart(Client *c, WindowPlacement p, ClientGeometry * g, View *v, Workarea 
 					g->y);
 				continue;
 			}
-			for (j = 0; j < num && !place_overlap((Geometry *) g, stack[j]);
+			for (j = 0; j < num && !place_overlap(g, stack[j]);
 			     j++) ;
 			if (j == num) {
 				DPRINTF("below: %dx%d+%d+%d good\n", g->w, g->h, g->x,
@@ -3780,7 +4375,7 @@ place_smart(Client *c, WindowPlacement p, ClientGeometry * g, View *v, Workarea 
 					g->y);
 				continue;
 			}
-			for (j = 0; j < num && !place_overlap((Geometry *) g, stack[j]);
+			for (j = 0; j < num && !place_overlap(g, stack[j]);
 			     j++) ;
 			if (j == num) {
 				DPRINTF("right: %dx%d+%d+%d good\n", g->w, g->h, g->x,
@@ -3807,7 +4402,7 @@ place_smart(Client *c, WindowPlacement p, ClientGeometry * g, View *v, Workarea 
 					g->y);
 				continue;
 			}
-			for (j = 0; j < num && !place_overlap((Geometry *) g, stack[j]);
+			for (j = 0; j < num && !place_overlap(g, stack[j]);
 			     j++) ;
 			if (j == num) {
 				DPRINTF("right: %dx%d+%d+%d good\n", g->w, g->h, g->x,
@@ -3829,7 +4424,7 @@ place_smart(Client *c, WindowPlacement p, ClientGeometry * g, View *v, Workarea 
 					g->y);
 				continue;
 			}
-			for (j = 0; j < num && !place_overlap((Geometry *) g, stack[j]);
+			for (j = 0; j < num && !place_overlap(g, stack[j]);
 			     j++) ;
 			if (j == num) {
 				DPRINTF("below: %dx%d+%d+%d good\n", g->w, g->h, g->x,
@@ -3861,114 +4456,14 @@ place_smart(Client *c, WindowPlacement p, ClientGeometry * g, View *v, Workarea 
 	return;
 }
 
-/* unused */
-void
-old_place_smart(Client *c, WindowPlacement p, ClientGeometry * g, View *v, Workarea *w)
-{
-	int t_b, l_r, xl, xr, yt, yb, x_beg, x_end, xd, y_beg, y_end, yd;
-	int best_x, best_y, best_a;
-	int d = scr->style.titleheight;
-
-	/* XXX: this algorithm (borrowed from fluxbox) calculates an insane number of
-	   calculations: it basically tests every possible fully on screen position
-	   against every other window. Simulated anealing would work better, but, like a
-	   bubble sort, it is simple. */
-
-	t_b = 1;		/* top to bottom or bottom to top */
-	l_r = 1;		/* left to right or right to left */
-
-	xl = w->x;
-	xr = w->x + w->w - (g->w + 2 * g->b);
-	yt = w->y;
-	yb = w->y + w->h - (g->h + 2 * g->b + g->t + g->g);
-	DPRINTF("boundaries: xl %d xr %x yt %d yb %d\n", xl, xr, yt, yb);
-
-	if (l_r) {
-		x_beg = xl;
-		x_end = xr;
-		if (p == CascadePlacement) {
-			x_end -= x_end % d;
-			xd = d;
-		} else
-			xd = 1;
-	} else {
-		x_beg = xr;
-		x_end = xl;
-		if (p == CascadePlacement) {
-			x_end += x_end % d;
-			xd = -d;
-		} else
-			xd = -1;
-	}
-	DPRINTF("x range: x_beg %d x_end %d xd %d\n", x_beg, x_end, xd);
-
-	if (t_b) {
-		y_beg = yt;
-		y_end = yb;
-		if (p == CascadePlacement) {
-			y_end -= y_end % d;
-			yd = d;
-		} else
-			yd = 1;
-	} else {
-		y_beg = yb;
-		y_end = yt;
-		if (p == CascadePlacement) {
-			y_end += y_end % d;
-			yd = -d;
-		} else
-			yd = -1;
-	}
-	DPRINTF("y range: y_beg %d y_end %d yd %d\n", y_beg, y_end, yd);
-
-	best_x = best_y = 0;
-	best_a = INT_MAX;
-
-	if (p == ColSmartPlacement) {
-		for (g->x = x_beg; l_r ? (g->x < x_end) : (g->x > x_end); g->x += xd) {
-			for (g->y = y_beg; t_b ? (g->y < y_end) : (g->y > y_end);
-			     g->y += yd) {
-				int a;
-
-				if ((a = total_overlap(c, v, (Geometry *) g)) == 0)
-					return;
-				if (a < best_a) {
-					best_x = g->x;
-					best_y = g->y;
-					best_a = a;
-				}
-			}
-		}
-	} else {
-		for (g->y = y_beg; t_b ? (g->y < y_end) : (g->y > y_end); g->y += yd) {
-			for (g->x = x_beg; l_r ? (g->x < x_end) : (g->x > x_end);
-			     g->x += xd) {
-				int a;
-
-				if ((a = total_overlap(c, v, (Geometry *) g)) == 0)
-					return;
-				if (a < best_a) {
-					best_x = g->x;
-					best_y = g->y;
-					best_a = a;
-				}
-			}
-		}
-	}
-	g->x = best_x;
-	g->y = best_y;
-}
-
 static void
-place_minoverlap(Client *c, WindowPlacement p, ClientGeometry * g, View *v,
-		 Workarea *w)
+place_minoverlap(Client *c, WindowPlacement p, ClientGeometry *g, View *v, Workarea *w)
 {
 	/* TODO: write this */
 }
 
 static void
-place_undermouse(Client *c, WindowPlacement p, ClientGeometry * g, View *v,
-		 Workarea *w)
+place_undermouse(Client *c, WindowPlacement p, ClientGeometry *g, View *v, Workarea *w)
 {
 	int mx, my;
 
@@ -4000,7 +4495,7 @@ place_undermouse(Client *c, WindowPlacement p, ClientGeometry * g, View *v,
 }
 
 static void
-place_random(Client *c, WindowPlacement p, ClientGeometry * g, View *v, Workarea *w)
+place_random(Client *c, WindowPlacement p, ClientGeometry *g, View *v, Workarea *w)
 {
 	int x_min, x_max, y_min, y_max, x_off, y_off;
 	int d = scr->style.titleheight;
@@ -4064,15 +4559,145 @@ place(Client *c, WindowPlacement p)
 	c->r.y = g.y;
 }
 
+static Bool
+getclientstrings(Client *c, char **name, char **clas, char **cmd)
+{
+	char **argv = NULL;
+	int argc = 0;
+	char *str = NULL, *nam = NULL, *cls = NULL;
+	int i;
+	size_t tot = 0;
+	XClassHint ch = { NULL, };
+
+	if (XGetClassHint(dpy, c->win, &ch)) {
+		if (ch.res_name) {
+			nam = strdup(ch.res_name);
+			XFree(ch.res_name);
+		}
+		if (ch.res_class) {
+			cls = strdup(ch.res_class);
+			XFree(ch.res_class);
+		}
+	}
+	*name = nam;
+	*clas = cls;
+	if (XGetCommand(dpy, c->win, &argv, &argc)) {
+		for (i = 0; i < argc; i++) {
+			size_t len = strlen(argv[i]);
+			const char *p = argv[i], *e = p + len;
+			char *s, *q, *tmp;
+			int count = 0;
+
+			tmp = ecalloc(2 + 2 * len, sizeof(*str));
+			s = tmp;
+			q = tmp + 1;
+			while (p < e) {
+				if (*p == '\'') {
+					*q++ = '\\';
+					*q++ = *p++;
+					count++;
+				} else {
+					*q++ = *p++;
+				}
+			}
+			if (count) {
+				*q++ = '\'';
+				*s = '\'';
+			} else {
+				s++;
+			}
+			*q = '\0';
+			len = strlen(s);
+			str = erealloc(str, (tot + len + 2) * sizeof(*str));
+			if (tot) {
+				strcat(str, " ");
+				strcat(str, s);
+				tot += len + 1;
+			} else {
+				strcpy(str, s);
+				tot += len;
+			}
+			free(tmp);
+		}
+		if (argv)
+			XFreeStringList(argv);
+	}
+	*cmd = str;
+	return ((nam || cls || str) ? True : False);
+}
+
+static void
+adddockapp(Client *c, Bool focusme, Bool raiseme)
+{
+	Tree *t;
+	Leaf *l = NULL;
+	char *name = NULL, *clas = NULL, *cmd = NULL;
+
+	if (!(t = scr->dock.tree)) {
+		DPRINTF("WARNING: no dock tree!\n");
+		return;
+	}
+
+	if (getclientstrings(c, &name, &clas, &cmd)) {
+		for (l = (Leaf *) t->head; l; l = l->next) {
+			if (l->client)
+				continue;
+			if (l->name && name && strcmp(l->name, name))
+				continue;
+			if (l->clas && clas && strcmp(l->clas, clas))
+				continue;
+			if (l->command && cmd && strcmp(l->command, cmd))
+				continue;
+			break;
+		}
+	}
+	if (l) {
+		DPRINTF("found leaf '%s' '%s' '%s'\n", l->name ? : "", l->clas ? : "", l->command ? : "");
+	} else {
+		DPRINTF("creating leaf\n");
+		l = ecalloc(1, sizeof(*l));
+		l->type = TreeTypeLeaf;
+		l->view = t->view;
+		l->layout = -1;
+		l->is.dockapp = True;
+		l->parent = (Container *) t;
+
+		if ((l->prev = (Leaf *) t->tail))
+			l->prev->next = l;
+		else
+			t->head = (Container *) l;
+		t->tail = (Container *) l;
+		t->nchild++;
+		DPRINTF("dockapp tree now has %d children\n", t->nchild);
+	}
+	l->client = c;
+	l->cnext = c->leaves;
+	c->leaves = l;
+	if (name) {
+		free(l->name);
+		l->name = name;
+	}
+	if (clas) {
+		free(l->clas);
+		l->clas = clas;
+	}
+	if (cmd) {
+		free(l->command);
+		l->command = cmd;
+	}
+}
+
 void
 addclient(Client *c, Bool focusme, Bool raiseme)
 {
+	View *v;
+
 	CPRINTF(c, "initial geometry c: %dx%d+%d+%d:%d t %d g %d v %d\n",
-		c->c.w, c->c.h, c->c.x, c->c.y, c->c.b, c->th, c->gh, c->hh);
+		c->c.w, c->c.h, c->c.x, c->c.y, c->c.b, c->c.t, c->c.g, c->c.v);
 	CPRINTF(c, "initial geometry r: %dx%d+%d+%d:%d t %d g %d v %d\n",
-		c->r.w, c->r.h, c->r.x, c->r.y, c->r.b, c->th, c->gh, c->hh);
+		c->r.w, c->r.h, c->r.x, c->r.y, c->r.b, c->c.t, c->c.g, c->c.v);
 	CPRINTF(c, "initial geometry s: %dx%d+%d+%d:%d t %d g %d v %d\n",
-		c->s.w, c->s.h, c->s.x, c->s.y, c->s.b, c->th, c->gh, c->hh);
+		c->s.w, c->s.h, c->s.x, c->s.y, c->s.b, c->c.t, c->c.g, c->c.v);
 
 	if (!c->s.x && !c->s.y && c->can.move && !c->is.dockapp) {
 		/* put it on the monitor startup notification requested if not already
@@ -4083,11 +4708,11 @@ addclient(Client *c, Bool focusme, Bool raiseme)
 	}
 
 	CPRINTF(c, "placed geometry c: %dx%d+%d+%d:%d t %d g %d v %d\n",
-		c->c.w, c->c.h, c->c.x, c->c.y, c->c.b, c->th, c->gh, c->hh);
+		c->c.w, c->c.h, c->c.x, c->c.y, c->c.b, c->c.t, c->c.g, c->c.h);
 	CPRINTF(c, "placed geometry r: %dx%d+%d+%d:%d t %d g %d v %d\n",
-		c->r.w, c->r.h, c->r.x, c->r.y, c->r.b, c->th, c->gh, c->hh);
+		c->r.w, c->r.h, c->r.x, c->r.y, c->r.b, c->c.t, c->c.g, c->c.h);
 	CPRINTF(c, "placed geometry s: %dx%d+%d+%d:%d t %d g %d v %d\n",
-		c->s.w, c->s.h, c->s.x, c->s.y, c->s.b, c->th, c->gh, c->hh);
+		c->s.w, c->s.h, c->s.x, c->s.y, c->s.b, c->c.t, c->c.g, c->c.h);
 
 	if (!c->can.move) {
 		int mx, my;
@@ -4110,15 +4735,49 @@ addclient(Client *c, Bool focusme, Bool raiseme)
 	ewmh_update_net_client_list();
 	if (c->is.managed)
 		ewmh_update_net_window_desktop(c);
+	if (c->is.bastard)
+		return;
+	if (c->is.dockapp) {
+		adddockapp(c, focusme, raiseme);
+		return;
+	}
+	if (!(v = c->cview) && !(v = clientview(c)) && !(v = onview(c)))
+		return;
+	if (v->layout && v->layout->arrange && v->layout->arrange->addclient)
+		v->layout->arrange->addclient(c, focusme, raiseme);
+}
+
+void
+deldockapp(Client *c)
+{
+	Leaf *l, *ln;
+
+	/* leaves leaf in place to accept restarted dock app */
+	for (ln = c->leaves; (l = ln);) {
+		ln = l->cnext;
+		l->cnext = NULL;
+		l->client = NULL;
+	}
+	c->leaves = NULL;
 }
 
 void
 delclient(Client *c)
 {
+	View *v;
+
 	detach(c);
 	detachclist(c);
 	detachflist(c);
 	detachstack(c);
+	if (c->is.dockapp) {
+		deldockapp(c);
+		return;
+	}
+	if (!(v = c->cview) && !(v = clientview(c)) && !(v = onview(c)))
+		return;
+	if (v->layout && v->layout->arrange && v->layout->arrange->delclient)
+		v->layout->arrange->delclient(c);
 }
 
 void
@@ -4137,7 +4796,7 @@ moveto(Client *c, RelativeDirection position)
 		return;		/* for now */
 
 	getworkarea(m, &w);
-	getgeometry(c, &c->c, &g);
+	g = c->c;
 
 	switch (position) {
 	case RelativeNone:
@@ -4208,7 +4867,7 @@ moveby(Client *c, RelativeDirection direction, int amount)
 		return;		/* for now */
 
 	getworkarea(m, &w);
-	getgeometry(c, &c->c, &g);
+	g = c->c;
 	switch (direction) {
 		int dx, dy;
 
@@ -4309,7 +4968,7 @@ snapto(Client *c, RelativeDirection direction)
 		return;		/* for now */
 
 	getworkarea(m, &w);
-	getgeometry(c, &c->c, &g);
+	g = c->c;
 
 	switch (direction) {
 	case RelativeNone:
@@ -4534,7 +5193,7 @@ edgeto(Client *c, int direction)
 		return;		/* for now */
 
 	getworkarea(m, &w);
-	getgeometry(c, &c->c, &g);
+	g = c->c;
 
 	switch (direction) {
 	case RelativeNone:

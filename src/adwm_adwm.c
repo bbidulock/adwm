@@ -25,6 +25,7 @@
 #include "resource.h"
 #include "actions.h"
 #include "parse.h"
+#include "layout.h"
 
 /*
  * The purpose of this file is to provide a loadable module that provides
@@ -240,6 +241,9 @@ initconfig_ADWM(void)
 	strncpy(n, "dock.orient", nlen);
 	strncpy(c, "Dock.Orient", clen);
 	options.dockori = atoi(readres(name, clas, "1"));
+	strncpy(n, "dock.monitor", nlen);
+	strncpy(c, "Dock.Monitor", clen);
+	options.dockmon = atoi(readres(name, clas, "0"));
 	strncpy(n, "dragdistance", nlen);
 	strncpy(c, "Dragdistance", clen);
 	options.dragdist = atoi(readres(name, clas, "5"));
@@ -348,6 +352,10 @@ initscreen_ADWM(void)
 	strncpy(c, "Dock.Orient", clen);
 	if ((res = readres(name, clas, NULL)))
 		scr->options.dockori = atoi(res);
+	strncpy(n, "dock.monitor", nlen);
+	strncpy(c, "Dock.Monitor", clen);
+	if ((res = readres(name, clas, NULL)))
+		scr->options.dockmon = atoi(res);
 	strncpy(n, "dragdistance", nlen);
 	strncpy(c, "Dragdistance", clen);
 	if ((res = readres(name, clas, NULL)))

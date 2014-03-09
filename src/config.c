@@ -56,6 +56,83 @@ inittags(void)
 	scr->ntags = scr->options.ntags;
 }
 
+static Bool
+parsedockapp(const char *res, char **name, char **clas, char **cmd)
+{
+	const char *p, *q;
+	size_t len;
+
+	p = res;
+	q = strchrnul(p, ' ');
+	if ((len = q - p)) {
+		*name = ecalloc(len + 1, sizeof(**name));
+		strncpy(*name, p, len);
+	} else
+		*name = NULL;
+	p = q + (*q ? 1 : 0);
+	q = strchrnul(p, ' ');
+	if ((len = q - p)) {
+		*clas = ecalloc(len + 1, sizeof(**clas));
+		strncpy(*clas, p, len);
+	} else
+		*clas = NULL;
+	p = q + (*q ? 1 : 0);
+	if ((len = strlen(p))) {
+		*cmd = ecalloc(len + 1, sizeof(**cmd));
+		strncpy(*cmd, p, len);
+	} else
+		*cmd = NULL;
+	if (!*name && !*clas && !*cmd)
+		return False;
+	return True;
+}
+
+void
+initdock(void)
+{
+	Tree *t;
+	unsigned i, s = scr->screen;
+
+	t = scr->dock.tree = ecalloc(1, sizeof(*t));
+	t->type = TreeTypeTree;
+	t->view = scr->dock.monitor->num;
+	t->layout = -1;
+	t->is.dockapp = True;
+
+	xresdb = xrdb;
+
+	for (i = 0; i < MAXTAGS; i++) {
+		const char *res;
+		char name[256], clas[256];
+		Leaf *l;
+		char *res_name, *res_class, *wm_command;
+
+		snprintf(name, sizeof(name), "adwm.screen%u.dock.app%u", s, i);
+		snprintf(clas, sizeof(clas), "Adwm.Screen%u.Dock.App%u", s, i);
+		res = readres(name, clas, NULL);
+		if (!res || !parsedockapp(res, &res_name, &res_class, &wm_command))
+			continue;
+		l = ecalloc(1, sizeof(*l));
+		l->type = TreeTypeLeaf;
+		l->view = t->view;
+		l->layout = -1;
+		l->is.dockapp = True;
+		l->parent = (Container *) t;
+		/* add to end of list */
+		if ((l->prev = (Leaf *) t->tail))
+			l->prev->next = l;
+		else
+			t->head = (Container *) l;
+		t->tail = (Container *) l;
+		t->nchild++;
+		l->client = NULL;
+		l->cnext = NULL;
+		l->name = res_name;
+		l->clas = res_class;
+		l->command = wm_command;
+	}
+}
+
 void
 initlayouts(void)
 {
@@ -99,6 +176,8 @@ initlayouts(void)
 			v->row = -1;
 			v->col = -1;
 		}
+		if (l->arrange && l->arrange->initlayout)
+			l->arrange->initlayout(v);
 	}
 }
 
@@ -163,6 +242,10 @@ initscreen(void)
 	strncpy(c, "Dock.Orient", clen);
 	if ((res = readres(name, clas, NULL)))
 		scr->options.dockori = atoi(res);
+	strncpy(n, "dock.monitor", nlen);
+	strncpy(c, "Dock.Monitor", clen);
+	if ((res = readres(name, clas, NULL)))
+		scr->options.dockmon = atoi(res);
 	strncpy(n, "dragdistance", nlen);
 	strncpy(c, "Dragdistance", clen);
 	if ((res = readres(name, clas, NULL)))
@@ -252,6 +335,9 @@ initconfig(void)
 	strcpy(n, "dock.orient");
 	strcpy(c, "Dock.Orient");
 	options.dockori = atoi(readres(name, clas, "1"));
+	strcpy(n, "dock.monitor");
+	strcpy(c, "Dock.Monitor");
+	options.dockmon = atoi(readres(name, clas, "0"));
 	strcpy(n, "dragdistance");
 	strcpy(c, "Dragdistance");
 	options.dragdist = atoi(readres(name, clas, "5"));

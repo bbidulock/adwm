@@ -24,8 +24,7 @@ typedef struct Arrangement Arrangement;
 struct Arrangement {
 	void *handle;
 	const char *name;
-	Tree **trees;
-	void (*initlayout) (Monitor *m, View *v, char code);
+	void (*initlayout) (View *v);
 	void (*addclient) (Client *c, Bool focusme, Bool raisme);
 	void (*delclient) (Client *c);
 	void (*raise) (Client *c);
@@ -34,6 +33,7 @@ struct Arrangement {
 	Bool (*isfloating)(Client *c, View *v);
 	void (*getdecor)(Client *c, View *v, ClientGeometry *g);
 	void (*arrange)(View *v);
+	void (*arrangedock)(View *v);
 	void (*setnmaster)(View *v, SetValue how, int n);
 	void (*rotate)(Client *c, View *v, RotateDirection dir, RotateArea area);
 	void (*zoom)(Client *c);
@@ -100,5 +100,9 @@ void toggleshade(Client *c);
 void toggledectiled(View *v);
 void zoom(Client *c);
 void zoomfloat(Client *c);
+
+extern Layout layouts[];
+extern Arrangement arrangements[];
+extern unsigned narr;
 
 #endif				/* __LOCAL_LAYOUT_H__ */

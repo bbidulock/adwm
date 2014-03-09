@@ -1134,11 +1134,11 @@ findclosest(Key *k, RelativeDirection dir)
 }
 
 static void
-k_select_cl(View *v, Key *k, CycleList * cl)
+k_select_cl(View *cv, Key *k, CycleList * cl)
 {
 	Client *c;
-	int i;
-	static IsUnion is = { .is = 0 };
+	View *v;
+	static IsUnion is = {.is = 0 };
 
 	if (cl != k->where) {
 		c = k->where->c;
@@ -1150,15 +1150,12 @@ k_select_cl(View *v, Key *k, CycleList * cl)
 	}
 	c = cl->c;
 	if (!(v = c->cview) && !(v = clientview(c))) {
-		if (!(c->tags & ((1ULL << scr->ntags) - 1))) {
+		if (!(v = onview(c))) {
 			k_stop(NULL, k);
 			return;
 		}
 		/* have to switch views on monitor v->curmon */
-		for (i = 0; i < scr->ntags; i++)
-			if (c->tags & (1ULL << i))
-				break;
-		view(v, i);
+		view(cv, v->index);
 	}
 	if (cl != k->where) {
 		is.is = 0;

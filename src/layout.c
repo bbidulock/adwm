@@ -66,6 +66,271 @@
  * This file contains layout-specific functions that must ultimately move into layout modules.
  */
 
+
+/*
+ * Some basic tree manipulation operations.
+ */
+
+void
+setfocused(Client *c)
+{
+	Leaf *l;
+	Container *cp, *cc;
+
+	if (c)
+		for (l = c->leaves; l; l = l->client.next)
+			for (cc = (Container *)l; (cp = cc->parent); cc = cp)
+				cp->node.children.focused = cc;
+}
+
+void
+setselected(Client *c)
+{
+	Leaf *l;
+	Container *cp, *cc;
+
+	if (c)
+		for (l = c->leaves; l; l = l->client.next)
+			for (cc = (Container *)l; (cp = cc->parent); cc = cp)
+				cp->node.children.selected = cc;
+}
+
+void
+delleaf(Leaf *l, Bool active)
+{
+	Term *t;
+	Container *cp;
+
+	if (!l) {
+		DPRINTF("ERROR: no leaf\n");
+		assert(l != NULL);
+	}
+	if (l->type != TreeTypeLeaf) {
+		DPRINTF("ERROR: not a leaf\n");
+		assert(l->type == TreeTypeLeaf);
+	}
+	if (!(t = l->parent)) {
+		DPRINTF("WARNING: attempting to delete detached leaf\n");
+		return;
+	}
+	l->parent = NULL;
+	if ((t->children.head == l))
+		t->children.head = l->next;
+	if ((t->children.tail == l))
+		t->children.tail = l->prev;
+	if (l->prev)
+		l->prev->next = l->next;
+	if (l->next)
+		l->next->prev = l->prev;
+	l->prev = l->next = NULL;
+	if (t->children.focused == l)
+		t->children.focused = NULL;
+	if (t->children.selected == l)
+		t->children.selected = NULL;
+	t->children.number--;
+
+	if (active)
+		for (cp = (Container *)t; cp; cp = cp->parent)
+			cp->node.children.active -= 1;
+}
+
+void
+appleaf(Container *cp, Leaf *l, Bool active)
+{
+	Leaf *after = NULL;
+
+	/* append leaf l into bottom container of cp */
+	/* when cp is a leaf, append after cp */
+	if (l->type != TreeTypeLeaf) {
+		DPRINTF("ERROR: l is not a leaf\n");
+		assert(l->type == TreeTypeLeaf);
+	}
+	if (l->parent) {
+		DPRINTF("WARNING: attempting to append attached leaf\n");
+		delleaf(l, active);
+	}
+	if (cp && cp->type == TreeTypeLeaf) {
+		after = &cp->leaf;
+		cp = cp->parent;
+	} else {
+		while ((cp && cp->node.children.tail &&
+			cp->node.children.tail->type != TreeTypeLeaf))
+			cp = cp->node.children.tail;
+	}
+	if (!cp) {
+		DPRINTF("ERROR: no parent node\n");
+		assert(cp != NULL);
+	}
+	l->next = l->prev = NULL; /* safety */
+	l->parent = &cp->term;
+	if (!after)
+		after = cp->term.children.tail;
+	if (cp->term.children.tail == after)
+		cp->term.children.tail = l;
+	if ((l->next = (after ? after->next : NULL)))
+		l->next->prev = l;
+	if ((l->prev = after))
+		l->prev->next = l;
+	else
+		cp->term.children.head = l;
+	cp->term.children.number++;
+	if (active)
+		for (; cp; cp = cp->parent)
+			cp->node.children.active += 1;
+	if (l->client.client) {
+		if (l->client.client == sel)
+			setselected(sel);
+		if (l->client.client == took)
+			setfocused(took);
+	}
+}
+
+void
+insleaf(Container *cp, Leaf *l, Bool active)
+{
+	Leaf *before = NULL;
+
+	/* insert leaf l into bottom container of cp */
+	/* when cp is a leaf, insert before cp */
+	if (l->type != TreeTypeLeaf) {
+		DPRINTF("ERROR: l is not a leaf\n");
+		assert(l->type == TreeTypeLeaf);
+	}
+	if (l->parent) {
+		DPRINTF("WARNING: attempting to insert attached leaf\n");
+		delleaf(l, active);
+	}
+	if (cp && cp->type == TreeTypeLeaf) {
+		before = &cp->leaf;
+		cp = cp->parent;
+	} else {
+		while ((cp && cp->node.children.head &&
+			cp->node.children.head->type != TreeTypeLeaf))
+			cp = cp->node.children.head;
+	}
+	if (!cp) {
+		DPRINTF("ERROR: no parent node\n");
+		assert(cp != NULL);
+	}
+	l->next = l->prev = NULL;	/* safety */
+	l->parent = &cp->term;
+	if (!before)
+		before = cp->term.children.head;
+	if (cp->term.children.head == before)
+		cp->term.children.head = l;
+	if ((l->prev = (before ? before->prev : NULL)))
+		l->prev->next = l;
+	if ((l->next = before))
+		l->next->prev = l;
+	else
+		cp->term.children.tail = l;
+	cp->term.children.number++;
+	if (active)
+		for (; cp; cp = cp->parent)
+			cp->node.children.active += 1;
+	if (l->client.client) {
+		if (l->client.client == sel)
+			setselected(sel);
+		if (l->client.client == took)
+			setfocused(took);
+	}
+}
+
+void
+delnode(Container *cc)
+{
+	Container *cp;
+
+	if (cc->type != TreeTypeNode) {
+		DPRINTF("ERROR: attempting to delete non-node\n");
+		assert(cc->type == TreeTypeNode);
+	}
+	if (!(cp = cc->parent)) {
+		DPRINTF("WARNING: attempting to delete detached node\n");
+		return;
+	}
+	cc->parent = NULL;
+	if ((cp->node.children.head == cc))
+		cp->node.children.head = cc->next;
+	if ((cp->node.children.tail == cc))
+		cp->node.children.tail = cc->prev;
+	if (cc->prev)
+		cc->prev->next = cc->next;
+	if (cc->next)
+		cc->next->prev = cc->prev;
+	cc->prev = cc->next = NULL;
+	if (cp->node.children.focused == cc)
+		cp->node.children.focused = NULL;
+	if (cp->node.children.selected == cc)
+		cp->node.children.selected = NULL;
+	cp->node.children.number--;
+
+	for (;cp;cp = cp->parent)
+		cp->node.children.active -= cc->node.children.active;
+}
+
+void
+appnode(Container *cp, Container *cc)
+{
+	/* append Container cc into container cp, cc must be extracted from tree */
+	if (cc->parent) {
+		DPRINTF("WARNING: attempting to append attached node\n");
+		delnode(cc);
+	}
+	if (cp->type == TreeTypeLeaf)
+		cp = cp->parent;
+	/* find bottom of tree */
+	while ((cp && cp->node.children.tail &&
+		cp->node.children.tail->type != TreeTypeLeaf))
+		cp = cp->node.children.tail;
+	if (!cp) {
+		DPRINTF("ERROR: no parent node\n");
+		assert(cp != NULL);
+	}
+	cc->next = cc->prev = NULL;	/* safety */
+	cc->parent = cp;
+	if ((cc->prev = cp->node.children.tail))
+		cc->prev->next = cc;
+	else
+		cp->node.children.head = cc;
+	cp->node.children.tail = cc;
+	cp->node.children.number++;
+
+	for (; cp; cp = cp->parent)
+		cp->node.children.active += cc->node.children.active;
+}
+
+void
+insnode(Container *cp, Container *cc)
+{
+	/* insert Container cc into container cp, cc must be extracted from tree */
+	if (cc->parent) {
+		DPRINTF("WARNING: attempting to append attached node\n");
+		delnode(cc);
+	}
+	if (cp->type == TreeTypeLeaf)
+		cp = cp->parent;
+	/* find bottom of tree */
+	while ((cp && cp->node.children.head &&
+		cp->node.children.head->type != TreeTypeLeaf))
+		cp = cp->node.children.tail;
+	if (!cp) {
+		DPRINTF("ERROR: no parent node\n");
+		assert(cp != NULL);
+	}
+	cc->next = cc->prev = NULL;	/* safety */
+	cc->parent = cp;
+	if ((cc->next = cp->node.children.head))
+		cc->next->prev = cc;
+	else
+		cp->node.children.tail = cc;
+	cp->node.children.head = cc;
+	cp->node.children.number++;
+
+	for (; cp; cp = cp->parent)
+		cp->node.children.active += cc->node.children.active;
+}
+
 static Bool
 validlist()
 {
@@ -198,66 +463,6 @@ detachstack(Client *c)
 	assert(*cp == c);
 	*cp = c->snext;
 	c->snext = NULL;
-}
-
-void
-setfocused(Client *c)
-{
-	Leaf *l;
-	View *v;
-	Container *x, *y;
-	int index;
-
-	if (!c)
-		return;
-	if (!(v = c->cview)) {
-		if (!(v = clientview(c))) {
-			CPRINTF(c, "No view for focused client!\n");
-			// assert(v != NULL);
-			return;
-		}
-	}
-	index = v->index;
-	for (l = c->leaves; l; l = l->cnext) {
-		if (l->view != index)
-			continue;
-		for (x = (Container *) l; x->type && (y = x->parent); x = y)
-			for (; x->type != TreeTypeLeaf && (y = x->node.focused); x = y)
-				x->node.focused = NULL;
-		for (x = (Container *) l; x->type && (y = x->parent); x = y)
-			y->node.focused = x;
-		break;
-	}
-}
-
-void
-setselected(Client *c)
-{
-	Leaf *l;
-	View *v;
-	Container *x, *y;
-	int index;
-
-	if (!c)
-		return;
-	if (!(v = c->cview)) {
-		if (!(v = clientview(c))) {
-			CPRINTF(c, "No view for selected client!\n");
-			// assert(v != NULL);
-			return;
-		}
-	}
-	index = v->index;
-	for (l = c->leaves; l; l = l->cnext) {
-		if (l->view != index)
-			continue;
-		for (x = (Container *) l; x->type && (y = x->parent); x = y)
-			for (; x->type != TreeTypeLeaf && (y = x->node.selected); x = y)
-				x->node.selected = NULL;
-		for (x = (Container *) l; x->type && (y = x->parent); x = y)
-			y->node.selected = x;
-		break;
-	}
 }
 
 void
@@ -1284,7 +1489,7 @@ arrangedock(View *v)
 				n = g[i];
 				g[i].x += g[i].w + b;
 				if (!cn || g[i].x > m->wa.x + m->wa.w) {
-					n.w = m->wa.x + m->wa.h - n.x - 2 * b;
+					n.w = m->wa.x + m->wa.w - n.x - 2 * b;
 					i++;
 				}
 			}
@@ -1309,22 +1514,15 @@ arrangedock(View *v)
 static Leaf *
 next_dockapp(Leaf *l)
 {
-	for (; l; l = l->next) {
-		if (!l->client) {
-			DPRINTF("skipping dock app with no client '%s' '%s' '%s'\n",
-					l->name ? : "",
-					l->clas ? : "",
-					l->command ? : "");
-			continue;
-		}
-		if (l->is.hidden) {
-			DPRINTF("skipping dock app marked hidden '%s' '%s' '%s'\n",
-					l->name ? : "",
-					l->clas ? : "",
-					l->command ? : "");
-			continue;
-		}
-		break;
+	if (l) {
+		Term *t = l->parent;
+
+		do {
+			do {
+				if (l->client.client && !l->is.hidden)
+					break;
+			} while ((l = l->next));
+		} while (!l && (t = t->next) && (l = t->children.head));
 	}
 	return l;
 }
@@ -1332,23 +1530,390 @@ next_dockapp(Leaf *l)
 Leaf *
 prev_dockapp(Leaf *l)
 {
-	for (; l; l = l->prev)
-		if (l->client && !l->is.hidden)
-			break;
+	if (l) {
+		Term *t = l->parent;
+
+		do {
+			do {
+				if (l->client.client && !l->is.hidden)
+					break;
+			} while ((l = l->prev));
+		} while (!l && (t = t->prev) && (l = t->children.tail));
+	}
 	return l;
 }
 
+static unsigned
+countdockapps(Container *t)
+{
+	unsigned active = 0, act, num;
+	Container *c;
+
+	switch (t->type) {
+	case TreeTypeNode:
+	case TreeTypeTerm:
+		for (num = 0, act = 0, c = t->node.children.head; c; c = c->next, num++)
+			act += countdockapps(c);
+		t->node.children.number = num;
+		t->node.children.active = act;
+		active += act;
+		break;
+	case TreeTypeLeaf:
+		if (t->leaf.client.client && !t->leaf.is.hidden)
+			active++;
+		break;
+	}
+	return active;
+}
+
 static void
+pushleaf(Term *n)
+{
+	Leaf *l;
+	Container *nnew, *nold;
+	Bool active = False;
+
+	/* push leaf from the node after this one and appeand to this one */
+	if (!(nnew = (Container *) n)) {
+		DPRINTF("ERROR: no node!\n");
+		assert(nnew != NULL);
+	}
+	if (!(nold = nnew->next)) {
+		DPRINTF("ERROR: no next node!\n");
+		assert(nold != NULL);
+	}
+	if (!(l = nold->term.children.head)) {
+		DPRINTF("ERROR: no leaf node!\n");
+		assert(l != NULL);
+	}
+	if (l->type != TreeTypeLeaf) {
+		DPRINTF("ERROR: not a leaf node!\n");
+		assert(l->type == TreeTypeLeaf);
+	}
+	if (l->client.client && !l->is.hidden)
+		active = True;
+	delleaf(l, active);	/* optional really */
+	appleaf(nnew, l, active);
+}
+
+static void
+popleaf(Term *n)
+{
+	Leaf *l;
+	Container *nnew, *nold;
+	Bool active = False;
+
+	/* pop leaf from this node and insert onto the one after this one */
+	if (!(nold = (Container *) n)) {
+		DPRINTF("ERROR: no node!\n");
+		assert(nold != NULL);
+	}
+	if (!(nnew = nold->next)) {
+		DPRINTF("ERROR: no next node!\n");
+		assert(nnew != NULL);
+	}
+	if (!(l = nold->term.children.tail)) {
+		DPRINTF("ERROR: no leaf node!\n");
+		assert(l != NULL);
+	}
+	if (l->type != TreeTypeLeaf) {
+		DPRINTF("ERROR: not a leaf node!\n");
+		assert(l->type == TreeTypeLeaf);
+	}
+	if (l->client.client && !l->is.hidden)
+		active = True;
+	delleaf(l, active);	/* optional really */
+	insleaf(nnew, l, active);
+}
+
+void
+arrangedock_basic(View *v, Bool floating)
+{
+	Leaf *l;
+	Monitor *m;
+	Container *t, *n;
+	int i, j, num, major, minor, count, b;
+	static const unsigned max = 64;
+	Workarea wa;
+
+	if (!(m = v->curmon))
+		return;
+
+	updategeom(m);
+	wa = m->dock.wa = m->wa;
+
+	if (m->dock.position == DockNone)
+		return;
+	if (!(t = scr->dock.tree))
+		return;
+	n = (Container *) t->node.children.head;
+
+	b = scr->style.border;
+	t->t.x = t->f.x = wa.x;
+	t->t.y = t->f.y = wa.y;
+	t->t.w = t->f.w = wa.w;
+	t->t.h = t->f.h = wa.h;
+	t->t.b = t->f.b = b;
+	t->t.t = t->f.t = 0;
+	t->t.g = t->f.g = 0;
+	t->t.v = t->f.v = 0;
+	t->c = floating ? t->f : t->t;
+
+	num = countdockapps((Container *) t);
+	DPRINTF("there are %d dock apps\n", num);
+	if (!num)
+		return;
+
+	switch (t->node.children.ori) {
+	case OrientLeft:
+	case OrientRight:
+		minor = (wa.h - b) / (max + b);
+		major = (num - 1) / minor + 1;
+		break;
+	case OrientTop:
+	case OrientBottom:
+		minor = (wa.w - b) / (max + b);
+		major = (num - 1) / minor + 1;
+		break;
+	default:
+		DPRINTF("ERROR: invalid child orientation\n");
+		return;
+	}
+	while (t->node.children.number < major)
+		n = adddocknode(t);
+	count = num;
+	for (i = 0, n = (Container *) t->node.children.head; i < major; i++, n = n->next) {
+		ClientGeometry gt, gf;
+
+		if (minor > count)
+			minor = count;
+		while (n->term.children.active < minor)
+			pushleaf(&n->term);
+		while (n->term.children.active > minor)
+			popleaf(&n->term);
+		gf = t->f;
+		gt = t->t;
+		switch (t->node.children.ori) {
+		case OrientLeft:
+		case OrientRight:
+			gt.y = wa.y;
+			gf.w = gt.w = max + 2 * b;
+			gt.h = wa.h;
+			gf.h = minor * (max + b) + b;
+			switch ((int) t->node.children.ori) {
+			case OrientLeft:
+				gf.x = gt.x = wa.x;
+				switch ((int) t->node.children.pos) {
+				case PositionNorthWest:
+					gf.y = wa.y;
+					break;
+				case PositionWest:
+					gf.y = wa.y + (wa.h - gf.h) / 2;
+					break;
+				case PositionSouthWest:
+					gf.y = wa.y + (wa.h - gf.h);
+					break;
+				}
+				wa.x += max + b;
+				break;
+			case OrientRight:
+				gf.x = gt.x = wa.x + wa.w - (max + b);
+				switch ((int) t->node.children.pos) {
+				case PositionNorthEast:
+					gf.y = wa.y;
+					break;
+				case PositionEast:
+					gf.y = wa.y + (wa.h - gf.h) / 2;
+					break;
+				case PositionSouthEast:
+					gf.y = wa.y + (wa.h - gf.h);
+					break;
+				}
+				break;
+			}
+			wa.w -= max + b;
+			break;
+		case OrientTop:
+		case OrientBottom:
+			gt.x = wa.x;
+			gf.h = gt.h = max + 2 * b;
+			gt.w = wa.w;
+			gf.w = minor * (max + b) + b;
+			switch ((int) t->node.children.ori) {
+			case OrientTop:
+				gf.y = gt.y = wa.y;
+				switch ((int) t->node.children.pos) {
+				case PositionNorthWest:
+					gf.x = wa.x;
+					break;
+				case PositionNorth:
+					gf.x = wa.x + (wa.w - gf.w) / 2;
+					break;
+				case PositionNorthEast:
+					gf.x = wa.x + (wa.w - gf.w);
+					break;
+				}
+				wa.y += max + b;
+				break;
+			case OrientBottom:
+				gf.y = gt.y = wa.y + wa.h - (max + b);
+				switch ((int) t->node.children.pos) {
+				case PositionSouthWest:
+					gf.x = wa.x;
+					break;
+				case PositionSouth:
+					gf.x = wa.x + (wa.w - gf.w) / 2;
+					break;
+				case PositionSouthEast:
+					gf.x = wa.x + (wa.w - gf.w);
+					break;
+				}
+				break;
+			}
+			wa.h -= max + b;
+			break;
+		default:
+			DPRINTF("ERROR: invalid childe orientation\n");
+			return;
+		}
+		n->t = gt;
+		n->f = gf;
+		n->c = floating ? gf : gt;
+		switch (n->term.children.ori) {
+		case OrientLeft:
+			/* left to right */
+			gt.w = (n->t.w - b) / minor + b;
+			gf.w = (n->f.w - b) / minor + b;
+			gt.x = n->t.x;
+			gf.x = n->f.x;
+			break;
+		case OrientRight:
+			/* right to left */
+			gt.w = (n->t.w - b) / minor + b;
+			gf.w = (n->f.w - b) / minor + b;
+			gt.x = n->t.x + n->t.w - gt.w;
+			gf.x = n->f.x + n->f.w - gf.w;
+			break;
+		case OrientTop:
+			/* top to bottom */
+			gt.h = (n->t.h - b) / minor + b;
+			gf.h = (n->f.h - b) / minor + b;
+			gt.y = n->t.y;
+			gf.y = n->f.y;
+			break;
+		case OrientBottom:
+			/* bottom to top */
+			gt.h = (n->t.h - b) / minor + b;
+			gf.h = (n->f.h - b) / minor + b;
+			gt.y = n->t.y + n->t.h - gt.h;
+			gf.y = n->f.y + n->f.h - gf.h;
+			break;
+		}
+		for (j = 1, l = n->term.children.head; l && j <= minor; l = l->next) {
+			Client *c;
+
+			if (!(c = l->client.client))
+				continue;
+			if (l->is.hidden || c->is.hidden) {
+				ban(c);
+				continue;
+			}
+			if (j == minor) {
+				switch (n->term.children.ori) {
+				case OrientLeft:
+					/* left to right */
+					gt.w = n->t.x + n->t.w - gt.x - 2 * b;
+					gf.w = n->f.x + n->f.w - gf.x - 2 * b;
+					break;
+				case OrientRight:
+					/* right to left */
+					gt.w += gt.x - n->t.x;
+					gt.x = n->t.x;
+					gf.w += gf.x - n->f.x;
+					gf.x = n->f.x;
+					break;
+				case OrientTop:
+					/* top to bottom */
+					gt.h = n->t.y + n->t.h - gt.y - 2 * b;
+					gf.h = n->f.y + n->f.h - gf.y - 2 * b;
+					break;
+				case OrientBottom:
+					/* bottom to top */
+					gt.h += gt.y - n->t.y;
+					gt.y = n->t.y;
+					gf.h += gf.y - n->f.y;
+					gf.y = n->f.y;
+					break;
+				}
+			}
+			l->t = gt;
+			l->f = gf;
+			l->c = floating ? gf : gt;
+			{
+				ClientGeometry g = l->c;
+
+				if (!floating && c->is.moveresize) {
+					/* center it where it already is located */
+					g.x = (c->c.x + c->c.w / 2) - g.w / 2;
+					g.y = (c->c.y + c->c.h / 2) - g.h / 2;
+				}
+				DPRINTF("CALLING reconfigure()\n");
+				reconfigure(c, &g);
+			}
+			unban(c, v);
+			switch (n->term.children.ori) {
+			case OrientLeft:
+				/* left to right */
+				gt.x += gt.w - b;
+				gf.x += gf.w - b;
+				break;
+			case OrientRight:
+				/* right to left */
+				gt.x -= gt.w - b;
+				gf.x -= gf.w - b;
+				break;
+			case OrientTop:
+				/* top to bottom */
+				gt.y += gt.h - b;
+				gf.y += gf.h - b;
+				break;
+			case OrientBottom:
+				/* bottom to top */
+				gt.y -= gt.h - b;
+				gf.y -= gf.h - b;
+				break;
+			}
+			j++;
+		}
+		count -= minor;
+	}
+	m->dock.wa = wa;
+	assert(count == 0);
+	for (; i < t->node.children.number; i++, n = n->next) {
+		/* unused rows/cols at end */
+		assert(n->term.children.active == 0);
+		n->t.x = n->f.x = n->c.x = 0;
+		n->t.y = n->f.y = n->c.y = 0;
+		n->t.w = n->f.w = n->c.w = 0;
+		n->t.h = n->f.h = n->c.h = 0;
+	}
+}
+
+void
 arrangedock_tile(View *v)
 {
+	arrangedock_basic(v, False);
+}
+
+void
+arrangedock_tile_old(View *v)
+{
 	Monitor *m;
-	Tree *t;
-	DockPosition pos;
-	DockOrient ori;
-	DockSide side;
+	Container *t;
 	Leaf *l, *ln;
 	int i, num, rows, cols, max, b;
 	ClientGeometry *g, *gx;
+	Workarea wa;
 
 	if (!(m = v->curmon))
 		return;
@@ -1356,100 +1921,53 @@ arrangedock_tile(View *v)
 	updategeom(m);
 	m->dock.wa = m->wa;
 
-	if ((pos = m->dock.position) == DockNone)
+	if (m->dock.position == DockNone)
 		return;
 	if (!(t = scr->dock.tree))
 		return;
 
-	for (num = 0, l = next_dockapp((Leaf *) t->head); l;
-	     l = next_dockapp(l->next), num++) ;
+	getworkarea(m, &wa);
+	t->t.x = t->c.x = wa.x;
+	t->t.y = t->c.y = wa.y;
+	t->t.w = t->c.w = wa.w;
+	t->t.h = t->c.h = wa.h;
+	t->t.b = t->c.b = scr->style.border;
+	t->t.t = t->c.t = 0;
+	t->t.g = t->c.g = 0;
+	t->t.v = t->c.v = 0;
+
+	num = countdockapps((Container *) t);
 
 	DPRINTF("there are %d dock apps\n", num);
 
 	if (num == 0)
 		return;
 
-	switch ((ori = m->dock.orient)) {
-	case DockHorz:
-		DPRINTF("dock oriented horizontal\n");
-		break;
-	case DockVert:
-		DPRINTF("dock oriented vertical\n");
-		break;
-	}
-	switch (pos) {
-	case DockNorth:
-		side = DockSideNorth;
-		DPRINTF("dock position North\n");
-		break;
-	case DockEast:
-		side = DockSideEast;
-		DPRINTF("dock position East\n");
-		break;
-	case DockSouth:
-		side = DockSideSouth;
-		DPRINTF("dock position South\n");
-		break;
-	case DockWest:
-		side = DockSideWest;
-		DPRINTF("dock position West\n");
-		break;
-	case DockNorthEast:
-		side = (ori == DockHorz) ? DockSideNorth : DockSideEast;
-		DPRINTF("dock position NorthEast\n");
-		break;
-	case DockNorthWest:
-		side = (ori == DockHorz) ? DockSideNorth : DockSideWest;
-		DPRINTF("dock position NorthWest\n");
-		break;
-	case DockSouthWest:
-		side = (ori == DockHorz) ? DockSideSouth : DockSideWest;
-		DPRINTF("dock position SouthWest\n");
-		break;
-	case DockSouthEast:
-		side = (ori == DockHorz) ? DockSideSouth : DockSideEast;
-		DPRINTF("dock position SouthEast\n");
-		break;
-	default:
-		return;
-	}
-	switch (side) {
-	case DockSideEast:
-		DPRINTF("dock side East\n");
-		break;
-	case DockSideWest:
-		DPRINTF("dock side West\n");
-		break;
-	case DockSideNorth:
-		DPRINTF("dock side North\n");
-		break;
-	case DockSideSouth:
-		DPRINTF("dock side South\n");
-		break;
-	}
-
 	max = 64;
 	b = scr->style.border;
 
-	switch (side) {
-	case DockSideEast:
-	case DockSideWest:
+	switch (t->node.children.ori) {
+	default:
+		DPRINTF("incorrect orientation\n");
+		return;
+	case OrientLeft:
+	case OrientRight:
 		rows = (m->wa.h - b) / (max + b);
 		cols = (num - 1) / rows + 1;
 		DPRINTF("dock columns %d, rows %d\n", cols, rows);
 		if (rows > num)
 			rows = num;
-		g = calloc(cols, sizeof(*g));
+		g = ecalloc(cols, sizeof(*g));
 		for (i = 0, gx = g; i < cols; i++, gx++) {
 			gx->b = b;
 			gx->w = max;
 			gx->h = (m->wa.h - b) / rows - b;
 			gx->y = m->wa.y;
-			switch ((int) side) {
-			case DockSideEast:
+			switch ((int) t->node.children.ori) {
+			case OrientRight:
 				gx->x = m->wa.x + m->wa.w - (i + 1) * (gx->w + b);
 				break;
-			case DockSideWest:
+			case OrientLeft:
 				gx->x = m->wa.x + i * (gx->w + b);
 				break;
 			}
@@ -1459,33 +1977,33 @@ arrangedock_tile(View *v)
 			if (rows > num)
 				rows = num;
 		}
-		switch ((int) side) {
-		case DockSideEast:
+		switch ((int) t->node.children.ori) {
+		case OrientRight:
 			break;
-		case DockSideWest:
+		case OrientLeft:
 			m->dock.wa.x += cols * (max + b) + b;
 			break;
 		}
 		m->dock.wa.w -= cols * (max + b) + b;
 		break;
-	case DockSideNorth:
-	case DockSideSouth:
+	case OrientTop:
+	case OrientBottom:
 		cols = (m->wa.w - b) / (max + b);
 		rows = (num - 1) / cols + 1;
 		if (cols > num)
 			cols = num;
 		DPRINTF("dock columns %d, rows %d\n", cols, rows);
-		g = calloc(rows, sizeof(*g));
+		g = ecalloc(rows, sizeof(*g));
 		for (i = 0, gx = g; i < rows; i++, gx++) {
 			gx->b = b;
 			gx->w = (m->wa.w - b) / cols - b;
 			gx->h = max;
 			gx->x = m->wa.x;
-			switch ((int) side) {
-			case DockSideNorth:
+			switch ((int) t->node.children.ori) {
+			case OrientTop:
 				gx->y = m->wa.y + i * (gx->h + b);
 				break;
-			case DockSideSouth:
+			case OrientBottom:
 				gx->y = m->wa.y + m->wa.h - (i + 1) * (gx->h + b);
 				break;
 			}
@@ -1495,26 +2013,26 @@ arrangedock_tile(View *v)
 			if (cols > num)
 				cols = num;
 		}
-		switch ((int) side) {
-		case DockSideNorth:
+		switch ((int) t->node.children.ori) {
+		case OrientTop:
 			m->dock.wa.y += rows * (max + b) + b;
 			break;
-		case DockSideSouth:
+		case OrientBottom:
 			break;
 		}
 		m->dock.wa.h -= rows * (max + b) + b;
 		break;
 	}
-	XResizeWindow(dpy, m->veil, m->dock.wa.w, m->dock.wa.h);
-	XMoveWindow(dpy, m->veil, m->dock.wa.x, m->dock.wa.y);
-	for (gx = g, ln = next_dockapp((Leaf *) t->head); (l = ln);) {
-		Client *c = l->client;
+	// XResizeWindow(dpy, m->veil, m->dock.wa.w, m->dock.wa.h);
+	// XMoveWindow(dpy, m->veil, m->dock.wa.x, m->dock.wa.y);
+	for (gx = g, ln = next_dockapp((Leaf *) t->node.children.head); (l = ln);) {
+		Client *c = l->client.client;
 		ClientGeometry ng;
 
 		ln = next_dockapp(l->next);
-		switch (ori) {
-		case DockVert:
-		{
+		switch (t->node.children.ori) {
+		case OrientLeft:
+		case OrientRight:
 			ng = *gx;
 			gx->y += gx->h + b;
 			if (!ln || gx->y > m->wa.y + m->wa.h) {
@@ -1522,17 +2040,15 @@ arrangedock_tile(View *v)
 				gx++;
 			}
 			break;
-		}
-		case DockHorz:
-		{
+		case OrientTop:
+		case OrientBottom:
 			ng = *gx;
 			gx->x = gx->w + b;
 			if (!ln || gx->x > m->wa.x + m->wa.w) {
-				ng.w = m->wa.x + m->wa.h - ng.x - 2 * b;
+				ng.w = m->wa.x + m->wa.w - ng.x - 2 * b;
 				gx++;
 			}
 			break;
-		}
 		}
 		if (!c->is.moveresize) {
 			DPRINTF("CALLING reconfigure()\n");
@@ -2109,17 +2625,24 @@ initlayout_monocle(View *v)
 		create_monocle(v);
 }
 
-static void
+void
 arrangedock_float(View *v)
 {
+	arrangedock_basic(v, True);
+}
+
+void
+arrangedock_float_old(View *v)
+{
 	Monitor *m;
-	Tree *t;
+	Container *t;
 	DockPosition pos;
 	DockOrient ori;
 	DockSide side;
 	Leaf *l, *ln;
 	int i, num, rows, cols, margin, max, b;
 	ClientGeometry *g, *gx;
+	Workarea wa;
 
 	if (!(m = v->curmon))
 		return;
@@ -2131,11 +2654,18 @@ arrangedock_float(View *v)
 		return;
 	if (!(t = scr->dock.tree))
 		return;
+	getworkarea(m, &wa);
+	t->f.x = t->c.x = wa.x;
+	t->f.y = t->c.y = wa.y;
+	t->f.w = t->c.w = wa.w;
+	t->f.h = t->c.h = wa.h;
 
-	for (num = 0, l = next_dockapp((Leaf *) t->head); l;
-	     l = next_dockapp(l->next), num++) ;
+	num = countdockapps((Container *)t);
 
 	DPRINTF("there are %d dock apps\n", num);
+
+	if (num == 0)
+		return;
 
 	switch ((ori = m->dock.orient)) {
 	case DockHorz:
@@ -2231,8 +2761,8 @@ arrangedock_float(View *v)
 		{
 			int h;
 
-			for (i = 0, gx = g, ln = next_dockapp((Leaf *) t->head); (l = ln);) {
-				Client *c = l->client;
+			for (i = 0, gx = g, ln = next_dockapp((Leaf *) t->node.children.head); (l = ln);) {
+				Client *c = l->client.client;
 
 				ln = next_dockapp(l->next);
 				h = c->r.h + 2 * margin;
@@ -2306,9 +2836,9 @@ arrangedock_float(View *v)
 		{
 			int w;
 
-			for (i = 0, gx = g, ln = next_dockapp((Leaf *) t->head);
+			for (i = 0, gx = g, ln = next_dockapp((Leaf *) t->node.children.head);
 			     (l = ln);) {
-				Client *c = l->client;
+				Client *c = l->client.client;
 
 				ln = next_dockapp(l->next);
 				w = c->r.w + 2 * margin;
@@ -2355,8 +2885,8 @@ arrangedock_float(View *v)
 	}
 	XResizeWindow(dpy, m->veil, m->dock.wa.w, m->dock.wa.h);
 	XMoveWindow(dpy, m->veil, m->dock.wa.x, m->dock.wa.y);
-	for (gx = g, ln = next_dockapp((Leaf *) t->head); (l = ln);) {
-		Client *c = l->client;
+	for (gx = g, ln = next_dockapp((Leaf *) t->node.children.head); (l = ln);) {
+		Client *c = l->client.client;
 		ClientGeometry ng;
 
 		ln = next_dockapp(l->next);
@@ -3050,8 +3580,6 @@ setnmaster(View *v, int n)
 				return;
 		}
 		break;
-	case OrientLast:
-		return;
 	}
 	if (master) {
 		if (v->nmaster != n) {
@@ -4626,10 +5154,126 @@ getclientstrings(Client *c, char **name, char **clas, char **cmd)
 	return ((nam || cls || str) ? True : False);
 }
 
+static Leaf *
+findleaf(Container *n, char *name, char *clas, char *cmd)
+{
+	Leaf *l = NULL;
+	Container *c;
+
+	switch (n->type) {
+	case TreeTypeNode:
+	case TreeTypeTerm:
+		for (c = n->node.children.head; c; c = c->next)
+			if ((l = findleaf(c, name, clas, cmd)))
+				break;
+		break;
+	case TreeTypeLeaf:
+		if (n->leaf.client.client)
+			break;
+		if (n->leaf.client.name && name && strcmp(n->leaf.client.name, name))
+			break;
+		if (n->leaf.client.clas && clas && strcmp(n->leaf.client.clas, clas))
+			break;
+		if (n->leaf.client.command && cmd && strcmp(n->leaf.client.command, cmd))
+			break;
+		l = &n->leaf;
+		break;
+	}
+	return l;
+}
+
+Container *
+adddocknode(Container *t)
+{
+	Container *n;
+
+	n = ecalloc(1, sizeof(*n));
+	n->type = TreeTypeTerm;
+	n->view = t->view;
+	n->is.dockapp = True;
+	switch (t->node.children.pos) {
+	default:
+	case PositionEast:
+		n->term.children.pos = PositionCenter;
+		n->term.children.ori = OrientTop;
+		break;
+	case PositionNorthEast:
+		switch (t->node.children.ori) {
+		case OrientTop:
+		case OrientBottom:
+			n->term.children.pos = PositionEast;
+			n->term.children.ori = OrientLeft;
+			break;
+		case OrientLeft:
+		case OrientRight:
+			n->term.children.pos = PositionNorth;
+			n->term.children.ori = OrientTop;
+			break;
+		}
+		break;
+	case PositionNorth:
+		n->term.children.pos = PositionCenter;
+		n->term.children.ori = OrientLeft;
+		break;
+	case PositionNorthWest:
+		switch (t->node.children.ori) {
+		case OrientTop:
+		case OrientBottom:
+			n->term.children.pos = PositionWest;
+			n->term.children.ori = OrientLeft;
+			break;
+		case OrientLeft:
+		case OrientRight:
+			n->term.children.pos = PositionNorth;
+			n->term.children.ori = OrientTop;
+			break;
+		}
+		break;
+	case PositionWest:
+		n->term.children.pos = PositionCenter;
+		n->term.children.ori = OrientTop;
+		break;
+	case PositionSouthWest:
+		switch (t->node.children.ori) {
+		case OrientTop:
+		case OrientBottom:
+			n->term.children.pos = PositionWest;
+			n->term.children.ori = OrientLeft;
+			break;
+		case OrientLeft:
+		case OrientRight:
+			n->term.children.pos = PositionSouth;
+			n->term.children.ori = OrientTop;
+			break;
+		}
+		break;
+	case PositionSouth:
+		n->term.children.pos = PositionCenter;
+		n->term.children.ori = OrientLeft;
+		break;
+	case PositionSouthEast:
+		switch (t->node.children.ori) {
+		case OrientTop:
+		case OrientBottom:
+			n->term.children.pos = PositionEast;
+			n->term.children.ori = OrientLeft;
+			break;
+		case OrientLeft:
+		case OrientRight:
+			n->term.children.pos = PositionSouth;
+			n->term.children.ori = OrientTop;
+			break;
+		}
+		break;
+	}
+	appnode(t, n);
+	return n;
+}
+
 static void
 adddockapp(Client *c, Bool focusme, Bool raiseme)
 {
-	Tree *t;
+	Container *t, *n;
 	Leaf *l = NULL;
 	char *name = NULL, *clas = NULL, *cmd = NULL;
 
@@ -4638,52 +5282,39 @@ adddockapp(Client *c, Bool focusme, Bool raiseme)
 		return;
 	}
 
-	if (getclientstrings(c, &name, &clas, &cmd)) {
-		for (l = (Leaf *) t->head; l; l = l->next) {
-			if (l->client)
-				continue;
-			if (l->name && name && strcmp(l->name, name))
-				continue;
-			if (l->clas && clas && strcmp(l->clas, clas))
-				continue;
-			if (l->command && cmd && strcmp(l->command, cmd))
-				continue;
-			break;
-		}
+	if (!(n = (Container *) t->node.children.tail)) {
+		DPRINTF("WARNING: no dock node!\n");
+		n = adddocknode(t);
 	}
+
+	if (getclientstrings(c, &name, &clas, &cmd))
+		l = findleaf((Container *) t, name, clas, cmd);
 	if (l) {
-		DPRINTF("found leaf '%s' '%s' '%s'\n", l->name ? : "", l->clas ? : "", l->command ? : "");
+		DPRINTF("found leaf '%s' '%s' '%s'\n", l->client.name ? : "",
+			l->client.clas ? : "", l->client.command ? : "");
 	} else {
 		DPRINTF("creating leaf\n");
 		l = ecalloc(1, sizeof(*l));
 		l->type = TreeTypeLeaf;
-		l->view = t->view;
-		l->layout = -1;
+		l->view = n->view;
 		l->is.dockapp = True;
-		l->parent = (Container *) t;
-
-		if ((l->prev = (Leaf *) t->tail))
-			l->prev->next = l;
-		else
-			t->head = (Container *) l;
-		t->tail = (Container *) l;
-		t->nchild++;
-		DPRINTF("dockapp tree now has %d children\n", t->nchild);
+		appleaf(n, l, True);
+		DPRINTF("dockapp tree now has %d active children\n", t->node.children.active);
 	}
-	l->client = c;
-	l->cnext = c->leaves;
+	l->client.client = c;
+	l->client.next = c->leaves;
 	c->leaves = l;
 	if (name) {
-		free(l->name);
-		l->name = name;
+		free(l->client.name);
+		l->client.name = name;
 	}
 	if (clas) {
-		free(l->clas);
-		l->clas = clas;
+		free(l->client.clas);
+		l->client.clas = clas;
 	}
 	if (cmd) {
-		free(l->command);
-		l->command = cmd;
+		free(l->client.command);
+		l->client.command = cmd;
 	}
 }
 
@@ -4751,12 +5382,16 @@ void
 deldockapp(Client *c)
 {
 	Leaf *l, *ln;
+	Container *cp;
 
 	/* leaves leaf in place to accept restarted dock app */
 	for (ln = c->leaves; (l = ln);) {
-		ln = l->cnext;
-		l->cnext = NULL;
-		l->client = NULL;
+		ln = l->client.next;
+		l->client.next = NULL;
+		l->client.client = NULL;
+		if (!l->is.hidden)
+			for (cp = (Container *) l->parent; cp; cp = cp->parent)
+				cp->node.children.active--;
 	}
 	c->leaves = NULL;
 }
@@ -5253,8 +5888,8 @@ rotateview(Client *c)
 		return;
 	if (!VFEATURES(v, ROTL))
 		return;
-	v->major = (v->major + 1) % OrientLast;
-	v->minor = (v->minor + 1) % OrientLast;
+	v->major = (v->major + 1) % 4;
+	v->minor = (v->minor + 1) % 4;
 	arrange(v);
 }
 
@@ -5267,8 +5902,8 @@ unrotateview(Client *c)
 		return;
 	if (!VFEATURES(v, ROTL))
 		return;
-	v->major = (v->major + OrientLast - 1) % OrientLast;
-	v->minor = (v->minor + OrientLast - 1) % OrientLast;
+	v->major = (v->major + 4 - 1) % 4;
+	v->minor = (v->minor + 4 - 1) % 4;
 	arrange(v);
 }
 
@@ -5281,7 +5916,7 @@ rotatezone(Client *c)
 		return;
 	if (!VFEATURES(v, ROTL) || !VFEATURES(v, NMASTER))
 		return;
-	v->minor = (v->minor + 1) % OrientLast;
+	v->minor = (v->minor + 1) % 4;
 	arrange(v);
 }
 
@@ -5294,7 +5929,7 @@ unrotatezone(Client *c)
 		return;
 	if (!VFEATURES(v, ROTL) || !VFEATURES(v, NMASTER))
 		return;
-	v->minor = (v->minor + OrientLast - 1) % OrientLast;
+	v->minor = (v->minor + 4 - 1) % 4;
 	arrange(v);
 }
 

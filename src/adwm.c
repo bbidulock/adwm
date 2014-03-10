@@ -2807,6 +2807,81 @@ findmonitornear(int row, int col)
 	return best;
 }
 
+static void
+updatedock(void)
+{
+	Monitor *m;
+	int i, dockmon;
+
+	for (m = scr->monitors, i = 0; i < scr->nmons; i++, m++) {
+		m->dock.position = DockNone;
+		m->dock.wa = m->wa;
+	}
+	scr->dock.monitor = NULL;
+	dockmon = (int) scr->options.dockmon - 1;
+	if (dockmon > scr->nmons - 1)
+		dockmon = scr->nmons - 1;
+	/* find the monitor if dock position is screen relative */
+	if (dockmon < 0) {
+		DockPosition pos = scr->options.dockpos;
+		int row, col;
+		Monitor *dm;
+
+		switch (pos) {
+		default:
+			pos = DockNone;
+		case DockNone:
+			row = 0;
+			col = 0;
+			break;
+		case DockEast:
+			row = (scr->m.rows + 1) / 2 - 1;	/* Center */
+			col = scr->m.cols - 1;	/* East */
+			break;
+		case DockNorthEast:
+			row = 0;	/* North */
+			col = scr->m.cols - 1;	/* East */
+			break;
+		case DockNorth:
+			row = 0;	/* North */
+			col = (scr->m.cols + 1) / 2 - 1;	/* Center */
+			break;
+		case DockNorthWest:
+			row = 0;	/* North */
+			col = 0;	/* West */
+			break;
+		case DockWest:
+			row = (scr->m.rows + 1) / 2 - 1;	/* Center */
+			col = 0;	/* West */
+			break;
+		case DockSouthWest:
+			row = scr->m.rows - 1;	/* South */
+			col = 0;	/* West */
+			break;
+		case DockSouth:
+			row = scr->m.rows - 1;	/* South */
+			col = (scr->m.cols + 1) / 2 - 1;	/* Center */
+			break;
+		case DockSouthEast:
+			row = scr->m.rows - 1;	/* South */
+			col = scr->m.cols - 1;	/* East */
+			break;
+		}
+		if (pos != DockNone && (dm = findmonitornear(row, col)))
+			dockmon = dm->num;
+	}
+	if (dockmon >= 0) {
+		for (m = scr->monitors; m; m = m->next) {
+			if (m->num == dockmon) {
+				m->dock.position = scr->options.dockpos;
+				m->dock.orient = scr->options.dockori;
+				scr->dock.monitor = m;
+				break;
+			}
+		}
+	}
+}
+
 void
 updatemonitors(XEvent *e, int n, Bool size_update, Bool full_update)
 {
@@ -2816,7 +2891,6 @@ updatemonitors(XEvent *e, int n, Bool size_update, Bool full_update)
 	int w, h;
 	Bool changed;
 	View *v;
-	int dockmon;
 
 	for (i = 0; i < n; i++)
 		scr->monitors[i].next = &scr->monitors[i + 1];
@@ -2891,72 +2965,8 @@ updatemonitors(XEvent *e, int n, Bool size_update, Bool full_update)
 	for (m = scr->monitors, i = 0; i < n; i++, m++) {
 		DPRINTF("Setting view %d to monitor %d\n", m->curview->index, m->num);
 		m->curview->curmon = m;
-		m->dock.position = DockNone;
-		m->dock.wa = m->wa;
 	}
-	scr->dock.monitor = NULL;
-	dockmon = (int) scr->options.dockmon - 1;
-	if (dockmon > n - 1)
-		dockmon = n - 1;
-	/* find the monitor if dock position is screen relative */
-	if (dockmon < 0) {
-		DockPosition pos = scr->options.dockpos;
-		int row, col;
-		Monitor *dm;
-
-		switch (pos) {
-		default:
-			pos = DockNone;
-		case DockNone:
-			row = 0;
-			col = 0;
-			break;
-		case DockEast:
-			row = (scr->m.rows + 1) / 2 - 1;	/* Center */
-			col = scr->m.cols - 1;	/* East */
-			break;
-		case DockNorthEast:
-			row = 0;	/* North */
-			col = scr->m.cols - 1;	/* East */
-			break;
-		case DockNorth:
-			row = 0;	/* North */
-			col = (scr->m.cols + 1) / 2 - 1;	/* Center */
-			break;
-		case DockNorthWest:
-			row = 0;	/* North */
-			col = 0;	/* West */
-			break;
-		case DockWest:
-			row = (scr->m.rows + 1) / 2 - 1;	/* Center */
-			col = 0;	/* West */
-			break;
-		case DockSouthWest:
-			row = scr->m.rows - 1;	/* South */
-			col = 0;	/* West */
-			break;
-		case DockSouth:
-			row = scr->m.rows - 1;	/* South */
-			col = (scr->m.cols + 1) / 2 - 1;	/* Center */
-			break;
-		case DockSouthEast:
-			row = scr->m.rows - 1;	/* South */
-			col = scr->m.cols - 1;	/* East */
-			break;
-		}
-		if (pos != DockNone && (dm = findmonitornear(row, col)))
-			dockmon = dm->num;
-	}
-	if (dockmon >= 0) {
-		for (m = scr->monitors; m; m = m->next) {
-			if (m->num == dockmon) {
-				m->dock.position = scr->options.dockpos;
-				m->dock.orient = scr->options.dockori;
-				scr->dock.monitor = m;
-				break;
-			}
-		}
-	}
+	updatedock();
 	ewmh_update_net_desktop_geometry();
 }
 

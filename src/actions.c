@@ -291,7 +291,6 @@ k_setmwfactor(XEvent *e, Key *k)
 				break;
 			case OrientBottom:
 			case OrientLeft:
-			case OrientLast:
 				if (k->act == DecCount)
 					setmwfact(v, v->mwfact - factor);
 				else

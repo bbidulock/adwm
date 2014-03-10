@@ -362,9 +362,22 @@ typedef enum {
 	OrientLeft,
 	OrientTop,
 	OrientRight,
-	OrientBottom,
-	OrientLast
+	OrientBottom
 } LayoutOrientation;
+
+typedef enum {
+	PositionNone,
+	PositionNorthWest,
+	PositionNorth,
+	PositionNorthEast,
+	PositionWest,
+	PositionCenter,
+	PositionEast,
+	PositionSouthWest,
+	PositionSouth,
+	PositionSouthEast,
+	PositionStatic,
+} LayoutPosition;
 
 typedef enum {
 	StrutsOn,
@@ -524,10 +537,10 @@ typedef struct AScreen AScreen;
 typedef struct Group Group;
 typedef struct CycleList CycleList;
 typedef struct Key Key;
-typedef struct Tree Tree;
 typedef struct Node Node;
+typedef struct Term Term;
 typedef struct Leaf Leaf;
-typedef struct Container Container;
+typedef union Container Container;
 typedef struct Arrangement Arrangement;
 
 #ifdef STARTUP_NOTIFICATION
@@ -825,7 +838,7 @@ struct View {
 	WindowPlacement placement;	/* float placement policy */
 	Monitor *curmon;		/* monitor currently displaying this view */
 	Layout *layout;
-	Tree *tree;			/* layout tree */
+	Node *tree;			/* layout tree */
 	int index;
 	unsigned long long seltags;	/* tags selected for this view */
 	int row, col;			/* row and column in desktop layout */
@@ -837,107 +850,86 @@ struct Tag {
 };
 
 typedef enum {
-	TreeTypeTree,
-	TreeTypeNode,
-	TreeTypeLeaf
+	TreeTypeNode,			/* interior node (contains nodes or terms) */
+	TreeTypeTerm,			/* terminal node (contains only leaves) */
+	TreeTypeLeaf			/* leaf node */
 } TreeType;
 
-struct Tree {
-	TreeType type;			/* always TreeTypeTree */
-	int view;			/* view number */
-	int layout;			/* layout number */
-	LayoutOrientation orient;
-	Geometry c, r, s;		/* current, restore, static */
-	int th, gh, hh;			/* title/grip height */
-	SkipUnion skip;
-	IsUnion is;
-	HasUnion has;
-	WithUnion with;
-	CanUnion can;
-	View *parent;
-	Tree *next;			/* next sibling tree */
-	Tree *prev;			/* prev sibling tree */
-
-	unsigned nchild;
-	Container *head;
-	Container *tail;
-
-	Container *selected;		/* last selected child */
-	Container *focused;		/* last focused child */
-
-};
+#define CONTAINER_COMMON_PORTION \
+	TreeType type; \
+	int view; \
+	ClientGeometry t, f, c; \
+	SkipUnion skip; \
+	IsUnion is; \
+	HasUnion has; \
+	WithUnion with; \
+	CanUnion can
 
 struct Node {
-	TreeType type;			/* always TreeTypeNode */
-	int view;			/* view number */
-	int layout;			/* layout number */
-	LayoutOrientation orient;
-	Geometry c, r, s;		/* current, restore, static */
-	int th, gh, hh;			/* title/grip height */
-	SkipUnion skip;
-	IsUnion is;
-	HasUnion has;
-	WithUnion with;
-	CanUnion can;
-	Container *parent;
+	CONTAINER_COMMON_PORTION;
+
+	Node *parent;
 	Node *next;			/* next sibling node */
 	Node *prev;			/* prev sibling node */
 
-	unsigned nchild;
-	Container *head;		/* all leaves or all nodes */
-	Container *tail;
+	struct {
+		unsigned number;
+		unsigned active;
+		Container *head;
+		Container *tail;
+		LayoutOrientation ori;
+		LayoutPosition pos;
+		Container *selected;		/* last selected child */
+		Container *focused;		/* last focused child */
+	} children;
+};
 
-	Container *selected;		/* last selected child */
-	Container *focused;		/* last focused child */
+struct Term {
+	CONTAINER_COMMON_PORTION;
 
+	Node *parent;
+	Term *next;			/* next sibling node */
+	Term *prev;			/* prev sibling node */
+
+	struct {
+		unsigned number;
+		unsigned active;
+		Leaf *head;
+		Leaf *tail;
+		LayoutOrientation ori;
+		LayoutPosition pos;
+		Leaf *selected;		/* last selected child */
+		Leaf *focused;		/* last focused child */
+	} children;
 };
 
 struct Leaf {
-	TreeType type;			/* always TreeTypeLeaf */
-	int view;			/* view number */
-	int layout;			/* layout number */
-	LayoutOrientation orient;
-	Geometry c, r, s;		/* current, restore, static */
-	int th, gh, hh;			/* title/grip height */
-	SkipUnion skip;
-	IsUnion is;
-	HasUnion has;
-	WithUnion with;
-	CanUnion can;
-	Container *parent;
+	CONTAINER_COMMON_PORTION;
+
+	Term *parent;
 	Leaf *next;			/* next sibling leaf */
 	Leaf *prev;			/* prev sibling leaf */
 
-	Leaf *cnext;			/* next leaf for same client */
-
-	Client *client;
-	char *name;
-	char *clas;
-	char *command;
-
+	struct {
+		Leaf *next;			/* next leaf for same client */
+		Client *client;
+		char *name;
+		char *clas;
+		char *command;
+	} client;
 };
 
-struct Container {
+union Container {
 	struct {
-		TreeType type;
-		int view;		/* view number */
-		int layout;		/* layout number */
-		LayoutOrientation orient;
-		Geometry c, r, s;	/* current, restore, static */
-		int th, gh, hh;		/* title/grip height */
-		SkipUnion skip;
-		IsUnion is;
-		HasUnion has;
-		WithUnion with;
-		CanUnion can;
+		CONTAINER_COMMON_PORTION;
+
 		Container *parent;
 		Container *next;	/* next sibling */
+		Container *prev;	/* prev sibling */
 	};
-	union {
-		Tree tree;
-		Node node;
-		Leaf leaf;
-	};
+	Node node;
+	Term term;
+	Leaf leaf;
 };
 
 typedef struct {
@@ -1051,7 +1043,7 @@ struct AScreen {
 	int screen;
 	unsigned ntags;
 	struct {
-		Tree *tree;		/* only one dock per screen for now... */
+		Container *tree;	/* only one dock per screen for now... */
 		Monitor *monitor;	/* monitor on which dock appears */
 	} dock;
 	View views[MAXTAGS];

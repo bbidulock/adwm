@@ -90,14 +90,58 @@ parsedockapp(const char *res, char **name, char **clas, char **cmd)
 void
 initdock(void)
 {
-	Tree *t;
+	Container *t, *n;
 	unsigned i, s = scr->screen;
+	Monitor *m = scr->dock.monitor;
 
 	t = scr->dock.tree = ecalloc(1, sizeof(*t));
-	t->type = TreeTypeTree;
-	t->view = scr->dock.monitor->num;
-	t->layout = -1;
+	t->type = TreeTypeNode;
+	t->view = m->num;
 	t->is.dockapp = True;
+	t->parent = NULL;
+
+	switch (m->dock.position) {
+	default:
+	case DockNone:
+	case DockEast:
+		t->node.children.pos = PositionEast;
+		t->node.children.ori = OrientRight;
+		break;
+	case DockNorthEast:
+		t->node.children.pos = PositionNorthEast;
+		t->node.children.ori =
+		    (m->dock.orient == DockHorz) ? OrientTop : OrientRight;
+		break;
+	case DockNorth:
+		t->node.children.pos = PositionNorth;
+		t->node.children.ori = OrientTop;
+		break;
+	case DockNorthWest:
+		t->node.children.pos = PositionNorthWest;
+		t->node.children.ori =
+		    (m->dock.orient == DockHorz) ? OrientTop : OrientLeft;
+		break;
+	case DockWest:
+		t->node.children.pos = PositionWest;
+		t->node.children.ori = OrientLeft;
+		break;
+	case DockSouthWest:
+		t->node.children.pos = PositionSouthWest;
+		t->node.children.ori =
+		    (m->dock.orient == DockHorz) ? OrientBottom : OrientLeft;
+		break;
+	case DockSouth:
+		t->node.children.pos = PositionSouth;
+		t->node.children.ori = OrientBottom;
+		break;
+	case DockSouthEast:
+		t->node.children.pos = PositionSouthEast;
+		t->node.children.ori =
+		    (m->dock.orient == DockHorz) ? OrientBottom : OrientRight;
+		break;
+	}
+
+	n = adddocknode(t);
 
 	xresdb = xrdb;
 
@@ -114,22 +158,14 @@ initdock(void)
 			continue;
 		l = ecalloc(1, sizeof(*l));
 		l->type = TreeTypeLeaf;
-		l->view = t->view;
-		l->layout = -1;
+		l->view = n->view;
 		l->is.dockapp = True;
-		l->parent = (Container *) t;
-		/* add to end of list */
-		if ((l->prev = (Leaf *) t->tail))
-			l->prev->next = l;
-		else
-			t->head = (Container *) l;
-		t->tail = (Container *) l;
-		t->nchild++;
-		l->client = NULL;
-		l->cnext = NULL;
-		l->name = res_name;
-		l->clas = res_class;
-		l->command = wm_command;
+		l->client.client = NULL;
+		l->client.next = NULL;
+		l->client.name = res_name;
+		l->client.clas = res_class;
+		l->client.command = wm_command;
+		appleaf(n, l, False);
 	}
 }
 

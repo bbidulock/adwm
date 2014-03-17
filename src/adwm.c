@@ -290,7 +290,7 @@ applyrules(Client *c)
 	unsigned int i, j;
 	regmatch_t tmp;
 	Bool matched = False;
-	XClassHint ch = { 0 };
+	XClassHint ch = { 0, };
 	View *cv = c->cview ? : selview();
 	Monitor *cm = (cv && cv->curmon) ? cv->curmon : nearmonitor(); /* XXX: necessary? */
 
@@ -787,7 +787,7 @@ cleanup(WithdrawCause cause)
 void
 send_configurenotify(Client *c, Window above)
 {
-	XConfigureEvent ce;
+	XConfigureEvent ce = { 0, };
 
 	/* This is not quite correct.  We need to report the position of the client
 	   window in root coordinates, however, we should report it using the specified
@@ -1712,8 +1712,8 @@ manage(Window w, XWindowAttributes *wa)
 {
 	Client *c, *t = NULL;
 	Window trans = None;
-	XWindowChanges wc;
-	XSetWindowAttributes twa;
+	XWindowChanges wc = { 0, };
+	XSetWindowAttributes twa = { 0, };
 	XWMHints *wmh;
 	unsigned long mask = 0;
 	Bool focusnew = True;
@@ -2104,7 +2104,7 @@ mappingnotify(XEvent *e)
 static Bool
 maprequest(XEvent *e)
 {
-	static XWindowAttributes wa;
+	XWindowAttributes wa = { 0, };
 	Client *c;
 	XMapRequestEvent *ev = &e->xmaprequest;
 
@@ -2323,7 +2323,7 @@ sync_request(Client *c, Time time)
 	int overflow = 0;
 	XEvent ce;
 	XSyncValue inc;
-	XSyncAlarmAttributes aa;
+	XSyncAlarmAttributes aa = { { 0, }, };
 
 	XSyncIntToValue(&inc, 1);
 	XSyncValueAdd(&c->sync.val, c->sync.val, inc, &overflow);
@@ -2381,7 +2381,7 @@ alarmnotify(XEvent *e)
 {
 	XSyncAlarmNotifyEvent *ae = (typeof(ae)) e;
 	Client *c;
-	XWindowChanges wc;
+	XWindowChanges wc = { 0, };
 	unsigned mask = 0;
 
 	if (!(c = getclient(ae->alarm, ClientSync))) {
@@ -2744,8 +2744,8 @@ scan(void)
 {
 	unsigned int i, num;
 	Window *wins, d1, d2;
-	XWindowAttributes wa;
-	XWMHints *wmh;
+	XWindowAttributes wa = { 0, };
+	XWMHints *wmh = { 0, };
 
 	wins = NULL;
 	if (XQueryTree(dpy, scr->root, &d1, &d2, &wins, &num)) {
@@ -3502,7 +3502,7 @@ togglemonitor()
 void
 unmanage(Client *c, WithdrawCause cause)
 {
-	XWindowChanges wc;
+	XWindowChanges wc = { 0, };
 	Bool doarrange, dostruts;
 	Window trans = None;
 
@@ -3742,8 +3742,8 @@ unmapnotify(XEvent *e)
 void
 updatesizehints(Client *c)
 {
-	long msize;
-	XSizeHints size;
+	long msize = 0;
+	XSizeHints size = { 0, };
 
 	if (!XGetWMNormalHints(dpy, c->win, &size, &msize) || !size.flags)
 		size.flags = PSize;

@@ -413,15 +413,19 @@ static void
 drawdockapp(Client *c, AScreen *ds)
 {
 	int status;
+	unsigned long pixel;
+
+	pixel = (c == sel) ? ds->style.color.sel[ColBG] : ds->style.color.norm[ColBG];
+	/* to avoid clearing window, initiallly set to norm[ColBG] */
+	// XSetWindowBackground(dpy, c->frame, pixel);
+	// XClearArea(dpy, c->frame, 0, 0, 0, 0, True);
 
 	ds->dc.x = ds->dc.y = 0;
 	if (!(ds->dc.w = c->c.w))
 		return;
 	if (!(ds->dc.h = c->c.h))
 		return;
-	XSetForeground(dpy, ds->dc.gc,
-		       c ==
-		       sel ? ds->style.color.sel[ColBG] : ds->style.color.norm[ColBG]);
+	XSetForeground(dpy, ds->dc.gc, pixel);
 	XSetLineAttributes(dpy, ds->dc.gc, ds->style.border, LineSolid, CapNotLast,
 			   JoinMiter);
 	XSetFillStyle(dpy, ds->dc.gc, FillSolid);
@@ -432,7 +436,45 @@ drawdockapp(Client *c, AScreen *ds)
 		DPRINTF("Could not fill rectangle, error %d\n", status);
 	CPRINTF(c, "Filled dockapp frame %dx%d+%d+%d\n", ds->dc.w, ds->dc.h, ds->dc.x,
 		ds->dc.y);
+	/* following are quite disruptive - many dockapps ignore expose events and simply 
+	   update on timer */
+	// XClearWindow(dpy, c->icon ? : c->win);
 	// XClearArea(dpy, c->icon ? : c->win, 0, 0, 0, 0, True);
+#if 0
+	/* doesn't work */
+	{
+		XEvent ev;
+
+		ev.xexpose.type = Expose;
+		ev.xexpose.serial = 0;
+		ev.xexpose.send_event = False;
+		ev.xexpose.display = dpy;
+		ev.xexpose.window = c->icon ? : c->win;
+		ev.xexpose.x = 0;
+		ev.xexpose.y = 0;
+		ev.xexpose.width = c->r.w;
+		ev.xexpose.height = c->r.h;
+		ev.xexpose.count = 0;
+
+		XSendEvent(dpy, c->icon ? : c->win, False, NoEventMask, &ev);
+
+		ev.xconfigure.type = ConfigureNotify;
+		ev.xconfigure.serial = 0;
+		ev.xconfigure.send_event = True;
+		ev.xconfigure.display = dpy;
+		ev.xconfigure.event = c->icon ? : c->win;
+		ev.xconfigure.window = c->icon ? : c->win;
+		ev.xconfigure.x = c->c.x + c->c.b + c->r.x;
+		ev.xconfigure.y = c->c.y + c->c.b + c->r.y;
+		ev.xconfigure.width = c->r.w;
+		ev.xconfigure.height = c->r.h;
+		ev.xconfigure.border_width = c->r.b;
+		ev.xconfigure.above = None;
+		ev.xconfigure.override_redirect = False;
+
+		XSendEvent(dpy, c->icon ? : c->win, False, NoEventMask, &ev);
+	}
+#endif
 }
 
 void

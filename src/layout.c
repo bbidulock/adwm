@@ -547,6 +547,9 @@ reconfigure_dockapp(Client *c, ClientGeometry *n)
 	XWindowChanges wwc, fwc;
 	unsigned wmask, fmask;
 
+	GPRINTF(&c->r, "initial c->r geometry\n");
+	GPRINTF(&c->c, "initial c->c geometry\n");
+	GPRINTF(n,     "initial n    geometry\n");
 	wmask = fmask = 0;
 	if (c->c.x != (fwc.x = n->x)) {
 		c->c.x = n->x;
@@ -580,17 +583,18 @@ reconfigure_dockapp(Client *c, ClientGeometry *n)
 	wwc.width = c->r.w;
 	wwc.height = c->r.h;
 	wwc.border_width = c->r.b;
+	GPRINTF(&c->r, "final   c->r geometry\n");
+	GPRINTF(&c->c, "final   c->c geometry\n");
+	GPRINTF(n,     "final   n    geometry\n");
 	if (fmask) {
 		DPRINTF("frame wc = %ux%u+%d+%d:%d\n", fwc.width, fwc.height, fwc.x,
 			fwc.y, fwc.border_width);
-		XConfigureWindow(dpy, c->frame,
-				 CWX | CWY | CWWidth | CWHeight | CWBorderWidth, &fwc);
+		XConfigureWindow(dpy, c->frame, fmask, &fwc);
 	}
 	if (wmask) {
 		DPRINTF("wind  wc = %ux%u+%d+%d:%d\n", wwc.width, wwc.height, wwc.x,
 			wwc.y, wwc.border_width);
-		XConfigureWindow(dpy, c->icon,
-				 CWX | CWY | CWWidth | CWHeight | CWBorderWidth, &wwc);
+		XConfigureWindow(dpy, c->icon, wmask, &wwc);
 	}
 	if ((fmask | wmask) && !(wmask & (CWWidth | CWHeight))) {
 		XConfigureEvent ce;
@@ -599,11 +603,11 @@ reconfigure_dockapp(Client *c, ClientGeometry *n)
 		ce.display = dpy;
 		ce.event = c->icon;
 		ce.window = c->icon;
-		ce.x = c->c.x + c->r.x;
-		ce.y = c->c.y + c->r.y;
+		ce.x = c->c.x + c->c.b + c->r.x;
+		ce.y = c->c.y + c->c.b + c->r.y;
 		ce.width = c->r.w;
 		ce.height = c->r.h;
-		ce.border_width = c->c.b;
+		ce.border_width = c->r.b;
 		ce.above = None;
 		ce.override_redirect = False;
 		XSendEvent(dpy, c->icon, False, StructureNotifyMask, (XEvent *) &ce);
@@ -858,6 +862,12 @@ configureclient(XEvent *e, Client *c, int gravity)
 	   moving the saved floating state.  This is the only function that calls
 	   findcurmonitor(). */
 
+	/* This is not quite correct anymore.  The client requests reconfiguration of its 
+	   interior window and uses the border width specified or last specified and the
+	   specified gravity as though it was never reparented and has no decorative
+	   border.   We need to move and resize the frame so that the reference
+	   points are intact. */
+
 	if (!(v = c->cview ? : selview()))
 		return False;
 	if (!c->is.max && isfloating(c, v)) {
@@ -916,7 +926,7 @@ configuremonitors(XEvent *e, Client *c)
 	if (c->is.max) {
 		Monitor *mt, *mb, *ml, *mr;
 		int t, b, l, r;
-		ClientGeometry g;
+		ClientGeometry g = { 0, };
 
 		mt = findmonbynum(ev->data.l[0]);
 		mb = findmonbynum(ev->data.l[1]);
@@ -941,6 +951,7 @@ configuremonitors(XEvent *e, Client *c)
 		g.b = 0;
 		g.t = 0;
 		g.g = 0;
+		g.v = 0;
 		reconfigure(c, &g);
 	}
 	return True;
@@ -1113,12 +1124,14 @@ getworkarea(Monitor *m, Workarea *w)
 	switch (m->curview->barpos) {
 	case StrutsOn:
 	default:
-		if (m->dock.position)
+		if (m->dock.position != DockNone)
 			wa = &m->dock.wa;
 		else
 			wa = &m->wa;
 		break;
 	case StrutsHide:
+		wa = &m->wa;
+		break;
 	case StrutsOff:
 		wa = &m->sc;
 		break;
@@ -1132,7 +1145,7 @@ getworkarea(Monitor *m, Workarea *w)
 static void
 updatefloat(Client *c, View *v)
 {
-	ClientGeometry g;
+	ClientGeometry g = { 0, };
 	Workarea wa;
 
 	if (c->is.dockapp)
@@ -1208,307 +1221,6 @@ prevdockapp(Client *c, View *v)
 {
 	for (; c && (!c->is.dockapp || !isvisible(c, v) || c->is.hidden); c = c->prev) ;
 	return c;
-}
-
-void
-arrangedock(View *v)
-{
-	Client *c = nextdockapp(scr->clients, v), *cn;
-	int i, num, rows, cols, margin = 4, max = 64, b = scr->style.border;
-	ClientGeometry *g = NULL, n;
-	Monitor *m = v->curmon;
-	DockPosition pos = m->dock.position;
-	DockSide side;
-	Bool overlap = VFEATURES(v, OVERLAP) ? True : False;
-
-	updategeom(m);
-	m->dock.wa = m->wa;
-
-	if (!c || pos == DockNone)
-		return;
-
-	for (num = 0, c = nextdockapp(scr->clients, v); c;
-	     c = nextdockapp(c->next, v), num++) ;
-
-	DPRINTF("there are %d dock apps\n", num);
-
-	switch (m->dock.orient) {
-	case DockHorz:
-		DPRINTF("Dock orientation Horz\n");
-		break;
-	case DockVert:
-		DPRINTF("Dock orientation Vert\n");
-		break;
-	}
-
-	switch (pos) {
-	case DockNorth:
-		side = DockSideNorth;
-		DPRINTF("Dock position North\n");
-		break;
-	case DockEast:
-		side = DockSideEast;
-		DPRINTF("Dock position East\n");
-		break;
-	case DockSouth:
-		side = DockSideSouth;
-		DPRINTF("Dock position South\n");
-		break;
-	case DockWest:
-		side = DockSideWest;
-		DPRINTF("Dock position West\n");
-		break;
-	case DockNorthEast:
-		side = (m->dock.orient == DockHorz) ? DockSideNorth : DockSideEast;
-		DPRINTF("Dock position NorthEast\n");
-		break;
-	case DockNorthWest:
-		side = (m->dock.orient == DockHorz) ? DockSideNorth : DockSideWest;
-		DPRINTF("Dock position NorthWest\n");
-		break;
-	case DockSouthWest:
-		side = (m->dock.orient == DockHorz) ? DockSideSouth : DockSideWest;
-		DPRINTF("Dock position SouthWest\n");
-		break;
-	case DockSouthEast:
-		side = (m->dock.orient == DockHorz) ? DockSideSouth : DockSideEast;
-		DPRINTF("Dock position SouthEast\n");
-		break;
-	default:
-		return;
-	}
-
-	switch (side) {
-	case DockSideEast:
-		DPRINTF("Dock side East\n");
-		break;
-	case DockSideWest:
-		DPRINTF("Dock side West\n");
-		break;
-	case DockSideNorth:
-		DPRINTF("Dock side North\n");
-		break;
-	case DockSideSouth:
-		DPRINTF("Dock side South\n");
-		break;
-	}
-
-	switch (side) {
-	case DockSideEast:
-	case DockSideWest:
-		rows = (m->wa.h - b) / (max + b);
-		cols = (num - 1) / rows + 1;
-		DPRINTF("dock columns %d, rows %d\n", cols, rows);
-		if (rows > num)
-			rows = num;
-		g = calloc(cols, sizeof(*g));
-		for (i = 0; i < cols; i++) {
-			g[i].b = b;
-			g[i].w = max;
-			g[i].h = (m->wa.h - b) / rows - b;
-			g[i].y = m->wa.y;
-			switch ((int) side) {
-			case DockSideEast:
-				g[i].x = m->wa.x + m->wa.w - (i + 1) * (g[i].w + b);
-				break;
-			case DockSideWest:
-				g[i].x = m->wa.x + i * (g[i].w + b);
-				break;
-			}
-			DPRINTF("geometry col %d is %dx%d+%d+%d:%d\n", i, g[i].w, g[i].h,
-				g[i].x, g[i].y, g[i].b);
-			num -= rows;
-			if (rows > num)
-				rows = num;
-		}
-		if (overlap) {
-			int h;
-
-			for (i = 0, cn = nextdockapp(scr->clients, v); (c = cn);) {
-				cn = nextdockapp(c->next, v);
-
-				h = c->r.h + 2 * margin;
-				if (h > max)
-					h = max;
-				h += b;
-				if (!cn || g[i].y + h + b <= m->wa.y + m->wa.h) {
-					g[i].y += h + b;
-					if (cn)
-						continue;
-				}
-				switch ((int) pos) {
-				case DockEast:
-				case DockWest:
-					g[i].y = m->wa.y + (m->wa.h -
-							    (g[i].y + b - m->wa.y)) / 2;
-					break;
-				case DockNorthEast:
-				case DockNorthWest:
-					g[i].y = m->wa.y;
-					break;
-				case DockSouthEast:
-				case DockSouthWest:
-					g[i].y = m->wa.y + (m->wa.h -
-							    (g[i].y + b - m->wa.y));
-					break;
-				}
-				DPRINTF("geometry col %d is %dx%d+%d+%d:%d\n", i, g[i].w,
-					g[i].h, g[i].x, g[i].y, g[i].b);
-				i++;
-			}
-			cols = i;
-		}
-		switch ((int) side) {
-		case DockSideEast:
-			m->dock.wa.w -= cols * (max + b) + b;
-			XResizeWindow(dpy, m->veil, m->dock.wa.w, m->dock.wa.h);
-			break;
-		case DockSideWest:
-			m->dock.wa.w -= cols * (max + b) + b;
-			XResizeWindow(dpy, m->veil, m->dock.wa.w, m->dock.wa.h);
-			m->dock.wa.x += cols * (max + b) + b;
-			XMoveWindow(dpy, m->veil, m->dock.wa.x, m->dock.wa.y);
-			break;
-		}
-		break;
-	case DockSideNorth:
-	case DockSideSouth:
-		cols = (m->wa.w - b) / (max + b);
-		rows = (num - 1) / cols + 1;
-		if (cols > num)
-			cols = num;
-		DPRINTF("dock columns %d, rows %d\n", cols, rows);
-		g = calloc(rows, sizeof(*g));
-		for (i = 0; i < rows; i++) {
-			g[i].b = b;
-			g[i].w = (m->wa.w - b) / cols - b;
-			g[i].h = max;
-			g[i].x = m->wa.x;
-			switch ((int) side) {
-			case DockSideNorth:
-				g[i].y = m->wa.y + i * (g[i].h + b);
-				break;
-			case DockSideSouth:
-				g[i].y = m->wa.y + m->wa.h - (i + 1) * (g[i].h + b);
-				break;
-			}
-			DPRINTF("geometry row %d is %dx%d+%d+%d:%d\n", i, g[i].w, g[i].h,
-				g[i].x, g[i].y, g[i].b);
-			num -= cols;
-			if (cols > num)
-				cols = num;
-		}
-		if (overlap) {
-			int w;
-
-			for (i = 0, cn = nextdockapp(scr->clients, v); (c = cn);) {
-				cn = nextdockapp(c->next, v);
-
-				w = c->r.w + 2 * margin;
-				if (w > max)
-					w = max;
-				w += b;
-				if (!cn || g[i].x + w + b <= m->wa.x + m->wa.w) {
-					g[i].x += w + b;
-					if (cn)
-						continue;
-				}
-				switch ((int) pos) {
-				case DockNorth:
-				case DockSouth:
-					g[i].x = m->wa.x + (m->wa.w -
-							    (g[i].x + b - m->wa.x)) / 2;
-					break;
-				case DockNorthWest:
-				case DockSouthWest:
-					g[i].x = m->wa.x;
-					break;
-				case DockNorthEast:
-				case DockSouthEast:
-					g[i].x = m->wa.x + (m->wa.w -
-							    (g[i].x + b - m->wa.x));
-					break;
-				}
-				DPRINTF("geometry row %d is %dx%d+%d+%d:%d\n", i, g[i].w,
-					g[i].h, g[i].x, g[i].y, g[i].b);
-				i++;
-			}
-			cols = i;
-		}
-		switch ((int) side) {
-		case DockSideNorth:
-			m->dock.wa.y += rows * (max + b) + b;
-			XMoveWindow(dpy, m->veil, m->dock.wa.x, m->dock.wa.y);
-			m->dock.wa.h -= rows * (max + b) + b;
-			XResizeWindow(dpy, m->veil, m->dock.wa.w, m->dock.wa.h);
-			break;
-		case DockSideSouth:
-			m->dock.wa.h -= rows * (max + b) + b;
-			XResizeWindow(dpy, m->veil, m->dock.wa.w, m->dock.wa.h);
-			break;
-		}
-		break;
-	}
-	for (i = 0, cn = nextdockapp(scr->clients, v); (c = cn);) {
-		cn = nextdockapp(c->next, v);
-		switch (m->dock.orient) {
-		case DockVert:
-			if (overlap) {
-				g[i].h = c->r.h + 2 * margin;
-				if (g[i].h > max)
-					g[i].h = max;
-				g[i].h += b;
-				if (g[i].y + g[i].h + b > m->wa.y + m->wa.h) {
-					g[i + 1].h = g[i].h;
-					i++;
-				}
-				n = g[i];
-				g[i].y += g[i].h + b;
-			} else {
-				n = g[i];
-				g[i].y += g[i].h + b;
-				if (!cn || g[i].y > m->wa.y + m->wa.h) {
-					n.h = m->wa.y + m->wa.h - n.y - 2 * b;
-					i++;
-				}
-			}
-			break;
-		case DockHorz:
-			if (overlap) {
-				g[i].w = c->r.w + 2 * margin;
-				if (g[i].w > max)
-					g[i].w = max;
-				g[i].w += b;
-				if (g[i].x + g[i].w + b > m->wa.x + m->wa.w) {
-					g[i + 1].w = g[i].w;
-					i++;
-				}
-				n = g[i];
-				g[i].x += g[i].w + b;
-			} else {
-				n = g[i];
-				g[i].x += g[i].w + b;
-				if (!cn || g[i].x > m->wa.x + m->wa.w) {
-					n.w = m->wa.x + m->wa.w - n.x - 2 * b;
-					i++;
-				}
-			}
-			break;
-		}
-		if (!c->is.moveresize) {
-			DPRINTF("CALLING reconfigure()\n");
-			reconfigure(c, &n);
-		} else {
-			ClientGeometry C = n;
-
-			/* center it where it was before */
-			C.x = (c->c.x + c->c.w / 2) - C.w / 2;
-			C.y = (c->c.y + c->c.h / 2) - C.h / 2;
-			DPRINTF("CALLING reconfigure()\n");
-			reconfigure(c, &C);
-		}
-	}
-	free(g);
 }
 
 static unsigned
@@ -1594,8 +1306,8 @@ popleaf(Term *n)
 	insleaf(nnew, l, active);
 }
 
-void
-arrangedock_basic(View *v, Bool floating)
+static void
+arrangedock(View *v)
 {
 	Leaf *l;
 	Monitor *m;
@@ -1603,6 +1315,7 @@ arrangedock_basic(View *v, Bool floating)
 	int i, j, num, major, minor, count, b;
 	static const unsigned max = 64;
 	Workarea wa;
+	Bool floating = VFEATURES(v, OVERLAP) ? True : False;
 
 	if (!(m = v->curmon))
 		return;
@@ -1652,6 +1365,8 @@ arrangedock_basic(View *v, Bool floating)
 	count = num;
 	for (i = 0, n = (Container *) t->node.children.head; i < major; i++, n = n->next) {
 		ClientGeometry gt, gf;
+		double pt, dt;
+		double pf, df;
 
 		if (minor > count)
 			minor = count;
@@ -1664,81 +1379,95 @@ arrangedock_basic(View *v, Bool floating)
 		switch (t->node.children.ori) {
 		case OrientLeft:
 		case OrientRight:
-			gt.y = wa.y;
+			wa.w -= max + b + (i ? 0 : b);
+			pt = wa.y;
 			gf.w = gt.w = max + 2 * b;
-			gt.h = wa.h;
-			gf.h = minor * (max + b) + b;
+			dt = wa.h;
+			df = minor * (max + b) + b;
 			switch ((int) t->node.children.ori) {
+			default:
 			case OrientLeft:
 				gf.x = gt.x = wa.x;
 				switch ((int) t->node.children.pos) {
 				case PositionNorthWest:
-					gf.y = wa.y;
+					pf = wa.y;
 					break;
+				default:
 				case PositionWest:
-					gf.y = wa.y + (wa.h - gf.h) / 2;
+					pf = wa.y + (wa.h - df) / 2.0;
 					break;
 				case PositionSouthWest:
-					gf.y = wa.y + (wa.h - gf.h);
+					pf = wa.y + (wa.h - df);
 					break;
 				}
 				wa.x += max + b;
 				break;
 			case OrientRight:
-				gf.x = gt.x = wa.x + wa.w - (max + b);
+				gf.x = gt.x = wa.x + wa.w;
 				switch ((int) t->node.children.pos) {
 				case PositionNorthEast:
-					gf.y = wa.y;
+					pf = wa.y;
 					break;
+				default:
 				case PositionEast:
-					gf.y = wa.y + (wa.h - gf.h) / 2;
+					pf = wa.y + (wa.h - df) / 2.0;
 					break;
 				case PositionSouthEast:
-					gf.y = wa.y + (wa.h - gf.h);
+					pf = wa.y + (wa.h - df);
 					break;
 				}
 				break;
 			}
-			wa.w -= max + b;
+			gt.y = pt;
+			gf.y = pf;
+			gt.h = dt;
+			gf.h = df;
 			break;
 		case OrientTop:
 		case OrientBottom:
-			gt.x = wa.x;
+			wa.h -= max + b + (i ? 0 : b);
+			pt = wa.x;
 			gf.h = gt.h = max + 2 * b;
-			gt.w = wa.w;
-			gf.w = minor * (max + b) + b;
+			dt = wa.w;
+			df = minor * (max + b) + b;
 			switch ((int) t->node.children.ori) {
+			default:
 			case OrientTop:
 				gf.y = gt.y = wa.y;
 				switch ((int) t->node.children.pos) {
 				case PositionNorthWest:
-					gf.x = wa.x;
+					pf = wa.x;
 					break;
+				default:
 				case PositionNorth:
-					gf.x = wa.x + (wa.w - gf.w) / 2;
+					pf = wa.x + (wa.w - df) / 2.0;
 					break;
 				case PositionNorthEast:
-					gf.x = wa.x + (wa.w - gf.w);
+					pf = wa.x + (wa.w - df);
 					break;
 				}
 				wa.y += max + b;
 				break;
 			case OrientBottom:
-				gf.y = gt.y = wa.y + wa.h - (max + b);
+				gf.y = gt.y = wa.y + wa.h;
 				switch ((int) t->node.children.pos) {
 				case PositionSouthWest:
-					gf.x = wa.x;
+					pf = wa.x;
 					break;
+				default:
 				case PositionSouth:
-					gf.x = wa.x + (wa.w - gf.w) / 2;
+					pf = wa.x + (wa.w - df) / 2.0;
 					break;
 				case PositionSouthEast:
-					gf.x = wa.x + (wa.w - gf.w);
+					pf = wa.x + (wa.w - df);
 					break;
 				}
 				break;
 			}
-			wa.h -= max + b;
+			gt.x = pt;
+			gf.x = pf;
+			gt.w = dt;
+			gf.w = df;
 			break;
 		default:
 			DPRINTF("ERROR: invalid childe orientation\n");
@@ -1750,31 +1479,48 @@ arrangedock_basic(View *v, Bool floating)
 		switch (n->term.children.ori) {
 		case OrientLeft:
 			/* left to right */
-			gt.w = (n->t.w - b) / minor + b;
-			gf.w = (n->f.w - b) / minor + b;
-			gt.x = n->t.x;
-			gf.x = n->f.x;
+			dt = ((double)(dt - b)) /((double) minor) + b;
+			df = ((double)(df - b)) /((double) minor) + b;
+			pt = pt;
+			pf = pf;
+			gt.w = dt;
+			gf.w = df;
+			gt.x = pt;
+			gf.x = pf;
 			break;
+		default:
 		case OrientRight:
 			/* right to left */
-			gt.w = (n->t.w - b) / minor + b;
-			gf.w = (n->f.w - b) / minor + b;
-			gt.x = n->t.x + n->t.w - gt.w;
-			gf.x = n->f.x + n->f.w - gf.w;
+			dt = ((double)(dt - b)) /((double) minor) + b;
+			df = ((double)(df - b)) /((double) minor) + b;
+			pt = pt + n->t.w - dt;
+			pf = pf + n->f.w - df;
+			gt.w = dt;
+			gf.w = df;
+			gt.x = pt;
+			gf.x = pf;
 			break;
 		case OrientTop:
 			/* top to bottom */
-			gt.h = (n->t.h - b) / minor + b;
-			gf.h = (n->f.h - b) / minor + b;
-			gt.y = n->t.y;
-			gf.y = n->f.y;
+			dt = ((double)(dt - b)) /((double) minor) + b;
+			df = ((double)(df - b)) /((double) minor) + b;
+			pt = pt;
+			pf = pf;
+			gt.h = dt;
+			gf.h = df;
+			gt.y = pt;
+			gf.y = pf;
 			break;
 		case OrientBottom:
 			/* bottom to top */
-			gt.h = (n->t.h - b) / minor + b;
-			gf.h = (n->f.h - b) / minor + b;
-			gt.y = n->t.y + n->t.h - gt.h;
-			gf.y = n->f.y + n->f.h - gf.h;
+			dt = ((double)(dt - b)) /((double) minor) + b;
+			df = ((double)(df - b)) /((double) minor) + b;
+			pt = pt + n->t.h - dt;
+			pf = pf + n->f.h - df;
+			gt.h = dt;
+			gf.h = df;
+			gt.y = pt;
+			gf.y = pf;
 			break;
 		}
 		for (j = 1, l = n->term.children.head; l && j <= minor; l = l->next) {
@@ -1790,8 +1536,8 @@ arrangedock_basic(View *v, Bool floating)
 				switch (n->term.children.ori) {
 				case OrientLeft:
 					/* left to right */
-					gt.w = n->t.x + n->t.w - gt.x - 2 * b;
-					gf.w = n->f.x + n->f.w - gf.x - 2 * b;
+					gt.w = n->t.x + n->t.w - gt.x;
+					gf.w = n->f.x + n->f.w - gf.x;
 					break;
 				case OrientRight:
 					/* right to left */
@@ -1802,8 +1548,8 @@ arrangedock_basic(View *v, Bool floating)
 					break;
 				case OrientTop:
 					/* top to bottom */
-					gt.h = n->t.y + n->t.h - gt.y - 2 * b;
-					gf.h = n->f.y + n->f.h - gf.y - 2 * b;
+					gt.h = n->t.y + n->t.h - gt.y;
+					gf.h = n->f.y + n->f.h - gf.y;
 					break;
 				case OrientBottom:
 					/* bottom to top */
@@ -1825,6 +1571,8 @@ arrangedock_basic(View *v, Bool floating)
 					g.x = (c->c.x + c->c.w / 2) - g.w / 2;
 					g.y = (c->c.y + c->c.h / 2) - g.h / 2;
 				}
+				g.w -= 2 * g.b;
+				g.h -= 2 * g.b;
 				DPRINTF("CALLING reconfigure()\n");
 				reconfigure(c, &g);
 			}
@@ -1832,28 +1580,61 @@ arrangedock_basic(View *v, Bool floating)
 			switch (n->term.children.ori) {
 			case OrientLeft:
 				/* left to right */
-				gt.x += gt.w - b;
-				gf.x += gf.w - b;
+				pt += dt - b;
+				pf += df - b;
+				gt.w = pt - gt.x + b;
+				gf.w = pf - gf.x + b;
+				gt.x = pt;
+				gf.x = pf;
 				break;
 			case OrientRight:
 				/* right to left */
-				gt.x -= gt.w - b;
-				gf.x -= gf.w - b;
+				pt -= dt - b;
+				pf -= df - b;
+				gt.w = gt.x - pt + b;
+				gf.w = gf.x - pf + b;
+				gt.x = pt;
+				gf.x = pf;
 				break;
 			case OrientTop:
 				/* top to bottom */
-				gt.y += gt.h - b;
-				gf.y += gf.h - b;
+				pt += dt - b;
+				pf += df - b;
+				gt.h = pt - gt.y + b;
+				gf.h = pf - gf.y + b;
+				gt.y = pt;
+				gf.y = pf;
 				break;
 			case OrientBottom:
 				/* bottom to top */
-				gt.y -= gt.h - b;
-				gf.y -= gf.h - b;
+				pt -= dt - b;
+				pf -= df - b;
+				gt.h = gt.y - pt + b;
+				gf.h = gf.y - pf + b;
+				gt.y = pt;
+				gf.y = pf;
 				break;
 			}
 			j++;
 		}
 		count -= minor;
+	}
+	switch (t->node.children.ori) {
+	default:
+	case OrientRight:
+		wa.w += b;
+		break;
+	case OrientLeft:
+		wa.w += b;
+		wa.x -= b;
+		break;
+	case OrientBottom:
+		wa.h += b;
+		break;
+	case OrientTop:
+		wa.h += b;
+		wa.y -= b;
+		break;
 	}
 	m->dock.wa = wa;
 	assert(count == 0);
@@ -1865,12 +1646,6 @@ arrangedock_basic(View *v, Bool floating)
 		n->t.w = n->f.w = n->c.w = 0;
 		n->t.h = n->f.h = n->c.h = 0;
 	}
-}
-
-static void
-arrangedock_tile(View *v)
-{
-	arrangedock_basic(v, False);
 }
 
 Client *
@@ -1893,7 +1668,7 @@ static void
 tile(View *v)
 {
 	LayoutArgs wa, ma, sa;
-	ClientGeometry n, m, s, g;
+	ClientGeometry n = { 0, }, m = { 0, }, s = { 0, }, g = { 0, };
 	Client *c, *mc;
 	Monitor *cm = v->curmon;
 	int i, overlap, th, gh, hh, mg;
@@ -2250,8 +2025,7 @@ tile(View *v)
 static void
 arrange_tile(View *v)
 {
-	// arrangedock(v);
-	arrangedock_tile(v);
+	arrangedock(v);
 	tile(v);
 	arrangefloats(v);
 }
@@ -2319,7 +2093,7 @@ grid(View *v)
 
 	for (i = 0, col = 0, row = 0, c = nexttiled(scr->clients, v); c && i < n;
 	     c = nexttiled(c->next, v), i++, col = i % cols, row = i / cols) {
-		ClientGeometry n;
+		ClientGeometry n = { 0, };
 
 		n.x = gap + wa.x + (col * cw);
 		n.y = gap + wa.y + (row * rh[col]);
@@ -2359,8 +2133,7 @@ grid(View *v)
 static void
 arrange_grid(View *v)
 {
-	// arrangedock(v);
-	arrangedock_tile(v);
+	arrangedock(v);
 	grid(v);
 	arrangefloats(v);
 }
@@ -2391,13 +2164,18 @@ monocle(View *v)
 	Workarea w;
 
 	getworkarea(v->curmon, &w);
+	DPRINTF("work area is %dx%d+%d+%d\n", w.w, w.h, w.x, w.y);
 	for (c = nexttiled(scr->clients, v); c; c = nexttiled(c->next, v)) {
-		ClientGeometry g;
+		ClientGeometry g = { 0, };
 
-		memcpy(&g, &w, sizeof(w));
+		g.x = w.x;
+		g.y = w.y;
+		g.w = w.w;
+		g.h = w.h;
 		g.t = (v->dectiled && c->has.title) ? scr->style.titleheight : 0;
 		g.g = (v->dectiled && c->has.grips) ? scr->style.gripsheight : 0;
-		g.b = (g.t || g.g) ? scr->style.border : 0;
+		g.v = scr->style.fullgrips ? g.g : 0;
+		g.b = (g.t || g.g || g.v) ? scr->style.border : 0;
 		g.w -= 2 * g.b;
 		g.h -= 2 * g.b;
 
@@ -2409,8 +2187,7 @@ monocle(View *v)
 static void
 arrange_monocle(View *v)
 {
-	// arrangedock(v);
-	arrangedock_tile(v);
+	arrangedock(v);
 	monocle(v);
 	arrangefloats(v);
 }
@@ -2435,16 +2212,9 @@ initlayout_monocle(View *v)
 }
 
 static void
-arrangedock_float(View *v)
-{
-	arrangedock_basic(v, True);
-}
-
-static void
 arrange_float(View *v)
 {
-	// arrangedock(v);
-	arrangedock_float(v);
+	arrangedock(v);
 	arrangefloats(v);
 }
 
@@ -2769,11 +2539,17 @@ restack_client(Client *c, int stack_mode, Client *o)
 	case Above:
 		if (o) {
 			/* just above sibling */
+			if (c->snext == o)
+				/* already just above sibling */
+				return;
 			*cp = c->snext;
 			*op = c;
 			c->snext = o;
 		} else {
 			/* top of stack */
+			if (cp == &scr->stack)
+				/* already at top */
+				return;
 			*cp = c->snext;
 			c->snext = scr->stack;
 			scr->stack = c;
@@ -2782,11 +2558,17 @@ restack_client(Client *c, int stack_mode, Client *o)
 	case Below:
 		if (o) {
 			/* just below sibling */
+			if (o->snext == c)
+				/* already just below sibling */
+				return;
 			*cp = c->snext;
 			c->snext = o->snext;
 			o->snext = c;
 		} else {
 			/* bottom of stack */
+			if (lp == &c->snext)
+				/* already at bottom */
+				return;
 			*cp = c->snext;
 			c->snext = *lp;
 			*lp = c;
@@ -2801,6 +2583,9 @@ restack_client(Client *c, int stack_mode, Client *o)
 				return;
 		}
 		/* top of stack */
+		if (cp == &scr->stack)
+			/* already at top */
+			return;
 		*cp = c->snext;
 		c->snext = scr->stack;
 		scr->stack = c;
@@ -2814,6 +2599,9 @@ restack_client(Client *c, int stack_mode, Client *o)
 				return;
 		}
 		/* bottom of stack */
+		if (lp == &c->snext)
+			/* already at bottom */
+			return;
 		*cp = c->snext;
 		c->snext = *lp;
 		*lp = c;
@@ -2822,11 +2610,17 @@ restack_client(Client *c, int stack_mode, Client *o)
 		if (o) {
 			if (client_occludes(o, c)) {
 				/* top of stack */
+				if (cp == &scr->stack)
+					/* already at top */
+					return;
 				*cp = c->snext;
 				c->snext = scr->stack;
 				scr->stack = c;
 			} else if (client_occludes(c, o)) {
 				/* bottom of stack */
+				if (lp == &c->snext)
+					/* already at bottom */
+					return;
 				*cp = c->snext;
 				c->snext = *lp;
 				*lp = c;
@@ -2835,11 +2629,17 @@ restack_client(Client *c, int stack_mode, Client *o)
 		} else {
 			if (client_occluded_any(c)) {
 				/* top of stack */
+				if (cp == &scr->stack)
+					/* already at top */
+					return;
 				*cp = c->snext;
 				c->snext = scr->stack;
 				scr->stack = c;
 			} else if (client_occludes_any(c)) {
 				/* bottom of stack */
+				if (lp == &c->snext)
+					/* already at bottom */
+					return;
 				*cp = c->snext;
 				c->snext = *lp;
 				*lp = c;
@@ -2907,28 +2707,24 @@ Arrangement arrangement_FLOAT = {
 	.name = "float",
 	.initlayout = initlayout_float,
 	.arrange = arrange_float,
-	.arrangedock = arrangedock_float,
 };
 
 Arrangement arrangement_TILE = {
 	.name = "tile",
 	.initlayout = initlayout_tile,
 	.arrange = arrange_tile,
-	.arrangedock = arrangedock_tile,
 };
 
 Arrangement arrangement_GRID = {
 	.name = "grid",
 	.initlayout = initlayout_grid,
 	.arrange = arrange_grid,
-	.arrangedock = arrangedock_tile,
 };
 
 Arrangement arrangement_MONO = {
 	.name = "monocle",
 	.initlayout = initlayout_monocle,
 	.arrange = arrange_monocle,
-	.arrangedock = arrangedock_tile,
 };
 
 Layout layouts[] = {
@@ -3400,7 +3196,7 @@ mousemove(Client *c, XEvent *e, Bool toggle)
 	int dx, dy;
 	int x_root, y_root;
 	View *v, *nv;
-	ClientGeometry n, o;
+	ClientGeometry n = { 0, }, o = { 0, };
 	Bool moved = False, isfloater;
 	int move = CurMove;
 	IsUnion was = {.is = 0 };
@@ -3811,7 +3607,7 @@ mouseresize_from(Client *c, int from, XEvent *e, Bool toggle)
 	int dx, dy;
 	int x_root, y_root;
 	View *v, *nv;
-	ClientGeometry n, o;
+	ClientGeometry n = { 0, }, o = { 0, };
 	Bool resized = False;
 	IsUnion was = {.is = 0 };
 
@@ -4557,7 +4353,7 @@ place_random(Client *c, WindowPlacement p, ClientGeometry *g, View *v, Workarea 
 static void
 place(Client *c, WindowPlacement p)
 {
-	ClientGeometry g;
+	ClientGeometry g = { 0, };
 	Workarea w;
 	View *v;
 	Monitor *m;
@@ -4931,7 +4727,7 @@ moveto(Client *c, RelativeDirection position)
 	Monitor *m;
 	View *v;
 	Workarea w;
-	ClientGeometry g;
+	ClientGeometry g = { 0, };
 
 	if (!c || !c->can.move || !(v = c->cview))
 		return;
@@ -5002,7 +4798,7 @@ moveby(Client *c, RelativeDirection direction, int amount)
 	Monitor *m;
 	View *v;
 	Workarea w;
-	ClientGeometry g;
+	ClientGeometry g = { 0, };
 
 	if (!c || !c->can.move || !(v = c->cview))
 		return;
@@ -5101,7 +4897,7 @@ snapto(Client *c, RelativeDirection direction)
 	Monitor *m;
 	View *v;
 	Workarea w;
-	ClientGeometry g;
+	ClientGeometry g = { 0, };
 	Client *s, *ox, *oy;
 	int min1, max1, edge;
 
@@ -5328,7 +5124,7 @@ edgeto(Client *c, int direction)
 	Monitor *m;
 	View *v;
 	Workarea w;
-	ClientGeometry g;
+	ClientGeometry g = { 0, };
 
 	if (!c || !c->can.move || !(v = c->cview))
 		return;

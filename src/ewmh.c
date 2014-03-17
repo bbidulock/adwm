@@ -223,11 +223,14 @@ sn_handler(SnMonitorEvent * event, void *dummy)
 	case SN_MONITOR_EVENT_COMPLETED:
 	case SN_MONITOR_EVENT_CANCELED:
 		seq = sn_monitor_event_get_startup_sequence(event);
-		for (n = notifies, np = &notifies; n; np = &n->next, n = *np) {
+		np = &notifies;
+		while ((n = *np)) {
 			if (n->seq == seq) {
 				sn_startup_sequence_unref(n->seq);
 				*np = n->next;
 				free(n);
+			} else {
+				np = &n->next;
 			}
 		}
 		break;
@@ -528,14 +531,14 @@ ewmh_update_net_desktop_names()
 		if (scr->tags[i].name)
 			len += strlen(scr->tags[i].name);
 	len += scr->ntags;
-	pos = buf = ecalloc(len, 1);
+	pos = buf = ecalloc(len, sizeof(*buf));
 	for (i = 0; i < scr->ntags; i++) {
 		if (scr->tags[i].name) {
 			slen = strlen(scr->tags[i].name);
 			memcpy(pos, scr->tags[i].name, slen);
 			pos += slen;
 		}
-		*(pos++) = '\0';
+		*pos++ = '\0';
 	}
 	XChangeProperty(dpy, scr->root, _XA_NET_DESKTOP_NAMES, _XA_UTF8_STRING, 8,
 			PropModeReplace, (unsigned char *) buf, len);
@@ -566,7 +569,7 @@ ewmh_update_echinus_seltags()
 	unsigned int i;
 
 	XPRINTF("%s\n", "Updating _ECHINUS_SELTAGS");
-	seltags = ecalloc(scr->ntags, sizeof(seltags[0]));
+	seltags = ecalloc(scr->ntags, sizeof(*seltags));
 	for (m = scr->monitors; m != NULL; m = m->next)
 		for (tags = 1, i = 0; i < scr->ntags; i++, tags <<= 1)
 			if (m->curview->seltags & tags)
@@ -1037,7 +1040,7 @@ ewmh_update_net_work_area()
 	long workarea[4];
 
 	XPRINTF("%s\n", "Updating _NET_WORKAREA");
-	geoms = ecalloc(longs, sizeof(geoms[0]));
+	geoms = ecalloc(longs, sizeof(*geoms));
 
 	for (m = scr->monitors; m; m = m->next) {
 		l = max(l, m->struts[LeftStrut]);
@@ -1130,7 +1133,7 @@ ewmh_update_net_desktop_modes()
 	unsigned int i;
 
 	XPRINTF("%s\n", "Updating _NET_DESKTOP_MODES");
-	data = ecalloc(scr->ntags, sizeof(data[0]));
+	data = ecalloc(scr->ntags, sizeof(*data));
 	for (i = 0; i < scr->ntags; i++) {
 		switch (scr->views[i].layout->symbol) {
 		case 'i':

@@ -25,7 +25,7 @@ enum { Left, Right, Top, Bottom, LeftStartY, LeftEndY, RightStartY, RightEndY, T
 void
 setstruts(Bool autohide)
 {
-	int *struts;
+	long *struts;
 	int x, y;
 	unsigned w, h, b, d;
 	Atom net_wm_strut_partial;
@@ -37,14 +37,14 @@ setstruts(Bool autohide)
 	net_wm_window_type = XInternAtom(dpy, "_NET_WM_WINDOW_TYPE", False);
 	net_wm_window_type_dock = XInternAtom(dpy, "_NET_WM_WINDOW_TYPE_DOCK", False);
 
-	struts = emallocz(12 * sizeof(int));
+	struts = calloc(12, sizeof(*struts));
 	XGetWindowAttributes(dpy, win, &wa);
 	XGetGeometry(dpy, win, &root, &x, &y, &w, &h, &b, &d);
 	fprintf(stderr, "%d %d\n", x, y);
 	fprintf(stderr, "x:%d y:%d ht: %d\n", wa.x, wa.y, DisplayHeight(dpy, screen));
 	if (bottom) {
 		struts[Bottom] = DisplayHeight(dpy, screen) - my + mh;
-		fprintf(stderr, "BotStrut=%d\n", struts[Bottom]);
+		fprintf(stderr, "BotStrut=%ld\n", struts[Bottom]);
 		struts[BotStartX] = mx;
 		struts[BotEndX] = mx + mw;
 	} else {

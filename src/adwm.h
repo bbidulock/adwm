@@ -1185,15 +1185,16 @@ void unmanage(Client *c, WithdrawCause cause);
 				     fprintf(stderr, args); fflush(stderr); } while(0)
 #define CPRINTF(c,args...)	do { fprintf(stderr, "%s %s():%d [0x%08lx 0x%08lx 0x%08lx %-20s] ", __FILE__,__func__,__LINE__,(c)->frame,(c)->win,(c)->icon,(c)->name); \
 				     fprintf(stderr, args); fflush(stderr); } while(0)
+#define GPRINTF(_g,args...)	do { fprintf(stderr, "%s %s():%d %dx%d+%d+%d:%d (%d:%d:%d) ", __FILE__,__func__,__LINE__,(_g)->w,(_g)->h,(_g)->x,(_g)->y,(_g)->b,(_g)->t,(_g)->g,(_g)->v); \
+				     fprintf(stderr, args); fflush(stderr); } while(0)
 #define XPRINTF(args...)	do { } while(0)
 #else
 #define DPRINT			do { } while(0)
 #define DPRINTF(args...)	do { } while(0)
 #define CPRINTF(c,args...)	do { } while(0)
+#define GPRINTF(g,args...)	do { } while(0)
 #define XPRINTF(args...)	do { } while(0)
 #endif
-#define DPRINTCLIENT(c) DPRINTF("%s: x: %d y: %d w: %d h: %d th: %d gh: %d hh: %d f: %d b: %d m: %d\n", \
-				    c->name, c->x, c->y, c->w, c->h, c->th, c->gh, c->hh, c->skip.arrange, c->is.bastard, c->is.max)
 
 #define OPAQUE			0xffffffff
 #define RESNAME		       "adwm"

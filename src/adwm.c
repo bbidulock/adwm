@@ -789,6 +789,11 @@ send_configurenotify(Client *c, Window above)
 {
 	XConfigureEvent ce;
 
+	/* This is not quite correct.  We need to report the position of the client
+	   window in root coordinates, however, we should report it using the specified
+	   gravity and without consideration for dercorative borders.  Width and height
+	   are correct here but not the position.  Also, the border must be c->s.b. */
+
 	ce.type = ConfigureNotify;
 	ce.display = dpy;
 	ce.event = c->win;
@@ -1460,21 +1465,22 @@ Bool
 gettextprop(Window w, Atom atom, char **text)
 {
 	char **list = NULL, *str;
-	int n;
+	int n = 0;
 	XTextProperty name = { NULL, };
 
-	XGetTextProperty(dpy, w, &name, atom);
+	if (XGetTextProperty(dpy, w, &name, atom) != Success)
+		return False;
 	if (!name.nitems)
 		return False;
 	if (name.encoding == XA_STRING) {
-		if ((str = strdup((char *) name.value))) {
+		if ((str = strndup((char *) name.value, name.nitems))) {
 			free(*text);
 			*text = str;
 		}
 	} else {
 		if (Xutf8TextPropertyToTextList(dpy, &name, &list, &n) >= Success
-		    && n > 0 && *list) {
-			if ((str = strdup(*list))) {
+		    && n > 0 && list && *list) {
+			if ((str = strndup(*list, name.nitems))) {
 				free(*text);
 				*text = str;
 			}
@@ -1664,7 +1670,7 @@ killclient(Client *c)
 		if (n == 0 && c->leader)
 			pids = getcard(c->win, _XA_NET_WM_PID, &n);
 		if (n > 0) {
-			char hostname[64], *machine;
+			char hostname[64], *machine = NULL;
 			pid_t pid = pids[0];
 
 			XFree(pids);
@@ -1864,13 +1870,11 @@ manage(Window w, XWindowAttributes *wa)
 		c->r.x = c->c.x = 0;
 		c->r.y = c->c.y = 0;
 		if (c->icon != c->win && XGetWindowAttributes(dpy, c->icon, wa)) {
-			c->r.x = wa->x;
-			c->r.y = wa->y;
-			c->r.w = wa->width;
-			c->r.h = wa->height;
+			c->c.x = c->r.x = wa->x;
+			c->c.y = c->r.y = wa->y;
+			c->c.w = c->r.w = wa->width;
+			c->c.h = c->r.h = wa->height;
 			c->r.b = wa->border_width;
-			c->c.w = c->r.w + 2 * c->r.x;
-			c->c.h = c->r.h + 2 * c->r.y;
 		}
 	}
 
@@ -1887,10 +1891,19 @@ manage(Window w, XWindowAttributes *wa)
 		twa.event_mask |= ExposureMask | MOUSEMASK;
 	mask = CWOverrideRedirect | CWEventMask;
 	if (wa->depth == 32) {
-		mask |= CWColormap | CWBorderPixel | CWBackPixel;
 		twa.colormap = XCreateColormap(dpy, scr->root, wa->visual, AllocNone);
+		mask |= CWColormap;
 		twa.background_pixel = BlackPixel(dpy, scr->screen);
+		mask |= CWBackPixel;
 		twa.border_pixel = BlackPixel(dpy, scr->screen);
+		mask |= CWBorderPixel;
+	}
+	if (c->is.dockapp || (wa->depth == 32 && DefaultDepth(dpy, scr->screen) != 32)) {
+		twa.background_pixel = scr->style.color.norm[ColBG];
+		mask |= CWBackPixel;
+	} else {
+		twa.background_pixmap = ParentRelative;
+		mask |= CWBackPixmap;
 	}
 	c->frame =
 	    XCreateWindow(dpy, scr->root, c->c.x, c->c.y, c->c.w,
@@ -1945,6 +1958,18 @@ manage(Window w, XWindowAttributes *wa)
 		XAddToSaveSet(dpy, c->icon);
 		XConfigureWindow(dpy, c->icon, CWBorderWidth, &wc);
 		XMapWindow(dpy, c->icon);
+#if 0
+		/* not necessary and doesn't help */
+		if (c->win && c->win != c->icon) {
+			XWindowChanges cwc;
+
+			/* map primary window offscreen */
+			cwc.x = DisplayWidth (dpy, scr->screen) + 10;
+			cwc.y = DisplayHeight(dpy, scr->screen) + 10;
+			XConfigureWindow(dpy, c->win, CWX|CWY, &cwc);
+			XMapWindow(dpy, c->win);
+		}
+#endif
 	} else {
 		XChangeWindowAttributes(dpy, c->win, CWEventMask | CWDontPropagate, &twa);
 		XSelectInput(dpy, c->win, CLIENTMASK);
@@ -3546,13 +3571,11 @@ unmanage(Client *c, WithdrawCause cause)
 			wc.border_width = c->s.b;
 			if (c->icon) {
 				XReparentWindow(dpy, c->icon, scr->root, wc.x, wc.y);
-				XMoveWindow(dpy, c->icon, wc.x, wc.y);
 				XConfigureWindow(dpy, c->icon,
 						 (CWX | CWY | CWWidth | CWHeight |
 						  CWBorderWidth), &wc);
 			} else {
 				XReparentWindow(dpy, c->win, scr->root, wc.x, wc.y);
-				XMoveWindow(dpy, c->win, wc.x, wc.y);
 				XConfigureWindow(dpy, c->win,
 						 (CWX | CWY | CWWidth | CWHeight |
 						  CWBorderWidth), &wc);
@@ -3607,20 +3630,70 @@ unmanage(Client *c, WithdrawCause cause)
 static void
 updategeommon(Monitor *m)
 {
-	m->wa = m->sc;
-	switch (m->curview->barpos) {
-	default:
-		m->wa.x += m->struts[LeftStrut];
-		m->wa.y += m->struts[TopStrut];
-		m->wa.w -= m->struts[LeftStrut] + m->struts[RightStrut];
-		m->wa.h -= m->struts[TopStrut] + m->struts[BotStrut];
-		break;
-	case StrutsHide:
-	case StrutsOff:
-		break;
+	int t = 0, l = 0, b = 0, r = 0;
+
+	if (m->curview->barpos != StrutsOff) {
+		l = m->struts[LeftStrut];
+		t = m->struts[TopStrut];
+		r = m->struts[RightStrut];
+		b = m->struts[BotStrut];
 	}
-	XMoveWindow(dpy, m->veil, m->wa.x, m->wa.y);
-	XResizeWindow(dpy, m->veil, m->wa.w, m->wa.h);
+
+	m->wa = m->sc;
+
+	if (m->curview->barpos == StrutsHide) {
+		switch (m->dock.position) {
+		case DockNone:
+			break;
+		case DockEast:
+			r = max(1, r);
+			break;
+		case DockWest:
+			l = max(1, l);
+			break;
+		case DockNorth:
+			t = max(1, t);
+			break;
+		case DockSouth:
+			b = max(1, b);
+			break;
+		case DockNorthEast:
+			if (m->dock.orient == DockHorz)
+				t = max(1, t);
+			else
+				r = max(1, r);
+			break;
+		case DockNorthWest:
+			if (m->dock.orient == DockHorz)
+				t = max(1, t);
+			else
+				l = max(1, l);
+			break;
+		case DockSouthWest:
+			if (m->dock.orient == DockHorz)
+				b = max(1, b);
+			else
+				l = max(1, l);
+			break;
+		case DockSouthEast:
+			if (m->dock.orient == DockHorz)
+				b = max(1, b);
+			else
+				r = max(1, r);
+			break;
+		}
+		l = min(1, l);
+		t = min(1, t);
+		r = min(1, r);
+		b = min(1, b);
+	}
+
+	m->wa.x += l;
+	m->wa.y += t;
+	m->wa.w -= l + r;
+	m->wa.h -= t + b;
+
+	XMoveResizeWindow(dpy, m->veil, m->wa.x, m->wa.y, m->wa.w, m->wa.h);
 }
 
 void

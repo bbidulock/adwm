@@ -3239,6 +3239,8 @@ mousemove(Client *c, XEvent *e, Bool toggle)
 		XEvent ev;
 
 		XIfEvent(dpy, &ev, &ismoveevent, (XPointer) c);
+		if (ev.type == MotionNotify)
+			while (XCheckMaskEvent(dpy, PointerMotionMask, &ev)) ;
 		geteventscr(&ev);
 
 		switch (ev.type) {
@@ -3640,6 +3642,8 @@ mouseresize_from(Client *c, int from, XEvent *e, Bool toggle)
 		XEvent ev;
 
 		XIfEvent(dpy, &ev, &isresizeevent, (XPointer) c);
+		if (ev.type == MotionNotify)
+			while (XCheckMaskEvent(dpy, PointerMotionMask, &ev)) ;
 		geteventscr(&ev);
 
 		switch (ev.type) {

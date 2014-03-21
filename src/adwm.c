@@ -1468,7 +1468,7 @@ gettextprop(Window w, Atom atom, char **text)
 	int n = 0;
 	XTextProperty name = { NULL, };
 
-	if (XGetTextProperty(dpy, w, &name, atom) != Success)
+	if (!XGetTextProperty(dpy, w, &name, atom))
 		return False;
 	if (!name.nitems)
 		return False;

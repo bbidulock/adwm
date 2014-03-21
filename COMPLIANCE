@@ -71,7 +71,7 @@ _NET_ACTIVE_WINDOW:			supported
 _NET_WORKAREA:				supported
 _NET_SUPPORTING_WM_CHECK:		supported
 _NET_VIRTUAL_ROOTS:			supported (trivial)
-_NET_DESKTOP_LAYOUT:			NOT supported
+_NET_DESKTOP_LAYOUT:			supported
 _NET_SHOWING_DESKTOP:			supported
 
 
@@ -276,7 +276,7 @@ _DT_WORKSPACE_INFO_<name>		NOT supported
 _DT_WORKSPACE_HINTS			supported
 _DT_WORKSPACE_PRESENCE			supported
 
-_DT_WM_HINTS				NOT supported
+_DT_WM_HINTS				supported
 _DT_WM_REQUEST				NOT supported
 _DT_WORKSPACE_EMBEDDED_CLIENTS		NOT supported
 _DT_WMSAVE_HINT				NOT supported

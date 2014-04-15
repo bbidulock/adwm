@@ -1674,10 +1674,10 @@ killclient(Client *c)
 			pid_t pid = pids[0];
 
 			XFree(pids);
-			if (gettextprop(c->win, XA_WM_CLIENT_MACHINE, &machine)
+			if ((gettextprop(c->win, XA_WM_CLIENT_MACHINE, &machine) && machine)
 			    || (c->leader
-				&& gettextprop(c->leader, XA_WM_CLIENT_MACHINE,
-					       &machine))) {
+				&& (gettextprop(c->leader, XA_WM_CLIENT_MACHINE,
+					       &machine) && machine))) {
 				if (!strncmp(hostname, machine, 64)) {
 					XSaveContext(dpy, c->win, context[ClientDead],
 						     (XPointer) c);
@@ -3808,7 +3808,7 @@ updatesizehints(Client *c)
 void
 updatetitle(Client *c)
 {
-	if (!gettextprop(c->win, _XA_NET_WM_NAME, &c->name))
+	if (!gettextprop(c->win, _XA_NET_WM_NAME, &c->name) || !c->name)
 		gettextprop(c->win, XA_WM_NAME, &c->name);
 	ewmh_update_net_window_visible_name(c);
 }
@@ -3816,7 +3816,7 @@ updatetitle(Client *c)
 void
 updateiconname(Client *c)
 {
-	if (!gettextprop(c->win, _XA_NET_WM_ICON_NAME, &c->icon_name))
+	if (!gettextprop(c->win, _XA_NET_WM_ICON_NAME, &c->icon_name) || !c->name)
 		gettextprop(c->win, XA_WM_ICON_NAME, &c->icon_name);
 	ewmh_update_net_window_visible_icon_name(c);
 }

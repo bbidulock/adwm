@@ -331,6 +331,7 @@ insnode(Container *cp, Container *cc)
 		cp->node.children.active += cc->node.children.active;
 }
 
+#ifdef DEBUG
 static Bool
 validlist()
 {
@@ -346,6 +347,7 @@ validlist()
 	}
 	return True;
 }
+#endif
 
 static void
 attach(Client *c, Bool attachaside)

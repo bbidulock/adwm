@@ -3247,7 +3247,7 @@ setup(char *conf, AdwmOperations *ops)
 	int d;
 	int i, j;
 	unsigned int mask;
-	Window w, proot;
+	Window w, proot = None;
 	Monitor *m;
 	XModifierKeymap *modmap;
 	XSetWindowAttributes wa;
@@ -3514,6 +3514,14 @@ unmanage(Client *c, WithdrawCause cause)
 	c->can.focus = 0;
 	if (sel == c)
 		focuslast(c);
+	/* valgring found this... */
+	if (took == c)
+		took = NULL;
+	if (gave == c)
+		gave = NULL;
+	if (sel == c)
+		sel = NULL;
+	focus(sel);
 	/* The server grab construct avoids race conditions. */
 	XGrabServer(dpy);
 	XSelectInput(dpy, c->frame, NoEventMask);

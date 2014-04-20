@@ -505,11 +505,12 @@ ewmh_update_net_desktop_viewport()
 {
 	long *data;
 
-	data = ecalloc(scr->ntags * 2, sizeof(data[0]));
+	data = ecalloc(scr->ntags * 2, sizeof(*data));
 	XChangeProperty(dpy, scr->root, _XA_NET_DESKTOP_VIEWPORT, XA_CARDINAL, 32,
 			PropModeReplace, (unsigned char *) data, scr->ntags * 2);
 	XChangeProperty(dpy, scr->root, _XA_WIN_AREA, XA_CARDINAL, 32,
 			PropModeReplace, (unsigned char *) data, 2);
+	free(data);
 }
 
 Bool names_synced = False;

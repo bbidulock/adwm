@@ -2600,7 +2600,7 @@ handle_event(XEvent *ev)
 AScreen *
 getscreen(Window win)
 {
-	Window *wins, wroot, parent;
+	Window *wins = NULL, wroot, parent;
 	unsigned int num;
 	AScreen *s = NULL;
 
@@ -2608,10 +2608,8 @@ getscreen(Window win)
 		return (s);
 	if (!XFindContext(dpy, win, context[ScreenContext], (XPointer *) &s))
 		return (s);
-	if (!XQueryTree(dpy, win, &wroot, &parent, &wins, &num))
-		return (s);
-	if (!XFindContext(dpy, wroot, context[ScreenContext], (XPointer *) &s))
-		return (s);
+	if (XQueryTree(dpy, win, &wroot, &parent, &wins, &num))
+		XFindContext(dpy, wroot, context[ScreenContext], (XPointer *) &s);
 	if (wins)
 		XFree(wins);
 	return (s);
@@ -2745,11 +2743,12 @@ scan(void)
 	unsigned int i, num;
 	Window *wins, d1, d2;
 	XWindowAttributes wa = { 0, };
-	XWMHints *wmh = { 0, };
 
 	wins = NULL;
 	if (XQueryTree(dpy, scr->root, &d1, &d2, &wins, &num)) {
 		for (i = 0; i < num; i++) {
+			XWMHints *wmh = NULL;
+
 			DPRINTF("scan checking window 0x%lx\n", wins[i]);
 			if (!XGetWindowAttributes(dpy, wins[i], &wa) ||
 			    wa.override_redirect || issystray(wins[i] ||
@@ -2757,15 +2756,21 @@ scan(void)
 			    || XGetTransientForHint(dpy, wins[i], &d1) ||
 			    ((wmh = XGetWMHints(dpy, wins[i])) &&
 			     (wmh->flags & WindowGroupHint) &&
-			     (wmh->window_group != wins[i])))
+			     (wmh->window_group != wins[i]))) {
+				XFree(wmh);
 				continue;
+			}
 			DPRINTF("scan checking non-transient window 0x%lx\n", wins[i]);
 			if (wa.map_state == IsViewable
 			    || getstate(wins[i]) == IconicState
 			    || getstate(wins[i]) == NormalState)
 				manage(wins[i], &wa);
+			if (wmh)
+				XFree(wmh);
 		}
 		for (i = 0; i < num; i++) {
+			XWMHints *wmh = NULL;
+
 			DPRINTF("scan checking window 0x%lx\n", wins[i]);
 			/* now the transients and group members */
 			if (!XGetWindowAttributes(dpy, wins[i], &wa) ||
@@ -2781,6 +2786,8 @@ scan(void)
 				|| getstate(wins[i]) == IconicState
 				|| getstate(wins[i]) == NormalState))
 				manage(wins[i], &wa);
+			if (wmh)
+				XFree(wmh);
 		}
 	}
 	if (wins)
@@ -3026,8 +3033,10 @@ initmonitors(XEvent *e)
 			goto no_xinerama;
 		}
 		DPRINTF("XINERAMA defineds %d monitors for screen %d\n", n, scr->screen);
-		if (n < 2)
+		if (n < 2) {
+			XFree(si);
 			goto no_xinerama;
+		}
 		for (i = 0; i < n; i++) {
 			if (i < scr->nmons) {
 				m = &scr->monitors[i];
@@ -3099,22 +3108,29 @@ initmonitors(XEvent *e)
 		XRRScreenResources *sr;
 		int i, j;
 
-		if (!(sr = XRRGetScreenResources(dpy, scr->root)) || sr->ncrtc < 2)
+		if (!(sr = XRRGetScreenResources(dpy, scr->root)) || sr->ncrtc < 2) {
+			if (sr)
+				XRRFreeScreenResources(sr);
 			goto no_xrandr;
+		}
 		for (i = 0, n = 0; i < sr->ncrtc; i++) {
 			XRRCrtcInfo *ci;
 
 			if (!(ci = XRRGetCrtcInfo(dpy, sr, sr->crtcs[i])))
 				continue;
-			if (!ci->width || !ci->height)
+			if (!ci->width || !ci->height) {
+				XRRFreeCrtcInfo(ci);
 				continue;
+			}
 			/* skip mirrors */
 			for (j = 0; j < n; j++)
 				if (scr->monitors[j].sc.x == scr->monitors[n].sc.x &&
 				    scr->monitors[j].sc.y == scr->monitors[n].sc.y)
 					break;
-			if (j < n)
+			if (j < n) {
+				XRRFreeCrtcInfo(ci);
 				continue;
+			}
 
 			if (n < scr->nmons) {
 				m = &scr->monitors[n];
@@ -3171,7 +3187,9 @@ initmonitors(XEvent *e)
 							&wa);
 			}
 			n++;
+			XRRFreeCrtcInfo(ci);
 		}
+		XRRFreeScreenResources(sr);
 		updatemonitors(e, n, size_update, full_update);
 		return True;
 
@@ -3244,10 +3262,10 @@ sighandler(int sig)
 void
 setup(char *conf, AdwmOperations *ops)
 {
-	int d;
+	int d = 0;
 	int i, j;
-	unsigned int mask;
-	Window w, proot = None;
+	unsigned int mask = 0;
+	Window w = None, proot = None;
 	Monitor *m;
 	XModifierKeymap *modmap;
 	XSetWindowAttributes wa;
@@ -3349,7 +3367,7 @@ setup(char *conf, AdwmOperations *ops)
 	}
 
 	/* multihead support */
-	XQueryPointer(dpy, scr->root, &proot, &w, &d, &d, &d, &d, &mask);
+	XQueryPointer(dpy, screens->root, &proot, &w, &d, &d, &d, &d, &mask);
 	XFindContext(dpy, proot, context[ScreenContext], (XPointer *) &scr);
 }
 

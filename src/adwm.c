@@ -86,7 +86,6 @@ int xerrordummy(Display *dsply, XErrorEvent *ee);
 int xerrorstart(Display *dsply, XErrorEvent *ee);
 int (*xerrorxlib) (Display *, XErrorEvent *);
 
-Bool isdockapp(Window win);
 Bool issystray(Window win);
 void delsystray(Window win);
 
@@ -989,7 +988,7 @@ focuschange(XEvent *e)
 		break;
 	default:
 		if ((c = getclient(win, ClientAny))) {
-			if (gave && c != gave) {
+			if (gave && c != gave && canfocus(gave)) {
 				if (took != gave && !(gave->can.focus & TAKE_FOCUS)) {
 					CPRINTF(c, "stole focus\n");
 					CPRINTF(gave, "giving back focus\n");
@@ -1035,6 +1034,7 @@ setfocus(Client *c)
 {
 	/* more simple */
 	if (c && canfocus(c)) {
+		CPRINTF(c, "setting focus\n");
 		if (c->can.focus & TAKE_FOCUS) {
 			XEvent ce;
 
@@ -1052,7 +1052,7 @@ setfocus(Client *c)
 		} else if (c->can.focus & GIVE_FOCUS)
 			XSetInputFocus(dpy, c->win, RevertToPointerRoot, user_time);
 		gave = c;
-	} else
+	} else if (!c)
 		XSetInputFocus(dpy, PointerRoot, RevertToPointerRoot, CurrentTime);
 }
 
@@ -1066,22 +1066,27 @@ focus(Client *c)
 
 	o = sel;
 	if ((!c && scr->managed)
-	    || (c && (c->is.bastard || !canfocus(c) || !isvisible(c, v))))
-		for (c = scr->flist;
-		     c && (c->is.bastard || !canfocus(c)
-			   || (!c->is.dockapp && (c->is.icon || c->is.hidden))
-			   || !isvisible(c, v)); c = c->fnext) ;
+	    || (c && (!canfocus(c) || (!c->is.dockapp && (c->is.icon || c->is.hidden))
+		      || !isvisible(c, v))))
+		for (c = scr->flist; c && (!canfocus(c)
+					   || (!c->is.dockapp
+					       && (c->is.icon || c->is.hidden))
+					   || !isvisible(c, v)); c = c->fnext) ;
 	if (sel && sel != c) {
 		XSetWindowBorder(dpy, sel->frame, scr->style.color.norm[ColBorder]);
 	}
-	if (sel)
+	if (sel) {
 		XPRINTF("Deselecting %sclient frame 0x%08lx win 0x%08lx named %s\n",
 			sel->is.bastard ? "bastard " : "",
 			sel->frame, sel->win, sel->name);
+		CPRINTF(sel, "deselecting\n");
+	}
 	sel = c;
-	if (c)
+	if (c) {
 		XPRINTF("Selecting   %sclient frame 0x%08lx win 0x%08lx named %s\n",
 			c->is.bastard ? "bastard " : "", c->frame, c->win, c->name);
+		CPRINTF(c, "selecting\n");
+	}
 	if (!scr->managed)
 		return;
 	ewmh_update_net_active_window();
@@ -1187,11 +1192,10 @@ focuslast(Client *c)
 		return (sel);
 	if (!(v = c->cview))
 		return (NULL);
-	for (s = scr->flist; s &&
-	     (s == c
-	      || (s->is.bastard || !canfocus(s)
-		  || (!c->is.dockapp && (s->is.icon || s->is.hidden))
-		  || !isvisible(s, v))); s = s->fnext) ;
+	for (s = scr->flist; s && (s == c || (!canfocus(s)
+					      || (!c->is.dockapp
+						  && (s->is.icon || s->is.hidden))
+					      || !isvisible(s, v))); s = s->fnext) ;
 	focus(s);
 	return (s);
 }
@@ -2114,8 +2118,6 @@ maprequest(XEvent *e)
 		return True;
 	if (issystray(ev->window))
 		return True;
-	if (isdockapp(ev->window))
-		return True;
 	if (!(c = getclient(ev->window, ClientWindow))) {
 		manage(ev->window, &wa);
 		return True;
@@ -2224,21 +2226,6 @@ findmonitor(Client *c)
 
 	return bestmonitor(xmin, ymin, xmax, ymax);
 }
-
-#if 0
-Monitor *
-findcurmonitor(Client *c)
-{
-	int xmin, xmax, ymin, ymax;
-
-	xmin = c->c.x;
-	xmax = c->c.x + c->c.w + 2 * c->c.b;
-	ymin = c->c.y;
-	ymax = c->c.y + c->c.h + 2 * c->c.b;
-
-	return bestmonitor(xmin, ymin, xmax, ymax);
-}
-#endif
 
 View *
 clientview(Client *c)
@@ -2685,22 +2672,6 @@ delsystray(Window win)
 }
 
 Bool
-isdockapp(Window win)
-{
-#if 0
-	XWMHints *wmh;
-	Bool ret;
-
-	if ((ret = ((wmh = XGetWMHints(dpy, win)) &&
-		    (wmh->flags & StateHint) && (wmh->initial_state == WithdrawnState))))
-		setwmstate(win, WithdrawnState, None);
-	return ret;
-#else
-	return False;
-#endif
-}
-
-Bool
 issystray(Window win)
 {
 	int format, status;
@@ -2751,8 +2722,7 @@ scan(void)
 
 			DPRINTF("scan checking window 0x%lx\n", wins[i]);
 			if (!XGetWindowAttributes(dpy, wins[i], &wa) ||
-			    wa.override_redirect || issystray(wins[i] ||
-							      isdockapp(wins[i]))
+			    wa.override_redirect || issystray(wins[i])
 			    || XGetTransientForHint(dpy, wins[i], &d1) ||
 			    ((wmh = XGetWMHints(dpy, wins[i])) &&
 			     (wmh->flags & WindowGroupHint) &&
@@ -2774,8 +2744,7 @@ scan(void)
 			DPRINTF("scan checking window 0x%lx\n", wins[i]);
 			/* now the transients and group members */
 			if (!XGetWindowAttributes(dpy, wins[i], &wa) ||
-			    wa.override_redirect || issystray(wins[i]) ||
-			    isdockapp(wins[i]))
+			    wa.override_redirect || issystray(wins[i]))
 				continue;
 			DPRINTF("scan checking transient window 0x%lx\n", wins[i]);
 			if ((XGetTransientForHint(dpy, wins[i], &d1) ||

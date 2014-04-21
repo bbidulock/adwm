@@ -1166,6 +1166,7 @@ Bool selectionclear(XEvent *e);
 void with_transients(Client *c, void (*each) (Client *, int), int data);
 
 /* needed by layout.c */
+Bool canfocus(Client *c);
 void updategeom(Monitor *m);
 extern Cursor cursor[CurLast];
 extern int ebase[BaseLast];

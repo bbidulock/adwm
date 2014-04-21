@@ -77,10 +77,12 @@ setfocused(Client *c)
 	Leaf *l;
 	Container *cp, *cc;
 
-	if (c)
+	if (c) {
+		CPRINTF(c, "setting as focused\n");
 		for (l = c->leaves; l; l = l->client.next)
 			for (cc = (Container *)l; (cp = cc->parent); cc = cp)
 				cp->node.children.focused = cc;
+	}
 }
 
 void
@@ -89,10 +91,12 @@ setselected(Client *c)
 	Leaf *l;
 	Container *cp, *cc;
 
-	if (c)
+	if (c) {
+		CPRINTF(c, "setting as selected\n");
 		for (l = c->leaves; l; l = l->client.next)
 			for (cc = (Container *)l; (cp = cc->parent); cc = cp)
 				cp->node.children.selected = cc;
+	}
 }
 
 void
@@ -507,8 +511,8 @@ isfloating(Client *c, View *v)
 Bool
 enterclient(XEvent *e, Client *c)
 {
-	if (c->is.bastard && !c->is.dockapp) {
-		CPRINTF(c, "FOCUS: cannot focus bastards.\n");
+	if (!c || !canfocus(c)) {
+		CPRINTF(c, "FOCUS: cannot focus client.\n");
 		return True;
 	}
 	/* focus when switching monitors */

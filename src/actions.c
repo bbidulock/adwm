@@ -26,12 +26,14 @@ m_move(Client *c, XEvent *e)
 void
 m_nexttag(Client *c, XEvent *e)
 {
+	APRINT;
 	viewrighttag();
 }
 
 void
 m_prevtag(Client *c, XEvent *e)
 {
+	APRINT;
 	viewlefttag();
 }
 

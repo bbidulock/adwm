@@ -1181,6 +1181,8 @@ void unmanage(Client *c, WithdrawCause cause);
 
 #define LENGTH(x)		(sizeof(x)/sizeof(*x))
 #ifdef DEBUG
+#define APRINT			do { } while(0)
+#define APRINTF(args...)	do { } while(0)
 #define DPRINT			do { fprintf(stderr, "%s %s() %d\n",__FILE__,__func__, __LINE__); fflush(stderr); } while(0)
 #define DPRINTF(args...)	do { fprintf(stderr, "%s %s():%d ", __FILE__,__func__, __LINE__); \
 				     fprintf(stderr, args); fflush(stderr); } while(0)
@@ -1190,6 +1192,9 @@ void unmanage(Client *c, WithdrawCause cause);
 				     fprintf(stderr, args); fflush(stderr); } while(0)
 #define XPRINTF(args...)	do { } while(0)
 #else
+#define APRINT			do { fprintf(stderr, "%s %s() %d\n",__FILE__,__func__, __LINE__); fflush(stderr); } while(0)
+#define APRINTF(args...)	do { fprintf(stderr, "%s %s():%d ", __FILE__,__func__, __LINE__); \
+				     fprintf(stderr, args); fflush(stderr); } while(0)
 #define DPRINT			do { } while(0)
 #define DPRINTF(args...)	do { } while(0)
 #define CPRINTF(c,args...)	do { } while(0)

@@ -484,7 +484,7 @@ buttonpress(XEvent *e)
 		button_mask &= ~(1 << button);
 
 	if (ev->window == scr->root) {
-		DPRINTF("SCREEN %d: 0x%lx button: %d\n", scr->screen, ev->window,
+		APRINTF("SCREEN %d: 0x%lx button: %d\n", scr->screen, ev->window,
 			ev->button);
 		/* _WIN_DESKTOP_BUTTON_PROXY */
 		/* modifiers or not interested in press */

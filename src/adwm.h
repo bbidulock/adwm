@@ -1180,9 +1180,15 @@ extern Group window_stack;
 void unmanage(Client *c, WithdrawCause cause);
 
 #define LENGTH(x)		(sizeof(x)/sizeof(*x))
+#define _DPRINT			do { fprintf(stderr, "%s %s() %d\n",__FILE__,__func__, __LINE__); fflush(stderr); } while(0)
+#define _DPRINTF(args...)	do { fprintf(stderr, "%s %s():%d ", __FILE__,__func__, __LINE__); \
+				     fprintf(stderr, args); fflush(stderr); } while(0)
+#define _CPRINTF(c,args...)	do { fprintf(stderr, "%s %s():%d [0x%08lx 0x%08lx 0x%08lx %-20s] ", __FILE__,__func__,__LINE__,(c)->frame,(c)->win,(c)->icon,(c)->name); \
+				     fprintf(stderr, args); fflush(stderr); } while(0)
+#define _GPRINTF(_g,args...)	do { fprintf(stderr, "%s %s():%d %dx%d+%d+%d:%d (%d:%d:%d) ", __FILE__,__func__,__LINE__,(_g)->w,(_g)->h,(_g)->x,(_g)->y,(_g)->b,(_g)->t,(_g)->g,(_g)->v); \
+				     fprintf(stderr, args); fflush(stderr); } while(0)
+#define _XPRINTF(args...)	do { } while(0)
 #ifdef DEBUG
-#define APRINT			do { } while(0)
-#define APRINTF(args...)	do { } while(0)
 #define DPRINT			do { fprintf(stderr, "%s %s() %d\n",__FILE__,__func__, __LINE__); fflush(stderr); } while(0)
 #define DPRINTF(args...)	do { fprintf(stderr, "%s %s():%d ", __FILE__,__func__, __LINE__); \
 				     fprintf(stderr, args); fflush(stderr); } while(0)
@@ -1192,9 +1198,6 @@ void unmanage(Client *c, WithdrawCause cause);
 				     fprintf(stderr, args); fflush(stderr); } while(0)
 #define XPRINTF(args...)	do { } while(0)
 #else
-#define APRINT			do { fprintf(stderr, "%s %s() %d\n",__FILE__,__func__, __LINE__); fflush(stderr); } while(0)
-#define APRINTF(args...)	do { fprintf(stderr, "%s %s():%d ", __FILE__,__func__, __LINE__); \
-				     fprintf(stderr, args); fflush(stderr); } while(0)
 #define DPRINT			do { } while(0)
 #define DPRINTF(args...)	do { } while(0)
 #define CPRINTF(c,args...)	do { } while(0)
@@ -1227,7 +1230,7 @@ extern Display *dpy;
 extern AScreen *scr;
 extern AScreen *screens;
 extern AScreen *event_scr;
-extern void (*actions[LastOn][5][2]) (Client *, XEvent *);
+extern void (*actions[LastOn][Button5-Button1+1][2]) (Client *, XEvent *);
 extern Client *sel;
 extern Client *gave;			/* gave focus last */
 extern Client *took;			/* took focus last */

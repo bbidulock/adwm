@@ -125,58 +125,58 @@ Group systray = { NULL, 0, 0 };
 
 /* configuration, allows nested code to access above variables */
 
-void (*actions[LastOn][5][2]) (Client *, XEvent *) = {
+void (*actions[LastOn][Button5-Button1+1][2]) (Client *, XEvent *) = {
 	/* *INDENT-OFF* */
 	/* OnWhere */
 	[OnClientTitle]	 = {
-				/* ButtonPress	    ButtonRelease */
-		[Button1-1] =	{ m_move,	    NULL	    },
-		[Button2-1] =	{ NULL,		    m_zoom	    },
-		[Button3-1] =	{ m_resize,	    NULL	    },
-		[Button4-1] =	{ NULL,		    m_shade	    },
-		[Button5-1] =	{ NULL,		    m_shade	    },
+					/* ButtonPress	    ButtonRelease */
+		[Button1-Button1] =	{ m_move,	    NULL	    },
+		[Button2-Button1] =	{ NULL,		    m_zoom	    },
+		[Button3-Button1] =	{ m_resize,	    NULL	    },
+		[Button4-Button1] =	{ NULL,		    m_shade	    },
+		[Button5-Button1] =	{ NULL,		    m_shade	    },
 	},
 	[OnClientGrips]  = {
-		[Button1-1] =	{ m_resize,	    NULL	    },
-		[Button2-1] =	{ NULL,		    NULL	    },
-		[Button3-1] =	{ NULL,		    NULL	    },
-		[Button4-1] =	{ NULL,		    NULL	    },
-		[Button5-1] =	{ NULL,		    NULL	    },
+		[Button1-Button1] =	{ m_resize,	    NULL	    },
+		[Button2-Button1] =	{ NULL,		    NULL	    },
+		[Button3-Button1] =	{ NULL,		    NULL	    },
+		[Button4-Button1] =	{ NULL,		    NULL	    },
+		[Button5-Button1] =	{ NULL,		    NULL	    },
 	},
 	[OnClientFrame]	 = {
-		[Button1-1] =	{ m_resize,	    NULL	    },
-		[Button2-1] =	{ NULL,		    NULL	    },
-		[Button3-1] =	{ NULL,		    NULL	    },
-		[Button4-1] =	{ NULL,		    m_shade	    },
-		[Button5-1] =	{ NULL,		    m_shade	    },
+		[Button1-Button1] =	{ m_resize,	    NULL	    },
+		[Button2-Button1] =	{ NULL,		    NULL	    },
+		[Button3-Button1] =	{ NULL,		    NULL	    },
+		[Button4-Button1] =	{ NULL,		    m_shade	    },
+		[Button5-Button1] =	{ NULL,		    m_shade	    },
 	},
 	[OnClientDock]   = {
-		[Button1-1] =	{ m_move,	    NULL	    },
-		[Button2-1] =	{ NULL,		    NULL	    },
-		[Button3-1] =	{ NULL,		    NULL	    },
-		[Button4-1] =	{ NULL,		    NULL	    },
-		[Button5-1] =	{ NULL,		    NULL	    },
+		[Button1-Button1] =	{ m_move,	    NULL	    },
+		[Button2-Button1] =	{ NULL,		    NULL	    },
+		[Button3-Button1] =	{ NULL,		    NULL	    },
+		[Button4-Button1] =	{ NULL,		    NULL	    },
+		[Button5-Button1] =	{ NULL,		    NULL	    },
 	},
 	[OnClientWindow] = {
-		[Button1-1] =	{ m_move,	    NULL	    },
-		[Button2-1] =	{ m_zoom,	    NULL	    },
-		[Button3-1] =	{ m_resize,	    NULL	    },
-		[Button4-1] =	{ m_shade,	    NULL	    },
-		[Button5-1] =	{ m_shade,	    NULL	    },
+		[Button1-Button1] =	{ m_move,	    NULL	    },
+		[Button2-Button1] =	{ m_zoom,	    NULL	    },
+		[Button3-Button1] =	{ m_resize,	    NULL	    },
+		[Button4-Button1] =	{ m_shade,	    NULL	    },
+		[Button5-Button1] =	{ m_shade,	    NULL	    },
 	},
 	[OnClientIcon] = {
-		[Button1-1] =	{ m_move,	    NULL	    },
-		[Button2-1] =	{ NULL,		    NULL	    },
-		[Button3-1] =	{ NULL,		    NULL	    },
-		[Button4-1] =	{ NULL,		    NULL	    },
-		[Button5-1] =	{ NULL,		    NULL	    },
+		[Button1-Button1] =	{ m_move,	    NULL	    },
+		[Button2-Button1] =	{ NULL,		    NULL	    },
+		[Button3-Button1] =	{ NULL,		    NULL	    },
+		[Button4-Button1] =	{ NULL,		    NULL	    },
+		[Button5-Button1] =	{ NULL,		    NULL	    },
 	},
 	[OnRoot]	 = {
-		[Button1-1] =	{ NULL,		    NULL	    },
-		[Button2-1] =	{ NULL,		    NULL	    },
-		[Button3-1] =	{ NULL,		    m_spawn	    },
-		[Button4-1] =	{ NULL,		    m_prevtag	    },
-		[Button5-1] =	{ NULL,		    m_nexttag	    },
+		[Button1-Button1] =	{ NULL,		    NULL	    },
+		[Button2-Button1] =	{ NULL,		    NULL	    },
+		[Button3-Button1] =	{ NULL,		    m_spawn	    },
+		[Button4-Button1] =	{ NULL,		    m_nexttag	    },
+		[Button5-Button1] =	{ NULL,		    m_prevtag	    },
 	},
 	/* *INDENT-ON* */
 };
@@ -463,15 +463,16 @@ buttonpress(XEvent *e)
 	Client *c;
 	int i;
 	XButtonPressedEvent *ev = &e->xbutton;
-	static int button_states[Button5] = { 0, };
-	static int button_mask = 0;
+	static int button_proxy = 0;
 	void (*action) (Client *, XEvent *);
-	int button, direct;
+	int button, direct, state;
 
 	if (Button1 > ev->button || ev->button > Button5)
 		return False;
 	button = ev->button - Button1;
 	direct = (ev->type == ButtonPress) ? 0 : 1;
+	state = ev->state &
+	    ~(Button1Mask | Button2Mask | Button3Mask | Button4Mask | Button5Mask);
 
 	pushtime(ev->time);
 
@@ -480,40 +481,40 @@ buttonpress(XEvent *e)
 	     ev->button, ev->window, ev->root, ev->subwindow, ev->time, ev->x, ev->y,
 	     ev->x_root, ev->y_root, ev->state);
 
-	if (ev->window != scr->root)
-		button_mask &= ~(1 << button);
+	if (ev->type == ButtonRelease && (button_proxy & (1 << button))) {
+		/* if we proxied the press, we must proxy the release too */
+		DPRINTF("BUTTON %d: passing to button proxy, state = 0x%08x\n",
+			button + Button1, state);
+		XSendEvent(dpy, scr->selwin, False, SubstructureNotifyMask, e);
+		button_proxy &= ~(1 << button);
+		return True;
+	}
 
 	if (ev->window == scr->root) {
-		APRINTF("SCREEN %d: 0x%lx button: %d\n", scr->screen, ev->window,
+		DPRINTF("SCREEN %d: 0x%lx button: %d\n", scr->screen, ev->window,
 			ev->button);
 		/* _WIN_DESKTOP_BUTTON_PROXY */
-		/* modifiers or not interested in press */
+		/* modifiers or not interested in press or release */
 		if (ev->type == ButtonPress) {
-			if (ev->state || ev->button < Button3 || ev->button > Button5) {
-				button_states[button] = ev->state;
+			if (state || (!actions[OnRoot][button][0] &&
+				      !actions[OnRoot][button][1])) {
+				DPRINTF
+				    ("BUTTON %d: passing to button proxy, state = 0x%08x\n",
+				     button + Button1, state);
 				XUngrabPointer(dpy, CurrentTime);	// ev->time ??
 				XSendEvent(dpy, scr->selwin, False,
 					   SubstructureNotifyMask, e);
+				button_proxy |= ~(1 << button);
 				return True;
 			}
-			/* only process button presses once per button */
-			if ((button_mask & (1 << button)))
-				return True;
-			button_mask |= (1 << button);
-		} else if (ev->type == ButtonRelease) {
-			if (button_states[ev->button] || ev->button < Button3
-			    || ev->button > Button5) {
-				XSendEvent(dpy, scr->selwin, False,
-					   SubstructureNotifyMask, e);
-				return True;
-			}
-			/* do not process button releases with no corresponding press */
-			if (!(button_mask & (1 << button)))
-				return True;
-			button_mask &= ~(1 << button);
 		}
-		if ((action = actions[OnRoot][button][direct]))
+		if ((action = actions[OnRoot][button][direct])) {
+			DPRINTF("Action %p for On=%d, button=%d, direct=%d\n", action,
+				OnRoot, button + Button1, direct);
 			(*action) (NULL, (XEvent *) ev);
+		} else
+			DPRINTF("No action for On=%d, button=%d, direct=%d\n", OnRoot,
+				button + Button1, direct);
 		XUngrabPointer(dpy, CurrentTime);
 	} else if ((c = getclient(ev->window, ClientTitle)) && ev->window == c->title) {
 		DPRINTF("TITLE %s: 0x%lx button: %d\n", c->name, ev->window, ev->button);
@@ -563,13 +564,23 @@ buttonpress(XEvent *e)
 				drawclient(c);
 			}
 		}
-		if ((action = actions[OnClientTitle][button][direct]))
+		if ((action = actions[OnClientTitle][button][direct])) {
+			DPRINTF("Action %p for On=%d, button=%d, direct=%d\n", action,
+				OnClientTitle, button + Button1, direct);
 			(*action) (c, (XEvent *) ev);
+		} else
+			DPRINTF("No action for On=%d, button=%d, direct=%d\n",
+				OnClientTitle, button + Button1, direct);
 		XUngrabPointer(dpy, CurrentTime);
 		drawclient(c);
 	} else if ((c = getclient(ev->window, ClientGrips)) && ev->window == c->grips) {
-		if ((action = actions[OnClientGrips][button][direct]))
+		if ((action = actions[OnClientGrips][button][direct])) {
+			DPRINTF("Action %p for On=%d, button=%d, direct=%d\n", action,
+				ClientGrips, button + Button1, direct);
 			(*action) (c, (XEvent *) ev);
+		} else
+			DPRINTF("No action for On=%d, button=%d, direct=%d\n",
+				ClientGrips, button + Button1, direct);
 		XUngrabPointer(dpy, CurrentTime);
 		drawclient(c);
 	} else if ((c = getclient(ev->window, ClientIcon)) && ev->window == c->icon) {
@@ -578,8 +589,13 @@ buttonpress(XEvent *e)
 			XAllowEvents(dpy, ReplayPointer, CurrentTime);
 			return True;
 		}
-		if ((action = actions[OnClientIcon][button][direct]))
+		if ((action = actions[OnClientIcon][button][direct])) {
+			DPRINTF("Action %p for On=%d, button=%d, direct=%d\n", action,
+				ClientIcon, button + Button1, direct);
 			(*action) (c, (XEvent *) ev);
+		} else
+			DPRINTF("No action for On=%d, button=%d, direct=%d\n", ClientIcon,
+				button + Button1, direct);
 		XUngrabPointer(dpy, CurrentTime);	// ev->time ??
 		drawclient(c);
 	} else if ((c = getclient(ev->window, ClientWindow)) && ev->window == c->win) {
@@ -588,18 +604,33 @@ buttonpress(XEvent *e)
 			XAllowEvents(dpy, ReplayPointer, CurrentTime);
 			return True;
 		}
-		if ((action = actions[OnClientWindow][button][direct]))
+		if ((action = actions[OnClientWindow][button][direct])) {
+			DPRINTF("Action %p for On=%d, button=%d, direct=%d\n", action,
+				OnClientWindow, button + Button1, direct);
 			(*action) (c, (XEvent *) ev);
+		} else
+			DPRINTF("No action for On=%d, button=%d, direct=%d\n",
+				OnClientWindow, button + Button1, direct);
 		XUngrabPointer(dpy, CurrentTime);	// ev->time ??
 		drawclient(c);
 	} else if ((c = getclient(ev->window, ClientFrame)) && ev->window == c->frame) {
 		DPRINTF("FRAME %s: 0x%lx button: %d\n", c->name, ev->window, ev->button);
 		if (c->is.dockapp) {
-			if ((action = actions[OnClientDock][button][direct]))
+			if ((action = actions[OnClientDock][button][direct])) {
+				DPRINTF("Action %p for On=%d, button=%d, direct=%d\n",
+					action, OnClientDock, button + Button1, direct);
 				(*action) (c, (XEvent *) ev);
+			} else
+				DPRINTF("No action for On=%d, button=%d, direct=%d\n",
+					OnClientDock, button + Button1, direct);
 		} else {
-			if ((action = actions[OnClientFrame][button][direct]))
+			if ((action = actions[OnClientFrame][button][direct])) {
+				DPRINTF("Action %p for On=%d, button=%d, direct=%d\n",
+					action, OnClientFrame, button + Button1, direct);
 				(*action) (c, (XEvent *) ev);
+			} else
+				DPRINTF("No action for On=%d, button=%d, direct=%d\n",
+					OnClientFrame, button + Button1, direct);
 		}
 		XUngrabPointer(dpy, CurrentTime);	// ev->time ??
 		drawclient(c);

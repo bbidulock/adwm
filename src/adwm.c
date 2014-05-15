@@ -1743,7 +1743,7 @@ leavenotify(XEvent *e)
 Bool latertime(Time time);
 
 void
-manage(Window w, XWindowAttributes *wa)
+manage(Window w, XWindowAttributes * wa)
 {
 	Client *c, *t = NULL;
 	Window trans = None;
@@ -1781,8 +1781,7 @@ manage(Window w, XWindowAttributes *wa)
 		XSaveContext(dpy, c->icon, context[ClientIcon], (XPointer) c);
 		if (c->icon != c->win) {
 			XSaveContext(dpy, c->icon, context[ClientAny], (XPointer) c);
-			XSaveContext(dpy, c->icon, context[ScreenContext],
-				     (XPointer) scr);
+			XSaveContext(dpy, c->icon, context[ScreenContext], (XPointer) scr);
 		}
 	}
 	// c->tags = 0;
@@ -1802,24 +1801,21 @@ manage(Window w, XWindowAttributes *wa)
 	if ((c->with.time) && latertime(c->user_time))
 		focusnew = False;
 
-	take_focus =
-	    checkatom(c->win, _XA_WM_PROTOCOLS, _XA_WM_TAKE_FOCUS) ? TAKE_FOCUS : 0;
+	take_focus = checkatom(c->win, _XA_WM_PROTOCOLS, _XA_WM_TAKE_FOCUS) ? TAKE_FOCUS : 0;
 	c->can.focus = take_focus | GIVE_FOCUS;
 
-	/* FIXME: we aren't check whether the client requests to be mapped in the
-	   IconicState or NormalState here, and we should.  It appears that previous code 
-	   base was simply mapping all windows in the NormalState.  This explains some
-	   ugliness.  We already filtered out WithdrawnState (the very old DontCareState) 
-	   during the scan.  We should check StateHint flag and set is.icon and
-	   setwmstate() at the end of this sequence (clients use appearance of WM_STATE
-	   to indicate mapping). */
+	/* FIXME: we aren't check whether the client requests to be mapped in the IconicState or
+	   NormalState here, and we should.  It appears that previous code base was simply mapping
+	   all windows in the NormalState.  This explains some ugliness.  We already filtered out
+	   WithdrawnState (the very old DontCareState) during the scan.  We should check StateHint
+	   flag and set is.icon and setwmstate() at the end of this sequence (clients use appearance 
+	   of WM_STATE to indicate mapping). */
 
 	if (wmh) {
 		if (wmh->flags & InputHint)
 			c->can.focus = take_focus | (wmh->input ? GIVE_FOCUS : 0);
 		c->is.attn = (wmh->flags & XUrgencyHint) ? True : False;
-		if ((wmh->flags & WindowGroupHint) &&
-		    (c->leader = wmh->window_group) != None) {
+		if ((wmh->flags & WindowGroupHint) && (c->leader = wmh->window_group) != None) {
 			updategroup(c, c->leader, ClientGroup, &c->nonmodal);
 		}
 		XFree(wmh);
@@ -1852,12 +1848,11 @@ manage(Window w, XWindowAttributes *wa)
 					}
 				}
 			} else if (t) {
-				/* Transients are not allowed to perform some actions
-				   when window for which they are are transient for is
-				   also managed.  ICCCM 2.0 says such applications should 
-				   act on the non-transient managed client and let the
-				   window manager decide what to do about the transients. 
-				 */
+				/* Transients are not allowed to perform some actions when window
+				   for which they are are transient for is also managed.  ICCCM 2.0 
+				   says such applications should act on the non-transient managed
+				   client and let the window manager decide what to do about the
+				   transients. */
 				c->can.min = False;	/* can't (de)iconify */
 				c->can.hide = False;	/* can't hide or show */
 				c->can.tag = False;	/* can't change desktops */
@@ -1985,8 +1980,7 @@ manage(Window w, XWindowAttributes *wa)
 	twa.do_not_propagate_mask = CLIENTNOPROPAGATEMASK;
 
 	if (c->icon) {
-		XChangeWindowAttributes(dpy, c->icon, CWEventMask | CWDontPropagate,
-					&twa);
+		XChangeWindowAttributes(dpy, c->icon, CWEventMask | CWDontPropagate, &twa);
 		XSelectInput(dpy, c->icon, CLIENTMASK);
 
 		XReparentWindow(dpy, c->icon, c->frame, c->r.x, c->r.y);
@@ -1999,14 +1993,18 @@ manage(Window w, XWindowAttributes *wa)
 			XWindowChanges cwc;
 
 			/* map primary window offscreen */
-			cwc.x = DisplayWidth (dpy, scr->screen) + 10;
+			cwc.x = DisplayWidth(dpy, scr->screen) + 10;
 			cwc.y = DisplayHeight(dpy, scr->screen) + 10;
-			XConfigureWindow(dpy, c->win, CWX|CWY, &cwc);
+			XConfigureWindow(dpy, c->win, CWX | CWY, &cwc);
 			XMapWindow(dpy, c->win);
 		}
 #endif
 	} else {
-		XChangeWindowAttributes(dpy, c->win, CWEventMask | CWDontPropagate, &twa);
+		/* in case of stupid client */
+		twa.backing_store = NotUseful;
+		twa.win_gravity = NorthWestGravity;
+		XChangeWindowAttributes(dpy, c->win, CWEventMask | CWDontPropagate |
+					CWBackingStore | CWWinGravity, &twa);
 		XSelectInput(dpy, c->win, CLIENTMASK);
 
 		XReparentWindow(dpy, c->win, c->frame, 0, c->c.t);

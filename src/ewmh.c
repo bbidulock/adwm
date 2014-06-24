@@ -394,7 +394,7 @@ ewmh_del_client(Client *c, WithdrawCause cause)
 	{
 		ewmh_update_net_client_list();
 		if (sel == c) {
-			focus(NULL);
+			focus(NULL, NULL);
 			ewmh_update_net_active_window();
 		}
 		/* fall through */
@@ -2242,7 +2242,7 @@ clientmessage(XEvent *e)
 			   message_type == _XA_WIN_FOCUS) {
 			c->is.icon = False;
 			c->is.hidden = False;
-			focus(c);
+			focus(c, NULL);
 			arrange(clientview(c));
 		} else if (message_type == _XA_NET_WM_STATE) {
 			ewmh_process_state_atom(c, (Atom) ev->data.l[1], ev->data.l[0]);

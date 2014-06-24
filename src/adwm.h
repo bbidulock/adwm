@@ -1140,7 +1140,7 @@ void decborder(int px);
 void setmargin(int px);
 void incmargin(int px);
 void decmargin(int px);
-void focus(Client *c);
+void focus(Client *c, View *v);
 void focusicon(void);
 void focusnext(Client *c);
 void focusprev(Client *c);

@@ -952,7 +952,7 @@ enternotify(XEvent *e)
 	} else if (ev->window == scr->root) {
 		DPRINTF("Not focusing root\n");
 		if (took)
-			focus(took);
+			focus(took, NULL);
 	} else {
 		DPRINTF("Unknown entered window 0x%08lx\n", ev->window);
 		return False;
@@ -1015,7 +1015,7 @@ focuschange(XEvent *e)
 	switch (win) {
 	case None:
 	case PointerRoot:
-		focus(gave);
+		focus(gave, NULL);
 		break;
 	default:
 		if ((c = getclient(win, ClientAny))) {
@@ -1023,7 +1023,7 @@ focuschange(XEvent *e)
 				if (took != gave && !(gave->can.focus & TAKE_FOCUS)) {
 					CPRINTF(c, "stole focus\n");
 					CPRINTF(gave, "giving back focus\n");
-					focus(gave);
+					focus(gave, NULL);
 					return True;
 				}
 			}
@@ -1088,12 +1088,12 @@ setfocus(Client *c)
 }
 
 void
-focus(Client *c)
+focus(Client *c, View *v)
 {
 	Client *o;
-	View *v;
 
-	v = c ? c->cview : selview();
+	if (!v)
+		v = c ? c->cview : selview();
 
 	o = sel;
 	if ((!c && scr->managed)
@@ -1140,7 +1140,7 @@ focus(Client *c)
 	}
 	if (o && o != sel) {
 		drawclient(o);
-		if (o->is.shaded && scr->options.autoroll)
+		if (o->is.shaded && scr->options.autoroll && isvisible(o, v))
 			arrange(v);
 		lowertiled(o);
 		ewmh_update_net_window_state(o);
@@ -1165,7 +1165,7 @@ focusicon()
 		c->is.icon = False;
 		ewmh_update_net_window_state(c);
 	}
-	focus(c);
+	focus(c, v);
 	if (c->is.managed)
 		arrange(v);
 }
@@ -1187,7 +1187,7 @@ focusforw(Client *c)
 		     c && (!canfocus(c) || c->skip.focus || (c->is.icon || c->is.hidden)
 			   || !isvisible(c, v)); c = c->next) ;
 	if (c)
-		focus(c);
+		focus(c, v);
 	return (c);
 }
 
@@ -1209,7 +1209,7 @@ focusback(Client *c)
 			     || !isvisible(c, v)); c = c->prev) ;
 	}
 	if (c)
-		focus(c);
+		focus(c, v);
 	return (c);
 }
 
@@ -1227,7 +1227,7 @@ focuslast(Client *c)
 					      || (!c->is.dockapp
 						  && (s->is.icon || s->is.hidden))
 					      || !isvisible(s, v))); s = s->fnext) ;
-	focus(s);
+	focus(s, v);
 	return (s);
 }
 
@@ -1735,7 +1735,7 @@ leavenotify(XEvent *e)
 	if (!ev->same_screen) {
 		XFindContext(dpy, ev->window, context[ScreenContext], (XPointer *) &scr);
 		if (!scr->managed)
-			focus(NULL);
+			focus(NULL, NULL);
 	}
 	return True;
 }
@@ -2112,14 +2112,14 @@ manage(Window w, XWindowAttributes * wa)
 		    ("Focusing newly managed %sclient: frame 0x%08lx win 0x%08lx name %s\n",
 		     c->is.bastard ? "bastard " : "", c->frame, c->win, c->name);
 		arrange(NULL);
-		focus(c);
+		focus(c, NULL);
 	} else {
 		DPRINTF
 		    ("Lowering newly managed %sclient: frame 0x%08lx win 0x%08lx name %s\n",
 		     c->is.bastard ? "bastard " : "", c->frame, c->win, c->name);
 		restack_belowif(c, sel);
 		arrange(NULL);
-		focus(sel);
+		focus(sel, NULL);
 	}
 }
 
@@ -3420,7 +3420,7 @@ togglemin(Client *c)
 	if (c->is.icon) {
 		c->is.icon = False;
 		if (c->is.managed && !c->is.hidden) {
-			focus(c);
+			focus(c, NULL);
 			arrange(clientview(c));
 		}
 	} else {
@@ -3472,7 +3472,7 @@ togglemodal(Client *c)
 				incmodal(c, g);
 		}
 		if (c->is.managed)
-			focus(sel);
+			focus(sel, NULL);
 		break;
 	case ModalGroup:
 		if ((g = getleader(c->leader, ClientLeader)))
@@ -3512,7 +3512,7 @@ togglemonitor()
 	if (!m)
 		return;
 	XWarpPointer(dpy, None, scr->root, 0, 0, 0, 0, m->mx, m->my);
-	focus(NULL);
+	focus(NULL, NULL);
 }
 
 void
@@ -3537,7 +3537,7 @@ unmanage(Client *c, WithdrawCause cause)
 		gave = NULL;
 	if (sel == c)
 		sel = NULL;
-	focus(sel);
+	focus(sel, NULL);
 	/* The server grab construct avoids race conditions. */
 	XGrabServer(dpy);
 	XSelectInput(dpy, c->frame, NoEventMask);

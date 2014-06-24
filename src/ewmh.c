@@ -1837,7 +1837,7 @@ ewmh_process_net_startup_id(Client *c)
 			gettextprop(c->leader, _XA_NET_STARTUP_ID, &c->startup_id);
 	if (c->startup_id) {
 		char *p, *q, *copy;
-		char *launcher, *launchee;
+		char *launcher, *launchee, *hostname;
 		long pid, sequence, timestamp = 0;
 
 		do {
@@ -1857,25 +1857,29 @@ ewmh_process_net_startup_id(Client *c)
 			*p++ = '\0';
 			pid = atol(q);
 			q = p;
-			if (!(p = strchr(q, '_')))
+			if (!(p = strchr(q, '-')))
 				break;
 			*p++ = '\0';
 			sequence = atol(q);
 			q = p;
-			if (!(p = strstr(q, "TIME")) || p != q)
+			if (!(p = strstr(q, "_TIME")))
 				break;
+			*p++ = '\0';
+			hostname = q;
 			q = p + 4;
 			timestamp = atol(q);
 
 			/* Note: when xdg-launch is the launcher, the startup id is:
-			   %s/%s/%d-%d_TIME%lu, launcher, launchee, pid, sequence, ts
-			   where the sequence is in fact the monitor number. */
+			   %s/%s/%d-%d-%s_TIME%lu, launcher, launchee, pid, sequence,
+			   %hostname, ts where the sequence is in fact the monitor
+			   %number. */
 
 			if (strstr(launcher, "xdg-launch") &&
 			    0 <= sequence && sequence < scr->nmons)
 				c->monitor = sequence + 1;
 
 			(void) launchee;
+			(void) hostname;
 			(void) pid;
 		} while (0);
 		free(copy);

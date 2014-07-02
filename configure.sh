@@ -31,8 +31,8 @@ esac
 	--prefix=/usr \
 	--sysconfdir=/etc \
 	CPPFLAGS="$CPPFLAGS" \
-	CFLAGS="-Wall -Werror $CFLAGS" \
-	CXXFLAGS="-Wall -Werror $CXXFLAGS" \
+	CFLAGS="$DEBUG_CFLAGS -Wall -Werror $CFLAGS" \
+	CXXFLAGS="$DEBUG_CXXFLAGS -Wall -Werror $CXXFLAGS" \
 	LDFLAGS="$LDFLAGS" \
 	DEBUG_CFLAGS="$DEBUG_CFLAGS" \
 	DEBUG_CXXFLAGS="$DEBUG_CXXFLAGS"

@@ -518,7 +518,7 @@ enterclient(XEvent *e, Client *c)
 	/* focus when switching monitors */
 	if (!isvisible(sel, c->cview)) {
 		CPRINTF(c, "FOCUS: monitor switching focus\n");
-		focus(c, NULL);
+		focus(c);
 	}
 	switch (scr->options.focus) {
 	case Clk2Focus:
@@ -527,19 +527,19 @@ enterclient(XEvent *e, Client *c)
 		/* FIXME: incorporate isfloating() check into skip.sloppy setting */
 		if (!c->skip.sloppy && isfloating(c, c->cview)) {
 			CPRINTF(c, "FOCUS: sloppy focus\n");
-			focus(c, NULL);
+			focus(c);
 		}
 		break;
 	case AllSloppy:
 		if (!c->skip.sloppy) {
 			CPRINTF(c, "FOCUS: sloppy focus\n");
-			focus(c, NULL);
+			focus(c);
 		}
 		break;
 	case SloppyRaise:
 		if (!c->skip.sloppy) {
 			CPRINTF(c, "FOCUS: sloppy focus\n");
-			focus(c, NULL);
+			focus(c);
 			raiseclient(c);
 		}
 		break;
@@ -1119,7 +1119,7 @@ discardenter()
 	XSync(dpy, False);
 	while (XCheckMaskEvent(dpy, EnterWindowMask, &ev)) ;
 	if (sel)
-		focus(sel, NULL);	/* put focus back where it was */
+		focus(sel);	/* put focus back where it was */
 }
 
 static void
@@ -5263,7 +5263,7 @@ rotatewins(Client *c)
 		detach(s);
 		attach(s, True);
 		arrange(v);
-		focus(s, v);
+		focus(s);
 	}
 }
 
@@ -5282,7 +5282,7 @@ unrotatewins(Client *c)
 		detach(s);
 		attach(s, False);
 		arrange(v);
-		focus(s, v);
+		focus(s);
 	}
 }
 
@@ -5418,7 +5418,7 @@ zoom(Client *c)
 	detach(c);
 	attach(c, False);
 	arrange(v);
-	focus(c, v);
+	focus(c);
 }
 
 void

@@ -58,7 +58,7 @@ _tag(Client *c, int index)
 	if (c->is.managed)
 		ewmh_update_net_window_desktop(c);
 	arrange(NULL);
-	focus(NULL, NULL);
+	focus(NULL);
 }
 
 void
@@ -135,7 +135,7 @@ toggleview(View *cv, int index)
 		if ((v->seltags & tags) && v != cv)
 			arrange(v);
 	arrange(cv);
-	focus(NULL, cv);
+	focus(NULL);
 	ewmh_update_net_current_desktop();
 }
 
@@ -154,7 +154,7 @@ focusview(View *v, int index)
 		if (((c->tags & tags) || c->is.sticky) &&
 		    !c->is.bastard && !c->is.dockapp && c->can.focus)
 			break;
-	focus(c, v);
+	focus(c);
 }
 
 void
@@ -203,7 +203,7 @@ view(View *ov, int index)
 	updategeom(cm);
 	XPRINTF("VIEW: arranging view %d\n", cv->index);
 	arrange(cv);
-	focus(NULL, cv);
+	focus(NULL);
 	ewmh_update_net_current_desktop();
 }
 

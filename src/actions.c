@@ -18,7 +18,7 @@ void
 m_move(Client *c, XEvent *e)
 {
 	DPRINT;
-	focus(c, NULL);
+	focus(c);
 	if (!mousemove(c, e, (e->xbutton.state & ControlMask) ? False : True))
 		raiselower(c);
 }
@@ -38,7 +38,7 @@ m_prevtag(Client *c, XEvent *e)
 void
 m_resize(Client *c, XEvent *e)
 {
-	focus(c, NULL);
+	focus(c);
 	if (!mouseresize(c, e, (e->xbutton.state & ControlMask) ? False : True))
 		raiselower(c);
 }
@@ -1165,7 +1165,7 @@ k_select_cl(View *cv, Key *k, CycleList * cl)
 				c->is.hidden = False;
 		}
 	}
-	focus(c, NULL);
+	focus(c);
 	if (k->cyc) {
 		k->stop = k_stop;
 		if (!XGrabKeyboard(dpy, scr->root, GrabModeSync, False,

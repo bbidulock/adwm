@@ -61,7 +61,6 @@ void compileregs(void);
 Group *getleader(Window leader, int group);
 Client *focusforw(Client *c);
 Client *focusback(Client *c);
-Client *focuslast(Client *c);
 long getstate(Window w);
 void incmodal(Client *c, Group *g);
 void decmodal(Client *c, Group *g);
@@ -72,7 +71,6 @@ void reconfigure(Client *c, ClientGeometry * g);
 void restack_belowif(Client *c, Client *sibling);
 void run(void);
 void scan(void);
-void setfocus(Client *c);
 void tag(Client *c, int index);
 void updatestruts(void);
 void updatesizehints(Client *c);
@@ -347,7 +345,7 @@ setwmstate(Window win, long state, Window icon)
 }
 
 static void
-applystate(Client *c, XWMHints * wmh)
+applystate(Client *c, XWMHints *wmh)
 {
 	int state = NormalState;
 
@@ -1060,11 +1058,43 @@ canfocus(Client *c)
 	return False;
 }
 
-void
+static Bool
+isviewable(Client *c)
+{
+	XWindowAttributes wa = { 0, };
+	Window win;
+
+	if (!c)
+		return False;
+
+	win = (c->icon && c->icon != c->win) ? c->icon : c->win;
+
+	if (!XGetWindowAttributes(dpy, win, &wa))
+		return False;
+	if (wa.map_state != IsViewable)
+		return False;
+	return True;
+}
+
+static Bool
+focusok(Client *c)
+{
+	if (!c)
+		return False;
+	if (!canfocus(c))
+		return False;
+	if (!isviewable(c)) {
+		_CPRINTF(c, "attempt to focus unviewable client\n");
+		return False;
+	}
+	return True;
+}
+
+static void
 setfocus(Client *c)
 {
 	/* more simple */
-	if (c && canfocus(c)) {
+	if (focusok(c)) {
 		CPRINTF(c, "setting focus\n");
 		if (c->can.focus & TAKE_FOCUS) {
 			XEvent ce;
@@ -1083,8 +1113,8 @@ setfocus(Client *c)
 		} else if (c->can.focus & GIVE_FOCUS)
 			XSetInputFocus(dpy, c->win, RevertToPointerRoot, user_time);
 		gave = c;
-	} else if (!c)
-		XSetInputFocus(dpy, PointerRoot, RevertToPointerRoot, CurrentTime);
+	} else if (c)
+		_CPRINTF(c, "cannot set focus\n");
 }
 
 static Bool
@@ -1094,7 +1124,7 @@ canselect(Client *c)
 		return False;
 	if (!canfocus(c))
 		return False;
-	if (!c->is.dockapp && (c->is.icon || c->is.hidden))
+	if ((!c->is.dockapp && c->is.icon) || c->is.hidden)
 		return False;
 	if (!isvisible(c, NULL))
 		return False;
@@ -1151,8 +1181,10 @@ focus(Client *c)
 	if (!scr->managed)
 		return;
 	ewmh_update_net_active_window();
-	setfocus(sel);
-	setselected(sel);
+	if (sel && sel != o) {
+		setfocus(sel);
+		setselected(sel);
+	}
 	if (c && c != o) {
 		if (c->is.attn)
 			c->is.attn = False;
@@ -1243,24 +1275,6 @@ focusback(Client *c)
 	return (c);
 }
 
-Client *
-focuslast(Client *c)
-{
-	Client *s;
-	View *v;
-
-	if (!c || c != sel)
-		return (sel);
-	if (!(v = c->cview))
-		return (NULL);
-	for (s = scr->flist; s && (s == c || (!canfocus(s)
-					      || (!c->is.dockapp
-						  && (s->is.icon || s->is.hidden))
-					      || !isvisible(s, v))); s = s->fnext) ;
-	focus(s);
-	return (s);
-}
-
 void
 focusnext(Client *c)
 {
@@ -1275,35 +1289,35 @@ focusprev(Client *c)
 		raiseclient(c);
 }
 
-void
-with_transients(Client *c, void (*each) (Client *, int), int data)
+Bool
+with_transients(Client *c, Bool (*each) (Client *, int), int data)
 {
 	Client *t;
 	Window *m;
 	unsigned int i, g, n = 0;
 	int ctx[2] = { ClientTransFor, ClientTransForGroup };
+	Bool any = False;
 
 	if (!c)
-		return;
+		return (any);
 	for (g = 0; g < 2; g++)
 		if ((m = getgroup(c, c->win, ctx[g], &n)))
 			for (i = 0; i < n; i++)
 				if ((t = getclient(m[i], ClientWindow)) && t != c)
-					each(t, data);
-	each(c, data);
+					any |= each(t, data);
+	any |= each(c, data);
+	return (any);
 }
 
-static void
+static Bool
 _iconify(Client *c, int dummy)
 {
-	if (!c->is.icon) {
-		c->is.icon = True;
-		ewmh_update_net_window_state(c);
-	}
-	if (c == sel)
-		focuslast(c);
-	ban(c);
-	arrange(clientview(c));
+	if (c->is.icon)
+		return False;
+	c->is.icon = True;
+	needarrange(clientview(c));
+	ewmh_update_net_window_state(c);
+	return True;
 }
 
 void
@@ -1311,31 +1325,42 @@ iconify(Client *c)
 {
 	if (!c || (!c->can.min && c->is.managed))
 		return;
-	return with_transients(c, &_iconify, 0);
+	if (with_transients(c, &_iconify, 0)) {
+		arrangeneeded();
+		focus(sel);
+	}
 }
 
 void
 iconifyall(View *v)
 {
 	Client *c;
+	Bool any = False;
 
 	for (c = scr->clients; c; c = c->next) {
 		if (!isvisible(c, v))
 			continue;
 		if (c->is.bastard || c->is.dockapp)
 			continue;
-		iconify(c);
+		if (!c->can.min && c->is.managed)
+			continue;
+		any |= with_transients(c, &_iconify, 0);
+	}
+	if (any) {
+		arrangeneeded();
+		focus(sel);
 	}
 }
 
-static void
+static Bool
 _deiconify(Client *c, int dummy)
 {
 	if (!c->is.icon)
-		return;
+		return False;
 	c->is.icon = False;
-	if (c->is.managed)
-		arrange(NULL);
+	needarrange(clientview(c));
+	ewmh_update_net_window_state(c);
+	return True;
 }
 
 void
@@ -1343,19 +1368,42 @@ deiconify(Client *c)
 {
 	if (!c || (!c->can.min && c->is.managed))
 		return;
-	return with_transients(c, &_deiconify, 0);
+	if (with_transients(c, &_deiconify, 0)) {
+		arrangeneeded();
+		focus(sel);
+	}
 }
 
-static void
+void
+deiconifyall(View *v)
+{
+	Client *c;
+	Bool any = False;
+
+	for (c = scr->clients; c; c = c->next) {
+		if (!isvisible(c, v))
+			continue;
+		if (c->is.bastard || c->is.dockapp)
+			continue;
+		if (!c->can.min && c->is.managed)
+			continue;
+		any |= with_transients(c, &_deiconify, 0);
+	}
+	if (any) {
+		arrangeneeded();
+		focus(sel);
+	}
+}
+
+static Bool
 _hide(Client *c, int dummy)
 {
-	if (c->is.hidden || !c->can.hide || WTCHECK(c, WindowTypeDock)
-	    || WTCHECK(c, WindowTypeDesk))
-		return;
-	if (c == sel)
-		focuslast(c);
+	if (c->is.hidden)
+		return False;
 	c->is.hidden = True;
+	needarrange(clientview(c));
 	ewmh_update_net_window_state(c);
+	return True;
 }
 
 void
@@ -1363,30 +1411,42 @@ hide(Client *c)
 {
 	if (!c || (!c->can.hide && c->is.managed))
 		return;
-	return with_transients(c, &_hide, 0);
+	if (with_transients(c, &_hide, 0)) {
+		arrangeneeded();
+		focus(sel);
+	}
 }
 
 void
 hideall(View *v)
 {
 	Client *c;
+	Bool any = False;
 
 	for (c = scr->clients; c; c = c->next) {
 		if (!isvisible(c, v))
 			continue;
 		if (c->is.bastard || c->is.dockapp)
 			continue;
-		hide(c);
+		if (!c->can.hide && c->is.managed)
+			continue;
+		any |= with_transients(c, &_hide, 0);
+	}
+	if (any) {
+		arrangeneeded();
+		focus(sel);
 	}
 }
 
-static void
+static Bool
 _show(Client *c, int dummy)
 {
 	if (!c->is.hidden)
-		return;
+		return False;
 	c->is.hidden = False;
+	needarrange(clientview(c));
 	ewmh_update_net_window_state(c);
+	return True;
 }
 
 void
@@ -1394,33 +1454,42 @@ show(Client *c)
 {
 	if (!c || (!c->can.hide && c->is.managed))
 		return;
-	return with_transients(c, &_show, 0);
+	if (with_transients(c, &_show, 0)) {
+		arrangeneeded();
+		focus(sel);
+	}
 }
 
 void
 showall(View *v)
 {
 	Client *c;
+	Bool any = False;
 
 	for (c = scr->clients; c; c = c->next) {
 		if (!isvisible(c, v))
 			continue;
 		if (c->is.bastard || c->is.dockapp)
 			continue;
-		show(c);
+		if (!c->can.hide && c->is.managed)
+			continue;
+		any |= with_transients(c, &_show, 0);
+	}
+	if (any) {
+		arrangeneeded();
+		focus(sel);
 	}
 }
 
 void
 togglehidden(Client *c)
 {
-	if (!c || !c->can.hide)
+	if (!c)
 		return;
 	if (c->is.hidden)
 		show(c);
 	else
 		hide(c);
-	arrange(clientview(c));
 }
 
 void
@@ -3448,16 +3517,14 @@ togglemin(Client *c)
 	if (!c || (!c->can.min && c->is.managed))
 		return;
 	if (c->is.icon) {
+		deiconify(c);
 		c->is.icon = False;
 		if (c->is.managed && !c->is.hidden) {
 			focus(c);
 			arrange(clientview(c));
 		}
-	} else {
-		c->is.icon = True;
-		if (c->is.managed)
-			iconify(c);
-	}
+	} else
+		iconify(c);
 }
 
 void
@@ -3558,8 +3625,6 @@ unmanage(Client *c, WithdrawCause cause)
 	    c->is.bastard || c->is.dockapp;
 	dostruts = c->with.struts;
 	c->can.focus = 0;
-	if (sel == c)
-		focuslast(c);
 	/* valgring found this... */
 	if (took == c)
 		took = NULL;

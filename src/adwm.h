@@ -842,6 +842,7 @@ struct View {
 	int index;
 	unsigned long long seltags;	/* tags selected for this view */
 	int row, col;			/* row and column in desktop layout */
+	Bool needarrange;		/* need to be rearranged */
 };					/* per-tag settings */
 
 struct Tag {
@@ -1163,7 +1164,7 @@ void togglehidden(Client *c);
 Bool selectionclear(XEvent *e);
 
 /* needed by tags.c */
-void with_transients(Client *c, void (*each) (Client *, int), int data);
+Bool with_transients(Client *c, Bool (*each) (Client *, int), int data);
 
 /* needed by layout.c */
 Bool canfocus(Client *c);

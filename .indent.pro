@@ -24,6 +24,7 @@
 -ss
 -hnl
 -nbc
+-TXWMHints
 -TTree
 -TNode
 -TLeaf

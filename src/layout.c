@@ -2709,6 +2709,32 @@ arrange(View *ov)
 	}
 }
 
+void
+needarrange(View *v)
+{
+	if (!v) {
+		unsigned i;
+
+		for (v = scr->views, i = 0; i < scr->ntags; i++, v++)
+			needarrange(v);
+	} else
+		v->needarrange = True;
+}
+
+void
+arrangeneeded(void)
+{
+	unsigned i;
+	View *v;
+
+	for (v = scr->views, i = 0; i < scr->ntags; i++, v++) {
+		if (v->needarrange) {
+			arrange(v);
+			v->needarrange = False;
+		}
+	}
+}
+
 Arrangement arrangement_FLOAT = {
 	.name = "float",
 	.initlayout = initlayout_float,

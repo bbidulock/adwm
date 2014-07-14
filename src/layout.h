@@ -66,6 +66,8 @@ void restack_client(Client *c, int stack_mode, Client *sibling);
 void toggleabove(Client *c);
 void togglebelow(Client *c);
 void arrange(View *v);
+void needarrange(View *v);
+void arrangeneeded(void);
 void setlayout(const char *arg);
 void raisetiled(Client *c);
 void lowertiled(Client *c);

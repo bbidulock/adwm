@@ -431,6 +431,26 @@ setclientstate(Client *c, long state)
 	}
 }
 
+static Bool
+relfocus(Client *c)
+{
+	Bool refocus = False;
+
+	if (took == c) {
+		took = NULL;
+		refocus = True;
+	}
+	if (gave == c) {
+		gave = NULL;
+		refocus = True;
+	}
+	if (sel == c) {
+		sel = NULL;
+		refocus = True;
+	}
+	return refocus;
+}
+
 void
 ban(Client *c)
 {
@@ -439,6 +459,7 @@ ban(Client *c)
 	setclientstate(c, c->is.icon ? IconicState : NormalState);
 	if (!c->is.banned) {
 		c->is.banned = True;
+		relfocus(c);
 		XUnmapWindow(dpy, c->frame);
 	}
 }
@@ -1113,7 +1134,14 @@ setfocus(Client *c)
 		} else if (c->can.focus & GIVE_FOCUS)
 			XSetInputFocus(dpy, c->win, RevertToPointerRoot, user_time);
 		gave = c;
-	} else if (c)
+	} else if (!c) {
+		Window win = None;
+		int revert = RevertToPointerRoot;
+
+		XGetInputFocus(dpy, &win, &revert);
+		if (!win)
+			XSetInputFocus(dpy, PointerRoot, revert, CurrentTime);
+	} else
 		_CPRINTF(c, "cannot set focus\n");
 }
 
@@ -1169,11 +1197,9 @@ focus(Client *c)
 	if (!scr->managed)
 		return;
 	ewmh_update_net_active_window();
-	if (sel && sel != o) {
-		setfocus(sel);
-		setselected(sel);
-	}
+	setfocus(sel);
 	if (c && c != o) {
+		setselected(c);
 		if (c->is.attn)
 			c->is.attn = False;
 		/* FIXME: why would it be otherwise if it is focusable? Also, a client
@@ -2878,6 +2904,7 @@ scan(void)
 	if (wins)
 		XFree(wins);
 	DPRINTF("done scanning screen %d\n", scr->screen);
+	focus(sel);
 	ewmh_update_kde_splash_progress();
 }
 
@@ -3612,20 +3639,14 @@ unmanage(Client *c, WithdrawCause cause)
 		       XGetTransientForHint(dpy, c->win, &trans))) ||
 	    c->is.bastard || c->is.dockapp;
 	dostruts = c->with.struts;
-	c->can.focus = 0;
-	/* valgring found this... */
-	if (took == c)
-		took = NULL;
-	if (gave == c)
-		gave = NULL;
-	if (sel == c)
-		sel = NULL;
-	focus(sel);
 	/* The server grab construct avoids race conditions. */
 	XGrabServer(dpy);
 	XSelectInput(dpy, c->frame, NoEventMask);
 	XUnmapWindow(dpy, c->frame);
 	XSetErrorHandler(xerrordummy);
+	c->can.focus = 0;
+	if (relfocus(c))
+		focus(sel);
 	c->is.managed = False;
 	if (c->is.modal)
 		togglemodal(c);

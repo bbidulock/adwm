@@ -1143,26 +1143,14 @@ shouldsel(Client *c)
 	return True;
 }
 
-static Client *
-goodselect(Client *c)
-{
-	if ((!c && scr->managed) || (c && !canselect(c))) {
-		/* skip some on first pass */
-		for (c = scr->flist; c && !shouldsel(c); c = c->fnext) ;
-		if (c)
-			return(c);
-		for (c = scr->flist; c && !canselect(c); c = c->fnext) ;
-	}
-	return (c);
-}
-
 void
 focus(Client *c)
 {
 	Client *o;
 
 	o = sel;
-	c = goodselect(c);
+	if ((!c && scr->managed) || (c && !canselect(c)))
+		for (c = scr->flist; c && !shouldsel(c); c = c->fnext) ;
 	if (sel && sel != c) {
 		XSetWindowBorder(dpy, sel->frame, scr->style.color.norm[ColBorder]);
 	}

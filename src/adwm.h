@@ -10,6 +10,8 @@
 #include <X11/Xutil.h>
 #include <X11/Xresource.h>
 #include <X11/Xft/Xft.h>
+#include <X11/extensions/XInput2.h>
+#include <X11/extensions/Xfixes.h>
 #ifdef SYNC
 #include <X11/extensions/sync.h>
 #endif
@@ -236,6 +238,7 @@ enum {
 #define _XA_KDE_WM_CHANGE_STATE			atom[WindowChangeState]
 
 enum {
+	XfixesBase,
 	XrandrBase,
 	XineramaBase,
 	XsyncBase,
@@ -645,6 +648,7 @@ struct Monitor {
 		DockOrient orient;
 	} dock;
 	int row, col;			/* row and column in monitor layout */
+	PointerBarrier bars[8];
 };
 
 typedef struct {

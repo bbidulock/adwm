@@ -2097,7 +2097,10 @@ manage(Window w, XWindowAttributes * wa)
 		XSelectInput(dpy, c->icon, CLIENTMASK);
 
 		XReparentWindow(dpy, c->icon, c->frame, c->r.x, c->r.y);
-		XAddToSaveSet(dpy, c->icon);
+		if (haveext[XfixesBase])
+			XFixesChangeSaveSet(dpy, c->icon, SetModeInsert, SaveSetNearest, SaveSetUnmap);
+		else
+			XChangeSaveSet(dpy, c->icon, SetModeInsert);
 		XConfigureWindow(dpy, c->icon, CWBorderWidth, &wc);
 		XMapWindow(dpy, c->icon);
 #if 0
@@ -2125,7 +2128,10 @@ manage(Window w, XWindowAttributes * wa)
 			XReparentWindow(dpy, c->grips, c->frame, 0, c->c.h - c->c.g);
 		if (c->title)
 			XReparentWindow(dpy, c->title, c->frame, 0, 0);
-		XAddToSaveSet(dpy, c->win);
+		if (haveext[XfixesBase])
+			XFixesChangeSaveSet(dpy, c->win, SetModeInsert, SaveSetRoot, SaveSetMap);
+		else
+			XChangeSaveSet(dpy, c->win, SetModeInsert);
 		XConfigureWindow(dpy, c->win, CWBorderWidth, &wc);
 		XMapWindow(dpy, c->win);
 	}
@@ -3027,6 +3033,69 @@ updatedock(void)
 }
 
 void
+updatebarriers(void)
+{
+	Monitor *m;
+	int i, all = XIAllMasterDevices;
+
+	if (!haveext[XfixesBase])
+		return;
+	for (m = scr->monitors; m; m = m->next)
+		for (i = 0; i < 8; i++)
+			if (m->bars[i])
+				XFixesDestroyPointerBarrier(dpy, m->bars[i]);
+	if (nscr < 2 && scr->nmons < 2)
+		return;
+	for (m = scr->monitors; m; m = m->next) {
+		int w, h;
+
+		w = m->sc.w / 20;
+		h = m->sc.h / 20;
+
+		m->bars[0] =
+		    XFixesCreatePointerBarrier(dpy, scr->root,
+					       m->sc.x, m->sc.y,
+					       m->sc.x, m->sc.y + h,
+					       BarrierNegativeX, 1, &all);
+		m->bars[1] =
+		    XFixesCreatePointerBarrier(dpy, scr->root,
+					       m->sc.x, m->sc.y,
+					       m->sc.x + w, m->sc.y,
+					       BarrierNegativeY, 1, &all);
+		m->bars[2] =
+		    XFixesCreatePointerBarrier(dpy, scr->root,
+					       m->sc.x + m->sc.w - w,
+					       m->sc.y, m->sc.x + m->sc.w, m->sc.y,
+					       BarrierNegativeY, 1, &all);
+		m->bars[3] =
+		    XFixesCreatePointerBarrier(dpy, scr->root,
+					       m->sc.x + m->sc.w, m->sc.y,
+					       m->sc.x + m->sc.w, m->sc.y + h,
+					       BarrierPositiveX, 1, &all);
+		m->bars[4] =
+		    XFixesCreatePointerBarrier(dpy, scr->root,
+					       m->sc.x + m->sc.w, m->sc.y + m->sc.h - h,
+					       m->sc.x + m->sc.w, m->sc.y + m->sc.h,
+					       BarrierPositiveX, 1, &all);
+		m->bars[5] =
+		    XFixesCreatePointerBarrier(dpy, scr->root,
+					       m->sc.x + m->sc.w - w, m->sc.y + m->sc.h,
+					       m->sc.x + m->sc.w, m->sc.y + m->sc.h,
+					       BarrierPositiveY, 1, &all);
+		m->bars[6] =
+		    XFixesCreatePointerBarrier(dpy, scr->root,
+					       m->sc.x, m->sc.y + m->sc.h,
+					       m->sc.x + w, m->sc.y + m->sc.h,
+					       BarrierPositiveY, 1, &all);
+		m->bars[7] =
+		    XFixesCreatePointerBarrier(dpy, scr->root,
+					       m->sc.x, m->sc.y + m->sc.h - h,
+					       m->sc.x, m->sc.y + m->sc.h,
+					       BarrierNegativeX, 1, &all);
+	}
+}
+
+void
 updatemonitors(XEvent *e, int n, Bool size_update, Bool full_update)
 {
 	int i, j;
@@ -3064,6 +3133,7 @@ updatemonitors(XEvent *e, int n, Bool size_update, Bool full_update)
 			updatestruts();
 		}
 	}
+	updatebarriers();
 	/* find largest monitor */
 	for (w = 0, h = 0, scr->sw = 0, scr->sh = 0, i = 0; i < n; i++) {
 		m = scr->monitors + i;
@@ -4138,6 +4208,12 @@ main(int argc, char *argv[])
 
 	for (i = 0; i < PartLast; i++)
 		context[i] = XUniqueContext();
+	haveext[XfixesBase]
+	    = XFixesQueryExtension(dpy, &ebase[XfixesBase], &dummy);
+	if (haveext[XfixesBase])
+		DPRINTF("have XFIXES extension with base %d\n", ebase[XfixesBase]);
+	else
+		DPRINTF("%s", "XFIXES extension is not supported\n");
 #ifdef XRANDR
 	haveext[XrandrBase]
 	    = XRRQueryExtension(dpy, &ebase[XrandrBase], &dummy);

@@ -1117,6 +1117,8 @@ setfocus(Client *c)
 	/* more simple */
 	if (focusok(c)) {
 		CPRINTF(c, "setting focus\n");
+		if (c->can.focus & GIVE_FOCUS)
+			XSetInputFocus(dpy, c->win, RevertToPointerRoot, user_time);
 		if (c->can.focus & TAKE_FOCUS) {
 			XEvent ce;
 
@@ -1131,8 +1133,7 @@ setfocus(Client *c)
 			ce.xclient.data.l[3] = 0l;
 			ce.xclient.data.l[4] = 0l;
 			XSendEvent(dpy, c->win, False, NoEventMask, &ce);
-		} else if (c->can.focus & GIVE_FOCUS)
-			XSetInputFocus(dpy, c->win, RevertToPointerRoot, user_time);
+		}
 		gave = c;
 	} else if (!c) {
 		Window win = None;

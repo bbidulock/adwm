@@ -3249,6 +3249,7 @@ initmonitors(XEvent *e)
 				}
 			} else {
 				XSetWindowAttributes wa;
+				int j;
 
 				scr->monitors =
 				    erealloc(scr->monitors,
@@ -3274,6 +3275,8 @@ initmonitors(XEvent *e)
 				XChangeWindowAttributes(dpy, m->veil,
 							CWBackPixmap | CWOverrideRedirect,
 							&wa);
+				for (j = 0; j < 8; j++)
+					m->bars[j] = None;
 			}
 		}
 		XFree(si);
@@ -3343,6 +3346,7 @@ initmonitors(XEvent *e)
 				}
 			} else {
 				XSetWindowAttributes wa;
+				int j;
 
 				scr->monitors =
 				    erealloc(scr->monitors,
@@ -3368,6 +3372,8 @@ initmonitors(XEvent *e)
 				XChangeWindowAttributes(dpy, m->veil,
 							CWBackPixmap | CWOverrideRedirect,
 							&wa);
+				for (j = 0; j < 8; j++)
+					m->bars[j] = None;
 			}
 			n++;
 			XRRFreeCrtcInfo(ci);

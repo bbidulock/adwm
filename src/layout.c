@@ -2701,10 +2701,8 @@ arrange(View *ov)
 			arrange(m->curview);
 		}
 	} else if ((m = ov->curmon)) {
-		XMapRaised(dpy, m->veil);
 		arrangeview(ov);
 		restack();
-		XUnmapWindow(dpy, m->veil);
 		discardenter();
 	}
 }

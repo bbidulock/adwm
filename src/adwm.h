@@ -641,7 +641,6 @@ struct Monitor {
 	View *curview;	    /* current view */
 	View *preview;	    /* previous view */
 	unsigned num, index;
-	Window veil;
 	struct {
 		Workarea wa;
 		DockPosition position;

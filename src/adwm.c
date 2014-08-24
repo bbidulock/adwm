@@ -2768,13 +2768,26 @@ run(void)
 	xfd = ConnectionNumber(dpy);
 	while (running) {
 		struct pollfd pfd = { xfd, POLLIN | POLLERR | POLLHUP, 0 };
+		int sig;
 
-		if (signum) {
-			if (signum == SIGHUP)
+		if ((sig = signum)) {
+			signum = 0;
+
+			switch (sig) {
+			case SIGHUP:
 				quit("HUP!");
-			else
+				break;
+			case SIGTERM:
+			case SIGINT:
+			case SIGQUIT:
 				quit(NULL);
-			break;
+				break;
+			case SIGCHLD:
+				wait(&sig);
+				break;
+			default:
+				break;
+			}
 		}
 
 		if (poll(&pfd, 1, -1) == -1) {
@@ -3446,6 +3459,12 @@ sighandler(int sig)
 {
 	if (sig)
 		signum = sig;
+	if (signum == SIGCHLD) {
+		int status;
+
+		wait(&status);
+		signum = 0;
+	}
 }
 
 void
@@ -3567,31 +3586,25 @@ spawn(const char *arg)
 
 	if (!arg)
 		return;
-	/* The double-fork construct avoids zombie processes and keeps the code clean
-	   from stupid signal handlers. */
 	if (fork() == 0) {
-		if (fork() == 0) {
-			char *d, *p;
+		char *d, *p;
 
-			if (dpy)
-				close(ConnectionNumber(dpy));
-			setsid();
-			d = strdup(getenv("DISPLAY"));
-			if (!(p = strrchr(d, '.')) || !strlen(p + 1)
-			    || strspn(p + 1, "0123456789") != strlen(p + 1)) {
-				size_t len = strlen(d) + 12;
-				char *s = calloc(len, sizeof(*s));
+		if (dpy)
+			close(ConnectionNumber(dpy));
+		setsid();
+		d = strdup(getenv("DISPLAY"));
+		if (!(p = strrchr(d, '.')) || !strlen(p + 1)
+		    || strspn(p + 1, "0123456789") != strlen(p + 1)) {
+			size_t len = strlen(d) + 12;
+			char *s = calloc(len, sizeof(*s));
 
-				snprintf(s, len, "%s.%d", d, scr->screen);
-				setenv("DISPLAY", s, 1);
-			}
-			execl(shell, shell, "-c", arg, (char *) NULL);
-			fprintf(stderr, "adwm: execl '%s -c %s'", shell, arg);
-			perror(" failed");
+			snprintf(s, len, "%s.%d", d, scr->screen);
+			setenv("DISPLAY", s, 1);
 		}
-		exit(0);
+		execl(shell, shell, "-c", arg, (char *) NULL);
+		fprintf(stderr, "adwm: execl '%s -c %s'", shell, arg);
+		perror(" failed");
 	}
-	wait(0);
 }
 
 void
@@ -4207,6 +4220,7 @@ main(int argc, char *argv[])
 	signal(SIGINT, sighandler);
 	signal(SIGTERM, sighandler);
 	signal(SIGQUIT, sighandler);
+	signal(SIGCHLD, sighandler);
 	cargc = argc;
 	cargv = argv;
 

@@ -2127,8 +2127,8 @@ manage(Window w, XWindowAttributes * wa)
 		}
 #endif
 	} else {
-		twa.backing_store = NotUseful;
-		mask |= CWBackingStore;
+		// twa.backing_store = NotUseful;
+		// mask |= CWBackingStore;
 		XChangeWindowAttributes(dpy, c->win, mask, &twa);
 		XSelectInput(dpy, c->win, CLIENTMASK);
 

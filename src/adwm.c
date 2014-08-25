@@ -2943,6 +2943,10 @@ isomni(Client *c)
 void
 freemonitors()
 {
+	int i;
+
+	for (i = 0; i < scr->nmons; i++)
+		XDestroyWindow(dpy, scr->monitors[i].veil);
 	free(scr->monitors);
 }
 
@@ -3257,6 +3261,7 @@ initmonitors(XEvent *e)
 					full_update = True;
 				}
 			} else {
+				XSetWindowAttributes wa;
 				int j;
 
 				scr->monitors =
@@ -3275,6 +3280,14 @@ initmonitors(XEvent *e)
 				m->my = m->sc.y + m->sc.h / 2;
 				m->num = si[i].screen_number;
 				m->curview = scr->views + (m->num % scr->ntags);
+				m->veil =
+				    XCreateSimpleWindow(dpy, scr->root, m->sc.x, m->sc.y,
+							m->sc.w, m->sc.h, 0, 0, 0);
+				wa.background_pixmap = None;
+				wa.override_redirect = True;
+				XChangeWindowAttributes(dpy, m->veil,
+							CWBackPixmap | CWOverrideRedirect,
+							&wa);
 				for (j = 0; j < 8; j++)
 					m->bars[j] = None;
 			}
@@ -3345,6 +3358,7 @@ initmonitors(XEvent *e)
 					full_update = True;
 				}
 			} else {
+				XSetWindowAttributes wa;
 				int j;
 
 				scr->monitors =
@@ -3363,6 +3377,14 @@ initmonitors(XEvent *e)
 				m->my = m->sc.y + m->sc.h / 2;
 				m->num = i;
 				m->curview = scr->views + (m->num % scr->ntags);
+				m->veil =
+				    XCreateSimpleWindow(dpy, scr->root, m->sc.x, m->sc.y,
+							m->sc.w, m->sc.h, 0, 0, 0);
+				wa.background_pixmap = None;
+				wa.override_redirect = True;
+				XChangeWindowAttributes(dpy, m->veil,
+							CWBackPixmap | CWOverrideRedirect,
+							&wa);
 				for (j = 0; j < 8; j++)
 					m->bars[j] = None;
 			}
@@ -3405,6 +3427,8 @@ initmonitors(XEvent *e)
 			full_update = True;
 		}
 	} else {
+		XSetWindowAttributes wa;
+
 		scr->monitors = erealloc(scr->monitors, n * sizeof(*scr->monitors));
 		m = &scr->monitors[0];
 		full_update = True;
@@ -3419,6 +3443,12 @@ initmonitors(XEvent *e)
 		m->my = m->sc.y + m->sc.h / 2;
 		m->num = 0;
 		m->curview = scr->views + (m->num % scr->ntags);
+		m->veil = XCreateSimpleWindow(dpy, scr->root, m->sc.x, m->sc.y,
+					      m->sc.w, m->sc.h, 0, 0, 0);
+		wa.background_pixmap = None;
+		wa.override_redirect = True;
+		XChangeWindowAttributes(dpy, m->veil, CWBackPixmap | CWOverrideRedirect,
+					&wa);
 	}
 	updatemonitors(e, n, size_update, full_update);
 	return True;
@@ -3880,6 +3910,8 @@ updategeommon(Monitor *m)
 	m->wa.y += t;
 	m->wa.w -= l + r;
 	m->wa.h -= t + b;
+
+	XMoveResizeWindow(dpy, m->veil, m->wa.x, m->wa.y, m->wa.w, m->wa.h);
 }
 
 void

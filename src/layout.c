@@ -736,7 +736,8 @@ reconfigure(Client *c, ClientGeometry *n)
 		XConfigureWindow(dpy, c->win, wmask | CWX | CWY | CWBorderWidth, &wwc);
 	}
 	/* ICCCM 2.0 4.1.5 */
-	if ((fmask | wmask) && !(wmask & (CWWidth | CWHeight)))
+	// if ((fmask | wmask) && !(wmask & (CWWidth | CWHeight)))
+	if (fmask | wmask) // always send one!
 		send_configurenotify(c, None);
 	XSync(dpy, False);
 	if (c->title && (tchange || ((wmask | fmask) & (CWWidth)))) {
@@ -2701,6 +2702,10 @@ arrange(View *ov)
 			arrange(m->curview);
 		}
 	} else if ((m = ov->curmon)) {
+		Workarea wa;
+
+		getworkarea(m, &wa);
+		XMoveResizeWindow(dpy, m->veil, wa.x, wa.y, wa.w, wa.h);
 		XMapRaised(dpy, m->veil);
 		arrangeview(ov);
 		restack();

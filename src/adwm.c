@@ -2046,7 +2046,7 @@ manage(Window w, XWindowAttributes * wa)
 		twa.background_pixel = scr->style.color.norm[ColBG];
 		mask |= CWBackPixel;
 	} else {
-		twa.background_pixmap = ParentRelative;
+		twa.background_pixmap = None;
 		mask |= CWBackPixmap;
 	}
 	c->frame =
@@ -2090,11 +2090,21 @@ manage(Window w, XWindowAttributes * wa)
 	addclient(c, False, True);
 
 	wc.border_width = 0;
+	mask = 0;
 	twa.event_mask = CLIENTMASK;
+	mask |= CWEventMask;
 	twa.do_not_propagate_mask = CLIENTNOPROPAGATEMASK;
+	mask |= CWDontPropagate;
+	/* in case of stupid client */
+	twa.win_gravity = NorthWestGravity;
+	mask |= CWWinGravity;
+	twa.save_under = False;
+	mask |= CWSaveUnder;
 
 	if (c->icon) {
-		XChangeWindowAttributes(dpy, c->icon, CWEventMask | CWDontPropagate, &twa);
+		twa.backing_store = Always;
+		mask |= CWBackingStore;
+		XChangeWindowAttributes(dpy, c->icon, mask, &twa);
 		XSelectInput(dpy, c->icon, CLIENTMASK);
 
 		XReparentWindow(dpy, c->icon, c->frame, c->r.x, c->r.y);
@@ -2117,11 +2127,9 @@ manage(Window w, XWindowAttributes * wa)
 		}
 #endif
 	} else {
-		/* in case of stupid client */
 		twa.backing_store = NotUseful;
-		twa.win_gravity = NorthWestGravity;
-		XChangeWindowAttributes(dpy, c->win, CWEventMask | CWDontPropagate |
-					CWBackingStore | CWWinGravity, &twa);
+		mask |= CWBackingStore;
+		XChangeWindowAttributes(dpy, c->win, mask, &twa);
 		XSelectInput(dpy, c->win, CLIENTMASK);
 
 		XReparentWindow(dpy, c->win, c->frame, 0, c->c.t);
@@ -3262,6 +3270,7 @@ initmonitors(XEvent *e)
 				}
 			} else {
 				XSetWindowAttributes wa;
+				int mask = 0;
 				int j;
 
 				scr->monitors =
@@ -3284,10 +3293,16 @@ initmonitors(XEvent *e)
 				    XCreateSimpleWindow(dpy, scr->root, m->sc.x, m->sc.y,
 							m->sc.w, m->sc.h, 0, 0, 0);
 				wa.background_pixmap = None;
+				mask |= CWBackPixmap;
 				wa.override_redirect = True;
-				XChangeWindowAttributes(dpy, m->veil,
-							CWBackPixmap | CWOverrideRedirect,
-							&wa);
+				mask |= CWOverrideRedirect;
+				wa.border_pixmap = CopyFromParent;
+				mask |= CWBorderPixmap;
+				wa.backing_store = NotUseful;
+				mask |= CWBackingStore;
+				wa.save_under = False;
+				mask |= CWSaveUnder;
+				XChangeWindowAttributes(dpy, m->veil, mask, &wa);
 				for (j = 0; j < 8; j++)
 					m->bars[j] = None;
 			}
@@ -3359,6 +3374,7 @@ initmonitors(XEvent *e)
 				}
 			} else {
 				XSetWindowAttributes wa;
+				int mask = 0;
 				int j;
 
 				scr->monitors =
@@ -3381,10 +3397,16 @@ initmonitors(XEvent *e)
 				    XCreateSimpleWindow(dpy, scr->root, m->sc.x, m->sc.y,
 							m->sc.w, m->sc.h, 0, 0, 0);
 				wa.background_pixmap = None;
+				mask |= CWBackPixmap;
 				wa.override_redirect = True;
-				XChangeWindowAttributes(dpy, m->veil,
-							CWBackPixmap | CWOverrideRedirect,
-							&wa);
+				mask |= CWOverrideRedirect;
+				wa.border_pixmap = CopyFromParent;
+				mask |= CWBorderPixmap;
+				wa.backing_store = NotUseful;
+				mask |= CWBackingStore;
+				wa.save_under = False;
+				mask |= CWSaveUnder;
+				XChangeWindowAttributes(dpy, m->veil, mask, &wa);
 				for (j = 0; j < 8; j++)
 					m->bars[j] = None;
 			}
@@ -3428,6 +3450,8 @@ initmonitors(XEvent *e)
 		}
 	} else {
 		XSetWindowAttributes wa;
+		int mask = 0;
+		int j;
 
 		scr->monitors = erealloc(scr->monitors, n * sizeof(*scr->monitors));
 		m = &scr->monitors[0];
@@ -3446,9 +3470,18 @@ initmonitors(XEvent *e)
 		m->veil = XCreateSimpleWindow(dpy, scr->root, m->sc.x, m->sc.y,
 					      m->sc.w, m->sc.h, 0, 0, 0);
 		wa.background_pixmap = None;
+		mask |= CWBackPixmap;
 		wa.override_redirect = True;
-		XChangeWindowAttributes(dpy, m->veil, CWBackPixmap | CWOverrideRedirect,
-					&wa);
+		mask |= CWOverrideRedirect;
+		wa.border_pixmap = CopyFromParent;
+		mask |= CWBorderPixmap;
+		wa.backing_store = NotUseful;
+		mask |= CWBackingStore;
+		wa.save_under = False;
+		mask |= CWSaveUnder;
+		XChangeWindowAttributes(dpy, m->veil, mask, &wa);
+		for (j = 0; j < 8; j++)
+			m->bars[j] = None;
 	}
 	updatemonitors(e, n, size_update, full_update);
 	return True;
@@ -3911,7 +3944,11 @@ updategeommon(Monitor *m)
 	m->wa.w -= l + r;
 	m->wa.h -= t + b;
 
-	XMoveResizeWindow(dpy, m->veil, m->wa.x, m->wa.y, m->wa.w, m->wa.h);
+	XMoveResizeWindow(dpy, m->veil,
+			m->wa.x + scr->style.border,
+			m->wa.y + scr->style.border,
+			m->wa.w - 2 * scr->style.border,
+			m->wa.h - 2 * scr->style.border);
 }
 
 void

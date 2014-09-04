@@ -1,7 +1,30 @@
 @PACKAGE@ -- history of user-visible changes.  @DATE@
 
 Release @PACKAGE@-@VERSION@ released @DATE@
--------------------------------------------
+--------------------------------------
+
+Changes:
+
+Brian Bidulock <bidulock@openss7.org> (15):
+      try to correct focus handling a bit
+      better focus handling on some events
+      better focus behaviour
+      a few focus regressions and tweaks
+      use XFixes to cure a few problems
+      handle toolkits that indicate both give and take focus
+      zero barrier members on initialization of monitor
+      add maintainer script
+      reap children properly
+      veil was a bad idea
+      Revert "veil was a bad idea"
+      fix veil and flittering of dockapps
+      let regular clients specify backing store if they want to
+      updating manual pages
+      spelling
+
+
+Release adwm-0.5.0 released 2014-07-02
+--------------------------------------
 
 This is the initial development release of @PACKAGE@.
 

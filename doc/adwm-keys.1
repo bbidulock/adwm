@@ -7,391 +7,751 @@
 .Sh SYNOPSIS
 .Nm @PACKAGE@
 .Sh DESCRIPTION
-.Nm
-.Ss SYNTAX
-.Ss COMMANDS
-.Bl -tag -width Ds -compact
-.It Ic quit
-
-.It Ic restart
-
-.It Ic killclient
-
-.It Ic zoom
-
-.It Ic moveright
-.It Ic moveleft
-.It Ic moveup
-.It Ic movedown
-
-.It Ic resizedecx
-.It Ic resizedecy
-.It Ic resizeincx
-.It Ic resizeincy
-
-.It Ic togglemonitor
-
-.It Ic appendtag
-.It Ic rmlasttag
-
-.It Ic rotateview
-.It Ic unrotateview
-
-.It Ic rotatezone
-.It Ic unrotatezone
-
-.It Ic rotatewins
-.It Ic unrotatewins
-
-.It Ic raise
-.It Ic lower
-
-.It Ic raiselower
-
-.It Ic <prefix><setting> [[+-]value[%]]
+.Xr adwm 1
+is a dynamic tiling window manager intended on being fully controllable using only
+the keyboard: the objective of all dynamic tiling window managers.  To acheive this
+objective,
+.Xr adwm 1
+supports both simple single-press key bindings as well as key chains.
 .Pp
-.Ic <setting>
+Single key bindings are key bindings on the root window that perform some action in
+response to a single key press.  Key chaining is when an Emacs-like sequence of keys
+need to be pressed in order for the action to be performed.
+.Ss SYNTAX
+.Pp
+The general syntax of key commands, as specified directly in the
+.Nm
+resource file, is as follows:
+.Pp
+.Dl Li "Adwm*" Ns Cm command Ns Li : Ar <list>
+.Pp
+where the fields are defined as follows:
+.Pp
+.Bl -tag -width Ds -compact
+.It Cm command
+One of the commands described under \(lqCOMMANDS\(rq.
+
+.It Ar <list> Li = Ar <binding> Op Li , Ar ...
+A list of one or more key values, separated by commas.
+The list represents the list of key bindings associated with the
+.Cm command .
+Each
+.Ar <binding>
+in the list represents a single key binding to the
+.Cm command
+with arguments.
+
+.It Ar <binding> Li = Ar <chain> Op Li = Ar <args>
+A key chain followed by an optional equal-sign and key arguments list.
+The
+.Ar <chain>
+specifies the sequence of key presses necessary to invoke the
+.Cm command ,
+and the
+.Ar <args>
+specify the arguments to
+.Cm command
+that are associated with this key binding, described for each
+.Cm command ,
+below, under \(lqCOMMANDS\(rq.
+
+.It Ar <args> Li = Ar <arg> Ns Op Li " " Ar ...
+A list of key arguments separated by spaces.  Individual key arguments cannot contain
+the comma, colon nor space characters.
+
+.It Ar <chain> Li = Ar <spec> Op Li : Ar ...
+A list of one or more key specifications, separated by colons.  Each
+.Ar <spec>
+specifies a keypress combination that must be performed in sequence to cause the
+.Cm command
+action to be performed.
+.Pp
+Example:
+.Dl Ar "W + w : h"
+
+.It Ar <spec> Li = [ Ns Ar <modifiers> Li "+ ]" Ns Ar <symbol>
+An optional set of modifiers and a plus-sign, followed by a key symbol.
+The
+.Ar <symbol>
+is the name of the key symbol;
+.Ar <modifiers>
+is a string containing one or more of the following characters:
+.Pp
+.Bl -tag -width ".Li M" -compact
+.It Li A
+The
+.Li Alt
+key.
+.It Li C
+The
+.Li Control
+key.
+.It Li S
+The
+.Li Shift
+key.
+.It Li W
+The
+.Li Windows
+key.
+.It Li M
+The
+.Li Mod
+key.  This key is definable using the
+.Cm modkey
+resource and defaults to the
+.Li Alt
+key.
+.It Li N
+The not
+.Li Mod
+key.  When
+.Cm modkey
+is defined to
+.Li A ,
+this is the same as
+.Li W ;
+otherwise, the other way around.
+.El
+.Pp
+Default:
+.Cm Adwm*modkey Ns : Ar "A"
+.El
+.Pp
+Note that whitespace is optional (except in the arguments list where arguments are
+separated by spaces).
+.Pp
+The following is an example of vim-like window key movement key chains:
+.Pp
+.Dl Li "Adwm*" Ns Cm movetoW Ns Li : Ar "W+w:h, CS+w:h"
+.Dl Li "Adwm*" Ns Cm movetoN Ns Li : Ar "W+w:j, CS+w:j"
+.Dl Li "Adwm*" Ns Cm movetoS Ns Li : Ar "W+w:k, CS+w:k"
+.Dl Li "Adwm*" Ns Cm movetoE Ns Li : Ar "W+w:l, CS+w:l"
+.Ss COMMANDS
+The commands are describe  below.  Each heading provides the format of the command
+resource (without the
+.Li "Adwm*"
+portion) and the possible arguments to each key binding.
+
+.Bl -tag -width Ds -compact
+.It Cm quit Op Ar command
+Causes
+.Nm
+to quit.
+When
+.Ar command
+is specified, executes
+.Ar command
+instead of quitting.
+.Pp
+Default:
+.Cm Adwm*quit Ns : Ar "CA + q"
+
+.It Cm restart Op Ar command
+Causes
+.Nm
+to restart.
+When
+.Ar command
+is specified, executes
+.Ar command
+instead of restarting.
+.Pp
+Default:
+.Cm Adwm*restart Ns : Ar "AS + q"
+
+.It Cm killclient
+Closes the selected client.  The behaviour of
+.Xr adwm 1
+when closing clients is to first attempt a close request to the client and upon the
+next attempt, kills the client process if the process identifier of the client is
+known, the client supports the
+.Ev _NET_WM_PING
+protocol, and has not responded to a ping since the latest attempt to close the
+client.
+.Pp
+Default:
+.Cm Adwm*killclient Ns : Ar "AS + c"
+
+.It Cm zoom
+Zooms the selected client.  When in tile layout, and the selected client is a
+master, this makes the first unselected slave client in the stacking area the current
+master; when the selected client is in the stacking area, makes it the new master.
+.Pp
+Default:
+.Cm Adwm*zoom Ns : Ar "A + Return"
+
+.It Cm move<direction> Op Ar "dx dy dw dh"
+Moves the selected client in the
+.Cm <direction>
+by the amounts specified.
+.Pp
+.Cm <direction>
 can be one of:
 .Pp
-.Bl -tag -width Ds -compact
-.It Ic mwfact
+.Bl -tag -width ".Cm right" -compact
+.It Cm right
+Moves the selected client to the right.
+.It Cm left
+Moves the selected client to the left.
+.It Cm up
+Moves the selected client upward.
+.It Cm down
+Moves the selected client downward.
+.El
+.Pp
+The optional arguments specify the movement and resize of the window and consists of
+four positive or negative integers as follows:
+.Pp
+.Bl -tag -width ".Ar dw" -compact
+.It Ar dx
+offset to apply to the window x-coordinate position;
+.It Ar dy
+offset to apply to the window y-coordinate position;
+.It Ar dw
+number of pixels to add to the window width;
+.It Ar dh
+number of pixels to add to the window height.
+.El
+.Pp
+Note that the practice of specifying more arguments than are necessary is for backward
+compatibility.
+.Pp
+Defaults:
+.Dl Cm Adwm*moveleft Ns : Ar "W + h" Li = -5
+.Dl Cm Adwm*movedown Ns : Ar "W + j" Li = 0 5
+.Dl Cm Adwm*moveup Ns : Ar "W + k" Li = 0 -5
+.Dl Cm Adwm*moveright Ns : Ar "W + l" Li = 5
+
+.It Cm resize<how><axis> Op Ar "dx dy dw dh"
+Resizes the selected client by
+.Cm <how>
+along
+.Cm <axis>
+in the amounts specified.
+.Pp
+.Cm <how>
+can be one of:
+.Pp
+.Bl -tag -width ".Cm dec" -compact
+.It Cm dec
+Decrease the size of the window.
+.It Cm inc
+Increase the size of the window.
+.El
+.Pp
+.Cm <axis>
+can be one of:
+.Pp
+.Bl -tag -width ".Cm x" -compact
+.Pp
+.It Cm x
+Resize the window horizontally.
+.It Cm y
+Resize the window vertically.
+.El
+.PP
+The optional arguments specify the movement and resize of the window and consists of
+four positive or negative integers as follows:
+.Pp
+.Bl -tag -width ".Ar dw" -compact
+.It Ar dx
+offset to apply to the window x-coordinate position;
+.It Ar dy
+offset to apply to the window y-coordinate position;
+.It Ar dw
+number of pixels to add to the window width;
+.It Ar dh
+number of pixels to add to the window height.
+.El
+.Pp
+Note that the practice of specifying more arguments than are necessary is for backward
+compatibility.
+.Pp
+Defaults:
+.Dl Cm Adwm*resizedecx Ns : Ar "WS + h" = 0 0 -5 0
+.Dl Cm Adwm*resizedecy Ns : Ar "WS + k" = 0 0 0 -5
+.Dl Cm Adwm*resizeincx Ns : Ar "WS + l" = 0 0 5 0
+.Dl Cm Adwm*resizeincy Ns : Ar "WS + j" = 0 0 0 5
+
+.It Cm togglemonitor
+Toggles the current monitor by warping the pointer to the its last position in the
+next monitor from the current monitor and sets the keyboard focus to the last window
+that was focused in that monitor.  If there is only one monitor, this does nothing.
+.Pp
+Default:
+.Cm Adwm*togglemonitor Ns : Ar "A + grave"
+
+.It Cm appendtag
+Appends a new tag (workspace) to the list, increasing the number of desktops by one.
+The maximum number of tags (workspaces) is set by configuration at 64.
+.Pp
+Default:
+.Cm Adwm*appendtag Ns : Ar "CAS + Right"
+
+.It Cm rmlasttag
+Removes the last tag (workspace) from the list, decreasing the number of desktops by
+one.  Any windows that were tagged only for the removed tag are tagged, instead, to
+the last tag on the list.  The first tag (workspace) cannot be removed.
+.Pp
+Default:
+.Cm Adwm*rmlasttag Ns : Ar "CAS + Left"
+
+.It Cm rotateview
+.It Cm unrotateview
+Rotates (rotates clockwise) or unrotates (rotates counter-clockwise) the current view.
+The view is the current tiling layout.  For master-stacking area layouts, this means
+that the master zone rotates from rigth-stacking, to bottom-stacking, to
+left-stacking, to top-stacking, and around again.
+.Pp
+Defaults:
+.Dl Cm Adwm*rotateview Ns : Ar "A + y"
+.Dl Cm Adwm*unrotateview Ns : Ar "AS + y"
+
+.It Cm rotatezone
+.It Cm unrotatezone
+Rotates (rotates clockwise) or unrotates (rotates counter-clockwise) the current zone.
+The zone is either the master, stacking, grid or monocle area.
+.Pp
+Defaults:
+.Dl Cm Adwm*rotatezone Ns : Ar "CA + y"
+.Dl Cm Adwm*unrotatezone Ns : Ar "CAS + y"
+
+.It Cm rotatewins
+.It Cm unrotatewins
+Rotates (rotates clockwise) or unrotates (rotates counter-clockwise) the windows in
+the current view.  That is, the windows rotate through the current tiling positions,
+rather than the tiling positions rotating about the screen.
+.Pp
+Defaults:
+.Dl Cm Adwm*rotatewins Ns : Ar "A + e"
+.Dl Cm Adwm*unrotatewins Ns : Ar "AS + e"
+
+.It Cm raise
+Raises the selected window to the top of the stacking order.
+.It Cm lower
+Lowers the selected window to the bottom of the stacking order.
+.It Cm raiselower
+When the selected window is not on top, this command raises it to the top; otherwise,
+it lowers it to the bottom 
+.Pp
+Defaults:
+.Dl Cm Adwm*raise Ns : Ar "A + Up"
+.Dl Cm Adwm*lower Ns : Ar "A + Down"
+.Dl Cm Adwm*raiselower Ns : Ar "AS + space"
+
+.It Cm <prefix><setting> Op [+-] Ns Ar value Ns [%]
+Set, increment or decrment various view layout parameters.
+.Pp
+.Cm <prefix>
+can be one of:
+.Pp
+.Bl -tag -width ".Cm dec" -compact
+.It Cm set
+Set the count or factor to
+.Ar value Ns .
+.It Cm inc
+Increase the count or factor by
+.Ar value Ns .
+.It Cm dec
+Decrease the count or factor by
+.Ar value Ns .
+.El
+.Pp
+.Cm <setting>
+can be one of:
+.Pp
+.Bl -tag -width ".Cm nmaster" -compact
+.It Cm mwfact
 Set, increase or decrease the master width factor.  The default when factor is not specified is
-to set the factor to 60%, or increase or decrease the factor by 5%.
-.It Ic nmaster
-Sets, increase or decrease the number of masters.  The default when number is not specified is
-to set the number to 1, or increase or decrease the factory by 1.
-.It Ic ncolumn
-Sets, increase or decrease the number of columns (or rows) in the stacking area.  The default
-when number is not specified is to set the number to 1, or increase or decrease the number by 1.
-.It Ic margin
+to set the factor to
+.Li 60% ,
+or increase or decrease the factor by
+.Li 5% .
+
+.It Cm nmaster
+Sets, increase or decrease the number of masters when in tile mode.  The default when
+number is not specified is to set the number to 1, or increase or decrease the
+factory by 1.
+
+.It Cm ncolumn
+Sets, increase or decrease the number of columns (or rows) in the stacking area when
+in grid mode.  The default when number is not specified is to set the number to 1, or
+increase or decrease the number by 1.
+Note that this is an alias for
+.Cm nmaster
+and only one need be set (typically just
+.Cm nmaster ).
+
+.It Cm margin
 Sets, increase or decrease the margin between tiled windows in pixels.  The default when
 number is not specified is to set the number to 0, or increase or decrease the number by 1.
-.It Ic border
+
+.It Cm border
 Sets, increase or decrease the border around decorated windows in pixels.  The default when
 number is not specified is to set the number to the value set by the style, or increase or
 decrease the number by 1.
 .El
 .Pp
-.Ic <prefix>
-can be one of:
-.Pp
-.Bl -tag -width Ds -compact
-.It Ic set
-Set the count or factor to
-.Ic value Ns .
-.It Ic inc
-Increase the count or factor by
-.Ic value Ns .
-.It Ic dec
-Decrease the count or factor by
-.Ic value Ns .
-.El
-.Pp
-.It Ic [<prefix>]<state>[<suffix>] [0|1]
+Defaults:
+.Dl Cm Adwm*decmwfact Ns : Ar "A + h" = -0.05
+.Dl Cm Adwm*incmwfact Ns : Ar "A + l" = +0.05
+.Dl Cm Adwm*decnmaster Ns : Ar "AS + j" = -1
+.Dl Cm Adwm*incnmaster Ns : Ar "AS + k" = +1
+.Dl Cm Adwm*decmargin Ns : Ar "WAS + m"
+.Dl Cm Adwm*incmargin Ns : Ar "WA + m"
+.Dl Cm Adwm*decborder Ns : Ar "WAS + b"
+.Dl Cm Adwm*incborder Ns : Ar "WA + b"
+
+
+.It Cm [<prefix>]<state>[<suffix>] [0|1]
 .Pp
 The
-.Ic <state>
+.Cm <state>
 indicates which state to change and is one of:
 .Pp
-.Bl -tag -width "XXXXXXXXXX" -compact
-.It Ic floating
+.Bl -tag -width ".Cm floating" -compact
+.It Cm floating
 The window is floating (or tiled).
-.It Ic fill
+.It Cm fill
 The window fills the available area.
-.It Ic full
+.It Cm full
 The window is fullscreen.
-.It Ic max
+.It Cm max
 The window is maximized.
-.It Ic maxv
+.It Cm maxv
 The window is vertically maximized.
-.It Ic maxh
+.It Cm maxh
 The window is horizontally maximized.
-.It Ic shade
+.It Cm shade
 The window is shaded.
-.It Ic shaded
+.It Cm shaded
 The window is shaded.
-.It Ic hide
+.It Cm hide
 The window is hidden.
-.It Ic hidden
+.It Cm hidden
 The window is hidden.
-.It Ic iconify
+.It Cm iconify
 The window is iconified (minimized).
-.It Ic min
+.It Cm min
 The window is iconified (minimized).
-.It Ic above
+.It Cm above
 The window is placed above others.
-.It Ic below
+.It Cm below
 The window is placed below others.
-.It Ic pager
+.It Cm pager
 The window appears in the pager.
-.It Ic taskbar
+.It Cm taskbar
 The window appears on the taskbar.
 .Pp
-.It Ic showing
+.It Cm showing
 The layout is showing the desktop.
-.It Ic struts
+.It Cm struts
 The layout is showing panels/docks.
-.It Ic dectiled
+.It Cm dectiled
 The layout decorates tiled windows.
 .El
 .Pp
 The optional
-.Ic <prefix>
+.Cm <prefix>
 indicates whether to set, unset or toggle the state and is one of (defaulting to
-.Ic set Ns ):
+.Cm set Ns ):
 .Pp
-.Bl -tag -width Ds -compact
-.It Ic set
+.Bl -tag -width ".Cm toggle" -compact
+.It Cm set
 Sets the state.
-.It Ic un
+.It Cm un
 Unsets the state.
-.It Ic de
+.It Cm de
 Unsets the state.
-.It Ic unset
+.It Cm unset
 Unsets the state.
-.It Ic toggle
+.It Cm toggle
 Toggles the state.
 .El
 .Pp
 The optional
-.Ic <suffix>
+.Cm <suffix>
 indicates to which windows or layouts the setting applies and is one of (defaulting
 to
-.Ic sel Ns ):
+.Cm sel Ns ):
 .Pp
-.Bl -tag -width Ds -compact
-.It Ic sel
+.Bl -tag -width ".Cm every" -compact
+.It Cm sel
 The current window or layout.
-.It Ic ptr
+.It Cm ptr
 The window or layout under the pointer.
-.It Ic all
+.It Cm all
 All windows or layout on current monitor.
-.It Ic any
+.It Cm any
 All windows or layouts on any monitor.
-.It Ic every
+.It Cm every
 All windows or layouts.
 .El
 .Pp
-.It Ic <movement><suffix> [increment]
+Defaults:
+.Dl Cm Adwm*togglemaxv Ns : Ar "CS + Up"
+.Dl Cm Adwm*togglemaxh Ns : Ar "CS + Right"
+.Dl Cm Adwm*togglemax Ns : Ar "CS + Left"
+.Dl Cm Adwm*toggleshade Ns : Ar "CS + Down"
+.Dl Cm !Adwm*togglehidden Ns : Ar "CS + _"
+.Dl Cm Adwm*toggleshowing Ns : Ar "CA + Return"
+.Dl Cm Adwm*togglestruts Ns : Ar "A + b"
+.Dl Cm Adwm*toggledectiled Ns : Ar "A + d"
+
+.It Cm <movement><suffix> [increment]
 .Pp
-.Ic <movement>
+.Cm <movement>
 indicates the type of movement to perform and is one of:
 .Pp
-.Bl -tag -width Ds -compact
-.It Ic moveto
+.Bl -tag -width ".Cm moveby" -compact
+.It Cm moveto
 Moves the window to the corresponding position in a 3x3 grid.
-.It Ic snapto
+.It Cm snapto
 Moves the window toward the corresponding position in a 3x3 grid, stopping at the first
 obstacle.
-.It Ic edgeto
+.It Cm edgeto
 Moves the window to the corresponding edges.
-.It Ic moveby
+.It Cm moveby
 Moves the window in the corresponding direction by the specified increment (or 1 when no default
 increment is specified).
 .El
 .Pp
-.Ic <suffix>
+.Cm <suffix>
 indicates the position or direction to which to move and
 is one of the following:
 .Pp
-.Bl -tag -width Ds -compact
-.It Ic NW
+.Bl -tag -width ".Cm SW" -compact
+.It Cm NW
 The upper-left corner of the monitor.
-.It Ic N
+.It Cm N
 The upper edge of the monitor.
-.It Ic NE
+.It Cm NE
 The upper-right corner of the monitor.
-.It Ic W
+.It Cm W
 The left edge of the monitor.
-.It Ic C
+.It Cm C
 The center of the monitor.
-.It Ic E
+.It Cm E
 The right edge of the monitor.
-.It Ic SW
+.It Cm SW
 The lower-left corner of the monitor.
-.It Ic S
+.It Cm S
 The lower edge of the monitor.
-.It Ic SE
+.It Cm SE
 The lower-right corner of the monitor.
-.It Ic R
+.It Cm R
 The initial static position of the window.
-.It Ic L
+.It Cm L
 The last position of the window.
 .El
 .Pp
-.It Ic <tagaction>[<suffix>] [tag|[+-]increment]
+.It Cm <tagaction>[<suffix>] [tag|[+-]increment]
 .Pp
-.Ic <tagaction>
+.Cm <tagaction>
 indicates the tag action to perform and
 can be one of the following:
 .Pp
-.Bl -tag -width Ds -compact
-.It Ic view
+.Bl -tag -width ".Cm toggleview" -compact
+.It Cm view
 View the corresponding tag on the current monitor.  This has the effect of changing to the
 corresponding desktop/workspace.
-.It Ic focusview
+
+.It Cm focusview
 Switch to the view of the corresponding tag and focus the first window in the view.
-.It Ic toggleview
+
+.It Cm toggleview
 Toggle viewing the corresponding tag on the current monitor.  This does not change
 desktop/workspace, just changes which windows are shown on the current desktop/workspace.
-.It Ic tag
+
+.It Cm tag
 Tag the selected window with the corresponding tag.  This has the effect of sending the window
 to the desktop/workspace corresponding to the tag.
-.It Ic toggletag
+
+.It Cm toggletag
 Toggle the corresponding tag on the selected window.  This affects on which desktops/workspaces
 the window is displayed.
-.It Ic taketo
+
+.It Cm taketo
 Tag the selected window with the corresponding tag and switch the view on the current monitor to
 that of the tag.  This has the effect of taking the window to the desktop/workspace
 corresponding to the tag.
 .El
 .Pp
 The optional
-.Ic <suffix>
+.Cm <suffix>
 is one of the following:
 .Pp
-.Bl -tag -width Ds -compact
-.It none
-.It Ic #
+.Bl -tag -width ".Cm right" -compact
+.It Dq
+.It Cm #
 The tag index number,
-.Ic # Ns ,
+.Cm # Ns ,
 starting at 1.
-.It Ic next
+.It Cm next
 The next tag.
-.It Ic prev
+.It Cm prev
 The previous tag.
-.It Ic last
+.It Cm last
 The previously selected tag.
-.It Ic up
+.It Cm up
 The tag above (w/o wrapping).
-.It Ic down
+.It Cm down
 The tag below (w/o wrapping).
-.It Ic left
+.It Cm left
 The tag to the left (w/o wrapping).
-.It Ic right
+.It Cm right
 The tag to the right (w/o wrapping).
-.It Ic NW
+.It Cm NW
 The upper-left tag (wrapping).
-.It Ic N
+.It Cm N
 The upper tag (wrapping).
-.It Ic NE
+.It Cm NE
 The upper-right tag (wrapping).
-.It Ic W
+.It Cm W
 The left tag (wrapping).
-.It Ic E
+.It Cm E
 The right tag (wrapping).
-.It Ic SW
+.It Cm SW
 The lower-left tag (wrapping).
-.It Ic S
+.It Cm S
 The lower tag (wrapping).
-.It Ic SE
+.It Cm SE
 The lower-right tag (wrapping).
 .El
 .Pp
-.It Ic [<prefix>]<cycle>[<suffix>][<range>]
+Defaults:
+.Dl Cm Adwm*viewprevtag Ns : Ar "A + Tab"
+.Dl Cm Adwm*viewlefttag Ns : Ar "CA + Left"
+.Dl Cm Adwm*viewrighttag Ns : Ar "CA + Right"
+
+.Dl Cm Adwm*view0 Ns : Ar "A + F1" , "C + F1" , "W + F1" , "A + 1"
+.Dl Cm Adwm*view1 Ns : Ar "A + F2" , "C + F2" , "W + F2" , "A + 2"
+.Dl ...
+.Dl Cm Adwm*view11 Ns : Ar "A + F12" , "C + F12" , "W + F12"
+
+.Dl Cm Adwm*toggleview0 Ns : Ar "CA + 1"
+.Dl Cm Adwm*toggleview1 Ns : Ar "CA + 2"
+.Dl ...
+.Dl Cm Adwm*toggleview9 Ns : Ar "CA + 0"
+
+.Dl Cm Adwm*focusview6 Ns : Ar "A + s"
+
+.Dl Cm Adwm*tag0 Ns : Ar "AS + 1"
+.Dl Cm Adwm*tag1 Ns : Ar "AS + 2"
+.Dl ...
+.Dl Cm Adwm*tag9 Ns : Ar "AS + 0"
+
+.Dl Cm Adwm*toggletag0 Ns : Ar "CAS + 1"
+.Dl Cm Adwm*toggletag1 Ns : Ar "CAS + 2"
+.Dl ...
+.Dl Cm Adwm*toggletag9 Ns : Ar "CAS + 0"
+
+
+.It Cm [<prefix>]<cycle>[<suffix>][<range>]
 .Pp
-.Ic <cycle>
+.Cm <cycle>
 specifies the action to perform and the range of windows on which the action may be performed
 and is one of the following:
 .Pp
-.Bl -tag -width Ds -compact
-.It Ic focus
+.Bl -tag -width ".Cm client" -compact
+.It Cm focus
 Select
 client, tiled order.
-.It Ic client
+.It Cm client
 Select
 client, client list order.
-.It Ic stack
+.It Cm stack
 Select
 client, stacking order.
-.It Ic group
+.It Cm group
 Select
 client of same class, tiled order.
-.It Ic tab
+.It Cm tab
 Select
 client tab, tab order.
-.It Ic panel
+.It Cm panel
 Select
 panels, tiled order.
-.It Ic dock
+.It Cm dock
 Select
 dock applications, tiled order.
-.It Ic swap
+.It Cm swap
 Swap with other
 client, tiled order.
 .El
 .Pp
 The optional
-.Ic <prefix>
+.Cm <prefix>
 indicates the form of cycling and can be one of the following:
 .Pp
-.Bl -tag -width Ds -compact
-.It none
+.Bl -tag -width ".Cm right" -compact
+.It Dq
 The window is selected immediately once the key is pressed and the cycle completes.
-.It Ic cycle
+.It Cm cycle
 The window is selected immediately once the key is pressed, however, the cycle does not complete
 until a modifier key is pressed or released or a new key is pressed.  This form also displays a
 cycle window (available window list) while the cycle is active.
 .El
 .Pp
 The optional
-.Ic <suffix>
+.Cm <suffix>
 indicates which client to select and is one of the following:
 .Pp
-.Bl -tag -width Ds -compact
-.It none
+.Bl -tag -width ".Cm every" -compact
+.It Dq
 Select window by tag argument (beginning at 1).
-.It Ic #
+.It Cm #
 Select window by index (beginning at 0).
-.It Ic icon
+.It Cm icon
 Select next iconified window in order.
-.It Ic next
+.It Cm next
 Select next window in order.
-.It Ic prev
+.It Cm prev
 Select previous window in order.
-.It Ic last
+.It Cm last
 Select last selected window.
-.It Ic up
+.It Cm up
 Select window above.
-.It Ic down
+.It Cm down
 Select window below.
-.It Ic left
+.It Cm left
 Select window to the left.
-.It Ic right
+.It Cm right
 Select window to the right.
-.It Ic NW
+.It Cm NW
 Select window above and to the left.
-.It Ic N
+.It Cm N
 Select window above.
-.It Ic NE
+.It Cm NE
 Select window above and to the right.
-.It Ic W
+.It Cm W
 Select window to the left.
-.It Ic E
+.It Cm E
 Select window to the right.
-.It Ic SW
+.It Cm SW
 Select window below and to the left.
-.It Ic S
+.It Cm S
 Select window below.
-.It Ic SE
+.It Cm SE
 Select window below and to the right.
 .El
 .Pp
 A optional
-.Ic <range>
+.Cm <range>
 indicates the range of clients to make available for selection and is one of the following:
 .Pp
-.Bl -tag -width Ds -compact
-.It none
+.Bl -tag -width ".Cm every" -compact
+.It Dq
 All focusable windows displayed on the current monitor.
-.It Ic act
+.It Cm act
 All windows on the current monitor that can be activated regarless of whether they can be
 focused or not and regardless of whether they are iconified or hidden or not.
-.It Ic all
+.It Cm all
 All windows on the current monitor.
-.It Ic all
+.It Cm all
 All windows on any monitor.
-.It Ic every
+.It Cm every
 All windows in any view.
 .El
 .Pp
@@ -401,14 +761,110 @@ Examples:
 .Dl Adwm*cyclefocusnextevery: WAC + j
 .Dl Adwm*cyclefocusprevevery: WAC + k
 .Pp
-.It Ic spawn<n> <command>
+.It Cm setlayout<c>
+Set the monitor layout for the current monintor to the specified layout,
+.Cm <c> ,
+where
+.Cm <c>
+is one of the following:
+.Pp
+.Bl -tag -width ".Cm i , f" -compact
+.It Cm m
+.Dq monacle
+showing one window at a time.
+.It Cm f , i
+.Dq floating
+stacked windows.
+.It Cm t
+.Dq tiled
+with master left and stacking right.
+.It Cm b
+.Dq tiled
+with master on bottom and stacking on top.
+.It Cm l
+.Dq tiled
+with master right and stacking left.
+.It Cm u
+.Dq tiled
+with master on top and stacking on bottom.
+.It Cm g
+.Dq grid
+with windows in rows and columns.
+.El
+.Pp
+Defaults:
+.Dl Cm Adwm*setlayoutm Ns : Ar "A + m"
+.Dl Cm Adwm*setlayoutf Ns : Ar "A + f"
+.Dl Cm Adwm*setlayouti Ns : Ar "A + i"
+.Dl Cm Adwm*setlayoutt Ns : Ar "A + r"
+.Dl Cm Adwm*setlayoutb Ns : Ar "A + w"
+.Dl Cm Adwm*setlayoutl Ns : Ar "A + t"
+.Dl Cm Adwm*setlayoutu Ns : Ar "A + u"
+.Dl Cm Adwm*setlayoutg Ns : Ar "A + g"
+.Pp
+.It Cm spawn<n> <command>
 Spawns the n'th command argument.
-.Ic <n>
+.Cm <n>
 can be from 0 to 63.
 .Pp
+Defaults:
+.Dl Cm Adwm*spawn0 Ns : Ar "CA + t" = roxterm
+.Dl Cm Adwm*spawn1 Ns : Ar "CA + w" = firefox
+.Dl Cm Adwm*spawn2 Ns : Ar "CA + f" = pcmanfm
+.Dl Cm Adwm*spawn3 Ns : Ar "CA + r" = xde-run
+.Dl Cm Adwm*spawn4 Ns : Ar "CA + v" = gvim
+.Dl Cm Adwm*spawn5 Ns : Ar "CA + n" = uxterm
+.Dl Cm Adwm*spawn6 Ns : Ar "CA + m" = xdg-traymenu -p
+.Pp
+.It Cm command Ar command
+This is not a key binding.  It specifies a command, 
+.Ar command ,
+to execute when a mouse button is pressed on the root window.  The default pops an
+XDG root menu.
+.Pp
+Default:
+.Dl Cm Adwm*command Ns : Ar "xdg-traymenu -p -b 1"
 .El
-.Sh EXAMPLES
+.Sh DEFAULTS
+The default key bindings are provided in the default key file,
+.Pa /usr/share/adwm/keysrc ,
+but may be overridden by the style (e.g. the default style located in
+.Pa /usr/share/adwm/styles/default/keysrc )
+and ultimately overridden by keys specified by the user in the user
+file (typically located in
+.Pa $HOME/.adwm/keysrc Ns ).
+.Pp
+The defaults are, in general, very vim-like in key binding and effect (but, of course,
+must include a modifier different from vim unless you want to lose all vim
+functionality).  Also, most window managers based on
+.Xr dwm 1
+follow a common thread of defaults.
+.Pp
+So that users of other window managers and systems do not have problems initially
+using
+.Xr adwm 1
+before they get used to the more advance key bindings, a full set of
+Gnome2/Windows95-like key bindings are also provided.  Specific default key bindings
+for advanced features provided by some window managers (such as
+.Xr openbox 1 ,
+.Xr pekwm 1 ,
+.Xr blackbox 1 ,
+.Xr fluxbox 1 ,
+.Xr icewm 1 )
+are also provided to smooth transition, or to make
+.Xr adwm 1
+immediately usable to these users as well.
 .Sh SEE ALSO
+.Rb
+.Xr adwm 1 ,
+.Xr dwm 1 ,
+.Xr openbox 1 ,
+.Xr pekwm 1 ,
+.Xr blackbox 1 ,
+.Xr fluxbox 1 ,
+.Xr icewm 1 .
+.Re
 .Sh BUGS
+No outstanding bugs.
 .Sh AUTHORS
 .An Brian Bidulock Aq bidulock@openss7.org

@@ -349,6 +349,10 @@ parsemod(const char *s, const char *e)
 		case 'M':
 			mod |= modkey;
 			break;
+		case 'N':
+			mod |= (modkey == Mod1Mask) ? Mod4Mask : 0;
+			mod |= (modkey == Mod4Mask) ? Mod1Mask : 0;
+			break;
 		default:
 			if (isblank(*p))
 				break;

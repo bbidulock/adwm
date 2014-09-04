@@ -1,0 +1,189 @@
+=head1 NAME
+
+adwm-keys
+
+=head1 DESCRIPTION
+
+=head2 SYNTAX
+
+=head2 COMMANDS
+
+=over
+
+=item B<quit>
+
+=item B<restart>
+
+todo
+
+=item B<killclient>
+
+todo
+
+=item B<zoom>
+
+=item B<moveright>
+
+=item B<moveleft>
+
+=item B<moveup>
+
+=item B<movedown>
+
+todo
+
+=item B<resizedecx>
+
+=item B<resizedecy>
+
+=item B<resizeincx>
+
+=item B<resizeincy>
+
+todo
+
+=item B<togglemonitor>
+
+todo
+
+=item B<appendtag>
+
+=item B<rmlasttag>
+
+todo
+
+=item B<rotateview>
+
+=item B<unrotateview>
+
+todo
+
+=item B<rotatezone>
+
+=item B<unrotatezone>
+
+todo
+
+=item B<rotatewins>
+
+=item B<unrotatewins>
+
+todo
+
+=item B<raise>
+
+=item B<lower>
+
+=item B<raiselower>
+
+todo
+
+=item B<E<lt>prefixE<gt>E<lt>settingE<gt>> [[+-]value[%]]
+
+B<E<lt>settingE<gt>> can be one of:
+
+=over
+
+=item B<mwfact>
+
+Set, increase or decrease the master width factor.  The default when
+I<factor> is not specified is to set the factor to 60%, or increase or
+decrease the factor by 5%.
+
+=item B<nmaster>
+
+Set, increase or decrease the number of masters by I<value>.  The
+default when I<value> is not specified is to set the number to 1, or
+increase or decrease the number by 1.
+
+=item B<nocolumn>
+
+Set, increase or decrease the number of columns (or rows) in the
+stacking area.  The default when number is not specified is to set the
+number to 1, or increase or decrease the number by 1.
+
+=item B<margin>
+
+Set, increase or decrease the margin between tiled windows in pixels.
+The default when I<value> is not specified is to set the number to 0, or
+increase or decrease the number by 1.
+
+=item B<border>
+
+=back
+
+B<E<lt>prefixE<gt>> can be one of:
+
+=over
+
+=item B<set>
+
+Set the count or factor to B<value>.
+
+=item B<inc>
+
+Increase the count or factor by B<value>
+
+=item B<dec>
+
+Decrease the count or factor by B<value>.
+
+=back
+
+=item B<[E<lt>prefixE<gt>]E<lt>stateE<gt>[E<lt>suffixE<gt>] [0|1]>
+
+The I<E<lt>stateE<gt>> indicates which state to change and may be one of
+the following:
+
+=over
+
+=item B<floating>
+
+=item B<fill>
+
+=item B<full>
+
+=item B<max>
+
+=item B<maxv>
+
+=item B<maxh>
+
+=item B<shade>
+
+=item B<shaded>
+
+=item B<hide>
+
+=item B<hidden>
+
+=item B<iconify>
+
+=item B<min>
+
+=item B<above>
+
+=item B<below>
+
+=item B<pager>
+
+=item B<taskbar>
+
+=item B<showing>
+
+=item B<struts>
+
+=back
+
+
+=back
+
+=head1 HISTORY
+
+=head1 AUTHOR
+
+Brian Bidulock <bidulock@openss7.org>
+
+=cut
+
+# vim: set ft=pod tw=72:

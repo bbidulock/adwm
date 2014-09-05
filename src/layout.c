@@ -1118,8 +1118,6 @@ discardenter()
 
 	XSync(dpy, False);
 	while (XCheckMaskEvent(dpy, EnterWindowMask, &ev)) ;
-	if (sel)
-		focus(sel);	/* put focus back where it was */
 }
 
 static void
@@ -2842,6 +2840,16 @@ raiselower(Client *c)
 		lowerclient(c);
 	else
 		raiseclient(c);
+}
+
+void
+raisefloater(Client *c)
+{
+	if (c->is.floater || c->skip.arrange || c->is.full ||
+		(c->cview && VFEATURES(c->cview, OVERLAP))) {
+		CPRINTF(c, "raising flating client for focus\n");
+		raiseclient(c);
+	}
 }
 
 void

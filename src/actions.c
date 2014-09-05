@@ -1165,6 +1165,8 @@ k_select_cl(View *cv, Key *k, CycleList * cl)
 				c->is.hidden = False;
 		}
 	}
+	/* raise floaters as we cycle */
+	raisefloater(c);
 	focus(c);
 	if (k->cyc) {
 		k->stop = k_stop;

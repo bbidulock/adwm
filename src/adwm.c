@@ -1198,7 +1198,6 @@ focus(Client *c)
 	if (!scr->managed)
 		return;
 	ewmh_update_net_active_window();
-	setfocus(sel);
 	if (c && c != o) {
 		setselected(c);
 		if (c->is.attn)
@@ -1222,6 +1221,7 @@ focus(Client *c)
 		lowertiled(o);
 		ewmh_update_net_window_state(o);
 	}
+	setfocus(sel);
 	XSync(dpy, False);
 }
 

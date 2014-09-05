@@ -735,8 +735,7 @@ reconfigure(Client *c, ClientGeometry *n)
 		XConfigureWindow(dpy, c->win, wmask | CWX | CWY | CWBorderWidth, &wwc);
 	}
 	/* ICCCM 2.0 4.1.5 */
-	// if ((fmask | wmask) && !(wmask & (CWWidth | CWHeight)))
-	if (fmask | wmask) // always send one!
+	if ((fmask | wmask) && !(wmask & (CWWidth | CWHeight)))
 		send_configurenotify(c, None);
 	XSync(dpy, False);
 	if (c->title && (tchange || ((wmask | fmask) & (CWWidth)))) {

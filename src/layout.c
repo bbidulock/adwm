@@ -2821,7 +2821,13 @@ lowerclient(Client *c)
 void
 raiselower(Client *c)
 {
-	if (c == scr->stack)
+	Client *o;
+
+	for (o = scr->stack; o; o = o->snext)
+		if (isvisible(o, c->cview) &&
+		    o->is.bastard == c->is.bastard && o->is.dockapp == c->is.dockapp)
+			break;
+	if (c == o)
 		lowerclient(c);
 	else
 		raiseclient(c);

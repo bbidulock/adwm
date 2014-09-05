@@ -3,4 +3,7 @@
 rm -f cscope.*
 ./autogen.sh
 ./configure.sh
-make clean all cscope
+make clean
+make cscope
+cscope -b
+make

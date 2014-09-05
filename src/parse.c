@@ -245,7 +245,8 @@ static KeyItem KeyItemsByTag[] = {
 	{"focusview",	k_focusview	},
 	{"tag",		k_tag		},
 	{"toggletag",	k_toggletag	},
-	{"taketo",	k_taketo	}
+	{"taketo",	k_taketo	},
+	{"sendto",	k_sendto	}
 	/* *INDENT-ON* */
 };
 

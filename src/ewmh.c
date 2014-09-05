@@ -2265,7 +2265,7 @@ clientmessage(XEvent *e)
 			int index = ev->data.l[0];
 
 			if (-1 <= index && index < scr->ntags)
-				tag(c, index);
+				tagonly(c, index);
 		} else if (message_type == _XA_NET_WM_DESKTOP_MASK ||
 			   message_type == _XA_WIN_WORKSPACES) {
 			unsigned index = ev->data.l[0];

@@ -1841,6 +1841,13 @@ k_taketo(XEvent *e, Key *k)
 }
 
 void
+k_sendto(XEvent *e, Key *k)
+{
+	if (sel)
+		tagonly(sel, idxoftag(sel->cview, k));
+}
+
+void
 k_setlayout(XEvent *e, Key *k)
 {
 	setlayout(k->arg);

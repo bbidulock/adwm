@@ -8,6 +8,7 @@ void appendtag(void);
 void rmlasttag(void);
 
 void tag(Client *c, int index);
+void tagonly(Client *c, int index);
 void taketo(Client *c, int index);
 
 void togglesticky(Client *c);

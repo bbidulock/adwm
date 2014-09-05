@@ -69,6 +69,7 @@ void k_focusview(XEvent *e, Key *k);
 void k_toggleview(XEvent *e, Key *k);
 void k_view(XEvent *e, Key *k);
 void k_taketo(XEvent *e, Key *k);
+void k_sendto(XEvent *e, Key *k);
 void k_setlayout(XEvent *e, Key *k);
 void k_spawn(XEvent *e, Key *k);
 

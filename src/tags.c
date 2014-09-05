@@ -90,6 +90,45 @@ tag(Client *c, int index)
 	}
 }
 
+static Bool
+_tagonly(Client *c, int index)
+{
+	unsigned long long tags;
+	View *oldv, *newv;
+
+	tags = (index == -1) ? ((1ULL << scr->ntags) - 1) : (1ULL << index);
+	if (c->tags == tags)
+		return False;
+	oldv = clientview(c);
+	if (!(c->tags = tags))
+		c->tags = (1ULL << c->cview->index);
+	newv = clientview(c);
+
+	if (c->is.managed)
+		ewmh_update_net_window_desktop(c);
+
+	if (newv != oldv) {
+		if (newv)
+			needarrange(newv);
+		if (oldv)
+			needarrange(oldv);
+	}
+	return True;
+}
+
+void
+tagonly(Client *c, int index)
+{
+	if (!c)
+		return;
+	if (!c->can.tag && c->is.managed)
+		return;
+	if (with_transients(c, &_tagonly, index)) {
+		arrangeneeded();
+		focus(sel);
+	}
+}
+
 void
 togglesticky(Client *c)
 {
@@ -288,7 +327,7 @@ viewrighttag()
 void
 taketo(Client *c, int index)
 {
-	tag(c, index);
+	tagonly(c, index);
 	view(c->cview, index);
 }
 

@@ -54,7 +54,6 @@ void delclient(Client *c);
 void setfocused(Client *c);
 void setselected(Client *c);
 void tookfocus(Client *c);
-Bool isfloating(Client *c, View *v);
 Bool enterclient(XEvent *e, Client *c);
 Bool configureclient(XEvent *e, Client *c, int gravity);
 Bool configuremonitors(XEvent *e, Client *c);

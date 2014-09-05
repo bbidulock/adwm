@@ -495,8 +495,7 @@ tookfocus(Client *next)
 	setfocused(took);
 }
 
-/* can be static soon */
-Bool
+static Bool
 isfloating(Client *c, View *v)
 {
 	if ((c->is.floater && !c->is.dockapp) || c->skip.arrange)
@@ -2272,6 +2271,18 @@ arrangeview(View *v)
 		ewmh_update_net_window_state(c);
 }
 
+static Bool
+isfloater(Client *c)
+{
+	if (c->is.floater || c->skip.arrange)
+		return True;
+	if (c->is.full)
+		return True;
+	if (c->cview && VFEATURES(c->cview, OVERLAP))
+		return True;
+	return False;
+}
+
 static void
 restack()
 {
@@ -2340,7 +2351,7 @@ restack()
 	for (i = 0; i < n; i++) {
 		if (!(c = cl[i]))
 			continue;
-		if (!c->is.bastard && (c->is.floater || c->skip.arrange) && !c->is.below
+		if (!c->is.bastard && isfloater(c) && !c->is.below
 		    && !WTCHECK(c, WindowTypeDesk)) {
 			cl[i] = NULL;
 			wl[j] = c->frame;
@@ -2365,7 +2376,7 @@ restack()
 	for (i = 0; i < n; i++) {
 		if (!(c = cl[i]))
 			continue;
-		if (!c->is.bastard && !(c->is.floater || c->skip.arrange) && !c->is.below
+		if (!c->is.bastard && !isfloater(c) && !c->is.below
 		    && !WTCHECK(c, WindowTypeDesk)) {
 			cl[i] = NULL;
 			wl[j] = c->frame;

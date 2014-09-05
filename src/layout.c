@@ -4073,25 +4073,24 @@ getplace(Client *c, ClientGeometry *g)
 	long *s = NULL;
 	unsigned long n;
 
-	if ((s = getcard(c->win, _XA_WIN_EXPANDED_SIZE, &n))) {
-		if (n >= 4) {
-			g->x = s[0];
-			g->y = s[1];
-			g->w = s[2];
-			g->h = s[3];
-		} else {
-			/* original static geometry */
-			g->x = c->s.x;
-			g->y = c->s.y;
-			g->w = c->s.w;
-			g->h = c->s.h;
-		}
-		g->b = c->c.b;
-		g->t = c->c.t;
-		g->g = c->c.g;
-		g->v = c->c.v;
-		XFree(s);
+	if ((s = getcard(c->win, _XA_WIN_EXPANDED_SIZE, &n)) && n >= 4) {
+		g->x = s[0];
+		g->y = s[1];
+		g->w = s[2];
+		g->h = s[3];
+	} else {
+		/* original static geometry */
+		g->x = c->s.x;
+		g->y = c->s.y;
+		g->w = c->s.w;
+		g->h = c->s.h;
 	}
+	g->b = c->c.b;
+	g->t = c->c.t;
+	g->g = c->c.g;
+	g->v = c->c.v;
+	if (s)
+		XFree(s);
 }
 
 static Client *

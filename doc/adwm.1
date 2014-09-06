@@ -63,53 +63,7 @@ Middle mouse button.
 .It Ic M3
 Right mouse button.
 .El
-.Ss KEY BINDINGS
-The default key bindings are:
-.Pp
-.Bl -tag -width "XXXXXXXXXXXX" -offset indent -compact
-.It Ic A-[F1..Fn]
-Views all windows with n-th tag.
-.It Ic A-Return
-Zooms/cycles current window to/from master area (tiled layout only).
-.It Ic A-Space
-Toggles between tiled and floating layout (affects all windows).
-.It Ic A-Tab
-Toggles to the previously selected tags.
-.It Ic A-b
-Toggles on/off statusbar space.
-.It Ic A-f
-Enables floating mode.
-.It Ic A-h
-Decreases the master area width about 5% (tiled layout only).
-.It Ic A-i
-Enables floating mode.
-.It Ic A-j
-Focuses next window.
-.It Ic A-k
-Focuses previous window.
-.It Ic A-l
-Increases the master are width about 5% (tiled layout only).
-.It Ic A-m
-Enables maximized (monocle) mode.
-.It Ic A-r
-Enables tiled mode.
-.It Ic A-t
-Starts xterm.
-.It Ic A-w
-Enables bottom-tiled mode.
-.It Ic A-C-[1..n]
-Adds/removes all windows with n-th tag to/from the view.
-.It Ic A-C-q
-Quits
-.Nm .
-.It Ic A-C-S-[1..n]
-Adds/removes n-th tag to/from current window.
-.It Ic A-S-[1..n]
-Applies n-th tag to current window.
-.It Ic A-S-c
-Closes focused window.
-.El
-.Ss MOUSE BINDINGS
+.Sh BINDINGS
 The default mouse bindings are:
 .Pp
 .Bl -tag -width "XXXXXXXX" -offset indent -compact
@@ -129,6 +83,183 @@ instead.
 .It Ic A-M3
 Resizes current window while dragging.
 Tiled windows will be toggled to the floating state.
+.El
+.Pp
+The default key bindings are:
+.Pp
+.Bl -tag -width "XXXXXXXXXXXX" -offset indent -compact
+.It Ic A + [F1..Fn]
+Views all windows with n-th tag.
+.It Ic A + Return
+Zooms/cycles current window to/from master area (tiled layout only).
+.It Ic A + space
+Toggles between tiled and floating layout (affects all windows).
+.It Ic A + Tab
+Toggles to the previously selected tags.
+.It Ic A + b
+Toggles on/off statusbar space.
+.It Ic A + f
+Enables floating mode.
+.It Ic A + h
+Decreases the master area width about 5% (tiled layout only).
+.It Ic A + i
+Enables floating mode.
+.It Ic A + j
+Focuses next window.
+.It Ic A + k
+Focuses previous window.
+.It Ic A + l
+Increases the master are width about 5% (tiled layout only).
+.It Ic A + m
+Enables maximized (monocle) mode.
+.It Ic A + r
+Enables tiled mode.
+.It Ic A + t
+Starts xterm.
+.It Ic A + w
+Enables bottom-tiled mode.
+.It Ic AC + [1..n]
+Adds/removes all windows with n-th tag to/from the view.
+.It Ic AC + q
+Quits
+.Nm .
+.It Ic ACS + [1..n]
+Adds/removes n-th tag to/from current window.
+.It Ic AS + [1..n]
+Applies n-th tag to current window.
+.It Ic AS + c
+Closes focused window.
+.El
+.Pp
+Additional default key bindings consistent with
+.Xr spectrwm 1
+are as follows:
+.Pp
+.Bl -tag -width "XXXXXXXXXXXXXXXXXXXX" -offset indent -compact
+.It Ic "WS + Return"
+term
+.It Ic "W + p"
+menu
+.It Ic "WS + q"
+quit
+.It Ic "W + space"
+layoutnext
+.It Ic "WS + backslash"
+flipview
+.It Ic "WS + space"
+resetview
+.It Ic "W + h"
+decmwfact
+.It Ic "W + l"
+incmwfact
+.It Ic "W + comma"
+incnmaster
+.It Ic "W + period"
+decnmaster
+.It Ic "WS + comma"
+incncolumn
+.It Ic "WS + period"
+decncolumn
+.It Ic "W + Return"
+zoom
+.It Ic "W + j, W + Tab"
+focusnext
+.It Ic "W + k, WS + Tab"
+focusprev
+.It Ic "W + m"
+focusmain
+.It Ic "W + u"
+focusurgent
+.It Ic "WS + j"
+swapnext
+.It Ic "WS + k"
+swapprev
+.It Ic "W + b"
+togglestruts
+.It Ic "WS + b"
+togglestrutsall
+.It Ic "W + x"
+killclient
+.It Ic "WS + x"
+killclient
+.It Ic "W + " Ns Op Ar "1-9,0,F1-F12"
+viewtag 1 to 22
+.It Ic "WS + " Ns Op Ar "1-9,0,F1-F12"
+sendto 1 to 22
+.It Ic "W + " Ns Op Ar "KP_1-KP_9"
+monitor 1 to 9
+.It Ic "WS + " Ns Op Ar "KP_1-KP_9"
+sendtomon 1 to 9
+.It Ic "W + Right"
+focusnextwin
+.It Ic "W + Left"
+focusprevwin
+.It Ic "W + Up"
+focusnext
+.It Ic "W + Down"
+focusprev
+.It Ic "WS + a"
+sendtonext
+.It Ic "WS + Left"
+sendtoprev
+.It Ic "WS + Up"
+viewlast
+.It Ic "WS + Right"
+monitornext
+.It Ic "WS + Down"
+monitorprev
+.It Ic "W + s"
+spawn
+.Dq scrot -s
+.It Ic "WS + s"
+spawn
+.Dq scrot
+.It Ic "WS + v"
+spawn
+.Dq xde-identify|gxmessage -file -
+.It Ic "W + t"
+togglefloating
+.It Ic "WS + Delete"
+spawn
+.Dq xde-xlock -l
+.It Ic "WS + i"
+spawn
+.Dq /bin/true
+.It Ic "W + w"
+iconify
+.It Ic "WS + w"
+uniconify
+.It Ic "W + e"
+togglemax
+.It Ic "WS + r"
+toggleraisetiled
+.It Ic "W + v"
+button 2
+.It Ic "W + minus"
+decresizex
+.It Ic "W + equal"
+incresizex
+.It Ic "WS + minus"
+decresizey
+.It Ic "WS + equal"
+incresizey
+.It Ic "W + bracketleft"
+decmovex
+.It Ic "W + bracketright"
+incmovex
+.It Ic "WS + bracketleft"
+decmovey
+.It Ic "WS + bracketright"
+incmovey
+.It Ic "WS + slash"
+spawn
+.Dq xde-namews
+.It Ic "W + slash"
+spawn
+.Dq xde-searchws
+.It Ic "W + f"
+spawn
+.Dq xde-searchwin
 .El
 .Ss CUSTOMIZATION
 The configuration file is a set of X resources (with a class of Adwm),

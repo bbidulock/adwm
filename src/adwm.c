@@ -2802,12 +2802,12 @@ run(void)
 			if (errno == EAGAIN || errno == EINTR || errno == ERESTART)
 				continue;
 			cleanup(CauseRestarting);
-			eprint("poll failed: %s\n", strerror(errno));
+			eprint("%s", "poll failed: %s\n", strerror(errno));
 			exit(EXIT_FAILURE);
 		} else {
 			if (pfd.revents & (POLLNVAL | POLLHUP | POLLERR)) {
 				cleanup(CauseRestarting);
-				eprint("poll error\n");
+				eprint("%s", "poll error\n");
 				exit(EXIT_FAILURE);
 			}
 			if (pfd.revents & POLLIN) {
@@ -4245,14 +4245,15 @@ main(int argc, char *argv[])
 
 	if (argc == 3 && !strcmp("-f", argv[1]))
 		snprintf(conf, sizeof(conf), "%s", argv[2]);
-	else if (argc == 2 && !strcmp("-v", argv[1]))
-		eprint("adwm-" VERSION " (c) 2014 Brian Bidulock\n");
-	else if (argc != 1)
-		eprint("usage: adwm [-v] [-f conf]\n");
+	else if (argc == 2 && !strcmp("-v", argv[1])) {
+		fprintf(stdout, "adwm-" VERSION " (c) 2014 Brian Bidulock\n");
+		exit(0);
+	} else if (argc != 1)
+		eprint("%s", "usage: adwm [-v] [-f conf]\n");
 
 	setlocale(LC_CTYPE, "");
 	if (!(dpy = XOpenDisplay(0)))
-		eprint("adwm: cannot open display\n");
+		eprint("%s", "adwm: cannot open display\n");
 	signal(SIGHUP, sighandler);
 	signal(SIGINT, sighandler);
 	signal(SIGTERM, sighandler);
@@ -4262,7 +4263,7 @@ main(int argc, char *argv[])
 	cargv = argv;
 
 	if (!(baseops = get_adwm_ops("adwm")))
-		eprint("could not load base operations\n");
+		eprint("%s", "could not load base operations\n");
 
 	for (i = 0; i < PartLast; i++)
 		context[i] = XUniqueContext();
@@ -4332,8 +4333,7 @@ main(int argc, char *argv[])
 		}
 	for (scr = screens; scr < screens + nscr && !scr->managed; scr++) ;
 	if (scr == screens + nscr)
-		eprint
-		    ("adwm: another window manager is already running on each screen\n");
+		eprint("%s", "adwm: another window manager is already running on each screen\n");
 	setup(conf, baseops);
 	for (scr = screens; scr < screens + nscr; scr++)
 		if (scr->managed) {

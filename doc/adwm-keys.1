@@ -145,7 +145,7 @@ is specified, executes
 instead of quitting.
 .Pp
 Default:
-.Cm Adwm*quit Ns : Ar "CA + q"
+.Cm Adwm*quit Ns : Ar "CA + q" , Ar "WS + q"
 
 .It Cm restart Op Ar command
 Causes
@@ -297,31 +297,46 @@ the last tag on the list.  The first tag (workspace) cannot be removed.
 Default:
 .Cm Adwm*rmlasttag Ns : Ar "CAS + Left"
 
-.It Cm rotateview
-.It Cm unrotateview
-Rotates (rotates clockwise) or unrotates (rotates counter-clockwise) the current view.
-The view is the current tiling layout.  For master-stacking area layouts, this means
-that the master zone rotates from rigth-stacking, to bottom-stacking, to
-left-stacking, to top-stacking, and around again.
+.It Cm resetview
+Reset the view to its default settings for columns, rows, master width factor,
+orientation, etc.
+.Cm resetview
+is primarily for compatability with
+.Xr spectrwm 1 .
 .Pp
 Defaults:
+.Dl Cm Adwm*resetview Ns : Ar "WS + space"
+
+.It Cm flipview
+.It Cm rotateview
+.It Cm unrotateview
+Rotates (180-degrees, CW or CCW) the current view.  The view is the current tiling layout.  For
+master-stacking area layouts, this means that the master zone rotates from rigth-stacking, to
+bottom-stacking, to left-stacking, to top-stacking, and around again.
+.Cm flipview
+is primarily for compatability with
+.Xr spectrwm 1 .
+.Pp
+Defaults:
+.Dl Cm Adwm*flipview Ns : Ar "WS + backslash"
 .Dl Cm Adwm*rotateview Ns : Ar "A + y"
 .Dl Cm Adwm*unrotateview Ns : Ar "AS + y"
 
+.It Cm flipzone
 .It Cm rotatezone
 .It Cm unrotatezone
-Rotates (rotates clockwise) or unrotates (rotates counter-clockwise) the current zone.
-The zone is either the master, stacking, grid or monocle area.
+Rotates (180-degrees, CW or CCW) the current zone.  The zone is either the master, stacking, grid or
+monocle area.
 .Pp
 Defaults:
 .Dl Cm Adwm*rotatezone Ns : Ar "CA + y"
 .Dl Cm Adwm*unrotatezone Ns : Ar "CAS + y"
 
+.It Cm flipwins
 .It Cm rotatewins
 .It Cm unrotatewins
-Rotates (rotates clockwise) or unrotates (rotates counter-clockwise) the windows in
-the current view.  That is, the windows rotate through the current tiling positions,
-rather than the tiling positions rotating about the screen.
+Rotates (180-degrees, CW or CCW) the windows in the current view.  That is, the windows rotate
+through the current tiling positions, rather than the tiling positions rotating about the screen.
 .Pp
 Defaults:
 .Dl Cm Adwm*rotatewins Ns : Ar "A + e"
@@ -394,10 +409,12 @@ decrease the number by 1.
 .El
 .Pp
 Defaults:
-.Dl Cm Adwm*decmwfact Ns : Ar "A + h" = -0.05
-.Dl Cm Adwm*incmwfact Ns : Ar "A + l" = +0.05
-.Dl Cm Adwm*decnmaster Ns : Ar "AS + j" = -1
-.Dl Cm Adwm*incnmaster Ns : Ar "AS + k" = +1
+.Dl Cm Adwm*decmwfact Ns : Ar "A + h" Li = "-0.05" , Ar "W + h" Li = "-0.05"
+.Dl Cm Adwm*incmwfact Ns : Ar "A + l" Li = "+0.05" , Ar "W + l" Li = "+0.05"
+.Dl Cm Adwm*decnmaster Ns : Ar "AS + j" Li = "-1" , Ar "W + period" Li = "-1"
+.Dl Cm Adwm*incnmaster Ns : Ar "AS + k" Li = "+1" , Ar "W + comma" Li = "+1"
+.Dl Cm Adwm*decncolumn Ns : Ar "WS + comma" Li = "-1"
+.Dl Cm Adwm*incncolumn Ns : Ar "WS + period" Li = "+1"
 .Dl Cm Adwm*decmargin Ns : Ar "WAS + m"
 .Dl Cm Adwm*incmargin Ns : Ar "WA + m"
 .Dl Cm Adwm*decborder Ns : Ar "WAS + b"
@@ -812,13 +829,15 @@ Spawns the n'th command argument.
 can be from 0 to 63.
 .Pp
 Defaults:
-.Dl Cm Adwm*spawn0 Ns : Ar "CA + t" = roxterm
-.Dl Cm Adwm*spawn1 Ns : Ar "CA + w" = firefox
-.Dl Cm Adwm*spawn2 Ns : Ar "CA + f" = pcmanfm
-.Dl Cm Adwm*spawn3 Ns : Ar "CA + r" = xde-run
-.Dl Cm Adwm*spawn4 Ns : Ar "CA + v" = gvim
-.Dl Cm Adwm*spawn5 Ns : Ar "CA + n" = uxterm
-.Dl Cm Adwm*spawn6 Ns : Ar "CA + m" = xdg-traymenu -p
+.Dl Cm Adwm*spawn0 Ns : Ar "CA + t" = Qq roxterm
+.Dl Cm Adwm*spawn1 Ns : Ar "CA + w" = Qq firefox
+.Dl Cm Adwm*spawn2 Ns : Ar "CA + f" = Qq pcmanfm
+.Dl Cm Adwm*spawn3 Ns : Ar "CA + r" = Qq xde-run
+.Dl Cm Adwm*spawn4 Ns : Ar "CA + v" = Qq gvim
+.Dl Cm Adwm*spawn5 Ns : Ar "CA + n" = Qq uxterm
+.Dl Cm Adwm*spawn6 Ns : Ar "CA + m" = Qq xdg-traymenu -p
+.Dl Cm Adwm*spawn7 Ns : Ar "WS + Return" = Qq xde-term
+.Dl Cm Adwm*spawn8 Ns : Ar "W + p" = Qq xde-traymenu -p
 .Pp
 .It Cm command Ar command
 This is not a key binding.  It specifies a command, 

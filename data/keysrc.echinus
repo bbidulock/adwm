@@ -1,0 +1,82 @@
+! ADWM key bindings following Echinus defaults where possible
+
+Adwm*decmwfact:		A + h
+Adwm*focusnext:		A + j
+Adwm*focusprev:		A + k
+Adwm*focusview6:	A + s
+Adwm*incmwfact:		A + l
+Adwm*killclient:	AS + c
+Adwm*movedown:		A + s = 0 5 0 0
+Adwm*moveleft:		A + a = -5 0 0 0
+Adwm*moveright:		A + d = 5 0 0 0
+Adwm*moveup:		A + w = 0 -5 0 0
+Adwm*quit:		AC + q
+Adwm*resizedecx:	AS + a = 0 0 -5 0, WS + h = 0 0 -5 0
+Adwm*resizedecy:	AS + s = 0 0 0 -5, WS + k = 0 0 0 -5
+Adwm*resizeincx:	AS + d = 0 0 5 0, WS + l = 0 0 5 0
+Adwm*resizeincy:	AS + w = 0 0 0 5, WS + j = 0 0 0 5
+Adwm*restart:		AS + q
+Adwm*setlayoutb:	A + w
+Adwm*setlayoutf:	A + f, A + i
+Adwm*setlayoutm:	A + m
+Adwm*setlayoutt:	A + r
+Adwm*spawn0:		A + t = uxterm, AC + t = uxterm
+Adwm*tag0:		AS + 1
+Adwm*tag10:		AS + bracketleft
+Adwm*tag11:		AS + bracketright
+Adwm*tag1:		AS + 2
+Adwm*tag2:		AS + 3
+Adwm*tag3:		AS + 4
+Adwm*tag4:		AS + 5
+Adwm*tag5:		AS + 6
+Adwm*tag6:		AS + 7
+Adwm*tag7:		AS + 8
+Adwm*tag8:		AS + 9
+Adwm*tag9:		AS + 0
+Adwm*togglefloating:	A + space
+Adwm*togglemonitor:	A + grave
+Adwm*togglestruts:	A + b
+Adwm*toggletag0:	ACS + 1
+Adwm*toggletag10:	ACS + bracketleft
+Adwm*toggletag11:	ACS + bracketright
+Adwm*toggletag1:	ACS + 2
+Adwm*toggletag2:	ACS + 3
+Adwm*toggletag3:	ACS + 4
+Adwm*toggletag4:	ACS + 5
+Adwm*toggletag5:	ACS + 6
+Adwm*toggletag6:	ACS + 7
+Adwm*toggletag7:	ACS + 8
+Adwm*toggletag8:	ACS + 9
+Adwm*toggletag9:	ACS + 0
+Adwm*toggleview0:	AC + 1
+Adwm*toggleview10:	AC + bracketleft
+Adwm*toggleview11:	AC + bracketright
+Adwm*toggleview1:	AC + 2
+Adwm*toggleview2:	AC + 3
+Adwm*toggleview3:	AC + 4
+Adwm*toggleview4:	AC + 5
+Adwm*toggleview5:	AC + 6
+Adwm*toggleview6:	AC + 7
+Adwm*toggleview7:	AC + 8
+Adwm*toggleview8:	AC + 9
+Adwm*toggleview9:	AC + 0
+Adwm*view0:		A + F1
+Adwm*view10:		A + F11
+Adwm*view11:		A + F12
+Adwm*view1:		A + F2
+Adwm*view2:		A + F3
+Adwm*view3:		A + F4
+Adwm*view4:		A + F5
+Adwm*view5:		A + F6
+Adwm*view6:		A + F7
+Adwm*view7:		A + F8
+Adwm*view8:		A + F9
+Adwm*view9:		A + F10
+Adwm*viewleft:		AC + Left
+Adwm*viewprev:		A + Tab
+Adwm*viewrigth:		AC + Right
+Adwm*zoom:		A + Return
+
+
+
+! vim: set ft=xdefaults:

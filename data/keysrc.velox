@@ -1,0 +1,40 @@
+! ADWM key bindings following Velox defaults where possible
+
+Adwm*decmwfact:		W + h
+Adwm*decncolumns:	WC + l
+Adwm*decnmaster:	WS + l
+Adwm*focusnext:		W + j
+Adwm*focusprev:		W + k
+Adwm*incmwfact:		W + l
+Adwm*incncolumns:	WC + h
+Adwm*incnmaster:	WS + h
+Adwm*killclient:	WS + c
+Adwm*layoutnext:	W + space
+Adwm*layoutprev:	WS + space
+Adwm*quit:		WS + q
+Adwm*spawn0:		WS + Return = roxterm
+Adwm*spawn1:		W + r = dmenu
+Adwm*taketo0:		WS + 1
+Adwm*taketo1:		WS + 2
+Adwm*taketo2:		WS + 3
+Adwm*taketo3:		WS + 4
+Adwm*taketo4:		WS + 5
+Adwm*taketo5:		WS + 6
+Adwm*taketo6:		WS + 7
+Adwm*taketo7:		WS + 8
+Adwm*taketo8:		WS + 9
+Adwm*taketonext:	WS + j
+Adwm*taketoprev:	WS + k
+Adwm*togglefloating:	W + f
+Adwm*togglefocus:	W + g
+Adwm*view0:		W + 1
+Adwm*view1:		W + 2
+Adwm*view2:		W + 3
+Adwm*view3:		W + 4
+Adwm*view4:		W + 5
+Adwm*view5:		W + 6
+Adwm*view6:		W + 7
+Adwm*view7:		W + 8
+Adwm*view8:		W + 9
+
+! vim: set ft=xdefaults:

@@ -1,2 +1,119 @@
+! ADWM key bindings following SpectWM defaults where possible
+
+Adwm*button2:		W + v
+Adwm*decmwfactor:	W + h
+Adwm*decnmaster:	W + period
+Adwm*decnstacking:	WS + period
+Adwm*focusmain:		W + m
+Adwm*focusnextany:	W + Right
+Adwm*focusnext:		W + j, W + Tab
+Adwm*focusprevany:	W + Left
+Adwm*focusprev:		W + k, WS + Tab
+Adwm*focusurgent:	W + u
+Adwm*iconify:		W + w
+Adwm*incmwfactor:	W + l
+Adwm*incnmaster:	W + comma
+Adwm*incnstacking:	WS + comma
+Adwm*initscr:		WS + i
+Adwm*killclient:	W + x, WS + x
+Adwm*layoutflip:	WS + backslash
+Adwm*layoutnext:	W + space
+Adwm*layoutreset:	WS + space
+Adwm*movedown:		WS + bracketright
+Adwm*moveleft:		W + bracketleft
+Adwm*moveright:		W + bracketright
+Adwm*moveto0:		WS + 1
+Adwm*moveto10:		WS + F1
+Adwm*moveto11:		WS + F2
+Adwm*moveto12:		WS + F3
+Adwm*moveto13:		WS + F4
+Adwm*moveto14:		WS + F5
+Adwm*moveto15:		WS + F6
+Adwm*moveto16:		WS + F7
+Adwm*moveto17:		WS + F8
+Adwm*moveto18:		WS + F9
+Adwm*moveto19:		WS + F10
+Adwm*moveto1:		WS + 2
+Adwm*moveto20:		WS + F11
+Adwm*moveto21:		WS + F12
+Adwm*moveto2:		WS + 3
+Adwm*moveto3:		WS + 4
+Adwm*moveto4:		WS + 5
+Adwm*moveto5:		WS + 6
+Adwm*moveto6:		WS + 7
+Adwm*moveto7:		WS + 8
+Adwm*moveto8:		WS + 9
+Adwm*moveto9:		WS + 0
+Adwm*moveup:		WS + bracketleft
+Adwm*quit:		WS + q
+Adwm*raisetiled:	WS + r
+Adwm*resizedecx:	W + minus = 3 0 -6 0
+Adwm*resizedecy:	WS + minus = 0 3 0 -6
+Adwm*resizeincx:	W + equal = -3 0 6 0
+Adwm*resizeincy:	WS + equal = 0 -3 0 6
+Adwm*restart:		W + q
+Adwm*screen0:		W + KP_1
+Adwm*screen1:		W + KP_2
+Adwm*screen2:		W + KP_3
+Adwm*screen3:		W + KP_4
+Adwm*screen4:		W + KP_5
+Adwm*screen5:		W + KP_6
+Adwm*screen6:		W + KP_7
+Adwm*screen7:		W + KP_8
+Adwm*screen8:		W + KP_9
+Adwm*screennext:	WS + Right
+Adwm*screenprev:	WS + Left
+Adwm*spawn0:		WS + Return
+Adwm*spawn1:		W + p = xdg-traymenu -p
+Adwm*spawn2:		W + s = scrot
+Adwm*spawn3:		WS + s = scrot -s
+Adwm*spawn4:		WS + Delete = xde-xlock -l
+Adwm*spawn5:		WS + backslash = xde-namews
+Adwm*spawn6:		W + backslash = xde-findws
+Adwm*spawn7:		W + f = xde-findwin
+Adwm*swapnext:		WS + j
+Adwm*swapprev:		WS + k
+Adwm*taketonext:	W + a
+!Adwm*taketoprev:	WS + Left  <= must be a mistake
+Adwm*togglefloating:	W + t
+Adwm*togglemax:		
+Adwm*togglestrutsall:	W + b
+Adwm*togglestruts:	WS + b
+Adwm*toscreen0:		WS + KP_1
+Adwm*toscreen1:		WS + KP_2
+Adwm*toscreen2:		WS + KP_3
+Adwm*toscreen3:		WS + KP_4
+Adwm*toscreen4:		WS + KP_5
+Adwm*toscreen5:		WS + KP_6
+Adwm*toscreen6:		WS + KP_7
+Adwm*toscreen7:		WS + KP_8
+Adwm*toscreen8:		WS + KP_9
+Adwm*uniconify:		WS + w
+Adwm*view0:		W + 1
+Adwm*view10:		W + F1
+Adwm*view11:		W + F2
+Adwm*view12:		W + F3
+Adwm*view13:		W + F4
+Adwm*view14:		W + F5
+Adwm*view15:		W + F6
+Adwm*view16:		W + F7
+Adwm*view17:		W + F8
+Adwm*view18:		W + F9
+Adwm*view19:		W + F10
+Adwm*view1:		W + 2
+Adwm*view20:		W + F11
+Adwm*view21:		W + F12
+Adwm*view2:		W + 3
+Adwm*view3:		W + 4
+Adwm*view4:		W + 5
+Adwm*view5:		W + 6
+Adwm*view6:		W + 7
+Adwm*view7:		W + 8
+Adwm*view8:		W + 9
+Adwm*view9:		W + 0
+Adwm*viewlast:		WS + Up
+Adwm*viewnext:		W + Up
+Adwm*viewprev:		W + Down
+Adwm*zoom:		W + Return
 
 ! vim: set ft=xdefaults:

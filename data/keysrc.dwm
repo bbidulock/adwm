@@ -1,0 +1,57 @@
+! ADWM key bindings following DWM and XDWM defaults where possible
+
+!Adwm*spawn0:		AS + Return = st
+Adwm*decmwfact:		A + h
+Adwm*decnmaster:	A + d
+Adwm*focusnext:		A + j
+Adwm*focusprev:		A + k
+Adwm*incmwfact:		A + l
+Adwm*incnmaster:	A + i
+Adwm*killclient:	AS + c
+Adwm*layoutnext:	A + space
+Adwm*quit:		AS + q
+Adwm*screennext:	A + period
+Adwm*screenprev:	A + comma
+Adwm*scrtonext:		AS + period
+Adwm*scrtoprev:		AS + comma
+Adwm*setlayoutf:	A + f
+Adwm*setlayoutm:	A + m
+Adwm*setlayoutt:	A + t
+Adwm*spawn0:		AS + Return = uxterm
+Adwm*tag0:		AS + 1
+Adwm*tag1:		AS + 2
+Adwm*tag2:		AS + 3
+Adwm*tag3:		AS + 4
+Adwm*tag4:		AS + 5
+Adwm*tag5:		AS + 6
+Adwm*tag6:		AS + 7
+Adwm*tag7:		AS + 8
+Adwm*tag8:		AS + 9
+Adwm*tagall:		AS + 0
+Adwm*togglefloating:	AS + space
+Adwm*togglestruts:	A + b
+Adwm*toggletag0:	ACS + 1
+Adwm*toggletag1:	ACS + 2
+Adwm*toggletag2:	ACS + 3
+Adwm*toggletag3:	ACS + 4
+Adwm*toggletag4:	ACS + 5
+Adwm*toggletag5:	ACS + 6
+Adwm*toggletag6:	ACS + 7
+Adwm*toggletag7:	ACS + 8
+Adwm*toggletag8:	ACS + 9
+Adwm*toggletagall:	ACS + 0
+Adwm*view0:		A + 1
+Adwm*view1:		A + 2
+Adwm*view2:		A + 3
+Adwm*view3:		A + 4
+Adwm*view4:		A + 5
+Adwm*view5:		A + 6
+Adwm*view6:		A + 7
+Adwm*view7:		A + 8
+Adwm*view8:		A + 9
+Adwm*viewall:		A + 0
+Adwm*viewlast:		A + Tab
+Adwm*zoom:		A + Return
+
+
+! vim: set ft=xdefaults:

@@ -1,0 +1,75 @@
+! ADWM key bindings following WindowMaker defaults where possible
+
+Adwm*activate0:		W + 1
+Adwm*activate1:		W + 2
+Adwm*activate2:		W + 3
+Adwm*activate3:		W + 4
+Adwm*activate4:		W + 5
+Adwm*activate5:		W + 6
+Adwm*activate6:		W + 7
+Adwm*activate7:		W + 8
+Adwm*activate8:		W + 9
+Adwm*activate9:		W + 0
+Adwm*beginmoveresize:	W + M
+Adwm*focusnext:		A + Tab
+Adwm*focusprev:		AS + Tab
+Adwm*groupnext:		W + Tab
+Adwm*groupprev:		WS + Tab
+Adwm*hide:		A + H
+Adwm*hideothers:	AS + H
+Adwm*iconifyall:	AS + M
+Adwm*iconify:		A + M
+Adwm*killclient:	A + q, A + w
+Adwm*lower:		A + Down
+Adwm*maxtoE:		W + Right
+Adwm*maxtoN:		
+Adwm*maxtoNE:		
+Adwm*maxtoNW:		
+Adwm*maxtoS:		
+Adwm*maxtoSE:		
+Adwm*maxtoSW:		
+Adwm*maxtoW:		W + Left
+Adwm*modkey:		A
+Adwm*screennext:	W + Next
+Adwm*raise:		A + Up
+Adwm*raiselower:	A + space, A + Home
+Adwm*relaunch:		W + Return
+Adwm*sendto0:		W + F1
+Adwm*sendto1:		W + F2
+Adwm*sendto2:		W + F3
+Adwm*sendto3:		W + F4
+Adwm*sendto4:		W + F5
+Adwm*sendto5:		W + F6
+Adwm*sendto6:		W + F7
+Adwm*sendto7:		W + F8
+Adwm*sendto8:		W + F9
+Adwm*sendto9:		W + F10
+Adwm*sendtolast:	
+Adwm*sendtonext:	
+Adwm*sendtoprev:	
+Adwm*spawn0:		F12 = xdg-traymenu -p
+Adwm*spawn1:		F11 = xde-winlist
+Adwm*spawn2:		C + Escape = xde-winmenu -w active -W center
+Adwm*togglefill:	CS + Down
+Adwm*togglemax:		CS + Left
+Adwm*togglemaxh:	CS + right
+Adwm*togglemaxv:	CS + Up
+Adwm*toggleselect:	CS + Return
+Adwm*toggleshade:	A + S, AS + S
+Adwm*togglestruts:	AC + space
+Adwm*view0:		A + 1
+Adwm*view1:		A + 2
+Adwm*view2:		A + 3
+Adwm*view3:		A + 4
+Adwm*view4:		A + 5
+Adwm*view5:		A + 6
+Adwm*view6:		A + 7
+Adwm*view7:		A + 8
+Adwm*view8:		A + 9
+Adwm*view9:		A + 0
+Adwm*viewlast:		
+Adwm*viewnext:		AC + Right
+Adwm*viewprev:		AC + Left
+
+
+! vim: set ft=xdefaults:

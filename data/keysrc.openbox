@@ -1,0 +1,37 @@
+! ADWM key bindings following Openbox defaults where possible
+
+Adwm*begmove:		A + F7
+Adwm*begsize:		A + F8
+Adwm*focusE:		WS + Right
+Adwm*focusnext:		A + Tab
+Adwm*focusN:		WS + Up
+Adwm*focusprev:		AS + Tab
+Adwm*focusS:		WS + Down
+Adwm*focusW:		WS + Left
+Adwm*iconify:		A + F9
+Adwm*killclient:	A + F4, A + F5
+Adwm*lower:		A + Escape
+Adwm*max:		A + F10
+Adwm*panelnext:		AC + Tab
+Adwm*panelprev:		ACS + Tab
+Adwm*sendtoleft:	AS + Left
+Adwm*sendtoright:	AS + Right
+Adwm*sendtoup:		AS + Up
+Adwm*senttodown:	AS + Down
+Adwm*spawn0:		A + space = xdg-traymenu -p
+Adwm*spawn1:		W + e = pcmanfm
+Adwm*togglefull:	A + F11
+Adwm*togglemax:		A + F10
+Adwm*toggleshade:	A + F12
+Adwm*toggleshowing:	AS + d, W + d, AC + d
+Adwm*unmax:		A + F5
+Adwm*view0:		W + F1
+Adwm*view1:		W + F2
+Adwm*view2:		W + F3
+Adwm*view3:		W + F4
+Adwm*viewdown:		AC + Down
+Adwm*viewleft:		AC + Left
+Adwm*viewright:		AC + Right
+Adwm*viewup:		AC + Up
+
+! vim: set ft=xdefaults:

@@ -1,0 +1,105 @@
+! ADWM key bindings following Fluxbox defaults where possible
+
+Adwm*appendtag:		
+Adwm*focusE:		
+Adwm*focusN:		
+Adwm*focusS:		
+Adwm*focusW:		
+Adwm*groupnext:		A + Tab
+Adwm*groupprev:		AS + Tab
+Adwm*iconify:		A + F9, A + m
+Adwm*killclient:	A + F4, A + F5
+Adwm*lower:		A + down
+Adwm*movedown:		= 0 5 0 0
+Adwm*moveleft:		= -5 0 0 0
+Adwm*moveright:		= 5 0 0 0
+Adwm*moveup:		= 0 -5 0 0
+Adwm*quit:		AC + Delete
+Adwm*raise:		A + Up
+Adwm*reconfig:		A + r
+Adwm*rmlasttag:		
+Adwm*sendmon0:		
+Adwm*sendmon1:		
+Adwm*sendmon2:		
+Adwm*sendmon3:		
+Adwm*sendmonnext:	
+Adwm*sendmonprev:	
+Adwm*sendto0:		W + F1
+Adwm*sendto10:		W + F11
+Adwm*sendto11:		W + F12
+Adwm*sendto1:		W + F2
+Adwm*sendto2:		W + F3
+Adwm*sendto3:		W + F4
+Adwm*sendto4:		W + F5
+Adwm*sendto5:		W + F6
+Adwm*sendto6:		W + F7
+Adwm*sendto7:		W + F8
+Adwm*sendto8:		W + F9
+Adwm*sendto9:		W + F10
+Adwm*sendtonext:	W + Right
+Adwm*sendtoprev:	W + Left
+Adwm*setlayoutl:	
+Adwm*setlayoutt:	
+Adwm*setlayoutu:	
+Adwm*spawn0:		
+Adwm*spawn0:		W + m = xde-winmenu -w active -W center
+Adwm*spawn10:		A + space = xde-winmenu -w active -W center
+Adwm*spawn1:		A + F1 = uxterm, A + x = uxterm
+Adwm*spawn2:		A + F2 = xde-run, -W + r = xde-run
+Adwm*spawn3:		W + e = pcmanfm
+Adwm*spawn4:		C + escape = xdg-traymenu -p
+Adwm*spawn5:		A + t = roxterm
+Adwm*spawn6:		A + v = gvim
+Adwm*spawn7:		XF86AudioRaiseVolume = amixer sset Master,0 1+
+Adwm*spawn8:		XF86AudioLowerVolume = amixer sset Master,0 1-
+Adwm*spawn9:		XF86AudioMuteVolume  = amixer sset Master,0 toggle
+Adwm*tab0:		W + 1
+Adwm*tab1:		W + 2
+Adwm*tab2:		W + 3
+Adwm*tab3:		W + 4
+Adwm*tab4:		W + 5
+Adwm*tab5:		W + 6
+Adwm*tab6:		W + 7
+Adwm*tab7:		W + 8
+Adwm*tab8:		W + 9
+Adwm*tab9:		W + 0
+Adwm*tabnext:		W + Tab
+Adwm*tabprev:		WS + Tab
+Adwm*taketo0:		WC + F1
+Adwm*taketo10:		WC + F11
+Adwm*taketo11:		WC + F12
+Adwm*taketo1:		WC + F2
+Adwm*taketo2:		WC + F3
+Adwm*taketo3:		WC + F4
+Adwm*taketo4:		WC + F5
+Adwm*taketo5:		WC + F6
+Adwm*taketo6:		WC + F7
+Adwm*taketo7:		WC + F8
+Adwm*taketo8:		WC + F9
+Adwm*taketo9:		WC + F10
+Adwm*taketonext:	WC + Right
+Adwm*taketoprev:	WC + Left
+Adwm*toggledecor:	
+Adwm*togglefull:	A + F11
+Adwm*togglemax:		A + F10, CS + Left
+Adwm*togglemaxh:	CS + Right
+Adwm*togglemaxv:	CS + Up
+!Adwm*toggleshade:	A + s
+Adwm*toggleshowing:	
+Adwm*togglesticky:	
+Adwm*view0:		C + F1, A + 1
+Adwm*view10:		C + F11
+Adwm*view11:		C + F12
+Adwm*view1:		C + F2, A + 2
+Adwm*view2:		C + F3, A + 3
+Adwm*view3:		C + F4, A + 4
+Adwm*view4:		C + F5, A + 5
+Adwm*view5:		C + F6, A + 6
+Adwm*view6:		C + F7, A + 7
+Adwm*view7:		C + F8, A + 8
+Adwm*view8:		C + F9, A + 9
+Adwm*view9:		C + F10, A + 0
+Adwm*viewnext:		AC + Right
+Adwm*viewprev:		AC + Left
+
+! vim: set ft=xdefaults:

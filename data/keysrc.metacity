@@ -1,0 +1,75 @@
+! ADWM key bindings following IceWM defaults where possible
+!
+
+Adwm*docknext:		AC + Tab
+Adwm*dockprev:		ACS + Tab
+Adwm*fillE:		W + Right
+Adwm*fillW:		W + Left
+Adwm*focusnext:		A + escape
+Adwm*focusprev:		AS + escape
+Adwm*groupnext:		A + F6, W + Above_Tab, A + Above_Tab
+Adwm*groupprev:		AS + F6, WS + Above_Tab, AS + Above_Tab
+Adwm*killclient:	A + F4, A + F5, A + F10
+Adwm*lower:		A + Down
+Adwm*movetoC:		
+Adwm*movetoE:		
+Adwm*movetoN:		
+Adwm*movetoNE:		
+Adwm*movetoS:		
+Adwm*movetoSE:		
+Adwm*movetoSW:		
+Adwm*movetoW:		
+Adwm*panelnext:		AC + escape
+Adwm*panelprev:		ACS + escape
+Adwm*raise:		A + Up
+Adwm*raiselower:	
+Adwm*raiselower:	A + Left
+Adwm*spanw2:		? = xde-run
+Adwm*spawn0:		A + space = xde-winmenu -w active -W center
+Adwm*spawn1:		? = xdg-traymenu -p
+Adwm*spawn2:		A + F1 = roxterm, AC + Return = uxterm
+Adwm*taketo1:		
+Adwm*taketo10:		
+Adwm*taketo11:		
+Adwm*taketo12:		
+Adwm*taketo2:		
+Adwm*taketo3:		
+Adwm*taketo4:		
+Adwm*taketo5:		
+Adwm*taketo6:		
+Adwm*taketo7:		
+Adwm*taketo8:		
+Adwm*taketo9:		
+Adwm*taketoE:		ACS + Right
+Adwm*taketoN:		ACS + Up, WS + Page_Up
+Adwm*taketoS:		ACS + Down, WS + Page_Down
+Adwm*taketoW:		ACS + Left
+Adwm*toggleabove:	
+Adwm*togglefull:	
+Adwm*togglemax:		A + F10
+Adwm*toggleshowing:	
+Adwm*togglesticky:	
+Adwm*unmax:		A + F5, W + Down
+Adwm*view1:		
+Adwm*view10:		
+Adwm*view11:		
+Adwm*view12:		
+Adwm*view2:		
+Adwm*view3:		
+Adwm*view4:		
+Adwm*view5:		
+Adwm*view6:		
+Adwm*view7:		
+Adwm*view8:		
+Adwm*view9:		
+Adwm*viewE:		AC + Right
+Adwm*viewN:		AC + Up, W + Page_Up
+Adwm*viewS:		AC + Down, W + Page_Down
+Adwm*viewW:		AC + Left
+
+
+
+
+
+
+! vim: set ft=xdefaults:

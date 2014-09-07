@@ -70,7 +70,6 @@ void arrangeneeded(void);
 void setlayout(const char *arg);
 void raisefloater(Client *c);
 void raisetiled(Client *c);
-void lowertiled(Client *c);
 void raiseclient(Client *c);
 void lowerclient(Client *c);
 void raiselower(Client *c);

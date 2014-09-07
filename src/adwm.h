@@ -1129,6 +1129,7 @@ void *ecalloc(size_t nmemb, size_t size);
 void *emallocz(size_t size);
 void *erealloc(void *ptr, size_t size);
 void eprint(const char *errstr, ...);
+Client *findclient(Window w);
 const char *getresource(const char *resource, const char *defval);
 Client *getclient(Window w, int part);
 View *getview(int x, int y);
@@ -1209,6 +1210,18 @@ void unmanage(Client *c, WithdrawCause cause);
 #define GPRINTF(g,args...)	do { } while(0)
 #define XPRINTF(args...)	do { } while(0)
 #endif
+
+#define NONREENTRANT_ENTER \
+static int _was_here = 0; \
+do { \
+	if (_was_here++) \
+		_DPRINTF("entered %d times!\n", _was_here); \
+} while(0)
+#define NONREENTRANT_LEAVE \
+do { \
+	_was_here--; \
+} while(0)
+
 
 #define OPAQUE			0xffffffff
 #define RESNAME		       "adwm"

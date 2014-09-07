@@ -949,23 +949,12 @@ static Bool
 enternotify(XEvent *e)
 {
 	XCrossingEvent *ev = &e->xcrossing;
-	Window win = ev->window, froot = scr->root, fparent = None, *children = NULL;
-	unsigned nchild = 0;
 	Client *c;
 
-	if (ev->mode != NotifyNormal || ev->detail == NotifyInferior)
+	if (e->type != EnterNotify || ev->mode != NotifyNormal || ev->detail == NotifyInferior)
 		return True;
 
-	while (XQueryTree(dpy, win, &froot, &fparent, &children, &nchild)) {
-		if (children)
-			XFree(children);
-		if (win == froot || fparent == froot)
-			break;
-		win = fparent;
-	}
-	XFindContext(dpy, froot, context[ScreenContext], (XPointer *) &scr);
-
-	if ((c = getclient(ev->window, ClientAny))) {
+	if ((c = findclient(ev->window))) {
 		CPRINTF(c, "EnterNotify received\n");
 		enterclient(e, c);
 	} else if (ev->window == scr->root) {
@@ -1008,28 +997,17 @@ eprint(const char *errstr, ...)
 static Bool
 focuschange(XEvent *e)
 {
-	XEvent ev;
-	Window win, froot = scr->root, fparent = None, *children = NULL;
-	int revert;
-	unsigned nchild = 0;
+	XFocusChangeEvent *ev = &e->xfocus;
+	Window win = ev->window;
+	int revert = None;
 	Client *c;
 
 	/* Different approach: don't force focus, just track it.  When it goes to
 	   PointerRoot or None, set it to something reasonable. */
 
-	XSync(dpy, False);
-	/* discard all subsequent focus change events */
-	while (XCheckMaskEvent(dpy, FocusChangeMask, &ev)) ;
-
+	if (e->type != FocusIn)
+		return True;
 	XGetInputFocus(dpy, &win, &revert);
-	while (XQueryTree(dpy, win, &froot, &fparent, &children, &nchild)) {
-		if (children)
-			XFree(children);
-		if (win == froot || fparent == froot)
-			break;
-		win = fparent;
-	}
-	XFindContext(dpy, froot, context[ScreenContext], (XPointer *) &scr);
 
 	switch (win) {
 	case None:
@@ -1037,7 +1015,7 @@ focuschange(XEvent *e)
 		focus(gave);
 		break;
 	default:
-		if ((c = getclient(win, ClientAny))) {
+		if ((c = findclient(ev->window))) {
 			if (gave && c != gave && canfocus(gave)) {
 				if (took != gave && !(gave->can.focus & TAKE_FOCUS)) {
 					_CPRINTF(c, "stole focus\n");
@@ -1218,7 +1196,6 @@ focus(Client *c)
 		drawclient(o);
 		if (o->is.shaded && scr->options.autoroll && isvisible(o, o->cview))
 			arrange(o->cview);
-		lowertiled(o);
 		ewmh_update_net_window_state(o);
 	}
 	setfocus(sel);
@@ -1580,6 +1557,27 @@ getclient(Window w, int part)
 
 	XFindContext(dpy, w, context[part], (XPointer *) &c);
 	return c;
+}
+
+Client *
+findclient(Window fwind)
+{
+	Client *c = NULL;
+	Window froot = None, fparent = None, *children = NULL;
+	unsigned int nchild = 0;
+
+	do {
+		if (children) {
+			XFree(children);
+			children = NULL;
+		}
+		XFindContext(dpy, froot, context[ScreenContext], (XPointer *) &scr);
+		XFindContext(dpy, fwind, context[ClientAny], (XPointer *) &c);
+	}
+	while (!c && fwind != froot && (!froot || fparent != froot) &&
+	       XQueryTree(dpy, fwind, &froot, &fparent, &children, &nchild));
+
+	return (c);
 }
 
 long

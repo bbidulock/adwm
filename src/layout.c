@@ -2319,7 +2319,7 @@ restack()
 	for (i = 0; i < n; i++) {
 		if (!(c = cl[i]))
 			continue;
-		if (sel == c && c->is.max) {
+		if (sel == c && c->is.full) {
 			cl[i] = NULL;
 			wl[j] = c->frame;
 			sl[j] = c;
@@ -2846,7 +2846,7 @@ raisefloater(Client *c)
 {
 	if (c->is.floater || c->skip.arrange || c->is.full ||
 		(c->cview && VFEATURES(c->cview, OVERLAP))) {
-		CPRINTF(c, "raising flating client for focus\n");
+		CPRINTF(c, "raising floating client for focus\n");
 		raiseclient(c);
 	}
 }
@@ -2861,19 +2861,6 @@ raisetiled(Client *c)
 			c->is.above = True;
 		}
 		raiseclient(c);
-	}
-}
-
-void
-lowertiled(Client *c)
-{
-	if (c->is.bastard || c->is.dockapp || !isfloating(c, c->cview)) {
-		CPRINTF(c, "lowering non-floating client on focus\n");
-		if (c->is.bastard || c->is.dockapp) {
-			c->is.below = True;
-			c->is.above = False;
-		}
-		lowerclient(c);
 	}
 }
 

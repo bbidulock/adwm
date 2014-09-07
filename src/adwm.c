@@ -952,20 +952,19 @@ enternotify(XEvent *e)
 	Client *c;
 
 	if (e->type != EnterNotify || ev->mode != NotifyNormal || ev->detail == NotifyInferior)
-		return True;
+		return False;
 
 	if ((c = findclient(ev->window))) {
 		CPRINTF(c, "EnterNotify received\n");
 		enterclient(e, c);
+		return True;
 	} else if (ev->window == scr->root) {
 		DPRINTF("Not focusing root\n");
-		if (took)
-			focus(took);
+		return False;
 	} else {
 		DPRINTF("Unknown entered window 0x%08lx\n", ev->window);
 		return False;
 	}
-	return True;
 }
 
 void
@@ -992,43 +991,6 @@ eprint(const char *errstr, ...)
 
 	dumpstack();
 	exit(EXIT_FAILURE);
-}
-
-static Bool
-focuschange(XEvent *e)
-{
-	XFocusChangeEvent *ev = &e->xfocus;
-	Window win = ev->window;
-	int revert = None;
-	Client *c;
-
-	/* Different approach: don't force focus, just track it.  When it goes to
-	   PointerRoot or None, set it to something reasonable. */
-
-	if (e->type != FocusIn)
-		return True;
-	XGetInputFocus(dpy, &win, &revert);
-
-	switch (win) {
-	case None:
-	case PointerRoot:
-		focus(gave);
-		break;
-	default:
-		if ((c = findclient(ev->window))) {
-			if (gave && c != gave && canfocus(gave)) {
-				if (took != gave && !(gave->can.focus & TAKE_FOCUS)) {
-					_CPRINTF(c, "stole focus\n");
-					_CPRINTF(gave, "giving back focus\n");
-					focus(gave);
-					return True;
-				}
-			}
-		}
-		tookfocus(c);
-		break;
-	}
-	return True;
 }
 
 static Bool
@@ -1150,6 +1112,53 @@ shouldsel(Client *c)
 	return True;
 }
 
+static Client *
+findfocus(Client *not)
+{
+	Client *c;
+
+	for (c = scr->flist; c && (c == not || !shouldsel(c)); c = c->fnext) ;
+	return (c);
+}
+
+static Bool
+focuschange(XEvent *e)
+{
+	XFocusChangeEvent *ev = &e->xfocus;
+	Window win = ev->window;
+	int revert = None;
+	Client *c;
+
+	/* Different approach: don't force focus, just track it.  When it goes to
+	   PointerRoot or None, set it to something reasonable. */
+
+	if (e->type != FocusIn)
+		return True;
+	XGetInputFocus(dpy, &win, &revert);
+
+	switch (win) {
+	case None:
+	case PointerRoot:
+		DPRINTF("trying to focus something else\n");
+		focus(findfocus(took));
+		break;
+	default:
+		if ((c = findclient(ev->window))) {
+			if (gave && c != gave && canfocus(gave)) {
+				if (took != gave && !(gave->can.focus & TAKE_FOCUS)) {
+					_CPRINTF(c, "stole focus\n");
+					_CPRINTF(gave, "giving back focus\n");
+					focus(gave);
+					return True;
+				}
+			}
+		}
+		tookfocus(c);
+		break;
+	}
+	return True;
+}
+
 void
 focus(Client *c)
 {
@@ -1157,7 +1166,7 @@ focus(Client *c)
 
 	o = sel;
 	if ((!c && scr->managed) || (c && !canselect(c)))
-		for (c = scr->flist; c && !shouldsel(c); c = c->fnext) ;
+		c = findfocus(NULL);
 	if (sel && sel != c) {
 		XSetWindowBorder(dpy, sel->frame, scr->style.color.norm[ColBorder]);
 	}

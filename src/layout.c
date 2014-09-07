@@ -3147,7 +3147,7 @@ move_begin(Client *c, View *v, Bool toggle, int move, IsUnion * was)
 	XGrabPointer(dpy, scr->root, False, MOUSEMASK, GrabModeAsync,
 		     GrabModeAsync, None, cursor[move], CurrentTime);
 
-	isfloater = isfloating(c, NULL) ? True : False;
+	isfloater = isfloating(c, v) ? True : False;
 
 	c->is.moveresize = True;
 	was->is = 0;
@@ -3198,7 +3198,7 @@ move_cancel(Client *c, View *v, ClientGeometry *orig, IsUnion * was)
 	wasfloating = was->floater;
 	was->floater = False;
 
-	if (isfloating(c, NULL)) {
+	if (isfloating(c, v)) {
 		if (was->is) {
 			c->is.full = was->full;
 			c->is.max = was->max;
@@ -3283,7 +3283,7 @@ mousemove(Client *c, XEvent *e, Bool toggle)
 	if (!c->can.floats || c->is.dockapp)
 		toggle = False;
 
-	isfloater = (toggle || isfloating(c, NULL)) ? True : False;
+	isfloater = (toggle || isfloating(c, v)) ? True : False;
 
 	if (XGrabPointer(dpy, scr->root, False, MOUSEMASK, GrabModeAsync,
 			 GrabModeAsync, None, None, CurrentTime) != GrabSuccess) {

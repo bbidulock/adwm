@@ -1140,7 +1140,10 @@ focuschange(XEvent *e)
 	case None:
 	case PointerRoot:
 		DPRINTF("trying to focus something else\n");
-		focus(findfocus(took));
+		if ((c = findfocus(took)))
+			focus(c);
+		else
+			setfocus(NULL);
 		break;
 	default:
 		if ((c = findclient(ev->window))) {

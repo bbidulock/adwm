@@ -721,11 +721,15 @@ The optional
 .Cm <suffix>
 indicates which client to select and is one of the following:
 .Pp
-.Bl -tag -width ".Cm every" -compact
+.Bl -tag -width ".Cm urgent" -compact
 .It Dq
 Select window by tag argument (beginning at 1).
 .It Cm #
 Select window by index (beginning at 0).
+.It Cm main
+Select the master window (focus only).
+.It Cm urgent
+Select next urgent window (focus only).
 .It Cm icon
 Select next iconified window in order.
 .It Cm next

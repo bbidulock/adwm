@@ -292,7 +292,7 @@ initewmh(char *name)
 	XChangeProperty(dpy, win, _XA_MOTIF_WM_INFO, _XA_MOTIF_WM_INFO, 32,
 			PropModeReplace, (unsigned char *) data, 2);
 
-	ewmh_update_net_client_list();
+	ewmh_update_net_client_lists();
 }
 
 void
@@ -392,7 +392,7 @@ ewmh_del_client(Client *c, WithdrawCause cause)
 	case CauseReparented:
 	case CauseUnmapped:
 	{
-		ewmh_update_net_client_list();
+		ewmh_update_net_client_lists();
 		if (sel == c) {
 			focus(NULL);
 			ewmh_update_net_active_window();
@@ -496,6 +496,13 @@ ewmh_update_net_client_list()
 	XChangeProperty(dpy, scr->root, _XA_WIN_CLIENT_LIST, XA_CARDINAL, 32,
 			PropModeReplace, (unsigned char *) wl, n);
 	free(wl);
+	XFlush(dpy);		/* XXX: caller's responsibility */
+}
+
+void
+ewmh_update_net_client_lists()
+{
+	ewmh_update_net_client_list();
 	ewmh_update_net_client_list_stacking();
 	XFlush(dpy);		/* XXX: caller's responsibility */
 }

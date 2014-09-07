@@ -471,6 +471,27 @@ detachstack(Client *c)
 	c->snext = NULL;
 }
 
+static void
+reattach(Client *c, Bool attachside)
+{
+	detach(c);
+	attach(c, attachside);
+}
+
+void
+reattachclist(Client *c)
+{
+	detachclist(c);
+	attachclist(c);
+}
+
+static void
+reattachflist(Client *c, Bool front)
+{
+	detachflist(c);
+	attachflist(c, front);
+}
+
 void
 tookfocus(Client *next)
 {
@@ -488,8 +509,7 @@ tookfocus(Client *next)
 			next->is.focused = True;
 			ewmh_update_net_window_state(next);
 		}
-		detachflist(next);
-		attachflist(next, True);
+		reattachflist(next, True);
 	}
 	gave = next;
 	setfocused(took);
@@ -2289,7 +2309,7 @@ restack()
 
 	for (n = 0, c = scr->stack; c; c = c->snext, n++) ;
 	if (!n) {
-		ewmh_update_net_client_list();
+		ewmh_update_net_client_list_stacking();
 		return;
 	}
 	wl = ecalloc(n, sizeof(*wl));
@@ -2440,7 +2460,7 @@ restack()
 
 		XRestackWindows(dpy, wl, n);
 
-		ewmh_update_net_client_list();
+		ewmh_update_net_client_list_stacking();
 	} else {
 		XPRINTF("%s", "No new stacking order\n");
 		free(wl);
@@ -4720,7 +4740,7 @@ addclient(Client *c, Bool focusme, Bool raiseme)
 	attachclist(c);
 	attachflist(c, focusme);
 	attachstack(c, raiseme);
-	ewmh_update_net_client_list();
+	ewmh_update_net_client_lists();
 	if (c->is.managed)
 		ewmh_update_net_window_desktop(c);
 	if (c->is.bastard)
@@ -5301,8 +5321,7 @@ rotatewins(Client *c)
 	if (!VFEATURES(v, ROTL))
 		return;
 	if ((s = nexttiled(scr->clients, v))) {
-		detach(s);
-		attach(s, True);
+		reattach(s, True);
 		arrange(v);
 		focus(s);
 	}
@@ -5320,8 +5339,7 @@ unrotatewins(Client *c)
 		return;
 	for (last = scr->clients; last && last->next; last = last->next) ;
 	if ((s = prevtiled(last, v))) {
-		detach(s);
-		attach(s, False);
+		reattach(s, False);
 		arrange(v);
 		focus(s);
 	}
@@ -5456,8 +5474,7 @@ zoom(Client *c)
 	if (c == nexttiled(scr->clients, v))
 		if (!(c = nexttiled(c->next, v)))
 			return;
-	detach(c);
-	attach(c, False);
+	reattach(c, False);
 	arrange(v);
 	focus(c);
 }

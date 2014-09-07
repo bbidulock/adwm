@@ -73,6 +73,7 @@ void run(void);
 void scan(void);
 void tag(Client *c, int index);
 void updatestruts(void);
+void updatehints(Client *c);
 void updatesizehints(Client *c);
 void updatetitle(Client *c);
 void updategroup(Client *c, Window leader, int group, int *nonmodal);
@@ -1291,6 +1292,36 @@ focusprev(Client *c)
 {
 	if ((c = focusback(c)))
 		raiseclient(c);
+}
+
+void
+focusmain(Client *c)
+{
+	View *v;
+
+	if (!c)
+		return;
+	if (!(v = c->cview))
+		return;
+	if (!(c = nexttiled(scr->clients, v)))
+		return;
+	focus(c);
+}
+
+void
+focusurgent(Client *c)
+{
+	Client *s;
+	View *v;
+
+	if (!c)
+		return;
+	if (!(v = c->cview))
+		return;
+	for (s = scr->flist; s && (s == c || !shouldsel(s) || !s->is.attn);
+	     s = s->fnext) ;
+	if (s)
+		focus(s);
 }
 
 Bool
@@ -2616,6 +2647,9 @@ propertynotify(XEvent *e)
 					arrange(NULL);
 					ewmh_update_net_window_state(c);
 				}
+				break;
+			case XA_WM_HINTS:
+				updatehints(c);
 				break;
 			case XA_WM_NORMAL_HINTS:
 				updatesizehints(c);
@@ -4002,6 +4036,20 @@ unmapnotify(XEvent *e)
 		return True;
 	}
 	return False;
+}
+
+void
+updatehints(Client *c)
+{
+	XWMHints *wmh;
+
+	if ((wmh = XGetWMHints(dpy, c->win))) {
+		if (wmh->flags & XUrgencyHint && !c->is.attn) {
+			c->is.attn = True;
+			ewmh_update_net_window_state(c);
+		}
+		XFree(wmh);
+	}
 }
 
 void

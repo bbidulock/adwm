@@ -26,6 +26,8 @@ static KeyItem KeyItems[] = {
 	{ "quit",		k_quit		 }, /* arg is new command */
 	{ "restart", 		k_restart	 }, /* arg is new command */
 	{ "killclient",		k_killclient	 },
+	{ "focusmain",		k_focusmain	 },
+	{ "focusurgent",	k_focusurgent	 },
 	{ "zoom", 		k_zoom		 },
 	{ "moveright", 		k_moveresizekb	 }, /* arg is delta geometry */
 	{ "moveleft", 		k_moveresizekb	 }, /* arg is delta geometry */

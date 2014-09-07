@@ -1150,6 +1150,8 @@ void focus(Client *c);
 void focusicon(void);
 void focusnext(Client *c);
 void focusprev(Client *c);
+void focusmain(Client *c);
+void focusurgent(Client *c);
 AScreen *getscreen(Window win);
 AScreen *geteventscr(XEvent *ev);
 void killclient(Client *c);

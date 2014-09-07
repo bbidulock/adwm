@@ -12,6 +12,8 @@ void m_spawn(Client *c, XEvent *ev);
 void m_zoom(Client *c, XEvent *ev);
 
 void k_chain(XEvent *e, Key *k);
+void k_focusmain(XEvent *e, Key *k);
+void k_focusurgent(XEvent *e, Key *k);
 void k_zoom(XEvent *e, Key *k);
 void k_killclient(XEvent *e, Key *k);
 void k_moveresizekb(XEvent *e, Key *k);

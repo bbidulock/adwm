@@ -138,6 +138,20 @@ k_chain(XEvent *e, Key *key)
 }
 
 void
+k_focusmain(XEvent *e, Key *k)
+{
+	if (sel)
+		focusmain(sel);
+}
+
+void
+k_focusurgent(XEvent *e, Key *k)
+{
+	if (sel)
+		focusurgent(sel);
+}
+
+void
 k_zoom(XEvent *e, Key *k)
 {
 	if (sel)

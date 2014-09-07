@@ -1142,7 +1142,7 @@ focuschange(XEvent *e)
 		DPRINTF("trying to focus something else\n");
 		if ((c = findfocus(took)))
 			focus(c);
-		else
+		else if (!win)
 			setfocus(NULL);
 		break;
 	default:

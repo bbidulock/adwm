@@ -4044,9 +4044,9 @@ moveresizekb(Client *c, int dx, int dy, int dw, int dh, int gravity)
 		g = c->c;
 		getreference(&xr, &yr, (Geometry *) &g, gravity);
 
-		if (dw && (dw < c->incw))
+		if (dw && c->incw && (abs(dw) < c->incw))
 			dw = (dw / abs(dw)) * c->incw;
-		if (dh && (dh < c->inch))
+		if (dh && c->inch && (abs(dh) < c->inch))
 			dh = (dh / abs(dh)) * c->inch;
 		g.w += dw;
 		g.h += dh;

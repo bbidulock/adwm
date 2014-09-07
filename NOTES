@@ -34,7 +34,7 @@ adwm -- notes file.  2014-02-10
 [width="100%",options="header"]
 |===
 |Function			|ADWM Function		|gnome (mutter/metacity)	|Description
-|activate-window-menu		|			|A-Space			|Activate the window menu
+|activate-window-menu		|spawn xde-winmenu	|A-Space			|Activate the window menu
 |begin-move			|begmove		|A-F7				|Move window
 |begin-resize			|begsize		|A-F8				|Resize window
 |close				|killclient		|A-F4				|Close window
@@ -255,21 +255,21 @@ Fluxbox permits mutliple keys to be bound to the same key action.
 |RightWorkspace dW			|view E +1		|			|			|next workspace (no wrap)
 |RootMenu				|			|			|			|opens the root menu
 |SendToNextHead dM			|			|			|			|
-|SendToNextWorkspace dW			|tag +1			|W-Right		|W-Right		|
-|SendToPrevHead dM			|screen -1		|			|			|
-|SendToPrevWorkspace dW			|tag -1			|W-Left			|W-Left			|
-|SendToWorkspace 1			|tag 1			|W-F1			|W-F1			|
-|SendToWorkspace 2			|tag 2			|W-F2			|W-F2			|
-|SendToWorkspace 3			|tag 3			|W-F3			|W-F3			|
-|SendToWorkspace 4			|tag 4			|W-F4			|W-F4			|
-|SendToWorkspace 5			|tag 5			|W-F5			|W-F5			|
-|SendToWorkspace 6			|tag 6			|W-F6			|W-F6			|
-|SendToWorkspace 7			|tag 7			|W-F7			|W-F7			|
-|SendToWorkspace 8			|tag 8			|W-F8			|W-F8			|
-|SendToWorkspace 9			|tag 9			|W-F9			|W-F9			|
-|SendToWorkspace 10			|tag 10			|W-F10			|W-F10			|
-|SendToWorkspace 11			|tag 11			|W-F11			|W-F11			|
-|SendToWorkspace 12			|tag 12			|W-F12			|W-F12			|
+|SendToNextWorkspace dW			|sendtonext		|W-Right		|W-Right		|
+|SendToPrevHead dM			|toscreenprev		|			|			|
+|SendToPrevWorkspace dW			|sendtoprev		|W-Left			|W-Left			|
+|SendToWorkspace 1			|sendto 1		|W-F1			|W-F1			|
+|SendToWorkspace 2			|sendto 2		|W-F2			|W-F2			|
+|SendToWorkspace 3			|sendto 3		|W-F3			|W-F3			|
+|SendToWorkspace 4			|sendto 4		|W-F4			|W-F4			|
+|SendToWorkspace 5			|sendto 5		|W-F5			|W-F5			|
+|SendToWorkspace 6			|sendto 6		|W-F6			|W-F6			|
+|SendToWorkspace 7			|sendto 7		|W-F7			|W-F7			|
+|SendToWorkspace 8			|sendto 8		|W-F8			|W-F8			|
+|SendToWorkspace 9			|sendto 9		|W-F9			|W-F9			|
+|SendToWorkspace 10			|sendto 10		|W-F10			|W-F10			|
+|SendToWorkspace 11			|sendto 11		|W-F11			|W-F11			|
+|SendToWorkspace 12			|sendto 12		|W-F12			|W-F12			|
 |SetAlpha A UA				|			|			|			|
 |SetDecor				|			|			|			|
 |SetHead M				|movetoscreen M		|			|			|
@@ -413,18 +413,18 @@ Blackbox (bbkeys(1)) allows multiple keys to be bound to the same action.
 |rightWorkspace				|viewright		|#AC-L			|			|
 |sendtonextworkspace			|tagright/taketoright	|			|			|
 |sendtoprevworkspace			|tagleft/taketoleft	|			|			|
-|sendToWorkspace 1			|tag/taketo 1		|AC-w:1			|W-F1, AC-w:1		|
-|sendToWorkspace 2			|tag/taketo 2		|AC-w:2			|W-F2, AC-w:2		|
-|sendToWorkspace 3			|tag/taketo 3		|AC-w:3			|W-F3, AC-w:3		|
-|sendToWorkspace 4			|tag/taketo 4		|AC-w:4			|W-F4, AC-w:4		|
-|sendToWorkspace 5			|tag/taketo 5		|AC-w:5			|W-F5, AC-w:5		|
-|sendToWorkspace 6			|tag/taketo 6		|AC-w:6			|W-F6, AC-w:6		|
-|sendToWorkspace 7			|tag/taketo 7		|AC-w:7			|W-F7, AC-w:7		|
-|sendToWorkspace 8			|tag/taketo 8		|AC-w:8			|W-F8, AC-w:8		|
-|sendToWorkspace 9			|tag/taketo 9		|			|W-F9			|
-|sendToWorkspace 10			|tag/taketo 10		|			|W-F10			|
-|sendToWorkspace 11			|tag/taketo 11		|			|W-F11			|
-|sendToWorkspace 12			|tag/taketo 12		|			|W-F12			|
+|sendToWorkspace 1			|sendto 1		|AC-w:1			|W-F1, AC-w:1		|
+|sendToWorkspace 2			|sendto 2		|AC-w:2			|W-F2, AC-w:2		|
+|sendToWorkspace 3			|sendto 3		|AC-w:3			|W-F3, AC-w:3		|
+|sendToWorkspace 4			|sendto 4		|AC-w:4			|W-F4, AC-w:4		|
+|sendToWorkspace 5			|sendto 5		|AC-w:5			|W-F5, AC-w:5		|
+|sendToWorkspace 6			|sendto 6		|AC-w:6			|W-F6, AC-w:6		|
+|sendToWorkspace 7			|sendto 7		|AC-w:7			|W-F7, AC-w:7		|
+|sendToWorkspace 8			|sendto 8		|AC-w:8			|W-F8, AC-w:8		|
+|sendToWorkspace 9			|sendto 9		|			|W-F9			|
+|sendToWorkspace 10			|sendto 10		|			|W-F10			|
+|sendToWorkspace 11			|sendto 11		|			|W-F11			|
+|sendToWorkspace 12			|sendto 12		|			|W-F12			|
 |showRootMenu				|			|AC-Escape		|AC-Escape		|
 |showworkspacemenu			|			|			|			|
 |stringchain				|			|			|			|
@@ -456,10 +456,10 @@ is because openbox used to use a separate keybinder like bbkeys.
 |DesktopRight (wrap=no)		|view E			|AC-Right		|AC-Right		|
 |DesktopUp (wrap=no)		|view N			|AC-Up			|AC-Up			|
 |DesktopDown (wrap=no)		|view S			|AC-Down		|AC-Down		|
-|SendToDesktopLeft (wrap=no)	|tag W			|AS-Left		|AS-Left		|
-|SendToDesktopRight (wrap=no)	|tag E			|AS-Right		|AS-Right		|
-|SendToDesktopUp (wrap=no)	|tag N			|AS-Up			|AS-Up			|
-|SendToDesktopDown (wrap=no)	|tag S			|AS-Down		|AS-Down		|
+|SendToDesktopLeft (wrap=no)	|sendto W		|AS-Left		|AS-Left		|
+|SendToDesktopRight (wrap=no)	|sendto E		|AS-Right		|AS-Right		|
+|SendToDesktopUp (wrap=no)	|sendto N		|AS-Up			|AS-Up			|
+|SendToDesktopDown (wrap=no)	|sendto S		|AS-Down		|AS-Down		|
 |ToggleShowDesktop		|toggleshowing		|AS-d			|W-d, AC-d		|
 |Close				|killclient		|A-F4			|A-F4			|
 |Close (no kill in openbox)	|killclient		|			|A-F5			|
@@ -525,10 +525,10 @@ is because openbox used to use a separate keybinder like bbkeys.
 |MoveRelativeHorz		|moveresize dX 0 0 0	|			|			|
 |MoveRelativeVert		|moveresize 0 dY 0 0	|			|			|
 |MoveToCenter			|moveto C		|			|			|
-|MoveToEdgeeast			|align E		|			|			|
-|MovetoEdgenorth		|align N		|			|			|
-|MoveToEdgesouth		|align S		|			|			|
-|MoveToEdgewest			|align W		|			|			|
+|MoveToEdgeeast			|edgeto E		|			|			|
+|MovetoEdgenorth		|edgeto N		|			|			|
+|MoveToEdgesouth		|edgeto S		|			|			|
+|MoveToEdgewest			|edgeto W		|			|			|
 |NextWindow			|focusnext		|			|			|
 |PreviousWindow			|focusprev		|			|			|
 |Raise				|raise			|			|			|
@@ -540,13 +540,13 @@ is because openbox used to use a separate keybinder like bbkeys.
 |ResizeRelativeVert		|moveresize +0 +0 +0 dH	|			|			|
 |Restart			|restart		|			|			|
 |SendToBottomLayer		|below			|			|			|
-|SendToDesktop			|tag #			|			|			|
-|SendToDesktopDown		|tag S			|			|			|
-|SendToDesktopLeft		|tag W			|			|			|
-|SendToDesktopNext		|tag +1			|			|			|
-|SendToDesktopPrevious		|tag -1			|			|			|
-|SendToDesktopRight		|tag E			|			|			|
-|SendToDesktopUp		|tag N			|			|			|
+|SendToDesktop			|sendto #		|			|			|
+|SendToDesktopDown		|sendto S		|			|			|
+|SendToDesktopLeft		|sendto W		|			|			|
+|SendToDesktopNext		|sendtonext		|			|			|
+|SendToDesktopPrevious		|sendtoprev		|			|			|
+|SendToDesktopRight		|sendto E		|			|			|
+|SendToDesktopUp		|sendto N		|			|			|
 |SendToNormalLayer		|normal			|			|			|
 |SendTotoplayer			|above			|			|			|
 |SessionLogout			|quit			|			|			|
@@ -648,15 +648,15 @@ is because openbox used to use a separate keybinder like bbkeys.
 |MoveToHead			|			|			|			|
 |MoveToEdge TopLeft		|moveto NW		|AC-c:q			|			|
 |MoveToEdge TopCenterEdge	|moveto N		|AC-c:y/w		|			|
-|MoveToEdge TopEdge		|align N		|AC-c:S-y/w		|			|
+|MoveToEdge TopEdge		|edgeto N		|AC-c:S-y/w		|			|
 |MoveToEdge TopRight		|moveto NE		|AC-c:p/e		|			|
 |MoveToEdge LeftCenterEdge	|moveto W		|AC-c:a			|			|
-|MoveToEdge LeftEdge		|align W		|AC-c:S-a		|			|
+|MoveToEdge LeftEdge		|edgeto W		|AC-c:S-a		|			|
 |MoveToEdge RightCenterEdge	|moveto E		|AC-c:l/d		|			|
-|MoveToEdge RightEdge		|align E		|AC-c:S-l/d		|			|
+|MoveToEdge RightEdge		|edgeto E		|AC-c:S-l/d		|			|
 |MoveToEdge BottomLeft		|moveto SW		|AC-c:z			|			|
 |MoveToEdge BottomCenterEdge	|moveto S		|AC-c:b/x		|			|
-|MoveToEdge BottomEdge		|align S		|AC-c:S-b/x		|			|
+|MoveToEdge BottomEdge		|edgeto S		|AC-c:S-b/x		|			|
 |MoveToEdge BottomRight		|moveto SE		|AC-c:m/c		|			|
 |MoveToEdge Center		|moveto C		|AC-c:h/s		|			|
 |MoveToEdge			|			|			|			|
@@ -679,15 +679,15 @@ is because openbox used to use a separate keybinder like bbkeys.
 |AttachFrameInPrevFrame		|			|AC-t:u			|			|
 |FindClient			|			|			|			|
 |GotoClientID			|			|			|			|
-|SendToWorkspace 1		|tag 1			|W-F1, AC-w:F1		|			|
-|SendToWorkspace 2		|tag 2			|W-F2, AC-w:F2		|			|
-|SendToWorkspace 3		|tag 3			|W-F3, AC-w:F3		|			|
-|SendToWorkspace 4		|tag 4			|W-F4, AC-w:F4		|			|
-|SendToWorkspace 5		|tag 5			|W-F5, AC-w:F5		|			|
-|SendToWorkspace 6		|tag 6			|W-F6, AC-w:F6		|			|
-|SendToWorkspace 7		|tag 7			|W-F7, AC-w:F7		|			|
-|SendToWorkspace 8		|tag 8			|W-F8, AC-w:F8		|			|
-|SendToWorkspace 9		|tag 9			|W-F9, AC-w:F9		|			|
+|SendToWorkspace 1		|sendto 1		|W-F1, AC-w:F1		|			|
+|SendToWorkspace 2		|sendto 2		|W-F2, AC-w:F2		|			|
+|SendToWorkspace 3		|sendto 3		|W-F3, AC-w:F3		|			|
+|SendToWorkspace 4		|sendto 4		|W-F4, AC-w:F4		|			|
+|SendToWorkspace 5		|sendto 5		|W-F5, AC-w:F5		|			|
+|SendToWorkspace 6		|sendto 6		|W-F6, AC-w:F6		|			|
+|SendToWorkspace 7		|sendto 7		|W-F7, AC-w:F7		|			|
+|SendToWorkspace 8		|sendto 8		|W-F8, AC-w:F8		|			|
+|SendToWorkspace 9		|sendto 9		|W-F9, AC-w:F9		|			|
 |Send/GoToWorkspace Next	|taketo W		|ACS-Left, AC-W:Up	|			|
 |Send/GoToWorkspace Prev	|taketo E		|ACS-Right, AC-W:Down	|			|
 |Send/GoToWorkspace NextV	|taketo S		|ACS-Up			|			|
@@ -798,21 +798,21 @@ WindowMaker does not allow multiple keys to be bound to the same action (unless 
 |MinimizeAllKey			|iconify *		|			|AS-M			|miniaturize all windows
 |ModifierKey			|modkey			|A			|Mode1			|default mouse modifier key
 |MoveResizeKey			|begmove/begsize	|			|W-M			|move/resize active window
-|MoveToLastWorkspaceKey		|tag L			|			|			|move window to last used workspace
-|MoveToNextWorkspaceKey		|tag +1			|			|			|move window to next workspace
-|MoveToNextWorkspaceLayerKey	|tag +10		|			|			|move window to next ten workspaces
-|MoveToPrevWorkspaceKey		|tag -1			|			|			|move window to previous workspace
-|MoveToPrevWorkspaceLayerKey	|tag -10		|			|			|move window to previous ten workspaces
-|MoveToWorkspace10Key		|tag 10			|			|W-F10			|move window to workspace 10
-|MoveToWorkspace1Key		|tag 1			|			|W-F1			|move window to workspace 1
-|MoveToWorkspace2Key		|tag 2			|			|W-F2			|move window to workspace 2
-|MoveToWorkspace3Key		|tag 3			|			|W-F3			|move window to workspace 3
-|MoveToWorkspace4Key		|tag 4			|			|W-F4			|move window to workspace 4
-|MoveToWorkspace5Key		|tag 5			|			|W-F5			|move window to workspace 5
-|MoveToWorkspace6Key		|tag 6			|			|W-F6			|move window to workspace 6
-|MoveToWorkspace7Key		|tag 7			|			|W-F7			|move window to workspace 7
-|MoveToWorkspace8Key		|tag 8			|			|W-F8			|move window to workspace 8
-|MoveToWorkspace9Key		|tag 9			|			|W-F9			|move window to workspace 9
+|MoveToLastWorkspaceKey		|sendto L		|			|			|move window to last used workspace
+|MoveToNextWorkspaceKey		|sendto +1		|			|			|move window to next workspace
+|MoveToNextWorkspaceLayerKey	|sendto +10		|			|			|move window to next ten workspaces
+|MoveToPrevWorkspaceKey		|sendto -1		|			|			|move window to previous workspace
+|MoveToPrevWorkspaceLayerKey	|sendto -10		|			|			|move window to previous ten workspaces
+|MoveToWorkspace10Key		|sendto 10		|			|W-F10			|move window to workspace 10
+|MoveToWorkspace1Key		|sendto 1		|			|W-F1			|move window to workspace 1
+|MoveToWorkspace2Key		|sendto 2		|			|W-F2			|move window to workspace 2
+|MoveToWorkspace3Key		|sendto 3		|			|W-F3			|move window to workspace 3
+|MoveToWorkspace4Key		|sendto 4		|			|W-F4			|move window to workspace 4
+|MoveToWorkspace5Key		|sendto 5		|			|W-F5			|move window to workspace 5
+|MoveToWorkspace6Key		|sendto 6		|			|W-F6			|move window to workspace 6
+|MoveToWorkspace7Key		|sendto 7		|			|W-F7			|move window to workspace 7
+|MoveToWorkspace8Key		|sendto 8		|			|W-F8			|move window to workspace 8
+|MoveToWorkspace9Key		|sendto 9		|			|W-F9			|move window to workspace 9
 |NextWorkspaceKey		|view +1		|AC-Right		|AC-Right		|switch to next workspace
 |NextWorkspaceLayerKey		|view +10		|			|AC-Up			|switch to next ten workspaces
 |PrevWorkspaceKey		|view -1		|AC-Left		|AC-Left		|switch to previous workspace
@@ -1323,7 +1323,7 @@ The window movement and resize are not so necessary.
 [width="100%",options="header"]
 |===
 |Function Name		|ADWM Function		|spectrwm Default	|Description
-|term			|spawn xde-terminal	|WS-Return		|Spawn a new terminal
+|term			|spawn xde-term		|WS-Return		|Spawn a new terminal
 |menu			|			|W-p			|Menu
 |quit			|quit			|WS-q			|Quit spectrwm
 |restart		|restart		|W-q			|Restart spectrwm
@@ -1340,8 +1340,8 @@ The window movement and resize are not so necessary.
 |focus_next		|			|W-j, W-Tab		|Focus next window in workspace
 |focus_prev		|			|W-k, W-S-Tab		|Focus previous window in workspace
 |focus_main		|			|W-m			|Focus on main window in workspace
-|focus_urgent		|			|WS-j			|Focus on next window with an urgency hint flag set.  The workspace is switched if needed.
-|swap_next		|			|W-u			|Swap with next window in workspace
+|focus_urgent		|			|W-u			|Focus on next window with an urgency hint flag set.  The workspace is switched if needed.
+|swap_next		|			|WS-j			|Swap with next window in workspace
 |swap_prev		|			|WS-k			|Swap with previous window in workspace
 |bar_toggle		|			|W-b			|Toggle overall visibility of status bars
 |bar_toggle_ws		|			|WS-b			|Toggle status bar on current workspace
@@ -1423,7 +1423,7 @@ coverage of other defaults as possible.
 |A-8			|		|		|view 8		|view 8		|view 8		|		|		|view 8		|view 8		|view 8		|		|		|		|		|
 |A-9			|		|		|view 9		|		|view 9		|		|		|view 9		|view 9		|view 9		|		|		|		|		|
 |A-0			|		|		|view 10	|		|view 10	|		|		|		|view *		|view *		|		|		|		|		|
-|A-F1			|		|spawn xde-menu	|spawn xde-terminal|spawn xde-terminal|		|		|raise		|		|		|		|view 1		|		|		|		|
+|A-F1			|		|spawn xde-menu	|spawn xde-term	|spawn xde-term	|		|		|raise		|		|		|		|view 1		|		|		|		|
 |A-F2			|		|spawn xde-run	|spawn xde-run	|		|		|		|togglesticky	|		|		|		|view 2		|		|		|		|
 |A-F3			|		|		|		|		|		|		|lower		|		|		|		|view 3		|		|		|		|
 |A-F4			|		|close		|close		|close		|		|close		|close		|		|		|		|view 4		|		|		|		|
@@ -1435,6 +1435,26 @@ coverage of other defaults as possible.
 |A-F10			|		|togglemax	|togglemax	|togglemaxv	|		|maximize/togglemax|togglemax	|		|		|		|view 10	|		|		|		|
 |A-F11			|		|		|togglefull	|togglemaxh	|		|togglefull	|togglefull	|		|		|		|view 11	|		|		|		|
 |A-F12			|		|		|		|togglefull	|		|toggleshade	|toggleshade	|		|		|		|view 12	|		|		|		|
+|A-space		|		|winmenu	|winmenu	|		|raiselower	|winmenu	|winmenu	|		|layoutnext	|layoutnext	|togglefloating	|		|		|		|
+|A-Tab			|		|		|		|		|		|		|		|		|viewlasttag	|viewlasttag	|viewlasttag	|		|		|		|
+|A-Return		|		|		|		|		|		|		|		|		|zoom		|zoom		|zoom		|		|		|		|
+|A-Grave		|		|		|		|		|		|		|		|		|		|		|togglemonitor	|		|		|		|
+|A-Comma		|		|		|		|		|		|		|		|		|screenprev	|screenprev	|		|		|		|		|
+|A-Period		|		|		|		|		|		|		|		|		|screennext	|screenenxt	|		|		|		|		|
+|A-a			|		|		|		|		|		|		|		|		|		|		|moveleft	|		|		|		|
+|A-b			|		|		|		|		|		|		|		|		|togglestruts	|togglestruts	|togglestruts	|		|		|		|
+|A-d			|		|		|		|		|		|		|		|		|decnmaster	|decnmaster	|moveright	|		|		|		|
+|A-f			|		|		|		|		|		|		|		|		|setlayoutf	|setlayoutf	|setlayoutf	|		|		|		|
+|A-h			|		|		|		|		|		|		|		|		|decmwfact	|decmwfact	|decmwfact	|		|		|		|
+|A-i			|		|		|		|		|		|		|		|		|incnmaster	|incnmaster	|setlayouti	|		|		|		|
+|A-j			|		|		|		|		|		|		|		|		|focusnext	|focusnext	|focusnext	|		|		|		|
+|A-k			|		|		|		|		|		|		|		|		|focusprev	|focusprev	|focusprev	|		|		|		|
+|A-l			|		|		|		|		|		|		|		|		|incmwfact	|incmwfact	|incmwfact	|		|		|		|
+|A-m			|		|		|		|		|		|		|		|		|setlayoutm	|setlayoutm	|setlayoutm	|		|		|		|
+|A-r			|		|		|		|		|		|		|		|		|		|		|setlayoutt	|		|		|		|
+|A-s			|		|		|		|		|		|		|		|		|		|		|movedown	|		|		|		|
+|A-t			|		|		|		|		|		|		|		|		|setlayoutt	|setlayoutt	|spawn uxterm	|		|		|		|
+|A-w			|		|		|		|		|		|		|		|		|		|		|moveup/layoutb	|		|		|		|
 |W-1			|		|		|tab 1		|		|focus 1	|		|		|		|		|		|		|view 1		|view 1		|view 1		|
 |W-2			|		|		|tab 2		|		|focus 2	|		|		|		|		|		|		|view 2		|view 2		|view 2		|
 |W-3			|		|		|tab 3		|		|focus 3	|		|		|		|		|		|		|view 3		|view 3		|view 3		|
@@ -1445,18 +1465,62 @@ coverage of other defaults as possible.
 |W-8			|		|		|tab 8		|		|focus 8	|		|		|		|		|		|		|view 8		|view 8		|view 8		|
 |W-9			|		|		|tab 9		|		|focus 9	|		|		|		|		|		|		|view 9		|view 9		|view 9		|
 |W-0			|		|		|tab 10		|		|focus 10	|		|		|		|		|		|		|view 10	|view 10	|		|
-|W-F1			|		|		|tag 1		|tag 1		|tag 1		|view 1		|		|tag 1		|		|		|		|view 1		|view 11	|		|
-|W-F2			|		|		|tag 2		|tag 2		|tag 2		|view 2		|		|tag 2		|		|		|		|view 2		|view 12	|		|
-|W-F3			|		|		|tag 3		|tag 3		|tag 3		|view 3		|		|tag 3		|		|		|		|view 3		|view 13	|		|
-|W-F4			|		|		|tag 4		|tag 4		|tag 4		|view 4		|		|tag 4		|		|		|		|view 4		|view 14	|		|
-|W-F5			|		|		|tag 5		|tag 5		|tag 5		|		|		|tag 5		|		|		|		|view 5		|view 15	|		|
-|W-F6			|		|		|tag 6		|tag 6		|tag 6		|		|		|tag 6		|		|		|		|view 6		|view 16	|		|
-|W-F7			|		|		|tag 7		|tag 7		|tag 7		|		|		|tag 7		|		|		|		|view 7		|view 17	|		|
-|W-F8			|		|		|tag 8		|tag 8		|tag 8		|		|		|tag 8		|		|		|		|view 8		|view 18	|		|
-|W-F9			|		|		|tag 9		|tag 9		|tag 9		|		|		|tag 9		|		|		|		|view 9		|view 19	|		|
-|W-F10			|		|		|tag 10		|tag 10		|tag 10		|		|		|		|		|		|		|view 10	|view 20	|		|
-|W-F11			|		|		|tag 11		|tag 11		|		|		|		|		|		|		|		|view 11	|view 21	|		|
-|W-F12			|		|		|tag 12		|tag 12		|		|		|		|		|		|		|		|view 12	|view 22	|		|
+|W-F1			|		|		|sendto 1	|sendto 1	|sendto 1	|view 1		|		|sendto 1	|		|		|		|view 11	|view 11	|		|
+|W-F2			|		|		|sendto 2	|sendto 2	|sendto 2	|view 2		|		|sendto 2	|		|		|		|view 12	|view 12	|		|
+|W-F3			|		|		|sendto 3	|sendto 3	|sendto 3	|view 3		|		|sendto 3	|		|		|		|view 13	|view 13	|		|
+|W-F4			|		|		|sendto 4	|sendto 4	|sendto 4	|view 4		|		|sendto 4	|		|		|		|view 14	|view 14	|		|
+|W-F5			|		|		|sendto 5	|sendto 5	|sendto 5	|		|		|sendto 5	|		|		|		|view 15	|view 15	|		|
+|W-F6			|		|		|sendto 6	|sendto 6	|sendto 6	|		|		|sendto 6	|		|		|		|view 16	|view 16	|		|
+|W-F7			|		|		|sendto 7	|sendto 7	|sendto 7	|		|		|sendto 7	|		|		|		|view 17	|view 17	|		|
+|W-F8			|		|		|sendto 8	|sendto 8	|sendto 8	|		|		|sendto 8	|		|		|		|view 18	|view 18	|		|
+|W-F9			|		|		|sendto 9	|sendto 9	|sendto 9	|		|		|sendto 9	|		|		|		|view 19	|view 19	|		|
+|W-F10			|		|		|sendto 10	|sendto 10	|sendto 10	|		|		|		|		|		|		|view 20	|view 20	|		|
+|W-F11			|		|		|sendto 11	|sendto 11	|		|		|		|		|		|		|		|view 21	|view 21	|		|
+|W-F12			|		|		|sendto 12	|sendto 12	|		|		|		|		|		|		|		|view 22	|view 22	|		|
+|W-KP_1			|		|		|		|		|		|		|		|		|		|		|		|monitor 1	|		|		|
+|W-KP_2			|		|		|		|		|		|		|		|		|		|		|		|monitor 2	|		|		|
+|W-KP_3			|		|		|		|		|		|		|		|		|		|		|		|monitor 3	|		|		|
+|W-KP_4			|		|		|		|		|		|		|		|		|		|		|		|monitor 4	|		|		|
+|W-KP_5			|		|		|		|		|		|		|		|		|		|		|		|monitor 5	|		|		|
+|W-KP_6			|		|		|		|		|		|		|		|		|		|		|		|monitor 6	|		|		|
+|W-KP_7			|		|		|		|		|		|		|		|		|		|		|		|monitor 7	|		|		|
+|W-KP_8			|		|		|		|		|		|		|		|		|		|		|		|monitor 8	|		|		|
+|W-KP_9			|		|		|		|		|		|		|		|		|		|		|		|monitor 9	|		|		|
+|W-KP_0			|		|		|		|		|		|		|		|		|		|		|		|		|		|		|
+|W-space		|		|inputnext	|		|		|		|		|		|layoutnext?	|		|		|		|layoutnext	|layoutnext	|layoutnext	|
+|W-Escape		|		|		|		|		|		|		|		|		|		|		|		|		|		|viewlast	|
+|W-Comma		|		|		|		|		|		|		|		|		|		|		|		|incnmaster	|		|		|
+|W-Period		|		|		|		|		|		|		|		|		|		|		|		|decnmaster	|		|		|
+|W-Return		|		|		|		|		|		|		|		|		|		|		|		|zoom		|		|spawn uxterm	|
+|W-Tab			|		|		|		|		|		|		|		|		|		|		|		|focusnext	|		|		|
+|W-Left			|		|		|		|		|		|		|		|		|		|		|		|viewprev	|		|viewprev	|
+|W-Right		|		|		|		|		|		|		|		|		|		|		|		|viewnext (win)	|		|viewnext	|
+|W-Up			|		|		|		|		|		|		|		|		|		|		|		|viewprev (win)	|		|		|
+|W-Down			|		|		|		|		|		|		|		|		|		|		|		|viewnext	|		|		|
+|W-bracketleft		|		|		|		|		|		|		|		|		|		|		|		|movex -5	|		|		|
+|W-bracketright		|		|		|		|		|		|		|		|		|		|		|		|movex +5	|		|		|
+|W-minus		|		|		|		|		|		|		|		|		|		|		|		|resizex -5	|		|		|
+|W-equal		|		|		|		|		|		|		|		|		|		|		|		|resizex +5	|		|		|
+|W-backslash		|		|		|		|		|		|		|		|		|		|		|		|search_workspace|		|		|
+|W-a			|		|		|		|		|		|		|		|		|		|		|		|taketonext	|		|		|
+|W-b			|		|		|		|		|		|		|		|		|		|		|		|togglestruts	|		|		|
+|W-f			|		|		|		|		|		|		|		|		|		|		|		|search_win	|togglefloating	|full		|
+|W-g			|		|		|		|		|		|		|		|		|		|		|		|		|togglefocus	|		|
+|W-h			|		|		|		|		|		|		|		|		|		|		|		|decmwfact	|		|decmwfact	|
+|W-j			|		|		|		|		|		|		|		|		|		|		|		|focusnext	|focusnext	|focusnext	|
+|W-k			|		|		|		|		|		|		|		|		|		|		|		|focusprev	|focusprev	|focusprev	|
+|W-l			|		|		|		|		|		|		|		|		|		|		|		|incmwfact	|		|incmwfact	|
+|W-m			|		|		|		|		|		|		|		|		|		|		|		|focusmaster	|		|max		|
+|W-o			|		|		|		|		|		|		|		|		|		|		|		|		|		|sendtonext	|
+|W-p			|		|		|		|		|		|		|		|		|		|		|		|menu		|		|		|
+|W-q			|		|		|		|		|		|		|		|		|		|		|		|restart	|		|		|
+|W-r			|		|		|		|		|		|		|		|		|		|		|		|		|spawn xdg-demu	|spawn xde-run	|
+|W-s			|		|		|		|		|		|		|		|		|		|		|		|screenshot	|		|		|
+|W-t			|		|		|		|		|		|		|		|		|		|		|		|togglefloating	|		|above		|
+|W-u			|		|		|		|		|		|		|		|		|		|		|		|swapnext	|		|focusurgent	|
+|W-v			|		|		|		|		|		|		|		|		|		|		|		|button 2	|		|		|
+|W-w			|		|		|		|		|		|		|		|		|		|		|		|iconify	|		|menu		|
+|W-x			|		|		|		|		|		|		|		|		|		|		|		|killclient	|		|run lua	|
 |AS-1			|		|		|		|		|		|		|		|		|tag 1		|tag 1		|tag 1		|		|		|		|
 |AS-2			|		|		|		|		|		|		|		|		|tag 2		|tag 2		|tag 2		|		|		|		|
 |AS-3			|		|		|		|		|		|		|		|		|tag 3		|tag 3		|tag 3		|		|		|		|
@@ -1479,38 +1543,75 @@ coverage of other defaults as possible.
 |AS-F10			|		|		|		|		|		|		|togglemaxv	|		|		|		|		|		|		|		|
 |AS-F11			|		|		|		|		|		|		|hideall	|		|		|		|		|		|		|		|
 |AS-F12			|		|		|		|		|		|		|hide		|		|		|		|		|		|		|		|
-|WS-1			|		|		|		|		|		|		|		|		|		|		|		|		|tag 1		|tag 1		|
-|WS-2			|		|		|		|		|		|		|		|		|		|		|		|		|tag 2		|tag 2		|
-|WS-3			|		|		|		|		|		|		|		|		|		|		|		|		|tag 3		|tag 3		|
-|WS-4			|		|		|		|		|		|		|		|		|		|		|		|		|tag 4		|tag 4		|
-|WS-5			|		|		|		|		|		|		|		|		|		|		|		|		|tag 5		|tag 5		|
-|WS-6			|		|		|		|		|		|		|		|		|		|		|		|		|tag 6		|tag 6		|
-|WS-7			|		|		|		|		|		|		|		|		|		|		|		|		|tag 7		|tag 7		|
-|WS-8			|		|		|		|		|		|		|		|		|		|		|		|		|tag 8		|tag 8		|
-|WS-9			|		|		|		|		|		|		|		|		|		|		|		|		|tag 9		|tag 9		|
-|WS-0			|		|		|		|		|		|		|		|		|		|		|		|		|tag 10		|		|
-|WS-F1			|		|		|		|		|		|		|		|		|		|		|		|tag 1		|tag 11		|		|
-|WS-F2			|		|		|		|		|		|		|		|		|		|		|		|tag 2		|tag 12		|		|
-|WS-F3			|		|		|		|		|		|		|		|		|		|		|		|tag 3		|tag 13		|		|
-|WS-F4			|		|		|		|		|		|		|		|		|		|		|		|tag 4		|tag 14		|		|
-|WS-F5			|		|		|		|		|		|		|		|		|		|		|		|tag 5		|tag 15		|		|
-|WS-F6			|		|		|		|		|		|		|		|		|		|		|		|tag 6		|tag 16		|		|
-|WS-F7			|		|		|		|		|		|		|		|		|		|		|		|tag 7		|tag 17		|		|
-|WS-F8			|		|		|		|		|		|		|		|		|		|		|		|tag 8		|tag 18		|		|
-|WS-F9			|		|		|		|		|		|		|		|		|		|		|		|tag 9		|tag 19		|		|
-|WS-F10			|		|		|		|		|		|		|		|		|		|		|		|tag 10		|tag 20		|		|
-|WS-F11			|		|		|		|		|		|		|		|		|		|		|		|tag 11		|tag 21		|		|
-|WS-F12			|		|		|		|		|		|		|		|		|		|		|		|tag 12		|tag 22		|		|
-|WS-KP_1		|		|		|		|		|		|		|		|		|		|		|		|monitor 1	|		|		|
-|WS-KP_2		|		|		|		|		|		|		|		|		|		|		|		|monitor 2	|		|		|
-|WS-KP_3		|		|		|		|		|		|		|		|		|		|		|		|monitor 3	|		|		|
-|WS-KP_4		|		|		|		|		|		|		|		|		|		|		|		|monitor 4	|		|		|
-|WS-KP_5		|		|		|		|		|		|		|		|		|		|		|		|monitor 5	|		|		|
-|WS-KP_6		|		|		|		|		|		|		|		|		|		|		|		|monitor 6	|		|		|
-|WS-KP_7		|		|		|		|		|		|		|		|		|		|		|		|monitor 7	|		|		|
-|WS-KP_8		|		|		|		|		|		|		|		|		|		|		|		|monitor 8	|		|		|
-|WS-KP_9		|		|		|		|		|		|		|		|		|		|		|		|monitor 9	|		|		|
+|AS-space		|		|		|		|		|		|		|		|		|togglefloating	|togglefloating	|		|		|		|		|
+|AS-Return		|		|		|		|		|		|		|		|		|spawn st	|spawn uxterm	|		|		|		|		|
+|AS-Comma		|		|		|		|		|		|		|		|		|sendmonprev	|sendmonprev	|		|		|		|		|
+|AS-Period		|		|		|		|		|		|		|		|		|sendmonnext	|sendmonnext	|		|		|		|		|
+|AS-c			|		|		|		|		|		|		|		|		|killclient	|killclient	|killclient	|		|		|		|
+|AS-q			|		|		|		|		|		|		|		|		|quit		|quit		|restart	|		|		|		|
+|AS-a			|		|		|		|		|		|		|		|		|		|		|resizedecx	|		|		|		|
+|AS-d			|		|		|		|		|		|		|		|		|		|		|resizeincx	|		|		|		|
+|AS-w			|		|		|		|		|		|		|		|		|		|		|resizedecy	|		|		|		|
+|AS-s			|		|		|		|		|		|		|		|		|		|		|resizeincy	|		|		|		|
+|WS-1			|		|		|		|		|		|		|		|		|		|		|		|sendto 1	|taketo 1	|tag 1		|
+|WS-2			|		|		|		|		|		|		|		|		|		|		|		|sendto 2	|taketo 2	|tag 2		|
+|WS-3			|		|		|		|		|		|		|		|		|		|		|		|sendto 3	|taketo 3	|tag 3		|
+|WS-4			|		|		|		|		|		|		|		|		|		|		|		|sendto 4	|taketo 4	|tag 4		|
+|WS-5			|		|		|		|		|		|		|		|		|		|		|		|sendto 5	|taketo 5	|tag 5		|
+|WS-6			|		|		|		|		|		|		|		|		|		|		|		|sendto 6	|taketo 6	|tag 6		|
+|WS-7			|		|		|		|		|		|		|		|		|		|		|		|sendto 7	|taketo 7	|tag 7		|
+|WS-8			|		|		|		|		|		|		|		|		|		|		|		|sendto 8	|taketo 8	|tag 8		|
+|WS-9			|		|		|		|		|		|		|		|		|		|		|		|sendto 9	|taketo 9	|tag 9		|
+|WS-0			|		|		|		|		|		|		|		|		|		|		|		|sendto 10	|taketo 10	|		|
+|WS-F1			|		|		|		|		|		|		|		|		|		|		|		|sendto 11	|taketo 11	|		|
+|WS-F2			|		|		|		|		|		|		|		|		|		|		|		|sendto 12	|taketo 12	|		|
+|WS-F3			|		|		|		|		|		|		|		|		|		|		|		|sendto 13	|taketo 13	|		|
+|WS-F4			|		|		|		|		|		|		|		|		|		|		|		|sendto 14	|taketo 14	|		|
+|WS-F5			|		|		|		|		|		|		|		|		|		|		|		|sendto 15	|taketo 15	|		|
+|WS-F6			|		|		|		|		|		|		|		|		|		|		|		|sendto 16	|taketo 16	|		|
+|WS-F7			|		|		|		|		|		|		|		|		|		|		|		|sendto 17	|taketo 17	|		|
+|WS-F8			|		|		|		|		|		|		|		|		|		|		|		|sendto 18	|taketo 18	|		|
+|WS-F9			|		|		|		|		|		|		|		|		|		|		|		|sendto 19	|taketo 19	|		|
+|WS-F10			|		|		|		|		|		|		|		|		|		|		|		|sendto 20	|taketo 20	|		|
+|WS-F11			|		|		|		|		|		|		|		|		|		|		|		|sendto 21	|taketo 21	|		|
+|WS-F12			|		|		|		|		|		|		|		|		|		|		|		|sendto 22	|taketo 22	|		|
+|WS-KP_1		|		|		|		|		|		|		|		|		|		|		|		|sendmon 1	|		|		|
+|WS-KP_2		|		|		|		|		|		|		|		|		|		|		|		|sendmon 2	|		|		|
+|WS-KP_3		|		|		|		|		|		|		|		|		|		|		|		|sendmon 3	|		|		|
+|WS-KP_4		|		|		|		|		|		|		|		|		|		|		|		|sendmon 4	|		|		|
+|WS-KP_5		|		|		|		|		|		|		|		|		|		|		|		|sendmon 5	|		|		|
+|WS-KP_6		|		|		|		|		|		|		|		|		|		|		|		|sendmon 6	|		|		|
+|WS-KP_7		|		|		|		|		|		|		|		|		|		|		|		|sendmon 7	|		|		|
+|WS-KP_8		|		|		|		|		|		|		|		|		|		|		|		|sendmon 8	|		|		|
+|WS-KP_9		|		|		|		|		|		|		|		|		|		|		|		|sendmon 9	|		|		|
 |WS-KP_0		|		|		|		|		|		|		|		|		|		|		|		|		|		|		|
+|WS-Left		|		|		|		|		|		|		|		|		|		|		|		|viewnext	|		|		|
+|WS-Right		|		|		|		|		|		|		|		|		|		|		|		|taketoprev	|		|		|
+|WS-Up			|		|		|		|		|		|		|		|		|		|		|		|viewlast	|		|		|
+|WS-Down		|		|		|		|		|		|		|		|		|		|		|		|		|		|		|
+|WS-Return		|		|		|		|		|		|		|		|		|		|		|		|spawn xde-term	|spawn roxterm	|		|
+|WS-backslash		|		|		|		|		|		|		|		|		|		|		|		|fliplayout	|		|		|
+|WS-space		|		|		|		|		|		|		|		|		|		|		|		|resetlayout	|layoutprev	|layoutprev	|
+|WS-comma		|		|		|		|		|		|		|		|		|		|		|		|incncolumns	|		|		|
+|WS-period		|		|		|		|		|		|		|		|		|		|		|		|decncolumns	|		|		|
+|WS-delete		|		|		|		|		|		|		|		|		|		|		|		|spawn xde-xlock|		|		|
+|WS-bracketleft		|		|		|		|		|		|		|		|		|		|		|		|movey +5	|		|		|
+|WS-bracketright	|		|		|		|		|		|		|		|		|		|		|		|movey -5	|		|		|
+|WS-minus		|		|		|		|		|		|		|		|		|		|		|		|resizey -5	|		|		|
+|WS-equal		|		|		|		|		|		|		|		|		|		|		|		|resizey +5	|		|		|
+|WS-b			|		|		|		|		|		|		|		|		|		|		|		|togglestruts	|		|		|
+|WS-c			|		|		|		|		|		|		|		|		|		|		|		|		|killclient	|killclient	|
+|WS-h			|		|		|		|		|		|		|		|		|		|		|		|		|decmwfact	|incnmaster	|
+|WS-i			|		|		|		|		|		|		|		|		|		|		|		|initscr	|		|		|
+|WS-j			|		|		|		|		|		|		|		|		|		|		|		|focusurgent	|taketonext	|		|
+|WS-k			|		|		|		|		|		|		|		|		|		|		|		|swapprev	|taketoprev	|		|
+|WS-l			|		|		|		|		|		|		|		|		|		|		|		|		|incmwfast	|decnmaster	|
+|WS-q			|		|		|		|		|		|		|		|		|		|		|		|quit		|quit		|quit		|
+|WS-r			|		|		|		|		|		|		|		|		|		|		|		|always_raise	|		|		|
+|WS-s			|		|		|		|		|		|		|		|		|		|		|		|screenshotwin	|		|		|
+|WS-v			|		|		|		|		|		|		|		|		|		|		|		|version	|		|		|
+|WS-w			|		|		|		|		|		|		|		|		|		|		|		|uniconify	|		|		|
+|WS-x			|		|		|		|		|		|		|		|		|		|		|		|killclient	|		|		|
 |AC-1			|		|		|		|		|		|		|view 1		|		|		|		|toggleview 1	|		|		|		|
 |AC-2			|		|		|		|		|		|		|view 2		|		|		|		|toggleview 2	|		|		|		|
 |AC-3			|		|		|		|		|		|		|view 3		|		|		|		|toggleview 3	|		|		|		|
@@ -1535,6 +1636,11 @@ coverage of other defaults as possible.
 |AC-F10			|		|		|		|		|		|		|		|		|		|		|		|		|		|		|
 |AC-F11			|		|		|		|		|		|		|		|		|		|		|		|		|		|		|
 |AC-F12			|		|		|		|		|		|		|		|		|		|		|		|		|		|		|
+|AC-bracketleft		|		|		|		|		|		|		|view 11	|		|		|		|		|		|		|		|
+|AC-bracketright	|		|		|		|		|		|		|view 12	|		|		|		|		|		|		|		|
+|AC-Left		|		|		|		|		|		|		|		|		|		|		|viewlefttag	|		|		|		|
+|AC-Right		|		|		|		|		|		|		|		|		|		|		|viewrighttag	|		|		|		|
+|AC-q			|		|		|		|		|		|		|		|		|		|		|quit		|		|		|		|
 |WC-1			|		|		|		|		|		|		|		|		|		|		|		|		|		|toggleview 1	|
 |WC-2			|		|		|		|		|		|		|		|		|		|		|		|		|		|toggleview 2	|
 |WC-3			|		|		|		|		|		|		|		|		|		|		|		|		|		|toggleview 3	|
@@ -1557,6 +1663,14 @@ coverage of other defaults as possible.
 |WC-F10			|		|		|taketo 10	|		|		|		|		|		|		|		|		|		|		|		|
 |WC-F11			|		|		|taketo 11	|		|		|		|		|		|		|		|		|		|		|		|
 |WC-F12			|		|		|taketo 12	|		|		|		|		|		|		|		|		|		|		|		|
+|WC-space		|		|		|		|		|		|		|		|		|		|		|		|		|		|togglefloating	|
+|WC-Return		|		|		|		|		|		|		|		|		|		|		|		|		|		|zoom		|
+|WC-h			|		|		|		|		|		|		|		|		|		|		|		|		|incncolumns	|incncolumns	|
+|WC-j			|		|		|		|		|		|		|		|		|		|		|		|		|		|screenext	|
+|WC-k			|		|		|		|		|		|		|		|		|		|		|		|		|		|screenprev	|
+|WC-l			|		|		|		|		|		|		|		|		|		|		|		|		|decncolumns	|decncolumns	|
+|WC-n			|		|		|		|		|		|		|		|		|		|		|		|		|		|unmax		|
+|WC-r			|		|		|		|		|		|		|		|		|		|		|		|		|		|restart	|
 |ACS-1			|		|		|		|		|		|		|taketo 1	|		|toggletag 1	|toggletag 1	|toggletag 1	|		|		|		|
 |ACS-2			|		|		|		|		|		|		|taketo 2	|		|toggletag 2	|toggletag 2	|toggletag 2	|		|		|		|
 |ACS-3			|		|		|		|		|		|		|taketo 3	|		|toggletag 3	|toggletag 3	|toggletag 3	|		|		|		|

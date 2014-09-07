@@ -1,35 +1,61 @@
-! ADWM key bindings following PekWM defaults where possible
 
-Adwm*togglemax:		W + m, AC + a : m : m
-Adwm*togglemaxv:	AC + a : m : v
-Adwm*togglemaxh:	AC + a : m : h
-Adwm*togglefull:	W + f, AC + a : f
-Adwm*toggleshade:	W + s, AC + a : s
+
+
+
+
+
+Adwm*begmoveresize:	W + Return, AC + a : Return
+Adwm*edgetoE:		AC + c : S + l, AC + c : S + d
+Adwm*edgetoN:		AC + c : S + y, AC + c : S + w
+Adwm*edgetoS:		AC + c : S + b, AC + c : S + x
+Adwm*edgetoW:		AC + c : S + a
+Adwm*focusdown:		W + Down, AC + f : Down
+Adwm*focuslast:		AC + Tab, AC + f : S + p
+Adwm*focusleft:		W + Left, AC + f : Left
+Adwm*focusnext:		A + Tab, AC + f : o
+Adwm*focusprev:		AS + Tab, AC + f : p
+Adwm*focusrigth:	W + Right, AC + f : Right
+Adwm*focusup:		W + Up, AC + f : Up
 Adwm*iconify:		W + i
-Adwm*toggleselect:	W + z, AC + t : m
-Adwm*toggletab:		W + t, AC + t : t
-Adwm*togglestruts:	W + h, AC + p : h
-Adwm*toggleborder:	AC + d : b
-Adwm*toggletitlebar:	AC + d : t
-Adwm*toggledecor:	AC + d : d
-Adwm*togglesticky:	AC + a : a
-Adwm*toggleabove:	AC + a : o
-Adwm*togglebelow:	AC + a : b
-Adwm*toggletaskbar:	AC + s : m
-Adwm*togglepager:	AC + s : f
-Adwm*togglefill:	W + g, AC + a : g : g
-Adwm*togglefillv:	AC + a : g : v
-Adwm*togglefillh:	AC + a : g : h
+! ADWM key bindings following PekWM defaults where possible
+Adwm*killclient:	W + q, AC + a : q : q, AC + a : q : f, AC + a : q : k
+Adwm*layoutnext:	W + space
+Adwm*lower:		AC + a : l, AC + a : S + l
+Adwm*movetoC:		AC + c : h, AC + c :s
+Adwm*movetoE:		AC + c : l, AC + c : d
+Adwm*movetoN:		AC + c : y, AC + c : w
+Adwm*movetoNE:		AC + c : p, AC + c : e
+Adwm*movetoNW:		AC + c : q
+Adwm*movetoS:		AC + c : b, AC + c : x
+Adwm*movetoSE:		AC + c : m, AC + c : c
+Adwm*movetoSW:		AC + c : m, AC + c : c
+Adwm*movetoW:		AC + c : a
+Adwm*quit:		AC + p : End
+Adwm*raise:		AC + a : r, AC + a : S + r
+Adwm*raiselower:	AC + a : u
+Adwm*reload:		AC + Delete, AC + P : Delete
 Adwm*resizeincx:	AC + a : Left = -5 0 5 0, AC + a : Right 0 0 5 0
 Adwm*resizeincy:	AC + a : Up = 0 -5 0 5, AC + a : Down 0 0 0 5
-Adwm*killclient:	W + q, AC + a : q : q, AC + a : q : f, AC + a : q : k
-Adwm*raise:		AC + a : r, AC + a : S + r
-Adwm*lower:		AC + a : l, AC + a : S + l
-Adwm*raiselower:	AC + a : u
-Adwm*tabnext:		W + Tab, AC + f : i
-Adwm*tabprev:		WS + Tab : AC + f : u
-Adwm*tabtonext:		WC + Right, AC + f : S + i
-Adwm*tabtoprev:		WC + Left, AC + f : S + u
+Adwm*restart:		AC + p : Next, AC + p : Prior = twm
+Adwm*sendto0:		W + F1, AC + w : F1
+Adwm*sendto1:		W + F2, AC + w : F2
+Adwm*sendto2:		W + F3, AC + w : F3
+Adwm*sendto3:		W + F4, AC + w : F4
+Adwm*sendto4:		W + F5, AC + w : F5
+Adwm*sendto5:		W + F6, AC + w : F6
+Adwm*sendto6:		W + F7, AC + w : F7
+Adwm*sendto7:		W + F8, AC + w : F8
+Adwm*sendto8:		W + F9, AC + w : F9
+Adwm*spawn0:		A + Print = scrot -s
+Adwm*spawn1:		W + e = uxterm, AC + e : e = uxterm
+Adwm*spawn2:		AC + e : l = xde-xlock -l
+Adwm*spawn3:		AC + e : s = scrot -s
+Adwm*spawn4:		W + d = xde-run
+Adwm*spawn5:		AC + e : c = xde-run
+Adwm*spawn6:		AC + p : d = xde-run
+Adwm*spawn7:		W + v = xde-findwin
+Adwm*spawn8:		W + r = xdg-traymenu -p
+Adwm*spawn9:		W + w = xde-winmenu -w active -W center
 Adwm*tab0:		AC + f : 1
 Adwm*tab1:		AC + f : 2
 Adwm*tab2:		AC + f : 3
@@ -40,40 +66,33 @@ Adwm*tab6:		AC + f : 7
 Adwm*tab7:		AC + f : 8
 Adwm*tab8:		AC + f : 9
 Adwm*tab9:		AC + f : 0
-Adwm*begmoveresize:	W + Return, AC + a : Return
-Adwm*movetoNW:		AC + c : q
-Adwm*movetoN:		AC + c : y, AC + c : w
-Adwm*edgetoN:		AC + c : S + y, AC + c : S + w
-Adwm*movetoNE:		AC + c : p, AC + c : e
-Adwm*movetoW:		AC + c : a
-Adwm*edgetoW:		AC + c : S + a
-Adwm*movetoE:		AC + c : l, AC + c : d
-Adwm*edgetoE:		AC + c : S + l, AC + c : S + d
-Adwm*movetoSW:		AC + c : m, AC + c : c
-Adwm*movetoS:		AC + c : b, AC + c : x
-Adwm*edgetoS:		AC + c : S + b, AC + c : S + x
-Adwm*movetoSE:		AC + c : m, AC + c : c
-Adwm*movetoC:		AC + c : h, AC + c :s
-Adwm*focusnext:		A + Tab, AC + f : o
-Adwm*focusprev:		AS + Tab, AC + f : p
-Adwm*focuslast:		AC + Tab, AC + f : S + p
-Adwm*focusleft:		W + Left, AC + f : Left
-Adwm*focusrigth:	W + Right, AC + f : Right
-Adwm*focusup:		W + Up, AC + f : Up
-Adwm*focusdown:		W + Down, AC + f : Down
-Adwm*sendto0:		W + F1, AC + w : F1
-Adwm*sendto1:		W + F2, AC + w : F2
-Adwm*sendto2:		W + F3, AC + w : F3
-Adwm*sendto3:		W + F4, AC + w : F4
-Adwm*sendto4:		W + F5, AC + w : F5
-Adwm*sendto5:		W + F6, AC + w : F6
-Adwm*sendto6:		W + F7, AC + w : F7
-Adwm*sendto7:		W + F8, AC + w : F8
-Adwm*sendto8:		W + F9, AC + w : F9
-Adwm*taketoW:		ACS + Left, AC + W : Up
+Adwm*tabnext:		W + Tab, AC + f : i
+Adwm*tabprev:		WS + Tab : AC + f : u
+Adwm*tabtonext:		WC + Right, AC + f : S + i
+Adwm*tabtoprev:		WC + Left, AC + f : S + u
 Adwm*taketoE:		ACS + Right, AC + W : Down
 Adwm*taketoN:		ACS + Up
 Adwm*taketoS:		ACS + Down
+Adwm*taketoW:		ACS + Left, AC + W : Up
+Adwm*toggleabove:	AC + a : o
+Adwm*togglebelow:	AC + a : b
+Adwm*toggleborder:	AC + d : b
+Adwm*toggledecor:	AC + d : d
+Adwm*togglefillh:	AC + a : g : h
+Adwm*togglefillv:	AC + a : g : v
+Adwm*togglefill:	W + g, AC + a : g : g
+Adwm*togglefull:	W + f, AC + a : f
+Adwm*togglemaxh:	AC + a : m : h
+Adwm*togglemaxv:	AC + a : m : v
+Adwm*togglemax:		W + m, AC + a : m : m
+Adwm*togglepager:	AC + s : f
+Adwm*toggleselect:	W + z, AC + t : m
+Adwm*toggleshade:	W + s, AC + a : s
+Adwm*togglesticky:	AC + a : a
+Adwm*togglestruts:	W + h, AC + p : h
+Adwm*toggletab:		W + t, AC + t : t
+Adwm*toggletaskbar:	AC + s : m
+Adwm*toggletitlebar:	AC + d : t
 Adwm*view0:		W + 1, AC + w : 1
 Adwm*view1:		W + 2, AC + w : 2
 Adwm*view2:		W + 3, AC + w : 3
@@ -83,30 +102,11 @@ Adwm*view5:		W + 6, AC + w : 6
 Adwm*view6:		W + 7, AC + w : 7
 Adwm*view7:		W + 8, AC + w : 8
 Adwm*view8:		W + 9, AC + w : 9
-Adwm*viewW:		WC + Left, AC + W : Left
 Adwm*viewE:		WC + Right, AC + W : Right
-Adwm*viewN:		WC + Up
-Adwm*viewS:		WC + Down
 Adwm*viewnext:		AC + w : n
+Adwm*viewN:		WC + Up
 Adwm*viewprev:		AC + w : p
-Adwm*spawn0:		A + Print = scrot -s
-Adwm*spawn1:		W + e = uxterm, AC + e : e = uxterm
-Adwm*spawn2:		AC + e : l = xde-xlock -l
-Adwm*spawn3:		AC + e : s = scrot -s
-Adwm*reload:		AC + Delete, AC + P : Delete
-Adwm*restart:		AC + p : Next, AC + p : Prior = twm
-Adwm*quit:		AC + p : End
-Adwm*spawn4:		W + d = xde-run
-Adwm*spawn5:		AC + e : c = xde-run
-Adwm*spawn6:		AC + p : d = xde-run
-Adwm*spawn7:		W + v = xde-findwin
-Adwm*spawn8:		W + r = xdg-traymenu -p
-Adwm*spawn9:		W + w = xde-winmenu -w active -W center
-Adwm*layoutnext:	W + space
-
+Adwm*viewS:		WC + Down
+Adwm*viewW:		WC + Left, AC + W : Left
 ! note that there are some move and resize key bindings too
-
-
-
-
 ! vim: set ft=xdefaults:

@@ -48,8 +48,8 @@ Adwm*spawn1:		A + F1 = uxterm, A + x = uxterm
 Adwm*spawn2:		A + F2 = xde-run, -W + r = xde-run
 Adwm*spawn3:		W + e = pcmanfm
 Adwm*spawn4:		C + escape = xdg-traymenu -p
-Adwm*spawn5:		A + t = roxterm
-Adwm*spawn6:		A + v = gvim
+Adwm*spawn5:		AC + t = roxterm
+Adwm*spawn6:		AC + v = gvim
 Adwm*spawn7:		XF86AudioRaiseVolume = amixer sset Master,0 1+
 Adwm*spawn8:		XF86AudioLowerVolume = amixer sset Master,0 1-
 Adwm*spawn9:		XF86AudioMuteVolume  = amixer sset Master,0 toggle

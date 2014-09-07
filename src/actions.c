@@ -163,6 +163,12 @@ k_moveresizekb(XEvent *e, Key *k)
 }
 
 void
+k_flipview(XEvent *e, Key *k)
+{
+	flipview(sel);
+}
+
+void
 k_rotateview(XEvent *e, Key *k)
 {
 	rotateview(sel);
@@ -175,6 +181,12 @@ k_unrotateview(XEvent *e, Key *k)
 }
 
 void
+k_flipzone(XEvent *e, Key *k)
+{
+	flipzone(sel);
+}
+
+void
 k_rotatezone(XEvent *e, Key *k)
 {
 	rotatezone(sel);
@@ -184,6 +196,12 @@ void
 k_unrotatezone(XEvent *e, Key *k)
 {
 	unrotatezone(sel);
+}
+
+void
+k_flipwins(XEvent *e, Key *k)
+{
+	flipwins(sel);
 }
 
 void

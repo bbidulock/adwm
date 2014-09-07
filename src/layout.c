@@ -5257,6 +5257,20 @@ edgeto(Client *c, int direction)
 }
 
 void
+flipview(Client *c)
+{
+	View *v;
+
+	if (!c || !(v = c->cview))
+		return;
+	if (!VFEATURES(v, ROTL))
+		return;
+	v->major = (v->major + 2) % 4;
+	v->minor = (v->minor + 2) % 4;
+	arrange(v);
+}
+
+void
 rotateview(Client *c)
 {
 	View *v;
@@ -5285,6 +5299,19 @@ unrotateview(Client *c)
 }
 
 void
+flipzone(Client *c)
+{
+	View *v;
+
+	if (!c || !(v = c->cview))
+		return;
+	if (!VFEATURES(v, ROTL) || !VFEATURES(v, NMASTER))
+		return;
+	v->minor = (v->minor + 2) % 4;
+	arrange(v);
+}
+
+void
 rotatezone(Client *c)
 {
 	View *v;
@@ -5308,6 +5335,12 @@ unrotatezone(Client *c)
 		return;
 	v->minor = (v->minor + 4 - 1) % 4;
 	arrange(v);
+}
+
+void
+flipwins(Client *c)
+{
+	/* FIXME: make this do something */
 }
 
 void

@@ -1,0 +1,56 @@
+Adwm*lower:A + Down
+Adwm*spawn1:A + F1 = roxterm
+Adwm*togglemaxv:A + F10, CS + Up
+Adwm*togglemaxh:A + F11, CS + Right
+Adwm*togglemax:A + F12, CS + Left
+Adwm*spawn3:A + F2 = xde-run
+Adwm*killclient:A + F4, A + q
+Adwm*spawn0:A + F5 = xrefresh
+Adwm*toggleshade:A + F9
+Adwm*focusnext:A + Tab
+Adwm*raise:A + Up
+Adwm*iconify:A + m
+Adwm*movedown:AC + Down = 0 5 0 0
+Adwm*viewdown:AC + Down, AC + j
+Adwm*spawn5:AC + Escape = xdg-traymenu -p
+Adwm*viewprev:AC + Left
+Adwm*moveleft:AC + Left = -5 0 0 0
+Adwm*viewnext:AC + Right
+Adwm*moveright:AC + Right = 5 0 0 0
+Adwm*focusnextevery:AC + Tab
+Adwm*moveup:AC + Up = 0 -5 0 0
+Adwm*viewup:AC + Up, AC + k
+Adwm*viewleft:AC + h
+Adwm*viewright:AC + l
+Adwm*togglesticky:AC + s
+Adwm*resizeincy:ACS + Down = 0 0 0 5
+Adwm*resizedecx:ACS + Left = 0 0 -5 0
+Adwm*resizeincx:ACS + Right = 0 0 5 0
+Adwm*resizedecy:ACS + Up = 0 0 0 -5
+Adwm*focusprev:AS + Tab
+Adwm*spawn4:C + Escape = xdg-traymenu -p
+Adwm*view0:C + F1, A + 1
+Adwm*view9:C + F10, A + 0
+Adwm*view10:C + F11
+Adwm*view11:C + F12
+Adwm*view1:C + F2, A + 2
+Adwm*view2:C + F3, A + 3
+Adwm*view3:C + F4, A + 4
+Adwm*view4:C + F5, A + 5
+Adwm*view5:C + F6, A + 6
+Adwm*view6:C + F7, A + 7
+Adwm*view7:C + F8, A + 8
+Adwm*view8:C + F9, A + 9
+Adwm*sendto0:W + F1, AC + w : 1
+Adwm*sendto9:W + F10
+Adwm*sendto10:W + F11
+Adwm*sendto11:W + F12
+Adwm*sendto1:W + F2, AC + w : 2
+Adwm*sendto2:W + F3, AC + w : 3
+Adwm*sendto3:W + F4, AC + w : 4
+Adwm*sendto4:W + F5, AC + w : 5
+Adwm*sendto5:W + F6, AC + w : 6
+Adwm*sendto6:W + F7, AC + w : 7
+Adwm*sendto7:W + F8, AC + w : 8
+Adwm*sendto8:W + F9
+Adwm*spawn2:W + e = pcmanfm

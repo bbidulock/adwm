@@ -1,0 +1,33 @@
+Adwm*lower:A + Escape
+Adwm*max:A + F10
+Adwm*togglemax:A + F10
+Adwm*togglefull:A + F11
+Adwm*toggleshade:A + F12
+Adwm*killclient:A + F4, A + F5
+Adwm*unmax:A + F5
+Adwm*begmove:A + F7
+Adwm*begsize:A + F8
+Adwm*iconify:A + F9
+Adwm*focusnext:A + Tab
+Adwm*spawn0:A + space = xdg-traymenu -p
+Adwm*viewdown:AC + Down
+Adwm*viewleft:AC + Left
+Adwm*viewright:AC + Right
+Adwm*panelnext:AC + Tab
+Adwm*viewup:AC + Up
+Adwm*panelprev:ACS + Tab
+Adwm*senttodown:AS + Down
+Adwm*sendtoleft:AS + Left
+Adwm*sendtoright:AS + Right
+Adwm*focusprev:AS + Tab
+Adwm*sendtoup:AS + Up
+Adwm*toggleshowing:AS + d, W + d, AC + d
+Adwm*view0:W + F1
+Adwm*view1:W + F2
+Adwm*view2:W + F3
+Adwm*view3:W + F4
+Adwm*spawn1:W + e = pcmanfm
+Adwm*focusdown:WS + Down
+Adwm*focusleft:WS + Left
+Adwm*focusright:WS + Right
+Adwm*focusup:WS + Up

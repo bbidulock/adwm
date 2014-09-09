@@ -1,0 +1,84 @@
+Adwm*togglemaxh:
+Adwm*focusnext:A + Escape
+Adwm*raise:A + F1
+Adwm*togglemax:A + F10
+Adwm*togglefull:A + F11
+Adwm*toggleshade:A + F12
+Adwm*togglesticky:A + F2
+Adwm*lower:A + F3
+Adwm*killclient:A + F4
+Adwm*unmax:A + F5
+Adwm*focusnext:A + F6
+Adwm*begmove:A + F7
+Adwm*begsize:A + F8
+Adwm*iconify:A + F9
+Adwm*focusnextall:A + Tab
+Adwm*spawn5:A + space = xde-winmenu -w active -W center
+Adwm*view9:AC + 0
+Adwm*view0:AC + 1
+Adwm*view1:AC + 2
+Adwm*view2:AC + 3
+Adwm*view3:AC + 4
+Adwm*view4:AC + 5
+Adwm*view5:AC + 6
+Adwm*view6:AC + 7
+Adwm*view7:AC + 8
+Adwm*view8:AC + 9
+Adwm*spawn1:AC + Delete = xde-logout
+Adwm*viewlast:AC + Down
+Adwm*spawn3:AC + Escape = xde-winlist
+Adwm*movetoSW:AC + KP_1
+Adwm*movetoS:AC + KP_2
+Adwm*movetoSE:AC + KP_3
+Adwm*movetoW:AC + KP_4
+Adwm*movetoC:AC + KP_5
+Adwm*movetoE:AC + KP_6
+Adwm*movetoNW:AC + KP_7
+Adwm*movetoN:AC + KP_8
+Adwm*movetoNE:AC + KP_9
+Adwm*viewprev:AC + Left
+Adwm*viewnext:AC + Right
+Adwm*view10:AC + bracketleft
+Adwm*view11:AC + bracketright
+Adwm*toggleshowing:AC + d
+Adwm*togglestruts:AC + h
+Adwm*spawn4:AC + r = xde-run
+Adwm*taketo9:ACS + 0
+Adwm*taketo0:ACS + 1
+Adwm*taketo1:ACS + 2
+Adwm*taketo2:ACS + 3
+Adwm*taketo3:ACS + 4
+Adwm*taketo4:ACS + 5
+Adwm*taketo5:ACS + 6
+Adwm*taketo6:ACS + 7
+Adwm*taketo7:ACS + 8
+Adwm*taketo8:ACS + 9
+Adwm*taketolast:ACS + Down
+Adwm*snaptoSW:ACS + KP_1
+Adwm*snaptoS:ACS + KP_2
+Adwm*snaptoSE:ACS + KP_3
+Adwm*snaptoW:ACS + KP_4
+Adwm*smartplace:ACS + KP_5
+Adwm*snaptoE:ACS + KP_6
+Adwm*snaptoNW:ACS + KP_7
+Adwm*snaptoN:ACS + KP_8
+Adwm*snaptoNE:ACS + KP_9
+Adwm*taketoprev:ACS + Left
+Adwm*taketonext:ACS + Right
+Adwm*taketo10:ACS + bracketleft
+Adwm*taketo11:ACS + bracketright
+Adwm*focusprev:AS + Escape
+Adwm*togglemaxv:AS + F10
+Adwm*hideall:AS + F11
+Adwm*hide:AS + F12
+Adwm*setlayoutu:AS + F2
+Adwm*setlayoutt:AS + F3
+Adwm*setlayoutf:AS + F4
+Adwm*arrange:AS + F5
+Adwm*focusprev:AS + F6
+Adwm*setlayouti:AS + F7
+Adwm*arrangeicons:AS + F8
+Adwm*iconifyall:AS + F9
+Adwm*focuslast:AS + Tab
+Adwm*spawn2:C + Escape = xdg-traymenu -p
+Adwm*spawn0:S + Escape = xde-winmenu -w active -W center

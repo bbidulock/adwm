@@ -1,15 +1,15 @@
 ! ADWM key bindings following WindowMaker defaults where possible
 
-Adwm*activate0:		W + 1
-Adwm*activate1:		W + 2
-Adwm*activate2:		W + 3
-Adwm*activate3:		W + 4
-Adwm*activate4:		W + 5
-Adwm*activate5:		W + 6
-Adwm*activate6:		W + 7
-Adwm*activate7:		W + 8
-Adwm*activate8:		W + 9
-Adwm*activate9:		W + 0
+Adwm*focus0:		W + 1
+Adwm*focus1:		W + 2
+Adwm*focus2:		W + 3
+Adwm*focus3:		W + 4
+Adwm*focus4:		W + 5
+Adwm*focus5:		W + 6
+Adwm*focus6:		W + 7
+Adwm*focus7:		W + 8
+Adwm*focus8:		W + 9
+Adwm*focus9:		W + 0
 Adwm*beginmoveresize:	W + M
 Adwm*focusnext:		A + Tab
 Adwm*focusprev:		AS + Tab

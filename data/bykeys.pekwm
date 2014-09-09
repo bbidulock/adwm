@@ -1,0 +1,103 @@
+Adwm*spawn0:A + Print = scrot -s
+Adwm*focusnext:A + Tab, AC + f : o
+Adwm*reload:AC + Delete, AC + P : Delete
+Adwm*focuslast:AC + Tab, AC + f : S + p
+Adwm*resizeincx:AC + a : Left = -5 0 5 0, AC + a : Right 0 0 5 0
+Adwm*resizeincy:AC + a : Up = 0 -5 0 5, AC + a : Down 0 0 0 5
+Adwm*togglesticky:AC + a : a
+Adwm*togglebelow:AC + a : b
+Adwm*togglefillh:AC + a : g : h
+Adwm*togglefillv:AC + a : g : v
+Adwm*lower:AC + a : l, AC + a : S + l
+Adwm*togglemaxh:AC + a : m : h
+Adwm*togglemaxv:AC + a : m : v
+Adwm*toggleabove:AC + a : o
+Adwm*raise:AC + a : r, AC + a : S + r
+Adwm*raiselower:AC + a : u
+Adwm*edgetoW:AC + c : S + a
+Adwm*edgetoS:AC + c : S + b, AC + c : S + x
+Adwm*edgetoE:AC + c : S + l, AC + c : S + d
+Adwm*edgetoN:AC + c : S + y, AC + c : S + w
+Adwm*movetoW:AC + c : a
+Adwm*movetoS:AC + c : b, AC + c : x
+Adwm*movetoC:AC + c : h, AC + c :s
+Adwm*movetoE:AC + c : l, AC + c : d
+Adwm*movetoSE:AC + c : m, AC + c : c
+Adwm*movetoSW:AC + c : m, AC + c : c
+Adwm*movetoNE:AC + c : p, AC + c : e
+Adwm*movetoNW:AC + c : q
+Adwm*movetoN:AC + c : y, AC + c : w
+Adwm*toggleborder:AC + d : b
+Adwm*toggledecor:AC + d : d
+Adwm*toggletitlebar:AC + d : t
+Adwm*spawn5:AC + e : c = xde-run
+Adwm*spawn2:AC + e : l = xde-xlock -l
+Adwm*spawn3:AC + e : s = scrot -s
+Adwm*tab9:AC + f : 0
+Adwm*tab0:AC + f : 1
+Adwm*tab1:AC + f : 2
+Adwm*tab2:AC + f : 3
+Adwm*tab3:AC + f : 4
+Adwm*tab4:AC + f : 5
+Adwm*tab5:AC + f : 6
+Adwm*tab6:AC + f : 7
+Adwm*tab7:AC + f : 8
+Adwm*tab8:AC + f : 9
+Adwm*quit:AC + p : End
+Adwm*restart:AC + p : Next, AC + p : Prior = twm
+Adwm*spawn6:AC + p : d = xde-run
+Adwm*togglepager:AC + s : f
+Adwm*toggletaskbar:AC + s : m
+Adwm*viewnext:AC + w : n
+Adwm*viewprev:AC + w : p
+Adwm*taketodown:ACS + Down
+Adwm*taketoleft:ACS + Left, AC + W : Up
+Adwm*taketoright:ACS + Right, AC + W : Down
+Adwm*taketoup:ACS + Up
+Adwm*focusprev:AS + Tab, AC + f : p
+Adwm*view0:W + 1, AC + w : 1
+Adwm*view1:W + 2, AC + w : 2
+Adwm*view2:W + 3, AC + w : 3
+Adwm*view3:W + 4, AC + w : 4
+Adwm*view4:W + 5, AC + w : 5
+Adwm*view5:W + 6, AC + w : 6
+Adwm*view6:W + 7, AC + w : 7
+Adwm*view7:W + 8, AC + w : 8
+Adwm*view8:W + 9, AC + w : 9
+Adwm*focusdown:W + Down, AC + f : Down
+Adwm*sendto0:W + F1, AC + w : F1
+Adwm*sendto1:W + F2, AC + w : F2
+Adwm*sendto2:W + F3, AC + w : F3
+Adwm*sendto3:W + F4, AC + w : F4
+Adwm*sendto4:W + F5, AC + w : F5
+Adwm*sendto5:W + F6, AC + w : F6
+Adwm*sendto6:W + F7, AC + w : F7
+Adwm*sendto7:W + F8, AC + w : F8
+Adwm*sendto8:W + F9, AC + w : F9
+Adwm*focusleft:W + Left, AC + f : Left
+Adwm*begmoveresize:W + Return, AC + a : Return
+Adwm*focusrigth:W + Right, AC + f : Right
+Adwm*tabnext:W + Tab, AC + f : i
+Adwm*focusup:W + Up, AC + f : Up
+Adwm*spawn4:W + d = xde-run
+Adwm*spawn1:W + e = uxterm, AC + e : e = uxterm
+Adwm*togglefull:W + f, AC + a : f
+Adwm*togglefill:W + g, AC + a : g : g
+Adwm*togglestruts:W + h, AC + p : h
+Adwm*iconify:W + i
+Adwm*togglemax:W + m, AC + a : m : m
+Adwm*killclient:W + q, AC + a : q : q, AC + a : q : f, AC + a : q : k
+Adwm*spawn8:W + r = xdg-traymenu -p
+Adwm*toggleshade:W + s, AC + a : s
+Adwm*layoutnext:W + space
+Adwm*toggletab:W + t, AC + t : t
+Adwm*spawn7:W + v = xde-findwin
+Adwm*spawn9:W + w = xde-winmenu -w active -W center
+Adwm*toggleselect:W + z, AC + t : m
+Adwm*viewdown:WC + Down
+Adwm*viewleft:WC + Left, AC + W : Left
+Adwm*tabtoprev:WC + Left, AC + f : S + u
+Adwm*viewright:WC + Right, AC + W : Right
+Adwm*tabtonext:WC + Right, AC + f : S + i
+Adwm*viewup:WC + Up
+Adwm*tabprev:WS + Tab : AC + f : u

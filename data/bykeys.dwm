@@ -1,5 +1,3 @@
-! ADWM key bindings following DWM and XDWM defaults where possible
-
 Adwm*viewall:A + 0
 Adwm*view0:A + 1
 Adwm*view1:A + 2
@@ -51,6 +49,3 @@ Adwm*scrtoprev:AS + comma
 Adwm*scrtonext:AS + period
 Adwm*quit:AS + q
 Adwm*togglefloating:AS + space
-
-
-! vim: set ft=xdefaults:

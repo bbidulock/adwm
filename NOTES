@@ -256,7 +256,7 @@ Fluxbox permits mutliple keys to be bound to the same key action.
 |RootMenu				|			|			|			|opens the root menu
 |SendToNextHead dM			|			|			|			|
 |SendToNextWorkspace dW			|sendtonext		|W-Right		|W-Right		|
-|SendToPrevHead dM			|toscreenprev		|			|			|
+|SendToPrevHead dM			|scrtoprev		|			|			|
 |SendToPrevWorkspace dW			|sendtoprev		|W-Left			|W-Left			|
 |SendToWorkspace 1			|sendto 1		|W-F1			|W-F1			|
 |SendToWorkspace 2			|sendto 2		|W-F2			|W-F2			|
@@ -272,7 +272,7 @@ Fluxbox permits mutliple keys to be bound to the same key action.
 |SendToWorkspace 12			|sendto 12		|W-F12			|W-F12			|
 |SetAlpha A UA				|			|			|			|
 |SetDecor				|			|			|			|
-|SetHead M				|movetoscreen M		|			|			|
+|SetHead M				|scrto M		|			|			|
 |SetLayer				|			|			|			|
 |SetStyle path				|			|			|			|
 |SetWorkspaceNameDialog			|			|			|			|
@@ -1084,8 +1084,8 @@ the current desktop while switching, the former two pairs do not.
 |			|spawn st/uxterm	|AS-Return		|AS-Return		|Spawn a terminal
 |			|screenprev		|A-,			|A-,			|Focus previous screen/monitor
 |			|screennext		|A-.			|A-.			|Focus next screen/monitor
-|			|sendtoscreenprev	|A-S-,			|AS-,			|Send window to previous screen/monitor
-|			|sendtoscreennext	|A-S-.			|AS-.			|Send window to next screen/monitor
+|			|scrtoprev		|A-S-,			|AS-,			|Send window to previous screen/monitor
+|			|scrtonext		|A-S-.			|AS-.			|Send window to next screen/monitor
 |			|togglestruts		|A-b			|A-b			|Toggle status bar
 |			|setlayoutt		|A-t			|A-t			|Set tiled layout
 |			|setlayoutf		|A-f			|A-f			|Set floating layout
@@ -1261,7 +1261,7 @@ the current desktop while switching, the former two pairs do not.
 |			|viewlast		|W-Escape		|Focus previously selected tag set
 |			|swapnext		|WS-j			|Switch client with next client
 |			|swapprev		|WS-k			|Switch client with previous client
-|			|toscreennext		|W-o			|Send client to next screen
+|			|scrtonext		|W-o			|Send client to next screen
 |			|decmwfact		|W-h			|Decrease master width factor by 5%
 |			|incmwfact		|W-l			|Increase master width factor by 5%
 |			|incnmaster		|WS-h			|Increase number of master windows by 1
@@ -1399,216 +1399,260 @@ coverage of other defaults as possible.
 [width="100%",options="header"]
 |===
 |Key Sequence		|ADWM		|GNOME		|Fluxbox	|Blackbox	|WindowMaker	|Openbox/LXDE	|IceWM		|PekWM		|dwm		|xdwm		|Echinus	|Spectrwm	|velox		|awesome	|Notes
-|C-F1			|		|		|view 1		|view 1		|		|		|		|		|		|		|		|		|		|		|
-|C-F2			|		|		|view 2		|view 2		|		|		|		|		|		|		|		|		|		|		|
-|C-F3			|		|		|view 3		|view 3		|		|		|		|		|		|		|		|		|		|		|
-|C-F4			|		|		|view 4		|view 4		|		|		|		|		|		|		|		|		|		|		|
-|C-F5			|		|		|view 5		|view 5		|		|		|		|		|		|		|		|		|		|		|
-|C-F6			|		|		|view 6		|view 6		|		|		|		|		|		|		|		|		|		|		|
-|C-F7			|		|		|view 7		|view 7		|		|		|		|		|		|		|		|		|		|		|
-|C-F8			|		|		|view 8		|view 8		|		|		|		|		|		|		|		|		|		|		|
-|C-F9			|		|		|view 9		|view 9		|		|		|		|		|		|		|		|		|		|		|
-|C-F10			|		|		|view 10	|view 10	|		|		|		|		|		|		|		|		|		|		|
-|C-F11			|		|		|view 11	|view 11	|		|		|		|		|		|		|		|		|		|		|
-|C-F12			|		|		|view 12	|view 12	|		|		|		|		|		|		|		|		|		|		|
-|A-space		|		|winmenu	|winmenu	|		|raiselower	|winmenu	|winmenu	|		|layoutnext	|layoutnext	|togglefloating	|		|		|		|
-|W-space		|		|inputnext	|		|		|		|		|		|layoutnext?	|		|		|		|		|layoutnext	|layoutnext	|
-|A-1			|		|		|view 1		|view 1		|view 1		|		|		|view 1		|view 1		|view 1		|		|		|		|		|
-|A-2			|		|		|view 2		|view 2		|view 2		|		|		|view 2		|view 2		|view 2		|		|		|		|		|
-|A-3			|		|		|view 3		|view 3		|view 3		|		|		|view 3		|view 3		|view 3		|		|		|		|		|
-|A-4			|		|		|view 4		|view 4		|view 4		|		|		|view 4		|view 4		|view 4		|		|		|		|		|
-|A-5			|		|		|view 5		|view 5		|view 5		|		|		|view 5		|view 5		|view 5		|		|		|		|		|
-|A-6			|		|		|view 6		|view 6		|view 6		|		|		|view 6		|view 6		|view 6		|		|		|		|		|
-|A-7			|		|		|view 7		|view 7		|view 7		|		|		|view 7		|view 7		|view 7		|		|		|		|		|
-|A-8			|		|		|view 8		|view 8		|view 8		|		|		|view 8		|view 8		|view 8		|		|		|		|		|
-|A-9			|		|		|view 9		|		|view 9		|		|		|view 9		|view 9		|view 9		|		|		|		|		|
-|A-0			|		|		|view 10	|		|view 10	|		|		|		|view *		|view *		|		|		|		|		|
-|A-F1			|		|spawn xde-menu	|spawn xde-term	|spawn xde-term	|		|		|raise		|		|		|		|view 1		|		|		|		|
-|A-F2			|		|spawn xde-run	|spawn xde-run	|		|		|		|togglesticky	|		|		|		|view 2		|		|		|		|
-|A-F3			|		|		|		|		|		|		|lower		|		|		|		|view 3		|		|		|		|
-|A-F4			|		|close		|close		|close		|		|close		|close		|		|		|		|view 4		|		|		|		|
-|A-F5			|		|unmaximize	|kill		|spawn xrefresh	|		|unmaximize/kill|unmaximize	|		|		|		|view 5		|		|		|		|
-|A-F6			|		|groupnext	|		|		|		|		|focusnext	|		|		|		|view 6		|		|		|		|
-|A-F7			|		|begmove	|		|		|		|begmove	|begmove	|		|		|		|view 7		|		|		|		|
-|A-F8			|		|begsize	|		|		|		|begsize	|begsize	|		|		|		|view 8		|		|		|		|
-|A-F9			|		|iconify	|		|toggleshade	|		|iconify	|iconify	|		|		|		|view 9		|		|		|		|
-|A-F10			|		|togglemax	|togglemax	|togglemaxv	|		|maximize/togglemax|togglemax	|		|		|		|view 10	|		|		|		|
-|A-F11			|		|		|togglefull	|togglemaxh	|		|togglefull	|togglefull	|		|		|		|view 11	|		|		|		|
-|A-F12			|		|		|		|togglefull	|		|toggleshade	|toggleshade	|		|		|		|view 12	|		|		|		|
-|A-space		|		|winmenu	|winmenu	|		|raiselower	|winmenu	|winmenu	|		|layoutnext	|layoutnext	|togglefloating	|		|		|		|
-|A-Tab			|		|		|		|		|		|		|		|		|viewlasttag	|viewlasttag	|viewlasttag	|		|		|		|
-|A-Return		|		|		|		|		|		|		|		|		|zoom		|zoom		|zoom		|		|		|		|
-|A-Grave		|		|		|		|		|		|		|		|		|		|		|togglemonitor	|		|		|		|
-|A-Comma		|		|		|		|		|		|		|		|		|screenprev	|screenprev	|		|		|		|		|
-|A-Period		|		|		|		|		|		|		|		|		|screennext	|screenenxt	|		|		|		|		|
+|F11			|winlist	|		|		|		|winlist	|		|		|		|		|		|		|		|		|		|
+|F12			|menu		|		|		|		|menu		|		|		|		|		|		|		|		|		|		|
+|C-F1			|view 1		|		|view 1		|view 1		|		|		|		|		|		|		|		|		|		|		|
+|C-F2			|view 2		|		|view 2		|view 2		|		|		|		|		|		|		|		|		|		|		|
+|C-F3			|view 3		|		|view 3		|view 3		|		|		|		|		|		|		|		|		|		|		|
+|C-F4			|view 4		|		|view 4		|view 4		|		|		|		|		|		|		|		|		|		|		|
+|C-F5			|view 5		|		|view 5		|view 5		|		|		|		|		|		|		|		|		|		|		|
+|C-F6			|view 6		|		|view 6		|view 6		|		|		|		|		|		|		|		|		|		|		|
+|C-F7			|view 7		|		|view 7		|view 7		|		|		|		|		|		|		|		|		|		|		|
+|C-F8			|view 8		|		|view 8		|view 8		|		|		|		|		|		|		|		|		|		|		|
+|C-F9			|view 9		|		|view 9		|view 9		|		|		|		|		|		|		|		|		|		|		|
+|C-F10			|view 10	|		|view 10	|view 10	|		|		|		|		|		|		|		|		|		|		|
+|C-F11			|view 11	|		|view 11	|view 11	|		|		|		|		|		|		|		|		|		|		|
+|C-F12			|view 12	|		|view 12	|view 12	|		|		|		|		|		|		|		|		|		|		|
+|C-Escape		|menu		|		|menu		|menu		|winmenu	|		|menu		|		|		|		|		|		|		|		|
+|S-Escape		|winmenu	|		|		|		|		|		|winmenu	|		|		|		|		|		|		|		|
+|CS-Left		|togglemax	|		|togglemax	|togglemax	|togglemax	|		|		|		|		|		|		|		|		|		|
+|CS-Right		|togglemaxh	|		|togglemaxh	|togglemaxh	|togglemaxh	|		|		|		|		|		|		|		|		|		|
+|CS-Up			|togglemaxv	|		|togglemaxv	|togglemaxv	|togglemaxv	|		|		|		|		|		|		|		|		|		|
+|CS-Down		|togglefill	|		|		|		|togglefill	|		|		|		|		|		|		|		|		|		|
+|CS-Return		|toggleselect	|		|		|		|toggleselect	|		|		|		|		|		|		|		|		|		|
+|CS-underscore		|togglehidden	|		|		|		|		|		|		|		|		|		|		|		|		|		|
+|A-1			|view 1		|		|view 1		|view 1		|view 1		|		|		|view 1		|view 1		|view 1		|		|		|		|		|
+|A-2			|view 2		|		|view 2		|view 2		|view 2		|		|		|view 2		|view 2		|view 2		|		|		|		|		|
+|A-3			|view 3		|		|view 3		|view 3		|view 3		|		|		|view 3		|view 3		|view 3		|		|		|		|		|
+|A-4			|view 4		|		|view 4		|view 4		|view 4		|		|		|view 4		|view 4		|view 4		|		|		|		|		|
+|A-5			|view 5		|		|view 5		|view 5		|view 5		|		|		|view 5		|view 5		|view 5		|		|		|		|		|
+|A-6			|view 6		|		|view 6		|view 6		|view 6		|		|		|view 6		|view 6		|view 6		|		|		|		|		|
+|A-7			|view 7		|		|view 7		|view 7		|view 7		|		|		|view 7		|view 7		|view 7		|		|		|		|		|
+|A-8			|view 8		|		|view 8		|view 8		|view 8		|		|		|view 8		|view 8		|view 8		|		|		|		|		|
+|A-9			|view 9		|		|view 9		|		|view 9		|		|		|view 9		|view 9		|view 9		|		|		|		|		|
+|A-0			|view 10	|		|view 10	|		|view 10	|		|		|		|view *		|view *		|		|		|		|		|
+|A-bracketleft		|view 11	|		|		|		|		|		|		|		|		|		|		|		|		|		|
+|A-bracketright		|view 12	|		|		|		|		|		|		|		|		|		|		|		|		|		|
+|A-F1			|spawn uxterm	|spawn xde-term	|spawn xde-term	|spawn xde-term	|		|		|raise		|		|		|		|view 1		|		|		|		|
+|A-F2			|spawn xde-run	|spawn xde-run	|spawn xde-run	|spawn xde-run	|		|		|togglesticky	|		|		|		|view 2		|		|		|		|
+|A-F3			|raiselower	|		|		|		|		|		|lower		|		|		|		|view 3		|		|		|		|
+|A-F4			|close		|close		|close		|close		|		|close		|close		|		|		|		|view 4		|		|		|		|
+|A-F5			|kill		|unmax/kill	|kill		|spawn xrefresh	|		|unmax/kill	|unmax		|		|		|		|view 5		|		|		|		|
+|A-F6			|focusnextany	|groupnext	|		|		|		|		|focusnext	|		|		|		|view 6		|		|		|		|
+|A-F7			|begmove	|begmove	|		|		|		|begmove	|begmove	|		|		|		|view 7		|		|		|		|
+|A-F8			|begsize	|begsize	|		|		|		|begsize	|begsize	|		|		|		|view 8		|		|		|		|
+|A-F9			|iconify	|iconify	|iconify	|toggleshade	|		|iconify	|iconify	|		|		|		|view 9		|		|		|		|
+|A-F10			|togglemax	|togglemax	|togglemax	|togglemaxv	|		|max/togglemax	|togglemax	|		|		|		|view 10	|		|		|		|
+|A-F11			|togglefull	|		|togglefull	|togglemaxh	|		|togglefull	|togglefull	|		|		|		|view 11	|		|		|		|
+|A-F12			|toggleshade	|		|		|togglefull	|		|toggleshade	|toggleshade	|		|		|		|view 12	|		|		|		|
+|A-Above_Tab		|groupnext	|groupnext	|		|		|		|		|		|		|		|		|		|		|		|		|
+|A-Down			|lower		|lower		|lower		|lower		|lower		|		|		|		|		|		|		|		|		|		|
+|A-Escape		|focusnext	|focusnext	|		|		|		|lower		|focusnext	|		|		|		|		|		|		|		|
+|A-Home			|raiselower	|		|		|		|raiselower	|		|		|		|		|		|		|		|		|		|
+|A-Left			|raiselower	|raiselower	|		|		|		|		|		|		|		|		|		|		|		|		|
+|A-Return		|zoom		|		|		|		|		|		|		|		|zoom		|zoom		|zoom		|		|		|		|
+|A-Tab			|focusnext	|		|groupnext	|focusnext	|focusnext	|focusnext	|focusnextall	|focusnext	|viewprevtag	|viewprevtag	|viewprevtag	|		|		|		|
+|A-Up			|raise		|raise		|raise		|raise		|raise		|		|		|		|		|		|		|		|		|		|
+|A-Print		|spawn scrot	|		|		|		|		|		|		|spawn scrot -s	|		|		|		|		|		|		|
+|A-comma		|screenprev	|		|		|		|		|		|		|		|screenprev	|screenprev	|		|		|		|		|
+|A-grave		|togglemonitor	|		|		|		|		|		|		|		|		|		|togglemonitor	|		|		|		|
+|A-period		|screennext	|		|		|		|		|		|		|		|screennext	|screennext	|		|		|		|		|
+|A-space		|winmenu	|winmenu	|winmenu	|		|raiselower	|menu/winmenu	|winmenu	|		|layoutnext	|layoutnext	|togglefloating	|		|		|		|
 |A-a			|		|		|		|		|		|		|		|		|		|		|moveleft	|		|		|		|
-|A-b			|		|		|		|		|		|		|		|		|togglestruts	|togglestruts	|togglestruts	|		|		|		|
 |A-d			|		|		|		|		|		|		|		|		|decnmaster	|decnmaster	|moveright	|		|		|		|
-|A-f			|		|		|		|		|		|		|		|		|setlayoutf	|setlayoutf	|setlayoutf	|		|		|		|
-|A-h			|		|		|		|		|		|		|		|		|decmwfact	|decmwfact	|decmwfact	|		|		|		|
-|A-i			|		|		|		|		|		|		|		|		|incnmaster	|incnmaster	|setlayouti	|		|		|		|
-|A-j			|		|		|		|		|		|		|		|		|focusnext	|focusnext	|focusnext	|		|		|		|
-|A-k			|		|		|		|		|		|		|		|		|focusprev	|focusprev	|focusprev	|		|		|		|
-|A-l			|		|		|		|		|		|		|		|		|incmwfact	|incmwfact	|incmwfact	|		|		|		|
-|A-m			|		|		|		|		|		|		|		|		|setlayoutm	|setlayoutm	|setlayoutm	|		|		|		|
-|A-r			|		|		|		|		|		|		|		|		|		|		|setlayoutt	|		|		|		|
-|A-s			|		|		|		|		|		|		|		|		|		|		|movedown	|		|		|		|
-|A-t			|		|		|		|		|		|		|		|		|setlayoutt	|setlayoutt	|spawn uxterm	|		|		|		|
-|A-w			|		|		|		|		|		|		|		|		|		|		|moveup/layoutb	|		|		|		|
-|W-1			|		|		|tab 1		|		|focus 1	|		|		|		|		|		|		|view 1		|view 1		|view 1		|
-|W-2			|		|		|tab 2		|		|focus 2	|		|		|		|		|		|		|view 2		|view 2		|view 2		|
-|W-3			|		|		|tab 3		|		|focus 3	|		|		|		|		|		|		|view 3		|view 3		|view 3		|
-|W-4			|		|		|tab 4		|		|focus 4	|		|		|		|		|		|		|view 4		|view 4		|view 4		|
-|W-5			|		|		|tab 5		|		|focus 5	|		|		|		|		|		|		|view 5		|view 5		|view 5		|
-|W-6			|		|		|tab 6		|		|focus 6	|		|		|		|		|		|		|view 6		|view 6		|view 6		|
-|W-7			|		|		|tab 7		|		|focus 7	|		|		|		|		|		|		|view 7		|view 7		|view 7		|
-|W-8			|		|		|tab 8		|		|focus 8	|		|		|		|		|		|		|view 8		|view 8		|view 8		|
-|W-9			|		|		|tab 9		|		|focus 9	|		|		|		|		|		|		|view 9		|view 9		|view 9		|
-|W-0			|		|		|tab 10		|		|focus 10	|		|		|		|		|		|		|view 10	|view 10	|		|
-|W-F1			|		|		|sendto 1	|sendto 1	|sendto 1	|view 1		|		|sendto 1	|		|		|		|view 11	|view 11	|		|
-|W-F2			|		|		|sendto 2	|sendto 2	|sendto 2	|view 2		|		|sendto 2	|		|		|		|view 12	|view 12	|		|
-|W-F3			|		|		|sendto 3	|sendto 3	|sendto 3	|view 3		|		|sendto 3	|		|		|		|view 13	|view 13	|		|
-|W-F4			|		|		|sendto 4	|sendto 4	|sendto 4	|view 4		|		|sendto 4	|		|		|		|view 14	|view 14	|		|
-|W-F5			|		|		|sendto 5	|sendto 5	|sendto 5	|		|		|sendto 5	|		|		|		|view 15	|view 15	|		|
-|W-F6			|		|		|sendto 6	|sendto 6	|sendto 6	|		|		|sendto 6	|		|		|		|view 16	|view 16	|		|
-|W-F7			|		|		|sendto 7	|sendto 7	|sendto 7	|		|		|sendto 7	|		|		|		|view 17	|view 17	|		|
-|W-F8			|		|		|sendto 8	|sendto 8	|sendto 8	|		|		|sendto 8	|		|		|		|view 18	|view 18	|		|
-|W-F9			|		|		|sendto 9	|sendto 9	|sendto 9	|		|		|sendto 9	|		|		|		|view 19	|view 19	|		|
-|W-F10			|		|		|sendto 10	|sendto 10	|sendto 10	|		|		|		|		|		|		|view 20	|view 20	|		|
-|W-F11			|		|		|sendto 11	|sendto 11	|		|		|		|		|		|		|		|view 21	|view 21	|		|
-|W-F12			|		|		|sendto 12	|sendto 12	|		|		|		|		|		|		|		|view 22	|view 22	|		|
-|W-KP_1			|		|		|		|		|		|		|		|		|		|		|		|monitor 1	|		|		|
-|W-KP_2			|		|		|		|		|		|		|		|		|		|		|		|monitor 2	|		|		|
-|W-KP_3			|		|		|		|		|		|		|		|		|		|		|		|monitor 3	|		|		|
-|W-KP_4			|		|		|		|		|		|		|		|		|		|		|		|monitor 4	|		|		|
-|W-KP_5			|		|		|		|		|		|		|		|		|		|		|		|monitor 5	|		|		|
-|W-KP_6			|		|		|		|		|		|		|		|		|		|		|		|monitor 6	|		|		|
-|W-KP_7			|		|		|		|		|		|		|		|		|		|		|		|monitor 7	|		|		|
-|W-KP_8			|		|		|		|		|		|		|		|		|		|		|		|monitor 8	|		|		|
-|W-KP_9			|		|		|		|		|		|		|		|		|		|		|		|monitor 9	|		|		|
-|W-KP_0			|		|		|		|		|		|		|		|		|		|		|		|		|		|		|
-|W-space		|		|inputnext	|		|		|		|		|		|layoutnext?	|		|		|		|layoutnext	|layoutnext	|layoutnext	|
-|W-Escape		|		|		|		|		|		|		|		|		|		|		|		|		|		|viewlast	|
-|W-Comma		|		|		|		|		|		|		|		|		|		|		|		|incnmaster	|		|		|
-|W-Period		|		|		|		|		|		|		|		|		|		|		|		|decnmaster	|		|		|
-|W-Return		|		|		|		|		|		|		|		|		|		|		|		|zoom		|		|spawn uxterm	|
-|W-Tab			|		|		|		|		|		|		|		|		|		|		|		|focusnext	|		|		|
-|W-Left			|		|		|		|		|		|		|		|		|		|		|		|viewprev	|		|viewprev	|
-|W-Right		|		|		|		|		|		|		|		|		|		|		|		|viewnext (win)	|		|viewnext	|
-|W-Up			|		|		|		|		|		|		|		|		|		|		|		|viewprev (win)	|		|		|
-|W-Down			|		|		|		|		|		|		|		|		|		|		|		|viewnext	|		|		|
-|W-bracketleft		|		|		|		|		|		|		|		|		|		|		|		|movex -5	|		|		|
-|W-bracketright		|		|		|		|		|		|		|		|		|		|		|		|movex +5	|		|		|
-|W-minus		|		|		|		|		|		|		|		|		|		|		|		|resizex -5	|		|		|
-|W-equal		|		|		|		|		|		|		|		|		|		|		|		|resizex +5	|		|		|
-|W-backslash		|		|		|		|		|		|		|		|		|		|		|		|search_workspace|		|		|
+|A-w			|		|		|		|		|killclient	|		|		|		|		|		|moveup		|		|		|		|
+|A-s			|		|		|toggleshade	|		|		|		|		|		|		|		|movedown	|		|		|		|
+|A-i			|		|		|		|		|		|		|		|		|incnmaster	|incnmaster	|setlayoutf	|		|		|		|
+|A-h			|decmwfact	|		|		|		|hide		|		|		|		|decmwfact	|decmwfact	|decmwfact	|		|		|		|
+|A-j			|focusnext	|		|		|		|		|		|		|		|focusnext	|focusnext	|focusnext	|		|		|		|
+|A-k			|focusprev	|		|		|		|		|		|		|		|focusprev	|focusprev	|focusprev	|		|		|		|
+|A-l			|incmwfact	|		|		|		|		|		|		|		|incmwfact	|incmwfact	|incmwfact	|		|		|		|
+|A-b			|togglestruts	|		|		|		|		|		|		|		|togglestruts	|togglestruts	|togglestruts	|		|		|		|
+|A-f			|setlayoutf	|		|		|		|		|		|		|		|setlayoutf	|setlayoutf	|setlayoutf	|		|		|		|
+|A-m			|setlayoutm	|		|		|iconify	|iconify	|		|		|		|setlayoutm	|setlayoutm	|setlayoutm	|		|		|		|
+|A-n			|iconify	|		|		|		|		|		|		|		|		|		|		|		|		|		|
+|A-q			|killclient	|		|		|		|killclient	|		|		|		|		|		|		|		|		|		|
+|A-r			|		|		|reconfig	|		|		|		|		|		|		|		|setlayoutt	|		|		|		|
+|A-t			|setlayoutt	|		|		|		|		|		|		|		|setlayoutt	|setlayoutt	|spawn uxterm	|		|		|		|
+|W-1			|view 1		|		|tab 1		|		|focus 1	|		|		|view 1		|		|		|		|view 1		|view 1		|view 1		|
+|W-2			|view 2		|		|tab 2		|		|focus 2	|		|		|view 2		|		|		|		|view 2		|view 2		|view 2		|
+|W-3			|view 3		|		|tab 3		|		|focus 3	|		|		|view 3		|		|		|		|view 3		|view 3		|view 3		|
+|W-4			|view 4		|		|tab 4		|		|focus 4	|		|		|view 4		|		|		|		|view 4		|view 4		|view 4		|
+|W-5			|view 5		|		|tab 5		|		|focus 5	|		|		|view 5		|		|		|		|view 5		|view 5		|view 5		|
+|W-6			|view 6		|		|tab 6		|		|focus 6	|		|		|view 6		|		|		|		|view 6		|view 6		|view 6		|
+|W-7			|view 7		|		|tab 7		|		|focus 7	|		|		|view 7		|		|		|		|view 7		|view 7		|view 7		|
+|W-8			|view 8		|		|tab 8		|		|focus 8	|		|		|view 8		|		|		|		|view 8		|view 8		|view 8		|
+|W-9			|view 9		|		|tab 9		|		|focus 9	|		|		|view 9		|		|		|		|view 9		|view 9		|view 9		|
+|W-0			|view 10	|		|tab 10		|		|focus 10	|		|		|		|		|		|		|view 10	|view 10	|		|
+|W-bracketleft		|moveleft	|		|		|		|		|		|		|		|		|		|		|moveleft	|		|		|
+|W-bracketright		|moveright	|		|		|		|		|		|		|		|		|		|		|moveright	|		|		|
+|W-F1			|sendto 1	|		|sendto 1	|sendto 1	|sendto 1	|view 1		|		|sendto 1	|		|		|		|view 11	|view 11	|		|
+|W-F2			|sendto 2	|		|sendto 2	|sendto 2	|sendto 2	|view 2		|		|sendto 2	|		|		|		|view 12	|view 12	|		|
+|W-F3			|sendto 3	|		|sendto 3	|sendto 3	|sendto 3	|view 3		|		|sendto 3	|		|		|		|view 13	|view 13	|		|
+|W-F4			|sendto 4	|		|sendto 4	|sendto 4	|sendto 4	|view 4		|		|sendto 4	|		|		|		|view 14	|view 14	|		|
+|W-F5			|sendto 5	|		|sendto 5	|sendto 5	|sendto 5	|		|		|sendto 5	|		|		|		|view 15	|view 15	|		|
+|W-F6			|sendto 6	|		|sendto 6	|sendto 6	|sendto 6	|		|		|sendto 6	|		|		|		|view 16	|view 16	|		|
+|W-F7			|sendto 7	|		|sendto 7	|sendto 7	|sendto 7	|		|		|sendto 7	|		|		|		|view 17	|view 17	|		|
+|W-F8			|sendto 8	|		|sendto 8	|sendto 8	|sendto 8	|		|		|sendto 8	|		|		|		|view 18	|view 18	|		|
+|W-F9			|sendto 9	|		|sendto 9	|sendto 9	|sendto 9	|		|		|sendto 9	|		|		|		|view 19	|view 19	|		|
+|W-F10			|sendto 10	|		|sendto 10	|sendto 10	|sendto 10	|		|		|		|		|		|		|view 20	|view 20	|		|
+|W-F11			|sendto 11	|		|sendto 11	|sendto 11	|		|		|		|		|		|		|		|view 21	|view 21	|		|
+|W-F12			|sendto 12	|		|sendto 12	|sendto 12	|		|		|		|		|		|		|		|view 22	|view 22	|		|
+|W-KP_1			|monitor 1	|		|		|		|		|		|		|		|		|		|		|monitor 1	|		|		|
+|W-KP_2			|monitor 2	|		|		|		|		|		|		|		|		|		|		|monitor 2	|		|		|
+|W-KP_3			|monitor 3	|		|		|		|		|		|		|		|		|		|		|monitor 3	|		|		|
+|W-KP_4			|monitor 4	|		|		|		|		|		|		|		|		|		|		|monitor 4	|		|		|
+|W-KP_5			|monitor 5	|		|		|		|		|		|		|		|		|		|		|monitor 5	|		|		|
+|W-KP_6			|monitor 6	|		|		|		|		|		|		|		|		|		|		|monitor 6	|		|		|
+|W-KP_7			|monitor 7	|		|		|		|		|		|		|		|		|		|		|monitor 7	|		|		|
+|W-KP_8			|monitor 8	|		|		|		|		|		|		|		|		|		|		|monitor 8	|		|		|
+|W-KP_9			|monitor 9	|		|		|		|		|		|		|		|		|		|		|monitor 9	|		|		|
+|W-KP_0			|monitor 10	|		|		|		|		|		|		|		|		|		|		|		|		|		|
+|W-Tab			|focusnext	|		|tabnext	|		|groupnext	|		|		|tabnext	|		|		|		|focusnext	|		|		|
+|W-Above_Tab		|groupnext	|groupnext	|		|		|		|		|		|		|		|		|		|		|		|		|
+|W-Escape		|viewlast	|		|		|		|		|		|		|		|		|		|		|		|		|viewlast	|
+|W-Return		|zoom		|		|		|		|relaunch	|		|		|beginmovesize	|		|		|		|zoom		|		|spawn xterm	|
+|W-space		|layoutnext	|inputnext	|		|		|		|		|		|layoutnext?	|		|		|		|layoutnext	|layoutnext	|layoutnext	|
+|W-slash		|		|		|		|		|		|		|		|		|		|		|		|		|		|		|
+|W-backslash		|		|		|		|		|		|		|		|		|		|		|		|spawn xde-findws|		|		|
+|W-comma		|incnmaster	|		|		|		|		|		|		|		|		|		|		|incnmaster	|		|		|
+|W-period		|decnmaster	|		|		|		|		|		|		|		|		|		|		|decnmaster	|		|		|
+|W-Left			|		|fillleft	|sendtoprev	|		|fillleft	|		|		|focusleft	|		|		|		|viewprev (win)	|		|viewprev	|
+|W-Right		|		|fillreight	|sendtonext	|		|fillright	|		|		|focusright	|		|		|		|viewnext (win)	|		|viewnext	|
+|W-Up			|		|		|		|		|		|		|		|focusup	|		|		|		|viewnext	|		|		|
+|W-Down			|		|unmax		|		|		|		|		|		|focusdown	|		|		|		|viewprev	|		|		|
+|W-minus		|resizedecx	|		|		|		|		|		|		|		|		|		|		|resizex -5	|		|		|
+|W-equal		|resizeincx	|		|		|		|		|		|		|		|		|		|		|resizex +5	|		|		|
+|W-Page_Up		|viewup		|viewup		|		|		|		|		|		|		|		|		|		|		|		|		|
+|W-Page_Down		|viewdown	|viewdown	|		|		|		|		|		|		|		|		|		|		|		|		|
 |W-a			|		|		|		|		|		|		|		|		|		|		|		|taketonext	|		|		|
-|W-b			|		|		|		|		|		|		|		|		|		|		|		|togglestruts	|		|		|
-|W-f			|		|		|		|		|		|		|		|		|		|		|		|search_win	|togglefloating	|full		|
-|W-g			|		|		|		|		|		|		|		|		|		|		|		|		|togglefocus	|		|
-|W-h			|		|		|		|		|		|		|		|		|		|		|		|decmwfact	|		|decmwfact	|
-|W-j			|		|		|		|		|		|		|		|		|		|		|		|focusnext	|focusnext	|focusnext	|
-|W-k			|		|		|		|		|		|		|		|		|		|		|		|focusprev	|focusprev	|focusprev	|
-|W-l			|		|		|		|		|		|		|		|		|		|		|		|incmwfact	|		|incmwfact	|
-|W-m			|		|		|		|		|		|		|		|		|		|		|		|focusmaster	|		|max		|
-|W-o			|		|		|		|		|		|		|		|		|		|		|		|		|		|sendtonext	|
-|W-p			|		|		|		|		|		|		|		|		|		|		|		|menu		|		|		|
-|W-q			|		|		|		|		|		|		|		|		|		|		|		|restart	|		|		|
-|W-r			|		|		|		|		|		|		|		|		|		|		|		|		|spawn xdg-demu	|spawn xde-run	|
-|W-s			|		|		|		|		|		|		|		|		|		|		|		|screenshot	|		|		|
-|W-t			|		|		|		|		|		|		|		|		|		|		|		|togglefloating	|		|above		|
-|W-u			|		|		|		|		|		|		|		|		|		|		|		|swapnext	|		|focusurgent	|
-|W-v			|		|		|		|		|		|		|		|		|		|		|		|button 2	|		|		|
-|W-w			|		|		|		|		|		|		|		|		|		|		|		|iconify	|		|menu		|
-|W-x			|		|		|		|		|		|		|		|		|		|		|		|killclient	|		|run lua	|
-|AS-1			|		|		|		|		|		|		|		|		|tag 1		|tag 1		|tag 1		|		|		|		|
-|AS-2			|		|		|		|		|		|		|		|		|tag 2		|tag 2		|tag 2		|		|		|		|
-|AS-3			|		|		|		|		|		|		|		|		|tag 3		|tag 3		|tag 3		|		|		|		|
-|AS-4			|		|		|		|		|		|		|		|		|tag 4		|tag 4		|tag 4		|		|		|		|
-|AS-5			|		|		|		|		|		|		|		|		|tag 5		|tag 5		|tag 5		|		|		|		|
-|AS-6			|		|		|		|		|		|		|		|		|tag 6		|tag 6		|tag 6		|		|		|		|
-|AS-7			|		|		|		|		|		|		|		|		|tag 7		|tag 7		|tag 7		|		|		|		|
-|AS-8			|		|		|		|		|		|		|		|		|tag 8		|tag 8		|tag 8		|		|		|		|
-|AS-9			|		|		|		|		|		|		|		|		|tag 9		|tag 9		|tag 9		|		|		|		|
-|AS-0			|		|		|		|		|		|		|		|		|		|		|		|		|		|		|
+|W-d			|		|		|		|		|		|toggleshowing	|		|spawn xde-run	|		|		|		|		|		|		|
+|W-w			|		|		|		|		|		|		|		|winmenu	|		|		|		|iconify	|		|menu		|
+|W-s			|		|		|		|		|		|		|		|toggleshade	|		|		|		|spawn scrot	|		|		|
+|W-b			|		|		|		|		|		|		|		|		|		|		|		|togglestrutsall|		|		|
+|W-e			|spawn xde-fm	|		|spawn xde-fm	|spawn xde-fm	|		|spawn xde-fm	|		|spawn xde-term	|		|		|		|		|		|		|
+|W-f			|togglefull	|		|		|		|		|		|		|togglefull	|		|		|		|spawn xde-findwin|togglefloating|full		|
+|W-g			|		|		|		|		|		|		|		|togglefill	|		|		|		|		|togglefocus	|		|
+|W-i			|iconify	|		|		|		|		|		|		|iconify	|		|		|		|		|		|		|
+|W-h			|decmwfact	|		|		|		|		|		|		|togglestruts	|		|		|		|decmwfact	|decmwfact	|decmwfact	|
+|W-j			|focusnext	|		|		|		|		|		|		|		|		|		|		|focusnext	|focusnext	|focusnext	|
+|W-k			|focusprev	|		|		|		|		|		|		|		|		|		|		|focusprev	|focusprev	|focusprev	|
+|W-l			|incmwfact	|		|		|		|		|		|		|		|		|		|		|incmwfact	|incmwfact	|incmwfact	|
+|W-m			|focusmain	|		|winmenu	|		|beginmovesize	|		|		|togglemax	|		|		|		|focusmain	|		|max		|
+|W-n			|iconify	|		|		|		|		|		|		|		|		|		|		|		|		|iconify	|
+|W-o			|scrtonext	|		|		|		|		|		|		|		|		|		|		|		|		|scrtonext	|
+|W-p			|menu		|		|		|		|		|		|		|		|		|		|		|menu		|		|		|
+|W-q			|killclient	|		|		|		|		|		|		|killclient	|		|		|		|restart	|		|		|
+|W-r			|spawn xde-run	|		|		|		|		|		|		|menu		|		|		|		|		|spawn dmenu	|spawn xde-run	|
+|W-t			|togglefloating	|		|		|		|		|		|		|toggletab	|		|		|		|togglefloating	|		|above		|
+|W-u			|focusurgent	|		|		|		|		|		|		|		|		|		|		|focusurgent	|		|focusurgent	|
+|W-v			|button 2	|		|		|		|		|		|		|spawn xde-findwin|		|		|		|button 2	|		|		|
+|W-x			|killclient	|		|		|		|		|		|		|		|		|		|		|killclient	|		|run lua	|
+|W-z			|toggleselect	|		|		|		|		|		|		|toggleselect	|		|		|		|		|		|		|
+|AS-1			|tag 1		|		|		|		|		|		|		|		|tag 1		|tag 1		|tag 1		|		|		|		|
+|AS-2			|tag 2		|		|		|		|		|		|		|		|tag 2		|tag 2		|tag 2		|		|		|		|
+|AS-3			|tag 3		|		|		|		|		|		|		|		|tag 3		|tag 3		|tag 3		|		|		|		|
+|AS-4			|tag 4		|		|		|		|		|		|		|		|tag 4		|tag 4		|tag 4		|		|		|		|
+|AS-5			|tag 5		|		|		|		|		|		|		|		|tag 5		|tag 5		|tag 5		|		|		|		|
+|AS-6			|tag 6		|		|		|		|		|		|		|		|tag 6		|tag 6		|tag 6		|		|		|		|
+|AS-7			|tag 7		|		|		|		|		|		|		|		|tag 7		|tag 7		|tag 7		|		|		|		|
+|AS-8			|tag 8		|		|		|		|		|		|		|		|tag 8		|tag 8		|tag 8		|		|		|		|
+|AS-9			|tag 9		|		|		|		|		|		|		|		|tag 9		|tag 9		|tag 9		|		|		|		|
+|AS-0			|tag 10		|		|		|		|		|		|		|		|tag *		|tag *		|tag 10		|		|		|		|
+|AS-bracketleft		|tag 11		|		|		|		|		|		|		|		|		|		|tag 11		|		|		|		|
+|AS-bracketright	|tag 12		|		|		|		|		|		|		|		|		|		|tag 12		|		|		|		|
 |AS-F1			|		|		|		|		|		|		|		|		|		|		|		|		|		|		|
-|AS-F2			|		|		|		|		|		|		|arrange TileVertical|		|		|		|		|		|		|		|
-|AS-F3			|		|		|		|		|		|		|arrange TileHorizontal|	|		|		|		|		|		|		|
-|AS-F4			|		|		|		|		|		|		|arrange Cascade|		|		|		|		|		|		|		|
-|AS-F5			|		|		|		|		|		|		|arrange Smart	|		|		|		|		|		|		|		|
-|AS-F6			|		|groupprev	|		|		|		|		|focusprev	|		|		|		|		|		|		|		|
-|AS-F7			|		|		|		|		|		|		|unarrange	|		|		|		|		|		|		|		|
-|AS-F8			|		|		|		|		|		|		|arrange Icons	|		|		|		|		|		|		|		|
-|AS-F9			|		|		|		|		|		|		|iconifyall	|		|		|		|		|		|		|		|
-|AS-F10			|		|		|		|		|		|		|togglemaxv	|		|		|		|		|		|		|		|
-|AS-F11			|		|		|		|		|		|		|hideall	|		|		|		|		|		|		|		|
-|AS-F12			|		|		|		|		|		|		|hide		|		|		|		|		|		|		|		|
-|AS-space		|		|		|		|		|		|		|		|		|togglefloating	|togglefloating	|		|		|		|		|
-|AS-Return		|		|		|		|		|		|		|		|		|spawn st	|spawn uxterm	|		|		|		|		|
-|AS-Comma		|		|		|		|		|		|		|		|		|sendmonprev	|sendmonprev	|		|		|		|		|
-|AS-Period		|		|		|		|		|		|		|		|		|sendmonnext	|sendmonnext	|		|		|		|		|
-|AS-c			|		|		|		|		|		|		|		|		|killclient	|killclient	|killclient	|		|		|		|
-|AS-q			|		|		|		|		|		|		|		|		|quit		|quit		|restart	|		|		|		|
-|AS-a			|		|		|		|		|		|		|		|		|		|		|resizedecx	|		|		|		|
-|AS-d			|		|		|		|		|		|		|		|		|		|		|resizeincx	|		|		|		|
-|AS-w			|		|		|		|		|		|		|		|		|		|		|resizedecy	|		|		|		|
-|AS-s			|		|		|		|		|		|		|		|		|		|		|resizeincy	|		|		|		|
-|WS-1			|		|		|		|		|		|		|		|		|		|		|		|sendto 1	|taketo 1	|tag 1		|
-|WS-2			|		|		|		|		|		|		|		|		|		|		|		|sendto 2	|taketo 2	|tag 2		|
-|WS-3			|		|		|		|		|		|		|		|		|		|		|		|sendto 3	|taketo 3	|tag 3		|
-|WS-4			|		|		|		|		|		|		|		|		|		|		|		|sendto 4	|taketo 4	|tag 4		|
-|WS-5			|		|		|		|		|		|		|		|		|		|		|		|sendto 5	|taketo 5	|tag 5		|
-|WS-6			|		|		|		|		|		|		|		|		|		|		|		|sendto 6	|taketo 6	|tag 6		|
-|WS-7			|		|		|		|		|		|		|		|		|		|		|		|sendto 7	|taketo 7	|tag 7		|
-|WS-8			|		|		|		|		|		|		|		|		|		|		|		|sendto 8	|taketo 8	|tag 8		|
-|WS-9			|		|		|		|		|		|		|		|		|		|		|		|sendto 9	|taketo 9	|tag 9		|
-|WS-0			|		|		|		|		|		|		|		|		|		|		|		|sendto 10	|taketo 10	|		|
-|WS-F1			|		|		|		|		|		|		|		|		|		|		|		|sendto 11	|taketo 11	|		|
-|WS-F2			|		|		|		|		|		|		|		|		|		|		|		|sendto 12	|taketo 12	|		|
-|WS-F3			|		|		|		|		|		|		|		|		|		|		|		|sendto 13	|taketo 13	|		|
-|WS-F4			|		|		|		|		|		|		|		|		|		|		|		|sendto 14	|taketo 14	|		|
-|WS-F5			|		|		|		|		|		|		|		|		|		|		|		|sendto 15	|taketo 15	|		|
-|WS-F6			|		|		|		|		|		|		|		|		|		|		|		|sendto 16	|taketo 16	|		|
-|WS-F7			|		|		|		|		|		|		|		|		|		|		|		|sendto 17	|taketo 17	|		|
-|WS-F8			|		|		|		|		|		|		|		|		|		|		|		|sendto 18	|taketo 18	|		|
-|WS-F9			|		|		|		|		|		|		|		|		|		|		|		|sendto 19	|taketo 19	|		|
-|WS-F10			|		|		|		|		|		|		|		|		|		|		|		|sendto 20	|taketo 20	|		|
-|WS-F11			|		|		|		|		|		|		|		|		|		|		|		|sendto 21	|taketo 21	|		|
-|WS-F12			|		|		|		|		|		|		|		|		|		|		|		|sendto 22	|taketo 22	|		|
-|WS-KP_1		|		|		|		|		|		|		|		|		|		|		|		|sendmon 1	|		|		|
-|WS-KP_2		|		|		|		|		|		|		|		|		|		|		|		|sendmon 2	|		|		|
-|WS-KP_3		|		|		|		|		|		|		|		|		|		|		|		|sendmon 3	|		|		|
-|WS-KP_4		|		|		|		|		|		|		|		|		|		|		|		|sendmon 4	|		|		|
-|WS-KP_5		|		|		|		|		|		|		|		|		|		|		|		|sendmon 5	|		|		|
-|WS-KP_6		|		|		|		|		|		|		|		|		|		|		|		|sendmon 6	|		|		|
-|WS-KP_7		|		|		|		|		|		|		|		|		|		|		|		|sendmon 7	|		|		|
-|WS-KP_8		|		|		|		|		|		|		|		|		|		|		|		|sendmon 8	|		|		|
-|WS-KP_9		|		|		|		|		|		|		|		|		|		|		|		|sendmon 9	|		|		|
+|AS-F2			|setlayoutu	|		|		|		|		|		|setlayoutu	|		|		|		|		|		|		|		|
+|AS-F3			|setlayoutt	|		|		|		|		|		|setlayoutt	|		|		|		|		|		|		|		|
+|AS-F4			|setlayoutf	|		|		|		|		|		|setlayoutf	|		|		|		|		|		|		|		|
+|AS-F5			|arrangesmart	|		|		|		|		|		|arrange Smart	|		|		|		|		|		|		|		|
+|AS-F6			|groupprev	|groupprev	|		|		|		|		|focusprev	|		|		|		|		|		|		|		|
+|AS-F7			|setlayouti	|		|		|		|		|		|setlayouti	|		|		|		|		|		|		|		|
+|AS-F8			|arrangeicons	|		|		|		|		|		|arrange Icons	|		|		|		|		|		|		|		|
+|AS-F9			|iconifyall	|		|		|		|		|		|iconifyall	|		|		|		|		|		|		|		|
+|AS-F10			|togglemaxv	|		|		|		|		|		|togglemaxv	|		|		|		|		|		|		|		|
+|AS-F11			|hideall	|		|		|		|		|		|hideall	|		|		|		|		|		|		|		|
+|AS-F12			|hide		|		|		|		|		|		|hide		|		|		|		|		|		|		|		|
+|AS-space		|togglefloating	|		|		|		|		|		|		|		|togglefloating	|togglefloating	|		|		|		|		|
+|AS-Return		|spawn xde-term	|		|		|		|		|		|		|		|spawn st	|spawn uxterm	|		|		|		|		|
+|AS-comma		|scrtoprev	|		|		|		|		|		|		|		|scrtoprev	|scrtoprev	|		|		|		|		|
+|AS-period		|scrtonext	|		|		|		|		|		|		|		|scrtonext	|scrtonext	|		|		|		|		|
+|AS-Escape		|focusprev	|focusprev	|		|		|		|		|focusprev	|		|		|		|		|		|		|		|
+|AS-Tab			|focusprev	|		|groupprev	|focusprev	|focusprev	|focusprev	|focuslast	|focusprev	|		|		|		|		|		|		|
+|AS-Above_Tab		|groupprev	|groupprev	|		|		|		|		|		|		|		|		|		|		|		|		|
+|AS-Down		|sendtodown	|		|		|		|		|sendtodown	|		|		|		|		|		|		|		|		|
+|AS-Left		|sendtoleft	|		|		|		|		|sendtoleft	|		|		|		|		|		|		|		|		|
+|AS-Right		|sendtoright	|		|		|		|		|sendtoright	|		|		|		|		|		|		|		|		|
+|AS-Up			|sendtoup	|		|		|		|		|sendtoup	|		|		|		|		|		|		|		|		|
+|AS-c			|killclient	|		|		|		|		|		|		|		|killclient	|killclient	|killclient	|		|		|		|
+|AS-h			|hideothers	|		|		|		|hideothers	|		|		|		|		|		|		|		|		|		|
+|AS-m			|iconifyall	|		|		|		|iconifyall	|		|		|		|		|		|		|		|		|		|
+|AS-q			|quit		|		|		|		|		|		|		|		|quit		|quit		|restart	|		|		|		|
+|AS-a			|resizedecx	|		|		|		|		|		|		|		|		|		|resizedecx	|		|		|		|
+|AS-d			|resizeincx	|		|		|		|		|toggleshowing	|		|		|		|		|resizeincx	|		|		|		|
+|AS-w			|resizedecy	|		|		|		|		|		|		|		|		|		|resizedecy	|		|		|		|
+|AS-s			|resizeincy	|		|		|		|toggleshade	|		|		|		|		|		|resizeincy	|		|		|		|
+|WS-1			|sendto 1	|		|		|		|		|		|		|		|		|		|		|sendto 1	|taketo 1	|tag 1		|
+|WS-2			|sendto 2	|		|		|		|		|		|		|		|		|		|		|sendto 2	|taketo 2	|tag 2		|
+|WS-3			|sendto 3	|		|		|		|		|		|		|		|		|		|		|sendto 3	|taketo 3	|tag 3		|
+|WS-4			|sendto 4	|		|		|		|		|		|		|		|		|		|		|sendto 4	|taketo 4	|tag 4		|
+|WS-5			|sendto 5	|		|		|		|		|		|		|		|		|		|		|sendto 5	|taketo 5	|tag 5		|
+|WS-6			|sendto 6	|		|		|		|		|		|		|		|		|		|		|sendto 6	|taketo 6	|tag 6		|
+|WS-7			|sendto 7	|		|		|		|		|		|		|		|		|		|		|sendto 7	|taketo 7	|tag 7		|
+|WS-8			|sendto 8	|		|		|		|		|		|		|		|		|		|		|sendto 8	|taketo 8	|tag 8		|
+|WS-9			|sendto 9	|		|		|		|		|		|		|		|		|		|		|sendto 9	|taketo 9	|tag 9		|
+|WS-0			|sendto 10	|		|		|		|		|		|		|		|		|		|		|sendto 10	|		|		|
+|WS-F1			|sendto 11	|		|		|		|		|		|		|		|		|		|		|sendto 11	|		|		|
+|WS-F2			|sendto 12	|		|		|		|		|		|		|		|		|		|		|sendto 12	|		|		|
+|WS-F3			|sendto 13	|		|		|		|		|		|		|		|		|		|		|sendto 13	|		|		|
+|WS-F4			|sendto 14	|		|		|		|		|		|		|		|		|		|		|sendto 14	|		|		|
+|WS-F5			|sendto 15	|		|		|		|		|		|		|		|		|		|		|sendto 15	|		|		|
+|WS-F6			|sendto 16	|		|		|		|		|		|		|		|		|		|		|sendto 16	|		|		|
+|WS-F7			|sendto 17	|		|		|		|		|		|		|		|		|		|		|sendto 17	|		|		|
+|WS-F8			|sendto 18	|		|		|		|		|		|		|		|		|		|		|sendto 18	|		|		|
+|WS-F9			|sendto 19	|		|		|		|		|		|		|		|		|		|		|sendto 19	|		|		|
+|WS-F10			|sendto 20	|		|		|		|		|		|		|		|		|		|		|sendto 20	|		|		|
+|WS-F11			|sendto 21	|		|		|		|		|		|		|		|		|		|		|sendto 21	|		|		|
+|WS-F12			|sendto 22	|		|		|		|		|		|		|		|		|		|		|sendto 22	|		|		|
+|WS-KP_1		|scrto 1	|		|		|		|		|		|		|		|		|		|		|scrto 1	|		|		|
+|WS-KP_2		|scrto 2	|		|		|		|		|		|		|		|		|		|		|scrto 2	|		|		|
+|WS-KP_3		|scrto 3	|		|		|		|		|		|		|		|		|		|		|scrto 3	|		|		|
+|WS-KP_4		|scrto 4	|		|		|		|		|		|		|		|		|		|		|scrto 4	|		|		|
+|WS-KP_5		|scrto 5	|		|		|		|		|		|		|		|		|		|		|scrto 5	|		|		|
+|WS-KP_6		|scrto 6	|		|		|		|		|		|		|		|		|		|		|scrto 6	|		|		|
+|WS-KP_7		|scrto 7	|		|		|		|		|		|		|		|		|		|		|scrto 7	|		|		|
+|WS-KP_8		|scrto 8	|		|		|		|		|		|		|		|		|		|		|scrto 8	|		|		|
+|WS-KP_9		|scrto 9	|		|		|		|		|		|		|		|		|		|		|scrto 9	|		|		|
 |WS-KP_0		|		|		|		|		|		|		|		|		|		|		|		|		|		|		|
-|WS-Left		|		|		|		|		|		|		|		|		|		|		|		|viewnext	|		|		|
-|WS-Right		|		|		|		|		|		|		|		|		|		|		|		|taketoprev	|		|		|
-|WS-Up			|		|		|		|		|		|		|		|		|		|		|		|viewlast	|		|		|
-|WS-Down		|		|		|		|		|		|		|		|		|		|		|		|		|		|		|
-|WS-Return		|		|		|		|		|		|		|		|		|		|		|		|spawn xde-term	|spawn roxterm	|		|
-|WS-backslash		|		|		|		|		|		|		|		|		|		|		|		|fliplayout	|		|		|
+|WS-Left		|screenprev	|		|		|		|		|focusleft	|		|		|		|		|		|screenprev	|		|		|
+|WS-Right		|screennext	|		|		|		|		|focusright	|		|		|		|		|		|screennext	|		|		|
+|WS-Up			|viewlast	|		|		|		|		|focusup	|		|		|		|		|		|viewlast	|		|		|
+|WS-Down		|taketoprev	|		|		|		|		|focusdown	|		|		|		|		|		|taketoprev	|		|		|
+|WS-Page_Down		|taketodown	|taketodown	|		|		|		|		|		|		|		|		|		|		|		|		|
+|WS-Page_Up		|taketoup	|taketoup	|		|		|		|		|		|		|		|		|		|		|		|		|
+|WS-Return		|spawn xde-term	|		|		|		|		|		|		|		|		|		|		|spawn xde-term	|spawn xterm	|		|
+|WS-Tab			|		|		|tabprev	|		|groupprev	|		|		|tabprev	|		|		|		|		|		|		|
+|WS-Above_Tab		|focusprev	|groupprev	|		|		|		|		|		|		|		|		|		|		|		|		|
+|WS-backslash		|fliplayout	|		|		|		|		|		|		|		|		|		|		|fliplayout	|		|		|
+|WS-slash		|		|		|		|		|		|		|		|		|		|		|		|spawn xde-namews|		|		|
 |WS-space		|		|		|		|		|		|		|		|		|		|		|		|resetlayout	|layoutprev	|layoutprev	|
 |WS-comma		|		|		|		|		|		|		|		|		|		|		|		|incncolumns	|		|		|
 |WS-period		|		|		|		|		|		|		|		|		|		|		|		|decncolumns	|		|		|
-|WS-delete		|		|		|		|		|		|		|		|		|		|		|		|spawn xde-xlock|		|		|
-|WS-bracketleft		|		|		|		|		|		|		|		|		|		|		|		|movey +5	|		|		|
-|WS-bracketright	|		|		|		|		|		|		|		|		|		|		|		|movey -5	|		|		|
+|WS-Delete		|		|		|		|		|		|		|		|		|		|		|		|spawn xde-xlock|		|		|
+|WS-bracketleft		|		|		|		|		|		|		|		|		|		|		|		|moveup		|		|		|
+|WS-bracketright	|		|		|		|		|		|		|		|		|		|		|		|movedown	|		|		|
 |WS-minus		|		|		|		|		|		|		|		|		|		|		|		|resizey -5	|		|		|
 |WS-equal		|		|		|		|		|		|		|		|		|		|		|		|resizey +5	|		|		|
 |WS-b			|		|		|		|		|		|		|		|		|		|		|		|togglestruts	|		|		|
 |WS-c			|		|		|		|		|		|		|		|		|		|		|		|		|killclient	|killclient	|
-|WS-h			|		|		|		|		|		|		|		|		|		|		|		|		|decmwfact	|incnmaster	|
+|WS-h			|		|		|		|		|		|		|		|		|		|		|		|		|incnmaster	|incnmaster	|
 |WS-i			|		|		|		|		|		|		|		|		|		|		|		|initscr	|		|		|
-|WS-j			|		|		|		|		|		|		|		|		|		|		|		|focusurgent	|taketonext	|		|
-|WS-k			|		|		|		|		|		|		|		|		|		|		|		|swapprev	|taketoprev	|		|
-|WS-l			|		|		|		|		|		|		|		|		|		|		|		|		|incmwfast	|decnmaster	|
+|WS-j			|		|		|		|		|		|		|		|		|		|		|		|swapnext	|taketonext	|swapnext	|
+|WS-k			|		|		|		|		|		|		|		|		|		|		|		|swapprev	|taketoprev	|swapprev	|
+|WS-l			|		|		|		|		|		|		|		|		|		|		|		|		|decnmaster	|decnmaster	|
 |WS-q			|		|		|		|		|		|		|		|		|		|		|		|quit		|quit		|quit		|
-|WS-r			|		|		|		|		|		|		|		|		|		|		|		|always_raise	|		|		|
-|WS-s			|		|		|		|		|		|		|		|		|		|		|		|screenshotwin	|		|		|
+|WS-r			|		|		|		|		|		|		|		|		|		|		|		|raisetiled	|		|		|
+|WS-s			|		|		|		|		|		|		|		|		|		|		|		|spawn scrot -s	|		|		|
 |WS-v			|		|		|		|		|		|		|		|		|		|		|		|version	|		|		|
 |WS-w			|		|		|		|		|		|		|		|		|		|		|		|uniconify	|		|		|
 |WS-x			|		|		|		|		|		|		|		|		|		|		|		|killclient	|		|		|
@@ -1621,9 +1665,9 @@ coverage of other defaults as possible.
 |AC-7			|		|		|		|		|		|		|view 7		|		|		|		|toggleview 7	|		|		|		|
 |AC-8			|		|		|		|		|		|		|view 8		|		|		|		|toggleview 8	|		|		|		|
 |AC-9			|		|		|		|		|		|		|view 9		|		|		|		|toggleview 9	|		|		|		|
-|AC-0			|		|		|		|		|		|		|view 10	|		|		|		|		|		|		|		|
-|AC-bracketleft		|		|		|		|		|		|		|view 11	|		|		|		|		|		|		|		|
-|AC-bracketright	|		|		|		|		|		|		|view 12	|		|		|		|		|		|		|		|
+|AC-0			|		|		|		|		|		|		|view 10	|		|		|		|toggleview 10	|		|		|		|
+|AC-bracketleft		|		|		|		|		|		|		|view 11	|		|		|		|toggleview 11	|		|		|		|
+|AC-bracketright	|		|		|		|		|		|		|view 12	|		|		|		|toggleview 12	|		|		|		|
 |AC-F1			|		|		|		|		|		|		|		|		|		|		|		|		|		|		|
 |AC-F2			|		|		|		|		|		|		|		|		|		|		|		|		|		|		|
 |AC-F3			|		|		|		|		|		|		|		|		|		|		|		|		|		|		|
@@ -1636,11 +1680,35 @@ coverage of other defaults as possible.
 |AC-F10			|		|		|		|		|		|		|		|		|		|		|		|		|		|		|
 |AC-F11			|		|		|		|		|		|		|		|		|		|		|		|		|		|		|
 |AC-F12			|		|		|		|		|		|		|		|		|		|		|		|		|		|		|
-|AC-bracketleft		|		|		|		|		|		|		|view 11	|		|		|		|		|		|		|		|
-|AC-bracketright	|		|		|		|		|		|		|view 12	|		|		|		|		|		|		|		|
-|AC-Left		|		|		|		|		|		|		|		|		|		|		|viewlefttag	|		|		|		|
-|AC-Right		|		|		|		|		|		|		|		|		|		|		|viewrighttag	|		|		|		|
+|AC-KP_1		|		|		|		|		|		|		|movetoSW	|		|		|		|		|		|		|		|
+|AC-KP_2		|		|		|		|		|		|		|movetoS	|		|		|		|		|		|		|		|
+|AC-KP_3		|		|		|		|		|		|		|movetoSE	|		|		|		|		|		|		|		|
+|AC-KP_4		|		|		|		|		|		|		|movetoW	|		|		|		|		|		|		|		|
+|AC-KP_5		|		|		|		|		|		|		|movetoC	|		|		|		|		|		|		|		|
+|AC-KP_6		|		|		|		|		|		|		|movetoE	|		|		|		|		|		|		|		|
+|AC-KP_7		|		|		|		|		|		|		|movetoNW	|		|		|		|		|		|		|		|
+|AC-KP_8		|		|		|		|		|		|		|movetoN	|		|		|		|		|		|		|		|
+|AC-KP_9		|		|		|		|		|		|		|movetoNE	|		|		|		|		|		|		|		|
+|AC-Left		|		|viewleft	|viewprev	|viewprev/moveleft|viewprev	|viewleft	|viewprev	|		|		|		|viewleft	|		|		|		|
+|AC-Right		|		|viewright	|viewnext	|viewnext/moveright|viewnext	|viewright	|viewnext	|		|		|		|viewright	|		|		|		|
+|AC-Down		|		|viewdown	|		|viewdown/movedown|		|viewdown	|viewlast	|		|		|		|		|		|		|		|
+|AC-Up			|		|viewup		|		|viewup/moveup	|		|viewup		|		|		|		|		|		|		|		|		|
+|AC-Tab			|		|		|		|focusnextevery	|		|panexnext	|		|focuslast	|		|		|		|		|		|		|
+|AC-Return		|		|spawn xde-term	|		|		|		|		|		|		|		|		|		|		|		|		|
+|AC-Delete		|		|		|quit		|		|		|		|spawn xde-logout|reload	|		|		|		|		|		|		|
+|AC-Escape		|		|panelnext	|		|menu		|		|		|winlist	|		|		|		|		|		|		|		|
+|AC-space		|		|		|		|		|togglestruts	|		|		|		|		|		|		|		|		|		|
+|AC-d			|		|		|		|		|		|toggleshowing	|toggleshowing	|		|		|		|		|		|		|		|
+|AC-h			|		|		|		|viewleft	|		|		|togglestruts	|		|		|		|		|		|		|		|
+|AC-j			|		|		|		|viewdown	|		|		|		|		|		|		|		|		|		|		|
+|AC-k			|		|		|		|viewup		|		|		|		|		|		|		|		|		|		|		|
+|AC-l			|		|		|		|viewright	|		|		|		|		|		|		|		|		|		|		|
+|AC-s			|		|		|		|togglesticky	|		|		|		|		|		|		|		|		|		|		|
+|AC-t			|		|		|spawn xterm	|		|		|		|		|		|		|		|		|		|		|		|
+|AC-v			|		|		|spawn gvim	|		|		|		|		|		|		|		|		|		|		|		|
 |AC-q			|		|		|		|		|		|		|		|		|		|		|quit		|		|		|		|
+|AC-r			|		|		|		|		|		|		|spawn xde-run	|		|		|		|		|		|		|		|
+|AC-w			|		|		|		|sendtoup	|		|		|		|		|		|		|		|		|		|		|
 |WC-1			|		|		|		|		|		|		|		|		|		|		|		|		|		|toggleview 1	|
 |WC-2			|		|		|		|		|		|		|		|		|		|		|		|		|		|toggleview 2	|
 |WC-3			|		|		|		|		|		|		|		|		|		|		|		|		|		|toggleview 3	|
@@ -1664,6 +1732,10 @@ coverage of other defaults as possible.
 |WC-F11			|		|		|taketo 11	|		|		|		|		|		|		|		|		|		|		|		|
 |WC-F12			|		|		|taketo 12	|		|		|		|		|		|		|		|		|		|		|		|
 |WC-space		|		|		|		|		|		|		|		|		|		|		|		|		|		|togglefloating	|
+|WC-Left		|		|		|taketoprev	|		|		|		|		|tabtoprev/viewleft|		|		|		|		|		|		|
+|WC-Right		|		|		|taketonext	|		|		|		|		|tabtonext/viewright|		|		|		|		|		|		|
+|WC-Down		|		|		|		|		|		|		|		|viewdown	|		|		|		|		|		|		|
+|WC-Up			|		|		|		|		|		|		|		|viewup		|		|		|		|		|		|		|
 |WC-Return		|		|		|		|		|		|		|		|		|		|		|		|		|		|zoom		|
 |WC-h			|		|		|		|		|		|		|		|		|		|		|		|		|incncolumns	|incncolumns	|
 |WC-j			|		|		|		|		|		|		|		|		|		|		|		|		|		|screenext	|
@@ -1680,13 +1752,15 @@ coverage of other defaults as possible.
 |ACS-7			|		|		|		|		|		|		|taketo 7	|		|toggletag 7	|toggletag 7	|toggletag 7	|		|		|		|
 |ACS-8			|		|		|		|		|		|		|taketo 8	|		|toggletag 8	|toggletag 8	|toggletag 8	|		|		|		|
 |ACS-9			|		|		|		|		|		|		|taketo 9	|		|toggletag 9	|toggletag 9	|toggletag 9	|		|		|		|
-|ACS-0			|		|		|		|		|		|		|taketo 10	|		|		|		|		|		|		|		|
-|ACS-bracketleft	|		|		|		|		|		|		|taketo 11	|		|		|		|		|		|		|		|
-|ACS-bracketright	|		|		|		|		|		|		|taketo 12	|		|		|		|		|		|		|		|
-|ACS-Down		|		|taketo S	|		|resize +0 +5	|		|		|		|taketo S	|		|		|		|		|		|		|
-|ACS-Left		|		|taketo W	|		|resize -5 +0	|		|		|		|taketo W	|		|		|		|		|		|		|
-|ACS-Right		|		|taketo E	|		|resize +5 +0	|		|		|		|taketo E	|		|		|		|		|		|		|
-|ACS-Up			|		|taketo N	|		|resize +0 -5	|		|		|		|taketo N	|		|		|		|		|		|		|
+|ACS-0			|		|		|		|		|		|		|taketo 10	|		|toggletag *	|toggletag *	|toggletag 10	|		|		|		|
+|ACS-bracketleft	|		|		|		|		|		|		|taketo 11	|		|		|		|toggletag 11	|		|		|		|
+|ACS-bracketright	|		|		|		|		|		|		|taketo 12	|		|		|		|toggletag 12	|		|		|		|
+|ACS-Down		|		|taketodown	|		|resize +0 +5	|		|		|taketolast	|taketodown	|		|		|		|		|		|		|
+|ACS-Left		|		|taketoleft	|		|resize -5 +0	|		|		|taketoprev	|taketoleft	|		|		|		|		|		|		|
+|ACS-Right		|		|taketoright	|		|resize +5 +0	|		|		|taketonext	|taketoright	|		|		|		|		|		|		|
+|ACS-Up			|		|taketoup	|		|resize +0 -5	|		|		|		|taketoup	|		|		|		|		|		|		|
+|ACS-Tab		|		|dockprev	|		|		|		|panelprev	|		|		|		|		|		|		|		|		|
+|ACS-Escape		|		|panelprev	|		|		|		|		|		|		|		|		|		|		|		|		|
 |ACS-KP_8		|		|		|		|		|		|		|snapto N	|		|		|		|		|		|		|		|
 |ACS-KP_9		|		|		|		|		|		|		|snapto NE	|		|		|		|		|		|		|		|
 |ACS-KP_6		|		|		|		|		|		|		|snapto E	|		|		|		|		|		|		|		|
@@ -1695,7 +1769,7 @@ coverage of other defaults as possible.
 |ACS-KP_1		|		|		|		|		|		|		|snapto SW	|		|		|		|		|		|		|		|
 |ACS-KP_4		|		|		|		|		|		|		|snapto W	|		|		|		|		|		|		|		|
 |ACS-KP_7		|		|		|		|		|		|		|snapto NW	|		|		|		|		|		|		|		|
-|ACS-KP_5		|		|		|		|		|		|		|		|		|		|		|		|		|		|		|
+|ACS-KP_5		|		|		|		|		|		|		|smartplace	|		|		|		|		|		|		|		|
 |ACS-KP_0		|		|		|		|		|		|		|		|		|		|		|		|		|		|		|
 |WCS-1			|		|		|		|		|		|		|		|		|		|		|		|		|		|toggletag 1	|
 |WCS-2			|		|		|		|		|		|		|		|		|		|		|		|		|		|toggletag 2	|

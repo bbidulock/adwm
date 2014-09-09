@@ -1,5 +1,3 @@
-! ADWM key bindings following Echinus defaults where possible
-
 Adwm*view0:A + F1
 Adwm*view9:A + F10
 Adwm*view10:A + F11
@@ -75,6 +73,3 @@ Adwm*resizeincx:AS + d = 0 0 5 0, WS + l = 0 0 5 0
 Adwm*restart:AS + q
 Adwm*resizedecy:AS + s = 0 0 0 -5, WS + k = 0 0 0 -5
 Adwm*resizeincy:AS + w = 0 0 0 5, WS + j = 0 0 0 5
-
-
-! vim: set ft=xdefaults:

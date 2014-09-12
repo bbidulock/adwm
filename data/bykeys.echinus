@@ -1,75 +1,81 @@
-Adwm*view0:A + F1
-Adwm*view9:A + F10
-Adwm*view10:A + F11
-Adwm*view11:A + F12
-Adwm*view1:A + F2
-Adwm*view2:A + F3
-Adwm*view3:A + F4
-Adwm*view4:A + F5
-Adwm*view5:A + F6
-Adwm*view6:A + F7
-Adwm*view7:A + F8
-Adwm*view8:A + F9
-Adwm*zoom:A + Return
-Adwm*viewprevtag:A + Tab
-Adwm*moveleft:A + a = -5 0 0 0
-Adwm*togglestruts:A + b
-Adwm*moveright:A + d = 5 0 0 0
-Adwm*setlayoutf:A + f, A + i
-Adwm*togglemonitor:A + grave
-Adwm*decmwfact:A + h
-Adwm*focusnext:A + j
-Adwm*focusprev:A + k
-Adwm*incmwfact:A + l
-Adwm*setlayoutm:A + m
-Adwm*setlayoutt:A + r
-Adwm*focusview6:A + s
-Adwm*movedown:A + s = 0 5 0 0
-Adwm*togglefloating:A + space
-Adwm*spawn0:A + t = uxterm, AC + t = uxterm
-Adwm*moveup:A + w = 0 -5 0 0
-Adwm*toggleview9:AC + 0
-Adwm*toggleview0:AC + 1
-Adwm*toggleview1:AC + 2
-Adwm*toggleview2:AC + 3
-Adwm*toggleview3:AC + 4
-Adwm*toggleview4:AC + 5
-Adwm*toggleview5:AC + 6
-Adwm*toggleview6:AC + 7
-Adwm*toggleview7:AC + 8
-Adwm*toggleview8:AC + 9
-Adwm*viewleft:AC + Left
-Adwm*viewrigth:AC + Right
-Adwm*toggleview10:AC + bracketleft
-Adwm*toggleview11:AC + bracketright
-Adwm*quit:AC + q
-Adwm*toggletag9:ACS + 0
-Adwm*toggletag0:ACS + 1
-Adwm*toggletag1:ACS + 2
-Adwm*toggletag2:ACS + 3
-Adwm*toggletag3:ACS + 4
-Adwm*toggletag4:ACS + 5
-Adwm*toggletag5:ACS + 6
-Adwm*toggletag6:ACS + 7
-Adwm*toggletag7:ACS + 8
-Adwm*toggletag8:ACS + 9
-Adwm*toggletag10:ACS + bracketleft
-Adwm*toggletag11:ACS + bracketright
-Adwm*tag9:AS + 0
-Adwm*tag0:AS + 1
-Adwm*tag1:AS + 2
-Adwm*tag2:AS + 3
-Adwm*tag3:AS + 4
-Adwm*tag4:AS + 5
-Adwm*tag5:AS + 6
-Adwm*tag6:AS + 7
-Adwm*tag7:AS + 8
-Adwm*tag8:AS + 9
-Adwm*resizedecx:AS + a = 0 0 -5 0, WS + h = 0 0 -5 0
-Adwm*tag10:AS + bracketleft
-Adwm*tag11:AS + bracketright
-Adwm*killclient:AS + c
-Adwm*resizeincx:AS + d = 0 0 5 0, WS + l = 0 0 5 0
-Adwm*restart:AS + q
-Adwm*resizedecy:AS + s = 0 0 0 -5, WS + k = 0 0 0 -5
-Adwm*resizeincy:AS + w = 0 0 0 5, WS + j = 0 0 0 5
+A + F10:Adwm*view9!echinus
+A + F11:Adwm*view10!echinus
+A + F12:Adwm*view11!echinus
+A + F1:Adwm*view0!echinus
+A + F2:Adwm*view1!echinus
+A + F3:Adwm*view2!echinus
+A + F4:Adwm*view3!echinus
+A + F5:Adwm*view4!echinus
+A + F6:Adwm*view5!echinus
+A + F7:Adwm*view6!echinus
+A + F8:Adwm*view7!echinus
+A + F9:Adwm*view8!echinus
+A + Return:Adwm*zoom!echinus
+A + Tab:Adwm*viewprevtag!echinus
+A + a = -5 0 0 0:Adwm*moveleft!echinus
+A + b:Adwm*togglestruts!echinus
+A + d = 5 0 0 0:Adwm*moveright!echinus
+A + f:Adwm*setlayoutf!echinus
+A + grave:Adwm*togglemonitor!echinus
+A + h:Adwm*decmwfact!echinus
+A + i:Adwm*setlayoutf!echinus
+A + j:Adwm*focusnext!echinus
+A + k:Adwm*focusprev!echinus
+A + l:Adwm*incmwfact!echinus
+A + m:Adwm*setlayoutm!echinus
+A + r:Adwm*setlayoutt!echinus
+A + s = 0 5 0 0:Adwm*movedown!echinus
+A + s:Adwm*focusview6!echinus
+A + space:Adwm*togglefloating!echinus
+A + t = uxterm:Adwm*spawn0!echinus
+A + w = 0 -5 0 0:Adwm*moveup!echinus
+AC + 0:Adwm*toggleview9!echinus
+AC + 1:Adwm*toggleview0!echinus
+AC + 2:Adwm*toggleview1!echinus
+AC + 3:Adwm*toggleview2!echinus
+AC + 4:Adwm*toggleview3!echinus
+AC + 5:Adwm*toggleview4!echinus
+AC + 6:Adwm*toggleview5!echinus
+AC + 7:Adwm*toggleview6!echinus
+AC + 8:Adwm*toggleview7!echinus
+AC + 9:Adwm*toggleview8!echinus
+AC + Left:Adwm*viewleft!echinus
+AC + Right:Adwm*viewrigth!echinus
+AC + bracketleft:Adwm*toggleview10!echinus
+AC + bracketright:Adwm*toggleview11!echinus
+AC + q:Adwm*quit!echinus
+AC + t = uxterm:Adwm*spawn0!echinus
+ACS + 0:Adwm*toggletag9!echinus
+ACS + 1:Adwm*toggletag0!echinus
+ACS + 2:Adwm*toggletag1!echinus
+ACS + 3:Adwm*toggletag2!echinus
+ACS + 4:Adwm*toggletag3!echinus
+ACS + 5:Adwm*toggletag4!echinus
+ACS + 6:Adwm*toggletag5!echinus
+ACS + 7:Adwm*toggletag6!echinus
+ACS + 8:Adwm*toggletag7!echinus
+ACS + 9:Adwm*toggletag8!echinus
+ACS + bracketleft:Adwm*toggletag10!echinus
+ACS + bracketright:Adwm*toggletag11!echinus
+AS + 0:Adwm*tag9!echinus
+AS + 1:Adwm*tag0!echinus
+AS + 2:Adwm*tag1!echinus
+AS + 3:Adwm*tag2!echinus
+AS + 4:Adwm*tag3!echinus
+AS + 5:Adwm*tag4!echinus
+AS + 6:Adwm*tag5!echinus
+AS + 7:Adwm*tag6!echinus
+AS + 8:Adwm*tag7!echinus
+AS + 9:Adwm*tag8!echinus
+AS + a = 0 0 -5 0:Adwm*resizedecx!echinus
+AS + bracketleft:Adwm*tag10!echinus
+AS + bracketright:Adwm*tag11!echinus
+AS + c:Adwm*killclient!echinus
+AS + d = 0 0 5 0:Adwm*resizeincx!echinus
+AS + q:Adwm*restart!echinus
+AS + s = 0 0 0 -5:Adwm*resizedecy!echinus
+AS + w = 0 0 0 5:Adwm*resizeincy!echinus
+WS + h = 0 0 -5 0:Adwm*resizedecx!echinus
+WS + j = 0 0 0 5:Adwm*resizeincy!echinus
+WS + k = 0 0 0 -5:Adwm*resizedecy!echinus
+WS + l = 0 0 5 0:Adwm*resizeincx!echinus

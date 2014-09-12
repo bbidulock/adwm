@@ -1,102 +1,117 @@
-Adwm*appendtag:
-Adwm*focusE:
-Adwm*focusN:
-Adwm*focusS:
-Adwm*focusW:
-Adwm*rmlasttag:
-Adwm*sendmon0:
-Adwm*sendmon1:
-Adwm*sendmon2:
-Adwm*sendmon3:
-Adwm*sendmonnext:
-Adwm*sendmonprev:
-Adwm*setlayoutl:
-Adwm*setlayoutt:
-Adwm*setlayoutu:
-Adwm*spawn0:
-Adwm*toggledecor:
-Adwm*toggleshowing:
-Adwm*togglesticky:
-Adwm*moveleft:= -5 0 0 0
-Adwm*moveup:= 0 -5 0 0
-Adwm*movedown:= 0 5 0 0
-Adwm*moveright:= 5 0 0 0
-Adwm*spawn1:A + F1 = uxterm, A + x = uxterm
-Adwm*togglemax:A + F10, CS + Left
-Adwm*togglefull:A + F11
-Adwm*spawn2:A + F2 = xde-run, -W + r = xde-run
-Adwm*killclient:A + F4, A + F5
-Adwm*iconify:A + F9, A + m
-Adwm*groupnext:A + Tab
-Adwm*raise:A + Up
-Adwm*lower:A + Down
-Adwm*reconfig:A + r
-Adwm*toggleshade:A + s
-Adwm*spawn10:A + space = xde-winmenu -w active -W center
-Adwm*quit:AC + delete
-Adwm*viewprev:AC + Left
-Adwm*viewnext:AC + Right
-Adwm*spawn5:AC + t = roxterm
-Adwm*spawn6:AC + v = gvim
-Adwm*groupprev:AS + Tab
-Adwm*view0:C + F1, A + 1
-Adwm*view9:C + F10, A + 0
-Adwm*view10:C + F11
-Adwm*view11:C + F12
-Adwm*view1:C + F2, A + 2
-Adwm*view2:C + F3, A + 3
-Adwm*view3:C + F4, A + 4
-Adwm*view4:C + F5, A + 5
-Adwm*view5:C + F6, A + 6
-Adwm*view6:C + F7, A + 7
-Adwm*view7:C + F8, A + 8
-Adwm*view8:C + F9, A + 9
-Adwm*spawn4:C + escape = xdg-traymenu -p
-Adwm*togglemax:CS + Left
-Adwm*togglemaxh:CS + Right
-Adwm*togglemaxv:CS + Up
-Adwm*tab9:W + 0
-Adwm*tab0:W + 1
-Adwm*tab1:W + 2
-Adwm*tab2:W + 3
-Adwm*tab3:W + 4
-Adwm*tab4:W + 5
-Adwm*tab5:W + 6
-Adwm*tab6:W + 7
-Adwm*tab7:W + 8
-Adwm*tab8:W + 9
-Adwm*sendto0:W + F1
-Adwm*sendto9:W + F10
-Adwm*sendto10:W + F11
-Adwm*sendto11:W + F12
-Adwm*sendto1:W + F2
-Adwm*sendto2:W + F3
-Adwm*sendto3:W + F4
-Adwm*sendto4:W + F5
-Adwm*sendto5:W + F6
-Adwm*sendto6:W + F7
-Adwm*sendto7:W + F8
-Adwm*sendto8:W + F9
-Adwm*sendtoprev:W + Left
-Adwm*sendtonext:W + Right
-Adwm*tabnext:W + Tab
-Adwm*spawn3:W + e = pcmanfm
-Adwm*spawn0:W + m = xde-winmenu -w active -W center
-Adwm*taketo0:WC + F1
-Adwm*taketo9:WC + F10
-Adwm*taketo10:WC + F11
-Adwm*taketo11:WC + F12
-Adwm*taketo1:WC + F2
-Adwm*taketo2:WC + F3
-Adwm*taketo3:WC + F4
-Adwm*taketo4:WC + F5
-Adwm*taketo5:WC + F6
-Adwm*taketo6:WC + F7
-Adwm*taketo7:WC + F8
-Adwm*taketo8:WC + F9
-Adwm*taketoprev:WC + Left
-Adwm*taketonext:WC + Right
-Adwm*tabprev:WS + Tab
-Adwm*spawn8:XF86AudioLowerVolume = amixer sset Master,0 1-
-Adwm*spawn9:XF86AudioMuteVolume  = amixer sset Master,0 toggle
-Adwm*spawn7:XF86AudioRaiseVolume = amixer sset Master,0 1+
+:Adwm*appendtag!fluxbox
+:Adwm*focusE!fluxbox
+:Adwm*focusN!fluxbox
+:Adwm*focusS!fluxbox
+:Adwm*focusW!fluxbox
+:Adwm*rmlasttag!fluxbox
+:Adwm*sendmon0!fluxbox
+:Adwm*sendmon1!fluxbox
+:Adwm*sendmon2!fluxbox
+:Adwm*sendmon3!fluxbox
+:Adwm*sendmonnext!fluxbox
+:Adwm*sendmonprev!fluxbox
+:Adwm*setlayoutl!fluxbox
+:Adwm*setlayoutt!fluxbox
+:Adwm*setlayoutu!fluxbox
+:Adwm*spawn0!fluxbox
+:Adwm*toggledecor!fluxbox
+:Adwm*toggleshowing!fluxbox
+:Adwm*togglesticky!fluxbox
+= -5 0 0 0:Adwm*moveleft!fluxbox
+= 0 -5 0 0:Adwm*moveup!fluxbox
+= 0 5 0 0:Adwm*movedown!fluxbox
+= 5 0 0 0:Adwm*moveright!fluxbox
+A + 0:Adwm*view9!fluxbox
+A + 1:Adwm*view0!fluxbox
+A + 2:Adwm*view1!fluxbox
+A + 3:Adwm*view2!fluxbox
+A + 4:Adwm*view3!fluxbox
+A + 5:Adwm*view4!fluxbox
+A + 6:Adwm*view5!fluxbox
+A + 7:Adwm*view6!fluxbox
+A + 8:Adwm*view7!fluxbox
+A + 9:Adwm*view8!fluxbox
+A + Down:Adwm*lower!fluxbox
+A + F1 = uxterm:Adwm*spawn1!fluxbox
+A + F10:Adwm*togglemax!fluxbox
+A + F11:Adwm*togglefull!fluxbox
+A + F2 = xde-run:Adwm*spawn2!fluxbox
+A + F4:Adwm*killclient!fluxbox
+A + F5:Adwm*killclient!fluxbox
+A + F9:Adwm*iconify!fluxbox
+A + Tab:Adwm*groupnext!fluxbox
+A + Up:Adwm*raise!fluxbox
+A + m:Adwm*iconify!fluxbox
+A + r:Adwm*reconfig!fluxbox
+A + s:Adwm*toggleshade!fluxbox
+A + space = xde-winmenu -w active -W center:Adwm*spawn10!fluxbox
+A + x = uxterm:Adwm*spawn1!fluxbox
+AC + Left:Adwm*viewprev!fluxbox
+AC + Right:Adwm*viewnext!fluxbox
+AC + delete:Adwm*quit!fluxbox
+AC + t = roxterm:Adwm*spawn5!fluxbox
+AC + v = gvim:Adwm*spawn6!fluxbox
+AS + Tab:Adwm*groupprev!fluxbox
+C + F10:Adwm*view9!fluxbox
+C + F11:Adwm*view10!fluxbox
+C + F12:Adwm*view11!fluxbox
+C + F1:Adwm*view0!fluxbox
+C + F2:Adwm*view1!fluxbox
+C + F3:Adwm*view2!fluxbox
+C + F4:Adwm*view3!fluxbox
+C + F5:Adwm*view4!fluxbox
+C + F6:Adwm*view5!fluxbox
+C + F7:Adwm*view6!fluxbox
+C + F8:Adwm*view7!fluxbox
+C + F9:Adwm*view8!fluxbox
+C + escape = xdg-traymenu -p:Adwm*spawn4!fluxbox
+CS + Left:Adwm*togglemax!fluxbox
+CS + Left:Adwm*togglemax!fluxbox
+CS + Right:Adwm*togglemaxh!fluxbox
+CS + Up:Adwm*togglemaxv!fluxbox
+W + 0:Adwm*tab9!fluxbox
+W + 1:Adwm*tab0!fluxbox
+W + 2:Adwm*tab1!fluxbox
+W + 3:Adwm*tab2!fluxbox
+W + 4:Adwm*tab3!fluxbox
+W + 5:Adwm*tab4!fluxbox
+W + 6:Adwm*tab5!fluxbox
+W + 7:Adwm*tab6!fluxbox
+W + 8:Adwm*tab7!fluxbox
+W + 9:Adwm*tab8!fluxbox
+W + F10:Adwm*sendto9!fluxbox
+W + F11:Adwm*sendto10!fluxbox
+W + F12:Adwm*sendto11!fluxbox
+W + F1:Adwm*sendto0!fluxbox
+W + F2:Adwm*sendto1!fluxbox
+W + F3:Adwm*sendto2!fluxbox
+W + F4:Adwm*sendto3!fluxbox
+W + F5:Adwm*sendto4!fluxbox
+W + F6:Adwm*sendto5!fluxbox
+W + F7:Adwm*sendto6!fluxbox
+W + F8:Adwm*sendto7!fluxbox
+W + F9:Adwm*sendto8!fluxbox
+W + Left:Adwm*sendtoprev!fluxbox
+W + Right:Adwm*sendtonext!fluxbox
+W + Tab:Adwm*tabnext!fluxbox
+W + e = pcmanfm:Adwm*spawn3!fluxbox
+W + m = xde-winmenu -w active -W center:Adwm*spawn0!fluxbox
+W + r = xde-run:Adwm*spawn2!fluxbox
+WC + F10:Adwm*taketo9!fluxbox
+WC + F11:Adwm*taketo10!fluxbox
+WC + F12:Adwm*taketo11!fluxbox
+WC + F1:Adwm*taketo0!fluxbox
+WC + F2:Adwm*taketo1!fluxbox
+WC + F3:Adwm*taketo2!fluxbox
+WC + F4:Adwm*taketo3!fluxbox
+WC + F5:Adwm*taketo4!fluxbox
+WC + F6:Adwm*taketo5!fluxbox
+WC + F7:Adwm*taketo6!fluxbox
+WC + F8:Adwm*taketo7!fluxbox
+WC + F9:Adwm*taketo8!fluxbox
+WC + Left:Adwm*taketoprev!fluxbox
+WC + Right:Adwm*taketonext!fluxbox
+WS + Tab:Adwm*tabprev!fluxbox
+XF86AudioLowerVolume = amixer sset Master,0 1-:Adwm*spawn8!fluxbox
+XF86AudioMuteVolume  = amixer sset Master,0 toggle:Adwm*spawn9!fluxbox
+XF86AudioRaiseVolume = amixer sset Master,0 1+:Adwm*spawn7!fluxbox

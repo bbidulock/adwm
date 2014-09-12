@@ -1,115 +1,118 @@
-Adwm*togglemax:
-Adwm*view9:W + 0
-Adwm*view0:W + 1
-Adwm*view1:W + 2
-Adwm*view2:W + 3
-Adwm*view3:W + 4
-Adwm*view4:W + 5
-Adwm*view5:W + 6
-Adwm*view6:W + 7
-Adwm*view7:W + 8
-Adwm*view8:W + 9
-Adwm*viewnext:W + Down
-Adwm*view10:W + F1
-Adwm*view19:W + F10
-Adwm*view20:W + F11
-Adwm*view21:W + F12
-Adwm*view11:W + F2
-Adwm*view12:W + F3
-Adwm*view13:W + F4
-Adwm*view14:W + F5
-Adwm*view15:W + F6
-Adwm*view16:W + F7
-Adwm*view17:W + F8
-Adwm*view18:W + F9
-Adwm*screen0:W + KP_1
-Adwm*screen1:W + KP_2
-Adwm*screen2:W + KP_3
-Adwm*screen3:W + KP_4
-Adwm*screen4:W + KP_5
-Adwm*screen5:W + KP_6
-Adwm*screen6:W + KP_7
-Adwm*screen7:W + KP_8
-Adwm*screen8:W + KP_9
-Adwm*viewprevwin:W + Left
-Adwm*zoom:W + Return
-Adwm*viewnextwin:W + Right
-Adwm*viewprev:W + Up
-Adwm*taketonext:W + a
-Adwm*togglestrutsall:W + b
-Adwm*spawn6:W + backslash = xde-findws
-Adwm*moveleft:W + bracketleft
-Adwm*moveright:W + bracketright
-Adwm*incnmaster:W + comma
-Adwm*resizeincx:W + equal = -3 0 6 0
-Adwm*spawn7:W + f = xde-findwin
-Adwm*decmwfact:W + h
-Adwm*focusnext:W + j, W + Tab
-Adwm*focusprev:W + k, WS + Tab
-Adwm*incmwfact:W + l
-Adwm*focusmain:W + m
-Adwm*resizedecx:W + minus = 3 0 -6 0
-Adwm*spawn1:W + p = xdg-traymenu -p
-Adwm*decnmaster:W + period
-Adwm*restart:W + q
-Adwm*spawn2:W + s = scrot
-Adwm*layoutnext:W + space
-Adwm*togglefloating:W + t
-Adwm*focusurgent:W + u
-Adwm*button2:W + v
-Adwm*iconify:W + w
-Adwm*killclient:W + x, WS + x
-Adwm*sendto9:WS + 0
-Adwm*sendto0:WS + 1
-Adwm*sendto1:WS + 2
-Adwm*sendto2:WS + 3
-Adwm*sendto3:WS + 4
-Adwm*sendto4:WS + 5
-Adwm*sendto5:WS + 6
-Adwm*sendto6:WS + 7
-Adwm*sendto7:WS + 8
-Adwm*sendto8:WS + 9
-Adwm*spawn4:WS + Delete = xde-xlock -l
-Adwm*taketoprev:WS + Down
-Adwm*sendto10:WS + F1
-Adwm*sendto19:WS + F10
-Adwm*sendto20:WS + F11
-Adwm*sendto21:WS + F12
-Adwm*sendto11:WS + F2
-Adwm*sendto12:WS + F3
-Adwm*sendto13:WS + F4
-Adwm*sendto14:WS + F5
-Adwm*sendto15:WS + F6
-Adwm*sendto16:WS + F7
-Adwm*sendto17:WS + F8
-Adwm*sendto18:WS + F9
-Adwm*toscreen0:WS + KP_1
-Adwm*toscreen1:WS + KP_2
-Adwm*toscreen2:WS + KP_3
-Adwm*toscreen3:WS + KP_4
-Adwm*toscreen4:WS + KP_5
-Adwm*toscreen5:WS + KP_6
-Adwm*toscreen6:WS + KP_7
-Adwm*toscreen7:WS + KP_8
-Adwm*toscreen8:WS + KP_9
-Adwm*screenprev:WS + Left
-Adwm*spawn0:WS + Return = xterm
-Adwm*screennext:WS + Right
-Adwm*viewlast:WS + Up
-Adwm*togglestruts:WS + b
-Adwm*fliplayout:WS + backslash
-Adwm*moveup:WS + bracketleft
-Adwm*movedown:WS + bracketright
-Adwm*incncolumns:WS + comma
-Adwm*resizeincy:WS + equal = 0 -3 0 6
-Adwm*initscr:WS + i
-Adwm*swapnext:WS + j
-Adwm*swapprev:WS + k
-Adwm*resizedecy:WS + minus = 0 3 0 -6
-Adwm*decncolumns:WS + period
-Adwm*quit:WS + q
-Adwm*raisetiled:WS + r
-Adwm*spawn3:WS + s = scrot -s
-Adwm*spawn5:WS + slash = xde-namews
-Adwm*resetlayout:WS + space
-Adwm*uniconify:WS + w
+:Adwm*togglemax!spectrwm
+W + 0:Adwm*view9!spectrwm
+W + 1:Adwm*view0!spectrwm
+W + 2:Adwm*view1!spectrwm
+W + 3:Adwm*view2!spectrwm
+W + 4:Adwm*view3!spectrwm
+W + 5:Adwm*view4!spectrwm
+W + 6:Adwm*view5!spectrwm
+W + 7:Adwm*view6!spectrwm
+W + 8:Adwm*view7!spectrwm
+W + 9:Adwm*view8!spectrwm
+W + Down:Adwm*viewnext!spectrwm
+W + F10:Adwm*view19!spectrwm
+W + F11:Adwm*view20!spectrwm
+W + F12:Adwm*view21!spectrwm
+W + F1:Adwm*view10!spectrwm
+W + F2:Adwm*view11!spectrwm
+W + F3:Adwm*view12!spectrwm
+W + F4:Adwm*view13!spectrwm
+W + F5:Adwm*view14!spectrwm
+W + F6:Adwm*view15!spectrwm
+W + F7:Adwm*view16!spectrwm
+W + F8:Adwm*view17!spectrwm
+W + F9:Adwm*view18!spectrwm
+W + KP_1:Adwm*screen0!spectrwm
+W + KP_2:Adwm*screen1!spectrwm
+W + KP_3:Adwm*screen2!spectrwm
+W + KP_4:Adwm*screen3!spectrwm
+W + KP_5:Adwm*screen4!spectrwm
+W + KP_6:Adwm*screen5!spectrwm
+W + KP_7:Adwm*screen6!spectrwm
+W + KP_8:Adwm*screen7!spectrwm
+W + KP_9:Adwm*screen8!spectrwm
+W + Left:Adwm*viewprevwin!spectrwm
+W + Return:Adwm*zoom!spectrwm
+W + Right:Adwm*viewnextwin!spectrwm
+W + Tab:Adwm*focusnext!spectrwm
+W + Up:Adwm*viewprev!spectrwm
+W + a:Adwm*taketonext!spectrwm
+W + b:Adwm*togglestrutsall!spectrwm
+W + slash = xde-findws:Adwm*spawn6!spectrwm
+W + bracketleft:Adwm*moveleft!spectrwm
+W + bracketright:Adwm*moveright!spectrwm
+W + comma:Adwm*incnmaster!spectrwm
+W + equal = -3 0 6 0:Adwm*resizeincx!spectrwm
+W + f = xde-findwin:Adwm*spawn7!spectrwm
+W + h:Adwm*decmwfact!spectrwm
+W + j:Adwm*focusnext!spectrwm
+W + k:Adwm*focusprev!spectrwm
+W + l:Adwm*incmwfact!spectrwm
+W + m:Adwm*focusmain!spectrwm
+W + minus = 3 0 -6 0:Adwm*resizedecx!spectrwm
+W + p = xdg-traymenu -p:Adwm*spawn1!spectrwm
+W + period:Adwm*decnmaster!spectrwm
+W + q:Adwm*restart!spectrwm
+W + s = scrot:Adwm*spawn2!spectrwm
+W + space:Adwm*layoutnext!spectrwm
+W + t:Adwm*togglefloating!spectrwm
+W + u:Adwm*focusurgent!spectrwm
+W + v:Adwm*button2!spectrwm
+W + w:Adwm*iconify!spectrwm
+W + x:Adwm*killclient!spectrwm
+WS + 0:Adwm*sendto9!spectrwm
+WS + 1:Adwm*sendto0!spectrwm
+WS + 2:Adwm*sendto1!spectrwm
+WS + 3:Adwm*sendto2!spectrwm
+WS + 4:Adwm*sendto3!spectrwm
+WS + 5:Adwm*sendto4!spectrwm
+WS + 6:Adwm*sendto5!spectrwm
+WS + 7:Adwm*sendto6!spectrwm
+WS + 8:Adwm*sendto7!spectrwm
+WS + 9:Adwm*sendto8!spectrwm
+WS + Delete = xde-xlock -l:Adwm*spawn4!spectrwm
+WS + Down:Adwm*taketoprev!spectrwm
+WS + F10:Adwm*sendto19!spectrwm
+WS + F11:Adwm*sendto20!spectrwm
+WS + F12:Adwm*sendto21!spectrwm
+WS + F1:Adwm*sendto10!spectrwm
+WS + F2:Adwm*sendto11!spectrwm
+WS + F3:Adwm*sendto12!spectrwm
+WS + F4:Adwm*sendto13!spectrwm
+WS + F5:Adwm*sendto14!spectrwm
+WS + F6:Adwm*sendto15!spectrwm
+WS + F7:Adwm*sendto16!spectrwm
+WS + F8:Adwm*sendto17!spectrwm
+WS + F9:Adwm*sendto18!spectrwm
+WS + KP_1:Adwm*toscreen0!spectrwm
+WS + KP_2:Adwm*toscreen1!spectrwm
+WS + KP_3:Adwm*toscreen2!spectrwm
+WS + KP_4:Adwm*toscreen3!spectrwm
+WS + KP_5:Adwm*toscreen4!spectrwm
+WS + KP_6:Adwm*toscreen5!spectrwm
+WS + KP_7:Adwm*toscreen6!spectrwm
+WS + KP_8:Adwm*toscreen7!spectrwm
+WS + KP_9:Adwm*toscreen8!spectrwm
+WS + Left:Adwm*screenprev!spectrwm
+WS + Return = xterm:Adwm*spawn0!spectrwm
+WS + Right:Adwm*screennext!spectrwm
+WS + Tab:Adwm*focusprev!spectrwm
+WS + Up:Adwm*viewlast!spectrwm
+WS + b:Adwm*togglestruts!spectrwm
+WS + backslash:Adwm*fliplayout!spectrwm
+WS + bracketleft:Adwm*moveup!spectrwm
+WS + bracketright:Adwm*movedown!spectrwm
+WS + comma:Adwm*incncolumns!spectrwm
+WS + equal = 0 -3 0 6:Adwm*resizeincy!spectrwm
+WS + i:Adwm*initscr!spectrwm
+WS + j:Adwm*swapnext!spectrwm
+WS + k:Adwm*swapprev!spectrwm
+WS + minus = 0 3 0 -6:Adwm*resizedecy!spectrwm
+WS + period:Adwm*decncolumns!spectrwm
+WS + q:Adwm*quit!spectrwm
+WS + r:Adwm*raisetiled!spectrwm
+WS + s = scrot -s:Adwm*spawn3!spectrwm
+WS + slash = xde-namews:Adwm*spawn5!spectrwm
+WS + space:Adwm*resetlayout!spectrwm
+WS + w:Adwm*uniconify!spectrwm
+WS + x:Adwm*killclient!spectrwm

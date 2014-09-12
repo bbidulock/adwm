@@ -1,0 +1,278 @@
+! ADWM default key bindings file
+
+Adwm*modkey:A
+
+Adwm*appendtag:AC + equal
+Adwm*arrange:AS + F5
+Adwm*arrangeicons:AS + F8
+Adwm*begmove:A + F7
+Adwm*begmoveresize:AC + a : Return
+Adwm*begmoveresize:WS + m
+Adwm*begsize:A + F8
+Adwm*button2:W + v
+Adwm*decborder:WAS + b = 1
+Adwm*decmargin:WAS + m = 1
+Adwm*decmwfact:A + h = -0.05, W + h = -0.05
+Adwm*decncolumns:WC + l = -1, WS + period = -1
+Adwm*decnmaster:AS + j = -1, W + period = -1, WS + l = -1
+Adwm*docknext:AC + Tab
+Adwm*dockprev:ACS + Tab
+Adwm*edgetoE:AC + c : S + d, AC + c : S + l
+Adwm*edgetoN:AC + c : S + w, AC + c : S + y
+Adwm*edgetoS:AC + c : S + b, AC + c : S + x
+Adwm*edgetoW:AC + c : S + a
+Adwm*fillleft:W + Left
+Adwm*fillright:W + Right
+Adwm*fliplayout:WS + backslash
+Adwm*focusnext:A + Escape, A + Tab, A + j, W + Tab, W + j
+Adwm*focusprev:A + k, AS + Escape, AS + Tab, W + k, WS + Tab
+Adwm*focusurgent:W + u
+Adwm*groupnext:A + Above_Tab, A + F6, W + Above_Tab
+Adwm*groupprev:AS + Above_Tab, AS + F6, WS + Above_Tab
+Adwm*hide:AS + F12, AS + h
+Adwm*hideall:AS + F11
+Adwm*iconify:A + F9, AS + m, W + i, W + n, W + w
+Adwm*iconifyall:AS + F9
+Adwm*incborder:WA + b = 1
+Adwm*incmargin:WA + m = 1
+Adwm*incmwfact:A + l = +0.05, W + l = +0.05
+Adwm*incncolumns:WC + h = +1, WS + comma = +1
+Adwm*incnmaster:AS + k = +1, W + comma = +1, WS + h = +1
+Adwm*initscr:WS + i
+Adwm*killclient:A + F4, A + F5, A + q, AC + a : q : f, AC + a : q : k, AC + a : q : q, AS + c, W + q, W + x, WS + c, WS + x
+Adwm*layoutnext:W + space
+Adwm*layoutprev:WS + space
+Adwm*lower:A + Down, AC + a : S + l, AC + a : l
+Adwm*movedown:WS + bracketright = 0 5 0 0
+Adwm*moveleft:W + bracketleft = -5 0 0 0
+Adwm*moveright:W + bracketright = 5 0 0 0
+Adwm*movetoC:AC + KP_5, AC + c : h, AC + c : s
+Adwm*movetoE:AC + KP_6, AC + c : d, AC + c : l
+Adwm*movetoN:AC + KP_8, AC + c : w, AC + c : y
+Adwm*movetoNE:AC + KP_9, AC + c : e, AC + c : p
+Adwm*movetoNW:AC + KP_7, AC + c : q
+Adwm*movetoS:AC + KP_2, AC + c : b, AC + c : x
+Adwm*movetoSE:AC + KP_3, AC + c : c, AC + c : m
+Adwm*movetoSW:AC + KP_1, AC + c : c, AC + c : m
+Adwm*movetoW:AC + KP_4, AC + c : a
+Adwm*moveup:WS + bracketleft = 0 -5 0 0
+Adwm*panelnext:AC + Escape
+Adwm*panelprev:ACS + Escape
+Adwm*quit:AC + p : End, AC + q, WS + q
+Adwm*raise:A + Up, AC + a : S + r, AC + a : r
+Adwm*raiselower:A + Home, A + Left, AC + a : u
+Adwm*raisetiled:WS + r
+Adwm*reload:AC + p : Delete
+Adwm*resizedecx:AS + a = 3 0 -6 0, W + minus = 3 0 -6 0
+Adwm*resizedecy:AS + s = 0 3 0 -6, WS + minus = 0 3 0 -6
+Adwm*resizeincx:AC + a : Left = -3 0 6 0, AC + a : Right -3 0 6 0, AS + d = -3 0 6 0, W + equal = -3 0 6 0
+Adwm*resizeincy:AC + a : Down 0 -3 0 6, AC + a : Up = 0 -3 0 6, AS + w = 0 -3 0 6, WS + equal = 0 -3 0 6
+Adwm*restart:AC + p : Next, AC + p : Prior = twm, AS + q, WC + r
+Adwm*rmlasttag:AC + minus
+Adwm*rotateview:A + y
+Adwm*rotatewins:A + e
+Adwm*rotatezone:AC + y
+Adwm*screen0:W + KP_1
+Adwm*screen1:W + KP_2
+Adwm*screen2:W + KP_3
+Adwm*screen3:W + KP_4
+Adwm*screen4:W + KP_5
+Adwm*screen5:W + KP_6
+Adwm*screen6:W + KP_7
+Adwm*screen7:W + KP_8
+Adwm*screen8:W + KP_9
+Adwm*screennext:A + period, W + Next, WC + j, WS + Right
+Adwm*screenprev:A + comma, W + Prior, WC + k, WS + Left
+Adwm*scrto0:WS + KP_1
+Adwm*scrto1:WS + KP_2
+Adwm*scrto2:WS + KP_3
+Adwm*scrto3:WS + KP_4
+Adwm*scrto4:WS + KP_5
+Adwm*scrto5:WS + KP_6
+Adwm*scrto6:WS + KP_7
+Adwm*scrto7:WS + KP_8
+Adwm*scrto8:WS + KP_9
+Adwm*scrtonext:AS + period, W + o
+Adwm*scrtoprev:AS + comma
+Adwm*sendto0:W + F1, WS + 1
+Adwm*sendto10:W + F11, WS + F1
+Adwm*sendto11:W + F12, WS + F2
+Adwm*sendto12:WS + F3
+Adwm*sendto13:WS + F4
+Adwm*sendto14:WS + F5
+Adwm*sendto15:WS + F6
+Adwm*sendto16:WS + F7
+Adwm*sendto17:WS + F8
+Adwm*sendto18:WS + F9
+Adwm*sendto19:WS + F10
+Adwm*sendto1:W + F2, WS + 2
+Adwm*sendto20:WS + F11
+Adwm*sendto21:WS + F12
+Adwm*sendto2:W + F3, WS + 3
+Adwm*sendto3:W + F4, WS + 4
+Adwm*sendto4:W + F5, WS + 5
+Adwm*sendto5:W + F6, WS + 6
+Adwm*sendto6:W + F7, WS + 7
+Adwm*sendto7:W + F8, WS + 8
+Adwm*sendto8:W + F9, WS + 9
+Adwm*sendto9:W + F10, WS + 0
+Adwm*sendtodown:AS + Down
+Adwm*sendtoleft:AS + Left
+Adwm*sendtoright:AS + Right
+Adwm*sendtoup:AS + Up
+Adwm*setlayoutb:A + w
+Adwm*setlayoutf:A + f, AS + F4
+Adwm*setlayoutg:A + g
+Adwm*setlayouti:A + i, AS + F7
+Adwm*setlayoutl:A + t
+Adwm*setlayoutm:A + m
+Adwm*setlayoutt:A + r, AS + F3
+Adwm*setlayoutu:A + u, AS + F2
+Adwm*smartplace:ACS + KP_5
+Adwm*snaptoE:ACS + KP_6
+Adwm*snaptoN:ACS + KP_8
+Adwm*snaptoNE:ACS + KP_9
+Adwm*snaptoNW:ACS + KP_7
+Adwm*snaptoS:ACS + KP_2
+Adwm*snaptoSE:ACS + KP_3
+Adwm*snaptoSW:ACS + KP_1
+Adwm*snaptoW:ACS + KP_4
+Adwm*spawn0:A + F1 = uxterm
+Adwm*spawn1:A + F2 = xde-run
+Adwm*spawn2:A + Print = scrot -s
+Adwm*spawn3:A + space = xde-winmenu -w active -W center
+Adwm*spawn4:A + x = uxterm
+Adwm*spawn5:AC + Delete = xde-logout
+Adwm*spawn6:AC + Return = uxterm
+Adwm*spawn7:AC + e : c = xde-run
+Adwm*spawn8:AC + e : e = uxterm
+Adwm*spawn9:AC + e : l = xde-xlock -l
+Adwm*spawn10:AC + e : s = scrot -s
+Adwm*spawn11:AC + f = pcmanfm
+Adwm*spawn12:AC + m = xdg-traymenu -p
+Adwm*spawn13:AC + n = uxterm
+Adwm*spawn14:AC + p : d = xde-run
+Adwm*spawn15:AC + r = xde-run
+Adwm*spawn16:AC + t = roxterm
+Adwm*spawn17:AC + v = gvim
+Adwm*spawn18:AC + w = firefox
+Adwm*spawn19:AC + x = uxterm
+Adwm*spawn20:AS + Return = uxterm
+Adwm*spawn21:C + Escape = xdg-traymenu -p
+Adwm*spawn22:F11 = xde-winlist
+Adwm*spawn23:F12 = xdg-traymenu -p
+Adwm*spawn24:S + Escape = xde-winmenu -w active -W center
+Adwm*spawn25:W + e = pcmanfm
+Adwm*spawn26:W + p = xdg-traymenu -p
+Adwm*spawn27:W + r = xde-run
+Adwm*spawn28:W + s = scrot
+Adwm*spawn29:W + slash = xde-findws
+Adwm*spawn30:WS + Delete = xde-xlock -l
+Adwm*spawn31:WS + Return = uxterm
+Adwm*spawn32:WS + s = scrot -s
+Adwm*spawn33:WS + slash = xde-namews
+Adwm*swapnext:WS + j
+Adwm*swapprev:WS + k
+Adwm*tag0:AS + 1
+Adwm*tag10:AS + bracketleft
+Adwm*tag11:AS + bracketright
+Adwm*tag1:AS + 2
+Adwm*tag2:AS + 3
+Adwm*tag3:AS + 4
+Adwm*tag4:AS + 5
+Adwm*tag5:AS + 6
+Adwm*tag6:AS + 7
+Adwm*tag7:AS + 8
+Adwm*tag8:AS + 9
+Adwm*tag9:AS + 0
+Adwm*taketo0:WC + F1
+Adwm*taketo10:WC + F11
+Adwm*taketo11:WC + F12
+Adwm*taketo1:WC + F2
+Adwm*taketo2:WC + F3
+Adwm*taketo3:WC + F4
+Adwm*taketo4:WC + F5
+Adwm*taketo5:WC + F6
+Adwm*taketo6:WC + F7
+Adwm*taketo7:WC + F8
+Adwm*taketo8:WC + F9
+Adwm*taketo9:WC + F10
+Adwm*taketodown:ACS + Down, WC + Down, WS + Page_Down
+Adwm*taketoleft:WS + Home
+Adwm*taketonext:ACS + Right, W + a, WC + Right
+Adwm*taketoprev:ACS + Left, WC + Left, WS + Down
+Adwm*taketoright:WS + End
+Adwm*taketoup:ACS + Up, WC + Up, WS + Page_Up
+Adwm*toggleabove:A + Right, AC + a : o
+Adwm*togglebelow:AC + a : b
+Adwm*toggledectiled:A + d
+Adwm*togglefill:AC + a : g : g, CS + Down
+Adwm*togglefillh:AC + a : g : h
+Adwm*togglefillv:AC + a : g : v
+Adwm*togglefloating:AS + space, W + t, WC + space
+Adwm*togglefocus:W + g
+Adwm*togglefull:A + F11, AC + a : f, W + f
+Adwm*togglemax:A + F10, AC + a : m : m, CS + Left, W + m
+Adwm*togglemaxh:AC + a : m : h, CS + Right
+Adwm*togglemaxv:AC + a : m : v, AS + F10, CS + Up
+Adwm*togglemonitor:A + grave
+Adwm*toggleselect:W + z
+Adwm*toggleshade:A + F12, A + s, AC + a : s
+Adwm*toggleshowing:AC + d, W + d
+Adwm*togglesticky:AC + a : a, AC + s
+Adwm*togglestruts:A + b, AC + p : h, AC + space, WS + b
+Adwm*togglestrutsall:W + b
+Adwm*toggletag0:ACS + 1, WCS + 1
+Adwm*toggletag10:ACS + bracketleft, WCS + bracketleft
+Adwm*toggletag11:ACS + bracketright, WCS + bracketright
+Adwm*toggletag1:ACS + 2, WCS + 2
+Adwm*toggletag2:ACS + 3, WCS + 3
+Adwm*toggletag3:ACS + 4, WCS + 4
+Adwm*toggletag4:ACS + 5, WCS + 5
+Adwm*toggletag5:ACS + 6, WCS + 6
+Adwm*toggletag6:ACS + 7, WCS + 7
+Adwm*toggletag7:ACS + 8, WCS + 8
+Adwm*toggletag8:ACS + 9, WCS + 9
+Adwm*toggletag9:ACS + 0, WCS + 0
+Adwm*toggleview0:AC + 1, WC + 1
+Adwm*toggleview10:AC + bracketleft, WC + bracketleft
+Adwm*toggleview11:AC + bracketright, WC + bracketright
+Adwm*toggleview1:AC + 2, WC + 2
+Adwm*toggleview2:AC + 3, WC + 3
+Adwm*toggleview3:AC + 4, WC + 4
+Adwm*toggleview4:AC + 5, WC + 5
+Adwm*toggleview5:AC + 6, WC + 6
+Adwm*toggleview6:AC + 7, WC + 7
+Adwm*toggleview7:AC + 8, WC + 8
+Adwm*toggleview8:AC + 9, WC + 9
+Adwm*toggleview9:AC + 0, WC + 0
+Adwm*uniconify:WS + w
+Adwm*unmax:A + F5, WC + n
+Adwm*unrotateview:AS + y
+Adwm*unrotatewins:AS + e
+Adwm*unrotatezone:ACS + y
+Adwm*view0:A + 1, C + F1, W + 1
+Adwm*view10:A + bracketleft, C + F11
+Adwm*view11:A + bracketright, C + F12
+Adwm*view1:A + 2, C + F2, W + 2
+Adwm*view2:A + 3, C + F3, W + 3
+Adwm*view3:A + 4, C + F4, W + 4
+Adwm*view4:A + 5, C + F5, W + 5
+Adwm*view5:A + 6, C + F6, W + 6
+Adwm*view6:A + 7, C + F7, W + 7
+Adwm*view7:A + 8, C + F8, W + 8
+Adwm*view8:A + 9, C + F9, W + 9
+Adwm*view9:A + 0, C + F10, W + 0
+Adwm*viewdown:AC + Down, AC + j, W + Page_Down
+Adwm*viewlast:W + Escape, WS + Up
+Adwm*viewleft:AC + h, W + Home
+Adwm*viewnext:AC + Right, W + Up
+Adwm*viewprev:AC + Left, W + Down
+Adwm*viewright:AC + l, W + End
+Adwm*viewup:AC + Up, AC + k, W + Page_Up
+Adwm*zoom:A + Return, W + Return, WC + Return
+
+Adwm*command:xdg-traymenu -p -b 1
+
+! vim: set ft=xdefaults:
+

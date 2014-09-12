@@ -1,423 +1,423 @@
-A + 0:Adwm*view9
-A + 1:Adwm*view0
-A + 2:Adwm*view1
-A + 3:Adwm*view2
-A + 4:Adwm*view3
-A + 5:Adwm*view4
-A + 6:Adwm*view5
-A + 7:Adwm*view6
-A + 8:Adwm*view7
-A + 9:Adwm*view8
-A + Above_Tab:Adwm*groupnext
-A + Down:Adwm*lower
-A + Escape:Adwm*focusnext
-A + F1 = uxterm:Adwm*spawn5
-A + F10:Adwm*togglemax
-A + F11:Adwm*togglefull
-A + F12:Adwm*toggleshade
-A + F2 = xde-run:Adwm*spawn6
-A + F3:Adwm*raiselower
-A + F4:Adwm*killclient
-A + F5:Adwm*killclient
-A + F6:Adwm*focusnextany
-A + F7:Adwm*begmove
-A + F8:Adwm*begsize
-A + F9:Adwm*iconify
-A + Home:Adwm*raiselower
-A + Left:Adwm*raiselower
-A + Return:Adwm*zoom
-A + Tab:Adwm*viewprevtag
-A + Up:Adwm*raise
-A + b:Adwm*togglestruts
-A + bracketleft:Adwm*view10
-A + bracketright:Adwm*view11
-A + comma:Adwm*screenprev
-A + d:Adwm*toggledectiled
-A + e:Adwm*rotatewins
-A + f:Adwm*setlayoutf
-A + g:Adwm*setlayoutg
-A + grave:Adwm*togglemonitor
-A + h = 5%:Adwm*decmwfact
-A + i:Adwm*setlayouti
-A + j:Adwm*focusnext
-A + k:Adwm*focusprev
-A + l = 5%:Adwm*incmwfact
-A + m:Adwm*setlayoutm
-A + period:Adwm*screennext
-A + q:Adwm*killclient
-A + r:Adwm*setlayoutt
-A + s:Adwm*focusview6
-A + space = xde-winmenu -w active -W center:Adwm*spawn7
-A + space:Adwm*togglefloating
-A + t:Adwm*setlayoutl
-A + u:Adwm*setlayoutu
-A + w:Adwm*setlayoutb
-A + y:Adwm*rotateview
-AC + 0:Adwm*view9
-AC + 1:Adwm*view0
-AC + 2:Adwm*view1
-AC + 3:Adwm*view2
-AC + 4:Adwm*view3
-AC + 5:Adwm*view4
-AC + 6:Adwm*view5
-AC + 7:Adwm*view6
-AC + 8:Adwm*view7
-AC + 9:Adwm*view8
-AC + Delete:Adwm*quit
-AC + Down:Adwm*viewdown
-AC + Escape:Adwm*panelnext
-AC + KP_1:Adwm*movetoSW
-AC + KP_2:Adwm*movetoS
-AC + KP_3:Adwm*movetoSE
-AC + KP_4:Adwm*movetoW
-AC + KP_5:Adwm*movetoC
-AC + KP_6:Adwm*movetoE
-AC + KP_7:Adwm*movetoNW
-AC + KP_8:Adwm*movetoN
-AC + KP_9:Adwm*movetoNE
-AC + Left:Adwm*viewprev
-AC + Return = uxterm:Adwm*spawn0
-AC + Right:Adwm*viewnext
-AC + Tab:Adwm*panelnext
-AC + Up:Adwm*viewup
-AC + bracketleft:Adwm*view10
-AC + bracketright:Adwm*view11
-AC + d:Adwm*toggleshowing
-AC + h:Adwm*viewleft
-AC + j:Adwm*viewdown
-AC + k:Adwm*viewup
-AC + l:Adwm*viewright
-AC + q:Adwm*quit
-AC + r = xde-run:Adwm*spawn1
-AC + s:Adwm*togglesticky
-AC + space:Adwm*togglestruts
-AC + t = uxterm:Adwm*spawn2
-AC + v = gvim:Adwm*spawn3
-AC + w : 0:Adwm*sendto9
-AC + w : 1:Adwm*sendto0
-AC + w : 2:Adwm*sendto1
-AC + w : 3:Adwm*sendto2
-AC + w : 4:Adwm*sendto3
-AC + w : 5:Adwm*sendto4
-AC + w : 6:Adwm*sendto5
-AC + w : 7:Adwm*sendto6
-AC + w : 8:Adwm*sendto7
-AC + w : 9:Adwm*sendto8
-AC + x = uxterm:Adwm*spawn4
-ACS + 0:Adwm*taketo9
-ACS + 1:Adwm*taketo0
-ACS + 2:Adwm*taketo1
-ACS + 3:Adwm*taketo2
-ACS + 4:Adwm*taketo3
-ACS + 5:Adwm*taketo4
-ACS + 6:Adwm*taketo5
-ACS + 7:Adwm*taketo6
-ACS + 8:Adwm*taketo7
-ACS + 9:Adwm*taketo8
-ACS + Down:Adwm*taketodown
-ACS + Escape:Adwm*panelprev
-ACS + KP_1:Adwm*snaptoSW
-ACS + KP_2:Adwm*snaptoS
-ACS + KP_3:Adwm*snaptoSE
-ACS + KP_4:Adwm*snaptoW
-ACS + KP_5:Adwm*smartplace
-ACS + KP_6:Adwm*snaptoE
-ACS + KP_7:Adwm*snaptoNW
-ACS + KP_8:Adwm*snaptoN
-ACS + KP_9:Adwm*snaptoNE
-ACS + Left:Adwm*taketoprev
-ACS + Right:Adwm*taketonext
-ACS + Tab:Adwm*panelprev
-ACS + Up:Adwm*taketoup
-ACS + bracketleft:Adwm*taketo10
-ACS + bracketright:Adwm*taketo11
-AS + 0:Adwm*tag9
-AS + 1:Adwm*tag0
-AS + 2:Adwm*tag1
-AS + 3:Adwm*tag2
-AS + 4:Adwm*tag3
-AS + 5:Adwm*tag4
-AS + 6:Adwm*tag5
-AS + 7:Adwm*tag6
-AS + 8:Adwm*tag7
-AS + 9:Adwm*tag8
-AS + Above_Tab:Adwm*groupprev
-AS + Down:Adwm*senttodown
-AS + Escape:Adwm*focusprev
-AS + F10:Adwm*togglemaxv
-AS + F11:Adwm*hideall
-AS + F12:Adwm*hide
-AS + F2:Adwm*setlayoutu
-AS + F3:Adwm*setlayoutt
-AS + F4:Adwm*setlayoutf
-AS + F5:Adwm*arrange
-AS + F6:Adwm*activateprev
-AS + F6:Adwm*groupprev
-AS + F7:Adwm*setlayouti
-AS + F8:Adwm*arrangeicons
-AS + F9:Adwm*iconifyall
-AS + Left:Adwm*sendtoleft
-AS + Return = uxterm:Adwm*spawn8
-AS + Right:Adwm*sendtoright
-AS + Tab:Adwm*focusprevall
-AS + Up:Adwm*sendtoup
-AS + a = 0 0 -5 0:Adwm*resizedecx
-AS + bracketleft:Adwm*tag10
-AS + bracketright:Adwm*tag11
-AS + c:Adwm*killclient
-AS + comma:Adwm*scrtoprev
-AS + d:Adwm*toggleshowing
-AS + e:Adwm*unrotatewins
-AS + h:Adwm*hide
-AS + j = 1:Adwm*decnmaster
-AS + k = 1:Adwm*incnmaster
-AS + m:Adwm*iconify
-AS + period:Adwm*scrtonext
-AS + q:Adwm*restart
-AS + s = 0 0 0 -5:Adwm*resizedecy
-AS + space:Adwm*raiselower
-AS + w = 0 0 0 5:Adwm*resizeincy
-AS + y:Adwm*unrotateview
-C + Escape = xdg-traymenu -p:Adwm*spawn9
-C + F10:Adwm*view9
-C + F11:Adwm*view10
-C + F12:Adwm*view11
-C + F1:Adwm*view0
-C + F2:Adwm*view1
-C + F3:Adwm*view2
-C + F4:Adwm*view3
-C + F5:Adwm*view4
-C + F6:Adwm*view5
-C + F7:Adwm*view6
-C + F8:Adwm*view7
-C + F9:Adwm*view8
-CA + 0:Adwm*toggleview9
-CA + 1:Adwm*toggleview0
-CA + 2:Adwm*toggleview1
-CA + 3:Adwm*toggleview2
-CA + 4:Adwm*toggleview3
-CA + 5:Adwm*toggleview4
-CA + 6:Adwm*toggleview5
-CA + 7:Adwm*toggleview6
-CA + 8:Adwm*toggleview7
-CA + 9:Adwm*toggleview8
-CA + Down:Adwm*viewS
-CA + Left:Adwm*viewlefttag
-CA + Left:Adwm*viewprev
-CA + Return:Adwm*toggleshowing
-CA + Right:Adwm*viewnext
-CA + Right:Adwm*viewrighttag
-CA + Up:Adwm*viewN
-CA + f = pcmanfm:Adwm*spawn2
-CA + m = xdg-traymenu -p:Adwm*spawn6
-CA + n = uxterm:Adwm*spawn5
-CA + q:Adwm*quit
-CA + r = xde-run:Adwm*spawn3
-CA + t = roxterm:Adwm*spawn0
-CA + v = gvim:Adwm*spawn4
-CA + w = firefox:Adwm*spawn1
-CA + y:Adwm*rotatezone
-CAS + 0:Adwm*toggletag9
-CAS + 1:Adwm*toggletag0
-CAS + 2:Adwm*toggletag1
-CAS + 3:Adwm*toggletag2
-CAS + 4:Adwm*toggletag3
-CAS + 5:Adwm*toggletag4
-CAS + 6:Adwm*toggletag5
-CAS + 7:Adwm*toggletag6
-CAS + 8:Adwm*toggletag7
-CAS + 9:Adwm*toggletag8
-CAS + Left:Adwm*rmlasttag
-CAS + Right:Adwm*appendtag
-CAS + y:Adwm*unrotatezone
-CS + Down:Adwm*toggleshade
-CS + Left:Adwm*togglemax
-CS + Return:Adwm*toggleselect
-CS + Right:Adwm*togglemaxh
-CS + Up:Adwm*togglemaxv
-CS + _:!Adwm*togglehidden
-F11 = xde-winlist:Adwm*spawn10
-F12 = xdg-traymenu -p:Adwm*spawn11
-S + Escape = xde-winmenu -w active -W center:Adwm*spawn12
-W + 0:Adwm*view9
-W + 1:Adwm*view0
-W + 2:Adwm*view1
-W + 3:Adwm*view2
-W + 4:Adwm*view3
-W + 5:Adwm*view4
-W + 6:Adwm*view5
-W + 7:Adwm*view6
-W + 8:Adwm*view7
-W + 9:Adwm*view8
-W + Above_Tab:Adwm*groupnext
-W + Down:Adwm*viewprev
-W + Escape:Adwm*viewlast
-W + F10:Adwm*view9
-W + F11:Adwm*view10
-W + F12:Adwm*view11
-W + F1:Adwm*view0
-W + F2:Adwm*view1
-W + F3:Adwm*view2
-W + F4:Adwm*view3
-W + F5:Adwm*view4
-W + F6:Adwm*view5
-W + F7:Adwm*view6
-W + F8:Adwm*view7
-W + F9:Adwm*view8
-W + KP_1:Adwm*screen0
-W + KP_2:Adwm*screen1
-W + KP_3:Adwm*screen2
-W + KP_4:Adwm*screen3
-W + KP_5:Adwm*screen4
-W + KP_6:Adwm*screen5
-W + KP_7:Adwm*screen6
-W + KP_8:Adwm*screen7
-W + KP_9:Adwm*screen8
-W + Left:Adwm*fillleft
-W + Page_Down:Adwm*viewdown
-W + Page_Up:Adwm*viewup
-W + Return = uxterm:Adwm*spawn16
-W + Right:Adwm*fillright
-W + Tab:Adwm*focusnext
-W + Up:Adwm*viewnext
-W + a:Adwm*taketonext
-W + b:Adwm*togglestrutsall
-W + backslash = xde-findws:Adwm*spawn13
-W + bracketleft:Adwm*moveleft
-W + bracketright:Adwm*moveright
-W + comma:Adwm*incnmaster
-W + d:Adwm*toggleshowing
-W + e = pcmanfm:Adwm*spawn14
-W + equal = -3 0 6 0:Adwm*resizeincx
-W + f:Adwm*togglefull
-W + g:Adwm*togglefocus
-W + h = -5  0  0  0:Adwm*moveleft
-W + j =  0  5  0  0:Adwm*movedown
-W + k =  0 -5  0  0:Adwm*moveup
-W + l =  5  0  0  0:Adwm*moveright
-W + m:Adwm*focusmain
-W + minus = 3 0 -6 0:Adwm*resizedecx
-W + n:Adwm*iconify
-W + o:Adwm*scrtonext
-W + p = xdg-traymenu -p:Adwm*spawn15
-W + period:Adwm*decnmaster
-W + q:Adwm*restart
-W + r = xde-run:Adwm*spawn17
-W + s = scrot:Adwm*spawn20
-W + space:Adwm*layoutnext
-W + t:Adwm*togglefloating
-W + u:Adwm*focusurgent
-W + v:Adwm*button2
-W + w:Adwm*iconify
-W + x:Adwm*killclient
-WA + b = 1:Adwm*incborder
-WA + m = 1:Adwm*incmargin
-WAS + b = 1:Adwm*decborder
-WAS + m = 1:Adwm*decmargin
-WC + 0:Adwm*toggleview9
-WC + 1:Adwm*toggleview0
-WC + 2:Adwm*toggleview1
-WC + 3:Adwm*toggleview2
-WC + 4:Adwm*toggleview3
-WC + 5:Adwm*toggleview4
-WC + 6:Adwm*toggleview5
-WC + 7:Adwm*toggleview6
-WC + 8:Adwm*toggleview7
-WC + 9:Adwm*toggleview8
-WC + F10:Adwm*taketo9
-WC + F11:Adwm*taketo10
-WC + F12:Adwm*taketo11
-WC + F1:Adwm*taketo0
-WC + F2:Adwm*taketo1
-WC + F3:Adwm*taketo2
-WC + F4:Adwm*taketo3
-WC + F5:Adwm*taketo4
-WC + F6:Adwm*taketo5
-WC + F7:Adwm*taketo6
-WC + F8:Adwm*taketo7
-WC + F9:Adwm*taketo8
-WC + Return:Adwm*zoom
-WC + Right:Adwm*taketonext
-WC + bracketleft:Adwm*toggleview10
-WC + bracketright:Adwm*toggleview11
-WC + h:Adwm*incncolumns
-WC + j:Adwm*screennext
-WC + k:Adwm*screenprev
-WC + l:Adwm*decncolumns
-WC + n:Adwm*unmax
-WC + r:Adwm*restart
-WC + space:Adwm*togglefloating
-WCS + 0:Adwm*toggletag9
-WCS + 1:Adwm*toggletag0
-WCS + 2:Adwm*toggletag1
-WCS + 3:Adwm*toggletag2
-WCS + 4:Adwm*toggletag3
-WCS + 5:Adwm*toggletag4
-WCS + 6:Adwm*toggletag5
-WCS + 7:Adwm*toggletag6
-WCS + 8:Adwm*toggletag7
-WCS + 9:Adwm*toggletag8
-WCS + bracketleft:Adwm*toggletag10
-WCS + bracketright:Adwm*toggletag11
-WS + 0:Adwm*sendto9
-WS + 1:Adwm*sendto0
-WS + 2:Adwm*sendto1
-WS + 3:Adwm*sendto2
-WS + 4:Adwm*sendto3
-WS + 5:Adwm*sendto4
-WS + 6:Adwm*sendto5
-WS + 7:Adwm*sendto6
-WS + 8:Adwm*sendto7
-WS + 9:Adwm*sendto8
-WS + Above_Tab:Adwm*groupprev
-WS + Delete = xde-xlock -l:Adwm*spawn18
-WS + Down:Adwm*focusdown
-WS + F10:Adwm*sendto19
-WS + F11:Adwm*sendto20
-WS + F12:Adwm*sendto21
-WS + F1:Adwm*sendto10
-WS + F2:Adwm*sendto11
-WS + F3:Adwm*sendto12
-WS + F4:Adwm*sendto13
-WS + F5:Adwm*sendto14
-WS + F6:Adwm*sendto15
-WS + F7:Adwm*sendto16
-WS + F8:Adwm*sendto17
-WS + F9:Adwm*sendto18
-WS + KP_1:Adwm*scrto0
-WS + KP_2:Adwm*scrto1
-WS + KP_3:Adwm*scrto2
-WS + KP_4:Adwm*scrto3
-WS + KP_5:Adwm*scrto4
-WS + KP_6:Adwm*scrto5
-WS + KP_7:Adwm*scrto6
-WS + KP_8:Adwm*scrto7
-WS + KP_9:Adwm*scrto8
-WS + Left:Adwm*focusleft
-WS + Page_Down:Adwm*taketodown
-WS + Page_Up:Adwm*taketoup
-WS + Return = roxterm:Adwm*spawn19
-WS + Right:Adwm*focusright
-WS + Tab:Adwm*focusprev
-WS + Up:Adwm*focusup
-WS + b:Adwm*togglestruts
-WS + backslash:Adwm*layoutflip
-WS + bracketleft:Adwm*moveup
-WS + bracketright:Adwm*movedown
-WS + c:Adwm*killclient
-WS + comma:Adwm*incncolumns
-WS + equal = 0 -3 0 6:Adwm*resizeincy
-WS + h = 0  0 -5  0:Adwm*resizedecx
-WS + i:Adwm*initscr
-WS + j = 0  0  0  5:Adwm*resizeincy
-WS + k = 0  0  0 -5:Adwm*resizedecy
-WS + l = 0  0  5  0:Adwm*resizeincx
-WS + m:Adwm*beginmoveresize
-WS + minus = 0 3 0 -6:Adwm*resizedecy
-WS + period:Adwm*decncolumns
-WS + q:Adwm*quit
-WS + r:Adwm*raisetiled
-WS + s = scrot -s:Adwm*spawn21
-WS + space:Adwm*layoutprev
-WS + w:Adwm*uniconify
-WS + x:Adwm*killclient
+A + 0:Adwm*view9!adwm
+A + 1:Adwm*view0!adwm
+A + 2:Adwm*view1!adwm
+A + 3:Adwm*view2!adwm
+A + 4:Adwm*view3!adwm
+A + 5:Adwm*view4!adwm
+A + 6:Adwm*view5!adwm
+A + 7:Adwm*view6!adwm
+A + 8:Adwm*view7!adwm
+A + 9:Adwm*view8!adwm
+A + Above_Tab:Adwm*groupnext!adwm
+A + Down:Adwm*lower!adwm
+A + Escape:Adwm*focusnext!adwm
+A + F1 = uxterm:Adwm*spawn5!adwm
+A + F10:Adwm*togglemax!adwm
+A + F11:Adwm*togglefull!adwm
+A + F12:Adwm*toggleshade!adwm
+A + F2 = xde-run:Adwm*spawn6!adwm
+A + F3:Adwm*raiselower!adwm
+A + F4:Adwm*killclient!adwm
+A + F5:Adwm*killclient!adwm
+A + F6:Adwm*focusnextany!adwm
+A + F7:Adwm*begmove!adwm
+A + F8:Adwm*begsize!adwm
+A + F9:Adwm*iconify!adwm
+A + Home:Adwm*raiselower!adwm
+A + Left:Adwm*raiselower!adwm
+A + Return:Adwm*zoom!adwm
+A + Tab:Adwm*viewprevtag!adwm
+A + Up:Adwm*raise!adwm
+A + b:Adwm*togglestruts!adwm
+A + bracketleft:Adwm*view10!adwm
+A + bracketright:Adwm*view11!adwm
+A + comma:Adwm*screenprev!adwm
+A + d:Adwm*toggledectiled!adwm
+A + e:Adwm*rotatewins!adwm
+A + f:Adwm*setlayoutf!adwm
+A + g:Adwm*setlayoutg!adwm
+A + grave:Adwm*togglemonitor!adwm
+A + h = 5%:Adwm*decmwfact!adwm
+A + i:Adwm*setlayouti!adwm
+A + j:Adwm*focusnext!adwm
+A + k:Adwm*focusprev!adwm
+A + l = 5%:Adwm*incmwfact!adwm
+A + m:Adwm*setlayoutm!adwm
+A + period:Adwm*screennext!adwm
+A + q:Adwm*killclient!adwm
+A + r:Adwm*setlayoutt!adwm
+A + s:Adwm*focusview6!adwm
+A + space = xde-winmenu -w active -W center:Adwm*spawn7!adwm
+A + space:Adwm*togglefloating!adwm
+A + t:Adwm*setlayoutl!adwm
+A + u:Adwm*setlayoutu!adwm
+A + w:Adwm*setlayoutb!adwm
+A + y:Adwm*rotateview!adwm
+AC + 0:Adwm*view9!adwm
+AC + 1:Adwm*view0!adwm
+AC + 2:Adwm*view1!adwm
+AC + 3:Adwm*view2!adwm
+AC + 4:Adwm*view3!adwm
+AC + 5:Adwm*view4!adwm
+AC + 6:Adwm*view5!adwm
+AC + 7:Adwm*view6!adwm
+AC + 8:Adwm*view7!adwm
+AC + 9:Adwm*view8!adwm
+AC + Delete:Adwm*quit!adwm
+AC + Down:Adwm*viewdown!adwm
+AC + Escape:Adwm*panelnext!adwm
+AC + KP_1:Adwm*movetoSW!adwm
+AC + KP_2:Adwm*movetoS!adwm
+AC + KP_3:Adwm*movetoSE!adwm
+AC + KP_4:Adwm*movetoW!adwm
+AC + KP_5:Adwm*movetoC!adwm
+AC + KP_6:Adwm*movetoE!adwm
+AC + KP_7:Adwm*movetoNW!adwm
+AC + KP_8:Adwm*movetoN!adwm
+AC + KP_9:Adwm*movetoNE!adwm
+AC + Left:Adwm*viewprev!adwm
+AC + Return = uxterm:Adwm*spawn0!adwm
+AC + Right:Adwm*viewnext!adwm
+AC + Tab:Adwm*panelnext!adwm
+AC + Up:Adwm*viewup!adwm
+AC + bracketleft:Adwm*view10!adwm
+AC + bracketright:Adwm*view11!adwm
+AC + d:Adwm*toggleshowing!adwm
+AC + h:Adwm*viewleft!adwm
+AC + j:Adwm*viewdown!adwm
+AC + k:Adwm*viewup!adwm
+AC + l:Adwm*viewright!adwm
+AC + q:Adwm*quit!adwm
+AC + r = xde-run:Adwm*spawn1!adwm
+AC + s:Adwm*togglesticky!adwm
+AC + space:Adwm*togglestruts!adwm
+AC + t = uxterm:Adwm*spawn2!adwm
+AC + v = gvim:Adwm*spawn3!adwm
+AC + w : 0:Adwm*sendto9!adwm
+AC + w : 1:Adwm*sendto0!adwm
+AC + w : 2:Adwm*sendto1!adwm
+AC + w : 3:Adwm*sendto2!adwm
+AC + w : 4:Adwm*sendto3!adwm
+AC + w : 5:Adwm*sendto4!adwm
+AC + w : 6:Adwm*sendto5!adwm
+AC + w : 7:Adwm*sendto6!adwm
+AC + w : 8:Adwm*sendto7!adwm
+AC + w : 9:Adwm*sendto8!adwm
+AC + x = uxterm:Adwm*spawn4!adwm
+ACS + 0:Adwm*taketo9!adwm
+ACS + 1:Adwm*taketo0!adwm
+ACS + 2:Adwm*taketo1!adwm
+ACS + 3:Adwm*taketo2!adwm
+ACS + 4:Adwm*taketo3!adwm
+ACS + 5:Adwm*taketo4!adwm
+ACS + 6:Adwm*taketo5!adwm
+ACS + 7:Adwm*taketo6!adwm
+ACS + 8:Adwm*taketo7!adwm
+ACS + 9:Adwm*taketo8!adwm
+ACS + Down:Adwm*taketodown!adwm
+ACS + Escape:Adwm*panelprev!adwm
+ACS + KP_1:Adwm*snaptoSW!adwm
+ACS + KP_2:Adwm*snaptoS!adwm
+ACS + KP_3:Adwm*snaptoSE!adwm
+ACS + KP_4:Adwm*snaptoW!adwm
+ACS + KP_5:Adwm*smartplace!adwm
+ACS + KP_6:Adwm*snaptoE!adwm
+ACS + KP_7:Adwm*snaptoNW!adwm
+ACS + KP_8:Adwm*snaptoN!adwm
+ACS + KP_9:Adwm*snaptoNE!adwm
+ACS + Left:Adwm*taketoprev!adwm
+ACS + Right:Adwm*taketonext!adwm
+ACS + Tab:Adwm*panelprev!adwm
+ACS + Up:Adwm*taketoup!adwm
+ACS + bracketleft:Adwm*taketo10!adwm
+ACS + bracketright:Adwm*taketo11!adwm
+AS + 0:Adwm*tag9!adwm
+AS + 1:Adwm*tag0!adwm
+AS + 2:Adwm*tag1!adwm
+AS + 3:Adwm*tag2!adwm
+AS + 4:Adwm*tag3!adwm
+AS + 5:Adwm*tag4!adwm
+AS + 6:Adwm*tag5!adwm
+AS + 7:Adwm*tag6!adwm
+AS + 8:Adwm*tag7!adwm
+AS + 9:Adwm*tag8!adwm
+AS + Above_Tab:Adwm*groupprev!adwm
+AS + Down:Adwm*senttodown!adwm
+AS + Escape:Adwm*focusprev!adwm
+AS + F10:Adwm*togglemaxv!adwm
+AS + F11:Adwm*hideall!adwm
+AS + F12:Adwm*hide!adwm
+AS + F2:Adwm*setlayoutu!adwm
+AS + F3:Adwm*setlayoutt!adwm
+AS + F4:Adwm*setlayoutf!adwm
+AS + F5:Adwm*arrange!adwm
+AS + F6:Adwm*activateprev!adwm
+AS + F6:Adwm*groupprev!adwm
+AS + F7:Adwm*setlayouti!adwm
+AS + F8:Adwm*arrangeicons!adwm
+AS + F9:Adwm*iconifyall!adwm
+AS + Left:Adwm*sendtoleft!adwm
+AS + Return = uxterm:Adwm*spawn8!adwm
+AS + Right:Adwm*sendtoright!adwm
+AS + Tab:Adwm*focusprevall!adwm
+AS + Up:Adwm*sendtoup!adwm
+AS + a = 0 0 -5 0:Adwm*resizedecx!adwm
+AS + bracketleft:Adwm*tag10!adwm
+AS + bracketright:Adwm*tag11!adwm
+AS + c:Adwm*killclient!adwm
+AS + comma:Adwm*scrtoprev!adwm
+AS + d:Adwm*toggleshowing!adwm
+AS + e:Adwm*unrotatewins!adwm
+AS + h:Adwm*hide!adwm
+AS + j = 1:Adwm*decnmaster!adwm
+AS + k = 1:Adwm*incnmaster!adwm
+AS + m:Adwm*iconify!adwm
+AS + period:Adwm*scrtonext!adwm
+AS + q:Adwm*restart!adwm
+AS + s = 0 0 0 -5:Adwm*resizedecy!adwm
+AS + space:Adwm*raiselower!adwm
+AS + w = 0 0 0 5:Adwm*resizeincy!adwm
+AS + y:Adwm*unrotateview!adwm
+C + Escape = xdg-traymenu -p:Adwm*spawn9!adwm
+C + F10:Adwm*view9!adwm
+C + F11:Adwm*view10!adwm
+C + F12:Adwm*view11!adwm
+C + F1:Adwm*view0!adwm
+C + F2:Adwm*view1!adwm
+C + F3:Adwm*view2!adwm
+C + F4:Adwm*view3!adwm
+C + F5:Adwm*view4!adwm
+C + F6:Adwm*view5!adwm
+C + F7:Adwm*view6!adwm
+C + F8:Adwm*view7!adwm
+C + F9:Adwm*view8!adwm
+CA + 0:Adwm*toggleview9!adwm
+CA + 1:Adwm*toggleview0!adwm
+CA + 2:Adwm*toggleview1!adwm
+CA + 3:Adwm*toggleview2!adwm
+CA + 4:Adwm*toggleview3!adwm
+CA + 5:Adwm*toggleview4!adwm
+CA + 6:Adwm*toggleview5!adwm
+CA + 7:Adwm*toggleview6!adwm
+CA + 8:Adwm*toggleview7!adwm
+CA + 9:Adwm*toggleview8!adwm
+CA + Down:Adwm*viewS!adwm
+CA + Left:Adwm*viewlefttag!adwm
+CA + Left:Adwm*viewprev!adwm
+CA + Return:Adwm*toggleshowing!adwm
+CA + Right:Adwm*viewnext!adwm
+CA + Right:Adwm*viewrighttag!adwm
+CA + Up:Adwm*viewN!adwm
+CA + f = pcmanfm:Adwm*spawn2!adwm
+CA + m = xdg-traymenu -p:Adwm*spawn6!adwm
+CA + n = uxterm:Adwm*spawn5!adwm
+CA + q:Adwm*quit!adwm
+CA + r = xde-run:Adwm*spawn3!adwm
+CA + t = roxterm:Adwm*spawn0!adwm
+CA + v = gvim:Adwm*spawn4!adwm
+CA + w = firefox:Adwm*spawn1!adwm
+CA + y:Adwm*rotatezone!adwm
+CAS + 0:Adwm*toggletag9!adwm
+CAS + 1:Adwm*toggletag0!adwm
+CAS + 2:Adwm*toggletag1!adwm
+CAS + 3:Adwm*toggletag2!adwm
+CAS + 4:Adwm*toggletag3!adwm
+CAS + 5:Adwm*toggletag4!adwm
+CAS + 6:Adwm*toggletag5!adwm
+CAS + 7:Adwm*toggletag6!adwm
+CAS + 8:Adwm*toggletag7!adwm
+CAS + 9:Adwm*toggletag8!adwm
+CAS + Left:Adwm*rmlasttag!adwm
+CAS + Right:Adwm*appendtag!adwm
+CAS + y:Adwm*unrotatezone!adwm
+CS + Down:Adwm*toggleshade!adwm
+CS + Left:Adwm*togglemax!adwm
+CS + Return:Adwm*toggleselect!adwm
+CS + Right:Adwm*togglemaxh!adwm
+CS + Up:Adwm*togglemaxv!adwm
+CS + _:!Adwm*togglehidden!adwm
+F11 = xde-winlist:Adwm*spawn10!adwm
+F12 = xdg-traymenu -p:Adwm*spawn11!adwm
+S + Escape = xde-winmenu -w active -W center:Adwm*spawn12!adwm
+W + 0:Adwm*view9!adwm
+W + 1:Adwm*view0!adwm
+W + 2:Adwm*view1!adwm
+W + 3:Adwm*view2!adwm
+W + 4:Adwm*view3!adwm
+W + 5:Adwm*view4!adwm
+W + 6:Adwm*view5!adwm
+W + 7:Adwm*view6!adwm
+W + 8:Adwm*view7!adwm
+W + 9:Adwm*view8!adwm
+W + Above_Tab:Adwm*groupnext!adwm
+W + Down:Adwm*viewprev!adwm
+W + Escape:Adwm*viewlast!adwm
+W + F10:Adwm*view9!adwm
+W + F11:Adwm*view10!adwm
+W + F12:Adwm*view11!adwm
+W + F1:Adwm*view0!adwm
+W + F2:Adwm*view1!adwm
+W + F3:Adwm*view2!adwm
+W + F4:Adwm*view3!adwm
+W + F5:Adwm*view4!adwm
+W + F6:Adwm*view5!adwm
+W + F7:Adwm*view6!adwm
+W + F8:Adwm*view7!adwm
+W + F9:Adwm*view8!adwm
+W + KP_1:Adwm*screen0!adwm
+W + KP_2:Adwm*screen1!adwm
+W + KP_3:Adwm*screen2!adwm
+W + KP_4:Adwm*screen3!adwm
+W + KP_5:Adwm*screen4!adwm
+W + KP_6:Adwm*screen5!adwm
+W + KP_7:Adwm*screen6!adwm
+W + KP_8:Adwm*screen7!adwm
+W + KP_9:Adwm*screen8!adwm
+W + Left:Adwm*fillleft!adwm
+W + Page_Down:Adwm*viewdown!adwm
+W + Page_Up:Adwm*viewup!adwm
+W + Return = uxterm:Adwm*spawn16!adwm
+W + Right:Adwm*fillright!adwm
+W + Tab:Adwm*focusnext!adwm
+W + Up:Adwm*viewnext!adwm
+W + a:Adwm*taketonext!adwm
+W + b:Adwm*togglestrutsall!adwm
+W + backslash = xde-findws:Adwm*spawn13!adwm
+W + bracketleft:Adwm*moveleft!adwm
+W + bracketright:Adwm*moveright!adwm
+W + comma:Adwm*incnmaster!adwm
+W + d:Adwm*toggleshowing!adwm
+W + e = pcmanfm:Adwm*spawn14!adwm
+W + equal = -3 0 6 0:Adwm*resizeincx!adwm
+W + f:Adwm*togglefull!adwm
+W + g:Adwm*togglefocus!adwm
+W + h = -5  0  0  0:Adwm*moveleft!adwm
+W + j =  0  5  0  0:Adwm*movedown!adwm
+W + k =  0 -5  0  0:Adwm*moveup!adwm
+W + l =  5  0  0  0:Adwm*moveright!adwm
+W + m:Adwm*focusmain!adwm
+W + minus = 3 0 -6 0:Adwm*resizedecx!adwm
+W + n:Adwm*iconify!adwm
+W + o:Adwm*scrtonext!adwm
+W + p = xdg-traymenu -p:Adwm*spawn15!adwm
+W + period:Adwm*decnmaster!adwm
+W + q:Adwm*restart!adwm
+W + r = xde-run:Adwm*spawn17!adwm
+W + s = scrot:Adwm*spawn20!adwm
+W + space:Adwm*layoutnext!adwm
+W + t:Adwm*togglefloating!adwm
+W + u:Adwm*focusurgent!adwm
+W + v:Adwm*button2!adwm
+W + w:Adwm*iconify!adwm
+W + x:Adwm*killclient!adwm
+WA + b = 1:Adwm*incborder!adwm
+WA + m = 1:Adwm*incmargin!adwm
+WAS + b = 1:Adwm*decborder!adwm
+WAS + m = 1:Adwm*decmargin!adwm
+WC + 0:Adwm*toggleview9!adwm
+WC + 1:Adwm*toggleview0!adwm
+WC + 2:Adwm*toggleview1!adwm
+WC + 3:Adwm*toggleview2!adwm
+WC + 4:Adwm*toggleview3!adwm
+WC + 5:Adwm*toggleview4!adwm
+WC + 6:Adwm*toggleview5!adwm
+WC + 7:Adwm*toggleview6!adwm
+WC + 8:Adwm*toggleview7!adwm
+WC + 9:Adwm*toggleview8!adwm
+WC + F10:Adwm*taketo9!adwm
+WC + F11:Adwm*taketo10!adwm
+WC + F12:Adwm*taketo11!adwm
+WC + F1:Adwm*taketo0!adwm
+WC + F2:Adwm*taketo1!adwm
+WC + F3:Adwm*taketo2!adwm
+WC + F4:Adwm*taketo3!adwm
+WC + F5:Adwm*taketo4!adwm
+WC + F6:Adwm*taketo5!adwm
+WC + F7:Adwm*taketo6!adwm
+WC + F8:Adwm*taketo7!adwm
+WC + F9:Adwm*taketo8!adwm
+WC + Return:Adwm*zoom!adwm
+WC + Right:Adwm*taketonext!adwm
+WC + bracketleft:Adwm*toggleview10!adwm
+WC + bracketright:Adwm*toggleview11!adwm
+WC + h:Adwm*incncolumns!adwm
+WC + j:Adwm*screennext!adwm
+WC + k:Adwm*screenprev!adwm
+WC + l:Adwm*decncolumns!adwm
+WC + n:Adwm*unmax!adwm
+WC + r:Adwm*restart!adwm
+WC + space:Adwm*togglefloating!adwm
+WCS + 0:Adwm*toggletag9!adwm
+WCS + 1:Adwm*toggletag0!adwm
+WCS + 2:Adwm*toggletag1!adwm
+WCS + 3:Adwm*toggletag2!adwm
+WCS + 4:Adwm*toggletag3!adwm
+WCS + 5:Adwm*toggletag4!adwm
+WCS + 6:Adwm*toggletag5!adwm
+WCS + 7:Adwm*toggletag6!adwm
+WCS + 8:Adwm*toggletag7!adwm
+WCS + 9:Adwm*toggletag8!adwm
+WCS + bracketleft:Adwm*toggletag10!adwm
+WCS + bracketright:Adwm*toggletag11!adwm
+WS + 0:Adwm*sendto9!adwm
+WS + 1:Adwm*sendto0!adwm
+WS + 2:Adwm*sendto1!adwm
+WS + 3:Adwm*sendto2!adwm
+WS + 4:Adwm*sendto3!adwm
+WS + 5:Adwm*sendto4!adwm
+WS + 6:Adwm*sendto5!adwm
+WS + 7:Adwm*sendto6!adwm
+WS + 8:Adwm*sendto7!adwm
+WS + 9:Adwm*sendto8!adwm
+WS + Above_Tab:Adwm*groupprev!adwm
+WS + Delete = xde-xlock -l:Adwm*spawn18!adwm
+WS + Down:Adwm*focusdown!adwm
+WS + F10:Adwm*sendto19!adwm
+WS + F11:Adwm*sendto20!adwm
+WS + F12:Adwm*sendto21!adwm
+WS + F1:Adwm*sendto10!adwm
+WS + F2:Adwm*sendto11!adwm
+WS + F3:Adwm*sendto12!adwm
+WS + F4:Adwm*sendto13!adwm
+WS + F5:Adwm*sendto14!adwm
+WS + F6:Adwm*sendto15!adwm
+WS + F7:Adwm*sendto16!adwm
+WS + F8:Adwm*sendto17!adwm
+WS + F9:Adwm*sendto18!adwm
+WS + KP_1:Adwm*scrto0!adwm
+WS + KP_2:Adwm*scrto1!adwm
+WS + KP_3:Adwm*scrto2!adwm
+WS + KP_4:Adwm*scrto3!adwm
+WS + KP_5:Adwm*scrto4!adwm
+WS + KP_6:Adwm*scrto5!adwm
+WS + KP_7:Adwm*scrto6!adwm
+WS + KP_8:Adwm*scrto7!adwm
+WS + KP_9:Adwm*scrto8!adwm
+WS + Left:Adwm*focusleft!adwm
+WS + Page_Down:Adwm*taketodown!adwm
+WS + Page_Up:Adwm*taketoup!adwm
+WS + Return = roxterm:Adwm*spawn19!adwm
+WS + Right:Adwm*focusright!adwm
+WS + Tab:Adwm*focusprev!adwm
+WS + Up:Adwm*focusup!adwm
+WS + b:Adwm*togglestruts!adwm
+WS + backslash:Adwm*layoutflip!adwm
+WS + bracketleft:Adwm*moveup!adwm
+WS + bracketright:Adwm*movedown!adwm
+WS + c:Adwm*killclient!adwm
+WS + comma:Adwm*incncolumns!adwm
+WS + equal = 0 -3 0 6:Adwm*resizeincy!adwm
+WS + h = 0  0 -5  0:Adwm*resizedecx!adwm
+WS + i:Adwm*initscr!adwm
+WS + j = 0  0  0  5:Adwm*resizeincy!adwm
+WS + k = 0  0  0 -5:Adwm*resizedecy!adwm
+WS + l = 0  0  5  0:Adwm*resizeincx!adwm
+WS + m:Adwm*beginmoveresize!adwm
+WS + minus = 0 3 0 -6:Adwm*resizedecy!adwm
+WS + period:Adwm*decncolumns!adwm
+WS + q:Adwm*quit!adwm
+WS + r:Adwm*raisetiled!adwm
+WS + s = scrot -s:Adwm*spawn21!adwm
+WS + space:Adwm*layoutprev!adwm
+WS + w:Adwm*uniconify!adwm
+WS + x:Adwm*killclient!adwm

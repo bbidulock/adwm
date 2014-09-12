@@ -1,65 +1,77 @@
-Adwm*movetoC:
-Adwm*movetoE:
-Adwm*movetoN:
-Adwm*movetoNE:
-Adwm*movetoS:
-Adwm*movetoSE:
-Adwm*movetoSW:
-Adwm*movetoW:
-Adwm*raiselower:
-Adwm*taketo10:
-Adwm*taketo11:
-Adwm*taketo12:
-Adwm*taketo1:
-Adwm*taketo2:
-Adwm*taketo3:
-Adwm*taketo4:
-Adwm*taketo5:
-Adwm*taketo6:
-Adwm*taketo7:
-Adwm*taketo8:
-Adwm*taketo9:
-Adwm*toggleabove:
-Adwm*togglefull:
-Adwm*toggleshowing:
-Adwm*togglesticky:
-Adwm*view10:
-Adwm*view11:
-Adwm*view12:
-Adwm*view1:
-Adwm*view2:
-Adwm*view3:
-Adwm*view4:
-Adwm*view5:
-Adwm*view6:
-Adwm*view7:
-Adwm*view8:
-Adwm*view9:
-Adwm*spanw2:? = xde-run
-Adwm*spawn1:? = xdg-traymenu -p
-Adwm*lower:A + Down
-Adwm*spawn2:A + F1 = roxterm, AC + Return = uxterm
-Adwm*togglemax:A + F10
-Adwm*killclient:A + F4, A + F5, A + F10
-Adwm*unmax:A + F5, W + Down
-Adwm*groupnext:A + F6, W + Above_Tab, A + Above_Tab
-Adwm*raiselower:A + Left
-Adwm*raise:A + Up
-Adwm*focusnext:A + Escape
-Adwm*spawn0:A + space = xde-winmenu -w active -W center
-Adwm*viewdown:AC + Down, W + Page_Down
-Adwm*viewleft:AC + Left
-Adwm*viewright:AC + Right
-Adwm*docknext:AC + Tab
-Adwm*viewup:AC + Up, W + Page_Up
-Adwm*panelnext:AC + Escape
-Adwm*taketodown:ACS + Down, WS + Page_Down
-Adwm*taketoleft:ACS + Left
-Adwm*taketoright:ACS + Right
-Adwm*dockprev:ACS + Tab
-Adwm*taketoup:ACS + Up, WS + Page_Up
-Adwm*panelprev:ACS + Escape
-Adwm*groupprev:AS + F6, WS + Above_Tab, AS + Above_Tab
-Adwm*focusprev:AS + Escape
-Adwm*fillleft:W + Left
-Adwm*fillright:W + Right
+:Adwm*movetoC!metacity
+:Adwm*movetoE!metacity
+:Adwm*movetoN!metacity
+:Adwm*movetoNE!metacity
+:Adwm*movetoS!metacity
+:Adwm*movetoSE!metacity
+:Adwm*movetoSW!metacity
+:Adwm*movetoW!metacity
+:Adwm*raiselower!metacity
+:Adwm*taketo1!metacity
+:Adwm*taketo10!metacity
+:Adwm*taketo11!metacity
+:Adwm*taketo12!metacity
+:Adwm*taketo2!metacity
+:Adwm*taketo3!metacity
+:Adwm*taketo4!metacity
+:Adwm*taketo5!metacity
+:Adwm*taketo6!metacity
+:Adwm*taketo7!metacity
+:Adwm*taketo8!metacity
+:Adwm*taketo9!metacity
+:Adwm*toggleabove!metacity
+:Adwm*togglefull!metacity
+:Adwm*toggleshowing!metacity
+:Adwm*togglesticky!metacity
+:Adwm*view1!metacity
+:Adwm*view10!metacity
+:Adwm*view11!metacity
+:Adwm*view12!metacity
+:Adwm*view2!metacity
+:Adwm*view3!metacity
+:Adwm*view4!metacity
+:Adwm*view5!metacity
+:Adwm*view6!metacity
+:Adwm*view7!metacity
+:Adwm*view8!metacity
+:Adwm*view9!metacity
+? = xde-run:Adwm*spanw2!metacity
+? = xdg-traymenu -p:Adwm*spawn1!metacity
+A + Above_Tab:Adwm*groupnext!metacity
+A + Down:Adwm*lower!metacity
+A + Escape:Adwm*focusnext!metacity
+A + F1 = roxterm:Adwm*spawn2!metacity
+A + F10:Adwm*killclient!metacity
+A + F10:Adwm*togglemax!metacity
+A + F4:Adwm*killclient!metacity
+A + F5:Adwm*killclient!metacity
+A + F5:Adwm*unmax!metacity
+A + F6:Adwm*groupnext!metacity
+A + Left:Adwm*raiselower!metacity
+A + Up:Adwm*raise!metacity
+A + space = xde-winmenu -w active -W center:Adwm*spawn0!metacity
+AC + Down:Adwm*viewdown!metacity
+AC + Escape:Adwm*panelnext!metacity
+AC + Left:Adwm*viewleft!metacity
+AC + Return = uxterm:Adwm*spawn2!metacity
+AC + Right:Adwm*viewright!metacity
+AC + Tab:Adwm*docknext!metacity
+AC + Up:Adwm*viewup!metacity
+ACS + Down:Adwm*taketodown!metacity
+ACS + Escape:Adwm*panelprev!metacity
+ACS + Left:Adwm*taketoleft!metacity
+ACS + Right:Adwm*taketoright!metacity
+ACS + Tab:Adwm*dockprev!metacity
+ACS + Up:Adwm*taketoup!metacity
+AS + Above_Tab:Adwm*groupprev!metacity
+AS + Escape:Adwm*focusprev!metacity
+AS + F6:Adwm*groupprev!metacity
+W + Above_Tab:Adwm*groupnext!metacity
+W + Down:Adwm*unmax!metacity
+W + Left:Adwm*fillleft!metacity
+W + Page_Down:Adwm*viewdown!metacity
+W + Page_Up:Adwm*viewup!metacity
+W + Right:Adwm*fillright!metacity
+WS + Above_Tab:Adwm*groupprev!metacity
+WS + Page_Down:Adwm*taketodown!metacity
+WS + Page_Up:Adwm*taketoup!metacity

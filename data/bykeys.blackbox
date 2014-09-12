@@ -1,56 +1,80 @@
-Adwm*lower:A + Down
-Adwm*spawn1:A + F1 = roxterm
-Adwm*togglemaxv:A + F10, CS + Up
-Adwm*togglemaxh:A + F11, CS + Right
-Adwm*togglemax:A + F12, CS + Left
-Adwm*spawn3:A + F2 = xde-run
-Adwm*killclient:A + F4, A + q
-Adwm*spawn0:A + F5 = xrefresh
-Adwm*toggleshade:A + F9
-Adwm*focusnext:A + Tab
-Adwm*raise:A + Up
-Adwm*iconify:A + m
-Adwm*movedown:AC + Down = 0 5 0 0
-Adwm*viewdown:AC + Down, AC + j
-Adwm*spawn5:AC + Escape = xdg-traymenu -p
-Adwm*viewprev:AC + Left
-Adwm*moveleft:AC + Left = -5 0 0 0
-Adwm*viewnext:AC + Right
-Adwm*moveright:AC + Right = 5 0 0 0
-Adwm*focusnextevery:AC + Tab
-Adwm*moveup:AC + Up = 0 -5 0 0
-Adwm*viewup:AC + Up, AC + k
-Adwm*viewleft:AC + h
-Adwm*viewright:AC + l
-Adwm*togglesticky:AC + s
-Adwm*resizeincy:ACS + Down = 0 0 0 5
-Adwm*resizedecx:ACS + Left = 0 0 -5 0
-Adwm*resizeincx:ACS + Right = 0 0 5 0
-Adwm*resizedecy:ACS + Up = 0 0 0 -5
-Adwm*focusprev:AS + Tab
-Adwm*spawn4:C + Escape = xdg-traymenu -p
-Adwm*view0:C + F1, A + 1
-Adwm*view9:C + F10, A + 0
-Adwm*view10:C + F11
-Adwm*view11:C + F12
-Adwm*view1:C + F2, A + 2
-Adwm*view2:C + F3, A + 3
-Adwm*view3:C + F4, A + 4
-Adwm*view4:C + F5, A + 5
-Adwm*view5:C + F6, A + 6
-Adwm*view6:C + F7, A + 7
-Adwm*view7:C + F8, A + 8
-Adwm*view8:C + F9, A + 9
-Adwm*sendto0:W + F1, AC + w : 1
-Adwm*sendto9:W + F10
-Adwm*sendto10:W + F11
-Adwm*sendto11:W + F12
-Adwm*sendto1:W + F2, AC + w : 2
-Adwm*sendto2:W + F3, AC + w : 3
-Adwm*sendto3:W + F4, AC + w : 4
-Adwm*sendto4:W + F5, AC + w : 5
-Adwm*sendto5:W + F6, AC + w : 6
-Adwm*sendto6:W + F7, AC + w : 7
-Adwm*sendto7:W + F8, AC + w : 8
-Adwm*sendto8:W + F9
-Adwm*spawn2:W + e = pcmanfm
+A + 0:Adwm*view9!blackbox
+A + 1:Adwm*view0!blackbox
+A + 2:Adwm*view1!blackbox
+A + 3:Adwm*view2!blackbox
+A + 4:Adwm*view3!blackbox
+A + 5:Adwm*view4!blackbox
+A + 6:Adwm*view5!blackbox
+A + 7:Adwm*view6!blackbox
+A + 8:Adwm*view7!blackbox
+A + 9:Adwm*view8!blackbox
+A + Down:Adwm*lower!blackbox
+A + F1 = roxterm:Adwm*spawn1!blackbox
+A + F10:Adwm*togglemaxv!blackbox
+A + F11:Adwm*togglemaxh!blackbox
+A + F12:Adwm*togglemax!blackbox
+A + F2 = xde-run:Adwm*spawn3!blackbox
+A + F4:Adwm*killclient!blackbox
+A + F5 = xrefresh:Adwm*spawn0!blackbox
+A + F9:Adwm*toggleshade!blackbox
+A + Tab:Adwm*focusnext!blackbox
+A + Up:Adwm*raise!blackbox
+A + m:Adwm*iconify!blackbox
+A + q:Adwm*killclient!blackbox
+AC + Down = 0 5 0 0:Adwm*movedown!blackbox
+AC + Down:Adwm*viewdown!blackbox
+AC + Escape = xdg-traymenu -p:Adwm*spawn5!blackbox
+AC + Left = -5 0 0 0:Adwm*moveleft!blackbox
+AC + Left:Adwm*viewprev!blackbox
+AC + Right = 5 0 0 0:Adwm*moveright!blackbox
+AC + Right:Adwm*viewnext!blackbox
+AC + Tab:Adwm*focusnextevery!blackbox
+AC + Up = 0 -5 0 0:Adwm*moveup!blackbox
+AC + Up:Adwm*viewup!blackbox
+AC + h:Adwm*viewleft!blackbox
+AC + j:Adwm*viewdown!blackbox
+AC + k:Adwm*viewup!blackbox
+AC + l:Adwm*viewright!blackbox
+AC + s:Adwm*togglesticky!blackbox
+AC + w : 1:Adwm*sendto0!blackbox
+AC + w : 2:Adwm*sendto1!blackbox
+AC + w : 3:Adwm*sendto2!blackbox
+AC + w : 4:Adwm*sendto3!blackbox
+AC + w : 5:Adwm*sendto4!blackbox
+AC + w : 6:Adwm*sendto5!blackbox
+AC + w : 7:Adwm*sendto6!blackbox
+AC + w : 8:Adwm*sendto7!blackbox
+ACS + Down = 0 0 0 5:Adwm*resizeincy!blackbox
+ACS + Left = 0 0 -5 0:Adwm*resizedecx!blackbox
+ACS + Right = 0 0 5 0:Adwm*resizeincx!blackbox
+ACS + Up = 0 0 0 -5:Adwm*resizedecy!blackbox
+AS + Tab:Adwm*focusprev!blackbox
+C + Escape = xdg-traymenu -p:Adwm*spawn4!blackbox
+C + F10:Adwm*view9!blackbox
+C + F11:Adwm*view10!blackbox
+C + F12:Adwm*view11!blackbox
+C + F1:Adwm*view0!blackbox
+C + F2:Adwm*view1!blackbox
+C + F3:Adwm*view2!blackbox
+C + F4:Adwm*view3!blackbox
+C + F5:Adwm*view4!blackbox
+C + F6:Adwm*view5!blackbox
+C + F7:Adwm*view6!blackbox
+C + F8:Adwm*view7!blackbox
+C + F9:Adwm*view8!blackbox
+CS + Left:Adwm*togglemax!blackbox
+CS + Right:Adwm*togglemaxh!blackbox
+CS + Up:Adwm*togglemaxv!blackbox
+W + F10:Adwm*sendto9!blackbox
+W + F11:Adwm*sendto10!blackbox
+W + F12:Adwm*sendto11!blackbox
+W + F1:Adwm*sendto0!blackbox
+W + F2:Adwm*sendto1!blackbox
+W + F3:Adwm*sendto2!blackbox
+W + F4:Adwm*sendto3!blackbox
+W + F5:Adwm*sendto4!blackbox
+W + F6:Adwm*sendto5!blackbox
+W + F7:Adwm*sendto6!blackbox
+W + F8:Adwm*sendto7!blackbox
+W + F9:Adwm*sendto8!blackbox
+W + e = pcmanfm:Adwm*spawn2!blackbox

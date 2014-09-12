@@ -1,70 +1,73 @@
-Adwm*maxtoN:
-Adwm*maxtoNE:
-Adwm*maxtoNW:
-Adwm*maxtoS:
-Adwm*maxtoSE:
-Adwm*maxtoSW:
-Adwm*sendtolast:
-Adwm*sendtonext:
-Adwm*sendtoprev:
-Adwm*viewlast:
-Adwm*modkey:A
-Adwm*view9:A + 0
-Adwm*view0:A + 1
-Adwm*view1:A + 2
-Adwm*view2:A + 3
-Adwm*view3:A + 4
-Adwm*view4:A + 5
-Adwm*view5:A + 6
-Adwm*view6:A + 7
-Adwm*view7:A + 8
-Adwm*view8:A + 9
-Adwm*lower:A + Down
-Adwm*hide:A + H
-Adwm*iconify:A + M
-Adwm*toggleshade:A + S, AS + S
-Adwm*focusnext:A + Tab
-Adwm*raise:A + Up
-Adwm*killclient:A + q, A + w
-Adwm*raiselower:A + space, A + Home
-Adwm*viewprev:AC + Left
-Adwm*viewnext:AC + Right
-Adwm*togglestruts:AC + space
-Adwm*hideothers:AS + H
-Adwm*iconifyall:AS + M
-Adwm*focusprev:AS + Tab
-Adwm*spawn2:C + Escape = xde-winmenu -w active -W center
-Adwm*togglefill:CS + Down
-Adwm*togglemax:CS + Left
-Adwm*toggleselect:CS + Return
-Adwm*togglemaxv:CS + Up
-Adwm*togglemaxh:CS + Right
-Adwm*spawn1:F11 = xde-winlist
-Adwm*spawn0:F12 = xdg-traymenu -p
-Adwm*focus9:W + 0
-Adwm*focus0:W + 1
-Adwm*focus1:W + 2
-Adwm*focus2:W + 3
-Adwm*focus3:W + 4
-Adwm*focus4:W + 5
-Adwm*focus5:W + 6
-Adwm*focus6:W + 7
-Adwm*focus7:W + 8
-Adwm*focus8:W + 9
-Adwm*sendto0:W + F1
-Adwm*sendto9:W + F10
-Adwm*sendto1:W + F2
-Adwm*sendto2:W + F3
-Adwm*sendto3:W + F4
-Adwm*sendto4:W + F5
-Adwm*sendto5:W + F6
-Adwm*sendto6:W + F7
-Adwm*sendto7:W + F8
-Adwm*sendto8:W + F9
-Adwm*maxtoleft:W + Left
-Adwm*beginmoveresize:W + M
-Adwm*screennext:W + Next
-Adwm*relaunch:W + Return
-Adwm*maxtoright:W + Right
-Adwm*groupnext:W + Tab
-Adwm*groupprev:WS + Tab
+:Adwm*maxtoN!wmaker
+:Adwm*maxtoNE!wmaker
+:Adwm*maxtoNW!wmaker
+:Adwm*maxtoS!wmaker
+:Adwm*maxtoSE!wmaker
+:Adwm*maxtoSW!wmaker
+:Adwm*sendtolast!wmaker
+:Adwm*sendtonext!wmaker
+:Adwm*sendtoprev!wmaker
+:Adwm*viewlast!wmaker
+A + 0:Adwm*view9!wmaker
+A + 1:Adwm*view0!wmaker
+A + 2:Adwm*view1!wmaker
+A + 3:Adwm*view2!wmaker
+A + 4:Adwm*view3!wmaker
+A + 5:Adwm*view4!wmaker
+A + 6:Adwm*view5!wmaker
+A + 7:Adwm*view6!wmaker
+A + 8:Adwm*view7!wmaker
+A + 9:Adwm*view8!wmaker
+A + Down:Adwm*lower!wmaker
+A + H:Adwm*hide!wmaker
+A + Home:Adwm*raiselower!wmaker
+A + M:Adwm*iconify!wmaker
+A + S:Adwm*toggleshade!wmaker
+A + Tab:Adwm*focusnext!wmaker
+A + Up:Adwm*raise!wmaker
+A + q:Adwm*killclient!wmaker
+A + space:Adwm*raiselower!wmaker
+A + w:Adwm*killclient!wmaker
+A:Adwm*modkey!wmaker
+AC + Left:Adwm*viewprev!wmaker
+AC + Right:Adwm*viewnext!wmaker
+AC + space:Adwm*togglestruts!wmaker
+AS + H:Adwm*hideothers!wmaker
+AS + M:Adwm*iconifyall!wmaker
+AS + S:Adwm*toggleshade!wmaker
+AS + Tab:Adwm*focusprev!wmaker
+C + Escape = xde-winmenu -w active -W center:Adwm*spawn2!wmaker
+CS + Down:Adwm*togglefill!wmaker
+CS + Left:Adwm*togglemax!wmaker
+CS + Return:Adwm*toggleselect!wmaker
+CS + Right:Adwm*togglemaxh!wmaker
+CS + Up:Adwm*togglemaxv!wmaker
+F11 = xde-winlist:Adwm*spawn1!wmaker
+F12 = xdg-traymenu -p:Adwm*spawn0!wmaker
+W + 0:Adwm*focus9!wmaker
+W + 1:Adwm*focus0!wmaker
+W + 2:Adwm*focus1!wmaker
+W + 3:Adwm*focus2!wmaker
+W + 4:Adwm*focus3!wmaker
+W + 5:Adwm*focus4!wmaker
+W + 6:Adwm*focus5!wmaker
+W + 7:Adwm*focus6!wmaker
+W + 8:Adwm*focus7!wmaker
+W + 9:Adwm*focus8!wmaker
+W + F10:Adwm*sendto9!wmaker
+W + F1:Adwm*sendto0!wmaker
+W + F2:Adwm*sendto1!wmaker
+W + F3:Adwm*sendto2!wmaker
+W + F4:Adwm*sendto3!wmaker
+W + F5:Adwm*sendto4!wmaker
+W + F6:Adwm*sendto5!wmaker
+W + F7:Adwm*sendto6!wmaker
+W + F8:Adwm*sendto7!wmaker
+W + F9:Adwm*sendto8!wmaker
+W + Left:Adwm*maxtoleft!wmaker
+W + M:Adwm*beginmoveresize!wmaker
+W + Next:Adwm*screennext!wmaker
+W + Return:Adwm*relaunch!wmaker
+W + Right:Adwm*maxtoright!wmaker
+W + Tab:Adwm*groupnext!wmaker
+WS + Tab:Adwm*groupprev!wmaker

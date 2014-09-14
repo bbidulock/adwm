@@ -16,6 +16,7 @@
 #include "layout.h"
 #include "tags.h"
 #include "actions.h"
+#include "config.h"
 #include "draw.h" /* verification */
 
 void setopacity(Client *c, unsigned int opacity);
@@ -624,37 +625,35 @@ getcolor(const char *colstr)
 static int
 initpixmap(const char *file, ButtonImage *bi)
 {
-	if (!file)
+	char *path;
+
+	if (!file || !(path = findrcpath(file)))
 		return 1;
 #ifdef XPM
-	if (strstr(file, ".xpm") && strlen(strstr(file, ".xpm")) == 4) {
+	if (strstr(path, ".xpm") && strlen(strstr(path, ".xpm")) == 4) {
 		XpmAttributes xa = { 0, };
 
-		if (XpmReadFileToPixmap(dpy, scr->root, file, &bi->pixmap, &bi->mask, &xa)
+		if (XpmReadFileToPixmap(dpy, scr->root, path, &bi->pixmap, &bi->mask, &xa)
 		    == Success) {
 			if ((bi->w = xa.width) && (bi->h = xa.height)) {
 				if (bi->h > scr->style.titleheight) {
 					bi->y += (bi->h - scr->style.titleheight) / 2;
 					bi->h = scr->style.titleheight;
 				}
+				free(path);
 				return 0;
 			}
 		}
 	}
 #endif
 #ifdef IMLIB2
-	if (!strstr(file, ".xbm") || strlen(strstr(file, ".xbm")) != 4) {
+	if (!strstr(path, ".xbm") || strlen(strstr(path, ".xbm")) != 4) {
 		Imlib_Image image;
 
 		imlib_context_push(scr->context);
 		imlib_context_set_mask(None);
 
-		if (!(image = imlib_load_image(file))) {
-			if (file[0] != '/') {
-				/* TODO: look for it else where */
-			}
-		}
-		if (image) {
+		if ((image = imlib_load_image(path))) {
 			imlib_context_set_image(image);
 			imlib_context_set_mask(None);
 			bi->w = imlib_image_get_width();
@@ -666,25 +665,29 @@ initpixmap(const char *file, ButtonImage *bi)
 			imlib_render_pixmaps_for_whole_image_at_size
 			    (&bi->pixmap, &bi->mask, bi->w, bi->h);
 		} else {
-			DPRINTF("could not load image file %s\n", file);
+			DPRINTF("could not load image file %s\n", path);
 		}
 		imlib_context_pop();
-		if (image)
+		if (image) {
+			free(path);
 			return 0;
+		}
 	}
 #endif
-	if (strstr(file, ".xbm") && strlen(strstr(file, ".xbm")) == 4) {
+	if (strstr(path, ".xbm") && strlen(strstr(path, ".xbm")) == 4) {
 		bi->bitmap =
 		    XCreatePixmap(dpy, scr->root, scr->style.titleheight,
 				  scr->style.titleheight, 1);
 		if (BitmapSuccess ==
-		    XReadBitmapFile(dpy, scr->root, file, &bi->w, &bi->h, &bi->bitmap,
+		    XReadBitmapFile(dpy, scr->root, path, &bi->w, &bi->h, &bi->bitmap,
 				    &bi->x, &bi->y)) {
 			if (bi->x == -1 || bi->y == -1)
 				bi->x = bi->y = 0;
+			free(path);
 			return 0;
 		}
 	}
+	free(path);
 	return 1;
 }
 

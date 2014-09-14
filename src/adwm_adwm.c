@@ -149,7 +149,7 @@ initrcfile_ADWM(void)
 	strcpy(config.udir, home);
 	strcat(config.udir, "/.adwm");
 	free(config.sdir);
-	config.sdir = strdup("/usr/share/adwm");
+	config.sdir = strdup(SYSCONFPATH);
 	if (!strncmp(home, config.pdir, strlen(home))) {
 		free(config.pdir);
 		config.pdir = strdup(config.udir);

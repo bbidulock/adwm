@@ -36,6 +36,7 @@ char *atomnames[NATOMS] = {
 	"WM_TAKE_FOCUS",
 	"_ECHINUS_LAYOUT",
 	"_ECHINUS_SELTAGS",
+	"_NET_RELOAD",		/* TODO */
 	"_NET_RESTART",		/* TODO */
 	"_NET_SHUTDOWN",	/* TODO */
 	"_NET_DESKTOP_LAYOUT",	/* TODO */
@@ -2432,6 +2433,8 @@ clientmessage(XEvent *e)
 		} else if (message_type == _XA_NET_SHOWING_DESKTOP) {
 			if (!ev->data.l[0] != !scr->showing_desktop)
 				toggleshowing();
+		} else if (message_type == _XA_NET_RELOAD) {
+			/* TODO */
 		} else if (message_type == _XA_NET_RESTART) {
 			/* TODO */
 		} else if (message_type == _XA_NET_SHUTDOWN) {

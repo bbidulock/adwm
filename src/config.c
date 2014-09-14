@@ -27,13 +27,15 @@
 Options options;
 
 typedef struct {
-	char *rcfile;			/* rcfile */
 	char *udir;			/* user directory */
 	char *pdir;			/* private directory */
 	char *sdir;			/* system directory */
+	char *rcfile;			/* rcfile */
+	char *keysfile;			/* kerysrc file */
+	char *stylefile;		/* stylerc file */
 } AdwmConfig;
 
-static AdwmConfig config;
+AdwmConfig config;
 
 void
 inittags(void)
@@ -417,6 +419,147 @@ initconfig(void)
 		options.ntags = 5;
 }
 
+static void
+initkeysfile(void)
+{
+	XrmDatabase krdb;
+	const char *file;
+	struct stat st;
+	char *path;
+
+	file = getresource("keysFile", "keysrc");
+	path = ecalloc(PATH_MAX + 1, sizeof(*path));
+	strncpy(path, file, PATH_MAX);
+	if (!lstat(file, &st) && S_ISLNK(st.st_mode)) {
+		if (readlink(file, path, PATH_MAX) == -1)
+			eprint("%s: %s\n", file, strerror(errno));
+	}
+	free(config.keysfile);
+	config.keysfile = strdup(path);
+	if (*config.keysfile != '/') {
+		strncpy(path, config.rcfile, PATH_MAX);
+		if (strrchr(path, '/'))
+			*strrchr(path, '/') = '\0';
+		strncat(path, "/", PATH_MAX);
+		strncat(path, config.keysfile, PATH_MAX);
+		free(config.keysfile);
+		config.keysfile = strdup(path);
+	}
+	free(path);
+	krdb = XrmGetFileDatabase(config.keysfile);
+	if (!krdb) {
+		DPRINTF("Could not find database file '%s'\n", config.keysfile);
+		return;
+	}
+	XrmMergeDatabases(krdb, &xrdb);
+}
+
+static void
+initstylefile(void)
+{
+	XrmDatabase srdb;
+	const char *file;
+	struct stat st;
+	char *path;
+
+	file = getresource("styleFile", "stylerc");
+	path = ecalloc(PATH_MAX + 1, sizeof(*path));
+	strncpy(path, file, PATH_MAX);
+	if (!lstat(file, &st) && S_ISLNK(st.st_mode))
+		if (readlink(file, path, PATH_MAX) == -1)
+			eprint("%s: %s\n", file, strerror(errno));
+	free(config.stylefile);
+	config.stylefile = strdup(path);
+	if (*config.stylefile != '/') {
+		strncpy(path, config.rcfile, PATH_MAX);
+		if (strrchr(path, '/'))
+			*strrchr(path, '/') = '\0';
+		strncat(path, "/", PATH_MAX);
+		strncat(path, config.stylefile, PATH_MAX);
+		free(config.stylefile);
+		config.stylefile = strdup(path);
+	}
+	free(path);
+	srdb = XrmGetFileDatabase(config.stylefile);
+	if (!srdb) {
+		DPRINTF("Could not find database file '%s'\n", config.stylefile);
+		return;
+	}
+	XrmMergeDatabases(srdb, &xrdb);
+}
+
+char *
+findrcpath(const char *file)
+{
+	char *path, *result;
+
+	path = ecalloc(PATH_MAX + 1, sizeof(*path));
+	strncpy(path, file, PATH_MAX);
+	if (*path != '/') {
+		if (config.stylefile) {
+			strncpy(path, config.stylefile, PATH_MAX);
+			if (strrchr(path, '/'))
+				*strrchr(path, '/') = '\0';
+			strncat(path, "/", PATH_MAX);
+			strncat(path, file, PATH_MAX);
+			if (!access(path, R_OK)) {
+				result = strdup(path);
+				free(path);
+				return (result);
+			}
+		}
+		if (config.rcfile) {
+			strncpy(path, config.rcfile, PATH_MAX);
+			if (strrchr(path, '/'))
+				*strrchr(path, '/') = '\0';
+			strncat(path, "/", PATH_MAX);
+			strncat(path, file, PATH_MAX);
+			if (!access(path, R_OK)) {
+				result = strdup(path);
+				free(path);
+				return (result);
+			}
+		}
+		if (config.pdir) {
+			strncpy(path, config.pdir, PATH_MAX);
+			strncat(path, "/", PATH_MAX);
+			strncat(path, file, PATH_MAX);
+			if (!access(path, R_OK)) {
+				result = strdup(path);
+				free(path);
+				return (result);
+			}
+		}
+		if (config.udir) {
+			strncpy(path, config.udir, PATH_MAX);
+			strncat(path, "/", PATH_MAX);
+			strncat(path, file, PATH_MAX);
+			if (!access(path, R_OK)) {
+				result = strdup(path);
+				free(path);
+				return (result);
+			}
+		}
+		if (config.sdir) {
+			strncpy(path, config.sdir, PATH_MAX);
+			strncat(path, "/", PATH_MAX);
+			strncat(path, file, PATH_MAX);
+			if (!access(path, R_OK)) {
+				result = strdup(path);
+				free(path);
+				return (result);
+			}
+		}
+	}
+	if (!access(path, R_OK)) {
+		result = strdup(path);
+		free(path);
+		return (result);
+	}
+	free(path);
+	return (NULL);
+}
+
 void
 initrcfile(void)
 {
@@ -477,7 +620,7 @@ initrcfile(void)
 	strcpy(config.udir, home);
 	strcat(config.udir, "/.adwm");
 	free(config.sdir);
-	config.sdir = strdup("/usr/share/adwm");
+	config.sdir = strdup(SYSCONFPATH);
 	if (!strncmp(home, config.pdir, strlen(home))) {
 		free(config.pdir);
 		config.pdir = strdup(config.udir);
@@ -545,4 +688,6 @@ initrcfile(void)
 		if (chdir(config.udir))
 			DPRINTF("Could not change directory to %s: %s\n", config.udir, strerror(errno));
 	}
+	initkeysfile();
+	initstylefile();
 }

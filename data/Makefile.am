@@ -54,11 +54,14 @@ nobase_dist_pkgdata_DATA = \
 install-data-hook:
 	mkdir -p $(DESTDIR)$(pkgdatadir)
 	rm -f $(DESTDIR)$(pkgdatadir)/style
-	rm -f $(DESTDIR)$(pkgdatadir)/keys
-	ln -sf styles/Default $(DESTDIR)$(pkgdatadir)/keys
+	rm -f $(DESTDIR)$(pkgdatadir)/keysrc
+	rm -f $(DESTDIR)$(pkgdatadir)/stylerc
 	ln -sf styles/Default $(DESTDIR)$(pkgdatadir)/style
+	ln -sf styles/Default/keysrc $(DESTDIR)$(pkgdatadir)/keysrc
+	ln -sf styles/Default/stylerc $(DESTDIR)$(pkgdatadir)/stylerc
 
 uninstall-hook:
 	rm -f $(DESTDIR)$(pkgdatadir)/style
-	rm -f $(DESTDIR)$(pkgdatadir)/keys
+	rm -f $(DESTDIR)$(pkgdatadir)/keysrc
+	rm -f $(DESTDIR)$(pkgdatadir)/stylerc
 

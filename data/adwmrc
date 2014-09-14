@@ -22,6 +22,3 @@ Adwm*tags.name6: misc
 
 Adwm*tags.layout1: m
 Adwm*tags.layout3: b
-
-#include "keys/keysrc"
-#include "style/stylerc"

@@ -27,7 +27,7 @@
 /* enums */
 enum {
 	Manager, Utf8String, WMProto, WMDelete, WMSaveYourself, WMState, WMChangeState,
-	WMTakeFocus, ELayout, ESelTags, WMRestart, WMShutdown, DeskLayout,
+	WMTakeFocus, ELayout, ESelTags, WMReload, WMRestart, WMShutdown, DeskLayout,
 	/* MWM/DTWM properties follow */
 	WMDesktop, MWMBindings, MWMDefaultBindings, MWMMessages, MWMOffset, MWMHints,
 	MWMMenu, MWMInfo, DTWorkspaceHints, DTWorkspacePresence, DTWorkspaceList,
@@ -82,6 +82,7 @@ enum {
 #define _XA_WM_TAKE_FOCUS			atom[WMTakeFocus]
 #define _XA_ECHINUS_LAYOUT			atom[ELayout]
 #define _XA_ECHINUS_SELTAGS			atom[ESelTags]
+#define _XA_NET_RELOAD				atom[WMReload]
 #define _XA_NET_RESTART				atom[WMRestart]
 #define _XA_NET_SHUTDOWN			atom[WMShutdown]
 #define _XA_NET_DESKTOP_LAYOUT			atom[DeskLayout]

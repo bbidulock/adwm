@@ -9,5 +9,6 @@ void initlayouts(void);
 void initscreen(void);
 void initconfig(void);
 void initrcfile(void);
+char *findrcpath(const char *file);
 
 #endif				/* __LOCAL_CONFIG_H__ */

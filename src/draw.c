@@ -810,7 +810,7 @@ freeelement(ElementType type)
 	int i;
 	Element *e = &scr->element[type];
 
-	if (type < LastBtn) {
+	if (e->image && type < LastBtn) {
 		for (i = 0; i < LastButtonImageType; i++) {
 			if (e->image[i].present)
 				freepixmap(&e->image[i]);

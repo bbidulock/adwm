@@ -4,6 +4,8 @@
 #define __LOCAL_TAGS_H__
 
 void settags(unsigned numtags);
+void addtag(void);
+void deltag(void);
 void appendtag(void);
 void rmlasttag(void);
 

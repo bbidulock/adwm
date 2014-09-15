@@ -25,6 +25,7 @@ static KeyItem KeyItems[] = {
 	{ "viewprevtag",	k_viewprevtag	 },
 	{ "quit",		k_quit		 }, /* arg is new command */
 	{ "restart", 		k_restart	 }, /* arg is new command */
+	{ "reload",		k_reload	 },
 	{ "killclient",		k_killclient	 },
 	{ "focusmain",		k_focusmain	 },
 	{ "focusurgent",	k_focusurgent	 },
@@ -486,6 +487,21 @@ initmodkey()
 	}
 }
 
+static void
+freekeys(void)
+{
+	if (scr->keys) {
+		Key **kp;
+		int i;
+
+		for (kp = scr->keys, i = 0; i < scr->nkeys; i++, kp++)
+			freechain(*kp);
+		free(scr->keys);
+		scr->keys = NULL;
+	}
+	scr->nkeys = 0;
+}
+
 void
 initkeys()
 {
@@ -493,6 +509,7 @@ initkeys()
 	const char *tmp;
 	char t[64];
 
+	freekeys();
 	initmodkey();
 	scr->keys = ecalloc(LENGTH(KeyItems), sizeof(Key *));
 	/* global functions */
@@ -714,13 +731,37 @@ compileregs(void)
 	}
 }
 
+static void
+freerules(void)
+{
+	int i;
+
+	if (!rules)
+		return;
+	for (i = 0; i < 64; i++) {
+		free(rules[i]->propregex);
+		rules[i]->propregex = NULL;
+		free(rules[i]->tagregex);
+		rules[i]->tagregex = NULL;
+		free(rules[i]->prop);
+		rules[i]->prop = NULL;
+		free(rules[i]->tags);
+		rules[i]->tags = NULL;
+		free(rules[i]);
+		rules[i] = NULL;
+	}
+	free(rules);
+	rules = NULL;
+}
+
 void
-initrules()
+initrules(void)
 {
 	int i;
 	char t[64];
 	const char *tmp;
 
+	freerules();
 	rules = ecalloc(64, sizeof(Rule *));
 	for (i = 0; i < 64; i++) {
 		snprintf(t, sizeof(t), "rule%d", i);

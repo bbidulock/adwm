@@ -568,10 +568,17 @@ initrcfile(void)
 	char *pos, *dir;
 	int i, len;
 	struct stat st;
+	static int initialized = 0;
 
 	/* init resource database */
-	XrmInitialize();
-
+	if (!initialized) {
+		XrmInitialize();
+		initialized = 1;
+	}
+	if (xrdb) {
+		XrmDestroyDatabase(xrdb);
+		xresdb = xrdb = NULL;
+	}
 	for (i = 0; i < cargc - 1; i++)
 		if (!strcmp(cargv[i], "-f"))
 			file = cargv[i + 1];
@@ -581,16 +588,16 @@ initrcfile(void)
 			config.rcfile = strdup(file);
 		else {
 			len = strlen(home) + strlen(file) + 2;
-			config.rcfile = ecalloc(len, sizeof(*config.rcfile));
-			strcpy(config.rcfile, home);
-			strcat(config.rcfile, "/");
-			strcat(config.rcfile, file);
+			config.rcfile = ecalloc(len + 1, sizeof(*config.rcfile));
+			strncpy(config.rcfile, home, len);
+			strncat(config.rcfile, "/", len);
+			strncat(config.rcfile, file, len);
 		}
 	} else {
 		len = strlen(home) + strlen("/.adwm/adwmrc") + 1;
-		config.rcfile = ecalloc(len, sizeof(*config.rcfile));
-		strcpy(config.rcfile, home);
-		strcat(config.rcfile, "/.adwm/adwmrc");
+		config.rcfile = ecalloc(len + 1, sizeof(*config.rcfile));
+		strncpy(config.rcfile, home, len);
+		strncat(config.rcfile, "/.adwm/adwmrc", len);
 		if (!lstat(config.rcfile, &st) && S_ISLNK(st.st_mode)) {
 			char *buf = ecalloc(PATH_MAX + 1, sizeof(*buf));
 
@@ -602,10 +609,10 @@ initrcfile(void)
 			} else if (*buf) {
 				free(config.rcfile);
 				len = strlen(home) + strlen(buf) + 2;
-				config.rcfile = ecalloc(len, sizeof(*config.rcfile));
-				strcpy(config.rcfile, home);
-				strcat(config.rcfile, "/");
-				strcat(config.rcfile, buf);
+				config.rcfile = ecalloc(len + 1, sizeof(*config.rcfile));
+				strncpy(config.rcfile, home, len);
+				strncat(config.rcfile, "/", len);
+				strncat(config.rcfile, buf, len);
 			}
 			free(buf);
 		}
@@ -616,9 +623,10 @@ initrcfile(void)
 	if ((pos = strrchr(config.pdir, '/')))
 		*pos = '\0';
 	free(config.udir);
-	config.udir = ecalloc(strlen(home) + strlen("/.adwm") + 1, sizeof(*config.udir));
-	strcpy(config.udir, home);
-	strcat(config.udir, "/.adwm");
+	len = strlen(home) + strlen("/.adwm") + 1;
+	config.udir = ecalloc(len + 1, sizeof(*config.udir));
+	strncpy(config.udir, home, len);
+	strncat(config.udir, "/.adwm", len);
 	free(config.sdir);
 	config.sdir = strdup(SYSCONFPATH);
 	if (!strncmp(home, config.pdir, strlen(home))) {
@@ -638,9 +646,9 @@ initrcfile(void)
 		DPRINTF("Couldn't find database file '%s'\n", config.rcfile);
 		free(config.rcfile);
 		len = strlen(config.pdir) + strlen("/adwmrc") + 2;
-		config.rcfile = ecalloc(len, sizeof(*config.rcfile));
-		strcpy(config.rcfile, config.pdir);
-		strcat(config.rcfile, "/adwmrc");
+		config.rcfile = ecalloc(len + 1, sizeof(*config.rcfile));
+		strncpy(config.rcfile, config.pdir, len);
+		strncat(config.rcfile, "/adwmrc", len);
 		if ((xrdb = XrmGetFileDatabase(config.rcfile))) {
 			dir = strdup(config.rcfile);
 			if (strrchr(dir, '/'))
@@ -654,9 +662,9 @@ initrcfile(void)
 		DPRINTF("Couldn't find database file '%s'\n", config.rcfile);
 		free(config.rcfile);
 		len = strlen(config.udir) + strlen("/adwmrc") + 2;
-		config.rcfile = ecalloc(len, sizeof(*config.rcfile));
-		strcpy(config.rcfile, config.udir);
-		strcat(config.rcfile, "/adwmrc");
+		config.rcfile = ecalloc(len + 1, sizeof(*config.rcfile));
+		strncpy(config.rcfile, config.udir, len);
+		strncat(config.rcfile, "/adwmrc", len);
 		if ((xrdb = XrmGetFileDatabase(config.rcfile))) {
 			dir = strdup(config.rcfile);
 			if (strrchr(dir, '/'))
@@ -670,9 +678,9 @@ initrcfile(void)
 		DPRINTF("Couldn't find database file '%s'\n", config.rcfile);
 		free(config.rcfile);
 		len = strlen(config.sdir) + strlen("/adwmrc") + 2;
-		config.rcfile = ecalloc(len, sizeof(*config.rcfile));
-		strcpy(config.rcfile, config.sdir);
-		strcat(config.rcfile, "/adwmrc");
+		config.rcfile = ecalloc(len + 1, sizeof(*config.rcfile));
+		strncpy(config.rcfile, config.sdir, len);
+		strncat(config.rcfile, "/adwmrc", len);
 		if ((xrdb = XrmGetFileDatabase(config.rcfile))) {
 			dir = strdup(config.rcfile);
 			if (strrchr(dir, '/'))

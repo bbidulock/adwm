@@ -616,10 +616,19 @@ getcolor(const char *colstr)
 {
 	XColor color, exact;
 
-	if (!XAllocNamedColor
-	    (dpy, DefaultColormap(dpy, scr->screen), colstr, &color, &exact))
+	if (!XAllocNamedColor(dpy, DefaultColormap(dpy, scr->screen), colstr,
+			      &color, &exact))
 		eprint("error, cannot allocate color '%s'\n", colstr);
 	return color.pixel;
+}
+
+static void
+freepixmap(ButtonImage *bi)
+{
+	if (bi->pixmap) {
+		XFreePixmap(dpy, bi->pixmap);
+		bi->pixmap = None;
+	}
 }
 
 static int
@@ -796,6 +805,22 @@ b_resize(Client *c, XEvent *ev)
 }
 
 static void
+freeelement(ElementType type)
+{
+	int i;
+	Element *e = &scr->element[type];
+
+	if (type < LastBtn) {
+		for (i = 0; i < LastButtonImageType; i++) {
+			if (e->image[i].present)
+				freepixmap(&e->image[i]);
+		}
+		free(e->image);
+		e->image = NULL;
+	}
+}
+
+static void
 initelement(ElementType type, const char *name, const char *def,
 	    void (**action) (Client *, XEvent *))
 {
@@ -839,6 +864,15 @@ initelement(ElementType type, const char *name, const char *def,
 	} else {
 		scr->element[type].action = action;
 	}
+}
+
+static void
+freebuttons()
+{
+	int i;
+
+	for (i = 0; i < LastElement; i++)
+		freeelement(i);
 }
 
 static void
@@ -955,6 +989,19 @@ initbuttons()
 }
 
 static void
+freefont(int hilite)
+{
+	if (scr->style.font[hilite]) {
+		XftFontClose(dpy, scr->style.font[hilite]);
+		scr->style.font[hilite] = NULL;
+	}
+	if (scr->dc.font[hilite].extents) {
+		free(scr->dc.font[hilite].extents);
+		scr->dc.font[hilite].extents = NULL;
+	}
+}
+
+static void
 initfont(const char *fontstr, int hilite)
 {
 	scr->style.font[hilite] = NULL;
@@ -974,8 +1021,59 @@ initfont(const char *fontstr, int hilite)
 }
 
 void
+freestyle()
+{
+	freebuttons();
+	if (scr->style.color.font[Normal]) {
+		XftColorFree(dpy, DefaultVisual(dpy, scr->screen),
+			     DefaultColormap(dpy, scr->screen),
+			     scr->style.color.font[Normal]);
+		free(scr->style.color.font[Normal]);
+		scr->style.color.font[Normal] = NULL;
+	}
+	if (scr->style.color.font[Selected]) {
+		XftColorFree(dpy, DefaultVisual(dpy, scr->screen),
+			     DefaultColormap(dpy, scr->screen),
+			     scr->style.color.font[Selected]);
+		free(scr->style.color.font[Selected]);
+		scr->style.color.font[Selected] = NULL;
+	}
+	if (scr->style.color.shadow[Normal]) {
+		XftColorFree(dpy, DefaultVisual(dpy, scr->screen),
+			     DefaultColormap(dpy, scr->screen),
+			     scr->style.color.shadow[Normal]);
+		free(scr->style.color.shadow[Normal]);
+		scr->style.color.shadow[Normal] = NULL;
+	}
+	if (scr->style.color.shadow[Selected]) {
+		XftColorFree(dpy, DefaultVisual(dpy, scr->screen),
+			     DefaultColormap(dpy, scr->screen),
+			     scr->style.color.shadow[Selected]);
+		free(scr->style.color.shadow[Selected]);
+		scr->style.color.shadow[Selected] = NULL;
+	}
+	freefont(Normal);
+	freefont(Selected);
+	if (scr->dc.gc) {
+		XFreeGC(dpy, scr->dc.gc);
+		scr->dc.gc = None;
+	}
+	if (scr->dc.draw.xft) {
+		XftDrawDestroy(scr->dc.draw.xft);
+		scr->dc.draw.xft = NULL;
+	}
+	if (scr->dc.draw.pixmap) {
+		XFreePixmap(dpy, scr->dc.draw.pixmap);
+		scr->dc.draw.pixmap = None;
+	}
+}
+
+void
 initstyle()
 {
+	Client *c;
+
+	freestyle();
 	scr->style.color.norm[ColBorder] =
 	    getcolor(getresource("normal.border", NORMBORDERCOLOR));
 	scr->style.color.norm[ColBG] = getcolor(getresource("normal.bg", NORMBGCOLOR));
@@ -992,14 +1090,13 @@ initstyle()
 
 	scr->style.color.font[Selected] = emallocz(sizeof(XftColor));
 	scr->style.color.font[Normal] = emallocz(sizeof(XftColor));
-	XftColorAllocName(dpy, DefaultVisual(dpy, scr->screen), DefaultColormap(dpy,
-										scr->
-										screen),
+	XftColorAllocName(dpy, DefaultVisual(dpy, scr->screen),
+			  DefaultColormap(dpy, scr->screen),
 			  getresource("selected.fg", SELFGCOLOR),
 			  scr->style.color.font[Selected]);
 	XftColorAllocName(dpy, DefaultVisual(dpy, scr->screen),
-			  DefaultColormap(dpy, scr->screen), getresource("normal.fg",
-									 NORMFGCOLOR),
+			  DefaultColormap(dpy, scr->screen),
+			  getresource("normal.fg", NORMFGCOLOR),
 			  scr->style.color.font[Normal]);
 	if (!scr->style.color.font[Selected] || !scr->style.color.font[Normal])
 		eprint("error, cannot allocate colors\n");
@@ -1047,41 +1144,11 @@ initstyle()
 				  DefaultDepth(dpy, scr->screen));
 		scr->dc.draw.xft =
 		    XftDrawCreate(dpy, scr->dc.draw.pixmap,
-				  DefaultVisual(dpy, scr->screen), DefaultColormap(dpy,
-										   scr->
-										   screen));
+				  DefaultVisual(dpy, scr->screen),
+				  DefaultColormap(dpy, scr->screen));
 	}
 	initbuttons();
-}
-
-void
-deinitstyle()
-{
-	/* XXX: more to do */
-	XftColorFree(dpy, DefaultVisual(dpy, scr->screen), DefaultColormap(dpy,
-									   scr->screen),
-		     scr->style.color.font[Normal]);
-	XftColorFree(dpy, DefaultVisual(dpy, scr->screen),
-		     DefaultColormap(dpy, scr->screen), scr->style.color.font[Selected]);
-	if (scr->style.color.shadow[Normal])
-		XftColorFree(dpy, DefaultVisual(dpy, scr->screen), DefaultColormap(dpy,
-										   scr->
-										   screen),
-			     scr->style.color.shadow[Normal]);
-	if (scr->style.color.shadow[Selected])
-		XftColorFree(dpy, DefaultVisual(dpy, scr->screen), DefaultColormap(dpy,
-										   scr->
-										   screen),
-			     scr->style.color.shadow[Selected]);
-	if (scr->style.font[Normal])
-		XftFontClose(dpy, scr->style.font[Normal]);
-	free(scr->dc.font[Normal].extents);
-	if (scr->style.font[Selected])
-		XftFontClose(dpy, scr->style.font[Selected]);
-	free(scr->dc.font[Selected].extents);
-	XFreeGC(dpy, scr->dc.gc);
-	if (scr->dc.draw.xft)
-		XftDrawDestroy(scr->dc.draw.xft);
-	if (scr->dc.draw.pixmap)
-		XFreePixmap(dpy, scr->dc.draw.pixmap);
+	/* redraw all existing clients */
+	for (c = scr->clients; c ; c = c->next)
+		drawclient(c);
 }

@@ -288,6 +288,12 @@ k_restart(XEvent *e, Key *k)
 }
 
 void
+k_reload(XEvent *e, Key *k)
+{
+	reload();
+}
+
+void
 k_setmwfactor(XEvent *e, Key *k)
 {
 	View *v;

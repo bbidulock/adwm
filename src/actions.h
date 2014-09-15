@@ -35,6 +35,7 @@ void k_lower(XEvent *e, Key *k);
 void k_raiselower(XEvent *e, Key *k);
 void k_quit(XEvent *e, Key *k);
 void k_restart(XEvent *e, Key *k);
+void k_reload(XEvent *e, Key *k);
 void k_setmwfactor(XEvent *e, Key *k);
 void k_setnmaster(XEvent *e, Key *k);
 void k_setmargin(XEvent *e, Key *k);

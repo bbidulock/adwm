@@ -4,7 +4,7 @@
 #define __LOCAL_DRAW_H__
 
 void drawclient(Client *c);
-void deinitstyle();
+void freestyle();
 void initstyle();
 
 #endif				/* __LOCAL_DRAW_H__ */

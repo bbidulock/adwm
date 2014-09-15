@@ -36,10 +36,10 @@ char *atomnames[NATOMS] = {
 	"WM_TAKE_FOCUS",
 	"_ECHINUS_LAYOUT",
 	"_ECHINUS_SELTAGS",
-	"_NET_RELOAD",		/* TODO */
-	"_NET_RESTART",		/* TODO */
-	"_NET_SHUTDOWN",	/* TODO */
-	"_NET_DESKTOP_LAYOUT",	/* TODO */
+	"_NET_RELOAD",
+	"_NET_RESTART",
+	"_NET_SHUTDOWN",
+	"_NET_DESKTOP_LAYOUT",
 	/* MWM/DTWM properties follow */
 	"WM_DESKTOP",
 	"_MOTIF_BINDINGS",
@@ -2434,11 +2434,11 @@ clientmessage(XEvent *e)
 			if (!ev->data.l[0] != !scr->showing_desktop)
 				toggleshowing();
 		} else if (message_type == _XA_NET_RELOAD) {
-			/* TODO */
+			reload();
 		} else if (message_type == _XA_NET_RESTART) {
-			/* TODO */
+			restart(NULL);
 		} else if (message_type == _XA_NET_SHUTDOWN) {
-			/* TODO */
+			quit(NULL);
 		} else if (message_type == _XA_MANAGER) {
 			/* TODO */
 		} else if (message_type == _XA_NET_STARTUP_INFO_BEGIN) {

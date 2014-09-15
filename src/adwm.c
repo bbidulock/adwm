@@ -815,7 +815,7 @@ cleanup(WithdrawCause cause)
 	XrmDestroyDatabase(xrdb);
 
 	for (scr = screens; scr < screens + nscr; scr++) {
-		deinitstyle();
+		freestyle();
 		XUngrabKey(dpy, AnyKey, AnyModifier, scr->root);
 	}
 
@@ -3545,6 +3545,68 @@ sighandler(int sig)
 }
 
 void
+reload(void)
+{
+	char *owd;
+
+	owd = ecalloc(PATH_MAX, sizeof(*owd));
+	if (!getcwd(owd, PATH_MAX))
+		strcpy(owd, "/");
+
+	initrcfile();
+	initrules();
+	initconfig();
+
+	for (scr = screens; scr < screens + nscr; scr++) {
+		int ntags = scr->ntags;
+
+		if (scr->managed)
+			continue;
+
+		/* init per-screen configuration */
+		initscreen();
+
+		/* init tags */
+		inittags();
+		ewmh_process_net_number_of_desktops();
+		ewmh_process_net_desktop_names();
+		for (; ntags > scr->ntags; ntags--)
+			deltag();
+		for (; ntags < scr->ntags; ntags++)
+			addtag();
+		ewmh_process_net_desktop_names();
+		ewmh_update_net_number_of_desktops();
+
+		/* init key bindings */
+		initkeys();
+
+		/* initialize layouts */
+		initlayouts();
+		ewmh_update_net_desktop_modes();
+
+		ewmh_process_net_desktop_layout();
+		ewmh_update_net_desktop_layout();
+		ewmh_update_net_number_of_desktops();
+		ewmh_update_net_current_desktop();
+		ewmh_update_net_virtual_roots();
+
+		grabkeys();
+
+		/* init appearance */
+		initstyle();	/* XXX: must redraw clients after style change */
+
+		arrange(NULL);
+	}
+
+	if (owd) {
+		if (chdir(owd))
+			DPRINTF("Could not change directory to %s: %s\n", owd,
+				strerror(errno));
+		free(owd);
+	}
+}
+
+void
 setup(char *conf, AdwmOperations *ops)
 {
 	int d = 0;
@@ -3589,7 +3651,7 @@ setup(char *conf, AdwmOperations *ops)
 	sn_dpy = sn_display_new(dpy, NULL, NULL);
 #endif
 
-	owd = calloc(PATH_MAX, sizeof(*owd));
+	owd = ecalloc(PATH_MAX, sizeof(*owd));
 	if (!getcwd(owd, PATH_MAX))
 		strcpy(owd, "/");
 

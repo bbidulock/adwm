@@ -379,8 +379,8 @@ isomni(Client *c)
 	return True;
 }
 
-static void
-deltag()
+void
+deltag(void)
 {
 	Client *c;
 	unsigned long long tags;
@@ -414,8 +414,8 @@ deltag()
 	--scr->ntags;
 }
 
-static void
-addtag()
+void
+addtag(void)
 {
 	Client *c;
 

@@ -1160,6 +1160,7 @@ Bool configurerequest(XEvent *e);
 void pushtime(Time time);
 void quit(const char *arg);
 void restart(const char *arg);
+void reload(void);
 void spawn(const char *arg);
 void togglestruts(View *v);
 void togglemin(Client *c);

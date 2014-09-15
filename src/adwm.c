@@ -2827,7 +2827,7 @@ run(void)
 
 			switch (sig) {
 			case SIGHUP:
-				quit("HUP!");
+				reload();
 				break;
 			case SIGTERM:
 			case SIGINT:

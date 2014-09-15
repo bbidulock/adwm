@@ -739,6 +739,8 @@ freerules(void)
 	if (!rules)
 		return;
 	for (i = 0; i < 64; i++) {
+		if (!rules[i])
+			continue;
 		free(rules[i]->propregex);
 		rules[i]->propregex = NULL;
 		free(rules[i]->tagregex);

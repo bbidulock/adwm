@@ -258,37 +258,103 @@ static KeyItem KeyItemsByTag[] = {
 
 #define CLEANMASK(mask) (mask & ~(numlockmask | LockMask))
 
+static const char *
+showkey(Key *k)
+{
+	static char buf[256] = { 0, };
+	unsigned long mod = k->mod;
+	char *sym;
+	
+	buf[0] = '\0';
+	if (mod & Mod1Mask)
+		strcat(buf, "A");
+	if (mod & ControlMask)
+		strcat(buf, "C");
+	if (mod & ShiftMask)
+		strcat(buf, "S");
+	if (mod & Mod4Mask)
+		strcat(buf, "W");
+	if (mod & (Mod1Mask|ControlMask|ShiftMask|Mod4Mask))
+		strcat(buf, " + ");
+	if ((sym = XKeysymToString(k->keysym)))
+		strcat(buf, sym);
+	else
+		strcat(buf, "(unknown)");
+	return (buf);
+}
+
+char *
+showchain_r(Key *k)
+{
+	char *buf, *tmp;
+
+	buf = calloc(1024, sizeof(*buf));
+	strcat(buf, showkey(k));
+	if (k->chain) {
+		for (k = k->chain; k; k = k->cnext) {
+			tmp = showchain_r(k);
+			strcat(buf, " : ");
+			strcat(buf, tmp);
+			free(tmp);
+			if (k->cnext)
+				strcat(buf, ", ");
+		}
+	}
+	return buf;
+}
+
+const char *
+showchain(Key *k)
+{
+	static char buf[1025], *tmp;
+
+	tmp = showchain_r(k);
+	strncpy(buf, tmp, 1024);
+	free(tmp);
+	return buf;
+}
+
 static void
 freekey(Key *k)
 {
 	if (k) {
 		free(k->arg);
+		k->arg = NULL;
 		free(k);
 	}
 }
 
 void
-freechain(Key *chain)
+freechain(Key *k)
 {
-	Key *k, *knext, *c, *cnext;
+	Key *c, *cnext;
 
-	for (knext = chain; (k = knext);) {
-		knext = k->chain;
-		for (cnext = k->cnext; (c = cnext);) {
+	if (k) {
+		_DPRINTF("Freeing chain: %p: %s\n", k, showchain(k));
+		cnext = k->chain;
+		k->chain = NULL;
+		while ((c = cnext)) {
 			cnext = c->cnext;
-			freekey(c);
+			c->cnext = NULL;
+			freechain(c);
 		}
 		freekey(k);
 	}
 }
 
+/*
+ * (*kp) and k have the same mod and keysym.  Both have a non-null ->chain.
+ * if there is a key in the (*kp)->chain list (*lp) that has the same mod and
+ * keysm as k->chain, then free (*lp) and set its location to *kp->chain
+ */
 static void
 mergechain(Key **kp, Key *k)
 {
 	Key **lp;
-
 	Key *next = k->chain;
 
+	DPRINTF("Merging chain %s\n", showchain(k));
+	DPRINTF("   into chain %s\n", showchain(*kp));
 	k->chain = NULL;
 	freekey(k);
 	k = next;
@@ -300,35 +366,44 @@ mergechain(Key **kp, Key *k)
 		if ((*lp)->chain && k->chain)
 			mergechain(lp, k);
 		else {
-			DPRINTF("Overriding previous key alternate!\n");
+			DPRINTF("Overriding previous key alternate %s!\n", showchain(k));
+			k->cnext = (*lp)->cnext;
+			(*lp)->cnext = NULL;
 			freechain(*lp);
 			*lp = k;
 		}
-	} else
+	} else {
+		k->cnext = NULL;
 		*lp = k;
+	}
 }
 
 void
 addchain(Key *k)
 {
 	Key **kp;
-	int i;
 
-	for (kp = scr->keys, i = 0; i < scr->nkeys; i++, kp++)
+	DPRINTF("Adding chain: %s ...\n", showchain(k));
+	for (kp = &scr->keylist; *kp; kp = &(*kp)->cnext)
 		if ((*kp)->mod == k->mod && (*kp)->keysym == k->keysym)
 			break;
-	if (i < scr->nkeys) {
+	if (*kp) {
+		DPRINTF("Overlapping key definition %s\n", XKeysymToString(k->keysym));
 		if ((*kp)->chain && k->chain)
 			mergechain(kp, k);
 		else {
-			DPRINTF("Overriding previous key definition!\n");
+			DPRINTF("Overriding previous key definition %d of %d: %s!\n", i + 1, scr->nkeys, showchain(k));
+			k->cnext = (*kp)->cnext;
+			(*kp)->cnext = NULL;
 			freechain(*kp);
 			*kp = k;
 		}
+		DPRINTF("... added chain: %s\n", showchain(*kp));
 	} else {
-		scr->keys = erealloc(scr->keys, (scr->nkeys + 1) * sizeof(*scr->keys));
-		scr->keys[scr->nkeys] = k;
-		scr->nkeys++;
+		DPRINTF("Adding new key %s\n", XKeysymToString(k->keysym));
+		k->cnext = scr->keylist;
+		scr->keylist = k;
+		DPRINTF("... added chain: %s\n", showchain(k));
 	}
 }
 
@@ -448,6 +523,8 @@ parsechain(const char *s, const char *e, Key *spec)
 		}
 		last = k;
 	}
+	if (chain)
+		DPRINTF("Parsed chain: %s\n", showchain(chain));
 	return chain;
 }
 
@@ -487,19 +564,19 @@ initmodkey()
 	}
 }
 
-static void
+void
 freekeys(void)
 {
-	if (scr->keys) {
-		Key **kp;
-		int i;
+	Key *k, *knext;
 
-		for (kp = scr->keys, i = 0; i < scr->nkeys; i++, kp++)
-			freechain(*kp);
-		free(scr->keys);
-		scr->keys = NULL;
+	knext = scr->keylist;
+	scr->keylist = NULL;
+	while ((k = knext)) {
+		knext = k->cnext;
+		k->cnext = NULL;
+		DPRINTF("Freeing key chain: %s\n", showchain(k));
+		freechain(k);
 	}
-	scr->nkeys = 0;
 }
 
 void
@@ -511,7 +588,6 @@ initkeys()
 
 	freekeys();
 	initmodkey();
-	scr->keys = ecalloc(LENGTH(KeyItems), sizeof(Key *));
 	/* global functions */
 	for (i = 0; i < LENGTH(KeyItems); i++) {
 		Key key = { 0, };
@@ -681,7 +757,7 @@ initkeys()
 		if (!tmp)
 			continue;
 		key.func = k_setlayout;
-		key.arg = strdup(&layouts[i].symbol);
+		key.arg = strdup(t + 9);
 		parsekeys(tmp, &key);
 	}
 	/* spawn */

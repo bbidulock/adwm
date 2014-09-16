@@ -5,6 +5,7 @@
 
 void initrules(void);
 void initkeys(void);
+void freekeys(void);
 void parsekeys(const char *s, Key *spec);
 void addchain(Key *chain);
 void freechain(Key *chain);

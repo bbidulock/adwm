@@ -699,7 +699,9 @@ initkeys_ADWM(void)
 	xresdb = xkeysdb;
 
 	initmodkey();
+#if 0
 	scr->keys = ecalloc(LENGTH(KeyItems), sizeof(Key *));
+#endif
 	/* global functions */
 	for (i = 0; i < LENGTH(KeyItems); i++) {
 		Key key = { 0, };

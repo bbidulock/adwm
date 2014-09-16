@@ -1054,8 +1054,7 @@ struct AScreen {
 	} dock;
 	View views[MAXTAGS];
 	Tag tags[MAXTAGS];
-	Key **keys;
-	unsigned nkeys;
+	Key *keylist;
 	struct {
 		int orient;		/* orientation */
 		int rows, cols;		/* rows and cols (one can be zero) */

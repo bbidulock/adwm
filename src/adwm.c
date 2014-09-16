@@ -806,8 +806,7 @@ cleanup(WithdrawCause cause)
 	}
 
 	for (scr = screens; scr < screens + nscr; scr++) {
-		free(scr->keys);
-		scr->keys = NULL;
+		freekeys();
 		freemonitors();
 	}
 
@@ -1719,14 +1718,15 @@ void
 grabkeys(void)
 {
 	unsigned int modifiers[] = { 0, LockMask, numlockmask, numlockmask | LockMask };
-	unsigned int i, j;
+	unsigned int j;
 	KeyCode code;
+	Key *k;
 
 	XUngrabKey(dpy, AnyKey, AnyModifier, scr->root);
-	for (i = 0; i < scr->nkeys; i++) {
-		if ((code = XKeysymToKeycode(dpy, scr->keys[i]->keysym))) {
+	for (k = scr->keylist; k; k = k->cnext) {
+		if ((code = XKeysymToKeycode(dpy, k->keysym))) {
 			for (j = 0; j < LENGTH(modifiers); j++)
-				XGrabKey(dpy, code, scr->keys[i]->mod | modifiers[j],
+				XGrabKey(dpy, code, k->mod | modifiers[j],
 					 scr->root, True, GrabModeAsync, GrabModeAsync);
 		}
 	}
@@ -1758,9 +1758,6 @@ keypress(XEvent *e)
 		mod = CLEANMASK(ev.xkey.state);
 
 		switch (ev.type) {
-			Key **kp;
-			int i;
-
 		case KeyRelease:
 			DPRINTF("KeyRelease: 0x%02lx %s\n", mod, XKeysymToString(keysym));
 			/* a key release other than the active key is a release of a
@@ -1783,9 +1780,11 @@ keypress(XEvent *e)
 					k->stop(&ev, k);
 				k = NULL;
 			}
-			for (i = 0, kp = scr->keys; !k && i < scr->nkeys; i++, kp++)
-				if ((*kp)->keysym == keysym && (*kp)->mod == mod)
-					k = *kp;
+			if (!k) {
+				for (k = scr->keylist; k; k = k->cnext)
+					if (k->keysym == keysym && k->mod == mod)
+						break;
+			}
 			if (k) {
 				DPRINTF("KeyPress: activating action\n");
 				handled = True;
@@ -3560,7 +3559,7 @@ reload(void)
 	for (scr = screens; scr < screens + nscr; scr++) {
 		int ntags = scr->ntags;
 
-		if (scr->managed)
+		if (!scr->managed)
 			continue;
 
 		/* init per-screen configuration */

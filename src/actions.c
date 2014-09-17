@@ -374,6 +374,39 @@ k_setnmaster(XEvent *e, Key *k)
 }
 
 void
+k_setncolumns(XEvent *e, Key *k)
+{
+	const char *arg;
+	View *v;
+	int num;
+
+	if (!(v = selview()))
+		return;
+
+	switch (k->act) {
+	case IncCount:
+		arg = k->arg ? : "+1";
+		break;
+	case DecCount:
+		arg = k->arg ? : "+1";
+		break;
+	default:
+	case SetCount:
+		arg = k->arg ? : "0";
+		break;
+	}
+	if (sscanf(arg, "%d", &num) == 1) {
+		if (arg[0] == '+' || arg[0] == '-' || k->act != SetCount) {
+			if (k->act == DecCount)
+				decncolumns(v, num);
+			else
+				incncolumns(v, num);
+		} else
+			setncolumns(v, num);
+	}
+}
+
+void
 k_setmargin(XEvent *e, Key *k)
 {
 	const char *arg;

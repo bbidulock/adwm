@@ -38,6 +38,7 @@ void k_restart(XEvent *e, Key *k);
 void k_reload(XEvent *e, Key *k);
 void k_setmwfactor(XEvent *e, Key *k);
 void k_setnmaster(XEvent *e, Key *k);
+void k_setncolumns(XEvent *e, Key *k);
 void k_setmargin(XEvent *e, Key *k);
 void k_setborder(XEvent *e, Key *k);
 void k_setfloating(XEvent *e, Key *k);

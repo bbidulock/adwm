@@ -35,6 +35,7 @@ struct Arrangement {
 	void (*arrange)(View *v);
 	void (*arrangedock)(View *v);
 	void (*setnmaster)(View *v, SetValue how, int n);
+	void (*setncolumns)(View *v, SetValue how, int n);
 	void (*rotate)(Client *c, View *v, RotateDirection dir, RotateArea area);
 	void (*zoom)(Client *c);
 	void (*zoomfloat)(Client *c);
@@ -77,6 +78,9 @@ void setmwfact(View *v, double factor);
 void setnmaster(View *v, int n);
 void decnmaster(View *v, int n);
 void incnmaster(View *v, int n);
+void setncolumns(View *v, int n);
+void decncolumns(View *v, int n);
+void incncolumns(View *v, int n);
 Bool mousemove(Client *c, XEvent *e, Bool toggle);
 Bool mouseresize_from(Client *c, int from, XEvent *e, Bool toggle);
 Bool mouseresize(Client *c, XEvent *e, Bool toggle);

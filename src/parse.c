@@ -72,7 +72,7 @@ static KeyItem KeyItemsByAmt[] = {
 	/* *INDENT-OFF* */
 	{ "mwfact",		k_setmwfactor	 },
 	{ "nmaster",		k_setnmaster	 },
-	{ "ncolumns",		k_setnmaster	 },
+	{ "ncolumns",		k_setncolumns	 },
 	{ "margin",		k_setmargin	 },
 	{ "border",		k_setborder	 }
 	/* *INDENT-ON* */

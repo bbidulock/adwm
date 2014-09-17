@@ -2900,104 +2900,113 @@ setmwfact(View *v, double factor)
 void
 setnmaster(View *v, int n)
 {
-	Bool master, column;
 	int length;
-	Monitor *m = v->curmon;
+	Monitor *m;
 
-	master = VFEATURES(v, NMASTER) ? True : False;
-	column = VFEATURES(v, NCOLUMNS) ? True : False;
-
-	if (!master && !column)
+	if (!VFEATURES(v, NMASTER))
 		return;
-
-	if (n < 1) {
-		if (master)
-			n = DEFNMASTER;
-		else
-			n = DEFNCOLUMNS;
-	}
+	if (!(m = v->curmon))
+		return;
+	if (n < 1)
+		n = DEFNMASTER;
 	switch (v->major) {
 	case OrientTop:
 	case OrientBottom:
-		if (m) {
-			length = m->wa.h;
-			if (master) {
-				switch (v->minor) {
-				case OrientTop:
-				case OrientBottom:
-					length = (double) m->wa.h * v->mwfact;
-					break;
-				default:
-					break;
-				}
-			}
-			if (length / n < 2 * (scr->style.titleheight + scr->style.border))
-				return;
+		length = m->wa.h;
+		switch (v->minor) {
+		case OrientTop:
+		case OrientBottom:
+			length = (double) m->wa.h * v->mwfact;
+			break;
+		default:
+			break;
 		}
+		if (length / n < 2 * (scr->style.titleheight + scr->style.border))
+			return;
 		break;
 	case OrientLeft:
 	case OrientRight:
-		if (m) {
-			length = m->wa.w;
-			if (master) {
-				switch (v->minor) {
-				case OrientLeft:
-				case OrientRight:
-					length = (double) m->wa.w * v->mwfact;
-					break;
-				default:
-					break;
-				}
-			}
-			if (length / n <
-			    2 * (6 * scr->style.titleheight + scr->style.border))
-				return;
+		length = m->wa.w;
+		switch (v->minor) {
+		case OrientLeft:
+		case OrientRight:
+			length = (double) m->wa.w * v->mwfact;
+			break;
+		default:
+			break;
 		}
+		if (length / n < 2 * (6 * scr->style.titleheight + scr->style.border))
+			return;
 		break;
 	}
-	if (master) {
-		if (v->nmaster != n) {
-			v->nmaster = n;
-			arrange(v);
-		}
-	} else {
-		if (v->ncolumns != n) {
-			v->ncolumns = n;
-			arrange(v);
-		}
+	if (v->nmaster != n) {
+		v->nmaster = n;
+		arrange(v);
 	}
 }
 
 void
 decnmaster(View *v, int n)
 {
-	Bool master, column;
-
-	master = VFEATURES(v, NMASTER) ? True : False;
-	column = VFEATURES(v, NCOLUMNS) ? True : False;
-
-	if (!master && !column)
+	if (!VFEATURES(v, NMASTER))
 		return;
-	if (master)
-		setnmaster(v, v->nmaster - n);
-	else
-		setnmaster(v, v->ncolumns - n);
+	setnmaster(v, v->nmaster - n);
 }
 
 void
 incnmaster(View *v, int n)
 {
-	Bool master, column;
-
-	master = VFEATURES(v, NMASTER) ? True : False;
-	column = VFEATURES(v, NCOLUMNS) ? True : False;
-
-	if (!master && !column)
+	if (!VFEATURES(v, NMASTER))
 		return;
-	if (master)
-		setnmaster(v, v->nmaster + n);
-	else
-		setnmaster(v, v->ncolumns + n);
+	setnmaster(v, v->nmaster + n);
+}
+
+void
+setncolumns(View *v, int n)
+{
+	int length;
+	Monitor *m;
+
+	if (!VFEATURES(v, NCOLUMNS))
+		return;
+	if (!(m = v->curmon))
+		return;
+	if (n < 1)
+		n = DEFNCOLUMNS;
+	switch (v->major) {
+	case OrientTop:
+	case OrientBottom:
+		length = m->wa.h;
+		if (length / n < 2 * (scr->style.titleheight + scr->style.border))
+			return;
+		break;
+	case OrientLeft:
+	case OrientRight:
+		length = m->wa.w;
+		if (length / n < 2 * (6 * scr->style.titleheight + scr->style.border))
+			return;
+		break;
+	}
+	if (v->ncolumns != n) {
+		v->ncolumns = n;
+		arrange(v);
+	}
+}
+
+void
+decncolumns(View *v, int n)
+{
+	if (!VFEATURES(v, NCOLUMNS))
+		return;
+	setncolumns(v, v->ncolumns - n);
+}
+
+void
+incncolumns(View *v, int n)
+{
+	if (!VFEATURES(v, NCOLUMNS))
+		return;
+	setncolumns(v, v->ncolumns + n);
 }
 
 static void

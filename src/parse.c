@@ -330,7 +330,7 @@ freechain(Key *k)
 	Key *c, *cnext;
 
 	if (k) {
-		_DPRINTF("Freeing chain: %p: %s\n", k, showchain(k));
+		DPRINTF("Freeing chain: %p: %s\n", k, showchain(k));
 		cnext = k->chain;
 		k->chain = NULL;
 		while ((c = cnext)) {

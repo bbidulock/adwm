@@ -8,16 +8,14 @@ A + 6:Adwm*view5
 A + 7:Adwm*view6
 A + 8:Adwm*view7
 A + 9:Adwm*view8
-A + Above_Tab:Adwm*groupnext
 A + Down:Adwm*lower
 A + Escape:Adwm*focusnext
-A + F1 = xde-term:Adwm*spawn5
+A + F1 = uxterm:Adwm*spawn8
 A + F10:Adwm*togglemax
 A + F11:Adwm*togglefull
 A + F12:Adwm*toggleshade
-A + F2 = xde-run:Adwm*spawn6
+A + F2 = xde-run:Adwm*spawn9
 A + F4:Adwm*killclient
-A + F5:Adwm*killclient
 A + F5:Adwm*unmax
 A + F6:Adwm*groupnext
 A + F7:Adwm*begmove
@@ -25,7 +23,7 @@ A + F8:Adwm*begsize
 A + F9:Adwm*iconify
 A + Home:Adwm*raiselower
 A + Left:Adwm*raiselower
-A + Print = scrot -s:Adwm*spawn0
+A + Print = scrot -s:Adwm*spawn10
 A + Return:Adwm*zoom
 A + Right:Adwm*toggleabove
 A + Tab:Adwm*focusnext
@@ -38,22 +36,22 @@ A + d:Adwm*toggledectiled
 A + e:Adwm*rotatewins
 A + f:Adwm*setlayoutf
 A + g:Adwm*setlayoutg
-A + grave:Adwm*togglemonitor
-A + h = 5%:Adwm*decmwfact
+A + grave:Adwm*groupnext
+A + h:Adwm*decmwfact
 A + i:Adwm*setlayouti
 A + j:Adwm*focusnext
 A + k:Adwm*focusprev
-A + l = 5%:Adwm*incmwfact
+A + l:Adwm*incmwfact
 A + m:Adwm*setlayoutm
 A + period:Adwm*screennext
 A + q:Adwm*killclient
 A + r:Adwm*setlayoutt
 A + s:Adwm*toggleshade
-A + space = xde-winmenu -w active -W center:Adwm*spawn0
+A + space = xde-winmenu -w active -W center:Adwm*spawn7
 A + t:Adwm*setlayoutl
 A + u:Adwm*setlayoutu
 A + w:Adwm*setlayoutb
-A + x = uxterm:Adwm*spawn1
+A + x = uxterm:Adwm*spawn11
 A + y:Adwm*rotateview
 AC + 0:Adwm*toggleview9
 AC + 1:Adwm*toggleview0
@@ -65,7 +63,7 @@ AC + 6:Adwm*toggleview5
 AC + 7:Adwm*toggleview6
 AC + 8:Adwm*toggleview7
 AC + 9:Adwm*toggleview8
-AC + Delete = xde-logout:Adwm*spawn1
+AC + Delete = xde-logout:Adwm*spawn12
 AC + Down:Adwm*viewdown
 AC + Escape:Adwm*panelnext
 AC + KP_1:Adwm*movetoSW
@@ -78,17 +76,17 @@ AC + KP_7:Adwm*movetoNW
 AC + KP_8:Adwm*movetoN
 AC + KP_9:Adwm*movetoNE
 AC + Left:Adwm*viewprev
-AC + Return = uxterm:Adwm*spawn0
+AC + Return = uxterm:Adwm*spawn13
 AC + Right:Adwm*viewnext
 AC + Tab:Adwm*docknext
 AC + Up:Adwm*viewup
-AC + a : Down 0 0 0 5:Adwm*resizeincy
-AC + a : Left = -5 0 5 0:Adwm*resizeincx
-AC + a : Return:Adwm*begmoveresize
-AC + a : Right 0 0 5 0:Adwm*resizeincx
+AC + a : Down:Adwm*resizedecy
+AC + a : Left:Adwm*resizedecx
+AC + a : Return:Adwm*begsize
+AC + a : Right:Adwm*resizeincx
 AC + a : S + l:Adwm*lower
 AC + a : S + r:Adwm*raise
-AC + a : Up = 0 -5 0 5:Adwm*resizeincy
+AC + a : Up:Adwm*resizeincy
 AC + a : a:Adwm*togglesticky
 AC + a : b:Adwm*togglebelow
 AC + a : f:Adwm*togglefull
@@ -118,24 +116,23 @@ AC + c : S + y:Adwm*edgetoN
 AC + c : a:Adwm*movetoW
 AC + c : b:Adwm*movetoS
 AC + c : c:Adwm*movetoSE
-AC + c : c:Adwm*movetoSW
 AC + c : d:Adwm*movetoE
 AC + c : e:Adwm*movetoNE
 AC + c : h:Adwm*movetoC
 AC + c : l:Adwm*movetoE
 AC + c : m:Adwm*movetoSE
-AC + c : m:Adwm*movetoSW
 AC + c : p:Adwm*movetoNE
 AC + c : q:Adwm*movetoNW
 AC + c : s:Adwm*movetoC
 AC + c : w:Adwm*movetoN
 AC + c : x:Adwm*movetoS
 AC + c : y:Adwm*movetoN
+AC + c : z:Adwm*movetoSW
 AC + d:Adwm*toggleshowing
-AC + e : c = xde-run:Adwm*spawn5
-AC + e : e = uxterm:Adwm*spawn1
-AC + e : l = xde-xlock -l:Adwm*spawn2
-AC + e : s = scrot -s:Adwm*spawn3
+AC + e : c = xde-run:Adwm*spawn14
+AC + e : e = uxterm:Adwm*spawn15
+AC + e : l = xde-xlock -l:Adwm*spawn16
+AC + e : s = scrot -s:Adwm*spawn17
 AC + equal:Adwm*appendtag
 AC + f = pcmanfm:Adwm*spawn2
 AC + h:Adwm*viewleft
@@ -149,16 +146,16 @@ AC + p : Delete:Adwm*reload
 AC + p : End:Adwm*quit
 AC + p : Next:Adwm*restart
 AC + p : Prior = twm:Adwm*restart
-AC + p : d = xde-run:Adwm*spawn6
+AC + p : d = xde-run:Adwm*spawn18
 AC + p : h:Adwm*togglestruts
 AC + q:Adwm*quit
-AC + r = xde-run:Adwm*spawn4
+AC + r = xde-run:Adwm*spawn3
 AC + s:Adwm*togglesticky
 AC + space:Adwm*togglestruts
 AC + t = roxterm:Adwm*spawn0
-AC + v = gvim:Adwm*spawn3
+AC + v = gvim:Adwm*spawn4
 AC + w = firefox:Adwm*spawn1
-AC + x = uxterm:Adwm*spawn4
+AC + x = uxterm:Adwm*spawn19
 AC + y:Adwm*rotatezone
 ACS + 0:Adwm*toggletag9
 ACS + 1:Adwm*toggletag0
@@ -198,7 +195,6 @@ AS + 6:Adwm*tag5
 AS + 7:Adwm*tag6
 AS + 8:Adwm*tag7
 AS + 9:Adwm*tag8
-AS + Above_Tab:Adwm*groupprev
 AS + Down:Adwm*sendtodown
 AS + Escape:Adwm*focusprev
 AS + F10:Adwm*togglemaxv
@@ -213,28 +209,29 @@ AS + F7:Adwm*setlayouti
 AS + F8:Adwm*arrangeicons
 AS + F9:Adwm*iconifyall
 AS + Left:Adwm*sendtoleft
-AS + Return = uxterm:Adwm*spawn8
+AS + Return = uxterm:Adwm*spawn20
 AS + Right:Adwm*sendtoright
 AS + Tab:Adwm*focusprev
 AS + Up:Adwm*sendtoup
-AS + a = 0 0 -5 0:Adwm*resizedecx
+AS + a:Adwm*resizedecx
 AS + bracketleft:Adwm*tag10
 AS + bracketright:Adwm*tag11
 AS + c:Adwm*killclient
 AS + comma:Adwm*scrtoprev
-AS + d = 0 0 5 0:Adwm*resizeincx
+AS + d:Adwm*resizeincx
 AS + e:Adwm*unrotatewins
+AS + grave:Adwm*groupprev
 AS + h:Adwm*hide
-AS + j = 1:Adwm*decnmaster
-AS + k = 1:Adwm*incnmaster
+AS + j:Adwm*decnmaster
+AS + k:Adwm*incnmaster
 AS + m:Adwm*iconify
 AS + period:Adwm*scrtonext
 AS + q:Adwm*restart
-AS + s = 0 0 0 -5:Adwm*resizedecy
+AS + s:Adwm*resizedecy
 AS + space:Adwm*togglefloating
-AS + w = 0 0 0 5:Adwm*resizeincy
+AS + w:Adwm*resizeincx
 AS + y:Adwm*unrotateview
-C + Escape = xdg-traymenu -p:Adwm*spawn9
+C + Escape = xdg-traymenu -p:Adwm*spawn21
 C + F10:Adwm*view9
 C + F11:Adwm*view10
 C + F12:Adwm*view11
@@ -249,12 +246,11 @@ C + F8:Adwm*view7
 C + F9:Adwm*view8
 CS + Down:Adwm*togglefill
 CS + Left:Adwm*togglemax
-CS + Return:Adwm*toggleselect
 CS + Right:Adwm*togglemaxh
 CS + Up:Adwm*togglemaxv
-F11 = xde-winlist:Adwm*spawn10
-F12 = xdg-traymenu -p:Adwm*spawn11
-S + Escape = xde-winmenu -w active -W center:Adwm*spawn12
+F11 = xde-winlist:Adwm*spawn22
+F12 = xdg-traymenu -p:Adwm*spawn23
+S + Escape = xde-winmenu -w active -W center:Adwm*spawn24
 W + 0:Adwm*view9
 W + 1:Adwm*view0
 W + 2:Adwm*view1
@@ -265,7 +261,6 @@ W + 6:Adwm*view5
 W + 7:Adwm*view6
 W + 8:Adwm*view7
 W + 9:Adwm*view8
-W + Above_Tab:Adwm*groupnext
 W + Down:Adwm*viewprev
 W + End:Adwm*viewright
 W + Escape:Adwm*viewlast
@@ -306,25 +301,26 @@ W + bracketleft:Adwm*moveleft
 W + bracketright:Adwm*moveright
 W + comma:Adwm*incnmaster
 W + d:Adwm*toggleshowing
-W + e = pcmanfm:Adwm*spawn14
-W + equal = -3 0 6 0:Adwm*resizeincx
+W + e = pcmanfm:Adwm*spawn25
+W + equal:Adwm*resizeincx
 W + f:Adwm*togglefull
 W + g:Adwm*togglefocus
-W + h = 5%:Adwm*decmwfact
+W + grave:Adwm*groupnext
+W + h:Adwm*decmwfact
 W + i:Adwm*iconify
 W + j:Adwm*focusnext
 W + k:Adwm*focusprev
-W + l = 5%:Adwm*incmwfact
+W + l:Adwm*incmwfact
 W + m:Adwm*togglemax
-W + minus = 3 0 -6 0:Adwm*resizedecx
+W + minus:Adwm*resizedecx
 W + n:Adwm*iconify
 W + o:Adwm*scrtonext
-W + p = xdg-traymenu -p:Adwm*spawn15
+W + p = xdg-traymenu -p:Adwm*spawn26
 W + period:Adwm*decnmaster
 W + q:Adwm*killclient
-W + r = xde-run:Adwm*spawn17
-W + s = scrot:Adwm*spawn20
-W + slash = xde-findws:Adwm*spawn13
+W + r = xde-run:Adwm*spawn27
+W + s = scrot:Adwm*spawn28
+W + slash = xde-findws:Adwm*spawn29
 W + space:Adwm*layoutnext
 W + t:Adwm*togglefloating
 W + u:Adwm*focusurgent
@@ -332,10 +328,10 @@ W + v:Adwm*button2
 W + w:Adwm*iconify
 W + x:Adwm*killclient
 W + z:Adwm*toggleselect
-WA + b = 1:Adwm*incborder
-WA + m = 1:Adwm*incmargin
-WAS + b = 1:Adwm*decborder
-WAS + m = 1:Adwm*decmargin
+WA + b:Adwm*incborder
+WA + m:Adwm*incmargin
+WAS + b:Adwm*decborder
+WAS + m:Adwm*decmargin
 WC + 0:Adwm*toggleview9
 WC + 1:Adwm*toggleview0
 WC + 2:Adwm*toggleview1
@@ -394,8 +390,7 @@ WS + 6:Adwm*sendto5
 WS + 7:Adwm*sendto6
 WS + 8:Adwm*sendto7
 WS + 9:Adwm*sendto8
-WS + Above_Tab:Adwm*groupprev
-WS + Delete = xde-xlock -l:Adwm*spawn18
+WS + Delete = xde-xlock -l:Adwm*spawn30
 WS + Down:Adwm*taketoprev
 WS + End:Adwm*taketoright
 WS + F10:Adwm*sendto19
@@ -423,29 +418,30 @@ WS + KP_9:Adwm*scrto8
 WS + Left:Adwm*screenprev
 WS + Page_Down:Adwm*taketodown
 WS + Page_Up:Adwm*taketoup
-WS + Return = uxterm:Adwm*spawn0
+WS + Return = uxterm:Adwm*spawn31
 WS + Right:Adwm*screennext
 WS + Tab:Adwm*focusprev
 WS + Up:Adwm*viewlast
 WS + b:Adwm*togglestruts
-WS + backslash:Adwm*fliplayout
+WS + backslash:Adwm*flipview
 WS + bracketleft:Adwm*moveup
 WS + bracketright:Adwm*movedown
 WS + c:Adwm*killclient
 WS + comma:Adwm*incncolumns
-WS + equal = 0 -3 0 6:Adwm*resizeincy
-WS + h = 1:Adwm*incnmaster
+WS + equal:Adwm*resizeincx
+WS + grave:Adwm*groupprev
+WS + h:Adwm*incnmaster
 WS + i:Adwm*initscr
 WS + j:Adwm*swapnext
 WS + k:Adwm*swapprev
-WS + l = 1:Adwm*decnmaster
-WS + m:Adwm*begmoveresize
-WS + minus = 0 3 0 -6:Adwm*resizedecy
+WS + l:Adwm*decnmaster
+WS + m:Adwm*begmove
+WS + minus:Adwm*resizedecy
 WS + period:Adwm*decncolumns
 WS + q:Adwm*quit
 WS + r:Adwm*raisetiled
-WS + s = scrot -s:Adwm*spawn21
-WS + slash = xde-namews:Adwm*spawn5
+WS + s = scrot -s:Adwm*spawn32
+WS + slash = xde-namews:Adwm*spawn33
 WS + space:Adwm*layoutprev
 WS + w:Adwm*uniconify
 WS + x:Adwm*killclient

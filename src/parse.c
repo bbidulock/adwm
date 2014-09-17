@@ -18,41 +18,42 @@
 typedef struct {
 	const char *name;
 	void (*action) (XEvent *e, Key *k);
+	char *arg;
 } KeyItem;
 
 static KeyItem KeyItems[] = {
 	/* *INDENT-OFF* */
-	{ "viewprevtag",	k_viewprevtag	 },
-	{ "quit",		k_quit		 }, /* arg is new command */
-	{ "restart", 		k_restart	 }, /* arg is new command */
-	{ "reload",		k_reload	 },
-	{ "killclient",		k_killclient	 },
-	{ "focusmain",		k_focusmain	 },
-	{ "focusurgent",	k_focusurgent	 },
-	{ "zoom", 		k_zoom		 },
-	{ "moveright", 		k_moveresizekb	 }, /* arg is delta geometry */
-	{ "moveleft", 		k_moveresizekb	 }, /* arg is delta geometry */
-	{ "moveup", 		k_moveresizekb	 }, /* arg is delta geometry */
-	{ "movedown", 		k_moveresizekb	 }, /* arg is delta geometry */
-	{ "resizedecx", 	k_moveresizekb	 }, /* arg is delta geometry */
-	{ "resizeincx", 	k_moveresizekb	 }, /* arg is delta geometry */
-	{ "resizedecy", 	k_moveresizekb	 }, /* arg is delta geometry */
-	{ "resizeincy", 	k_moveresizekb	 }, /* arg is delta geometry */
-	{ "togglemonitor", 	k_togglemonitor	 },
-	{ "appendtag",		k_appendtag	 },
-	{ "rmlasttag",		k_rmlasttag	 },
-	{ "flipview",		k_flipview	 },
-	{ "rotateview",		k_rotateview	 },
-	{ "unrotateview",	k_unrotateview	 },
-	{ "flipzone",		k_flipzone	 },
-	{ "rotatezone",		k_rotatezone	 },
-	{ "unrotatezone",	k_unrotatezone	 },
-	{ "flipwins",		k_flipwins	 },
-	{ "rotatewins",		k_rotatewins	 },
-	{ "unrotatewins",	k_unrotatewins	 },
-	{ "raise",		k_raise		 },
-	{ "lower",		k_lower		 },
-	{ "raiselower",		k_raiselower	 }
+	{ "viewprevtag",	k_viewprevtag,	 NULL		},
+	{ "quit",		k_quit,		 NULL		}, /* arg is new command */
+	{ "restart", 		k_restart,	 NULL		}, /* arg is new command */
+	{ "reload",		k_reload,	 NULL		},
+	{ "killclient",		k_killclient,	 NULL		},
+	{ "focusmain",		k_focusmain,	 NULL		},
+	{ "focusurgent",	k_focusurgent,	 NULL		},
+	{ "zoom", 		k_zoom,		 NULL		},
+	{ "moveright", 		k_moveresizekb,	 "+5 +0 +0 +0"	}, /* arg is delta geometry */
+	{ "moveleft", 		k_moveresizekb,	 "-5 +0 +0 +0"	}, /* arg is delta geometry */
+	{ "moveup", 		k_moveresizekb,	 "+0 -5 +0 +0"	}, /* arg is delta geometry */
+	{ "movedown", 		k_moveresizekb,	 "+0 +5 +0 +0"	}, /* arg is delta geometry */
+	{ "resizedecx", 	k_moveresizekb,	 "+3 +0 -6 +0"	}, /* arg is delta geometry */
+	{ "resizeincx", 	k_moveresizekb,	 "-3 +0 +6 +0"	}, /* arg is delta geometry */
+	{ "resizedecy", 	k_moveresizekb,	 "+0 +3 +0 -6"	}, /* arg is delta geometry */
+	{ "resizeincy", 	k_moveresizekb,	 "+0 -3 +0 +6"	}, /* arg is delta geometry */
+	{ "togglemonitor", 	k_togglemonitor, NULL		},
+	{ "appendtag",		k_appendtag,	 NULL		},
+	{ "rmlasttag",		k_rmlasttag,	 NULL		},
+	{ "flipview",		k_flipview,	 NULL		},
+	{ "rotateview",		k_rotateview,	 NULL		},
+	{ "unrotateview",	k_unrotateview,	 NULL		},
+	{ "flipzone",		k_flipzone,	 NULL		},
+	{ "rotatezone",		k_rotatezone,	 NULL		},
+	{ "unrotatezone",	k_unrotatezone,	 NULL		},
+	{ "flipwins",		k_flipwins,	 NULL		},
+	{ "rotatewins",		k_rotatewins,	 NULL		},
+	{ "unrotatewins",	k_unrotatewins,	 NULL		},
+	{ "raise",		k_raise	,	 NULL		},
+	{ "lower",		k_lower,	 NULL		},
+	{ "raiselower",		k_raiselower,	 NULL		}
 	/* *INDENT-ON* */
 };
 
@@ -598,7 +599,7 @@ initkeys()
 		if (!tmp)
 			continue;
 		key.func = KeyItems[i].action;
-		key.arg = NULL;
+		key.arg = KeyItems[i].arg;
 		parsekeys(tmp, &key);
 	}
 	/* increment, decrement and set functions */

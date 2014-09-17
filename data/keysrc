@@ -15,15 +15,15 @@ Adwm*reload:		AC + p : Delete
 Adwm*initscr:		WS + i
 
 ! move/resize [dx dy dw dh] - move by amount (pixels)
-Adwm*moveright:		W + bracketright = 5 0 0 0
-Adwm*moveleft:		W + bracketleft = -5 0 0 0
-Adwm*moveup:		WS + bracketleft = 0 -5 0 0
-Adwm*movedown:		WS + bracketright = 0 5 0 0
+Adwm*moveright:		W + bracketright
+Adwm*moveleft:		W + bracketleft
+Adwm*moveup:		WS + bracketleft
+Adwm*movedown:		WS + bracketright
 
-Adwm*resizedecx:	AC + a : Left = 3 0 -6 0, AS + a = 3 0 -6 0, W + minus = 3 0 -6 0
-Adwm*resizedecy:	AC + a : Down = 0 3 0 -6, AS + s = 0 3 0 -6, WS + minus = 0 3 0 -6
-Adwm*resizeincx:	AC + a : Right = -3 0 6 0, AS + d = -3 0 6 0, W + equal = -3 0 6 0
-Adwm*resizeincy:	AC + a : Up = 0 -3 0 6, AS + w = 0 -3 0 6, WS + equal = 0 -3 0 6
+Adwm*resizedecx:	AC + a : Left, AS + a, W + minus
+Adwm*resizedecy:	AC + a : Down, AS + s, WS + minus
+Adwm*resizeincx:	AC + a : Right, AS + d, W + equal
+Adwm*resizeincy:	AC + a : Up, AS + w, WS + equal
 
 Adwm*begmove:		A + F7, WS + m
 Adwm*begsize:		A + F8, AC + a : Return
@@ -68,16 +68,16 @@ Adwm*raisetiled:	WS + r
 ! nmaster/ncolumns	- set/dec/inc number of masters/columns(rows)
 ! margin		- set/dec/inc margin between windows (pixels)
 ! border		- set/dec/inc window borders (pixels)
-Adwm*decmwfact:		A + h = 5%, W + h = 5%
-Adwm*incmwfact:		A + l = 5%, W + l = 5%
-Adwm*decnmaster:	AS + j = -1, W + period = -1, WS + l = -1
-Adwm*incnmaster:	AS + k = +1, W + comma = +1, WS + h = +1
-Adwm*decncolumns:	WC + l = -1, WS + period = -1
-Adwm*incncolumns:	WC + h = +1, WS + comma = +1
-Adwm*decmargin:		WAS + m = 1
-Adwm*incmargin:		WA + m = 1
-Adwm*decborder:		WAS + b = 1
-Adwm*incborder:		WA + b = 1
+Adwm*decmwfact:		A + h, W + h
+Adwm*incmwfact:		A + l, W + l
+Adwm*decnmaster:	AS + j, W + period, WS + l
+Adwm*incnmaster:	AS + k, W + comma, WS + h
+Adwm*decncolumns:	WC + l, WS + period
+Adwm*incncolumns:	WC + h, WS + comma
+Adwm*decmargin:		WAS + m
+Adwm*incmargin:		WA + m
+Adwm*decborder:		WAS + b
+Adwm*incborder:		WA + b
 
 ! floating		- set/unset/toggle floating window
 ! fill			- set/unset/toggle fills available area

@@ -437,24 +437,27 @@ settags(unsigned int numtags)
 		addtag();
 	while (scr->ntags > numtags)
 		deltag();
-	ewmh_process_net_desktop_names();
 	ewmh_update_net_number_of_desktops();
+	ewmh_process_net_desktop_names();
+	ewmh_process_net_desktop_layout();
 }
 
 void
 appendtag()
 {
 	addtag();
-	ewmh_process_net_desktop_names();
 	ewmh_update_net_number_of_desktops();
+	ewmh_process_net_desktop_names();
+	ewmh_process_net_desktop_layout();
 }
 
 void
 rmlasttag()
 {
 	deltag();
-	ewmh_process_net_desktop_names();
 	ewmh_update_net_number_of_desktops();
+	ewmh_process_net_desktop_names();
+	ewmh_process_net_desktop_layout();
 }
 
 // vim: set sw=8 tw=80 com=srO\:/**,mb\:*,ex\:*/,srO\:/*,mb\:*,ex\:*/,b\:TRANS foldmarker=@{,@} foldmethod=marker:

@@ -348,23 +348,23 @@ freechain(Key *k)
  * keysm as k->chain, then free (*lp) and set its location to *kp->chain
  */
 static void
-mergechain(Key **kp, Key *k)
+mergechain(Key *c, Key *k)
 {
 	Key **lp;
 	Key *next = k->chain;
 
 	DPRINTF("Merging chain %s\n", showchain(k));
-	DPRINTF("   into chain %s\n", showchain(*kp));
+	DPRINTF("   into chain %s\n", showchain(c));
 	k->chain = NULL;
 	freekey(k);
 	k = next;
 
-	for (lp = &(*kp)->chain; *lp; lp = &(*lp)->cnext)
+	for (lp = &c->chain; *lp; lp = &(*lp)->cnext)
 		if ((*lp)->mod == k->mod && (*lp)->keysym == k->keysym)
 			break;
 	if (*lp) {
 		if ((*lp)->chain && k->chain)
-			mergechain(lp, k);
+			mergechain(*lp, k);
 		else {
 			DPRINTF("Overriding previous key alternate %s!\n", showchain(k));
 			k->cnext = (*lp)->cnext;
@@ -390,7 +390,7 @@ addchain(Key *k)
 	if (*kp) {
 		DPRINTF("Overlapping key definition %s\n", XKeysymToString(k->keysym));
 		if ((*kp)->chain && k->chain)
-			mergechain(kp, k);
+			mergechain(*kp, k);
 		else {
 			DPRINTF("Overriding previous key definition %d of %d: %s!\n", i + 1, scr->nkeys, showchain(k));
 			k->cnext = (*kp)->cnext;
@@ -486,13 +486,13 @@ parsekey(const char *s, const char *e, Key *k)
 		p = s;
 	q = ((q = strchr(p, '=') ? : e) < e) ? q : e;
 	if ((k->keysym = parsesym(p, q)) == NoSymbol) {
-		DPRINTF("Failed to parse symbol from '%s'\n", p);
+		_DPRINTF("Failed to parse symbol from '%s'\n", p);
 		return False;
 	}
-	if (q < e) {
-		free(k->arg);
+	if (q < e)
 		k->arg = parsearg(q + 1, e);
-	}
+	else if (k->arg)
+		k->arg = strdup(k->arg);
 	return True;
 }
 
@@ -757,7 +757,7 @@ initkeys()
 		if (!tmp)
 			continue;
 		key.func = k_setlayout;
-		key.arg = strdup(t + 9);
+		key.arg = t + 9;
 		parsekeys(tmp, &key);
 	}
 	/* spawn */

@@ -7,33 +7,39 @@ Adwm*modkey:		A
 ! restart [command]	- restart and optionally execute a command
 ! killclient		- close the selected window
 ! zoom			- swap selected window to/from master
-Adwm*quit:		AC + q
-Adwm*restart:		AS + q
-Adwm*killclient:	AS + c
-Adwm*zoom:		A + Return
+Adwm*quit:		AC + p : End, AC + q, WS + q
+Adwm*restart:		AC + p : Next, AC + p : Prior = twm, AS + q, WC + r
+Adwm*killclient:	A + F4, A + q, AC + a : q : f, AC + a : q : k, AC + a : q : q, AS + c, W + q, W + x, WS + c, WS + x
+Adwm*zoom:		A + Return, W + Return, WC + Return
+Adwm*reload:		AC + p : Delete
+Adwm*initscr:		WS + i
 
 ! move/resize [dx dy dw dh] - move by amount (pixels)
-Adwm*moveright:		W + l =  5  0  0  0
-Adwm*moveleft:		W + h = -5  0  0  0
-Adwm*moveup:		W + k =  0 -5  0  0
-Adwm*movedown:		W + j =  0  5  0  0
+Adwm*moveright:		W + bracketright = 5 0 0 0
+Adwm*moveleft:		W + bracketleft = -5 0 0 0
+Adwm*moveup:		WS + bracketleft = 0 -5 0 0
+Adwm*movedown:		WS + bracketright = 0 5 0 0
 
-Adwm*resizedecx:	WS + h = 0  0 -5  0
-Adwm*resizedecy:	WS + k = 0  0  0 -5
-Adwm*resizeincx:	WS + l = 0  0  5  0
-Adwm*resizeincy:	WS + j = 0  0  0  5
+Adwm*resizedecx:	AC + a : Left = 3 0 -6 0, AS + a = 3 0 -6 0, W + minus = 3 0 -6 0
+Adwm*resizedecy:	AC + a : Down = 0 3 0 -6, AS + s = 0 3 0 -6, WS + minus = 0 3 0 -6
+Adwm*resizeincx:	AC + a : Right = -3 0 6 0, AS + d = -3 0 6 0, W + equal = -3 0 6 0
+Adwm*resizeincy:	AC + a : Up = 0 -3 0 6, AS + w = 0 -3 0 6, WS + equal = 0 -3 0 6
+
+Adwm*begmove:		A + F7, WS + m
+Adwm*begsize:		A + F8, AC + a : Return
 
 ! togglemonitor		- warp pointer to previous monitor
-Adwm*togglemonitor:	A + grave
+!Adwm*togglemonitor:	A + grave
 
 ! appendtag		- create another workspace
 ! rmlasttag		- remove last workspace
-Adwm*appendtag:		ACS + Right
-Adwm*rmlasttag:		ACS + Left
+Adwm*appendtag:		AC + equal
+Adwm*rmlasttag:		AC + minus
 
 ! flipview		- flip
 ! rotateview		- rotate areas clockwise
 ! unrotateview		- rotate areas counter-clockwise
+Adwm*flipview:		WS + backslash
 Adwm*rotateview:	A + y
 Adwm*unrotateview:	AS + y
 
@@ -53,18 +59,21 @@ Adwm*unrotatewins:	AS + e
 ! lower			- lower selected window
 ! raiselower		- raise if not top, lower if top
 ! raisetiled		- raise tiled above floating
-Adwm*raise:		A + Up
-Adwm*lower:		A + Down
-Adwm*raiselower:	AS + space
+Adwm*raise:		A + Up, AC + a : S + r, AC + a : r
+Adwm*lower:		A + Down, AC + a : S + l, AC + a : l
+Adwm*raiselower:	A + Home, A + Left, AC + a : u
+Adwm*raisetiled:	WS + r
 
 ! mwfact		- set/dec/inc master width factor
 ! nmaster/ncolumns	- set/dec/inc number of masters/columns(rows)
 ! margin		- set/dec/inc margin between windows (pixels)
 ! border		- set/dec/inc window borders (pixels)
-Adwm*decmwfact:		A + h = 5%
-Adwm*incmwfact:		A + l = 5%
-Adwm*decnmaster:	AS + j = 1
-Adwm*incnmaster:	AS + k = 1
+Adwm*decmwfact:		A + h = 5%, W + h = 5%
+Adwm*incmwfact:		A + l = 5%, W + l = 5%
+Adwm*decnmaster:	AS + j = -1, W + period = -1, WS + l = -1
+Adwm*incnmaster:	AS + k = +1, W + comma = +1, WS + h = +1
+Adwm*decncolumns:	WC + l = -1, WS + period = -1
+Adwm*incncolumns:	WC + h = +1, WS + comma = +1
 Adwm*decmargin:		WAS + m = 1
 Adwm*incmargin:		WA + m = 1
 Adwm*decborder:		WAS + b = 1
@@ -83,59 +92,100 @@ Adwm*incborder:		WA + b = 1
 ! below			- set/unset/toggle below others
 ! pager			- set/unset/toggle appears on pager
 ! taskbar		- set/unset/toggle apperas on taskbar
-Adwm*togglefloating:	A + space
-Adwm*togglemaxv:	CS + Up
-Adwm*togglemaxh:	CS + Right
-Adwm*togglemax:		CS + Left
-Adwm*toggleshade:	CS + Down
+Adwm*togglefloating:	AS + space, W + t, WC + space
+Adwm*togglefill:	AC + a : g : g, CS + Down
+Adwm*togglefillh:	AC + a : g : h
+Adwm*togglefillv:	AC + a : g : v
+Adwm*togglefull:	A + F11, AC + a : f, W + f
+Adwm*togglemaxv:	AC + a : m : v, AS + F10, CS + Up
+Adwm*togglemaxh:	AC + a : m : h, CS + Right
+Adwm*togglemax:		A + F10, AC + a : m : m, CS + Left, W + m
+Adwm*unmax:		A + F5, WC + n
+Adwm*toggleshade:	A + F12, A + s, AC + a : s
+Adwm*hide:		AS + F12, AS + h
+Adwm*hideall:		AS + F11
 !Adwm*togglehidden:	CS + underscore
+Adwm*iconify:		A + F9, AS + m, W + i, W + n, W + w
+Adwm*iconifyall:	AS + F9
+Adwm*uniconify:		WS + w
+Adwm*toggleabove:	A + Right, AC + a : o
+Adwm*togglebelow:	AC + a : b
+Adwm*toggleselect:	W + z
+Adwm*togglesticky:	AC + a : a, AC + s
+
 
 ! showing		- set/unset/toggle showing desktop mode
 ! struts		- set/unset/toggle showing struts (dock/panel)
 ! dectiled		- set/unset/toggle window decorations in tiled modes
-Adwm*toggleshowing:	AC + Return
-Adwm*togglestruts:	A + b
+Adwm*toggleshowing:	AC + d, W + d
+Adwm*togglestruts:	A + b, AC + p : h, AC + space, WS + b
+Adwm*togglestrutsall:	W + b
 Adwm*toggledectiled:	A + d
 
 ! moveby		- move increment in direction
 ! moveto		- move to position in 3x3 grid
+Adwm*movetoSW:		AC + KP_1, AC + c : z
+Adwm*movetoS:		AC + KP_2, AC + c : b, AC + c : x
+Adwm*movetoSE:		AC + KP_3, AC + c : c, AC + c : m
+Adwm*movetoW:		AC + KP_4, AC + c : a
+Adwm*movetoC:		AC + KP_5, AC + c : h, AC + c : s
+Adwm*movetoE:		AC + KP_6, AC + c : d, AC + c : l
+Adwm*movetoNW:		AC + KP_7, AC + c : q
+Adwm*movetoN:		AC + KP_8, AC + c : w, AC + c : y
+Adwm*movetoNE:		AC + KP_9, AC + c : e, AC + c : p
 ! snapto		- move toward grid position snapping to obstacles
+Adwm*snaptoSW:		ACS + KP_1
+Adwm*snaptoS:		ACS + KP_2
+Adwm*snaptoSE:		ACS + KP_3
+Adwm*snaptoW:		ACS + KP_4
+Adwm*smartplace:	ACS + KP_5
+Adwm*snaptoE:		ACS + KP_6
+Adwm*snaptoNW:		ACS + KP_7
+Adwm*snaptoN:		ACS + KP_8
+Adwm*snaptoNE:		ACS + KP_9
 ! edgeto		- move to the corresponding edge
+Adwm*edgetoE:		AC + c : S + d, AC + c : S + l
+Adwm*edgetoN:		AC + c : S + w, AC + c : S + y
+Adwm*edgetoS:		AC + c : S + b, AC + c : S + x
+Adwm*edgetoW:		AC + c : S + a
 ! fill			- grow in the corresponding direction
+Adwm*fillleft:		W + Left
+Adwm*fillright:		W + Right
 
 ! view			- switch to view and focus last
-Adwm*view0:		A + F1, C + F1, W + F1, A + 1
-Adwm*view1:		A + F2, C + F2, W + F2, A + 2
-Adwm*view2:		A + F3, C + F3, W + F3, A + 3
-Adwm*view3:		A + F4, C + F4, W + F4, A + 4
-Adwm*view4:		A + F5, C + F5, W + F5, A + 5
-Adwm*view5:		A + F6, C + F6, W + F6, A + 6
-Adwm*view6:		A + F7, C + F7, W + F7, A + 7
-Adwm*view7:		A + F8, C + F8, W + F8, A + 8
-Adwm*view8:		A + F9, C + F9, W + F9, A + 9
-Adwm*view9:		A + F10, C + F10, W + F10, A + 0
-Adwm*view10:		A + F11, C + F11, W + F11
-Adwm*view11:		A + F12, C + F12, W + F12
-Adwm*viewnext:		AC + Right
-Adwm*viewprev:		AC + Left
-Adwm*viewprevtag:	A + Tab
-Adwm*viewN:		AC + Up
-Adwm*viewS:		AC + Down
-Adwm*viewlefttag:	AC + Left
-Adwm*viewrighttag:	AC + Right
+Adwm*view0:		A + 1, C + F1, W + 1
+Adwm*view1:		A + 2, C + F2, W + 2
+Adwm*view2:		A + 3, C + F3, W + 3
+Adwm*view3:		A + 4, C + F4, W + 4
+Adwm*view4:		A + 5, C + F5, W + 5
+Adwm*view5:		A + 6, C + F6, W + 6
+Adwm*view6:		A + 7, C + F7, W + 7
+Adwm*view7:		A + 8, C + F8, W + 8
+Adwm*view8:		A + 9, C + F9, W + 9
+Adwm*view9:		A + 0, C + F10, W + 0
+Adwm*view10:		A + bracketleft, C + F11
+Adwm*view11:		A + bracketright, C + F12
+Adwm*viewnext:		AC + Right, W + Up
+Adwm*viewprev:		AC + Left, W + Down
+Adwm*viewlast:		W + Escape, WS + Up
+Adwm*viewup:		AC + Up, AC + k, W + Page_Up
+Adwm*viewdown:		AC + Down, AC + j, W + Page_Down
+Adwm*viewleft:		AC + h, W + Home
+Adwm*viewright:		AC + l, W + End
 ! focusview		- switch to view and focus first window
-Adwm*focusview6:	A + s
 ! toggleview		- toggle tag in current view
-Adwm*toggleview0:	AC + 1
-Adwm*toggleview1:	AC + 2
-Adwm*toggleview2:	AC + 3
-Adwm*toggleview3:	AC + 4
-Adwm*toggleview4:	AC + 5
-Adwm*toggleview5:	AC + 6
-Adwm*toggleview6:	AC + 7
-Adwm*toggleview7:	AC + 8
-Adwm*toggleview8:	AC + 9
-Adwm*toggleview9:	AC + 0
+Adwm*toggleview0:	AC + 1, WC + 1
+Adwm*toggleview1:	AC + 2, WC + 2
+Adwm*toggleview2:	AC + 3, WC + 3
+Adwm*toggleview3:	AC + 4, WC + 4
+Adwm*toggleview4:	AC + 5, WC + 5
+Adwm*toggleview5:	AC + 6, WC + 6
+Adwm*toggleview6:	AC + 7, WC + 7
+Adwm*toggleview7:	AC + 8, WC + 8
+Adwm*toggleview8:	AC + 9, WC + 9
+Adwm*toggleview9:	AC + 0, WC + 0
+Adwm*toggleview10:	AC + bracketleft, WC + bracketleft
+Adwm*toggleview11:	AC + bracketright, WC + bracketright
 ! tag			- add tag to a window
 Adwm*tag0:		AS + 1
 Adwm*tag1:		AS + 2
@@ -147,42 +197,126 @@ Adwm*tag6:		AS + 7
 Adwm*tag7:		AS + 8
 Adwm*tag8:		AS + 9
 Adwm*tag9:		AS + 0
+Adwm*tag10:		AS + bracketleft
+Adwm*tag11:		AS + bracketright
 ! toggletag		- toggle tag on a window
-Adwm*toggletag0:	ACS + 1
-Adwm*toggletag1:	ACS + 2
-Adwm*toggletag2:	ACS + 3
-Adwm*toggletag3:	ACS + 4
-Adwm*toggletag4:	ACS + 5
-Adwm*toggletag5:	ACS + 6
-Adwm*toggletag6:	ACS + 7
-Adwm*toggletag7:	ACS + 8
-Adwm*toggletag8:	ACS + 9
-Adwm*toggletag9:	ACS + 0
+Adwm*toggletag0:	ACS + 1, WCS + 1
+Adwm*toggletag1:	ACS + 2, WCS + 2
+Adwm*toggletag2:	ACS + 3, WCS + 3
+Adwm*toggletag3:	ACS + 4, WCS + 4
+Adwm*toggletag4:	ACS + 5, WCS + 5
+Adwm*toggletag5:	ACS + 6, WCS + 6
+Adwm*toggletag6:	ACS + 7, WCS + 7
+Adwm*toggletag7:	ACS + 8, WCS + 8
+Adwm*toggletag8:	ACS + 9, WCS + 9
+Adwm*toggletag9:	ACS + 0, WCS + 0
+Adwm*toggletag10:	ACS + bracketleft, WCS + bracketleft
+Adwm*toggletag11:	ACS + bracketright, WCS + bracketright
 ! sendto		- send window to a view
+Adwm*sendto0:		W + F1, WS + 1
+Adwm*sendto1:		W + F2, WS + 2
+Adwm*sendto2:		W + F3, WS + 3
+Adwm*sendto3:		W + F4, WS + 4
+Adwm*sendto4:		W + F5, WS + 5
+Adwm*sendto5:		W + F6, WS + 6
+Adwm*sendto6:		W + F7, WS + 7
+Adwm*sendto7:		W + F8, WS + 8
+Adwm*sendto8:		W + F9, WS + 9
+Adwm*sendto9:		W + F10, WS + 0
+Adwm*sendto10:		W + F11, WS + F1
+Adwm*sendto11:		W + F12, WS + F2
+Adwm*sendto12:		WS + F3
+Adwm*sendto13:		WS + F4
+Adwm*sendto14:		WS + F5
+Adwm*sendto15:		WS + F6
+Adwm*sendto16:		WS + F7
+Adwm*sendto17:		WS + F8
+Adwm*sendto18:		WS + F9
+Adwm*sendto19:		WS + F10
+Adwm*sendto20:		WS + F11
+Adwm*sendto21:		WS + F12
+Adwm*sendtoup:		AS + Up
+Adwm*sendtodown:	AS + Down
+Adwm*sendtoleft:	AS + Left
+Adwm*sendtoright:	AS + Right
 ! taketo		- take window to a view
+Adwm*taketo0:		WC + F1
+Adwm*taketo1:		WC + F2
+Adwm*taketo2:		WC + F3
+Adwm*taketo3:		WC + F4
+Adwm*taketo4:		WC + F5
+Adwm*taketo5:		WC + F6
+Adwm*taketo6:		WC + F7
+Adwm*taketo7:		WC + F8
+Adwm*taketo8:		WC + F9
+Adwm*taketo9:		WC + F10
+Adwm*taketo10:		WC + F11
+Adwm*taketo11:		WC + F12
+Adwm*taketonext:	ACS + Right, W + a, WC + Right
+Adwm*taketoprev:	ACS + Left, WC + Left, WS + Down
+Adwm*taketoup:		ACS + Up, WC + Up, WS + Page_Up
+Adwm*taketodown:	ACS + Down, WC + Down, WS + Page_Down
+Adwm*taketoleft:	WS + Home
+Adwm*taketoright:	WS + End
 ! screen		- warp focus to a monitor
+Adwm*screen0:		W + KP_1
+Adwm*screen1:		W + KP_2
+Adwm*screen2:		W + KP_3
+Adwm*screen3:		W + KP_4
+Adwm*screen4:		W + KP_5
+Adwm*screen5:		W + KP_6
+Adwm*screen6:		W + KP_7
+Adwm*screen7:		W + KP_8
+Adwm*screen8:		W + KP_9
+Adwm*screennext:	A + period, W + Next, WC + j, WS + Right
+Adwm*screenprev:	A + comma, W + Prior, WC + k, WS + Left
 ! scrto			- send window to a monitor
+Adwm*scrto0:		WS + KP_1
+Adwm*scrto1:		WS + KP_2
+Adwm*scrto2:		WS + KP_3
+Adwm*scrto3:		WS + KP_4
+Adwm*scrto4:		WS + KP_5
+Adwm*scrto5:		WS + KP_6
+Adwm*scrto6:		WS + KP_7
+Adwm*scrto7:		WS + KP_8
+Adwm*scrto8:		WS + KP_9
+Adwm*scrtonext:		AS + period, W + o
+Adwm*scrtoprev:		AS + comma
 
 ! focus			- select client tiled order
-Adwm*focusnext:		A + j
-Adwm*focusprev:		A + k
+Adwm*focusnext:		A + j, A + Escape, A + Tab, W + Tab, W + j
+Adwm*focusprev:		A + k, AS + Escape, AS + Tab, W + k, WS + Tab
+Adwm*focusurgent:	W + u
 ! client		- select client list order
 ! stack			- select client stacking order
 ! group			- select client same class tiled order
+Adwm*groupnext:		A + grave, A + F6, W + grave
+Adwm*groupprev:		AS + grave, AS + F6, WS + grave
 ! tab			- select client tab order
 ! panel			- select panel tiled order
+Adwm*panelnext:		AC + Escape
+Adwm*panelprev:		ACS + Escape
 ! dock			- select dockapp tiled order
+Adwm*docknext:		AC + Tab
+Adwm*dockprev:		ACS + Tab
 ! swap			- swap with other client tiled order
+Adwm*swapnext:		WS + j
+Adwm*swapprev:		WS + k
 
 ! layout		- layout of monitor
 Adwm*setlayoutm:	A + m
-Adwm*setlayoutf:	A + f
-Adwm*setlayouti:	A + i
-Adwm*setlayoutt:	A + r
+Adwm*setlayoutf:	A + f, AS + F4
+Adwm*setlayouti:	A + i, AS + F7
+Adwm*setlayoutt:	A + r, AS + F3
 Adwm*setlayoutb:	A + w
 Adwm*setlayoutl:	A + t
-Adwm*setlayoutu:	A + u
+Adwm*setlayoutu:	A + u, AS + F2
 Adwm*setlayoutg:	A + g
+Adwm*layoutnext:	W + space
+Adwm*layoutprev:	WS + space
+Adwm*arrange:		AS + F5
+Adwm*arrangeicons:	AS + F8
+Adwm*togglefocus:	W + g
 
 ! spawn			- spawn a command
 Adwm*spawn0:		AC + t = roxterm
@@ -193,6 +327,32 @@ Adwm*spawn4:		AC + v = gvim
 Adwm*spawn5:		AC + n = uxterm
 Adwm*spawn6:		AC + m = xdg-traymenu -p
 Adwm*spawn7:		A + space = xde-winmenu -w active -W center
+Adwm*spawn8:		A + F1 = uxterm
+Adwm*spawn9:		A + F2 = xde-run
+Adwm*spawn10:		A + Print = scrot -s
+Adwm*spawn11:		A + x = uxterm
+Adwm*spawn12:		AC + Delete = xde-logout
+Adwm*spawn13:		AC + Return = uxterm
+Adwm*spawn14:		AC + e : c = xde-run
+Adwm*spawn15:		AC + e : e = uxterm
+Adwm*spawn16:		AC + e : l = xde-xlock -l
+Adwm*spawn17:		AC + e : s = scrot -s
+Adwm*spawn18:		AC + p : d = xde-run
+Adwm*spawn19:		AC + x = uxterm
+Adwm*spawn20:		AS + Return = uxterm
+Adwm*spawn21:		C + Escape = xdg-traymenu -p
+Adwm*spawn22:		F11 = xde-winlist
+Adwm*spawn23:		F12 = xdg-traymenu -p
+Adwm*spawn24:		S + Escape = xde-winmenu -w active -W center
+Adwm*spawn25:		W + e = pcmanfm
+Adwm*spawn26:		W + p = xdg-traymenu -p
+Adwm*spawn27:		W + r = xde-run
+Adwm*spawn28:		W + s = scrot
+Adwm*spawn29:		W + slash = xde-findws
+Adwm*spawn30:		WS + Delete = xde-xlock -l
+Adwm*spawn31:		WS + Return = uxterm
+Adwm*spawn32:		WS + s = scrot -s
+Adwm*spawn33:		WS + slash = xde-namews
 
 ! rule			- rules for window classes
 !Adwm*rule0:		Firefox.* web 0 1
@@ -200,6 +360,7 @@ Adwm*spawn7:		A + space = xde-winmenu -w active -W center
 !Adwm*rule5:		Gimp.* gfx 1 1
 
 ! button2		- key binding for mouse button 2
+Adwm*button2:		W + v
 
 ! command		- command for button press on root window
 Adwm*command:		xdg-traymenu -p -b 1

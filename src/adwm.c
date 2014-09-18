@@ -67,7 +67,7 @@ void decmodal(Client *c, Group *g);
 void freemonitors(void);
 void updatemonitors(XEvent *e, int n, Bool size, Bool full);
 void manage(Window w, XWindowAttributes *wa);
-void reconfigure(Client *c, ClientGeometry * g);
+void reconfigure(Client *c, ClientGeometry * g, Bool force);
 void restack_belowif(Client *c, Client *sibling);
 void run(void);
 void scan(void);

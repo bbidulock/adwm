@@ -567,7 +567,7 @@ enterclient(XEvent *e, Client *c)
 }
 
 static void
-reconfigure_dockapp(Client *c, ClientGeometry *n)
+reconfigure_dockapp(Client *c, ClientGeometry *n, Bool force)
 {
 	XWindowChanges wwc, fwc;
 	unsigned wmask, fmask;
@@ -621,7 +621,7 @@ reconfigure_dockapp(Client *c, ClientGeometry *n)
 			wwc.y, wwc.border_width);
 		XConfigureWindow(dpy, c->icon, wmask, &wwc);
 	}
-	if ((fmask | wmask) && !(wmask & (CWWidth | CWHeight))) {
+	if (force || ((fmask | wmask) && !(wmask & (CWWidth | CWHeight)))) {
 		XConfigureEvent ce;
 
 		ce.type = ConfigureNotify;
@@ -648,7 +648,7 @@ reconfigure_dockapp(Client *c, ClientGeometry *n)
  * or desktop boundaries. */
 
 static void
-reconfigure(Client *c, ClientGeometry *n)
+reconfigure(Client *c, ClientGeometry *n, Bool force)
 {
 	XWindowChanges wwc, fwc;
 	unsigned wmask, fmask;
@@ -667,7 +667,7 @@ reconfigure(Client *c, ClientGeometry *n)
 		n->w, n->h, n->b, n->t, n->g, n->v);
 
 	if (c->is.dockapp)
-		return reconfigure_dockapp(c, n);
+		return reconfigure_dockapp(c, n, force);
 
 	wmask = fmask = 0;
 	if (c->c.x != (fwc.x = n->x)) {
@@ -755,7 +755,7 @@ reconfigure(Client *c, ClientGeometry *n)
 		XConfigureWindow(dpy, c->win, wmask | CWX | CWY | CWBorderWidth, &wwc);
 	}
 	/* ICCCM 2.0 4.1.5 */
-	if ((fmask | wmask) && !(wmask & (CWWidth | CWHeight)))
+	if (force || ((fmask | wmask) && !(wmask & (CWWidth | CWHeight))))
 		send_configurenotify(c, None);
 	XSync(dpy, False);
 	if (c->title && (tchange || ((wmask | fmask) & (CWWidth)))) {
@@ -871,7 +871,7 @@ restore(Client *c)
 	DPRINTF("CALLING: constrain()\n");
 	constrain(c, &g);
 	DPRINTF("CALLING reconfigure()\n");
-	reconfigure(c, &g);
+	reconfigure(c, &g, False);
 }
 
 Bool
@@ -890,8 +890,8 @@ configureclient(XEvent *e, Client *c, int gravity)
 	/* This is not quite correct anymore.  The client requests reconfiguration of its 
 	   interior window and uses the border width specified or last specified and the
 	   specified gravity as though it was never reparented and has no decorative
-	   border.   We need to move and resize the frame so that the reference
-	   points are intact. */
+	   border.  We need to move and resize the frame so that the reference points are 
+	   intact. */
 
 	if (!(v = c->cview ? : selview()))
 		return False;
@@ -917,8 +917,13 @@ configureclient(XEvent *e, Client *c, int gravity)
 
 		g.b = (ev->value_mask & CWBorderWidth) ? ev->border_width : g.b;
 
+		/* When a client requests a different configuration and it is in tiling
+		   mode or maximized, we need to refuse whatever it asked for and
+		   generate configure notifies for the tiled arrangment. Unfortunately,
+		   reconfigure() only does this when the configuration changes, so we
+		   need to ask it to do a forced reconfiguration. */
 		DPRINTF("CALLING reconfigure()\n");
-		reconfigure(c, &g);
+		reconfigure(c, &g, True);
 		if (ev->value_mask & (CWBorderWidth))
 			c->s.b = g.b;
 	}
@@ -977,7 +982,7 @@ configuremonitors(XEvent *e, Client *c)
 		g.t = 0;
 		g.g = 0;
 		g.v = 0;
-		reconfigure(c, &g);
+		reconfigure(c, &g, False);
 	}
 	return True;
 }
@@ -1215,7 +1220,7 @@ updatefloat(Client *c, View *v)
 	}
 	CPRINTF(c, "g: %dx%d+%d+%d:%d\n", g.w, g.h, g.x, g.y, g.b);
 	DPRINTF("CALLING reconfigure()\n");
-	reconfigure(c, &g);
+	reconfigure(c, &g, False);
 	if (c->is.max)
 		ewmh_update_net_window_fs_monitors(c);
 	discardenter();
@@ -1597,7 +1602,7 @@ arrangedock(View *v)
 				g.w -= 2 * g.b;
 				g.h -= 2 * g.b;
 				DPRINTF("CALLING reconfigure()\n");
-				reconfigure(c, &g);
+				reconfigure(c, &g, False);
 			}
 			unban(c, v);
 			switch (n->term.children.ori) {
@@ -1896,7 +1901,7 @@ tile(View *v)
 		g.h -= 2 * (ma.g + g.b);
 		if (!c->is.moveresize) {
 			DPRINTF("CALLING reconfigure()\n");
-			reconfigure(c, &g);
+			reconfigure(c, &g, False);
 		} else {
 			ClientGeometry C = g;
 
@@ -1904,7 +1909,7 @@ tile(View *v)
 			C.x = (c->c.x + c->c.w / 2) - C.w / 2;
 			C.y = (c->c.y + c->c.h / 2) - C.h / 2;
 			DPRINTF("CALLING reconfigure()\n");
-			reconfigure(c, &C);
+			reconfigure(c, &C, False);
 		}
 		if (c->is.shaded && (c != sel || !scr->options.autoroll))
 			if (ma.s)
@@ -1992,7 +1997,7 @@ tile(View *v)
 		g.h -= 2 * (sa.g + g.b);
 		if (!c->is.moveresize) {
 			DPRINTF("CALLING reconfigure()\n");
-			reconfigure(c, &g);
+			reconfigure(c, &g, False);
 		} else {
 			ClientGeometry C = g;
 
@@ -2000,7 +2005,7 @@ tile(View *v)
 			C.x = (c->c.x + c->c.w / 2) - C.w / 2;
 			C.y = (c->c.y + c->c.h / 2) - C.h / 2;
 			DPRINTF("CALLING reconfigure()\n");
-			reconfigure(c, &C);
+			reconfigure(c, &C, False);
 		}
 		if (c->is.shaded && (c != sel || !scr->options.autoroll))
 			if (sa.s)
@@ -2137,7 +2142,7 @@ grid(View *v)
 		n.g = (v->dectiled && c->has.grips) ? scr->style.gripsheight : 0;
 		if (!c->is.moveresize) {
 			DPRINTF("CALLING reconfigure()\n");
-			reconfigure(c, &n);
+			reconfigure(c, &n, False);
 		} else {
 			ClientGeometry C = n;
 
@@ -2145,7 +2150,7 @@ grid(View *v)
 			C.x = (c->c.x + c->c.w / 2) - C.w / 2;
 			C.y = (c->c.y + c->c.h / 2) - C.h / 2;
 			DPRINTF("CALLING reconfigure()\n");
-			reconfigure(c, &C);
+			reconfigure(c, &C, False);
 		}
 	}
 	free(rc);
@@ -2203,7 +2208,7 @@ monocle(View *v)
 		g.h -= 2 * g.b;
 
 		DPRINTF("CALLING reconfigure()\n");
-		reconfigure(c, &g);
+		reconfigure(c, &g, False);
 	}
 }
 
@@ -3225,7 +3230,7 @@ move_cancel(Client *c, View *v, ClientGeometry *orig, IsUnion * was)
 		}
 		if (wasfloating) {
 			DPRINTF("CALLING reconfigure()\n");
-			reconfigure(c, orig);
+			reconfigure(c, orig, False);
 			save(c);
 			updatefloat(c, v);
 		} else
@@ -3375,7 +3380,7 @@ mousemove(Client *c, XEvent *e, Bool toggle)
 				n.x = ev.xmotion.x_root - n.w / 2;
 				n.y = ev.xmotion.y_root - n.h / 2;
 				DPRINTF("CALLING reconfigure()\n");
-				reconfigure(c, &n);
+				reconfigure(c, &n, False);
 				continue;
 			}
 			n.x = o.x + dx;
@@ -3443,7 +3448,7 @@ mousemove(Client *c, XEvent *e, Bool toggle)
 				v = nv;
 			}
 			DPRINTF("CALLING reconfigure()\n");
-			reconfigure(c, &n);
+			reconfigure(c, &n, False);
 			save(c);
 			continue;
 		}
@@ -3645,7 +3650,7 @@ resize_cancel(Client *c, View *v, ClientGeometry *orig, IsUnion * was)
 		}
 		if (wasfloating) {
 			DPRINTF("CALLING reconfigure()\n");
-			reconfigure(c, orig);
+			reconfigure(c, orig, False);
 			save(c);
 			updatefloat(c, v);
 		} else
@@ -3904,7 +3909,7 @@ mouseresize_from(Client *c, int from, XEvent *e, Bool toggle)
 			if (n.h < MINHEIGHT)
 				n.h = MINHEIGHT;
 			DPRINTF("CALLING reconfigure()\n");
-			reconfigure(c, &n);
+			reconfigure(c, &n, False);
 			if (isfloating(c, v))
 				save(c);
 			continue;
@@ -4867,7 +4872,7 @@ moveto(Client *c, RelativeDirection position)
 	default:
 		return;
 	}
-	reconfigure(c, &g);
+	reconfigure(c, &g, False);
 	save(c);
 	discardenter();
 }
@@ -4966,7 +4971,7 @@ moveby(Client *c, RelativeDirection direction, int amount)
 		g.y = m->sc.y + m->sc.h - 1;
 	if (g.y + g.h + g.b < m->sc.y)
 		g.y = m->sc.y - (g.h + g.b);
-	reconfigure(c, &g);
+	reconfigure(c, &g, False);
 	save(c);
 	discardenter();
 }
@@ -5193,7 +5198,7 @@ snapto(Client *c, RelativeDirection direction)
 	default:
 		return;
 	}
-	reconfigure(c, &g);
+	reconfigure(c, &g, False);
 	save(c);
 	discardenter();
 }
@@ -5260,7 +5265,7 @@ edgeto(Client *c, int direction)
 	default:
 		return;
 	}
-	reconfigure(c, &g);
+	reconfigure(c, &g, False);
 	save(c);
 	discardenter();
 }

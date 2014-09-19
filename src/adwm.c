@@ -568,7 +568,7 @@ buttonpress(XEvent *e)
 					/* only process release if processed press */
 					if (ec->pressed & (1 << button)) {
 						DPRINTF("ELEMENT %d RELEASED\n", i);
-						ec->pressed &= !(1 << button);
+						ec->pressed &= ~(1 << button);
 						drawclient(c);
 						/* resize needs to be on button press */
 						if (action) {
@@ -580,7 +580,7 @@ buttonpress(XEvent *e)
 				if (active)
 					return True;
 			} else {
-				ec->pressed &= !(1 << button);
+				ec->pressed &= ~(1 << button);
 				drawclient(c);
 			}
 		}

@@ -190,6 +190,7 @@ IGNOREEVENT(XEvent *e)
 static Bool keypress(XEvent *e);
 static Bool keyrelease(XEvent *e);
 static Bool buttonpress(XEvent *e);
+static Bool motionnotify(XEvent *e);
 static Bool enternotify(XEvent *e);
 static Bool leavenotify(XEvent *e);
 static Bool focuschange(XEvent *e);
@@ -212,7 +213,7 @@ Bool (*handler[LASTEvent + (EXTRANGE * BaseLast)]) (XEvent *) = {
 	    [KeyRelease] = keyrelease,
 	    [ButtonPress] = buttonpress,
 	    [ButtonRelease] = buttonpress,
-	    [MotionNotify] = IGNOREEVENT,
+	    [MotionNotify] = motionnotify,
 	    [EnterNotify] = enternotify,
 	    [LeaveNotify] = leavenotify,
 	    [FocusIn] = focuschange,
@@ -943,6 +944,48 @@ erealloc(void *ptr, size_t size)
 	if (!(res = realloc(ptr, size)))
 		eprint("fatal: could not realloc() %z bytes\n", size);
 	return res;
+}
+
+static Bool
+motionnotify(XEvent *e)
+{
+	Client *c;
+	XMotionEvent *ev = &e->xmotion;
+
+	if ((c = getclient(ev->window, ClientTitle)) && ev->window == c->title) {
+		Bool needdraw = False;
+		int i;
+
+		for (i = 0; i < LastElement; i++) {
+			ElementClient *ec = &c->element[i];
+
+			if (!ec->present)
+				continue;
+			if (ec->pressed) {
+				if (ec->hovered) {
+					ec->hovered = False;
+					needdraw = True;
+				}
+				continue;
+			}
+			if (ev->x >= ec->g.x && ev->x < ec->g.x + ec->g.w &&
+			    ev->y >= ec->g.y && ev->y < ec->g.y + ec->g.h) {
+				if (!ec->hovered) {
+					ec->hovered = True;
+					needdraw = True;
+				}
+			} else {
+				if (ec->hovered) {
+					ec->hovered = False;
+					needdraw = True;
+				}
+			}
+		}
+		if (needdraw)
+			drawclient(c);
+		return True;
+	}
+	return False;
 }
 
 static Bool
@@ -1884,12 +1927,30 @@ killclient(Client *c)
 static Bool
 leavenotify(XEvent *e)
 {
+	Client *c;
 	XCrossingEvent *ev = &e->xcrossing;
 
 	if (!ev->same_screen) {
 		XFindContext(dpy, ev->window, context[ScreenContext], (XPointer *) &scr);
 		if (!scr->managed)
 			focus(NULL);
+	}
+	if ((c = getclient(ev->window, ClientTitle)) && ev->window == c->title) {
+		Bool needdraw = False;
+		int i;
+
+		for (i = 0; i < LastElement; i++) {
+			ElementClient *ec = &c->element[i];
+
+			if (!ec->present)
+				continue;
+			if (ec->hovered) {
+				ec->hovered = False;
+				needdraw = True;
+			}
+		}
+		if (needdraw)
+			drawclient(c);
 	}
 	return True;
 }

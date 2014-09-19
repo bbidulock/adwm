@@ -131,7 +131,7 @@ buttonimage(AScreen *ds, Client *c, ElementType type)
 	ec = &c->element[type];
 	pressed = ec->pressed ? True : False;
 	hovered = ec->hovered;
-	focused = (c == gave) || (c == took) || (c == sel);
+	focused = (c == sel);
 
 	e = &ds->element[type];
 	if (!e->action) {

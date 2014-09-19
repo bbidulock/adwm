@@ -2165,7 +2165,7 @@ manage(Window w, XWindowAttributes * wa)
 	send_configurenotify(c, None);
 	XSetWindowBorder(dpy, c->frame, scr->style.color.norm[ColBorder]);
 
-	twa.event_mask = ExposureMask | MOUSEMASK;
+	twa.event_mask = ExposureMask | MOUSEMASK | WINDOWMASK;
 	/* we create title as root's child as a workaround for 32bit visuals */
 	if (c->has.title) {
 		c->element = ecalloc(LastElement, sizeof(*c->element));

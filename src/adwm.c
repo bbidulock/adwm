@@ -2251,6 +2251,7 @@ manage(Window w, XWindowAttributes * wa)
 	CPRINTF(c, "%-20s: %s\n", "has.but.shade", c->has.but.shade ? "true" : "false");
 	CPRINTF(c, "%-20s: %s\n", "has.but.fill", c->has.but.fill ? "true" : "false");
 	CPRINTF(c, "%-20s: %s\n", "has.but.floats", c->has.but.floats ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "has.but.half", c->has.but.half ? "true" : "false");
 	CPRINTF(c, "%-20s: %s\n", "with.struts", c->with.struts ? "true" : "false");
 	CPRINTF(c, "%-20s: %s\n", "with.time", c->with.time ? "true" : "false");
 	CPRINTF(c, "%-20s: %s\n", "can.move", c->can.move ? "true" : "false");

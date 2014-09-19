@@ -248,6 +248,10 @@ initscreen(void)
 	strncpy(c, "Command", clen);
 	if ((res = readres(name, clas, NULL)))
 		scr->options.command = res;
+	strncpy(n, "menucommand", nlen);
+	strncpy(c, "Menucommand", clen);
+	if ((res = readres(name, clas, NULL)))
+		scr->options.menucommand = res;
 	strncpy(n, "decoratetiled", nlen);
 	strncpy(c, "Decoratetiled", clen);
 	if ((res = readres(name, clas, NULL)))
@@ -349,6 +353,9 @@ initconfig(void)
 	strcpy(n, "command");
 	strcpy(c, "Command");
 	options.command = readres(name, clas, COMMAND);
+	strcpy(n, "menucommand");
+	strcpy(c, "Menucommand");
+	options.menucommand = readres(name, clas, MENUCOMMAND);
 	strcpy(n, "decoratetiled");
 	strcpy(c, "Decoratetiled");
 	options.dectiled = atoi(readres(name, clas, STR(DECORATETILED)));

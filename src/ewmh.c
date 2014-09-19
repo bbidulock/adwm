@@ -1261,6 +1261,7 @@ mwmh_process_motif_wm_hints(Client *c)
 				c->has.but.size = False;
 				c->has.but.max = False;
 				c->has.but.fill = False;
+				c->has.but.half = False;
 			}
 			if (!(hint & MWM_DECOR_TITLE))
 				c->has.title = False;

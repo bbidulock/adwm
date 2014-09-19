@@ -217,6 +217,9 @@ initconfig_ADWM(void)
 	strncpy(n, "command", nlen);
 	strncpy(c, "Command", clen);
 	options.command = readres(name, clas, COMMAND);
+	strncpy(n, "menucommand", nlen);
+	strncpy(c, "Menucommand", clen);
+	options.menucommand = readres(name, clas, MENUCOMMAND);
 	strncpy(n, "decoratetiled", nlen);
 	strncpy(c, "Decoratetiled", clen);
 	options.dectiled = atoi(readres(name, clas, STR(DECORATETILED)));
@@ -320,6 +323,10 @@ initscreen_ADWM(void)
 	strncpy(c, "Command", clen);
 	if ((res = readres(name, clas, NULL)))
 		scr->options.command = res;
+	strncpy(n, "menucommand", nlen);
+	strncpy(c, "Menucommand", clen);
+	if ((res = readres(name, clas, NULL)))
+		scr->options.menucommand = res;
 	strncpy(n, "decoratetiled", nlen);
 	strncpy(c, "Decoratetiled", clen);
 	if ((res = readres(name, clas, NULL)))
@@ -1026,6 +1033,7 @@ initstyle_ADWM(void)
 			const char *def;
 		} elements[LastElement] = {
 			/* *INDENT-OFF* */
+			[MenuBtn]	= { "button.menu",	MENUPIXMAP  },
 			[IconifyBtn]	= { "button.iconify",	ICONPIXMAP  },
 			[MaximizeBtn]	= { "button.maximize",	MAXPIXMAP   },
 			[CloseBtn]	= { "button.close",	CLOSEPIXMAP },

@@ -57,6 +57,7 @@ void k_settaskbar(XEvent *e, Key *k);
 void k_setshowing(XEvent *e, Key *k);
 void k_setstruts(XEvent *e, Key *k);
 void k_setdectiled(XEvent *e, Key *k);
+void k_setsticky(XEvent *e, Key *k);
 void k_moveto(XEvent *e, Key *k);
 void k_snapto(XEvent *e, Key *k);
 void k_edgeto(XEvent *e, Key *k);

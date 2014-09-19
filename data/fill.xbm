@@ -1,0 +1,4 @@
+#define fill_width 6
+#define fill_height 6
+static char fill_bits[] = {
+  0x00, 0x04, 0x12, 0x21, 0x12, 0x08, };

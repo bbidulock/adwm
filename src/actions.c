@@ -1016,6 +1016,32 @@ k_setdectiled(XEvent *e, Key *k)
 	return k_setlaygeneric(e, k, &v_setdectiled);
 }
 
+static void
+c_setsticky(XEvent *e, Key *k, Client *c)
+{
+	switch (k->set) {
+	case SetFlagSetting:
+		if (c->is.sticky)
+			return;
+		break;
+	case UnsetFlagSetting:
+		if (!c->is.sticky)
+			return;
+		break;
+	default:
+	case ToggleFlagSetting:
+		break;
+	}
+	togglesticky(c);
+}
+
+void
+k_setsticky(XEvent *e, Key *k)
+{
+	return k_setgeneric(e, k, &c_setsticky);
+}
+
+
 void
 k_moveto(XEvent *e, Key *k)
 {

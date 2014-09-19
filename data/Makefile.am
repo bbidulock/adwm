@@ -1,7 +1,19 @@
 
 nobase_dist_data_DATA = xsessions/adwm.desktop
 
-dist_pkgdata_DATA = close.xbm adwmrc iconify.xbm max.xbm
+dist_pkgdata_DATA = \
+	adwmrc \
+	close.xbm \
+	fill.xbm \
+	float.xbm \
+	iconify.xbm \
+	lhalf.xbm \
+	max.xbm \
+	menu.xbm \
+	resize.xbm \
+	rhalf.xbm \
+	shade.xbm \
+	stick.xbm
 
 nobase_dist_pkgdata_DATA = \
 	styles/Default/keysrc \

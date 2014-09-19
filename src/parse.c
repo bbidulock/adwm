@@ -126,7 +126,8 @@ static KeyItem KeyItemsByState[] = {
 	{ "taskbar",		k_settaskbar	 },
 	{ "showing",		k_setshowing	 },
 	{ "struts",		k_setstruts	 },
-	{ "dectiled",		k_setdectiled	 }
+	{ "dectiled",		k_setdectiled	 },
+	{ "sticky",		k_setsticky	 }
 	/* *INDENT-ON* */
 };
 

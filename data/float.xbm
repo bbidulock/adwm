@@ -1,0 +1,4 @@
+#define float_width 6
+#define float_height 6
+static char float_bits[] = {
+  0x0F, 0x09, 0x39, 0x2F, 0x24, 0x3C, };

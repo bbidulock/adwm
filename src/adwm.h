@@ -283,6 +283,7 @@ enum {
 };					/* client parts */
 
 typedef enum {
+	MenuBtn,
 	IconifyBtn,
 	MaximizeBtn,
 	CloseBtn,
@@ -698,6 +699,7 @@ typedef union {
 			unsigned stick:1;
 			unsigned fill:1;
 			unsigned floats:1;
+			unsigned half:1;
 		} but __attribute__ ((packed));
 	};
 	unsigned has;
@@ -1022,6 +1024,7 @@ typedef struct {
 	int focus;
 	int snap;
 	const char *command;
+	const char *menucommand;
 	DockPosition dockpos;
 	DockOrient dockori;
 	unsigned dockmon;

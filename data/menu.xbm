@@ -1,0 +1,4 @@
+#define menu_width 6
+#define menu_height 6
+static char menu_bits[] = {
+  0x1E, 0x00, 0x1E, 0x00, 0x1E, 0x00, };

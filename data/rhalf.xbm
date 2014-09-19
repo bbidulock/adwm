@@ -1,0 +1,4 @@
+#define rhalf_width 6
+#define rhalf_height 6
+static char rhalf_bits[] = {
+  0x3C, 0x24, 0x24, 0x24, 0x24, 0x3C, };

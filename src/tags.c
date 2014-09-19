@@ -141,16 +141,11 @@ togglesticky(Client *c)
 	if (c->is.managed) {
 		if (c->is.sticky)
 			tag(c, -1);
-		else {
-			View *v;
-
-			if (!(v = c->cview))
-				if (!(v = clientview(c)))
-					if (!(v = onview(c)))
-						v = nearview();
-			tag(c, v->index);
-		}
+		else
+			tagonly(c, v->index);
 		ewmh_update_net_window_state(c);
+		drawclient(c);
+		arrange(NULL);
 	}
 }
 

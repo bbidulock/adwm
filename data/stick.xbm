@@ -1,0 +1,4 @@
+#define stick_width 6
+#define stick_height 6
+static char stick_bits[] = {
+  0x00, 0x1E, 0x12, 0x12, 0x1E, 0x00, };

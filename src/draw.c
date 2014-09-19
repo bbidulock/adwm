@@ -50,6 +50,11 @@ buttonimage(AScreen *ds, Client *c, ElementType type)
 
 	(void) name;
 	switch (type) {
+	case MenuBtn:
+		name = "menu";
+		present = True;
+		toggled = False;
+		enabled = True;
 	case IconifyBtn:
 		name = "iconify";
 		present = c->has.but.min;
@@ -82,15 +87,15 @@ buttonimage(AScreen *ds, Client *c, ElementType type)
 		break;
 	case LHalfBtn:
 		name = "lhalf";
-		present = False;
+		present = c->has.but.half;
 		toggled = False;
-		enabled = False;
+		enabled = c->can.size || c->can.sizev || c->can.sizeh;
 		break;
 	case RHalfBtn:
 		name = "rhalf";
-		present = False;
+		present = c->has.but.half;
 		toggled = False;
-		enabled = False;
+		enabled = c->can.size || c->can.sizev || c->can.sizeh;
 		break;
 	case FillBtn:
 		name = "fill";
@@ -192,6 +197,8 @@ static ElementType
 elementtype(char which)
 {
 	switch (which) {
+	case 'E':
+		return MenuBtn;
 	case 'I':
 		return IconifyBtn;
 	case 'M':
@@ -701,6 +708,12 @@ initpixmap(const char *file, ButtonImage *bi)
 }
 
 static void
+b_menu(Client *c, XEvent *ev)
+{
+	spawn(scr->options.menucommand);
+}
+
+static void
 b_min(Client *c, XEvent *ev)
 {
 	iconify(c);
@@ -885,6 +898,13 @@ initbuttons()
 		void (*action[Button5-Button1+1][2]) (Client *, XEvent *);
 	} setup[LastElement] = {
 		/* *INDENT-OFF* */
+		[MenuBtn]	= { "button.menu",	MENUPIXMAP,	{
+			[Button1-Button1] = { NULL,		b_menu		},
+			[Button2-Button1] = { NULL,		b_menu		},
+			[Button3-Button1] = { NULL,		b_menu		},
+			[Button4-Button1] = { NULL,		NULL		},
+			[Button5-Button1] = { NULL,		NULL		},
+		} },
 		[IconifyBtn]	= { "button.iconify",	ICONPIXMAP,	{
 					    /* ButtonPress	ButtonRelease	*/
 			[Button1-Button1] = { NULL,		b_min		},

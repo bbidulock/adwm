@@ -1,0 +1,4 @@
+#define lhalf_width 6
+#define lhalf_height 6
+static char lhalf_bits[] = {
+  0x0F, 0x09, 0x09, 0x09, 0x09, 0x0F, };

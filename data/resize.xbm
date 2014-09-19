@@ -1,0 +1,4 @@
+#define resize_width 6
+#define resize_height 6
+static char resize_bits[] = {
+  0x0F, 0x01, 0x21, 0x21, 0x20, 0x3C, };

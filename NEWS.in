@@ -5,6 +5,63 @@ Release @PACKAGE@-@VERSION@ released @DATE@
 
 Changes:
 
+Release adwm-0.5.2 released 2014-09-21
+--------------------------------------
+
+Changes:
+
+Brian Bidulock <bidulock@openss7.org> (44):
+      correct raiselower behaviour
+      always consider tile as floaters when restacking overlay
+      fixed bug in floating placement
+      only set focus after done restacking
+      better window cycling
+      not so many configure messages (causes flashing)
+      change _NET_WM_DESKTOP message behaviour
+      another ignore
+      some support documentation for spectrwm
+      mimic key bindings
+      more keybinding mimics
+      working up common key bindings
+      correct logic error reconfiguring floating windows
+      fix tearout on move when floating layout
+      even better focus behavior
+      do not attempt to refocus destroyed clients
+      do not attempt to refocus last focusable window
+      do not multiple set PointerRoot
+      limite client list updates
+      add flipview, flipzone, flipwins
+      add focusmain and focusurgent
+      document focusmain and focusurgent
+      working up default keys
+      updated default keys
+      search for pixmaps in various proper directories
+      support style reload
+      fix null pointer dereference
+      respond to hup better, another segfault
+      convert key arrays to lists
+      no double free on key args
+      reduce verbosity
+      update default keys
+      update default style
+      handle some key binding defaults better
+      process the desktop layout when add or del views
+      split nmaster from ncolumns
+      force configure in response to configure-request
+      fix some button behaviour
+      better focus behaviour for buttons
+      correct button logic error
+      get button hovering working correctly
+      make sure titles generate enter and leave events
+      updated readme
+      0.5.2 release
+
+
+Release adwm-0.5.1 released 2014-09-02
+--------------------------------------
+
+Changes:
+
 Brian Bidulock <bidulock@openss7.org> (15):
       try to correct focus handling a bit
       better focus handling on some events

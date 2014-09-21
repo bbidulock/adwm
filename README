@@ -3,19 +3,19 @@ adwm -- read me first file.  2014-09-19
 adwm
 ====
 
-Package adwm-0.5.1.41 was released under GPL license 2014-09-19.
+Package adwm-0.5.1.42 was released under GPL license 2014-09-19.
 
 This was originally a fork of Echinus which in turn was a fork of dwm,
-and borrows concepts from awesome.  The source for adwm is hosted on
-GitHub at (http://github.com/bbidulock/adwm).  What it includes is
-a full rewrite with significant updates and additions resulting in
-full EWMH (NetwM), WMH (WinWM), MWMH (CDE/Motif), ICCCM 2.0 compliance
-and support.
+and borrows concepts from velox, awesome and spectrwm.  The source
+for adwm is hosted on GitHub at (http://github.com/bbidulock/adwm).
+What it includes is a full rewrite with significant updates and additions
+resulting in full EWMH (NetwM), WMH (WinWM), MWMH (CDE/Motif),
+ICCCM 2.0 compliance and support.
 
 Release
 -------
 
-This is the adwm-0.5.1.41 package, released 2014-09-19.  This release,
+This is the adwm-0.5.1.42 package, released 2014-09-19.  This release,
 and the latest version, can be obtained from the GitHub repository at
 (http://github.com/bbidulock/adwm), using a command such as:
 
@@ -29,7 +29,7 @@ features not yet implemented and other outstanding items.  The file
 
 Please see the `INSTALL' file for installation instructions.
 
-When working from `git(1)', following the instructions in this file.  An
+When working from `git(1)', follow the instructions in this file.  An
 abbreviated installation procedure that works for most applications
 appears below.
 

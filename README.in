@@ -6,11 +6,11 @@ adwm
 Package @PACKAGE@-@VERSION@ was released under GPL license @DATE@.
 
 This was originally a fork of Echinus which in turn was a fork of dwm,
-and borrows concepts from awesome.  The source for adwm is hosted on
-GitHub at (http://github.com/bbidulock/@PACKAGE@).  What it includes is
-a full rewrite with significant updates and additions resulting in
-full EWMH (NetwM), WMH (WinWM), MWMH (CDE/Motif), ICCCM 2.0 compliance
-and support.
+and borrows concepts from velox, awesome and spectrwm.  The source
+for adwm is hosted on GitHub at (http://github.com/bbidulock/@PACKAGE@).
+What it includes is a full rewrite with significant updates and additions
+resulting in full EWMH (NetwM), WMH (WinWM), MWMH (CDE/Motif),
+ICCCM 2.0 compliance and support.
 
 Release
 -------
@@ -29,7 +29,7 @@ features not yet implemented and other outstanding items.  The file
 
 Please see the `INSTALL' file for installation instructions.
 
-When working from `git(1)', following the instructions in this file.  An
+When working from `git(1)', follow the instructions in this file.  An
 abbreviated installation procedure that works for most applications
 appears below.
 

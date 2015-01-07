@@ -25,7 +25,7 @@ Please see the `NEWS' file for release notes and history of user visible
 changes for the current version, and the `ChangeLog' file for a more
 detailed history of implementation changes.  The `TODO' file lists
 features not yet implemented and other outstanding items.  The file
-`COMPLIANCE' lists the current staqte of XDG compliance.
+`COMPLIANCE' lists the current state of XDG compliance.
 
 Please see the `INSTALL' file for installation instructions.
 

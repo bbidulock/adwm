@@ -2240,8 +2240,8 @@ manage(Window w, XWindowAttributes * wa)
 		}
 #endif
 	} else {
-		// twa.backing_store = NotUseful;
-		// mask |= CWBackingStore;
+		twa.backing_store = Always;
+		mask |= CWBackingStore;
 		XChangeWindowAttributes(dpy, c->win, mask, &twa);
 		XSelectInput(dpy, c->win, CLIENTMASK);
 
@@ -3417,7 +3417,7 @@ initmonitors(XEvent *e)
 				mask |= CWBorderPixmap;
 				wa.backing_store = NotUseful;
 				mask |= CWBackingStore;
-				wa.save_under = False;
+				wa.save_under = True;
 				mask |= CWSaveUnder;
 				XChangeWindowAttributes(dpy, m->veil, mask, &wa);
 				for (j = 0; j < 8; j++)
@@ -3521,7 +3521,7 @@ initmonitors(XEvent *e)
 				mask |= CWBorderPixmap;
 				wa.backing_store = NotUseful;
 				mask |= CWBackingStore;
-				wa.save_under = False;
+				wa.save_under = True;
 				mask |= CWSaveUnder;
 				XChangeWindowAttributes(dpy, m->veil, mask, &wa);
 				for (j = 0; j < 8; j++)
@@ -3594,7 +3594,7 @@ initmonitors(XEvent *e)
 		mask |= CWBorderPixmap;
 		wa.backing_store = NotUseful;
 		mask |= CWBackingStore;
-		wa.save_under = False;
+		wa.save_under = True;
 		mask |= CWSaveUnder;
 		XChangeWindowAttributes(dpy, m->veil, mask, &wa);
 		for (j = 0; j < 8; j++)

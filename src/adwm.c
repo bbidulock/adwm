@@ -2139,11 +2139,21 @@ manage(Window w, XWindowAttributes * wa)
 
 	c->with.struts = getstruts(c);
 
-	XGrabButton(dpy, AnyButton, AnyModifier, c->win, True,
+	/* try not grabbing Button4 and Button5 */
+	XGrabButton(dpy, Button1, AnyModifier, c->win, True,
 		    ButtonPressMask, GrabModeSync, GrabModeAsync, None, None);
-	if (c->icon && c->icon != c->win)
-		XGrabButton(dpy, AnyButton, AnyModifier, c->icon, True,
+	XGrabButton(dpy, Button2, AnyModifier, c->win, True,
+		    ButtonPressMask, GrabModeSync, GrabModeAsync, None, None);
+	XGrabButton(dpy, Button3, AnyModifier, c->win, True,
+		    ButtonPressMask, GrabModeSync, GrabModeAsync, None, None);
+	if (c->icon && c->icon != c->win) {
+		XGrabButton(dpy, Button1, AnyModifier, c->icon, True,
 			    ButtonPressMask, GrabModeSync, GrabModeAsync, None, None);
+		XGrabButton(dpy, Button2, AnyModifier, c->icon, True,
+			    ButtonPressMask, GrabModeSync, GrabModeAsync, None, None);
+		XGrabButton(dpy, Button3, AnyModifier, c->icon, True,
+			    ButtonPressMask, GrabModeSync, GrabModeAsync, None, None);
+	}
 	twa.override_redirect = True;
 	twa.event_mask = FRAMEMASK;
 	if (c->is.dockapp)
@@ -3983,10 +3993,14 @@ unmanage(Client *c, WithdrawCause cause)
 	}
 	if (cause != CauseDestroyed) {
 		XSelectInput(dpy, c->win, CLIENTMASK & ~MAPPINGMASK);
-		XUngrabButton(dpy, AnyButton, AnyModifier, c->win);
+		XUngrabButton(dpy, Button1, AnyModifier, c->win);
+		XUngrabButton(dpy, Button2, AnyModifier, c->win);
+		XUngrabButton(dpy, Button3, AnyModifier, c->win);
 		if (c->icon && c->icon != c->win) {
 			XSelectInput(dpy, c->icon, CLIENTMASK & ~MAPPINGMASK);
-			XUngrabButton(dpy, AnyButton, AnyModifier, c->icon);
+			XUngrabButton(dpy, Button1, AnyModifier, c->icon);
+			XUngrabButton(dpy, Button2, AnyModifier, c->icon);
+			XUngrabButton(dpy, Button3, AnyModifier, c->icon);
 		}
 		if (cause != CauseReparented) {
 			if (c->gravity == StaticGravity || c->is.dockapp) {

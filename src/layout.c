@@ -3166,7 +3166,7 @@ move_begin(Client *c, View *v, Bool toggle, int move, IsUnion * was)
 
 	/* regrab pointer with move cursor */
 	XGrabPointer(dpy, scr->root, False, MOUSEMASK, GrabModeAsync,
-		     GrabModeAsync, None, cursor[move], CurrentTime);
+		     GrabModeAsync, None, cursor[move], user_time);
 
 	isfloater = isfloating(c, v) ? True : False;
 
@@ -3297,7 +3297,7 @@ mousemove(Client *c, XEvent *e, Bool toggle)
 	if (!(v = getview(x_root, y_root)) || (c->cview && v != c->cview))
 		if (!(v = c->cview)) {
 			CPRINTF(c, "No monitor to move from!\n");
-			XUngrabPointer(dpy, CurrentTime);
+			XUngrabPointer(dpy, e->xbutton.time);
 			return moved;
 		}
 
@@ -3307,9 +3307,9 @@ mousemove(Client *c, XEvent *e, Bool toggle)
 	isfloater = (toggle || isfloating(c, v)) ? True : False;
 
 	if (XGrabPointer(dpy, scr->root, False, MOUSEMASK, GrabModeAsync,
-			 GrabModeAsync, None, None, CurrentTime) != GrabSuccess) {
+			 GrabModeAsync, None, None, e->xbutton.time) != GrabSuccess) {
 		CPRINTF(c, "Couldn't grab pointer!\n");
-		XUngrabPointer(dpy, CurrentTime);
+		XUngrabPointer(dpy, e->xbutton.time);
 		return moved;
 	}
 
@@ -3452,7 +3452,7 @@ mousemove(Client *c, XEvent *e, Bool toggle)
 			save(c);
 			continue;
 		}
-		XUngrabPointer(dpy, CurrentTime);
+		XUngrabPointer(dpy, ev.xmotion.time);
 		break;
 	}
 	if (move_finish(c, v, &was))
@@ -3588,7 +3588,7 @@ resize_begin(Client *c, View *v, Bool toggle, int from, IsUnion * was)
 
 	/* regrab pointer with resize cursor */
 	XGrabPointer(dpy, scr->root, False, MOUSEMASK, GrabModeAsync,
-		     GrabModeAsync, None, cursor[from], CurrentTime);
+		     GrabModeAsync, None, cursor[from], user_time);
 
 	isfloater = isfloating(c, v) ? True : False;
 
@@ -3700,7 +3700,7 @@ mouseresize_from(Client *c, int from, XEvent *e, Bool toggle)
 
 	if (!(v = getview(x_root, y_root)) || (c->cview && v != c->cview))
 		if (!(v = c->cview)) {
-			XUngrabPointer(dpy, CurrentTime);
+			XUngrabPointer(dpy, e->xbutton.time);
 			return resized;
 		}
 
@@ -3708,8 +3708,8 @@ mouseresize_from(Client *c, int from, XEvent *e, Bool toggle)
 		toggle = False;
 
 	if (XGrabPointer(dpy, scr->root, False, MOUSEMASK, GrabModeAsync,
-			 GrabModeAsync, None, None, CurrentTime) != GrabSuccess) {
-		XUngrabPointer(dpy, CurrentTime);
+			 GrabModeAsync, None, None, e->xbutton.time) != GrabSuccess) {
+		XUngrabPointer(dpy, e->xbutton.time);
 		return resized;
 	}
 
@@ -3914,7 +3914,7 @@ mouseresize_from(Client *c, int from, XEvent *e, Bool toggle)
 				save(c);
 			continue;
 		}
-		XUngrabPointer(dpy, CurrentTime);
+		XUngrabPointer(dpy, ev.xmotion.time);
 		break;
 	}
 	if (resize_finish(c, v, &was))
@@ -3930,7 +3930,7 @@ mouseresize(Client *c, XEvent *e, Bool toggle)
 	int from;
 
 	if (!c->can.size || (!c->can.sizeh && !c->can.sizev)) {
-		XUngrabPointer(dpy, CurrentTime);
+		XUngrabPointer(dpy, user_time);
 		return False;
 	}
 	from = findcorner(c, e->xbutton.x_root, e->xbutton.y_root);

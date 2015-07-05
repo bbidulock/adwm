@@ -80,7 +80,7 @@ k_chain(XEvent *e, Key *key)
 	Key *k = NULL;
 
 	if (XGrabKeyboard
-	    (dpy, scr->root, GrabModeSync, False, GrabModeAsync, CurrentTime)) {
+	    (dpy, scr->root, GrabModeSync, False, GrabModeAsync, e->xkey.time)) {
 		DPRINTF("Could not grab keyboard\n");
 		return;
 	}
@@ -1268,7 +1268,7 @@ k_select_cl(View *cv, Key *k, CycleList * cl)
 	if (k->cyc) {
 		k->stop = k_stop;
 		if (!XGrabKeyboard(dpy, scr->root, GrabModeSync, False,
-				   GrabModeAsync, CurrentTime))
+				   GrabModeAsync, user_time))
 			return;
 		DPRINTF("Could not grab keyboard\n");
 	}

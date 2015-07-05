@@ -534,7 +534,7 @@ buttonpress(XEvent *e)
 				DPRINTF
 				    ("BUTTON %d: passing to button proxy, state = 0x%08x\n",
 				     button + Button1, state);
-				XUngrabPointer(dpy, CurrentTime);	// ev->time ??
+				XUngrabPointer(dpy, ev->time);
 				XSendEvent(dpy, scr->selwin, False,
 					   SubstructureNotifyMask, e);
 				button_proxy |= ~(1 << button);
@@ -548,7 +548,7 @@ buttonpress(XEvent *e)
 		} else
 			DPRINTF("No action for On=%d, button=%d, direct=%d\n", OnRoot,
 				button + Button1, direct);
-		XUngrabPointer(dpy, CurrentTime);
+		XUngrabPointer(dpy, ev->time);
 	} else if ((c = getclient(ev->window, ClientTitle)) && ev->window == c->title) {
 		DPRINTF("TITLE %s: 0x%lx button: %d\n", c->name, ev->window, ev->button);
 		for (i = 0; i < LastElement; i++) {
@@ -604,7 +604,7 @@ buttonpress(XEvent *e)
 		} else
 			DPRINTF("No action for On=%d, button=%d, direct=%d\n",
 				OnClientTitle, button + Button1, direct);
-		XUngrabPointer(dpy, CurrentTime);
+		XUngrabPointer(dpy, ev->time);
 		drawclient(c);
 	} else if ((c = getclient(ev->window, ClientGrips)) && ev->window == c->grips) {
 		if ((action = actions[OnClientGrips][button][direct])) {
@@ -614,12 +614,12 @@ buttonpress(XEvent *e)
 		} else
 			DPRINTF("No action for On=%d, button=%d, direct=%d\n",
 				ClientGrips, button + Button1, direct);
-		XUngrabPointer(dpy, CurrentTime);
+		XUngrabPointer(dpy, ev->time);
 		drawclient(c);
 	} else if ((c = getclient(ev->window, ClientIcon)) && ev->window == c->icon) {
 		DPRINTF("ICON %s: 0x%lx button: %d\n", c->name, ev->window, ev->button);
 		if ((CLEANMASK(ev->state) & modkey) != modkey) {
-			XAllowEvents(dpy, ReplayPointer, CurrentTime);
+			XAllowEvents(dpy, ReplayPointer, ev->time);
 			return True;
 		}
 		if ((action = actions[OnClientIcon][button][direct])) {
@@ -629,12 +629,12 @@ buttonpress(XEvent *e)
 		} else
 			DPRINTF("No action for On=%d, button=%d, direct=%d\n", ClientIcon,
 				button + Button1, direct);
-		XUngrabPointer(dpy, CurrentTime);	// ev->time ??
+		XUngrabPointer(dpy, ev->time);
 		drawclient(c);
 	} else if ((c = getclient(ev->window, ClientWindow)) && ev->window == c->win) {
 		DPRINTF("WINDOW %s: 0x%lx button: %d\n", c->name, ev->window, ev->button);
 		if ((CLEANMASK(ev->state) & modkey) != modkey) {
-			XAllowEvents(dpy, ReplayPointer, CurrentTime);
+			XAllowEvents(dpy, ReplayPointer, ev->time);
 			return True;
 		}
 		if ((action = actions[OnClientWindow][button][direct])) {
@@ -644,7 +644,7 @@ buttonpress(XEvent *e)
 		} else
 			DPRINTF("No action for On=%d, button=%d, direct=%d\n",
 				OnClientWindow, button + Button1, direct);
-		XUngrabPointer(dpy, CurrentTime);	// ev->time ??
+		XUngrabPointer(dpy, ev->time);
 		drawclient(c);
 	} else if ((c = getclient(ev->window, ClientFrame)) && ev->window == c->frame) {
 		DPRINTF("FRAME %s: 0x%lx button: %d\n", c->name, ev->window, ev->button);
@@ -665,7 +665,7 @@ buttonpress(XEvent *e)
 				DPRINTF("No action for On=%d, button=%d, direct=%d\n",
 					OnClientFrame, button + Button1, direct);
 		}
-		XUngrabPointer(dpy, CurrentTime);	// ev->time ??
+		XUngrabPointer(dpy, ev->time);
 		drawclient(c);
 	} else
 		return False;
@@ -964,6 +964,8 @@ motionnotify(XEvent *e)
 	Client *c;
 	XMotionEvent *ev = &e->xmotion;
 
+	pushtime(ev->time);
+
 	if ((c = getclient(ev->window, ClientTitle)) && ev->window == c->title) {
 		Bool needdraw = False;
 		int i;
@@ -1136,7 +1138,7 @@ setfocus(Client *c)
 
 		XGetInputFocus(dpy, &win, &revert);
 		if (!win)
-			XSetInputFocus(dpy, PointerRoot, revert, CurrentTime);
+			XSetInputFocus(dpy, PointerRoot, revert, user_time);
 	} else
 		_CPRINTF(c, "cannot set focus\n");
 }
@@ -1852,7 +1854,7 @@ keypress(XEvent *e)
 		}
 	} while (k);
 	DPRINTF("Done handling keypress function\n");
-	XUngrabKeyboard(dpy, CurrentTime);
+	XUngrabKeyboard(dpy, user_time);
 	return handled;
 }
 
@@ -2931,7 +2933,9 @@ run(void)
 				while (XPending(dpy) && running) {
 					XNextEvent(dpy, &ev);
 					scr = geteventscr(&ev);
-					if (!handle_event(&ev))
+					if (handle_event(&ev))
+						XFlush(dpy);
+					else
 						XPRINTF("WARNING: Event %d not handled\n",
 							ev.type);
 				}

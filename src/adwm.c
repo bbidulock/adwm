@@ -4192,8 +4192,8 @@ unmapnotify(XEvent *e)
 				return True;
 			}
 		} else {
-			/* real event - only if not banned or icon */
-			if (ev->event == c->frame && c->is.managed && !(c->is.icon || c->is.banned)) {
+			/* real event - only if not banned or icon or shaded */
+			if (ev->event == c->frame && c->is.managed && !(c->is.icon || c->is.banned || c->is.shaded)) {
 				CPRINTF(c, "unmanage self-unmapped window\n");
 				unmanage(c, CauseUnmapped);
 				return True;

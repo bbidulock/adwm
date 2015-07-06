@@ -647,6 +647,15 @@ reconfigure_dockapp(Client *c, ClientGeometry *n, Bool force)
 /* FIXME: this does not handle moving the window across monitor
  * or desktop boundaries. */
 
+static Bool
+check_unmapnotify(Display *dpy, XEvent *ev, XPointer arg)
+{
+	Client *c = (typeof(c)) arg;
+
+	return (ev->type == UnmapNotify && !ev->xunmap.send_event
+		&& ev->xunmap.window == c->win && ev->xunmap.event == c->frame);
+}
+
 static void
 reconfigure(Client *c, ClientGeometry *n, Bool force)
 {
@@ -745,9 +754,13 @@ reconfigure(Client *c, ClientGeometry *n, Bool force)
 	if ((wmask & (CWWidth | CWHeight))
 	    && !newsize(c, wwc.width, wwc.height, CurrentTime))
 		wmask &= ~(CWWidth | CWHeight);
-	if (shaded)
+	if (shaded) {
+		XEvent ev;
+
 		XUnmapWindow(dpy, c->win);
-	else
+		XSync(dpy, False);
+		XCheckIfEvent(dpy, &ev, &check_unmapnotify, (XPointer) c);
+	} else
 		XMapWindow(dpy, c->win);
 	if (wmask) {
 		DPRINTF("wind  wc = %ux%u+%d+%d:%d\n", wwc.width, wwc.height, wwc.x,

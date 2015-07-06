@@ -453,6 +453,15 @@ relfocus(Client *c)
 	return refocus;
 }
 
+static Bool
+check_unmapnotify(Display *dpy, XEvent *ev, XPointer arg)
+{
+	Client *c = (typeof(c)) arg;
+
+	return (ev->type == UnmapNotify && !ev->xunmap.send_event
+		&& ev->xunmap.window == c->win && ev->xunmap.event == c->frame);
+}
+
 void
 ban(Client *c)
 {
@@ -460,15 +469,24 @@ ban(Client *c)
 
 	setclientstate(c, c->is.icon ? IconicState : NormalState);
 	if (!c->is.banned) {
+#if 1
+		XEvent ev;
+#endif
 		c->is.banned = True;
 		relfocus(c);
 		XUnmapWindow(dpy, c->frame);
+#if 0
 		XSelectInput(dpy, c->frame, FRAMEMASK & ~SubstructureNotifyMask);
 		XSync(dpy, False);
 		XUnmapWindow(dpy, c->win);
 		XSync(dpy, False);
 		XSelectInput(dpy, c->frame, FRAMEMASK);
 		XSync(dpy, False);
+#else
+		XUnmapWindow(dpy, c->win);
+		XSync(dpy, False);
+		XCheckIfEvent(dpy, &ev, &check_unmapnotify, (XPointer) c);
+#endif
 	}
 }
 
@@ -4192,8 +4210,8 @@ unmapnotify(XEvent *e)
 				return True;
 			}
 		} else {
-			/* real event - only if not banned or icon or shaded */
-			if (ev->event == c->frame && c->is.managed && !(c->is.icon || c->is.banned || c->is.shaded)) {
+			/* real event */
+			if (ev->event == c->frame && c->is.managed) {
 				CPRINTF(c, "unmanage self-unmapped window\n");
 				unmanage(c, CauseUnmapped);
 				return True;

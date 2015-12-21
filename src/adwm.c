@@ -2241,8 +2241,8 @@ manage(Window w, XWindowAttributes * wa)
 	/* in case of stupid client */
 	twa.win_gravity = NorthWestGravity;
 	mask |= CWWinGravity;
-	twa.save_under = False;
-	mask |= CWSaveUnder;
+	// twa.save_under = False;
+	// mask |= CWSaveUnder;
 
 	if (c->icon) {
 		twa.backing_store = Always;

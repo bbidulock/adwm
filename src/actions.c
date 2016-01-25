@@ -69,6 +69,18 @@ m_spawn(Client *c, XEvent *e)
 }
 
 void
+m_spawn2(Client *c, XEvent *e)
+{
+	spawn(scr->options.command2);
+}
+
+void
+m_spawn3(Client *c, XEvent *e)
+{
+	spawn(scr->options.command3);
+}
+
+void
 m_zoom(Client *c, XEvent *e)
 {
 	zoomfloat(c);

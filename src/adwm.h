@@ -1024,6 +1024,8 @@ typedef struct {
 	int focus;
 	int snap;
 	const char *command;
+	const char *command2;
+	const char *command3;
 	const char *menucommand;
 	DockPosition dockpos;
 	DockOrient dockori;

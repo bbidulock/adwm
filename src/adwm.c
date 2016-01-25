@@ -171,8 +171,8 @@ void (*actions[LastOn][Button5-Button1+1][2]) (Client *, XEvent *) = {
 		[Button5-Button1] =	{ NULL,		    NULL	    },
 	},
 	[OnRoot]	 = {
-		[Button1-Button1] =	{ NULL,		    NULL	    },
-		[Button2-Button1] =	{ NULL,		    NULL	    },
+		[Button1-Button1] =	{ NULL,		    m_spawn3	    },
+		[Button2-Button1] =	{ NULL,		    m_spawn2	    },
 		[Button3-Button1] =	{ NULL,		    m_spawn	    },
 		[Button4-Button1] =	{ NULL,		    m_nexttag	    },
 		[Button5-Button1] =	{ NULL,		    m_prevtag	    },

@@ -9,6 +9,8 @@ void m_prevtag(Client *c, XEvent *ev);
 void m_resize(Client *c, XEvent *ev);
 void m_shade(Client *c, XEvent *ev);
 void m_spawn(Client *c, XEvent *ev);
+void m_spawn2(Client *c, XEvent *ev);
+void m_spawn3(Client *c, XEvent *ev);
 void m_zoom(Client *c, XEvent *ev);
 
 void k_chain(XEvent *e, Key *k);

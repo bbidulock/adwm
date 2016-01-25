@@ -248,6 +248,14 @@ initscreen(void)
 	strncpy(c, "Command", clen);
 	if ((res = readres(name, clas, NULL)))
 		scr->options.command = res;
+	strncpy(n, "command2", nlen);
+	strncpy(c, "Command2", clen);
+	if ((res = readres(name, clas, NULL)))
+		scr->options.command2 = res;
+	strncpy(n, "command3", nlen);
+	strncpy(c, "Command3", clen);
+	if ((res = readres(name, clas, NULL)))
+		scr->options.command3 = res;
 	strncpy(n, "menucommand", nlen);
 	strncpy(c, "Menucommand", clen);
 	if ((res = readres(name, clas, NULL)))
@@ -353,6 +361,12 @@ initconfig(void)
 	strcpy(n, "command");
 	strcpy(c, "Command");
 	options.command = readres(name, clas, COMMAND);
+	strcpy(n, "command2");
+	strcpy(c, "Command2");
+	options.command2 = readres(name, clas, COMMAND2);
+	strcpy(n, "command3");
+	strcpy(c, "Command3");
+	options.command3 = readres(name, clas, COMMAND3);
 	strcpy(n, "menucommand");
 	strcpy(c, "Menucommand");
 	options.menucommand = readres(name, clas, MENUCOMMAND);

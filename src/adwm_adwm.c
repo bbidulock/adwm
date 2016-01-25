@@ -217,6 +217,12 @@ initconfig_ADWM(void)
 	strncpy(n, "command", nlen);
 	strncpy(c, "Command", clen);
 	options.command = readres(name, clas, COMMAND);
+	strncpy(n, "command2", nlen);
+	strncpy(c, "Command2", clen);
+	options.command2 = readres(name, clas, COMMAND2);
+	strncpy(n, "command3", nlen);
+	strncpy(c, "Command3", clen);
+	options.command3 = readres(name, clas, COMMAND3);
 	strncpy(n, "menucommand", nlen);
 	strncpy(c, "Menucommand", clen);
 	options.menucommand = readres(name, clas, MENUCOMMAND);
@@ -323,6 +329,14 @@ initscreen_ADWM(void)
 	strncpy(c, "Command", clen);
 	if ((res = readres(name, clas, NULL)))
 		scr->options.command = res;
+	strncpy(n, "command2", nlen);
+	strncpy(c, "Command2", clen);
+	if ((res = readres(name, clas, NULL)))
+		scr->options.command2 = res;
+	strncpy(n, "command3", nlen);
+	strncpy(c, "Command3", clen);
+	if ((res = readres(name, clas, NULL)))
+		scr->options.command3 = res;
 	strncpy(n, "menucommand", nlen);
 	strncpy(c, "Menucommand", clen);
 	if ((res = readres(name, clas, NULL)))

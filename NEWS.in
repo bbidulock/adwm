@@ -5,6 +5,36 @@ Release @PACKAGE@-@VERSION@ released @DATE@
 
 Changes:
 
+Brian Bidulock <bidulock@openss7.org> (5):
+      stray h
+      let windows recommend backing store
+      let popups recommend save-unders
+      handle more buttons on root
+      add missing pixmaps, fix default style
+
+Release adwm-0.5.4 released 2015-07-10
+--------------------------------------
+
+Changes:
+
+Brian Bidulock <bidulock@openss7.org> (6):
+      twiddle with backing_store and save_under
+      try to avoid using CurrentTime: breaks timing
+      try not grabbing scrolling buttons
+      don't unmanage on real unmap events when shaded
+      handle suppression of unmap notify differently
+      updated release files
+
+Release adwm-0.5.3 released 2015-01-07
+--------------------------------------
+
+Changes:
+
+Brian Bidulock <bidulock@openss7.org> (2):
+      better ICCCM 4.1.4 compliance
+      updated readme
+
+
 Release adwm-0.5.2 released 2014-09-21
 --------------------------------------
 

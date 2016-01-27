@@ -28,7 +28,7 @@ Adwm*grips:						3
 !Adwm*button.maximize.pixmap:				max.xpm
 !Adwm*button.close.pixmap:				close.xpm
 
-Adwm*titlelayout: FASN  IMC
+Adwm*titlelayout: EFASLN  RIMC
 
 Adwm*button.iconify.pixmap:				min_focused.xpm
 Adwm*button.maximize.pixmap:				max_focused.xpm
@@ -115,14 +115,14 @@ Adwm*button.lhalf.disabled.hovered.pixmap:		pixmaps/lhalf_unfocus.xpm
 Adwm*button.lhalf.disabled.focused.pixmap:		pixmaps/lhalf_unfocus.xpm
 Adwm*button.lhalf.disabled.unfocus.pixmap:		pixmaps/lhalf_unfocus.xpm
 
-Adwm*button.lhalf.pixmap:				pixmaps/rhalf_focused.xpm
-Adwm*button.lhalf.pressed.pixmap:			pixmaps/rhalf_pressed.xpm
-Adwm*button.lhalf.hovered.pixmap:			pixmaps/rhalf_hovered.xpm
-Adwm*button.lhalf.focused.pixmap:			pixmaps/rhalf_focused.xpm
-Adwm*button.lhalf.unfocus.pixmap:			pixmaps/rhalf_unfocus.xpm
-Adwm*button.lhalf.disabled.hovered.pixmap:		pixmaps/rhalf_unfocus.xpm
-Adwm*button.lhalf.disabled.focused.pixmap:		pixmaps/rhalf_unfocus.xpm
-Adwm*button.lhalf.disabled.unfocus.pixmap:		pixmaps/rhalf_unfocus.xpm
+Adwm*button.rhalf.pixmap:				pixmaps/rhalf_focused.xpm
+Adwm*button.rhalf.pressed.pixmap:			pixmaps/rhalf_pressed.xpm
+Adwm*button.rhalf.hovered.pixmap:			pixmaps/rhalf_hovered.xpm
+Adwm*button.rhalf.focused.pixmap:			pixmaps/rhalf_focused.xpm
+Adwm*button.rhalf.unfocus.pixmap:			pixmaps/rhalf_unfocus.xpm
+Adwm*button.rhalf.disabled.hovered.pixmap:		pixmaps/rhalf_unfocus.xpm
+Adwm*button.rhalf.disabled.focused.pixmap:		pixmaps/rhalf_unfocus.xpm
+Adwm*button.rhalf.disabled.unfocus.pixmap:		pixmaps/rhalf_unfocus.xpm
 
 Adwm*button.float.pixmap:				pixmaps/float_focused.xpm
 Adwm*button.float.pressed.pixmap:			pixmaps/float_pressed.xpm
@@ -141,3 +141,14 @@ Adwm*button.float.toggled.unfocus.pixmap:		pixmaps/tile_unfocus.xpm
 Adwm*button.float.toggled.disabled.hovered.pixmap:	pixmaps/tile_unfocus.xpm
 Adwm*button.float.toggled.disabled.focused.pixmap:	pixmaps/tile_unfocus.xpm
 Adwm*button.float.toggled.disabled.unfocus.pixmap:	pixmaps/tile_unfocus.xpm
+
+Adwm*button.menu.pixmap:				pixmaps/menu_focused.xpm
+Adwm*button.menu.pressed.pixmap:			pixmaps/menu_pressed.xpm
+Adwm*button.menu.hovered.pixmap:			pixmaps/menu_hovered.xpm
+Adwm*button.menu.focused.pixmap:			pixmaps/menu_focused.xpm
+Adwm*button.menu.unfocus.pixmap:			pixmaps/menu_unfocus.xpm
+Adwm*button.menu.disabled.hovered.pixmap:		pixmaps/menu_unfocus.xpm
+Adwm*button.menu.disabled.focused.pixmap:		pixmaps/menu_unfocus.xpm
+Adwm*button.menu.disabled.unfocus.pixmap:		pixmaps/menu_unfocus.xpm
+
+! vim: set ft=xdefaults:

@@ -26,6 +26,10 @@ nobase_dist_pkgdata_DATA = \
 	styles/Default/pixmaps/float_hovered.xpm \
 	styles/Default/pixmaps/float_pressed.xpm \
 	styles/Default/pixmaps/float_unfocus.xpm \
+	styles/Default/pixmaps/lhalf_focused.xpm \
+	styles/Default/pixmaps/lhalf_hovered.xpm \
+	styles/Default/pixmaps/lhalf_pressed.xpm \
+	styles/Default/pixmaps/lhalf_unfocus.xpm \
 	styles/Default/pixmaps/max_focused.xpm \
 	styles/Default/pixmaps/max_hovered.xpm \
 	styles/Default/pixmaps/max_pressed.xpm \
@@ -38,6 +42,10 @@ nobase_dist_pkgdata_DATA = \
 	styles/Default/pixmaps/min_hovered.xpm \
 	styles/Default/pixmaps/min_pressed.xpm \
 	styles/Default/pixmaps/min_unfocus.xpm \
+	styles/Default/pixmaps/rhalf_focused.xpm \
+	styles/Default/pixmaps/rhalf_hovered.xpm \
+	styles/Default/pixmaps/rhalf_pressed.xpm \
+	styles/Default/pixmaps/rhalf_unfocus.xpm \
 	styles/Default/pixmaps/shade_focused.xpm \
 	styles/Default/pixmaps/shade_hovered.xpm \
 	styles/Default/pixmaps/shade_pressed.xpm \
@@ -62,6 +70,8 @@ nobase_dist_pkgdata_DATA = \
 	styles/Default/pixmaps/unshade_hovered.xpm \
 	styles/Default/pixmaps/unshade_pressed.xpm \
 	styles/Default/pixmaps/unshade_unfocus.xpm
+
+
 
 install-data-hook:
 	mkdir -p $(DESTDIR)$(pkgdatadir)

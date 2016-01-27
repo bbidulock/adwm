@@ -28,6 +28,9 @@ Adwm*resizeincy:	AC + a : Up, AS + w, WS + equal
 Adwm*begmove:		A + F7, WS + m
 Adwm*begsize:		A + F8, AC + a : Return
 
+!Adwm*begmoveresize:	AC + a : Return
+!Adwm*begmoveresize:	WS + m
+
 ! togglemonitor		- warp pointer to previous monitor
 !Adwm*togglemonitor:	A + grave
 
@@ -325,7 +328,7 @@ Adwm*spawn2:		AC + f = pcmanfm
 Adwm*spawn3:		AC + r = xde-run
 Adwm*spawn4:		AC + v = gvim
 Adwm*spawn5:		AC + n = uxterm
-Adwm*spawn6:		AC + m = xdg-traymenu -p
+Adwm*spawn6:		AC + m = xde-menu -P
 Adwm*spawn7:		A + space = xde-winmenu -w active -W center
 Adwm*spawn8:		A + F1 = uxterm
 Adwm*spawn9:		A + F2 = xde-run
@@ -340,12 +343,12 @@ Adwm*spawn17:		AC + e : s = scrot -s
 Adwm*spawn18:		AC + p : d = xde-run
 Adwm*spawn19:		AC + x = uxterm
 Adwm*spawn20:		AS + Return = uxterm
-Adwm*spawn21:		C + Escape = xdg-traymenu -p
+Adwm*spawn21:		C + Escape = xde-menu -P
 Adwm*spawn22:		F11 = xde-winlist
-Adwm*spawn23:		F12 = xdg-traymenu -p
+Adwm*spawn23:		F12 = xde-menu -P
 Adwm*spawn24:		S + Escape = xde-winmenu -w active -W center
 Adwm*spawn25:		W + e = pcmanfm
-Adwm*spawn26:		W + p = xdg-traymenu -p
+Adwm*spawn26:		W + p = xde-menu -P
 Adwm*spawn27:		W + r = xde-run
 Adwm*spawn28:		W + s = scrot
 Adwm*spawn29:		W + slash = xde-findws
@@ -353,6 +356,8 @@ Adwm*spawn30:		WS + Delete = xde-xlock -l
 Adwm*spawn31:		WS + Return = uxterm
 Adwm*spawn32:		WS + s = scrot -s
 Adwm*spawn33:		WS + slash = xde-namews
+Adwm*spawn34:		XF86MonBrightnessUp = xbrightness +4096
+Adwm*spawn35:		XF86MonBrightnessDown = xbrightness -4096
 
 ! rule			- rules for window classes
 !Adwm*rule0:		Firefox.* web 0 1
@@ -363,7 +368,10 @@ Adwm*spawn33:		WS + slash = xde-namews
 Adwm*button2:		W + v
 
 ! command		- command for button press on root window
-Adwm*command:		xdg-traymenu -p -b 1
+Adwm*command:		xde-menu -P -b 3
+Adwm*command2:		xde-wkspmenu -p -b 2
+! Adwm*command3:	xde-winlist -p -b 1 --hidden
+Adwm*menucommand:	xde-winmenu -p -b 1
 
 
 ! vim: set ft=xdefaults:

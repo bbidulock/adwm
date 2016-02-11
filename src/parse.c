@@ -547,7 +547,7 @@ parsekeys(const char *s, Key *spec)
 	DPRINTF("Parsing key: '%s'\n", s);
 	for (p = s; *p != '\0'; p = (*e == ',' ? e + 1 : e)) {
 		/* need to escape ',' in command */
-		for (e = p; *e != '\0' && (*e != ',' || (e > p && *(e - 1) != '\\')); e++) ;
+		for (e = p; *e != '\0' && (*e != ',' || (e > p && *(e - 1) == '\\')); e++) ;
 		if ((k = parsechain(p, e, spec))) {
 			DPRINTF("Adding key: '%s'\n", s);
 			addchain(k);

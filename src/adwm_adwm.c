@@ -705,7 +705,7 @@ capclass(char *clas)
 {
 	char *p;
 
-	for (p = clas; *p != '\0'; p = strchrnul(p, '.'), p += ((p == '\0') ? 0 : 1))
+	for (p = clas; *p != '\0'; p = strchrnul(p, '.'), p += ((*p == '\0') ? 0 : 1))
 		*p = toupper(*p);
 	return clas;
 }

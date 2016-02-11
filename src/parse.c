@@ -481,12 +481,15 @@ parsekey(const char *s, const char *e, Key *k)
 	const char *p, *q;
 
 	DPRINTF("Parsing key from: '%s'\n", s);
-	if ((p = strchr(s, '+')) && p < e) {
+	for (p = s; p < e && (isalnum(*p) || isblank(*p) || *p == '_'); p++) ;
+	if (p < e && *p == '+') {
 		k->mod = parsemod(s, p);
 		p++;
 	} else
 		p = s;
-	q = ((q = strchr(p, '=') ? : e) < e) ? q : e;
+	for (q = p; q < e && (isalnum(*q) || isblank(*q) || *q == '_'); q++) ;
+	if (q < e && *q != '=')
+		q = e;
 	if ((k->keysym = parsesym(p, q)) == NoSymbol) {
 		_DPRINTF("Failed to parse symbol from '%s'\n", p);
 		return False;
@@ -506,11 +509,15 @@ parsechain(const char *s, const char *e, Key *spec)
 
 	DPRINTF("Parsing chain from: '%s'\n", s);
 
-	for (p = s, q = ((q = strchr(p, ':') ? : e) > e) ? e : q;
-	     *p != '\0' && *p != ',';
-	     p = (*q == ':' ? q + 1 : q), q = ((q = strchr(p, ':') ? : e) > e) ? e : q) {
-		Key *k = ecalloc(1, sizeof(*k));
+	for (p = s; p < e; p = (*q == ':' ? q + 1 : q)) {
+		Key *k;
 
+		for (q = p;
+		     q < e && (isalnum(*q) || isblank(*q) || *q == '_' || *q == '+');
+		     q++) ;
+		if (q < e && *q != ':')
+			q = e;
+		k = ecalloc(1, sizeof(*k));
 		*k = *spec;
 		if (!parsekey(p, q, k)) {
 			freekey(k);
@@ -537,12 +544,14 @@ parsekeys(const char *s, Key *spec)
 	Key *k;
 
 	DPRINTF("Parsing key: '%s'\n", s);
-	for (p = s, e = strchrnul(p, ','); *p != '\0';
-	     p = (*e == ',' ? e + 1 : e), e = strchrnul(p, ','))
+	for (p = s; *p != '\0'; p = (*e == ',' ? e + 1 : e)) {
+		/* need to escape ',' in command */
+		for (e = p; *e != '\0' && (*e != ',' || (e > p && *(e - 1) != '\\')); e++) ;
 		if ((k = parsechain(p, e, spec))) {
 			DPRINTF("Adding key: '%s'\n", s);
 			addchain(k);
 		}
+	}
 }
 
 static void

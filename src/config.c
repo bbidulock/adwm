@@ -355,6 +355,9 @@ initconfig(void)
 	clen = sizeof(clas) - clen;
 
 	/* init appearance */
+	strcpy(n, "useveil");
+	strcpy(c, "Useveil");
+	options.useveil = atoi(readres(name, clas, "0")) ? True : False;
 	strcpy(n, "attachaside");
 	strcpy(c, "Attachaside");
 	options.attachaside = atoi(readres(name, clas, "1")) ? True : False;

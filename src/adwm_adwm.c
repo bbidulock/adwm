@@ -211,6 +211,9 @@ initconfig_ADWM(void)
 	nlen = sizeof(name) - nlen;
 	clen = sizeof(clas) - clen;
 
+	strncpy(n, "useveil", nlen);
+	strncpy(n, "Useveil", clen);
+	options.useveil  = atoi(readres(name, clas, "0")) ? True : False;
 	strncpy(n, "attachaside", nlen);
 	strncpy(c, "Attachaside", clen);
 	options.attachaside  = atoi(readres(name, clas, "1")) ? True : False;

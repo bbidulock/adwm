@@ -1016,6 +1016,7 @@ struct Key {
 };					/* keyboard shortcuts */
 
 typedef struct {
+	Bool useveil;
 	Bool attachaside;
 	Bool dectiled;
 	Bool decmax;

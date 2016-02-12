@@ -2751,11 +2751,15 @@ arrange(View *ov)
 		Workarea wa;
 
 		getworkarea(m, &wa);
-		XMoveResizeWindow(dpy, m->veil, wa.x, wa.y, wa.w, wa.h);
-		XMapRaised(dpy, m->veil);
+		if (scr->options.useveil) {
+			XMoveResizeWindow(dpy, m->veil, wa.x, wa.y, wa.w, wa.h);
+			XMapRaised(dpy, m->veil);
+		}
 		arrangeview(ov);
 		restack();
-		XUnmapWindow(dpy, m->veil);
+		if (scr->options.useveil) {
+			XUnmapWindow(dpy, m->veil);
+		}
 		discardenter();
 	}
 }

@@ -28,9 +28,6 @@ Adwm*resizeincy:	AC + a : Up, AS + w, WS + equal
 Adwm*begmove:		A + F7, WS + m
 Adwm*begsize:		A + F8, AC + a : Return
 
-!Adwm*begmoveresize:	AC + a : Return
-!Adwm*begmoveresize:	WS + m
-
 ! togglemonitor		- warp pointer to previous monitor
 !Adwm*togglemonitor:	A + grave
 

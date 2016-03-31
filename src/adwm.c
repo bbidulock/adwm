@@ -2429,11 +2429,11 @@ maprequest(XEvent *e)
 void
 getpointer(int *x, int *y)
 {
-	int di;
+	int di1, di2;
 	unsigned int dui;
-	Window dummy;
+	Window dummy1, dummy2;
 
-	XQueryPointer(dpy, scr->root, &dummy, &dummy, x, y, &di, &di, &dui);
+	XQueryPointer(dpy, scr->root, &dummy1, &dummy2, x, y, &di1, &di2, &dui);
 }
 
 static Monitor *

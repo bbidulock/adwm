@@ -536,6 +536,7 @@ enum {
 
 typedef struct Tag Tag;
 typedef struct View View;
+typedef struct Barrier Barrier;
 typedef struct Monitor Monitor;
 typedef struct Client Client;
 typedef struct AScreen AScreen;
@@ -635,6 +636,13 @@ typedef struct {
 	int x, y, w, h;
 } Workarea;
 
+struct Barrier {
+	Barrier *next;
+	int x1, y1, x2, y2;
+	int directions;
+	PointerBarrier bar;
+};
+
 struct Monitor {
 	Workarea sc, wa;
 	unsigned long struts[LastStrut];
@@ -650,7 +658,6 @@ struct Monitor {
 		DockOrient orient;
 	} dock;
 	int row, col;			/* row and column in monitor layout */
-	PointerBarrier bars[8];
 };
 
 typedef struct {
@@ -1046,6 +1053,7 @@ struct AScreen {
 	Window selwin;
 	Client *clients;
 	Monitor *monitors;
+	Barrier *barriers;
 	int last;
 	unsigned nmons;
 	Client *stack;

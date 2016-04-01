@@ -3204,66 +3204,153 @@ updatedock(void)
 }
 
 void
+destroybarriers(void)
+{
+	Barrier *b, *b_next;
+
+	for (b_next = scr->barriers; (b = b_next);) {
+		b_next = b->next;
+		if (b->bar) {
+			XFixesDestroyPointerBarrier(dpy, b->bar);
+			b->bar = None;
+		}
+		free(b);
+	}
+	scr->barriers = NULL;
+}
+
+void
+createbarriers(void)
+{
+	Barrier *b;
+	int all = XIAllMasterDevices;
+
+	for (b = scr->barriers; b; b = b->next) {
+		b->bar = XFixesCreatePointerBarrier(dpy, scr->root,
+						    b->x1, b->y1, b->x2, b->y2,
+						    b->directions, 1, &all);
+		if (b->bar)
+			continue;
+		DPRINTF("could not create barrier x1=%d, y1=%d, x2=%d, y2=%d\n",
+			b->x1, b->y1, b->x2, b->y2);
+	}
+}
+
+void
+add_barrier(int x1, int y1, int x2, int y2, int directions)
+{
+	Barrier *b;
+
+	if (x1 == x2) {
+		for (b = scr->barriers; b; b = b->next) {
+			if (b->x1 != x1 || b->x2 != x2)
+				continue;
+			if ((b->y1 <= y2 && b->y1 >= y1) || (y1 <= b->y2 && y1 >= b->y1)) {
+				if (y1 < b->y1)
+					b->y1 = y1;
+				if (y2 > b->y2)
+					b->y2 = y2;
+				b->directions |= directions;
+				break;
+			}
+		}
+	} else if (y1 == y2) {
+		for (b = scr->barriers; b; b = b->next) {
+			if (b->y1 != y1 || b->y2 != y2)
+				continue;
+			if ((b->x1 <= x2 && b->x1 >= x1) || (x1 <= b->x2 && x1 >= b->x1)) {
+				if (x1 < b->x1)
+					b->x1 = x1;
+				if (x2 > b->x2)
+					b->x2 = x2;
+				b->directions |= directions;
+				break;
+			}
+		}
+	} else {
+		DPRINTF("Invalid barrier x1=%d, y1=%d, x2=%d, y2=%d!\n", x1, y1, x2, y2);
+		return;
+	}
+	if (!b) {
+		b = ecalloc(1, sizeof(*b));
+		b->next = scr->barriers;
+		scr->barriers = b;
+		b->x1 = x1;
+		b->y1 = y1;
+		b->x2 = x2;
+		b->y2 = y2;
+		b->directions = directions;
+		b->bar = None;
+	}
+}
+
+void
 updatebarriers(void)
 {
 	Monitor *m;
-	int i, all = XIAllMasterDevices;
 
 	if (!haveext[XfixesBase])
 		return;
-	for (m = scr->monitors; m; m = m->next)
-		for (i = 0; i < 8; i++)
-			if (m->bars[i])
-				XFixesDestroyPointerBarrier(dpy, m->bars[i]);
+	destroybarriers();
+#if 0
 	if (nscr < 2 && scr->nmons < 2)
 		return;
+#endif
 	for (m = scr->monitors; m; m = m->next) {
-		int w, h;
+		int w, h, x1, y1, x2, y2;
 
 		w = m->sc.w / 20;
 		h = m->sc.h / 20;
 
-		m->bars[0] =
-		    XFixesCreatePointerBarrier(dpy, scr->root,
-					       m->sc.x, m->sc.y,
-					       m->sc.x, m->sc.y + h,
-					       BarrierNegativeX, 1, &all);
-		m->bars[1] =
-		    XFixesCreatePointerBarrier(dpy, scr->root,
-					       m->sc.x, m->sc.y,
-					       m->sc.x + w, m->sc.y,
-					       BarrierNegativeY, 1, &all);
-		m->bars[2] =
-		    XFixesCreatePointerBarrier(dpy, scr->root,
-					       m->sc.x + m->sc.w - w,
-					       m->sc.y, m->sc.x + m->sc.w, m->sc.y,
-					       BarrierNegativeY, 1, &all);
-		m->bars[3] =
-		    XFixesCreatePointerBarrier(dpy, scr->root,
-					       m->sc.x + m->sc.w, m->sc.y,
-					       m->sc.x + m->sc.w, m->sc.y + h,
-					       BarrierPositiveX, 1, &all);
-		m->bars[4] =
-		    XFixesCreatePointerBarrier(dpy, scr->root,
-					       m->sc.x + m->sc.w, m->sc.y + m->sc.h - h,
-					       m->sc.x + m->sc.w, m->sc.y + m->sc.h,
-					       BarrierPositiveX, 1, &all);
-		m->bars[5] =
-		    XFixesCreatePointerBarrier(dpy, scr->root,
-					       m->sc.x + m->sc.w - w, m->sc.y + m->sc.h,
-					       m->sc.x + m->sc.w, m->sc.y + m->sc.h,
-					       BarrierPositiveY, 1, &all);
-		m->bars[6] =
-		    XFixesCreatePointerBarrier(dpy, scr->root,
-					       m->sc.x, m->sc.y + m->sc.h,
-					       m->sc.x + w, m->sc.y + m->sc.h,
-					       BarrierPositiveY, 1, &all);
-		m->bars[7] =
-		    XFixesCreatePointerBarrier(dpy, scr->root,
-					       m->sc.x, m->sc.y + m->sc.h - h,
-					       m->sc.x, m->sc.y + m->sc.h,
-					       BarrierNegativeX, 1, &all);
+		/* NW corner vertical */
+		x1 = x2 = m->sc.x;
+		y1 = m->sc.y;
+		y2 = m->sc.y + h;
+		add_barrier(x1, y1, x2, y2, BarrierNegativeX);
+
+		/* NW corner horizontal */
+		y1 = y2 = m->sc.y;
+		x1 = m->sc.x;
+		x2 = m->sc.x + w;
+		add_barrier(x1, y1, x2, y2, BarrierNegativeY);
+
+		/* NE corner horizontal */
+		y1 = y2 = m->sc.y;
+		x1 = m->sc.x + m->sc.w - w;
+		x2 = m->sc.x + m->sc.w;
+		add_barrier(x1, y1, x2, y2, BarrierNegativeY);
+
+		/* NE corner vertical */
+		x1 = x2 = m->sc.x + m->sc.w;
+		y1 = m->sc.y;
+		y2 = m->sc.y + h;
+		add_barrier(x1, y1, x2, y2, BarrierPositiveX);
+
+		/* SE corner vertical */
+		x1 = x2 = m->sc.x + m->sc.w;
+		y1 = m->sc.y + m->sc.h - h;
+		y2 = m->sc.y + m->sc.h;
+		add_barrier(x1, y1, x2, y2, BarrierPositiveX);
+
+		/* SE corner horizontal */
+		y1 = y2 = m->sc.y + m->sc.h;
+		x1 = m->sc.x + m->sc.w - w;
+		x2 = m->sc.x + m->sc.w;
+		add_barrier(x1, y1, x2, y2, BarrierPositiveY);
+
+		/* SW corner horizontal */
+		y1 = y2 = m->sc.y + m->sc.h;
+		x1 = m->sc.x;
+		x2 = m->sc.x + w;
+		add_barrier(x1, y1, x2, y2, BarrierPositiveY);
+
+		/* SW corner vertical */
+		x1 = x2 = m->sc.x;
+		y1 = m->sc.y + m->sc.h - h;
+		y2 = m->sc.y + m->sc.h;
+		add_barrier(x1, y1, x2, y2, BarrierNegativeX);
 	}
+	createbarriers();
 }
 
 void
@@ -3420,7 +3507,6 @@ initmonitors(XEvent *e)
 			} else {
 				XSetWindowAttributes wa;
 				int mask = 0;
-				int j;
 
 				scr->monitors =
 				    erealloc(scr->monitors,
@@ -3452,8 +3538,6 @@ initmonitors(XEvent *e)
 				wa.save_under = True;
 				mask |= CWSaveUnder;
 				XChangeWindowAttributes(dpy, m->veil, mask, &wa);
-				for (j = 0; j < 8; j++)
-					m->bars[j] = None;
 			}
 		}
 		XFree(si);
@@ -3524,7 +3608,6 @@ initmonitors(XEvent *e)
 			} else {
 				XSetWindowAttributes wa;
 				int mask = 0;
-				int j;
 
 				scr->monitors =
 				    erealloc(scr->monitors,
@@ -3556,8 +3639,6 @@ initmonitors(XEvent *e)
 				wa.save_under = True;
 				mask |= CWSaveUnder;
 				XChangeWindowAttributes(dpy, m->veil, mask, &wa);
-				for (j = 0; j < 8; j++)
-					m->bars[j] = None;
 			}
 			n++;
 			XRRFreeCrtcInfo(ci);
@@ -3600,7 +3681,6 @@ initmonitors(XEvent *e)
 	} else {
 		XSetWindowAttributes wa;
 		int mask = 0;
-		int j;
 
 		scr->monitors = erealloc(scr->monitors, n * sizeof(*scr->monitors));
 		m = &scr->monitors[0];
@@ -3629,8 +3709,6 @@ initmonitors(XEvent *e)
 		wa.save_under = True;
 		mask |= CWSaveUnder;
 		XChangeWindowAttributes(dpy, m->veil, mask, &wa);
-		for (j = 0; j < 8; j++)
-			m->bars[j] = None;
 	}
 	updatemonitors(e, n, size_update, full_update);
 	return True;

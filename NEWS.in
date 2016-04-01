@@ -1,21 +1,61 @@
 @PACKAGE@ -- history of user-visible changes.  @DATE@
 
+
 Release @PACKAGE@-@VERSION@ released @DATE@
 --------------------------------------
 
 Changes:
 
-Brian Bidulock <bidulock@openss7.org> (5):
+git shortlog -e -n -w80,6,8 0.5.6...0.5.7
+
+Brian Bidulock <bidulock@openss7.org> (6):
+      add option whether to use veil
+      adjust keysrc for issue #1
+      better xsesssions file
+      no antialiasing for issue #1
+      fix issue #1
+      do not need XInput2.h for now
+
+
+Release adwm-0.5.6 released 2016-02-11
+--------------------------------------
+
+Changes:
+
+git shortlog -e -n -w80,6,8 0.5.5...0.5.6
+
+Brian Bidulock <bidulock@openss7.org> (7):
+      don't know why compiler missed this error
+      avoid error statement
+      silent make
+      better key parsing
+      more debugs
+      logic error
+      update release files
+
+
+Release adwm-0.5.5 released 2016-01-27
+--------------------------------------
+
+Changes:
+
+git shortlog -e -n -w80,6,8 0.5.4...0.5.5
+
+Brian Bidulock <bidulock@openss7.org> (6):
       stray h
       let windows recommend backing store
       let popups recommend save-unders
       handle more buttons on root
       add missing pixmaps, fix default style
+      release 0.5.5
+
 
 Release adwm-0.5.4 released 2015-07-10
 --------------------------------------
 
 Changes:
+
+git shortlog -e -n -w80,6,8 0.5.3...0.5.4
 
 Brian Bidulock <bidulock@openss7.org> (6):
       twiddle with backing_store and save_under
@@ -25,10 +65,13 @@ Brian Bidulock <bidulock@openss7.org> (6):
       handle suppression of unmap notify differently
       updated release files
 
+
 Release adwm-0.5.3 released 2015-01-07
 --------------------------------------
 
 Changes:
+
+git shortlog -e -n -w80,6,8 0.5.2...0.5.3
 
 Brian Bidulock <bidulock@openss7.org> (2):
       better ICCCM 4.1.4 compliance
@@ -40,7 +83,9 @@ Release adwm-0.5.2 released 2014-09-21
 
 Changes:
 
-Brian Bidulock <bidulock@openss7.org> (44):
+git shortlog -e -n -w80,6,8 0.5.1...0.5.2
+
+Brian Bidulock <bidulock@openss7.org> (45):
       correct raiselower behaviour
       always consider tile as floaters when restacking overlay
       fixed bug in floating placement
@@ -85,6 +130,7 @@ Brian Bidulock <bidulock@openss7.org> (44):
       make sure titles generate enter and leave events
       updated readme
       0.5.2 release
+      updated NEWS file for release
 
 
 Release adwm-0.5.1 released 2014-09-02
@@ -92,7 +138,9 @@ Release adwm-0.5.1 released 2014-09-02
 
 Changes:
 
-Brian Bidulock <bidulock@openss7.org> (15):
+git shortlog -e -n -w80,6,8 0.5.0...0.5.1
+
+Brian Bidulock <bidulock@openss7.org> (17):
       try to correct focus handling a bit
       better focus handling on some events
       better focus behaviour
@@ -108,6 +156,8 @@ Brian Bidulock <bidulock@openss7.org> (15):
       let regular clients specify backing store if they want to
       updating manual pages
       spelling
+      update NEWS for release
+      tweak cross-references on manual page
 
 
 Release adwm-0.5.0 released 2014-07-02

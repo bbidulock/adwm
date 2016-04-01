@@ -10,7 +10,6 @@
 #include <X11/Xutil.h>
 #include <X11/Xresource.h>
 #include <X11/Xft/Xft.h>
-#include <X11/extensions/XInput2.h>
 #include <X11/extensions/Xfixes.h>
 #ifdef SYNC
 #include <X11/extensions/sync.h>

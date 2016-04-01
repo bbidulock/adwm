@@ -3207,7 +3207,7 @@ void
 updatebarriers(void)
 {
 	Monitor *m;
-	int i, all = XIAllMasterDevices;
+	int i;
 
 	if (!haveext[XfixesBase])
 		return;
@@ -3215,8 +3215,6 @@ updatebarriers(void)
 		for (i = 0; i < 8; i++)
 			if (m->bars[i])
 				XFixesDestroyPointerBarrier(dpy, m->bars[i]);
-	if (nscr < 2 && scr->nmons < 2)
-		return;
 	for (m = scr->monitors; m; m = m->next) {
 		int w, h;
 
@@ -3227,42 +3225,42 @@ updatebarriers(void)
 		    XFixesCreatePointerBarrier(dpy, scr->root,
 					       m->sc.x, m->sc.y,
 					       m->sc.x, m->sc.y + h,
-					       BarrierNegativeX, 1, &all);
+					       BarrierPositiveX, 0, NULL);
 		m->bars[1] =
 		    XFixesCreatePointerBarrier(dpy, scr->root,
 					       m->sc.x, m->sc.y,
 					       m->sc.x + w, m->sc.y,
-					       BarrierNegativeY, 1, &all);
+					       BarrierPositiveY, 0, NULL);
 		m->bars[2] =
 		    XFixesCreatePointerBarrier(dpy, scr->root,
 					       m->sc.x + m->sc.w - w,
 					       m->sc.y, m->sc.x + m->sc.w, m->sc.y,
-					       BarrierNegativeY, 1, &all);
+					       BarrierPositiveY, 0, NULL);
 		m->bars[3] =
 		    XFixesCreatePointerBarrier(dpy, scr->root,
 					       m->sc.x + m->sc.w, m->sc.y,
 					       m->sc.x + m->sc.w, m->sc.y + h,
-					       BarrierPositiveX, 1, &all);
+					       BarrierNegativeX, 0, NULL);
 		m->bars[4] =
 		    XFixesCreatePointerBarrier(dpy, scr->root,
 					       m->sc.x + m->sc.w, m->sc.y + m->sc.h - h,
 					       m->sc.x + m->sc.w, m->sc.y + m->sc.h,
-					       BarrierPositiveX, 1, &all);
+					       BarrierNegativeX, 0, NULL);
 		m->bars[5] =
 		    XFixesCreatePointerBarrier(dpy, scr->root,
 					       m->sc.x + m->sc.w - w, m->sc.y + m->sc.h,
 					       m->sc.x + m->sc.w, m->sc.y + m->sc.h,
-					       BarrierPositiveY, 1, &all);
+					       BarrierNegativeY, 0, NULL);
 		m->bars[6] =
 		    XFixesCreatePointerBarrier(dpy, scr->root,
 					       m->sc.x, m->sc.y + m->sc.h,
 					       m->sc.x + w, m->sc.y + m->sc.h,
-					       BarrierPositiveY, 1, &all);
+					       BarrierNegativeY, 0, NULL);
 		m->bars[7] =
 		    XFixesCreatePointerBarrier(dpy, scr->root,
 					       m->sc.x, m->sc.y + m->sc.h - h,
 					       m->sc.x, m->sc.y + m->sc.h,
-					       BarrierNegativeX, 1, &all);
+					       BarrierPositiveX, 0, NULL);
 	}
 }
 
@@ -4487,7 +4485,7 @@ main(int argc, char *argv[])
 	if (argc == 3 && !strcmp("-f", argv[1]))
 		snprintf(conf, sizeof(conf), "%s", argv[2]);
 	else if (argc == 2 && !strcmp("-v", argv[1])) {
-		fprintf(stdout, "adwm-" VERSION " (c) 2014 Brian Bidulock\n");
+		fprintf(stdout, "adwm-" VERSION " (c) 2016 Brian Bidulock\n");
 		exit(0);
 	} else if (argc != 1)
 		eprint("%s", "usage: adwm [-v] [-f conf]\n");

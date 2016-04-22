@@ -1959,8 +1959,11 @@ killclient(Client *c)
 static Bool
 leavenotify(XEvent *e)
 {
-	Client *c;
 	XCrossingEvent *ev = &e->xcrossing;
+	Client *c;
+
+	if (e->type != LeaveNotify || ev->mode != NotifyNormal || ev->detail == NotifyInferior)
+		return False;
 
 	if (!ev->same_screen) {
 		XFindContext(dpy, ev->window, context[ScreenContext], (XPointer *) &scr);

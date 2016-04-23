@@ -1149,12 +1149,12 @@ get_decor(Client *c, View *v, ClientGeometry *g)
 }
 
 static void
-discardenter()
+discardcrossing()
 {
 	XEvent ev;
 
 	XSync(dpy, False);
-	while (XCheckMaskEvent(dpy, EnterWindowMask, &ev)) ;
+	while (XCheckMaskEvent(dpy, EnterWindowMask|LeaveWindowMask, &ev)) ;
 }
 
 static void
@@ -1236,7 +1236,7 @@ updatefloat(Client *c, View *v)
 	reconfigure(c, &g, False);
 	if (c->is.max)
 		ewmh_update_net_window_fs_monitors(c);
-	discardenter();
+	discardcrossing();
 }
 
 static void
@@ -2483,7 +2483,7 @@ restack()
 		XPRINTF("%s", "No new stacking order\n");
 		free(wl);
 	}
-	discardenter();
+	discardcrossing();
 }
 
 static int
@@ -2760,7 +2760,7 @@ arrange(View *ov)
 		if (scr->options.useveil) {
 			XUnmapWindow(dpy, m->veil);
 		}
-		discardenter();
+		discardcrossing();
 	}
 }
 
@@ -3474,7 +3474,7 @@ mousemove(Client *c, XEvent *e, Bool toggle)
 	}
 	if (move_finish(c, v, &was))
 		moved = True;
-	discardenter();
+	discardcrossing();
 	ewmh_update_net_window_state(c);
 	return moved;
 }
@@ -3936,7 +3936,7 @@ mouseresize_from(Client *c, int from, XEvent *e, Bool toggle)
 	}
 	if (resize_finish(c, v, &was))
 		resized = True;
-	discardenter();
+	discardcrossing();
 	ewmh_update_net_window_state(c);
 	return resized;
 }
@@ -4891,7 +4891,7 @@ moveto(Client *c, RelativeDirection position)
 	}
 	reconfigure(c, &g, False);
 	save(c);
-	discardenter();
+	discardcrossing();
 }
 
 void
@@ -4990,7 +4990,7 @@ moveby(Client *c, RelativeDirection direction, int amount)
 		g.y = m->sc.y - (g.h + g.b);
 	reconfigure(c, &g, False);
 	save(c);
-	discardenter();
+	discardcrossing();
 }
 
 void
@@ -5217,7 +5217,7 @@ snapto(Client *c, RelativeDirection direction)
 	}
 	reconfigure(c, &g, False);
 	save(c);
-	discardenter();
+	discardcrossing();
 }
 
 void
@@ -5284,7 +5284,7 @@ edgeto(Client *c, int direction)
 	}
 	reconfigure(c, &g, False);
 	save(c);
-	discardenter();
+	discardcrossing();
 }
 
 void

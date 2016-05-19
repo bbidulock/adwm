@@ -6,6 +6,18 @@ Release @PACKAGE@-@VERSION@ released @DATE@
 
 Changes:
 
+git shortlog -e -n -w80,6,8 0.5.7...0.5.8
+
+Brian Bidulock <bidulock@openss7.org> (2):
+      do not respond to grabs
+      clear all crossing events
+
+
+Release adwm-0.5.7 released 2016-04-01
+--------------------------------------
+
+Changes:
+
 git shortlog -e -n -w80,6,8 0.5.6...0.5.7
 
 Brian Bidulock <bidulock@openss7.org> (6):
@@ -163,7 +175,7 @@ Brian Bidulock <bidulock@openss7.org> (17):
 Release adwm-0.5.0 released 2014-07-02
 --------------------------------------
 
-This is the initial development release of @PACKAGE@.
+This is the initial development release of adwm.
 
 
 # vim: set ft=asciidoc tw=72 nocin nosi fo+=tcqlorn:

@@ -281,6 +281,7 @@ appnode(Container *cp, Container *cc)
 		DPRINTF("WARNING: attempting to append attached node\n");
 		delnode(cc);
 	}
+#if 0
 	if (cp->type == TreeTypeLeaf)
 		cp = cp->parent;
 	/* find bottom of tree */
@@ -291,6 +292,7 @@ appnode(Container *cp, Container *cc)
 		DPRINTF("ERROR: no parent node\n");
 		assert(cp != NULL);
 	}
+#endif
 	cc->next = cc->prev = NULL;	/* safety */
 	cc->parent = cp;
 	if ((cc->prev = cp->node.children.tail))
@@ -312,6 +314,7 @@ insnode(Container *cp, Container *cc)
 		DPRINTF("WARNING: attempting to append attached node\n");
 		delnode(cc);
 	}
+#if 0
 	if (cp->type == TreeTypeLeaf)
 		cp = cp->parent;
 	/* find bottom of tree */
@@ -322,6 +325,7 @@ insnode(Container *cp, Container *cc)
 		DPRINTF("ERROR: no parent node\n");
 		assert(cp != NULL);
 	}
+#endif
 	cc->next = cc->prev = NULL;	/* safety */
 	cc->parent = cp;
 	if ((cc->next = cp->node.children.head))

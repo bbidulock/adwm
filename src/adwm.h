@@ -1046,7 +1046,7 @@ struct AScreen {
 	Client *clients;
 	Monitor *monitors;
 	int last;
-	unsigned nmons;
+	int nmons;
 	Client *stack;
 	Client *clist;
 	Client *flist;

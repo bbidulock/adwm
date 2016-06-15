@@ -3118,10 +3118,14 @@ findmonitornear(int row, int col)
 	float dist = hypotf((scr->m.rows + 1) * h, (scr->m.cols + 1) * w);
 	Monitor *m, *best = NULL;
 
+	DPRINTF("Finding monitor nearest (%d,%d), max dist = %f\n", col, row, dist);
 	for (m = scr->monitors; m; m = m->next) {
-		float test = hypotf((m->row - row) * h, (m->col - col) * w);
+		float test;
 
-		if (test < dist) {
+		test = hypotf((m->row - row) * h, (m->col - col) * w);
+		DPRINTF("Testing monitor %d (%d,%d), dist = %f\n", m->num, m->col, m->row, test);
+		if (test <= dist) {
+			DPRINTF("Monitor %d is best!\n", m->num);
 			dist = test;
 			best = m;
 		}
@@ -3137,14 +3141,18 @@ updatedock(void)
 	Monitor *m;
 	int i, dockmon;
 
+	DPRINTF("Number of dock monitors is %d\n", scr->nmons);
 	for (m = scr->monitors, i = 0; i < scr->nmons; i++, m++) {
 		m->dock.position = DockNone;
 		m->dock.wa = m->wa;
 	}
 	scr->dock.monitor = NULL;
+	DPRINTF("Dock monitor option is %d\n", scr->options.dockmon);
 	dockmon = (int) scr->options.dockmon - 1;
+	DPRINTF("Dock monitor chosen is %d\n", dockmon);
 	if (dockmon > scr->nmons - 1)
 		dockmon = scr->nmons - 1;
+	DPRINTF("Dock monitor adjusted is %d\n", dockmon);
 	/* find the monitor if dock position is screen relative */
 	if (dockmon < 0) {
 		DockPosition pos = scr->options.dockpos;
@@ -3191,23 +3199,35 @@ updatedock(void)
 			col = scr->m.cols - 1;	/* East */
 			break;
 		}
-		if (pos != DockNone && (dm = findmonitornear(row, col)))
-			dockmon = dm->num;
+		if (pos != DockNone) {
+			if ((dm = findmonitornear(row, col))) {
+				dockmon = dm->num;
+				DPRINTF("Found monitor %d near (%d,%d)\n", dockmon, col, row);
+			} else {
+				DPRINTF("Cannot find monitor near (%d,%d)\n", col, row);
+			}
+		}
 	}
 	if (dockmon >= 0) {
+		DPRINTF("Looking for monitor %d assigned to dock...\n", dockmon);
 		for (m = scr->monitors; m; m = m->next) {
 			if (m->num == dockmon) {
 				m->dock.position = scr->options.dockpos;
 				m->dock.orient = scr->options.dockori;
 				scr->dock.monitor = m;
+				DPRINTF("Found monitor %d assigned to dock.\n", dockmon);
 				break;
 			}
 		}
 	}
-	if (!scr->dock.monitor && (m = scr->monitors)) {
-		m->dock.position = scr->options.dockpos;
-		m->dock.orient = scr->options.dockori;
-		scr->dock.monitor = m;
+	if (!scr->dock.monitor) {
+		DPRINTF("Did not find monitor assigned dock %d\n", dockmon);
+		if ((m = scr->monitors)) {
+			DPRINTF("Falling back to default monitor for dock.\n");
+			m->dock.position = scr->options.dockpos;
+			m->dock.orient = scr->options.dockori;
+			scr->dock.monitor = m;
+		}
 	}
 }
 

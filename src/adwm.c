@@ -3204,6 +3204,11 @@ updatedock(void)
 			}
 		}
 	}
+	if (!scr->dock.monitor && (m = scr->monitors)) {
+		m->dock.position = scr->options.dockpos;
+		m->dock.orient = scr->options.dockori;
+		scr->dock.monitor = m;
+	}
 }
 
 void
@@ -3277,6 +3282,7 @@ updatemonitors(XEvent *e, int n, Bool size_update, Bool full_update)
 	Bool changed;
 	View *v;
 
+	DPRINTF("There are now %d monitors (was %d)\n", n, scr->nmons);
 	for (i = 0; i < n; i++)
 		scr->monitors[i].next = &scr->monitors[i + 1];
 	scr->monitors[n - 1].next = NULL;
@@ -3285,7 +3291,11 @@ updatemonitors(XEvent *e, int n, Bool size_update, Bool full_update)
 	if (full_update)
 		size_update = True;
 	scr->nmons = n;
+	DPRINTF("Performing %s/%s updates\n",
+			full_update ? "full" : "partial",
+			size_update ? "resize" : "no-resize");
 	if (e) {
+		DPRINTF("Responding to an event\n");
 		if (full_update) {
 			for (c = scr->clients; c; c = c->next) {
 				if (isomni(c))
@@ -3314,6 +3324,7 @@ updatemonitors(XEvent *e, int n, Bool size_update, Bool full_update)
 		scr->sw = max(scr->sw, m->sc.x + m->sc.w);
 		scr->sh = max(scr->sh, m->sc.y + m->sc.h);
 	}
+	DPRINTF("Screen size is now %dx%d\n", scr->sw, scr->sh);
 	scr->m.rows = (scr->sh + h - 1) / h;
 	scr->m.cols = (scr->sw + w - 1) / w;
 	h = scr->sh / scr->m.rows;
@@ -3322,6 +3333,7 @@ updatemonitors(XEvent *e, int n, Bool size_update, Bool full_update)
 		m = scr->monitors + i;
 		m->row = m->my / h;
 		m->col = m->mx / w;
+		DPRINTF("Monitor %d at (%d,%d)\n", i+1, m->row, m->col);
 	}
 	/* handle insane geometries, push overlaps to the right */
 	do {

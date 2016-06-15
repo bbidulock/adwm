@@ -94,7 +94,7 @@ initdock(void)
 {
 	Container *t, *n;
 	unsigned i, s = scr->screen;
-	Monitor *m = scr->dock.monitor;
+	Monitor *m = scr->dock.monitor ? : scr->monitors;
 
 	t = scr->dock.tree = ecalloc(1, sizeof(*t));
 	t->type = TreeTypeNode;

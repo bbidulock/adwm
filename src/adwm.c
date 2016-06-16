@@ -96,7 +96,7 @@ Display *dpy;
 AScreen *scr;
 AScreen *event_scr;
 AScreen *screens;
-unsigned int nscr;
+int nscr;
 
 #ifdef STARTUP_NOTIFICATION
 SnDisplay *sn_dpy;
@@ -114,7 +114,7 @@ Cursor cursor[CurLast];
 int ebase[BaseLast];
 Bool haveext[BaseLast];
 Rule **rules;
-unsigned int nrules;
+int nrules;
 unsigned int modkey;
 unsigned int numlockmask;
 Time user_time;
@@ -4428,7 +4428,7 @@ void
 incmodal(Client *c, Group *g)
 {
 	Client *t;
-	int i;
+	unsigned int i;
 
 	g->modal_transients++;
 	for (i = 0; i < g->count; i++)
@@ -4440,7 +4440,7 @@ void
 decmodal(Client *c, Group *g)
 {
 	Client *t;
-	int i;
+	unsigned int i;
 
 	--g->modal_transients;
 	assert(g->modal_transients >= 0);

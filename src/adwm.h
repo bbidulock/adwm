@@ -575,23 +575,23 @@ typedef struct {
 	XColor picColor;		/* picColor => color => default color */
 	AdwmPixmap pixmap;		/* None */
 	XftColor textColor;		/* textColor => black */
-	unsigned textOpacity;		/* 0 */
+	int textOpacity;		/* 0 */
 	XftColor textShadowColor;	/* textShadowColor => default color */
-	unsigned textShadowOpacity;	/* 0 */
-	unsigned textShadowXOffset;	/* 0 */
-	unsigned textShadowYOffset;	/* 0 */
+	int textShadowOpacity;		/* 0 */
+	int textShadowXOffset;		/* 0 */
+	int textShadowYOffset;		/* 0 */
 	XColor borderColor;		/* borderColor => black */
-	unsigned borderWidth;		/* borderWidth => 1 */
+	int borderWidth;		/* borderWidth => 1 */
 	XColor backgroundColor;		/* backgroundColor => color => default color */
 	XColor foregroundColor;		/* foregroundColor => picColor => opposite color */
-	unsigned opacity;		/* 0 */
-	unsigned borders[4];		/* left, right, top, bottom pixmap borders */
+	int opacity;			/* 0 */
+	int borders[4];			/* left, right, top, bottom pixmap borders */
 } Texture;
 
 typedef struct {
 	XftFont *font;
 	XGlyphInfo extents;
-	unsigned ascent, descent, width, height;
+	int ascent, descent, width, height;
 } AdwmFont;
 
 typedef struct {
@@ -611,7 +611,7 @@ typedef struct {
 
 typedef struct {
 	Pixmap pixmap;
-	unsigned width, height;
+	int width, height;
 } AdwmBitmap;
 
 #define GIVE_FOCUS (1<<0)
@@ -641,7 +641,7 @@ struct Monitor {
 	int mx, my;
 	View *curview;	    /* current view */
 	View *preview;	    /* previous view */
-	unsigned num, index;
+	int num, index;
 	Window veil;
 	struct {
 		Workarea wa;
@@ -880,8 +880,8 @@ struct Node {
 	Node *prev;			/* prev sibling node */
 
 	struct {
-		unsigned number;
-		unsigned active;
+		int number;
+		int active;
 		Container *head;
 		Container *tail;
 		LayoutOrientation ori;
@@ -899,8 +899,8 @@ struct Term {
 	Term *prev;			/* prev sibling node */
 
 	struct {
-		unsigned number;
-		unsigned active;
+		int number;
+		int active;
 		Leaf *head;
 		Leaf *tail;
 		LayoutOrientation ori;
@@ -940,7 +940,7 @@ union Container {
 };
 
 typedef struct {
-	unsigned x, y, w, h;
+	int x, y, w, h;
 	struct {
 		XGlyphInfo *extents;
 		int ascent;
@@ -974,18 +974,18 @@ typedef struct {
 } Element;
 
 typedef struct {
-	unsigned border;
-	unsigned margin;
-	unsigned outline;
-	unsigned spacing;
-	unsigned titleheight;
-	unsigned gripsheight;
-	unsigned gripswidth;
+	int border;
+	int margin;
+	int outline;
+	int spacing;
+	int titleheight;
+	int gripsheight;
+	int gripswidth;
 	Bool fullgrips;
-	unsigned opacity;
+	int opacity;
 	char titlelayout[32];
 	XftFont *font[2];
-	unsigned drop[2];
+	int drop[2];
 	struct {
 		unsigned long norm[ColLast];
 		unsigned long sel[ColLast];
@@ -1008,9 +1008,9 @@ struct Key {
 	FlagSetting set;
 	WhichClient any;
 	IconsIncluded ico;
-	unsigned tag;
+	int tag;
 	CycleList *cycle, *where;
-	unsigned num;
+	int num;
 	Bool cyc;
 };					/* keyboard shortcuts */
 
@@ -1029,14 +1029,14 @@ typedef struct {
 	const char *menucommand;
 	DockPosition dockpos;
 	DockOrient dockori;
-	unsigned dockmon;
-	unsigned dragdist;
+	int dockmon;
+	int dragdist;
 	double mwfact;
 	double mhfact;
-	unsigned nmaster;
-	unsigned ncolumns;
+	int nmaster;
+	int ncolumns;
 	const char *deflayout;
-	unsigned ntags;
+	int ntags;
 } Options;
 
 struct AScreen {
@@ -1052,7 +1052,7 @@ struct AScreen {
 	Client *flist;
 	Bool showing_desktop;
 	int screen;
-	unsigned ntags;
+	int ntags;
 	struct {
 		Container *tree;	/* only one dock per screen for now... */
 		Monitor *monitor;	/* monitor on which dock appears */
@@ -1260,8 +1260,8 @@ extern void (*actions[LastOn][Button5-Button1+1][2]) (Client *, XEvent *);
 extern Client *sel;
 extern Client *gave;			/* gave focus last */
 extern Client *took;			/* took focus last */
-extern unsigned nscr;
-extern unsigned nrules;
+extern int nscr;
+extern int nrules;
 extern Rule **rules;
 extern unsigned modkey;
 extern unsigned numlockmask;

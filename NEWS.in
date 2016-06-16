@@ -6,6 +6,21 @@ Release @PACKAGE@-@VERSION@ released @DATE@
 
 Changes:
 
+git shortlog -e -n -w80,6,8 0.5.8...0.5.9
+
+Brian Bidulock <bidulock@openss7.org> (5):
+      fix multi-column dockapps
+      fall back to monitor 0 for dock
+      signed/unsigned comparisons
+      missed header file
+      avoid signed/unsigned comparisons
+
+
+Release adwm-0.5.8 released 2016-05-18
+--------------------------------------
+
+Changes:
+
 git shortlog -e -n -w80,6,8 0.5.7...0.5.8
 
 Brian Bidulock <bidulock@openss7.org> (2):

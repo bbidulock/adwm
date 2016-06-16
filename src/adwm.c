@@ -3337,25 +3337,33 @@ updatemonitors(XEvent *e, int n, Bool size_update, Bool full_update)
 	}
 	updatebarriers();
 	/* find largest monitor */
+	DPRINTF("Finding largest monitor\n");
 	for (w = 0, h = 0, scr->sw = 0, scr->sh = 0, i = 0; i < n; i++) {
 		m = scr->monitors + i;
+		DPRINTF("Processing monitor %d\n", m->index);
 		w = max(w, m->sc.w);
 		h = max(h, m->sc.h);
+		DPRINTF("Maximum monitor dimensions %dx%d\n", w, h);
 		scr->sw = max(scr->sw, m->sc.x + m->sc.w);
 		scr->sh = max(scr->sh, m->sc.y + m->sc.h);
+		DPRINTF("Maximum screen  dimensions %dx%d\n", w, h);
 	}
-	DPRINTF("Screen size is now %dx%d\n", scr->sw, scr->sh);
+	DPRINTF("Maximum screen  size is now %dx%d\n", scr->sw, scr->sh);
+	DPRINTF("Maximum monitor size is now %dx%d\n", w, h);
 	scr->m.rows = (scr->sh + h - 1) / h;
 	scr->m.cols = (scr->sw + w - 1) / w;
+	DPRINTF("Monitor array is %dx%d\n", scr->m.cols, scr->m.rows);
 	h = scr->sh / scr->m.rows;
 	w = scr->sw / scr->m.cols;
+	DPRINTF("Each monitor cell is %dx%d\n", w, h);
 	for (i = 0; i < n; i++) {
 		m = scr->monitors + i;
 		m->row = m->my / h;
 		m->col = m->mx / w;
-		DPRINTF("Monitor %d at (%d,%d)\n", i+1, m->row, m->col);
+		DPRINTF("Monitor %d at (%d,%d)\n", i+1, m->col, m->row);
 	}
 	/* handle insane geometries, push overlaps to the right */
+	DPRINTF("Handling insane geometries...\n");
 	do {
 		changed = False;
 		for (i = 0; i < n && !changed; i++) {
@@ -3365,12 +3373,22 @@ updatemonitors(XEvent *e, int n, Bool size_update, Bool full_update)
 
 				if (m->row != o->row || m->col != o->col)
 					continue;
+				DPRINTF("Monitors %d and %d conflict at (%d,%d)\n",
+						m->index, o->index, m->col, m->row);
 				if (m->mx < o->mx) {
 					o->col++;
+					DPRINTF("Moving monitor %d to the right (%d,%d)\n",
+							o->index, o->col, o->row);
 					scr->m.cols = max(scr->m.cols, o->col + 1);
+					DPRINTF("Monitor array is now %dx%d\n",
+							scr->m.cols, scr->m.rows);
 				} else {
 					m->col++;
+					DPRINTF("Moving monitor %d to the right (%d,%d)\n",
+							m->index, m->col, m->row);
 					scr->m.cols = max(scr->m.cols, m->col + 1);
+					DPRINTF("Monitor array is now %dx%d\n",
+							scr->m.cols, scr->m.rows);
 				}
 				changed = True;
 			}
@@ -3381,9 +3399,10 @@ updatemonitors(XEvent *e, int n, Bool size_update, Bool full_update)
 	for (v = scr->views, i = 0; i < scr->ntags; i++, v++)
 		v->curmon = NULL;
 	for (m = scr->monitors, i = 0; i < n; i++, m++) {
-		DPRINTF("Setting view %d to monitor %d\n", m->curview->index, m->num);
+		DPRINTF("Setting view %d to monitor %d\n", m->curview->index, m->index);
 		m->curview->curmon = m;
 	}
+	DPRINTF("Updating dock...\n");
 	updatedock();
 	ewmh_update_net_desktop_geometry();
 }
@@ -3407,6 +3426,7 @@ initmonitors(XEvent *e)
 		int i;
 		XineramaScreenInfo *si;
 
+		DPRINTF("XINERAMA extension supported\n");
 		if (!XineramaIsActive(dpy)) {
 			DPRINTF("XINERAMA is not active for screen %d\n", scr->screen);
 			goto no_xinerama;
@@ -3418,7 +3438,7 @@ initmonitors(XEvent *e)
 				scr->screen);
 			goto no_xinerama;
 		}
-		DPRINTF("XINERAMA defineds %d monitors for screen %d\n", n, scr->screen);
+		DPRINTF("XINERAMA defines %d monitors for screen %d\n", n, scr->screen);
 		if (n < 2) {
 			XFree(si);
 			goto no_xinerama;
@@ -3426,27 +3446,38 @@ initmonitors(XEvent *e)
 		for (i = 0; i < n; i++) {
 			if (i < scr->nmons) {
 				m = &scr->monitors[i];
+				DPRINTF("Checking existing monitor %d\n", m->index);
 				if (m->sc.x != si[i].x_org) {
+					DPRINTF("Monitor %d x position changed from %d to %d\n",
+							m->index, m->sc.x, si[i].x_org);
 					m->sc.x = m->wa.x = m->dock.wa.x = si[i].x_org;
 					m->mx = m->sc.x + m->sc.w / 2;
 					full_update = True;
 				}
 				if (m->sc.y != si[i].y_org) {
+					DPRINTF("Monitor %d y position changed from %d to %d\n",
+							m->index, m->sc.y, si[i].y_org);
 					m->sc.y = m->wa.y = m->dock.wa.y = si[i].y_org;
 					m->my = m->sc.y + m->sc.h / 2;
 					full_update = True;
 				}
 				if (m->sc.w != si[i].width) {
+					DPRINTF("Monitor %d width changed from %d to %d\n",
+							m->index, m->sc.w, si[i].width);
 					m->sc.w = m->wa.w = m->dock.wa.w = si[i].width;
 					m->mx = m->sc.x + m->sc.w / 2;
 					size_update = True;
 				}
 				if (m->sc.h != si[i].height) {
+					DPRINTF("Monitor %d height changed from %d to %d\n",
+							m->index, m->sc.h, si[i].height);
 					m->sc.h = m->wa.h = m->dock.wa.h = si[i].height;
 					m->my = m->sc.y + m->sc.h / 2;
 					size_update = True;
 				}
 				if (m->num != si[i].screen_number) {
+					DPRINTF("Monitor %d screen number changed from %d to %d\n",
+							m->index, m->num, si[i].screen_number);
 					m->num = si[i].screen_number;
 					full_update = True;
 				}
@@ -3455,6 +3486,7 @@ initmonitors(XEvent *e)
 				int mask = 0;
 				int j;
 
+				DPRINTF("Adding new monitor %d\n", i);
 				scr->monitors =
 				    erealloc(scr->monitors,
 					     (i + 1) * sizeof(*scr->monitors));
@@ -3488,6 +3520,24 @@ initmonitors(XEvent *e)
 				for (j = 0; j < 8; j++)
 					m->bars[j] = None;
 			}
+			DPRINTF("Monitor %d:\n", m->index);
+			DPRINTF("\tindex           = %d\n", m->index);
+			DPRINTF("\tscreen          = %d\n", m->num);
+			DPRINTF("\tscreen.x        = %d\n", m->sc.x);
+			DPRINTF("\tscreen.y        = %d\n", m->sc.y);
+			DPRINTF("\tscreen.w        = %d\n", m->sc.w);
+			DPRINTF("\tscreen.h        = %d\n", m->sc.h);
+			DPRINTF("\tworkarea.x      = %d\n", m->wa.x);
+			DPRINTF("\tworkarea.y      = %d\n", m->wa.y);
+			DPRINTF("\tworkarea.w      = %d\n", m->wa.w);
+			DPRINTF("\tworkarea.h      = %d\n", m->wa.h);
+			DPRINTF("\tdock.workarea.x = %d\n", m->dock.wa.x);
+			DPRINTF("\tdock.workarea.y = %d\n", m->dock.wa.y);
+			DPRINTF("\tdock.workarea.w = %d\n", m->dock.wa.w);
+			DPRINTF("\tdock.workarea.h = %d\n", m->dock.wa.h);
+			DPRINTF("\tmiddle.x        = %d\n", m->mx);
+			DPRINTF("\tmiddle.y        = %d\n", m->my);
+			DPRINTF("\tmiddle.y        = %d\n", m->my);
 		}
 		XFree(si);
 		updatemonitors(e, n, size_update, full_update);
@@ -3504,17 +3554,26 @@ initmonitors(XEvent *e)
 		XRRScreenResources *sr;
 		int i, j;
 
-		if (!(sr = XRRGetScreenResources(dpy, scr->root)) || sr->ncrtc < 2) {
-			if (sr)
-				XRRFreeScreenResources(sr);
+		DPRINTF("RANDR extension supported\n");
+		if (!(sr = XRRGetScreenResources(dpy, scr->root))) {
+			DPRINTF("RANDR not active for display\n");
+			goto no_xrandr;
+		}
+		DPRINTF("RANDR defines %d ctrc for display\n", sr->ncrtc);
+		if (sr->ncrtc < 2) {
+			XRRFreeScreenResources(sr);
 			goto no_xrandr;
 		}
 		for (i = 0, n = 0; i < sr->ncrtc; i++) {
 			XRRCrtcInfo *ci;
 
-			if (!(ci = XRRGetCrtcInfo(dpy, sr, sr->crtcs[i])))
+			DPRINTF("Checking CRTC %d\n", i);
+			if (!(ci = XRRGetCrtcInfo(dpy, sr, sr->crtcs[i]))) {
+				DPRINTF("CRTC %d not defined\n", i);
 				continue;
+			}
 			if (!ci->width || !ci->height) {
+				DPRINTF("CRTC %d is %dx%d\n", i, ci->width, ci->height);
 				XRRFreeCrtcInfo(ci);
 				continue;
 			}
@@ -3524,33 +3583,45 @@ initmonitors(XEvent *e)
 				    scr->monitors[j].sc.y == scr->monitors[n].sc.y)
 					break;
 			if (j < n) {
+				DPRINTF("Monitor %d is a mirror of %d\n", n, j);
 				XRRFreeCrtcInfo(ci);
 				continue;
 			}
 
 			if (n < scr->nmons) {
 				m = &scr->monitors[n];
+				DPRINTF("Checking existing monitor %d\n", m->index);
 				if (m->sc.x != ci->x) {
+					DPRINTF("Monitor %d x position changed from %d to %d\n",
+							m->index, m->sc.x, ci->x);
 					m->sc.x = m->wa.x = m->dock.wa.x = ci->x;
 					m->mx = m->sc.x + m->sc.w / 2;
 					full_update = True;
 				}
 				if (m->sc.y != ci->y) {
+					DPRINTF("Monitor %d y position changed from %d to %d\n",
+							m->index, m->sc.y, ci->y);
 					m->sc.y = m->wa.y = m->dock.wa.y = ci->y;
 					m->my = m->sc.y + m->sc.h / 2;
 					full_update = True;
 				}
 				if (m->sc.w != ci->width) {
+					DPRINTF("Monitor %d width changed from %d to %d\n",
+							m->index, m->sc.w, ci->width);
 					m->sc.w = m->wa.w = m->dock.wa.w = ci->width;
 					m->mx = m->sc.x + m->sc.w / 2;
 					size_update = True;
 				}
 				if (m->sc.h != ci->height) {
+					DPRINTF("Monitor %d height changed from %d to %d\n",
+							m->index, m->sc.h, ci->height);
 					m->sc.h = m->wa.h = m->dock.wa.h = ci->height;
 					m->my = m->sc.y + m->sc.h / 2;
 					size_update = True;
 				}
 				if (m->num != i) {
+					DPRINTF("Monitor %d screen number changed from %d to %d\n",
+							m->index, m->num, i);
 					m->num = i;
 					full_update = True;
 				}
@@ -3559,6 +3630,7 @@ initmonitors(XEvent *e)
 				int mask = 0;
 				int j;
 
+				DPRINTF("Adding new monitor %d\n", n);
 				scr->monitors =
 				    erealloc(scr->monitors,
 					     (n + 1) * sizeof(*scr->monitors));
@@ -3592,10 +3664,30 @@ initmonitors(XEvent *e)
 				for (j = 0; j < 8; j++)
 					m->bars[j] = None;
 			}
+			DPRINTF("Monitor %d:\n", m->index);
+			DPRINTF("\tindex           = %d\n", m->index);
+			DPRINTF("\tscreen          = %d\n", m->num);
+			DPRINTF("\tscreen.x        = %d\n", m->sc.x);
+			DPRINTF("\tscreen.y        = %d\n", m->sc.y);
+			DPRINTF("\tscreen.w        = %d\n", m->sc.w);
+			DPRINTF("\tscreen.h        = %d\n", m->sc.h);
+			DPRINTF("\tworkarea.x      = %d\n", m->wa.x);
+			DPRINTF("\tworkarea.y      = %d\n", m->wa.y);
+			DPRINTF("\tworkarea.w      = %d\n", m->wa.w);
+			DPRINTF("\tworkarea.h      = %d\n", m->wa.h);
+			DPRINTF("\tdock.workarea.x = %d\n", m->dock.wa.x);
+			DPRINTF("\tdock.workarea.y = %d\n", m->dock.wa.y);
+			DPRINTF("\tdock.workarea.w = %d\n", m->dock.wa.w);
+			DPRINTF("\tdock.workarea.h = %d\n", m->dock.wa.h);
+			DPRINTF("\tmiddle.x        = %d\n", m->mx);
+			DPRINTF("\tmiddle.y        = %d\n", m->my);
+			DPRINTF("\tmiddle.y        = %d\n", m->my);
 			n++;
 			XRRFreeCrtcInfo(ci);
 		}
 		XRRFreeScreenResources(sr);
+		if (n < 1)
+			goto no_xrandr;
 		updatemonitors(e, n, size_update, full_update);
 		return True;
 
@@ -3605,28 +3697,39 @@ initmonitors(XEvent *e)
 	n = 1;
 	if (n <= scr->nmons) {
 		m = &scr->monitors[0];
+		DPRINTF("Checking existing monitor %d\n", m->index);
 		if (m->sc.x != 0) {
+			DPRINTF("Monitor %d x position changed from %d to %d\n",
+					m->index, m->sc.x, 0);
 			m->sc.x = m->wa.x = m->dock.wa.x = 0;
 			m->mx = m->sc.x + m->sc.w / 2;
 			full_update = True;
 		}
 		if (m->sc.y != 0) {
+			DPRINTF("Monitor %d y position changed from %d to %d\n",
+					m->index, m->sc.y, 0);
 			m->sc.y = m->wa.y = m->dock.wa.y = 0;
 			m->my = m->sc.y + m->sc.h / 2;
 			full_update = True;
 		}
 		if (m->sc.w != DisplayWidth(dpy, scr->screen)) {
+			DPRINTF("Monitor %d width changed from %d to %d\n",
+					m->index, m->sc.w, (int) DisplayWidth(dpy, scr->screen));
 			m->sc.w = m->wa.w = m->dock.wa.w = DisplayWidth(dpy, scr->screen);
 			m->mx = m->sc.x + m->sc.w / 2;
 			size_update = True;
 		}
 		if (m->sc.h != DisplayHeight(dpy, scr->screen)) {
+			DPRINTF("Monitor %d height changed from %d to %d\n",
+					m->index, m->sc.h, (int) DisplayHeight(dpy, scr->screen));
 			m->sc.h = m->wa.h = m->dock.wa.h =
 			    DisplayHeight(dpy, scr->screen);
 			m->my = m->sc.y + m->sc.h / 2;
 			size_update = True;
 		}
 		if (m->num != 0) {
+			DPRINTF("Monitor %d screen number changed from %d to %d\n",
+					m->index, m->num, 0);
 			m->num = 0;
 			full_update = True;
 		}
@@ -3635,6 +3738,7 @@ initmonitors(XEvent *e)
 		int mask = 0;
 		int j;
 
+		DPRINTF("Adding new monitor %d\n", 0);
 		scr->monitors = erealloc(scr->monitors, n * sizeof(*scr->monitors));
 		m = &scr->monitors[0];
 		full_update = True;
@@ -3665,6 +3769,24 @@ initmonitors(XEvent *e)
 		for (j = 0; j < 8; j++)
 			m->bars[j] = None;
 	}
+	DPRINTF("Monitor %d:\n", m->index);
+	DPRINTF("\tindex           = %d\n", m->index);
+	DPRINTF("\tscreen          = %d\n", m->num);
+	DPRINTF("\tscreen.x        = %d\n", m->sc.x);
+	DPRINTF("\tscreen.y        = %d\n", m->sc.y);
+	DPRINTF("\tscreen.w        = %d\n", m->sc.w);
+	DPRINTF("\tscreen.h        = %d\n", m->sc.h);
+	DPRINTF("\tworkarea.x      = %d\n", m->wa.x);
+	DPRINTF("\tworkarea.y      = %d\n", m->wa.y);
+	DPRINTF("\tworkarea.w      = %d\n", m->wa.w);
+	DPRINTF("\tworkarea.h      = %d\n", m->wa.h);
+	DPRINTF("\tdock.workarea.x = %d\n", m->dock.wa.x);
+	DPRINTF("\tdock.workarea.y = %d\n", m->dock.wa.y);
+	DPRINTF("\tdock.workarea.w = %d\n", m->dock.wa.w);
+	DPRINTF("\tdock.workarea.h = %d\n", m->dock.wa.h);
+	DPRINTF("\tmiddle.x        = %d\n", m->mx);
+	DPRINTF("\tmiddle.y        = %d\n", m->my);
+	DPRINTF("\tmiddle.y        = %d\n", m->my);
 	updatemonitors(e, n, size_update, full_update);
 	return True;
 }

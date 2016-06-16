@@ -912,17 +912,25 @@ configureclient(XEvent *e, Client *c, int gravity)
 
 	if (!(v = c->cview ? : selview()))
 		return False;
-	if (!c->is.max && isfloating(c, v)) {
+	if ((!c->is.max && isfloating(c, v)) || c->is.bastard) {
 		ClientGeometry g;
 		int dx, dy, dw, dh;
 
 		g = c->c;
 
+		if ((ev->value_mask & CWX) && ev->x != g.x && !c->can.move)
+			CPRINTF(c, "refusing to move client\n");
+		if ((ev->value_mask & CWY) && ev->y != g.y && !c->can.move)
+			CPRINTF(c, "refusing to move client\n");
+		if ((ev->value_mask & CWWidth) && ev->width != g.w && !c->can.sizeh && ev->width != c->maxw)
+			CPRINTF(c, "refusing to resize client width\n");
+		if ((ev->value_mask & CWHeight) && ev->height != g.h && !c->can.sizev && ev->height != c->maxh)
+			CPRINTF(c, "refusing to resize client height\n");
+
 		dx = ((ev->value_mask & CWX) && c->can.move) ? ev->x - g.x : 0;
 		dy = ((ev->value_mask & CWY) && c->can.move) ? ev->y - g.y : 0;
-		dw = ((ev->value_mask & CWWidth) && c->can.sizeh) ? ev->width - g.w : 0;
-		dh = ((ev->value_mask & CWHeight)
-		      && c->can.sizev) ? ev->height - (g.h - g.t - g.g) : 0;
+		dw = ((ev->value_mask & CWWidth) && (c->can.sizeh || ev->width == c->maxw)) ? ev->width - g.w : 0;
+		dh = ((ev->value_mask & CWHeight) && (c->can.sizev || ev->height == c->maxh)) ? ev->height - (g.h - g.t - g.g) : 0;
 		g.b = (ev->value_mask & CWBorderWidth) ? ev->border_width : g.b;
 
 		moveresizekb(c, dx, dy, dw, dh, gravity);
@@ -930,6 +938,7 @@ configureclient(XEvent *e, Client *c, int gravity)
 	} else {
 		ClientGeometry g;
 
+		CPRINTF(c, "refusing to reconfigure client\n");
 		g = c->c;
 
 		g.b = (ev->value_mask & CWBorderWidth) ? ev->border_width : g.b;
@@ -4069,15 +4078,18 @@ moveresizekb(Client *c, int dx, int dy, int dw, int dh, int gravity)
 		dx = 0;
 		dy = 0;
 	}
+#if 0
+	/* constraints will handle this */
 	if (!c->can.sizeh)
 		dw = 0;
 	if (!c->can.sizev)
 		dh = 0;
+#endif
 	if (!(dx || dy || dw || dh))
 		return;
 	if (!(v = clientview(c)))
 		return;
-	if (!isfloating(c, v))
+	if (!isfloating(c, v) && !c->is.bastard)
 		return;
 	if (dw || dh) {
 		ClientGeometry g;

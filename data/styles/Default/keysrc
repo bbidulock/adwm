@@ -28,6 +28,9 @@ Adwm*resizeincy:	AC + a : Up, AS + w, WS + equal
 Adwm*begmove:		A + F7, WS + m
 Adwm*begsize:		A + F8, AC + a : Return
 
+!Adwm*begmoveresize:	AC + a : Return
+!Adwm*begmoveresize:	WS + m
+
 ! togglemonitor		- warp pointer to previous monitor
 !Adwm*togglemonitor:	A + grave
 
@@ -355,6 +358,15 @@ Adwm*spawn32:		WS + s = scrot -s
 Adwm*spawn33:		WS + slash = xde-namews
 Adwm*spawn34:		XF86MonBrightnessUp = xbrightness +4096
 Adwm*spawn35:		XF86MonBrightnessDown = xbrightness -4096
+Adwm*spawn36:		XF86AudioRaiseVolume = amixer sset Master,0 1+
+Adwm*spawn37:		XF86AudioLowerVolume = amixer sset Master,0 1-
+Adwm*spawn38:		XF86AudioMute = amixer sset Master,0 toggle
+Adwm*spawn39:		CWA + Left = xrandr -o left
+Adwm*spawn40:		CWA + Right = xrandr -o right
+Adwm*spawn41:		CWA + Down = xrandr -o inverted
+Adwm*spawn42:		CWA + Up = xrandr -o normal
+!Adwm*spawn43:		XF86Display
+!Adwm*spawn44:		XF86Sleep
 
 ! rule			- rules for window classes
 !Adwm*rule0:		Firefox.* web 0 1

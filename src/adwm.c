@@ -3404,6 +3404,7 @@ updatemonitors(XEvent *e, int n, Bool size_update, Bool full_update)
 	}
 	DPRINTF("Updating dock...\n");
 	updatedock();
+	updatestruts();
 	ewmh_update_net_desktop_geometry();
 }
 
@@ -4011,7 +4012,7 @@ togglestruts(View *v)
 {
 	v->barpos = (v->barpos == StrutsOn)
 	    ? (scr->options.hidebastards ? StrutsHide : StrutsOff) : StrutsOn;
-	updategeom(v->curmon);	/* XXX: necessary? */
+	updategeom(v->curmon);
 	arrange(v);
 }
 

@@ -3,24 +3,37 @@
 .Os @PACKAGE@ @VERSION@
 .Sh NAME
 .Nm @PACKAGE@-keys
-.Nd advanced dynamic window manager for X key bindings
+.Nd advanced dynamic window manager for X: key bindings
 .Sh SYNOPSIS
-.Nm @PACKAGE@
+.Nm @PACKAGE@-keys
 .Sh DESCRIPTION
-.Xr adwm 1
-is a dynamic tiling window manager intended on being fully controllable using only
-the keyboard: the objective of all dynamic tiling window managers.  To acheive this
-objective,
-.Xr adwm 1
+.Nm @PACKAGE@
+is a light-weight, reparenting, dynamic tiling/stacking window
+manager intended on being fully controllable using only the
+keyboard: the objective of all dynamic tiling window managers.
+To acheive this objective,
+.Nm @PACKAGE@
 supports both simple single-press key bindings as well as key chains.
 .Pp
 Single key bindings are key bindings on the root window that perform some action in
 response to a single key press.  Key chaining is when an Emacs-like sequence of keys
-need to be pressed in order for the action to be performed.
-.Ss SYNTAX
+need to be pressed for the action to be performed.
+.Pp
+Key bindings are defined in an X Resource formatted configuration file.
+Key bindings can either being part of the main confguration file, or
+they can be included or referenced from the main configuration file: see the
+.Cm keysFile
+directive in
+.Xr adwm-config 5 .
+It is typical to place the key binding in a file named
+.Pa keysrc
+in the same directory as the main configuration file (e.g. in the
+.Pa "$HOME/.adwm/keysrc"
+file).  See \(lqFILES\(rq, below.
+.Sh SYNTAX
 .Pp
 The general syntax of key commands, as specified directly in the
-.Nm
+.Nm @PACKAGE@
 resource file, is as follows:
 .Pp
 .Dl Li "Adwm*" Ns Cm command Ns Li : Ar <list>
@@ -123,20 +136,56 @@ separated by spaces).
 .Pp
 The following is an example of vim-like window key movement key chains:
 .Pp
-.Dl Li "Adwm*" Ns Cm movetoW Ns Li : Ar "W+w:h, CS+w:h"
-.Dl Li "Adwm*" Ns Cm movetoN Ns Li : Ar "W+w:j, CS+w:j"
-.Dl Li "Adwm*" Ns Cm movetoS Ns Li : Ar "W+w:k, CS+w:k"
-.Dl Li "Adwm*" Ns Cm movetoE Ns Li : Ar "W+w:l, CS+w:l"
-.Ss COMMANDS
-The commands are describe  below.  Each heading provides the format of the command
-resource (without the
+.Dl "Adwm*" Ns Cm movetoW Ns Li : Ar "W+w:h, CS+w:h"
+.Dl "Adwm*" Ns Cm movetoN Ns Li : Ar "W+w:j, CS+w:j"
+.Dl "Adwm*" Ns Cm movetoS Ns Li : Ar "W+w:k, CS+w:k"
+.Dl "Adwm*" Ns Cm movetoE Ns Li : Ar "W+w:l, CS+w:l"
+.Sh COMMANDS
+There are four commands that are used with preset mouse bindings and
+the remainder are for use with key bindings.  The commands are
+described below.
+Each heading provides the format of the command resource (without the
 .Li "Adwm*"
-portion) and the possible arguments to each key binding.
+portion) and the possible arguments to each mouse binding.
+.Ss MOUSE BINDINGS
+There are four commands that are used with preset mouse bindings
+(clicking on root window, titlebar or menu button).  The commands are
+described below.
+.Bl -tag -width "XX"
+.It Cm command Ar shell-command
+Specifies a shell command that will be executed when button 3 (right
+button) is clicked on the root window.
 
-.Bl -tag -width Ds -compact
+.Dl "Adwm*" Ns Cm command Ns Li : Ar "xterm"
+.Dl "Adwm*" Ns Cm command Ns Li : Ar "xde-menu -P -b 3"
+.It Cm command2 Ar shell-command
+Specifies a shell command that will be executed when button 2 (middle
+button) is clicked on the root window.
+
+.Dl "Adwm*" Ns Cm command2 Ns Li : Ar "xde-wkspmenu -p -b 2"
+.It Cm command3 Ar shell-command
+Specifies a shell command that will be executed when button 1 (left
+button) is clicked on the root window.
+
+.Dl "Adwm*" Ns Cm command3 Ns Li : Ar "xde-winlist -p -b 1 --hidden"
+.It Cm menucommand Ar shell-command
+Specifies a shell command that will be executed when button 1 (left
+button) is clicked on the menu button in a window's title bar.
+
+.Dl "Adwm*" Ns Cm menucommand Ns Li : Ar "xde-winmenu -p -b 1 --hidden"
+.El
+.Ss KEY BINDINGS
+The remaining commands are key bindings.  The commands are described
+below.
+Each heading provides the format of the command resource (without the
+.Li "Adwm*"
+portion) and the possible arguments to each key binding, in accordance
+with the key binding sytnax described above under \(lqSYNTAX\(rq.
+
+.Bl -tag -width "XX"
 .It Cm quit Op Ar command
 Causes
-.Nm
+.Nm @PACKAGE@
 to quit.
 When
 .Ar command
@@ -149,7 +198,7 @@ Default:
 
 .It Cm restart Op Ar command
 Causes
-.Nm
+.Nm @PACKAGE@
 to restart.
 When
 .Ar command
@@ -160,9 +209,14 @@ instead of restarting.
 Default:
 .Cm Adwm*restart Ns : Ar "AS + q"
 
+.It Cm reload
+Causes
+.Nm @PACKAGE@
+to reload configuration files.
+
 .It Cm killclient
 Closes the selected client.  The behaviour of
-.Xr adwm 1
+.Nm @PACKAGE@
 when closing clients is to first attempt a close request to the client and upon the
 next attempt, kills the client process if the process identifier of the client is
 known, the client supports the
@@ -307,9 +361,7 @@ is primarily for compatability with
 Defaults:
 .Dl Cm Adwm*resetview Ns : Ar "WS + space"
 
-.It Cm flipview
-.It Cm rotateview
-.It Cm unrotateview
+.It Cm flipview Ns , Cm rotateview Ns , Cm unrotateview
 Rotates (180-degrees, CW or CCW) the current view.  The view is the current tiling layout.  For
 master-stacking area layouts, this means that the master zone rotates from rigth-stacking, to
 bottom-stacking, to left-stacking, to top-stacking, and around again.
@@ -322,9 +374,7 @@ Defaults:
 .Dl Cm Adwm*rotateview Ns : Ar "A + y"
 .Dl Cm Adwm*unrotateview Ns : Ar "AS + y"
 
-.It Cm flipzone
-.It Cm rotatezone
-.It Cm unrotatezone
+.It Cm flipzone Ns , Cm rotatezone Ns , Cm unrotatezone
 Rotates (180-degrees, CW or CCW) the current zone.  The zone is either the master, stacking, grid or
 monocle area.
 .Pp
@@ -332,9 +382,7 @@ Defaults:
 .Dl Cm Adwm*rotatezone Ns : Ar "CA + y"
 .Dl Cm Adwm*unrotatezone Ns : Ar "CAS + y"
 
-.It Cm flipwins
-.It Cm rotatewins
-.It Cm unrotatewins
+.It Cm flipwins Ns , Cm rotatewins Ns , Cm unrotatewins
 Rotates (180-degrees, CW or CCW) the windows in the current view.  That is, the windows rotate
 through the current tiling positions, rather than the tiling positions rotating about the screen.
 .Pp
@@ -886,6 +934,8 @@ immediately usable to these users as well.
 .Sh SEE ALSO
 .Rb
 .Xr adwm 1 ,
+.Xr adwm-config 5 ,
+.Xr spectrwm 1 ,
 .Xr dwm 1 ,
 .Xr openbox 1 ,
 .Xr pekwm 1 ,

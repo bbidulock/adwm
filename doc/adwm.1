@@ -265,8 +265,8 @@ spawn
 The configuration file is a set of X resources (with a class of Adwm),
 which are described in the sections below.
 .Pp
-Every relative path specified is relative to the directory in which the
-configuration file is in.
+Every relative path specified is relative to the directory of the
+configuration file.
 .Ss MAIN SETTINGS
 .Bl -tag -width Ds
 .It Ic attachaside
@@ -398,7 +398,42 @@ options, can be specified following a comma.
 .Ss MISC SETTINGS
 .Bl -tag -width Ds
 .It Ic command
-Application to run on right click on root window.
+Application to run on right click (Button 3) on root window.
+The default without a configuration file is
+.Sy Ic xterm ,
+(defined by the
+.Sy COMMAND
+configuration macro).
+The default configuration file defines this to
+.Sy Ic "xde-menu -P -b 3" ,
+which will display a root menu at the pointer location.
+.It Ic command2
+Application to run on middle click (Button 2) on root window.
+The default without a configuration file is
+.Sy NULL ,
+(defined by the
+.Sy COMMAND2
+configuration macro).  The default configuration file sets this to
+.Sy Ic "xde-wkspcmenu -p -b 2" ,
+which will display a menu of workspaces and windows at the pointer location.
+.It Ic command3
+Application to run on left click (Button 1) on root window.  (Note: this setting is not recommended
+as Button 1 is used to cancel other menus and will still launch the application associated with this
+command.)
+The default without a configuration file is
+.Sy NULL ,
+(defined by the
+.Sy COMMAND3
+configuration macro).  The default configuration file does not set this.
+.It Ic menucommand
+Application to run when the menu icon on the title bar is clicked (Button 1).
+The default with no configuration file is
+.Sy NULL ,
+(defined by the
+.Sy MENUCOMMAND
+configuration macro).  The default configuration file sets this to
+.Sy Ic "xde-winmenu -p -b 1" ,
+which will display a menu of window actions in the upper left corner of the window.
 .It Ic opacity
 Opacity value for inactive windows (xcompmgr needed).
 .El
@@ -416,7 +451,18 @@ Number of tags.
 .Ss TITLE SETTINGS
 .Bl -tag -width Ds
 .It Ic decoratetiled
-If one, draw titles in tiled mode.
+If one (1), draw titles on windows (by default) in tiled mode.
+The default without a configuration file is zero (0), (defined by the
+.Sy DECORATETILED
+configuration macro).
+The value can be toggled with key bindings.
+.It Ic decoratemax
+If one (1), draw titles on maximized windows (by default).
+.PP
+The default without a configuration file is one (1), (defined by the
+.Sy DECORATEMAX
+configuration macro).
+The value can be toggled with key bindings.
 .It Ic font
 Titlebar font.
 .It Ic normal.drop
@@ -430,7 +476,9 @@ Titlebar font for focused windows.
 .It Ic spacing
 Spacing in pixels between titlebar elements.
 .It Ic title
-Titlebar height.
+Titlebar height.  The default is defined by the
+.Sy TITLEHEIGHT
+configuration macro, which defaults to zero (0).
 .It Ic titlelayout
 Titlebar consists of 3 parts separated with dashes or spaces.
 Left is aligned to left, center to center and right to right (obviously).
@@ -456,19 +504,82 @@ close buttons on right (note 2 spaces).
 .El
 .El
 .Ss COMMANDS
-.Bl -tag -width Ds
-.It Ic appendtag
-.It Ic rmlasttag
+.Bl -tag -width "XX"
+.It Ic appendtag , rmlasttag
 Appends a new tag or removes the last defined tag.  Effectivley increases
 or decreases the number of "desktops".
-.It Ic decmwfact [-]factor
-.It Ic incmwfact [+]factor
-Decreases, increases or sets the master window factor.  Without the
+.It Ic "{set|inc|dec}mwfact [-+]factor"
+Sets, increases or decreases the master window factor.  Without the
 leading  '-' or '+', sets the factor.
-.It Ic decnmaster -delta
-.It Ic incnmaster +delta
-Decreases or increases the number of master windows.  When the delta is zero,
-sets the default number of master windows.
+The default when
+.Ic factor
+is not specified is to set the factor to 60%,
+or increase or decrease the factor by 5%.
+.Pp
+Defaults:
+.Dl Sy "Adwm*decmwfact: A + h, W + h"
+.Dl Sy "Adwm*incmwfact: A + l, W + l"
+.It Ic "{set|inc|dec}nmaster [-+]value"
+Sets, increases or decreases the number of master windows by
+.Ic value .
+When the
+.Ic value
+is zero (0), sets the default number of master windows.
+The default when
+.Ic value
+is not specified is to set the number of masters to one (1), or increase or
+decrease the number of masters by one (1).
+.Pp
+Defaults:
+.Dl Sy "Adwm*decnmaster: AS + j, W + period, WS + l"
+.Dl Sy "Adwm*incnmaster: AS + k, W + comma, WS + h"
+.It Ic "{set|inc|dec}ncolumns [-+]value"
+Set, increase or decrease the number of columns (or rows) in the grid layout.
+The default when
+.Ic value
+is not specified, is to set the number of columns (rows) to one (1), or
+increase or decrease the number by one (1).
+.Pp
+Defaults:
+.Dl Sy "Adwm*decncolumns: WC + l, WS + period"
+.Dl Sy "Adwm*incncolumns: WC + h, WS + comma"
+.It Ic "{set|inc|dec}margin [-+]pixels"
+Set, increase or decrease the margin between tiled windows by
+.Ic pixels .
+The default when
+.Ic pixels
+is not specified is to set the number to zero (0), or to increase or decrease
+the number by one (1).
+.It Ic "{set|inc|dec}border [-+]pixels"
+Set, increase or decrease the window border around window by
+.Ic pixels .
+The default when
+.Ic pixels
+is not specifies is to set the number to one (1), or to increase or decrease
+the number by one (1).
+.It Ic "{[set]|{un|de|unset}|toggle}floating[sel|ptr|all|any|every]"
+.Pp
+Examples:
+.Dl Sy "Adwm*togglefloating: AS + space, W + t, WC + space"
+.It Ic "{[set]|{un|de|unset}|toggle}fill[sel|ptr|all|any|every]"
+.Pp
+Examples:
+.Dl Sy "Adwm*togglefill: AC + a : g : g, CS + Down"
+.It Ic "{[set]|{un|de|unset}|toggle}full[sel|ptr|all|any|every]"
+.It Ic "{[set]|{un|de|unset}|toggle}max[sel|ptr|all|any|every]"
+.It Ic "{[set]|{un|de|unset}|toggle}maxv[sel|ptr|all|any|every]"
+.It Ic "{[set]|{un|de|unset}|toggle}maxh[sel|ptr|all|any|every]"
+.It Ic "{[set]|{un|de|unset}|toggle}shade[d][sel|ptr|all|any|every]"
+.It Ic "{[set]|{un|de|unset}|toggle}{hide|hidden}[sel|ptr|all|any|every]"
+.It Ic "{[set]|{un|de|unset}|toggle}{min|iconify}[sel|ptr|all|any|every]"
+.It Ic "{[set]|{un|de|unset}|toggle}above[sel|ptr|all|any|every]"
+.It Ic "{[set]|{un|de|unset}|toggle}below[sel|ptr|all|any|every]"
+.It Ic "{[set]|{un|de|unset}|toggle}pager[sel|ptr|all|any|every]"
+.It Ic "{[set]|{un|de|unset}|toggle}taskbar[sel|ptr|all|any|every]"
+.It Ic "{[set]|{un|de|unset}|toggle}showing[sel|ptr|all|any|every]"
+.It Ic "{[set]|{un|de|unset}|toggle}struts[sel|ptr|all|any|every]"
+.It Ic "{[set]|{un|de|unset}|toggle}dectiled[sel|ptr|all|any|every]"
+.It Ic "{[set]|{un|de|unset}|toggle}sticky[sel|ptr|all|any|every]"
 .It Ic focusicon
 Focuses the next iconified window.
 .It Ic focusnext

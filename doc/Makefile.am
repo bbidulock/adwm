@@ -5,7 +5,13 @@ adwm.man: adwm.1
 adwm-keys.man: adwm-keys.1
 	sed 's,[@]PACKAGE[@],$(PACKAGE),g;s,[@]VERSION[@],$(VERSION),g' $< >$@
 
-nodist_man1_MANS = adwm.man adwm-keys.man
+adwm-style.man: adwm-style.1
+	sed 's,[@]PACKAGE[@],$(PACKAGE),g;s,[@]VERSION[@],$(VERSION),g' $< >$@
+
+adwm-config.man: adwm-config.1
+	sed 's,[@]PACKAGE[@],$(PACKAGE),g;s,[@]VERSION[@],$(VERSION),g' $< >$@
+
+nodist_man1_MANS = adwm.man adwm-keys.man adwm-style.man adwm-config.man
 
 SUFFIXES = .man .pod
 
@@ -31,8 +37,8 @@ adwm-keys.1.man: adwm-keys.1.pod
 
 pods: adwm.1.man adwm-keys.1.man
 
-CLEANFILES = adwm.man adwm-keys.man adwm.1.man adwm-keys.1.man
+CLEANFILES = adwm.man adwm-keys.man adwm-style.man adwm-config.man adwm.1.man adwm-keys.1.man
 
-EXTRA_DIST = adwm.1 adwm-keys.1 adwm.1.pod adwm-keys.1.pod
+EXTRA_DIST = adwm.1 adwm-keys.1 adwm-style.1 adwm-config.1 adwm.1.pod adwm-keys.1.pod
 
 .PHONY: pods

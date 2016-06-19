@@ -1,0 +1,685 @@
+.Dd $Mdocdate$
+.Dt ADWM-CONFIG \&5 "File Formats"
+.Os @PACKAGE@ @VERSION@
+.Sh NAME
+.Nm @PACKAGE@-config
+.Nd advanced dynamic window manager for X: configuration
+.Sh SYNOPSIS
+.Nm @PACKAGE@-config
+.Sh DESCRIPTION
+.Nm @PACKAGE@
+is a ligth-weight reparenting, dynamic tiling/stacking window
+manager intended on being fully controllable using only the
+keyboard: the objective of all dynamic tiling window managers.
+However,
+.Nm @PACKAGE@
+also supports regular stacking floating window management as
+well, and pointer actions are supported on decorative borders.
+.Pp
+Customization of configuration is defined in an X Resource
+formatted configuration file.  Configuration is part of a main
+configuration file.  It is typical to place the configuration
+file an a file named
+.Pa adwmrc
+in the main directory (e.g. in the
+.Pa $HOME/.adwm/adwmrc
+file).  See \(lqFILES,\(rq below.
+Configuration directives (some of which are comatible with
+.Xr echinus 1 ),
+are described below under \(lqDIRECTIVES.\(rq
+.Pp
+Key bindings are typically placed in a separate file, as
+described in
+.Xr adwm-keys 5 .
+Style elements (for decorative borders and the dock) are
+normally placed in a separate file, aslo, as described in
+.Xr adwm-style 5 .
+.Sh SYNTAX
+The general syntax of configuration directives, as specified
+directly in the
+.Nm @PACKAGE@
+resource file, is as follows:
+.Sh DIRECTIVES
+The configuration directives are defined below.  Each heading
+provides the format of the directive resource (without the
+.Li \(lqAdwm*\(rq
+portion) and the possible arguments for each directive, in
+accordance with the directive syntax described above under
+\(lqSYNTAX.\(rq
+
+.Ss FILE DIRECTIVES
+File directives specify where to find other configuration
+files.  Although all directives, key bindings and style
+elements can be located in a single configuration file, it is
+convenient to separate key bindings and style elements into
+seprate files.  The main configuration file is loaded first,
+then the key bindings file, and lastly the style elements
+file.  The file directives specifying the location of the last
+two files are as follows:
+.Bl -tag -width "XX"
+.It Cm keysFile Pa <path>
+Specifies the path and filename,
+.Pa <path> ,
+of a file from which to read key bindings.
+The path may be absolute or relative: when relative, the path
+is considered relative to the directory which contains the
+configuration file in which the declaration resides.
+The default is
+.Pa keysrc ,
+that is, the file named
+.Pa keysrc
+in the same directory as the main configuration file.
+Example:
+
+.Dl Adwm* Ns Cm keysFile Ns Li : Pa keysrc
+
+.It Cm styleFile Pa <path>
+Specifies the path and filename,
+.Pa <path> ,
+of a file from which to read style elements.
+The path may be absolute or relative: when relative, the path
+is considered relative to the directory which contains the
+configuration file in which the declaration resides.
+The default is
+.Pa stylerc ,
+that is, the file named
+.Pa stylerc
+in the same directory as the main configuration file.
+Example:
+
+.Dl Adwm* Ns Cm styleFile Ns Li : Pa stylerc
+
+.El
+.Ss TAG DIRECTIVES
+Tag directives affect the number of views (desktops) presented
+by the window manager and names and layouts associated with
+those views.  The tag directives are as follows:
+.Bl -tag -width "XX"
+.It Cm tags.number Ar <number>
+Specifies the number of tags (i.e. desktops) available.
+The default number is five (5).
+Example:
+
+.Dl Adwm* Ns Cm tags.number Ns Li : Ar 7
+
+.It Li [ Ns Cm screen<s>. Ns Li ] Ns Cm tags.name<n> Ar <string>
+Specifies the name associated with each tag (i.e. desktop),
+for a specific screen,
+.Cm <s> ,
+or for all screens.
+Tags are indexed from zero (0) to the total number of tags
+minus one.
+Example:
+
+.Dl Adwm* Ns Cm tags.number Ns Li : Ar 7
+.Dl Adwm* Ns Cm tags.name0 Ns Li : Ar main
+.Dl Adwm* Ns Cm tags.name1 Ns Li : Ar web
+.Dl Adwm* Ns Cm tags.name2 Ns Li : Ar doc
+.Dl Adwm* Ns Cm tags.name3 Ns Li : Ar dev
+.Dl Adwm* Ns Cm tags.name4 Ns Li : Ar scr
+.Dl Adwm* Ns Cm tags.name5 Ns Li : Ar gfx
+.Dl Adwm* Ns Cm tags.name6 Ns Li : Ar misc
+
+.It Li [ Ns Cm screen<s>. Ns Li ] Ns Cm deflayout Ar <layout>
+Specifies the default layout for views that have no layout defined for
+them.
+The argument,
+.Ar <layout> ,
+is a single lowercase ascii character that designates the layout, that
+can be one of the following:
+
+.Bl -tag -width ".Cm 'm'" -compact
+.It Cm 'i'
+stacking window arrangement;
+.It Cm 't'
+tile arrangment with master on left;
+.It Cm 'b'
+tiled arrangement with mast on bottom;
+.It Cm 'u'
+tiled arrangement with mast on top;
+.It Cm 'l'
+tiled arrangement with master on right;
+.It Cm 'm'
+monacle mode tiled arrangement;
+.It Cm 'f'
+stacking window arrangement;
+.It Cm 'g'
+grid tiled arrangement with columns.
+.El
+.Pp
+The default value is
+.Cm 'i' :
+that is, stacking window arrangement.
+Example:
+
+.Dl Adwm* Ns Cm deflayout Ns Li : Ar l
+
+.It Li [ Ns Cm screen<s>. Ns Li ] Ns Cm tags.layout<n> Ar <layout>
+Specifies the layout for a single view (optionally on a given screen).
+When unspecified for a view, defaults to the setting of the
+.Cm deflayout
+directive (usually floating/stacking).
+This is only the default setting for the view at startup: it is
+possible to use the key bindings to change the layout for a view.
+The argument,
+.Ar <layout> ,
+is a single lowercase ascii character that designates the layout, that
+can be one of the following:
+
+.Bl -tag -width ".Cm 'm'" -compact
+.It Cm 'i'
+stacking window arrangement;
+.It Cm 't'
+tile arrangment with master on left;
+.It Cm 'b'
+tiled arrangement with mast on bottom;
+.It Cm 'u'
+tiled arrangement with mast on top;
+.It Cm 'l'
+tiled arrangement with master on right;
+.It Cm 'm'
+monacle mode tiled arrangement;
+.It Cm 'f'
+stacking window arrangement;
+.It Cm 'g'
+grid tiled arrangement with columns.
+.El
+.Pp
+Example:
+
+.Dl Adwm* Ns Cm tags.layout1 Ns Li : Ar m
+.Dl Adwm* Ns Cm tags.layout3 Ns Li : Ar b
+
+.El
+.Ss MOUSE DIRECTIVES
+Mouse directives affect the actions of button clicks on the
+root window, or on the menu button in the title bar of client
+windows.  These directivees are normally specified in the
+.Ar keysFile
+instead of the main configuration file: see
+.Xr adwm-keys 5 ;
+however, they are also addressed here.
+.Pp
+Mouse directive apply to button pressed on the root window or
+menu button on a client window title bar.  It is possible to
+specify different commands to execute based upon the screen on
+which the button is clicked by using the
+.Li [ Ns Cm screen<s>. Ns Li ]
+syntax (where
+.Cm <s>
+is the number of the screen indexed from zero).
+.Bl -tag -width "XX"
+.It Li [ Ns Cm screen<s>. Ns Li ] Ns Cm command Ar <shell-command>
+Specifies the shell command to execute when button 3 (right
+button) is pressed on the root window.
+The default is
+.Li "\(lqxterm\(rq" .
+(The default is consistent with the behaviour of many tiling
+window managers, as most dynamic window managers do not
+support a root menu.)
+Example:
+
+.Dl Adwm* Ns Cm command Ns Li : Ar "xde-menu -P -b 3"
+
+.Pp
+.Sy Note:
+This directive is normally specified in the
+.Ar keysFile
+instead of the main configuration file.
+.It Li [ Ns Cm screen<s>. Ns Li ] Ns Cm command2 Ar <shell-command>
+Specifies the shell command to execute when button 2 (middle
+button) is pressed on the root window.
+The default is to not execute a shell command.
+Example:
+
+.Dl Adwm* Ns Cm command2 Ns Li : Ar "xde-wkspmenu -p -b 2"
+
+.Pp
+.Sy Note:
+This directive is normally specified in the
+.Ar keysFile
+instead of the main configuration file.
+.It Li [ Ns Cm screen<s>. Ns Li ] Ns Cm command3 Ar <shell-command>
+Specifies the shell command to execute when button 1 (left
+button) is pressed on the root window.
+The default is to not execute a shell command.
+Example:
+
+.Dl !Adwm* Ns Cm command3 Ns Li : Ar "xde-winlist -p -b 1 --hidden"
+
+.Pp
+.Sy Note:
+This directive is normally specified in the
+.Ar keysFile
+instead of the main configuration file.
+.It Li [ Ns Cm screen<s>. Ns Li ] Ns Cm menucommand Ar <shell-command>
+Specifies the shell command to execute when a button is
+pressed on the \(lqmenu\(rq button in the title bar.
+The default is to not execute a shell command.
+Example:
+
+.Dl Adwm* Ns Cm menucommand Ns Li : Ar "xde-winmenu -p -b 1"
+
+.Pp
+.Sy Note:
+This directive is normally specified in the
+.Ar keysFile
+instead of the main configuration file.
+.El
+.Ss GENERAL DIRECTIVES
+General directives affect primarily the general look and feel of the
+window manager.
+With the exception of
+.Cm useveil ,
+general directives can be applied to all screens, or to a specific
+screen using the
+.Li [ Ns Cm screen<s>. Ns Li ]
+syntax, where
+.Cm <s>
+is the number of the screen, indexed from zero, to which to apply the
+directive.
+The general directives are as follows:
+.Bl -tag -width "XX"
+.It Cm useveil Ar <bool>
+.Nm @PACKAGE@
+has the ability to raise a parent-relative window (veil) over
+the desktop work area before reconfiguring windows and then
+dropping the veil after windows are recofigured.  This serves
+to avoid unnecessary exposure events and to speed
+reconfiguration of the layout.  On some versions of the X
+server, this has the reverse effect and causes flickering and
+unnecessary exposure events.  This option is present so that
+the veil behaviour can be set appropriately for a specific
+system.
+.Pp
+The
+.Ar <bool>
+value can be zero (0), indicating true, or non-zero (1),
+indicating false.
+The default is zero (0): that is, the veil will not be used by
+default.
+Example:
+
+.Dl Adwm* Ns Cm useveil Ns Li : Ar 0
+
+.It Li [ Ns Cm screen<s>. Ns Li ] Ns Cm attachaside Ar <bool>
+Specifies whether newly created windows are attached on the
+master or slave side of the layout.
+The
+.Ar <bool>
+value can be zero (0), indicating true, or non-zero (1),
+indicating false.
+When true, newly created windows will be attached as slaves;
+when false, attached as master.
+The default is one (1): that is, newly created windows will be
+attached as slaves.
+Example:
+
+.Dl Adwm* Ns Cm attachaside Ns Li : Ar 0
+.Dl !I normally like attaching new windows as master
+
+.It Li [ Ns Cm screen<s>. Ns Li ] Ns Cm decoratetiled Ar <bool>
+Specifies whether to decorate tiled windows (by default) in
+tiled layouts.  Normally, tiled windows are not decorated with
+a title bar and resize grips.
+The
+.Ar <bool>
+value can be zero (0), indicating true, or non-zero (1),
+indicating false.
+When true, tiled windows are decorated by default; when false,
+they are not.
+The default value is zero (0): that is, tiled windows are not
+decorated by default.
+Example:
+
+.Dl Adwm* Ns Cm decoratetiled Ns Li : Ar 0
+
+.Pp
+.Sy Note:
+the setting of this directive can be changed on a view-by-view
+basis using the 
+.Cm dectiled
+key binding described in
+.Xr adwm-keys 5 .
+The setting of this directive merely sets the defaults for all
+views on the specified screen at startup.
+
+.It Li [ Ns Cm screen<s>. Ns Li ] Ns Cm decoratemax Ar <bool>
+Specifies whether to decorate maximized windows (by default).
+Normally, maximized windows are decorated when they are
+floaters, or in floating layouts.  However, when windows are
+maximized, more real estate can be provided to the window by
+not decorating them.
+The
+.Ar <bool>
+value can be zero (0), indicating true, or non-zero (1),
+indicating false.
+When true, maximized windows will be decorated; when false,
+they will not.
+The default value is one (1): that is, maximized windows are
+decorated by default.
+Example:
+
+.Dl Adwm* Ns Cm decoratemax Ns Li : Ar 1
+
+.Pp
+.Sy Note:
+windows that fill the available work area in tiled
+layouts (including \(lqmonacle\(rq mode) are not maximized
+windows.
+.It Li [ Ns Cm screen<s>. Ns Li ] Ns Cm hidebastards Ar <bool>
+Specifies whether to hide bastards (remove struts) or turn
+struts off.
+The
+.Ar <bool>
+value can be zero (0), indicating true, or non-zero (1),
+indicating false.
+When true, hides struts rather than turning them off;
+false, turns struts off rahter than hiding them.
+The default value is zero (0): that is, turn struts off rather
+than hiding them.
+.Pp
+Applications with struts are dock and panel applications that
+occupy the edge of the screen.  When struts are on, these
+applications occupy their reserved area and the work area on
+the screen is reduced.  When struts are off, these
+applications occupy the edge of the screen; but, the work area
+is not reduced.  When struts are hidden, the work area of the
+screen is not reduced; however, the applications owning the
+struts are not displayed.
+.Pp
+This directive affects primarily the response to the
+.Cm struts
+key binding as described in
+.Xr adwm-keys 5 .
+Setting this value to true has the effect of applying or
+removing struts; whereas, the value of false, provides for
+exposing and hiding struts.
+Example:
+
+.Dl Adwm* Ns Cm hidebastards Ns Li : Ar 1
+
+.It Li [ Ns Cm screen<s>. Ns Li ] Ns Cm autoroll Ar <bool>
+Specifies whether shaded windows (window that are rolled up inside
+their title bars) should automatically be unshaded when the window
+takes focus (is selected).
+The
+.Ar <bool>
+value can be zero (0), indicating true, or non-zero (1),
+indicating false.
+When true, windows will automatically be unshaded; false, will not.
+The default is zero (0): that is, shaded windows will not be
+automatically unshaded on being selected.
+Example:
+
+.Dl Adwm* Ns Cm autoroll Ns Li : Ar 1
+
+.It Li [ Ns Cm screen<s>. Ns Li ] Ns Cm sloppy Ar <model>
+The default value is zero (0): that is, click to focus.
+The argument,
+.Ar <model> ,
+is an integer value that can be one of the following:
+
+.Bl -tag -width ".Ar SloppyRaise(3)" -compact
+.It Ar "Clk2Focus(0)"
+click in windows to focus them;
+.It Ar "SloppyFloat(1)"
+focus follows mouse (floating windows only);
+.It Ar "AllSloppy(2)"
+focus follows mouse (all windows);
+.It Ar "SloppyRaise(3)"
+focus follows mouse and window are raised.
+.El
+.Pp
+.Sy Note:
+the most tested focus model is
+.Ar AllSloppy(2) .
+This is primarly because it is the model that I use every day.
+.It Li [ Ns Cm screen<s>. Ns Li ] Ns Cm snap Ar <pixels>
+Specifies the snap distance in pixels to be used when moving
+floating windows.  When moving windows, when a window edge
+come within
+.Ar <pixels>
+of a similarly oriented edge of another window, or the edge of
+the monitor or desktop work area, the window will snap to that
+position.
+The default value is five (5) pixels.
+Example:
+
+.Dl Adwm* Ns Cm snap Ns Li : Ar 5
+
+.It Li [ Ns Cm screen<s>. Ns Li ] Ns Cm dragdistance Ar <pixels>
+When
+.Nm @PACKAGE@
+receives a click on a title bar or resize grip, the action
+performed can depend upon whether the pointer is dragged or
+whether the button is simply clicked.  When clicking a mouse
+button, the pointer may mechanically move a small amount
+making it difficult to click in a title bar or resize grip.
+The drag distance, in pixels, is the distance that the pointer
+can move while a button is depressed without the window
+manager considering the action to be a drag.  This applies to
+all drags supported by the window manager.  The default
+value is five (5) pixels.  Example:
+
+.Dl Adwm* Ns Cm dragdistance Ns Li : Ar 5
+
+.It Li [ Ns Cm screen<s>. Ns Li ] Ns Cm mwfact Ar <float>
+Specifies the factor for the width of the master area in
+tiled layouts.  The argument is a floating point number
+between 0.1 and 0.9 (inclusive) that specifies the proportion
+of the width of the work area allocated to the master.  The
+default is 0.6 (60% of the width of the work area).
+Example:
+
+.Dl Adwm* Ns Cm mwfact Ns Li : Ar 0.6
+
+.Pp
+.Sy Note:
+this is
+the default value for new layouts; the value for specific
+views can be changed using the
+.Cm mwfact
+key binding defined in
+.Xr adwm-keys 5 .
+.It Li [ Ns Cm screen<s>. Ns Li ] Ns Cm mhfact Ar <float>
+Specifies the factor for the height of the master area in
+tiled layouts.  The argument is a floating point number
+between 0.1 and 0.9 (inclusive) that specifies the proportion
+of the height of the work area allocated to the master.  The
+default is 1.0 (100% of the height of the work area).
+Example:
+
+.Dl Adwm* Ns Cm mhfact Ns Li : Ar 0.5
+
+.Pp
+.Sy Note:
+this is
+the default value for new layouts; nevertheless the value is
+not currently used.
+.It Li [ Ns Cm screen<s>. Ns Li ] Ns Cm nmaster Ar <number>
+Specifies the default number of master windows in master/slave
+tiled layouts.  Tiled layouts have a fixed number of masters
+and a variable number of slaves.  This directive sets the
+default number of masters.  The number of masters in a layout
+can be changed using the
+.Cm nmaster
+key binding described in
+.Xr adwm-keys 5 .
+The default number is one (1).  Only values between 1 and 10
+(inclusive) are permitted.
+Example:
+
+.Dl Adwm* Ns Cm nmaster Ns Li : Ar 1
+
+.It Li [ Ns Cm screen<s>. Ns Li ] Ns Cm ncolumns Ar <number>
+Specifies the default number of columns (rows) in grid tiled
+layouts.  Grid layouts have a fixed number of rows or columns
+over which viewed windows are distributed.  This directive
+sets the default number.  The number of columns (rows) in a
+layout can be changed using the
+.Cm ncolumns
+key binding described in
+.Xr adwm-keys 5 .
+The default number is three (3).  Only values between 1 and 10
+(inclusive) are permitted.
+Example:
+
+.Dl Adwm* Ns Cm ncolumns Ns Li : Ar 3
+
+.El
+.Ss DOCK DIRECTIVES
+The dock is an area that contains Window Maker dock
+applications.
+The following directives specify the position and orientation
+of the dock.
+.Bl -tag -width "XX"
+.It Li [ Ns Cm screen<s>. Ns Li ] Ns Cm dock.position Ar <position>
+Specifies the position of the dock on the screen.
+The argument,
+.Ar <position> ,
+is an integer value that can be one of the following:
+
+.Bl -tag -width ".Ar DockSouthWest(0)" -compact
+.It Ar "DockNone(0)"
+default (same as
+.Ar "DockEast(1)" Ns );
+.It Ar "DockEast(1)"
+centered right on the screen;
+.It Ar "DockNorthEast(2)"
+top right on the screen;
+.It Ar "DockNorth(3)"
+centered top on the screen;
+.It Ar "DockNorthWest(4)"
+top left on the screen;
+.It Ar "DockWest(5)"
+centered left on the screen;
+.It Ar "DockSouthWest(6)"
+bottom left on the screen;
+.It Ar "DockSouth(7)"
+centered bottom on the screen;
+.It Ar "DockSouthEast(9)"
+bottom right on the screen.
+.El
+.Pp
+The default value is
+.Ar "DockNone(0)" :
+that is, the dock is centered on the right of the screen.
+.It Li [ Ns Cm screen<s>. Ns Li ] Ns Cm dock.orient Ar <orientation>
+Specifies the orientation of the dock on the screen.
+The argument,
+.Ar "<orientation>" ,
+is an integer value that can be one of the following:
+
+.Bl -tag -width ".Ar DockVert(1)" -compact
+.It Ar DockHorz(0)
+the dock is filled horizontally;
+.It Ar DockVert(1)
+the dock is filled vertically.
+.El
+.Pp
+The default value is chosen based on
+.Cm "dock.position" ,
+and is chosen so that the dock extends along the edge of the
+screen.
+.It Li [ Ns Cm screen<s>. Ns Li ] Ns Cm dock.monitor Ar <monitor>
+Specifies the monitor (in a multi-head setup) that will be
+used to contain the dock.  The argument,
+.Ar <monitor> ,
+is a value between zero (0) and the number of monitors
+(inclusive).
+.Pp
+The special value zero (0) indicates that the
+monitor for the dock should be automatically chosen based on
+.Cm "dock.position" .
+When chosen automatically, the monitor selected for the dock
+will be the monitor closest to the dock position on the
+screen.
+The other values indicate the monitor number of the monitor
+that should contain the dock.
+.Pp
+The default value is zero (0): that is, the dock monitor is
+chosen automatically.  Example:
+
+.Dl Adwm* Ns Cm dock.monitor Ns Li : Ar 0
+
+.It Li [ Ns Cm screen<s>. Ns Li ] Ns Cm dock.app<n> Ar "<res_name> <res_class> <wm_command>"
+Specifies the relative position of dock applications in the
+dock.
+Dock applications with a value of
+.Cm <n>
+that is lower are placed earlier in the dock; higher, placed
+later.
+The arguments (separated by a single space) are interpreted as
+follows:
+
+.Bl -tag -width ".Ar <wm_command>" -compact
+.It Ar "<res_name>"
+resource name in
+.Cm "WM_CLASS"
+property;
+.It Ar "<res_class>"
+resource class in
+.Cm "WM_CLASS"
+property;
+.It Ar "<wm_command>"
+command in
+.Cm "WM_COMMAND"
+property.
+.El
+.Pp
+Example:
+
+.Dl Adwm* Ns Cm dock.app0 Ns Li : Ar " wmclockmon DockApp wmclockmon"
+.Dl Adwm* Ns Cm dock.app1 Ns Li : Ar " wmblob DockApp wmblob"
+.Dl Adwm* Ns Cm dock.app2 Ns Li : Ar " wmnd wmnd wmnd"
+.Dl Adwm* Ns Cm dock.app3 Ns Li : Ar " wmcore wmcore wmcore"
+.Dl Adwm* Ns Cm dock.app4 Ns Li : Ar " wmcpuload DockApp wmcpuload"
+.Dl Adwm* Ns Cm dock.app5 Ns Li : Ar " wmtimer wmtimer wmtimer"
+.Dl Adwm* Ns Cm dock.app6 Ns Li : Ar " wmsysmon wmsysmon wmsysmon"
+.Dl Adwm* Ns Cm dock.app7 Ns Li : Ar " wmtimer wmtimer wmtimer"
+.Dl Adwm* Ns Cm dock.app8 Ns Li : Ar " wmbubble wmbubble wmbubble"
+.Dl Adwm* Ns Cm dock.app9 Ns Li : Ar " wmmixer WMMixer wmmixer"
+.Dl Adwm* Ns Cm dock.app10 Ns Li : Ar "wmnet WMNET wmnet"
+.Dl Adwm* Ns Cm dock.app11 Ns Li : Ar "wmCalClock wmCalClock wmCalClock"
+.El
+.Sh DEFAULTS
+The default configuration is provided in the default
+configuration file, typically,
+.Pa "$HOME/.adwm/adwmrc" .
+A system default configuration file is provided in
+.Pa "/usr/share/adwm/adwmrc" .
+See \(lqFILES,\(rq below.
+.Sh FILES
+.Bl -tag -width "XX"
+.It Pa $HOME/.adwm/adwmrc
+The location of the default user's configuration file.
+.It Pa $HOME/.adwm/keysrc
+The location of the default user's key bindings file.
+.It Pa $HOME/.adwm/styles/Default/stylerc
+The location of the default user's style file.
+.It Pa /usr/share/adwm/adwmrc
+The location of the system default configuration file.
+.It Pa /usr/share/adwm/keysrc
+The location of the system default key bindings file.
+.It Pa /usr/share/adwm/styles/Default/keysrc
+The location of the system default themed key bindings file.
+.It Pa /usr/share/adwm/styles/Default/stylerc
+The location of the system default themed style file.
+.El
+.Sh SEE ALSO
+.Rb
+.Xr adwm 1 ,
+.Xr adwm-keys 5 ,
+.Xr adwm-style 5 ,
+.Xr dwm 1 ,
+.Xr openbox 1 ,
+.Xr pekwm 1 ,
+.Xr blackbox 1 ,
+.Xr fluxbox 1 ,
+.Xr icewm 1 .
+.Re
+.Sh BUGS
+No outstanding bugs.
+.Sh AUTHORS
+.An Brian Bidulock Aq bidulock@openss7.org

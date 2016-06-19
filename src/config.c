@@ -240,8 +240,8 @@ initscreen(void)
 
 	scr->options = options;
 
-	strncpy(n, "attachside", nlen);
-	strncpy(c, "Attachside", clen);
+	strncpy(n, "attachaside", nlen);
+	strncpy(c, "Attachaside", clen);
 	if ((res = readres(name, clas, NULL)))
 		scr->options.attachaside = atoi(res) ? True : False;
 	strncpy(n, "command", nlen);

@@ -394,7 +394,7 @@ addchain(Key *k)
 		if ((*kp)->chain && k->chain)
 			mergechain(*kp, k);
 		else {
-			DPRINTF("Overriding previous key definition %d of %d: %s!\n", i + 1, scr->nkeys, showchain(k));
+			DPRINTF("Overriding previous key definition: %s!\n", showchain(k));
 			k->cnext = (*kp)->cnext;
 			(*kp)->cnext = NULL;
 			freechain(*kp);

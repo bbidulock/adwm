@@ -1862,7 +1862,7 @@ keypress(XEvent *e)
 						break;
 			}
 			if (k) {
-				DPRINTF("KeyPress: activating action\n");
+				DPRINTF("KeyPress: activating action for chain: %s\n", showchain(k));
 				handled = True;
 				if (k->func)
 					k->func(&ev, k);

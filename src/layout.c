@@ -918,19 +918,11 @@ configureclient(XEvent *e, Client *c, int gravity)
 
 		g = c->c;
 
-		if ((ev->value_mask & CWX) && ev->x != g.x && !c->can.move)
-			CPRINTF(c, "refusing to move client\n");
-		if ((ev->value_mask & CWY) && ev->y != g.y && !c->can.move)
-			CPRINTF(c, "refusing to move client\n");
-		if ((ev->value_mask & CWWidth) && ev->width != g.w && !c->can.sizeh && ev->width != c->maxw)
-			CPRINTF(c, "refusing to resize client width\n");
-		if ((ev->value_mask & CWHeight) && ev->height != g.h && !c->can.sizev && ev->height != c->maxh)
-			CPRINTF(c, "refusing to resize client height\n");
-
-		dx = ((ev->value_mask & CWX) && c->can.move) ? ev->x - g.x : 0;
-		dy = ((ev->value_mask & CWY) && c->can.move) ? ev->y - g.y : 0;
-		dw = ((ev->value_mask & CWWidth) && (c->can.sizeh || ev->width == c->maxw)) ? ev->width - g.w : 0;
-		dh = ((ev->value_mask & CWHeight) && (c->can.sizev || ev->height == c->maxh)) ? ev->height - (g.h - g.t - g.g) : 0;
+		/* we should really refuse to do anything at this point... */
+		dx = (ev->value_mask & CWX) ? ev->x - g.x : 0;
+		dy = (ev->value_mask & CWY) ? ev->y - g.y : 0;
+		dw = (ev->value_mask & CWWidth) ? ev->width - g.w : 0;
+		dh = (ev->value_mask & CWHeight) ? ev->height - (g.h - g.t - g.g) : 0;
 		g.b = (ev->value_mask & CWBorderWidth) ? ev->border_width : g.b;
 
 		moveresizekb(c, dx, dy, dw, dh, gravity);
@@ -2303,7 +2295,7 @@ arrangeview(View *v)
 	for (c = scr->stack; c; c = c->snext) {
 		if ((clientview(c) == v) &&
 		    ((!c->is.bastard && !c->is.dockapp && !(c->is.icon || c->is.hidden))
-		     || ((c->is.bastard || c->is.dockapp) && struts == StrutsOn))) {
+		     || ((c->is.bastard || c->is.dockapp) && struts != StrutsHide))) {
 			unban(c, v);
 		}
 	}

@@ -272,8 +272,8 @@ initscreen(void)
 	strncpy(c, "Hidebastards", clen);
 	if ((res = readres(name, clas, NULL)))
 		scr->options.hidebastards = atoi(res) ? True : False;
-	strncpy(n, "struts", nlen);
-	strncpy(c, "Struts", clen);
+	strncpy(n, "strutsactive", nlen);
+	strncpy(c, "StrutsActive", clen);
 	if ((res = readres(name, clas, NULL)))
 		scr->options.struts = atoi(res) ? True : False;
 	strncpy(n, "autoroll", nlen);
@@ -386,8 +386,8 @@ initconfig(void)
 	strcpy(n, "hidebastards");
 	strcpy(c, "Hidebastards");
 	options.hidebastards = atoi(readres(name, clas, "0")) ? True : False;
-	strcpy(n, "struts");
-	strcpy(c, "Struts");
+	strcpy(n, "strutsactive");
+	strcpy(c, "StrutsActive");
 	options.struts = atoi(readres(name, clas, "1")) ? True : False;
 	strcpy(n, "autoroll");
 	strcpy(c, "Autoroll");

@@ -1020,6 +1020,7 @@ typedef struct {
 	Bool dectiled;
 	Bool decmax;
 	Bool hidebastards;
+	Bool struts;
 	Bool autoroll;
 	int focus;
 	int snap;

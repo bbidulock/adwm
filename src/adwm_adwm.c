@@ -949,7 +949,7 @@ initlayouts_ADWM(void)
 				break;
 			}
 		l = v->layout;
-		v->barpos = StrutsOn;
+		v->barpos = scr->options.struts ? StrutsOn : scr->options.hidebastards ? StrutsHide : StrutsOff;
 		v->dectiled = scr->options.dectiled;
 		v->nmaster = scr->options.nmaster;
 		v->ncolumns = scr->options.ncolumns;

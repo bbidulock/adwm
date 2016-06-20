@@ -374,7 +374,7 @@ applystate(Client *c, XWMHints *wmh)
 	case WithdrawnState:
 		/* for windows that are not mapped */
 		c->is.dockapp = True;
-		c->is.above = True;	/* for now */
+		c->is.above = False;
 		c->skip.skip = -1U;
 		c->skip.arrange = False;
 		c->skip.sloppy = False;
@@ -1283,6 +1283,7 @@ focus(Client *c)
 		drawclient(o);
 		if (o->is.shaded && scr->options.autoroll && isvisible(o, o->cview))
 			arrange(o->cview);
+		lowertiled(o);
 		ewmh_update_net_window_state(o);
 	}
 	setfocus(sel);

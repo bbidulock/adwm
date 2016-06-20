@@ -2337,7 +2337,12 @@ restack()
 	Client *c, **ol, **cl, **sl;
 	Window *wl;
 	int i, j, n;
+	View *v;
+	Bool strutsoff = False;
 
+	XPRINTF("%s\n", "RESTACKING: -------------------------------------");
+	if ((v = selview()) && v->barpos == StrutsOff)
+		strutsoff = True;
 	for (n = 0, c = scr->stack; c; c = c->snext, n++) ;
 	if (!n) {
 		ewmh_update_net_client_list_stacking();
@@ -2378,14 +2383,52 @@ restack()
 			XPRINTF("client 0x%08lx 0x%08lx %s\n", c->frame, c->win, c->name);
 		}
 	}
-	/* windows of type _NET_WM_TYPE_DOCK (unless they have state _NET_WM_STATE_BELOW) 
-	   and windows having state _NET_WM_STATE_ABOVE. */
+	/* Auto hiding of docks and panels: when struts are off */
+	if (strutsoff && sel && WTCHECK(sel, WindowTypeDock)) {
+		XPRINTF("selected client 0x%08lx 0x%08lx %s\n", sel->frame, sel->win, sel->name);
+		if (sel->is.dockapp) {
+			/* If a dockapp is selected, all dockapps go on top (but below
+			   fullscreen windows. */
+			XPRINTF("%s", "LAYER: selected dock apps:\n");
+			for (i = 0; i < n; i++) {
+				if (!(c = cl[i]))
+					continue;
+				if (c->is.dockapp) {
+					cl[i] = NULL;
+					wl[j] = c->frame;
+					sl[j] = c;
+					j++;
+					XPRINTF("client 0x%08lx 0x%08lx %s\n", c->frame,
+						c->win, c->name);
+				}
+			}
+		} else {
+			/* Selected windows of type _NET_WM_TYPE_DOCK are placed on top
+			   (but below focused full screen windows. */
+			XPRINTF("%s", "LAYER: selected panels:\n");
+			for (i = 0; i < n; i++) {
+				if (!(c = cl[i]))
+					continue;
+				if (sel == c) {
+					cl[i] = NULL;
+					wl[j] = c->frame;
+					sl[j] = c;
+					j++;
+					XPRINTF("client 0x%08lx 0x%08lx %s\n", c->frame,
+						c->win, c->name);
+				}
+			}
+		}
+	}
+	/* windows of type _NET_WM_TYPE_DOCK (unless they have state _NET_WM_STATE_BELOW, 
+	   or struts are off and they are not selected) and windows having state
+	   _NET_WM_STATE_ABOVE. */
 	XPRINTF("%s",
 		"LAYER: _NET_WINDOW_TYPE_DOCK not _NET_WM_STATE_BELOW and _NET_WM_STATE_ABOVE:\n");
 	for (i = 0; i < n; i++) {
 		if (!(c = cl[i]))
 			continue;
-		if ((WTCHECK(c, WindowTypeDock) && !c->is.below) || c->is.above) {
+		if ((WTCHECK(c, WindowTypeDock) && !c->is.below && (!strutsoff || c == sel)) || c->is.above) {
 			cl[i] = NULL;
 			wl[j] = c->frame;
 			sl[j] = c;
@@ -2408,16 +2451,19 @@ restack()
 			XPRINTF("client 0x%08lx 0x%08lx %s\n", c->frame, c->win, c->name);
 		}
 	}
+	/* this layer should not contain _NET_WINDOW_TYPE_DOCK when struts are off */
 	XPRINTF("%s", "LAYER: bastards:\n");
 	for (i = 0; i < n; i++) {
 		if (!(c = cl[i]))
 			continue;
 		if (c->is.bastard && !c->is.below && !WTCHECK(c, WindowTypeDesk)) {
-			cl[i] = NULL;
-			wl[j] = c->frame;
-			sl[j] = c;
-			j++;
-			XPRINTF("client 0x%08lx 0x%08lx %s\n", c->frame, c->win, c->name);
+			if (!strutsoff || !WTCHECK(c, WindowTypeDock)) {
+				cl[i] = NULL;
+				wl[j] = c->frame;
+				sl[j] = c;
+				j++;
+				XPRINTF("client 0x%08lx 0x%08lx %s\n", c->frame, c->win, c->name);
+			}
 		}
 	}
 	XPRINTF("%s", "LAYER: tiled:\n");
@@ -2439,6 +2485,34 @@ restack()
 		if (!(c = cl[i]))
 			continue;
 		if (c->is.below && !WTCHECK(c, WindowTypeDesk)) {
+			cl[i] = NULL;
+			wl[j] = c->frame;
+			sl[j] = c;
+			j++;
+			XPRINTF("client 0x%08lx 0x%08lx %s\n", c->frame, c->win, c->name);
+		}
+	}
+	/* struts are off, unselected windows of type _NET_WM_TYPE_DOCK (includes dockapps) */
+	if (strutsoff) {
+		XPRINTF("%s", "LAYER: unselected panels and dock apps:\n");
+		for (i = 0; i < n; i++) {
+			if (!(c = cl[i]))
+				continue;
+			if (WTCHECK(c, WindowTypeDock)) {
+				cl[i] = NULL;
+				wl[j] = c->frame;
+				sl[j] = c;
+				j++;
+				XPRINTF("client 0x%08lx 0x%08lx %s\n", c->frame, c->win, c->name);
+			}
+		}
+	}
+	/* anything missed other than windows of type _NET_WM_TYPE_DESKTOP */
+	XPRINTF("%s", "LAYER: missed clients not having _NET_WINDOW_TYPE_DESKTOP:\n");
+	for (i = 0; i < n; i++) {
+		if (!(c = cl[i]))
+			continue;
+		if (!WTCHECK(c, WindowTypeDesk)) {
 			cl[i] = NULL;
 			wl[j] = c->frame;
 			sl[j] = c;
@@ -2918,6 +2992,20 @@ raisetiled(Client *c)
 		raiseclient(c);
 	}
 }
+
+void
+lowertiled(Client *c)
+{
+	if (c->is.bastard || c->is.dockapp || !isfloating(c, c->cview)) {
+		CPRINTF(c, "lowering non-floating client on loss of focus\n");
+		if (c->is.bastard || c->is.dockapp) {
+			c->is.below = True;
+			c->is.above = False;
+		}
+		lowerclient(c);
+	}
+}
+
 
 void
 setmwfact(View *v, double factor)

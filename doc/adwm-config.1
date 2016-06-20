@@ -399,6 +399,25 @@ Example:
 
 .Dl Adwm* Ns Cm hidebastards Ns Li : Ar 1
 
+.It Li [ Ns Cm screen<s>. Ns Li ] Ns Cm struts Ar <bool>
+Specifies whether struts (panels and dock) should default to
+shown or hidden.
+The
+.Ar <bool>
+value can be zero (0), indicating true, or non-zero (1),
+indicating false.
+When true, struts default to shown; false, hidden.
+The default value is one (1): that is, struts are shown by default.
+Example:
+
+.Dl Adwm* Ns Cm struts Ns Li : Ar 1
+.Pp
+.Sy Note:
+this setting only affects the default for views.  The actual
+setting for a particular view can be altered using the
+.Cm struts
+key binding as described in
+.Xr adwm-keys 5 .
 .It Li [ Ns Cm screen<s>. Ns Li ] Ns Cm autoroll Ar <bool>
 Specifies whether shaded windows (window that are rolled up inside
 their title bars) should automatically be unshaded when the window

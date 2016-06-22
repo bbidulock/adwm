@@ -2662,7 +2662,8 @@ ewmh_process_net_window_type(Client *c)
 		    WTCHECK(c, WindowTypeCombo) || WTCHECK(c, WindowTypeDnd)) {
 			c->is.bastard = True;
 			c->skip.skip = -1U;	/* skip everything */
-			c->skip.sloppy = False;
+			if (WTCHECK(c, WindowTypeDock))
+				c->skip.sloppy = False;
 			c->can.can = 0;	/* no functionality */
 			c->has.has = 0;	/* no decorations */
 			c->is.floater = True;

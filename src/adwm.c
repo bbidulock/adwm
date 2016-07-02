@@ -16,6 +16,7 @@
 #include <strings.h>
 #include <unistd.h>
 #include <regex.h>
+#include <wordexp.h>
 #include <signal.h>
 #include <math.h>
 #include <execinfo.h>
@@ -3983,10 +3984,35 @@ setup(char *conf, AdwmOperations *ops)
 void
 spawn(const char *arg)
 {
-	static char shell[] = "/bin/sh";
+	wordexp_t we = { 0, };
+	int status;
 
 	if (!arg)
 		return;
+	if ((status = wordexp(arg, &we, 0)) != 0 || we.we_wordc < 1) {
+		switch(status) {
+		case WRDE_BADCHAR:
+			fprintf(stderr, "adwm: bad character in command string: %s\n", arg);
+			break;
+		case WRDE_BADVAL:
+			fprintf(stderr, "adwm: undefined variable substitution in command string: %s\n", arg);
+			break;
+		case WRDE_CMDSUB:
+			fprintf(stderr, "adwm: command substitution in command string: %s\n", arg);
+			break;
+		case WRDE_NOSPACE:
+			fprintf(stderr, "adwm: out of memory processing command string: %s\n", arg);
+			break;
+		case WRDE_SYNTAX:
+			fprintf(stderr, "adwm: syntax error in command string: %s\n", arg);
+			break;
+		default:
+			fprintf(stderr, "adwm: unknown error processing command string: %s\n", arg);
+			break;
+		}
+		wordfree(&we); /* necessary ??? */
+		return;
+	}
 	if (fork() == 0) {
 		char *d, *p;
 
@@ -4002,9 +4028,12 @@ spawn(const char *arg)
 			snprintf(s, len, "%s.%d", d, scr->screen);
 			setenv("DISPLAY", s, 1);
 		}
-		execl(shell, shell, "-c", arg, (char *) NULL);
-		fprintf(stderr, "adwm: execl '%s -c %s'", shell, arg);
+		execvp(we.we_wordv[0], we.we_wordv);
+		fprintf(stderr, "adwm: execvp %s (%s)", we.we_wordv[0], arg);
 		perror(" failed");
+		exit(EXIT_FAILURE);
+	} else {
+		wordfree(&we);
 	}
 }
 

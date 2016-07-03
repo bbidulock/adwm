@@ -883,21 +883,25 @@ Spawns the n'th command argument.
 can be from 0 to 63.
 .Pp
 Defaults:
-.Dl Cm Adwm*spawn0 Ns : Ar "CA + t" = Qq roxterm
-.Dl Cm Adwm*spawn1 Ns : Ar "CA + w" = Qq firefox
-.Dl Cm Adwm*spawn2 Ns : Ar "CA + f" = Qq pcmanfm
-.Dl Cm Adwm*spawn3 Ns : Ar "CA + r" = Qq xde-run
-.Dl Cm Adwm*spawn4 Ns : Ar "CA + v" = Qq gvim
-.Dl Cm Adwm*spawn5 Ns : Ar "CA + n" = Qq uxterm
-.Dl Cm Adwm*spawn6 Ns : Ar "CA + m" = Qq xdg-traymenu -p
-.Dl Cm Adwm*spawn7 Ns : Ar "WS + Return" = Qq xde-term
-.Dl Cm Adwm*spawn8 Ns : Ar "W + p" = Qq xde-traymenu -p
+.Dl Cm Adwm*spawn0 Ns : Ar "CA + t" Li = roxterm
+.Dl Cm Adwm*spawn1 Ns : Ar "CA + w" Li = firefox
+.Dl Cm Adwm*spawn2 Ns : Ar "CA + f" Li = pcmanfm
+.Dl Cm Adwm*spawn3 Ns : Ar "CA + r" Li = xde-run
+.Dl Cm Adwm*spawn4 Ns : Ar "CA + v" Li = gvim
+.Dl Cm Adwm*spawn5 Ns : Ar "CA + n" Li = uxterm
+.Dl Cm Adwm*spawn6 Ns : Ar "CA + m" Li = xdg-traymenu -p
+.Dl Cm Adwm*spawn7 Ns : Ar "WS + Return" Li = xde-term
+.Dl Cm Adwm*spawn8 Ns : Ar "W + p" Li = xde-traymenu -p
 .Pp
 .It Cm command Ar command
 This is not a key binding.  It specifies a command, 
 .Ar command ,
 to execute when a mouse button is pressed on the root window.  The default pops an
 XDG root menu.
+.Pp
+Note that additional keybindings with commands can be specified on the
+same line following a comma, commas in commands must be escaped with
+two backslashes (one for xrdb and one for adwm).
 .Pp
 Default:
 .Dl Cm Adwm*command Ns : Ar "xdg-traymenu -p -b 1"

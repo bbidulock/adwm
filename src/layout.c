@@ -4601,7 +4601,7 @@ getclientstrings(Client *c, char **name, char **clas, char **cmd)
 	size_t tot = 0;
 	XClassHint ch = { NULL, };
 
-	if (XGetClassHint(dpy, c->win, &ch)) {
+	if (getclasshint(c, &ch)) {
 		if (ch.res_name) {
 			nam = strdup(ch.res_name);
 			XFree(ch.res_name);
@@ -4613,7 +4613,7 @@ getclientstrings(Client *c, char **name, char **clas, char **cmd)
 	}
 	*name = nam;
 	*clas = cls;
-	if (XGetCommand(dpy, c->win, &argv, &argc)) {
+	if (getcommand(c, &argv, &argc)) {
 		for (i = 0; i < argc; i++) {
 			size_t len = strlen(argv[i]);
 			const char *p = argv[i], *e = p + len;

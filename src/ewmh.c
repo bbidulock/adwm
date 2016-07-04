@@ -28,12 +28,15 @@ Atom atom[NATOMS];
 char *atomnames[NATOMS] = {
 	"MANAGER",
 	"UTF8_STRING",
+	"SM_CLIENT_ID",
 	"WM_PROTOCOLS",
 	"WM_DELETE_WINDOW",
 	"WM_SAVE_YOURSELF",
 	"WM_STATE",
 	"WM_CHANGE_STATE",
 	"WM_TAKE_FOCUS",
+	"WM_CLIENT_LEADER",
+	"WM_WINDOW_ROLE",
 	"_ECHINUS_LAYOUT",
 	"_ECHINUS_SELTAGS",
 	"_NET_RELOAD",
@@ -200,8 +203,117 @@ char *atomnames[NATOMS] = {
 #define MWM_STARTUP_STANDARD	(1<<0)
 #define MWM_STARTUP_CUSTOM	(1<<1)
 
+static Bool
+parse_startup_id(const char *id, char **launcher_p, char **launchee_p, char **hostname_p,
+		 pid_t *pid_p, long *sequence_p, long *timestamp_p)
+{
+	long sequence = 0, timestamp = 0;
+	pid_t pid = 0;
+	const char *p;
+	char *endptr = NULL;
+
+	do {
+		const char *q;
+		char *tmp;
+
+		p = q = id;
+		if (!(p = strchr(q, '/')))
+			break;
+		if (launcher_p)
+			*launcher_p = strndup(q, p - q);
+		q = p + 1;
+		if (!(p = strchr(q, '/')))
+			break;
+		if (launchee_p)
+			*launchee_p = strndup(q, p - q);
+		q = p + 1;
+		if (!(p = strchr(q, '-')))
+			break;
+		tmp = strndup(q, p - q);
+		pid = strtoul(tmp, &endptr, 10);
+		free(tmp);
+		if (endptr && *endptr)
+			break;
+		if (pid_p)
+			*pid_p = pid;
+		q = p + 1;
+		if (!(p = strchr(q, '-')))
+			break;
+		tmp = strndup(q, p - q);
+		sequence = strtoul(tmp, &endptr, 10);
+		free(tmp);
+		if (endptr && *endptr)
+			break;
+		if (sequence_p)
+			*sequence_p = sequence;
+		q = p + 1;
+		if (!(p = strstr(q, "_TIME")))
+			break;
+		if (hostname_p)
+			*hostname_p = strndup(q, p - q);
+		q = p + 5;
+		timestamp = strtoul(q, &endptr, 10);
+		if (endptr && *endptr)
+			break;
+		if (timestamp_p)
+			*timestamp_p = timestamp;
+		return (True);
+	}
+	while (0);
+
+	if (!timestamp && (p = strstr(id, "_TIME"))) {
+		timestamp = strtoul(p + 5, &endptr, 10);
+		if (!endptr || !*endptr)
+			if (timestamp_p)
+				*timestamp_p = timestamp;
+	}
+	return (False);
+}
+
 #ifdef STARTUP_NOTIFICATION
 static Notify *notifies;
+
+static Notify *
+n_new_notify(SnStartupSequence *seq)
+{
+	Notify *n;
+	Time timestamp;
+
+	n = emallocz(sizeof(*n));
+	n->seq = seq;
+	sn_startup_sequence_ref(seq);
+	n->assigned = False;
+	parse_startup_id(sn_startup_sequence_get_id(seq),
+			 &n->launcher, &n->launchee, &n->hostname,
+			 &n->pid, &n->sequence, &n->timestamp);
+	if (!n->timestamp)
+		if ((timestamp = sn_startup_sequence_get_timestamp(seq)) != -1)
+			n->timestamp = timestamp;
+	return (n);
+}
+
+static void
+n_del_notify(Notify *n)
+{
+	if (n->launcher) {
+		free(n->launcher);
+		n->launcher = NULL;
+	}
+	if (n->launchee) {
+		free(n->launchee);
+		n->launchee = NULL;
+	}
+	if (n->hostname) {
+		free(n->hostname);
+		n->hostname = NULL;
+	}
+	if (n->seq) {
+		sn_startup_sequence_unref(n->seq);
+		n->seq = NULL;
+	}
+	n->next = NULL;
+	free(n);
+}
 
 static void
 sn_handler(SnMonitorEvent * event, void *dummy)
@@ -213,32 +325,31 @@ sn_handler(SnMonitorEvent * event, void *dummy)
 
 	switch (sn_monitor_event_get_type(event)) {
 	case SN_MONITOR_EVENT_INITIATED:
-		n = emallocz(sizeof(*n));
-		n->seq = sn_monitor_event_get_startup_sequence(event);
-		n->assigned = False;
+		n = n_new_notify(seq);
 		n->next = notifies;
 		notifies = n;
+		DPRINTF("sn initiated id '%s'\n",
+			sn_startup_sequence_get_id(seq));
 		break;
 	case SN_MONITOR_EVENT_CHANGED:
+		DPRINTF("sn changed id '%s'\n",
+			sn_startup_sequence_get_id(seq));
 		break;
 	case SN_MONITOR_EVENT_COMPLETED:
 	case SN_MONITOR_EVENT_CANCELED:
-		seq = sn_monitor_event_get_startup_sequence(event);
+		DPRINTF("sn completed/canceled id '%s'\n",
+			sn_startup_sequence_get_id(seq));
 		np = &notifies;
 		while ((n = *np)) {
 			if (n->seq == seq) {
-				sn_startup_sequence_unref(n->seq);
 				*np = n->next;
-				free(n);
+				n_del_notify(n);
 			} else {
 				np = &n->next;
 			}
 		}
 		break;
 	}
-	if (seq)
-		sn_startup_sequence_unref(seq);
-	sn_monitor_event_unref(event);
 }
 #endif
 
@@ -1696,7 +1807,9 @@ ewmh_update_net_window_visible_name(Client *c)
 	XTextProperty prop = { NULL, };
 
 	if (c->name) {
-		if (Xutf8TextListToTextProperty(dpy, &c->name, 1, XUTF8StringStyle, &prop)
+		char *list[2] = { c->name, NULL };
+
+		if (Xutf8TextListToTextProperty(dpy, list, 1, XUTF8StringStyle, &prop)
 		    == Success) {
 			XSetTextProperty(dpy, c->win, &prop, _XA_NET_WM_VISIBLE_NAME);
 			if (prop.value)
@@ -1713,7 +1826,9 @@ ewmh_update_net_window_visible_icon_name(Client *c)
 	XTextProperty prop = { NULL, };
 
 	if (c->icon_name) {
-		if (Xutf8TextListToTextProperty(dpy, &c->icon_name, 1, XUTF8StringStyle,
+		char *list[2] = { c->icon_name, NULL };
+
+		if (Xutf8TextListToTextProperty(dpy, list, 1, XUTF8StringStyle,
 						&prop) == Success) {
 			XSetTextProperty(dpy, c->win, &prop,
 					 _XA_NET_WM_VISIBLE_ICON_NAME);
@@ -1724,97 +1839,6 @@ ewmh_update_net_window_visible_icon_name(Client *c)
 		XDeleteProperty(dpy, c->win, _XA_NET_WM_VISIBLE_ICON_NAME);
 	}
 }
-
-#ifdef STARTUP_NOTIFICATION
-SnStartupSequence *
-find_startup_seq(Client *c)
-{
-	Notify *n = NULL;
-	SnStartupSequence *seq = NULL;
-	XClassHint ch;
-	char **argv;
-	int argc;
-	const char *binary, *wmclass;
-
-	if ((seq = c->seq))
-		return seq;
-	if (c->startup_id) {
-		for (n = notifies; n; n = n->next)
-			if (!strcmp(c->startup_id, sn_startup_sequence_get_id(n->seq)))
-				break;
-		if (!n) {
-			DPRINTF("Cannot find startup id '%s'!\n", c->startup_id);
-			return NULL;
-		}
-		goto found_it;
-	}
-	if (XGetClassHint(dpy, c->win, &ch)) {
-		for (n = notifies; n; n = n->next) {
-			if (n->assigned)
-				continue;
-			if (sn_startup_sequence_get_completed(n->seq))
-				continue;
-			if ((wmclass = sn_startup_sequence_get_wmclass(n->seq))) {
-				if (ch.res_name && !strcmp(wmclass, ch.res_name))
-					break;
-				if (ch.res_class && !strcmp(wmclass, ch.res_class))
-					break;
-			}
-		}
-		if (ch.res_class)
-			XFree(ch.res_class);
-		if (ch.res_name)
-			XFree(ch.res_name);
-		if (n)
-			goto found_it;
-	}
-	if (XGetCommand(dpy, c->win, &argv, &argc)) {
-		for (n = notifies; n; n = n->next) {
-			if (n->assigned)
-				continue;
-			if (sn_startup_sequence_get_completed(n->seq))
-				continue;
-			if ((binary = sn_startup_sequence_get_binary_name(n->seq))) {
-				if (argv[0] && !strcmp(binary, argv[0]))
-					break;
-			}
-		}
-		if (argv)
-			XFreeStringList(argv);
-		if (n)
-			goto found_it;
-	}
-	if (XGetClassHint(dpy, c->win, &ch)) {
-		/* try again, case insensitive */
-		for (n = notifies; n; n = n->next) {
-			if (n->assigned)
-				continue;
-			if (sn_startup_sequence_get_completed(n->seq))
-				continue;
-			if ((wmclass = sn_startup_sequence_get_wmclass(n->seq))) {
-				if (ch.res_name && !strcasecmp(wmclass, ch.res_name))
-					break;
-				if (ch.res_class && !strcasecmp(wmclass, ch.res_class))
-					break;
-			}
-		}
-		if (ch.res_class)
-			XFree(ch.res_class);
-		if (ch.res_name)
-			XFree(ch.res_name);
-		if (n)
-			goto found_it;
-	}
-	return NULL;
-      found_it:
-	n->assigned = True;
-	seq = n->seq;
-	sn_startup_sequence_ref(seq);
-	sn_startup_sequence_complete(seq);
-	c->seq = seq;
-	return seq;
-}
-#endif
 
 void
 push_client_time(Client *c, Time time)
@@ -1833,50 +1857,205 @@ push_client_time(Client *c, Time time)
 		user_time = time;
 }
 
+#ifdef STARTUP_NOTIFICATION
+SnStartupSequence *
+find_startup_seq(Client *c)
+{
+	Notify *n = NULL;
+	SnStartupSequence *seq = NULL;
+	XClassHint ch = { NULL, };
+	char **argv = NULL, *machine = NULL, *startup_id = NULL;
+	int argc;
+	const char *binary, *wmclass;
+	pid_t pid = 0;
+
+	if ((seq = c->seq))
+		return seq;
+	do {
+		if ((startup_id = getstartupid(c))) {
+			for (n = notifies; n; n = n->next) {
+				if (n->assigned)
+					continue;
+				if (sn_startup_sequence_get_completed(n->seq))
+					continue;
+				DPRINTF("comparing '%s' with '%s'\n",
+					startup_id, sn_startup_sequence_get_id(n->seq));
+				if (!strcmp
+				    (startup_id, sn_startup_sequence_get_id(n->seq)))
+					break;
+			}
+			if (n)
+				break;
+			DPRINTF("cannot find startup id '%s'!\n",
+				startup_id);
+		}
+		if ((pid = getnetpid(c)) && (machine = getclientmachine(c))) {
+			for (n = notifies; n; n = n->next) {
+
+				DPRINTF("checking _NET_WM_PID and WM_CLIENT_MACHINE for '%s'\n",
+					sn_startup_sequence_get_id(n->seq));
+				if (n->assigned)
+					continue;
+				if (sn_startup_sequence_get_completed(n->seq))
+					continue;
+				if (n->hostname && strcasecmp(machine, n->hostname))
+					continue;	/* wrong host */
+				if (pid == n->pid)
+					break;
+			}
+			if (n)
+				break;
+		}
+		if (getclasshint(c, &ch)) {
+			for (n = notifies; n; n = n->next) {
+				DPRINTF("checking WM_CLASS for '%s'\n",
+					sn_startup_sequence_get_id(n->seq));
+				if (n->assigned)
+					continue;
+				if (sn_startup_sequence_get_completed(n->seq))
+					continue;
+				if (machine && n->hostname
+				    && strcasecmp(machine, n->hostname))
+					continue;	/* wrong host */
+				if ((wmclass = sn_startup_sequence_get_wmclass(n->seq))) {
+					if (ch.res_name && !strcmp(wmclass, ch.res_name))
+						break;
+					if (ch.res_class
+					    && !strcmp(wmclass, ch.res_class))
+						break;
+				}
+			}
+			if (n)
+				break;
+			DPRINTF("cannot find startup for (%s,%s)\n",
+				ch.res_name, ch.res_class);
+		}
+		if (getcommand(c, &argv, &argc)) {
+			for (n = notifies; n; n = n->next) {
+				DPRINTF("checking WM_COMMAND for '%s'\n",
+					sn_startup_sequence_get_id(n->seq));
+				if (n->assigned)
+					continue;
+				if (sn_startup_sequence_get_completed(n->seq))
+					continue;
+				if (machine && n->hostname
+				    && strcasecmp(machine, n->hostname))
+					continue;	/* wrong host */
+				if ((binary =
+				     sn_startup_sequence_get_binary_name(n->seq))) {
+					if (argv[0] && !strcmp(binary, argv[0]))
+						break;
+				}
+			}
+			if (n)
+				break;
+			DPRINTF("cannot find startup for !%s\n", argv[0]);
+		}
+		if (ch.res_name || ch.res_class) {
+			/* try again, case insensitive */
+			for (n = notifies; n; n = n->next) {
+				DPRINTF("checking WM_CLASS for '%s'\n",
+					sn_startup_sequence_get_id(n->seq));
+				if (n->assigned)
+					continue;
+				if (sn_startup_sequence_get_completed(n->seq))
+					continue;
+				if (machine && n->hostname
+				    && strcasecmp(machine, n->hostname))
+					continue;	/* wrong host */
+				if ((wmclass = sn_startup_sequence_get_wmclass(n->seq))) {
+					if (ch.res_name
+					    && !strcasecmp(wmclass, ch.res_name))
+						break;
+					if (ch.res_class
+					    && !strcasecmp(wmclass, ch.res_class))
+						break;
+				}
+			}
+			if (n)
+				break;
+			DPRINTF("cannot find startup for (%s,%s) (no case)\n",
+				ch.res_name, ch.res_class);
+		}
+	}
+	while (0);
+	if (n) {
+		long workspace;
+		const char *id;
+
+		DPRINTF("FOUND STARTUP ID '%s'!\n",
+			sn_startup_sequence_get_id(n->seq));
+		n->assigned = True;
+		seq = n->seq;
+		sn_startup_sequence_ref(seq);
+		/* XXX: don't know if we should complete the sequence here when the
+		   client is able to complete the sequence itself. */
+		sn_startup_sequence_complete(seq);
+		c->seq = seq;
+		id = strdup(sn_startup_sequence_get_id(seq));
+		XChangeProperty(dpy, c->win, _XA_NET_STARTUP_ID,
+				_XA_UTF8_STRING, 8, PropModeReplace,
+				(unsigned char *) id, strlen(id) + 1);
+		/* Note that if the window has mapped itself on the wrong workspace, we
+		   should move it there. */
+		if ((workspace = sn_startup_sequence_get_workspace(seq)) != -1) {
+			if (0 <= workspace && workspace < scr->ntags) {
+				if (c->is.managed) {
+					CPRINTF(c, "moving to workspace %ld for sequence '%s'\n",
+						 workspace, id);
+					tagonly(c, workspace);
+				} else {
+					CPRINTF(c, "marking for workspace %ld for sequence '%s'\n",
+						 workspace, id);
+					c->tags = (1ULL << workspace);
+					/* likely have not been read yet */
+					XChangeProperty(dpy, c->win, _XA_NET_WM_DESKTOP,
+							XA_CARDINAL, 32, PropModeReplace,
+							(unsigned char *) &workspace, 1);
+					XChangeProperty(dpy, c->win, _XA_WIN_WORKSPACE,
+							XA_CARDINAL, 32, PropModeReplace,
+							(unsigned char *) &workspace, 1);
+				}
+			}
+		} else
+			CPRINTF(c, "workspace not defined in sequence '%s'\n", id);
+		if (strstr(id, "xdg-launch") == id)
+			if (0 <= n->sequence && n->sequence < scr->nmons)
+				c->monitor = n->sequence + 1;
+		if (n->timestamp && n->timestamp != -1)
+			push_client_time(c, n->timestamp);
+	}
+	if (startup_id)
+		free(startup_id);
+	if (machine)
+		free(machine);
+	if (ch.res_name)
+		XFree(ch.res_name);
+	if (ch.res_class)
+		XFree(ch.res_class);
+	if (argv)
+		XFreeStringList(argv);
+	return (seq);
+}
+#endif
+
 void
 ewmh_process_net_startup_id(Client *c)
 {
 #ifdef STARTUP_NOTIFICATION
-	SnStartupSequence *seq;
-#endif
-	if (c->startup_id)
-		return;
-	if (!gettextprop(c->win, _XA_NET_STARTUP_ID, &c->startup_id))
-		if (c->leader != None && c->leader != c->win)
-			gettextprop(c->leader, _XA_NET_STARTUP_ID, &c->startup_id);
-	if (c->startup_id) {
-		char *p, *q, *copy;
-		char *launcher, *launchee, *hostname;
-		long pid, sequence, timestamp = 0;
+	find_startup_seq(c);
+#else
+	char *startup_id;
 
-		do {
-			p = q = copy = strdup(c->startup_id);
-			if (!(p = strchr(q, '/')))
-				break;
-			*p++ = '\0';
-			launcher = q;
-			q = p;
-			if (!(p = strchr(q, '/')))
-				break;
-			*p++ = '\0';
-			launchee = q;
-			q = p;
-			if (!(p = strchr(q, '-')))
-				break;
-			*p++ = '\0';
-			pid = atol(q);
-			q = p;
-			if (!(p = strchr(q, '-')))
-				break;
-			*p++ = '\0';
-			sequence = atol(q);
-			q = p;
-			if (!(p = strstr(q, "_TIME")))
-				break;
-			*p++ = '\0';
-			hostname = q;
-			q = p + 4;
-			timestamp = atol(q);
+	if (c->is.managed)
+		return;
+	if ((startup_id = getstartupid(c))) {
+		char *launcher = NULL, *launchee = NULL, *hostname = NULL;
+		pid_t pid = 0;
+		long sequence = 0, timestamp = 0;
+
+		if (parse_startup_id(startup_id, &launcher, &launchee,
+				     &hostname, &pid, &sequence, &timestamp)) {
 
 			/* Note: when xdg-launch is the launcher, the startup id is:
 			   %s/%s/%d-%d-%s_TIME%lu, launcher, launchee, pid, sequence,
@@ -1886,35 +2065,14 @@ ewmh_process_net_startup_id(Client *c)
 			if (strstr(launcher, "xdg-launch") &&
 			    0 <= sequence && sequence < scr->nmons)
 				c->monitor = sequence + 1;
-
-			(void) launchee;
-			(void) hostname;
-			(void) pid;
-		} while (0);
-		free(copy);
-
-		if (!timestamp && (p = strstr(c->startup_id, "_TIME")))
-			timestamp = atol(p + 5);
-		push_client_time(c, timestamp);
-	}
-#ifdef STARTUP_NOTIFICATION
-	if ((seq = find_startup_seq(c))) {
-		int workspace;
-
-		if (!c->startup_id) {
-			c->startup_id = strdup(sn_startup_sequence_get_id(seq));
-			XChangeProperty(dpy, c->win, _XA_NET_STARTUP_ID,
-					_XA_UTF8_STRING, 8, PropModeReplace,
-					(unsigned char *) c->startup_id,
-					strlen(c->startup_id) + 1);
 		}
-		push_client_time(c, sn_startup_sequence_get_timestamp(seq));
-		/* NOTE: should not override _NET_WM_DESKTOP */
-		workspace = sn_startup_sequence_get_workspace(seq);
-		if (0 <= workspace && workspace < scr->ntags)
-			c->tags = (1ULL << workspace);
-		/* TODO: use screen number to select monitor */
+		if (timestamp)
+			push_client_time(c, timestamp);
+		free(launcher);
+		free(launchee);
+		free(hostname);
 	}
+	free(startup_id);
 #endif
 }
 
@@ -1959,26 +2117,14 @@ ewmh_release_user_time_window(Client *c)
 	XDeleteContext(dpy, win, context[ClientAny]);
 }
 
-Window *getwind(Window win, Atom atom, unsigned long *nitems);
+Window getrecwin(Client *c, Atom atom);
 
 void
 ewmh_process_net_window_user_time_window(Client *c)
 {
-	Window *wins = NULL, win = None;
-	unsigned long n = 0;
+	Window win;
 
-	if ((wins = getwind(c->win, _XA_NET_WM_USER_TIME_WINDOW, &n))) {
-		Window other = wins[0];
-
-		XFree(wins);
-		/* check recursive */
-		if ((wins = getwind(other, _XA_NET_WM_USER_TIME_WINDOW, &n))) {
-			Window again = wins[0];
-
-			XFree(wins);
-			win = (other == again) ? again : None;
-		}
-	}
+	win = getrecwin(c, _XA_NET_WM_USER_TIME_WINDOW);
 	if (win == c->time_window)
 		return;
 	ewmh_release_user_time_window(c);
@@ -1986,10 +2132,11 @@ ewmh_process_net_window_user_time_window(Client *c)
 		return;
 
 	c->time_window = win;
-	XSelectInput(dpy, win, PropertyChangeMask);
-	XSaveContext(dpy, win, context[ClientTimeWindow], (XPointer) c);
-	XSaveContext(dpy, win, context[ClientAny], (XPointer) c);
-
+	if (win != c->win) {
+		XSelectInput(dpy, win, PropertyChangeMask);
+		XSaveContext(dpy, win, context[ClientTimeWindow], (XPointer) c);
+		XSaveContext(dpy, win, context[ClientAny], (XPointer) c);
+	}
 	ewmh_process_net_window_user_time(c);
 }
 
@@ -2443,14 +2590,6 @@ clientmessage(XEvent *e)
 			quit(NULL);
 		} else if (message_type == _XA_MANAGER) {
 			/* TODO */
-		} else if (message_type == _XA_NET_STARTUP_INFO_BEGIN) {
-#ifdef STARTUP_NOTIFICATION
-			sn_display_process_event(sn_dpy, e);
-#endif
-		} else if (message_type == _XA_NET_STARTUP_INFO) {
-#ifdef STARTUP_NOTIFICATION
-			sn_display_process_event(sn_dpy, e);
-#endif
 		} else if (message_type == _XA_WM_PROTOCOLS) {
 			if (0) {
 			} else if (ev->data.l[0] == _XA_NET_WM_PING) {
@@ -2496,6 +2635,14 @@ clientmessage(XEvent *e)
 			data[3] = border + gh + hw;
 			XChangeProperty(dpy, win, _XA_NET_FRAME_EXTENTS, XA_CARDINAL, 32,
 					PropModeReplace, (unsigned char *) &data, 4L);
+		} else if (message_type == _XA_NET_STARTUP_INFO_BEGIN) {
+#ifdef STARTUP_NOTIFICATION
+			sn_display_process_event(sn_dpy, e);
+#endif
+		} else if (message_type == _XA_NET_STARTUP_INFO) {
+#ifdef STARTUP_NOTIFICATION
+			sn_display_process_event(sn_dpy, e);
+#endif
 		} else
 			return False;
 	}
@@ -2558,6 +2705,13 @@ getcard(Window win, Atom atom, unsigned long *nitems)
 		*nitems = 0;
 		return NULL;
 	}
+	/* don't return empty properties */
+	if (*nitems == 0) {
+		if (ret) {
+			XFree(ret);
+			ret = NULL;
+		}
+	}
 	return ret;
 }
 
@@ -2577,6 +2731,116 @@ getwind(Window win, Atom atom, unsigned long *nitems)
 		return NULL;
 	}
 	return ret;
+}
+
+pid_t
+getnetpid(Client *c)
+{
+	long *card = NULL;
+	unsigned long n = 0;
+	Window win;
+	pid_t pid = 0;
+
+	if (((win = c->win) && (card = getcard(win, _XA_NET_WM_PID, &n))) ||
+	    ((win = c->leader) && win != c->win
+	     && (card = getcard(win, _XA_NET_WM_PID, &n))) ||
+	    ((win = c->session) && win != c->win
+	     && (card = getcard(win, _XA_NET_WM_PID, &n))) ||
+	    ((win = c->transfor) && win != c->win && win != scr->root
+	     && (card = getcard(win, _XA_NET_WM_PID, &n)))
+	    ) {
+		pid = *card;
+		XFree(card);
+	}
+	return (pid);
+}
+
+Bool
+getclasshint(Client *c, XClassHint *ch)
+{
+	Window win;
+
+	if (((win = c->win)
+	     && XGetClassHint(dpy, c->win, ch)) ||
+	    ((win = c->leader) && win != c->win
+	     && XGetClassHint(dpy, win, ch)) ||
+	    ((win = c->transfor) && win != c->win && win != scr->root
+	     && XGetClassHint(dpy, win, ch))
+	    ) {
+		return True;
+	}
+	return False;
+}
+
+Bool
+getcommand(Client *c, char ***v, int *n)
+{
+	Window win;
+
+	if (((win = c->win) && XGetCommand(dpy, win, v, n)) ||
+	    ((win = c->session) && win != c->win && XGetCommand(dpy, win, v, n)) ||
+	    ((win = c->leader) && win != c->win && XGetCommand(dpy, win, v, n))
+	    ) {
+		return True;
+	}
+	return False;
+}
+
+char *
+getstartupid(Client *c)
+{
+	Window win;
+	char *id = NULL;
+
+	if (((win = c->win) &&
+	     gettextprop(win, _XA_NET_STARTUP_ID, &id)) ||
+	    ((win = c->leader) && win != c->win &&
+	     gettextprop(win, _XA_NET_STARTUP_ID, &id)) ||
+	    ((win = c->session) && win != c->win &&
+	     gettextprop(win, _XA_NET_STARTUP_ID, &id))
+	    ) {
+		return (id);
+	}
+	return (id);
+}
+
+char *
+getclientmachine(Client *c)
+{
+	Window win;
+	char *host = NULL;
+
+	if (((win = c->win) &&
+	     gettextprop(win, XA_WM_CLIENT_MACHINE, &host)) ||
+	    ((win = c->leader) && win != c->win &&
+	     gettextprop(win, XA_WM_CLIENT_MACHINE, &host)) ||
+	    ((win = c->session) && win != c->win &&
+	     gettextprop(win, XA_WM_CLIENT_MACHINE, &host))
+	    ) {
+		return (host);
+	}
+	return (host);
+}
+
+Window
+getrecwin(Client *c, Atom atom)
+{
+	Window *wins = NULL, win = None;
+	unsigned long n = 0;
+
+	if ((wins = getwind(c->win, atom, &n))) {
+		Window other = wins[0];
+
+		XFree(wins);
+		/* check recursive */
+		if ((wins = getwind(other, atom, &n))) {
+			Window again = wins[0];
+
+			XFree(wins);
+			win = (other == again) ? again : None;
+		}
+	}
+	return (win);
 }
 
 Bool

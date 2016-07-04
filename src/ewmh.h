@@ -15,6 +15,12 @@ void ewmh_add_client(Client *c);
 void ewmh_del_client(Client *c, WithdrawCause cause);
 void setopacity(Client *c, unsigned opacity);
 int getstruts(Client *c);
+pid_t getnetpid(Client *c);
+Bool getclasshint(Client *c, XClassHint *ch);
+Bool getcommand(Client *c, char ***argvp, int *argcp);
+char *getstartupid(Client *c);
+char *getclientmachine(Client *c);
+Window getrecwin(Client *c, Atom atom);
 
 void ewmh_process_net_desktop_names(void);
 void ewmh_process_net_number_of_desktops(void);

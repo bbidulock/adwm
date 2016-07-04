@@ -25,8 +25,9 @@
 
 /* enums */
 enum {
-	Manager, Utf8String, WMProto, WMDelete, WMSaveYourself, WMState, WMChangeState,
-	WMTakeFocus, ELayout, ESelTags, WMReload, WMRestart, WMShutdown, DeskLayout,
+	Manager, Utf8String, SMClientId, WMProto, WMDelete, WMSaveYourself, WMState,
+	WMChangeState, WMTakeFocus, WMClientLeader, WMWindowRole, ELayout, ESelTags,
+	WMReload, WMRestart, WMShutdown, DeskLayout,
 	/* MWM/DTWM properties follow */
 	WMDesktop, MWMBindings, MWMDefaultBindings, MWMMessages, MWMOffset, MWMHints,
 	MWMMenu, MWMInfo, DTWorkspaceHints, DTWorkspacePresence, DTWorkspaceList,
@@ -73,12 +74,15 @@ enum {
 
 #define _XA_MANAGER				atom[Manager]
 #define _XA_UTF8_STRING				atom[Utf8String]
+#define _XA_SM_CLIENT_ID			atom[SMClientId]
 #define _XA_WM_PROTOCOLS			atom[WMProto]
 #define _XA_WM_DELETE_WINDOW			atom[WMDelete]
 #define _XA_WM_SAVE_YOURSELF			atom[WMSaveYourself]
 #define _XA_WM_STATE				atom[WMState]
 #define _XA_WM_CHANGE_STATE			atom[WMChangeState]
 #define _XA_WM_TAKE_FOCUS			atom[WMTakeFocus]
+#define _XA_WM_CLIENT_LEADER			atom[WMClientLeader]
+#define _XA_WM_WINDOW_ROLE			atom[WMWindowRole]
 #define _XA_ECHINUS_LAYOUT			atom[ELayout]
 #define _XA_ECHINUS_SELTAGS			atom[ESelTags]
 #define _XA_NET_RELOAD				atom[WMReload]
@@ -272,6 +276,7 @@ enum {
 	ClientTransFor,
 	ClientTransForGroup,
 	ClientLeader,
+	ClientSession,
 	ClientAny,
 	SysTrayWindows,
 	ClientPing,
@@ -771,7 +776,6 @@ typedef union {
 struct Client {
 	char *name;
 	char *icon_name;
-	char *startup_id;
 	int monitor;			/* initial monitor */
 	ClientGeometry c, r, s;		/* current, restore, static */
 	int basew, baseh, incw, inch, maxw, maxh, minw, minh;
@@ -803,6 +807,7 @@ struct Client {
 	Window time_window;
 	Window leader;
 	Window transfor;
+	Window session;
 	ElementClient *element;
 	Time user_time;
 #ifdef SYNC
@@ -1108,6 +1113,12 @@ struct Notify {
 	Notify *next;
 	SnStartupSequence *seq;
 	Bool assigned;
+	char *launcher;
+	char *launchee;
+	char *hostname;
+	pid_t pid;
+	long sequence;
+	long timestamp;
 };
 #endif
 
@@ -1195,21 +1206,21 @@ extern Group window_stack;
 void unmanage(Client *c, WithdrawCause cause);
 
 #define LENGTH(x)		(sizeof(x)/sizeof(*x))
-#define _DPRINT			do { fprintf(stderr, "%s %s() %d\n",__FILE__,__func__, __LINE__); fflush(stderr); } while(0)
-#define _DPRINTF(args...)	do { fprintf(stderr, "%s %s():%d ", __FILE__,__func__, __LINE__); \
+#define _DPRINT			do { fprintf(stderr, "adwm: %s %s() %d\n",__FILE__,__func__, __LINE__); fflush(stderr); } while(0)
+#define _DPRINTF(args...)	do { fprintf(stderr, "adwm: %s %s():%d ", __FILE__,__func__, __LINE__); \
 				     fprintf(stderr, args); fflush(stderr); } while(0)
-#define _CPRINTF(c,args...)	do { fprintf(stderr, "%s %s():%d [0x%08lx 0x%08lx 0x%08lx %-20s] ", __FILE__,__func__,__LINE__,(c)->frame,(c)->win,(c)->icon,(c)->name); \
+#define _CPRINTF(c,args...)	do { fprintf(stderr, "adwm: %s %s():%d [0x%08lx 0x%08lx 0x%08lx %-20s] ", __FILE__,__func__,__LINE__,(c)->frame,(c)->win,(c)->icon,(c)->name); \
 				     fprintf(stderr, args); fflush(stderr); } while(0)
-#define _GPRINTF(_g,args...)	do { fprintf(stderr, "%s %s():%d %dx%d+%d+%d:%d (%d:%d:%d) ", __FILE__,__func__,__LINE__,(_g)->w,(_g)->h,(_g)->x,(_g)->y,(_g)->b,(_g)->t,(_g)->g,(_g)->v); \
+#define _GPRINTF(_g,args...)	do { fprintf(stderr, "adwm: %s %s():%d %dx%d+%d+%d:%d (%d:%d:%d) ", __FILE__,__func__,__LINE__,(_g)->w,(_g)->h,(_g)->x,(_g)->y,(_g)->b,(_g)->t,(_g)->g,(_g)->v); \
 				     fprintf(stderr, args); fflush(stderr); } while(0)
 #define _XPRINTF(args...)	do { } while(0)
 #ifdef DEBUG
-#define DPRINT			do { fprintf(stderr, "%s %s() %d\n",__FILE__,__func__, __LINE__); fflush(stderr); } while(0)
-#define DPRINTF(args...)	do { fprintf(stderr, "%s %s():%d ", __FILE__,__func__, __LINE__); \
+#define DPRINT			do { fprintf(stderr, "adwm: %s %s() %d\n",__FILE__,__func__, __LINE__); fflush(stderr); } while(0)
+#define DPRINTF(args...)	do { fprintf(stderr, "adwm: %s %s():%d ", __FILE__,__func__, __LINE__); \
 				     fprintf(stderr, args); fflush(stderr); } while(0)
-#define CPRINTF(c,args...)	do { fprintf(stderr, "%s %s():%d [0x%08lx 0x%08lx 0x%08lx %-20s] ", __FILE__,__func__,__LINE__,(c)->frame,(c)->win,(c)->icon,(c)->name); \
+#define CPRINTF(c,args...)	do { fprintf(stderr, "adwm: %s %s():%d [0x%08lx 0x%08lx 0x%08lx %-20s] ", __FILE__,__func__,__LINE__,(c)->frame,(c)->win,(c)->icon,(c)->name); \
 				     fprintf(stderr, args); fflush(stderr); } while(0)
-#define GPRINTF(_g,args...)	do { fprintf(stderr, "%s %s():%d %dx%d+%d+%d:%d (%d:%d:%d) ", __FILE__,__func__,__LINE__,(_g)->w,(_g)->h,(_g)->x,(_g)->y,(_g)->b,(_g)->t,(_g)->g,(_g)->v); \
+#define GPRINTF(_g,args...)	do { fprintf(stderr, "adwm: %s %s():%d %dx%d+%d+%d:%d (%d:%d:%d) ", __FILE__,__func__,__LINE__,(_g)->w,(_g)->h,(_g)->x,(_g)->y,(_g)->b,(_g)->t,(_g)->g,(_g)->v); \
 				     fprintf(stderr, args); fflush(stderr); } while(0)
 #define XPRINTF(args...)	do { } while(0)
 #else

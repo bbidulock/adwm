@@ -723,7 +723,7 @@ initrcfile(void)
 	}
 	if (!xrdb) {
 		DPRINTF("Couldn't find database file '%s'\n", config.rcfile);
-		fprintf(stderr, "adwm: Could not find usable database, using defaults\n");
+		_DPRINTF("Could not find usable database, using defaults\n");
 		if (chdir(config.udir))
 			DPRINTF("Could not change directory to %s: %s\n", config.udir, strerror(errno));
 	}

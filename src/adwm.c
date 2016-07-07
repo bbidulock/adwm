@@ -1227,10 +1227,12 @@ focuschange(XEvent *e)
 		if ((c = findclient(ev->window))) {
 			if (gave && c != gave && canfocus(gave)) {
 				if (took != gave && !(gave->can.focus & TAKE_FOCUS)) {
-					_CPRINTF(c, "stole focus\n");
-					_CPRINTF(gave, "giving back focus\n");
-					focus(gave);
-					return True;
+					if (!c->leader || c->leader != gave->leader) {
+						_CPRINTF(c, "stole focus\n");
+						_CPRINTF(gave, "giving back focus\n");
+						focus(gave);
+						return True;
+					}
 				}
 			}
 		}

@@ -6,6 +6,33 @@ Release @PACKAGE@-@VERSION@ released @DATE@
 
 Changes:
 
+git shortlog -e -n -w80,6,8 0.5.9...0.6.0
+
+Brian Bidulock <bidulock@openss7.org> (17):
+      fix screen resize and configure requests
+      screen orientation keys
+      update geometry when screen resizes
+      updated documentation
+      handle auto-hiding of docks and panels
+      do not initially hide struts and allow recofig
+      a little debugging
+      rename struts to strutsactive: conflict key bind
+      should not select splash screens
+      use xdg-launch on key bindings
+      corrections to key bindings
+      perform word expanding on spawned commands
+      xrdb uses backslash as escape too!
+      document commas in commands
+      big rework of startup notification
+      change focus stealing
+      minor startup notification tweaks
+
+
+Release adwm-0.5.9 released 2016-06-15
+--------------------------------------
+
+Changes:
+
 git shortlog -e -n -w80,6,8 0.5.8...0.5.9
 
 Brian Bidulock <bidulock@openss7.org> (5):

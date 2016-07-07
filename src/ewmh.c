@@ -1990,12 +1990,15 @@ find_startup_seq(Client *c)
 		sn_startup_sequence_ref(seq);
 		/* XXX: don't know if we should complete the sequence here when the
 		   client is able to complete the sequence itself. */
-		sn_startup_sequence_complete(seq);
+		if (!sn_startup_sequence_get_completed(seq))
+			sn_startup_sequence_complete(seq);
 		c->seq = seq;
 		id = strdup(sn_startup_sequence_get_id(seq));
-		XChangeProperty(dpy, c->win, _XA_NET_STARTUP_ID,
-				_XA_UTF8_STRING, 8, PropModeReplace,
-				(unsigned char *) id, strlen(id) + 1);
+		if (!startup_id) {
+			XChangeProperty(dpy, c->win, _XA_NET_STARTUP_ID,
+					_XA_UTF8_STRING, 8, PropModeReplace,
+					(unsigned char *) id, strlen(id) + 1);
+		}
 		/* Note that if the window has mapped itself on the wrong workspace, we
 		   should move it there. */
 		if ((workspace = sn_startup_sequence_get_workspace(seq)) != -1) {

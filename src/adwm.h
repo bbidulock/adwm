@@ -1112,7 +1112,6 @@ typedef struct {
 struct Notify {
 	Notify *next;
 	SnStartupSequence *seq;
-	Bool assigned;
 	char *launcher;
 	char *launchee;
 	char *hostname;

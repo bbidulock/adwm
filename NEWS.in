@@ -1,14 +1,24 @@
 @PACKAGE@ -- history of user-visible changes.  @DATE@
 
-
-Release @PACKAGE@-@VERSION@ released @DATE@
+Release adwm-0.6.1 released 2016-07-08
 --------------------------------------
 
-Changes:
+git shortlog -e -n -w80,6,8 0.6.0...0.6.1
+Brian Bidulock <bidulock@openss7.org> (7):
+      update TODO file
+      remove complete sequences from list
+      really remove assigned flag
+      remove another assigned flag
+      autogenerate GNU NEWS file
+      oops: lost autconf from autogen.sh
+      remove missing files
+
+
+Release adwm-0.6.0 released 2016-07-07
+--------------------------------------
 
 git shortlog -e -n -w80,6,8 0.5.9...0.6.0
-
-Brian Bidulock <bidulock@openss7.org> (17):
+Brian Bidulock <bidulock@openss7.org> (18):
       fix screen resize and configure requests
       screen orientation keys
       update geometry when screen resizes
@@ -26,58 +36,51 @@ Brian Bidulock <bidulock@openss7.org> (17):
       big rework of startup notification
       change focus stealing
       minor startup notification tweaks
+      update releae files
 
 
 Release adwm-0.5.9 released 2016-06-15
 --------------------------------------
 
-Changes:
-
 git shortlog -e -n -w80,6,8 0.5.8...0.5.9
-
-Brian Bidulock <bidulock@openss7.org> (5):
+Brian Bidulock <bidulock@openss7.org> (6):
       fix multi-column dockapps
       fall back to monitor 0 for dock
       signed/unsigned comparisons
       missed header file
       avoid signed/unsigned comparisons
+      update release files
 
 
 Release adwm-0.5.8 released 2016-05-18
 --------------------------------------
 
-Changes:
-
 git shortlog -e -n -w80,6,8 0.5.7...0.5.8
-
-Brian Bidulock <bidulock@openss7.org> (2):
+Brian Bidulock <bidulock@openss7.org> (4):
       do not respond to grabs
       clear all crossing events
+      update release files
+      update release file
 
 
 Release adwm-0.5.7 released 2016-04-01
 --------------------------------------
 
-Changes:
-
 git shortlog -e -n -w80,6,8 0.5.6...0.5.7
-
-Brian Bidulock <bidulock@openss7.org> (6):
+Brian Bidulock <bidulock@openss7.org> (7):
       add option whether to use veil
       adjust keysrc for issue #1
       better xsesssions file
       no antialiasing for issue #1
       fix issue #1
       do not need XInput2.h for now
+      update release files
 
 
 Release adwm-0.5.6 released 2016-02-11
 --------------------------------------
 
-Changes:
-
 git shortlog -e -n -w80,6,8 0.5.5...0.5.6
-
 Brian Bidulock <bidulock@openss7.org> (7):
       don't know why compiler missed this error
       avoid error statement
@@ -91,10 +94,7 @@ Brian Bidulock <bidulock@openss7.org> (7):
 Release adwm-0.5.5 released 2016-01-27
 --------------------------------------
 
-Changes:
-
 git shortlog -e -n -w80,6,8 0.5.4...0.5.5
-
 Brian Bidulock <bidulock@openss7.org> (6):
       stray h
       let windows recommend backing store
@@ -107,10 +107,7 @@ Brian Bidulock <bidulock@openss7.org> (6):
 Release adwm-0.5.4 released 2015-07-10
 --------------------------------------
 
-Changes:
-
 git shortlog -e -n -w80,6,8 0.5.3...0.5.4
-
 Brian Bidulock <bidulock@openss7.org> (6):
       twiddle with backing_store and save_under
       try to avoid using CurrentTime: breaks timing
@@ -123,10 +120,7 @@ Brian Bidulock <bidulock@openss7.org> (6):
 Release adwm-0.5.3 released 2015-01-07
 --------------------------------------
 
-Changes:
-
 git shortlog -e -n -w80,6,8 0.5.2...0.5.3
-
 Brian Bidulock <bidulock@openss7.org> (2):
       better ICCCM 4.1.4 compliance
       updated readme
@@ -135,10 +129,7 @@ Brian Bidulock <bidulock@openss7.org> (2):
 Release adwm-0.5.2 released 2014-09-21
 --------------------------------------
 
-Changes:
-
 git shortlog -e -n -w80,6,8 0.5.1...0.5.2
-
 Brian Bidulock <bidulock@openss7.org> (45):
       correct raiselower behaviour
       always consider tile as floaters when restacking overlay
@@ -187,13 +178,10 @@ Brian Bidulock <bidulock@openss7.org> (45):
       updated NEWS file for release
 
 
-Release adwm-0.5.1 released 2014-09-02
+Release adwm-0.5.1 released 2014-09-04
 --------------------------------------
 
-Changes:
-
 git shortlog -e -n -w80,6,8 0.5.0...0.5.1
-
 Brian Bidulock <bidulock@openss7.org> (17):
       try to correct focus handling a bit
       better focus handling on some events
@@ -213,11 +201,3 @@ Brian Bidulock <bidulock@openss7.org> (17):
       update NEWS for release
       tweak cross-references on manual page
 
-
-Release adwm-0.5.0 released 2014-07-02
---------------------------------------
-
-This is the initial development release of adwm.
-
-
-# vim: set ft=asciidoc tw=72 nocin nosi fo+=tcqlorn:

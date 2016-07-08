@@ -3,7 +3,7 @@ ACLOCAL_AMFLAGS = -I m4
 
 SUBDIRS = src doc data
 
-EXTRA_DIST = INSTALL COPYING AUTHORS AUTHORS.in NEWS NEWS.in LICENSE README README.in README.echinus THANKS THANKS.in TODO TODO.in ChangeLog
+EXTRA_DIST = INSTALL COPYING AUTHORS AUTHORS.in NEWS NEWS.in LICENSE README README.in README.echinus THANKS TODO ChangeLog
 
 ChangeLog:
 	( \
@@ -31,12 +31,6 @@ NEWS: NEWS.in
 	sed -r -e 's:\@PACKAGE\@:$(PACKAGE):g;s:\@VERSION\@:$(VERSION):g;s:\@DATE\@:$(DATE):g' $< >$@
 
 AUTHORS: AUTHORS.in
-	sed -r -e 's:\@PACKAGE\@:$(PACKAGE):g;s:\@VERSION\@:$(VERSION):g;s:\@DATE\@:$(DATE):g' $< >$@
-
-THANKS: THANKS.in
-	sed -r -e 's:\@PACKAGE\@:$(PACKAGE):g;s:\@VERSION\@:$(VERSION):g;s:\@DATE\@:$(DATE):g' $< >$@
-
-TODO: TODO.in
 	sed -r -e 's:\@PACKAGE\@:$(PACKAGE):g;s:\@VERSION\@:$(VERSION):g;s:\@DATE\@:$(DATE):g' $< >$@
 
 dist_noinst_SCRIPTS = gennews.sh autogen.sh configure.sh rebuild.sh

@@ -40,4 +40,4 @@ sed -r -e "$subst" AUTHORS.in >AUTHORS
 
 mkdir m4 2>/dev/null
 
-#autoreconf -fiv
+autoreconf -fiv

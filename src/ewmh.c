@@ -282,7 +282,6 @@ n_new_notify(SnStartupSequence *seq)
 	n = emallocz(sizeof(*n));
 	n->seq = seq;
 	sn_startup_sequence_ref(seq);
-	n->assigned = False;
 	parse_startup_id(sn_startup_sequence_get_id(seq),
 			 &n->launcher, &n->launchee, &n->hostname,
 			 &n->pid, &n->sequence, &n->timestamp);

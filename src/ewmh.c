@@ -1961,6 +1961,7 @@ find_startup_seq(Client *c)
 	if (n) {
 		long workspace;
 		const char *id;
+		Notify *np, **npp;
 
 		DPRINTF("FOUND STARTUP ID '%s'!\n",
 			sn_startup_sequence_get_id(n->seq));
@@ -2005,6 +2006,12 @@ find_startup_seq(Client *c)
 		   client is able to complete the sequence itself. */
 		sn_startup_sequence_complete(seq);
 		/* sn-monitor will not see it's own message nor complete the sequence */
+		npp = &notifies;
+		/* delete predecessor's next pointer */
+		while ((np = *npp) != n)
+			npp = &np->next;
+		if (np == n)
+			*npp = n->next;
 		n_del_notify(n);
 	}
 	if (startup_id)

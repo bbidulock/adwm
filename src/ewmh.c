@@ -1874,10 +1874,6 @@ find_startup_seq(Client *c)
 	do {
 		if ((startup_id = getstartupid(c))) {
 			for (n = notifies; n; n = n->next) {
-				if (n->assigned)
-					continue;
-				if (sn_startup_sequence_get_completed(n->seq))
-					continue;
 				DPRINTF("comparing '%s' with '%s'\n",
 					startup_id, sn_startup_sequence_get_id(n->seq));
 				if (!strcmp
@@ -1894,10 +1890,6 @@ find_startup_seq(Client *c)
 
 				DPRINTF("checking _NET_WM_PID and WM_CLIENT_MACHINE for '%s'\n",
 					sn_startup_sequence_get_id(n->seq));
-				if (n->assigned)
-					continue;
-				if (sn_startup_sequence_get_completed(n->seq))
-					continue;
 				if (n->hostname && strcasecmp(machine, n->hostname))
 					continue;	/* wrong host */
 				if (pid == n->pid)
@@ -1910,10 +1902,6 @@ find_startup_seq(Client *c)
 			for (n = notifies; n; n = n->next) {
 				DPRINTF("checking WM_CLASS for '%s'\n",
 					sn_startup_sequence_get_id(n->seq));
-				if (n->assigned)
-					continue;
-				if (sn_startup_sequence_get_completed(n->seq))
-					continue;
 				if (machine && n->hostname
 				    && strcasecmp(machine, n->hostname))
 					continue;	/* wrong host */
@@ -1934,10 +1922,6 @@ find_startup_seq(Client *c)
 			for (n = notifies; n; n = n->next) {
 				DPRINTF("checking WM_COMMAND for '%s'\n",
 					sn_startup_sequence_get_id(n->seq));
-				if (n->assigned)
-					continue;
-				if (sn_startup_sequence_get_completed(n->seq))
-					continue;
 				if (machine && n->hostname
 				    && strcasecmp(machine, n->hostname))
 					continue;	/* wrong host */
@@ -1956,10 +1940,6 @@ find_startup_seq(Client *c)
 			for (n = notifies; n; n = n->next) {
 				DPRINTF("checking WM_CLASS for '%s'\n",
 					sn_startup_sequence_get_id(n->seq));
-				if (n->assigned)
-					continue;
-				if (sn_startup_sequence_get_completed(n->seq))
-					continue;
 				if (machine && n->hostname
 				    && strcasecmp(machine, n->hostname))
 					continue;	/* wrong host */
@@ -1985,13 +1965,8 @@ find_startup_seq(Client *c)
 
 		DPRINTF("FOUND STARTUP ID '%s'!\n",
 			sn_startup_sequence_get_id(n->seq));
-		n->assigned = True;
 		seq = n->seq;
 		sn_startup_sequence_ref(seq);
-		/* XXX: don't know if we should complete the sequence here when the
-		   client is able to complete the sequence itself. */
-		if (!sn_startup_sequence_get_completed(seq))
-			sn_startup_sequence_complete(seq);
 		c->seq = seq;
 		id = strdup(sn_startup_sequence_get_id(seq));
 		if (!startup_id) {
@@ -2027,6 +2002,11 @@ find_startup_seq(Client *c)
 				c->monitor = n->sequence + 1;
 		if (n->timestamp && n->timestamp != -1)
 			push_client_time(c, n->timestamp);
+		/* XXX: don't know if we should complete the sequence here when the
+		   client is able to complete the sequence itself. */
+		sn_startup_sequence_complete(seq);
+		/* sn-monitor will not see it's own message nor complete the sequence */
+		n_del_notify(n);
 	}
 	if (startup_id)
 		free(startup_id);

@@ -1,10 +1,18 @@
 @PACKAGE@ -- history of user-visible changes.  @DATE@
 
+Release adwm-0.6.2 released 2016-07-08
+--------------------------------------
+
+git shortlog -e -n -w80,6,8 0.6.1...0.6.2
+Brian Bidulock <bidulock@openss7.org> (1):
+      fool: you did not remove previous pointer
+
+
 Release adwm-0.6.1 released 2016-07-08
 --------------------------------------
 
 git shortlog -e -n -w80,6,8 0.6.0...0.6.1
-Brian Bidulock <bidulock@openss7.org> (7):
+Brian Bidulock <bidulock@openss7.org> (8):
       update TODO file
       remove complete sequences from list
       really remove assigned flag
@@ -12,6 +20,7 @@ Brian Bidulock <bidulock@openss7.org> (7):
       autogenerate GNU NEWS file
       oops: lost autconf from autogen.sh
       remove missing files
+      update release files
 
 
 Release adwm-0.6.0 released 2016-07-07
@@ -176,28 +185,4 @@ Brian Bidulock <bidulock@openss7.org> (45):
       updated readme
       0.5.2 release
       updated NEWS file for release
-
-
-Release adwm-0.5.1 released 2014-09-04
---------------------------------------
-
-git shortlog -e -n -w80,6,8 0.5.0...0.5.1
-Brian Bidulock <bidulock@openss7.org> (17):
-      try to correct focus handling a bit
-      better focus handling on some events
-      better focus behaviour
-      a few focus regressions and tweaks
-      use XFixes to cure a few problems
-      handle toolkits that indicate both give and take focus
-      zero barrier members on initialization of monitor
-      add maintainer script
-      reap children properly
-      veil was a bad idea
-      Revert "veil was a bad idea"
-      fix veil and flittering of dockapps
-      let regular clients specify backing store if they want to
-      updating manual pages
-      spelling
-      update NEWS for release
-      tweak cross-references on manual page
 

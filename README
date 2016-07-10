@@ -65,7 +65,7 @@ Running
 
 Read the manual page after installation:
 
-    man adwm.
+    man adwm
 
 
 Issues

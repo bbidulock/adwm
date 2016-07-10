@@ -1,4 +1,35 @@
-# created with git log --stat=75 -M -C | fmt -sct -w80
+# created with git log --stat=76 -M -C|fmt -sct -w80
+
+commit ceca8430ba15f1f2ae77e9960b6d2b515a11b811
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Jul 9 19:34:21 2016 -0600
+
+    simplify diestribution
+
+ .gitignore                         |    16 +-
+ AUTHORS                            |    13 +
+ ChangeLog                          | 11761 +++++++++++++++++++++++++++++++
+ Makefile.am                        |    83 +-
+ NEWS.in => NEWS                    |     2 +-
+ README                             |    47 +-
+ README => README.md                |    47 +-
+ README.in => README.md.in          |    47 +-
+ autogen.sh                         |    51 +-
+ configure.template => configure.ac |     6 +-
+ dist.sh                            |     9 +
+ gennews.sh                         |     8 +-
+ rebuild.sh                         |     6 +-
+ 13 files changed, 11941 insertions(+), 155 deletions(-)
+
+commit d261c28ef246b3a0abd64e3ace3c57dc36c4927b
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri Jul 8 18:22:14 2016 -0600
+
+    update release files
+
+ NEWS.in | 35 ++++++++++-------------------------
+ README  |  4 ++--
+ 2 files changed, 12 insertions(+), 27 deletions(-)
 
 commit f437fbd390f9fc921124727cd7c514fd56abfb55
 Author: Brian Bidulock <bidulock@openss7.org>

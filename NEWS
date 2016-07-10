@@ -1,17 +1,29 @@
-adwm -- history of user-visible changes.  2016-07-08
+adwm -- history of user-visible changes.  2016-07-09
+
+Release adwm-0.6.3 released 2016-07-09
+--------------------------------------
+
+git shortlog -e -n -w80,6,8 0.6.2...0.6.3
+
+Brian Bidulock <bidulock@openss7.org> (1):
+      simplify diestribution
+
 
 Release adwm-0.6.2 released 2016-07-08
 --------------------------------------
 
 git shortlog -e -n -w80,6,8 0.6.1...0.6.2
-Brian Bidulock <bidulock@openss7.org> (1):
+
+Brian Bidulock <bidulock@openss7.org> (2):
       fool: you did not remove previous pointer
+      update release files
 
 
 Release adwm-0.6.1 released 2016-07-08
 --------------------------------------
 
 git shortlog -e -n -w80,6,8 0.6.0...0.6.1
+
 Brian Bidulock <bidulock@openss7.org> (8):
       update TODO file
       remove complete sequences from list
@@ -27,6 +39,7 @@ Release adwm-0.6.0 released 2016-07-07
 --------------------------------------
 
 git shortlog -e -n -w80,6,8 0.5.9...0.6.0
+
 Brian Bidulock <bidulock@openss7.org> (18):
       fix screen resize and configure requests
       screen orientation keys
@@ -52,6 +65,7 @@ Release adwm-0.5.9 released 2016-06-15
 --------------------------------------
 
 git shortlog -e -n -w80,6,8 0.5.8...0.5.9
+
 Brian Bidulock <bidulock@openss7.org> (6):
       fix multi-column dockapps
       fall back to monitor 0 for dock
@@ -65,6 +79,7 @@ Release adwm-0.5.8 released 2016-05-18
 --------------------------------------
 
 git shortlog -e -n -w80,6,8 0.5.7...0.5.8
+
 Brian Bidulock <bidulock@openss7.org> (4):
       do not respond to grabs
       clear all crossing events
@@ -76,6 +91,7 @@ Release adwm-0.5.7 released 2016-04-01
 --------------------------------------
 
 git shortlog -e -n -w80,6,8 0.5.6...0.5.7
+
 Brian Bidulock <bidulock@openss7.org> (7):
       add option whether to use veil
       adjust keysrc for issue #1
@@ -90,6 +106,7 @@ Release adwm-0.5.6 released 2016-02-11
 --------------------------------------
 
 git shortlog -e -n -w80,6,8 0.5.5...0.5.6
+
 Brian Bidulock <bidulock@openss7.org> (7):
       don't know why compiler missed this error
       avoid error statement
@@ -104,6 +121,7 @@ Release adwm-0.5.5 released 2016-01-27
 --------------------------------------
 
 git shortlog -e -n -w80,6,8 0.5.4...0.5.5
+
 Brian Bidulock <bidulock@openss7.org> (6):
       stray h
       let windows recommend backing store
@@ -117,6 +135,7 @@ Release adwm-0.5.4 released 2015-07-10
 --------------------------------------
 
 git shortlog -e -n -w80,6,8 0.5.3...0.5.4
+
 Brian Bidulock <bidulock@openss7.org> (6):
       twiddle with backing_store and save_under
       try to avoid using CurrentTime: breaks timing
@@ -130,59 +149,8 @@ Release adwm-0.5.3 released 2015-01-07
 --------------------------------------
 
 git shortlog -e -n -w80,6,8 0.5.2...0.5.3
+
 Brian Bidulock <bidulock@openss7.org> (2):
       better ICCCM 4.1.4 compliance
       updated readme
-
-
-Release adwm-0.5.2 released 2014-09-21
---------------------------------------
-
-git shortlog -e -n -w80,6,8 0.5.1...0.5.2
-Brian Bidulock <bidulock@openss7.org> (45):
-      correct raiselower behaviour
-      always consider tile as floaters when restacking overlay
-      fixed bug in floating placement
-      only set focus after done restacking
-      better window cycling
-      not so many configure messages (causes flashing)
-      change _NET_WM_DESKTOP message behaviour
-      another ignore
-      some support documentation for spectrwm
-      mimic key bindings
-      more keybinding mimics
-      working up common key bindings
-      correct logic error reconfiguring floating windows
-      fix tearout on move when floating layout
-      even better focus behavior
-      do not attempt to refocus destroyed clients
-      do not attempt to refocus last focusable window
-      do not multiple set PointerRoot
-      limite client list updates
-      add flipview, flipzone, flipwins
-      add focusmain and focusurgent
-      document focusmain and focusurgent
-      working up default keys
-      updated default keys
-      search for pixmaps in various proper directories
-      support style reload
-      fix null pointer dereference
-      respond to hup better, another segfault
-      convert key arrays to lists
-      no double free on key args
-      reduce verbosity
-      update default keys
-      update default style
-      handle some key binding defaults better
-      process the desktop layout when add or del views
-      split nmaster from ncolumns
-      force configure in response to configure-request
-      fix some button behaviour
-      better focus behaviour for buttons
-      correct button logic error
-      get button hovering working correctly
-      make sure titles generate enter and leave events
-      updated readme
-      0.5.2 release
-      updated NEWS file for release
 

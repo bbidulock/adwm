@@ -2,15 +2,15 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.69])
-AC_INIT([adwm],[0.6.3],[https://github.com/bbidulock/adwm/issues])
-AC_REVISION([0.6.3])
+AC_INIT([adwm],[0.6.3.4],[https://github.com/bbidulock/adwm/issues])
+AC_REVISION([0.6.3.4])
 AC_CONFIG_SRCDIR([src/adwm.h])
 AC_CONFIG_HEADERS([src/autoconf.h])
 AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_AUX_DIR([scripts])
 AC_USE_SYSTEM_EXTENSIONS
 
-DATE='2016-07-09'
+DATE='2016-07-10'
 AC_SUBST([DATE])
 
 # Initialize Automake
@@ -18,6 +18,7 @@ AM_INIT_AUTOMAKE([dist-xz no-dist-gzip])
 AM_MAINTAINER_MODE
 
 # Checks for programs.
+AC_PROG_SED
 AC_PROG_AWK
 AC_PROG_CC
 AC_PROG_CPP

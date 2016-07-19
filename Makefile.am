@@ -3,7 +3,7 @@ ACLOCAL_AMFLAGS = -I m4
 
 SUBDIRS = src doc data
 
-EXTRA_DIST = INSTALL COPYING AUTHORS NEWS LICENSE README README.md README.md.in README.echinus THANKS TODO ChangeLog
+EXTRA_DIST = INSTALL COPYING AUTHORS NEWS README README.md README.md.in THANKS TODO ChangeLog COMPLIANCE
 
 dist_noinst_SCRIPTS = gennews.sh autogen.sh configure.sh rebuild.sh dist.sh
 
@@ -66,4 +66,6 @@ README.html: README.md
 
 README.txt: README.html
 	links -dump -width 80 -codepage utf-8 $< >$@
+
+EXTRA_DIST += README.echinus LICENSE
 

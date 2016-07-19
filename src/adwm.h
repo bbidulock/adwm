@@ -784,6 +784,7 @@ struct Client {
 	long flags;
 	int wintype;
 	int winstate;
+	int breadcrumb;
 	Bool wasfloating;
 	unsigned long long tags;
 	int nonmodal;
@@ -1192,6 +1193,7 @@ Bool with_transients(Client *c, Bool (*each) (Client *, int), int data);
 
 /* needed by layout.c */
 Bool canfocus(Client *c);
+Group *getleader(Window leader, int group);
 void updategeom(Monitor *m);
 extern Cursor cursor[CurLast];
 extern int ebase[BaseLast];

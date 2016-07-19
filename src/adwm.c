@@ -431,7 +431,7 @@ setclientstate(Client *c, long state)
 		break;
 	}
 	if (c->winstate != state) {
-		setwmstate(c->win, state, c->icon ? c->frame : None);
+		setwmstate(c->win, state, c->is.dockapp ? (c->icon ? : c->win) : None);
 		c->winstate = state;
 	}
 }
@@ -2315,7 +2315,7 @@ manage(Window w, XWindowAttributes * wa)
 	ewmh_process_net_window_sync_request_counter(c);
 	ewmh_process_net_window_state(c);
 	c->is.managed = True;
-	setwmstate(c->win, c->winstate, c->icon ? c->frame : None);
+	setwmstate(c->win, c->winstate, c->is.dockapp ? (c->icon ? : c->win) : None);
 	ewmh_update_net_window_state(c);
 	ewmh_update_net_window_desktop(c);
 

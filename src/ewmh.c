@@ -1464,34 +1464,57 @@ getmwmhints(Window win, Bool *title, Bool *grips, int *border)
 	}
 }
 
-#define WIN_LAYER_DESKTOP      0
-#define WIN_LAYER_BELOW        2
-#define WIN_LAYER_NORMAL       4
+#define WIN_LAYER_DESKTOP      0 /* windows with _NET_WM_TYPE_DESKTOP */
+#define WIN_LAYER_BELOW        2 /* windows with _NET_WM_STATE_BELOW */
+#define WIN_LAYER_NORMAL       4 /* windows not belonging to any other layer */
 #define WIN_LAYER_ONTOP        6
-#define WIN_LAYER_DOCK         8
-#define WIN_LAYER_ABOVE_DOCK  10
-#define WIN_LAYER_MENU        12
+#define WIN_LAYER_DOCK         8 /* windows of type _NET_WM_TYPE_DOCK unless _NET_WM_STATE_BELOW */
+#define WIN_LAYER_ABOVE_DOCK  10 /* window with _NET_WM_STATE_ABOVE */
+#define WIN_LAYER_MENU        12 /* focused windows with _NET_WM_STATE_FULLSCREEN */
+
+unsigned long
+get_layer(Client *c)
+{
+	unsigned long layer;
+
+	if (window_stack.modal_transients && c->is.modal == ModalSystem)
+		layer = WIN_LAYER_MENU;
+	else if (WTCHECK(c, WindowTypeDesk))
+		layer = WIN_LAYER_DESKTOP;
+	else if (sel == c && c->is.full)
+		layer = WIN_LAYER_ABOVE_DOCK;
+	else if (sel && ((sel->is.dockapp && c->is.dockapp)
+			 || (WTCHECK(sel, WindowTypeDock) && sel == c)))
+		layer = WIN_LAYER_DOCK;
+	else if ((WTCHECK(c, WindowTypeDock) && !c->is.below) || c->is.above)
+		layer = WIN_LAYER_ONTOP;
+	else if (!WTCHECK(c, WindowTypeDock) && !c->is.below)
+		layer = WIN_LAYER_NORMAL;
+	else
+		layer = WIN_LAYER_BELOW;
+	return (layer);
+}
+
+unsigned long
+get_full_layer(Client *c)
+{
+	unsigned long layer;
+	Window w;
+	Client *l;
+
+	layer = get_layer(c);
+	if (c->is.grptrans && (w = c->leader) && (l = findclient(w)))
+		layer = max(layer, get_layer(l));
+	if (c->is.transient && (w = c->transfor) && (l = findclient(w)))
+		layer = max(layer, get_layer(l));
+	return (layer);
+}
 
 void
 wmh_update_win_layer(Client *c)
 {
-	unsigned long layer = WIN_LAYER_NORMAL;
+	unsigned long layer = get_full_layer(c);
 
-	if (WTCHECK(c, WindowTypeDesk))
-		layer = WIN_LAYER_DESKTOP;
-	else if (WTCHECK(c, WindowTypeMenu))
-		layer = WIN_LAYER_MENU;
-	else if (c->is.below)
-		layer = WIN_LAYER_BELOW;
-	else if (WTCHECK(c, WindowTypeDock) && c->is.above)
-		layer = WIN_LAYER_ABOVE_DOCK;
-	else if (WTCHECK(c, WindowTypeDock) && !c->is.above)
-		layer = WIN_LAYER_DOCK;
-	else if (c->wintype & ~(WTFLAG(WindowTypeNormal) | WTFLAG(WindowTypeDesk) |
-				WTFLAG(WindowTypeDock) | WTFLAG(WindowTypeMenu)))
-		layer = 13;
-	else
-		layer = WIN_LAYER_NORMAL;
 	XChangeProperty(dpy, c->win, _XA_WIN_LAYER, XA_CARDINAL, 32,
 			PropModeReplace, (unsigned char *) &layer, 1L);
 }
@@ -2172,7 +2195,10 @@ wmh_process_layer(Client *c, unsigned int layer)
 		break;
 	case 3:
 	case WIN_LAYER_NORMAL:
-		c->wintype |= WTFLAG(WindowTypeNormal);
+		if (c->transfor)
+			c->wintype |= WTFLAG(WindowTypeDialog);
+		else
+			c->wintype |= WTFLAG(WindowTypeNormal);
 		break;
 	case 5:
 	case WIN_LAYER_ONTOP:
@@ -2182,16 +2208,20 @@ wmh_process_layer(Client *c, unsigned int layer)
 	case 7:
 	case WIN_LAYER_DOCK:
 		c->wintype |= WTFLAG(WindowTypeDock);
+		if (c->is.below)
+			togglebelow(c);
 		break;
 	case 9:
 	case WIN_LAYER_ABOVE_DOCK:
-		c->wintype |= WTFLAG(WindowTypeDock);
-		if (!c->is.above)
-			toggleabove(c);
+		if (!c->is.full)
+			togglefull(c);
 		break;
 	case 11:
 	case WIN_LAYER_MENU:
-		c->wintype |= WTFLAG(WindowTypeMenu);
+		if (c->transfor)
+			c->wintype |= WTFLAG(WindowTypeMenu);
+		else
+			c->wintype |= WTFLAG(WindowTypeToolbar);
 		break;
 	case 13:
 	default:
@@ -2900,10 +2930,42 @@ getwintype(Window win)
 	return ret;
 }
 
+// Normally override-redirect: top to bottom
+//
+// WindowTypeDnd:-	override: window being dragged
+// WindowTypeNotify:-	override: notification
+// WindowTypeTooltip:-	override: tooltip
+// WindowTypeDrop:-	override: drop down menu
+// WindowTypePopup: -	override: popup menu
+// WindowTypeCombo:-	override: combo box popup
+
+// Normally managed: top to bottom
+//
+// WindowTypeSplash:	managed: splash display
+// WindowTypeToolbar:-	managed: pinned toobar
+// WindowTypeMenu:	managed: pinned menu
+// WindowTypeDock:-	managed: dock or panel (but depends) on other settings
+// WindowTypeDialog:	managed: dialog window
+// WindowTypeUtil:	managed: persistent utility window
+// WindowTypeNormal:	managed: normal windows
+// WindowTypeDesk:-	managed: desktop
+
 void
 ewmh_process_net_window_type(Client *c)
 {
 	c->wintype = getwintype(c->win);
+
+	if (!c->wintype) {
+		/* When _NET_WM_WINDOW_TYPE is not set: */
+		if (c->transfor)
+			/* Managed windows with WM_TRANSIENT_FOR set MUST be taken as
+			   _NET_WM_WINDOW_TYPE_DIALOG. */
+			c->wintype |= WTFLAG(WindowTypeDialog);
+		else
+			/* Managed windows without WM_TRANSIENT_FOR set MUST be taken as
+			   _NET_WM_WINDOW_TYPE_NORMAL. */
+			c->wintype |= WTFLAG(WindowTypeNormal);
+	}
 	if (!WTCHECK(c, WindowTypeNormal)) {
 		if (WTCHECK(c, WindowTypeDesk) ||
 		    WTCHECK(c, WindowTypeDock) ||

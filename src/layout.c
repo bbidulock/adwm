@@ -2323,8 +2323,253 @@ isfloater(Client *c)
 	return False;
 }
 
+typedef struct StackContext {
+	int n;				/* number of clients in stack */
+	int i;				/* current client being considered */
+	int j;				/* current stack position */
+	Window *wl;			/* frame window list */
+	Client **ol;			/* original client list */
+	Client **cl;			/* unstacked client list */
+	Client **sl;			/* stacked client list */
+} StackContext;
+
+void
+stack_client(StackContext *s, Client *c)
+{
+	if (c->breadcrumb)
+		return;
+	s->cl[s->i] = NULL;
+	s->sl[s->j] = c;
+	s->wl[s->j] = c->frame;
+	c->breadcrumb++;
+	s->j++;
+	XPRINTF("client 0x%08lx 0x%08lx %s\n", c->frame, c->win, c->name);
+}
+
+/** @brief - stack clients
+  *
+  * General rules that must also be applied:
+  *
+  * 1. Global modal windows must always go on top.
+  * 2. Group modal windows must always go above their group.  When top-down
+  *    stacking the group leader, group modal windows must be stacked first.
+  * 3. Transient windows should go above the windows for which they are
+  *    transient.  When stacking a window, all its transients must be stacked
+  *    first.
+  */
+void
+stack_clients(StackContext * s, Client *c)
+{
+	Client *m;
+	Group *g;
+	Window w;
+	int k;
+
+	/* always stack modal windows */
+	if (c->is.modal)
+		return stack_client(s, c);
+	/* need to ensure that group modals are stacked first */
+	if (!c->nonmodal)
+		goto no_modal;
+	if (c->is.grptrans && (w = c->leader) && (g = getleader(w, ClientLeader)))
+		for (k = 0; k < g->count; k++)
+			if ((w = g->members[k]) != c->win &&
+			    (m = getclient(w, ClientWindow)) && m->is.modal)
+				stack_client(s, m);
+	if (c->is.transient && (w = c->transfor) && (g = getleader(w, ClientTransFor)))
+		for (k = 0; k < g->count; k++)
+			if ((w = g->members[k]) != c->win &&
+			    (m = getclient(w, ClientWindow)) && m->is.modal)
+				stack_client(s, m);
+      no_modal:
+	/* stack transients above windows they are transient for */
+	if ((g = getleader(c->win, ClientLeader)))
+		for (k = 0; k < g->count; k++)
+			if ((w = g->members[k]) != c->win &&
+			    (m = getclient(w, ClientWindow)) &&
+			    m->is.grptrans && m->leader == c->win)
+				stack_client(s, m);
+	if ((g = getleader(c->win, ClientTransFor)))
+		for (k = 0; k < g->count; k++)
+			if ((w = g->members[k]) != c->win &&
+			    (m = getclient(w, ClientWindow)) &&
+			    m->is.transient && m->transfor == c->win)
+				stack_client(s, m);
+	/* stack the window itself */
+	return stack_client(s, c);
+}
+
+/** @brief - restack windows
+  *
+  * The rationale is as follows: (from top to bottom)
+  *
+  * 1. (12) (WIN_LAYER_MENU      ) Global modal windows (if any).
+  * 2. (10) (WIN_LAYER_ABOVE_DOCK) Focused windows with state _NET_WM_STATE_FULLSCREEN  (but not type Desk)
+  * 3. ( 8) (WIN_LAYER_DOCK      ) Dockapps when a dockapp is selected and docks when selected.
+  * 4. ( 6) (WIN_LAYER_ONTOP     ) Window with type Dock and not state Below and windows with state Above.
+  * 5. ( 4) (WIN_LAYER_NORMAL    ) Other windows without state Below.
+  * 6. ( 2) (WIN_LAYER_BELOW     ) Windows with state Below and Dock not already stacked
+  * 7. ( 0) (WIN_LAYER_DESKTOP   ) Windows with type Desk.
+  *
+  * General rules that must also be applied:
+  *
+  * 4. Focused windows with both state Above and Below are treated as though
+  *    Below was not set.
+  * 5. Unfocused windows with both state Above and Below are treated as though
+  *    Above was not set.
+  */
 static void
 restack()
+{
+	StackContext s = { 0, };
+	Client *c;
+
+	XPRINTF("%s\n", "RESTACKING: -------------------------------------");
+	for (s.n = 0, c = scr->stack; c; c = c->snext, s.n++)
+		c->breadcrumb = 0;
+	if (!s.n) {
+		ewmh_update_net_client_list_stacking();
+		return;
+	}
+	s.ol = ecalloc(s.n, sizeof(*s.ol));
+	s.cl = ecalloc(s.n, sizeof(*s.cl));
+	s.sl = ecalloc(s.n, sizeof(*s.sl));
+	s.wl = ecalloc(s.n, sizeof(*s.wl));
+
+	for (s.i = 0, s.j = 0, c = scr->stack; c;
+	     s.ol[s.i] = s.cl[s.i] = c, s.i++, c = c->snext) ;
+
+	/* 1. Global modal windows (if any). */
+	if (window_stack.modal_transients) {
+		for (s.i = 0; s.i < s.n; s.i++) {
+			if (!(c = s.cl[s.i]))
+				continue;
+			if (c->is.modal == ModalSystem)
+				stack_clients(&s, c);
+		}
+	}
+	/* 2. Focused windows with state _NET_WM_STATE_FULLSCREEN  (but not type Desk) */
+	for (s.i = 0; s.i < s.n; s.i++) {
+		if (!(c = s.cl[s.i]))
+			continue;
+		if (WTCHECK(c, WindowTypeDesk))
+			continue;
+		if (sel == c && c->is.full)
+			stack_clients(&s, c);
+	}
+	/* 3. Dockapps when a dockapp is selected and docks when selected. */
+	if (sel && WTCHECK(sel, WindowTypeDock)) {
+		if (sel->is.dockapp) {
+			for (s.i = 0; s.i < s.n; s.i++) {
+				if (!(c = s.cl[s.i]))
+					continue;
+				if (c->is.dockapp)
+					stack_clients(&s, c);
+			}
+		} else {
+			for (s.i = 0; s.i < s.n; s.i++) {
+				if (!(c = s.cl[s.i]))
+					continue;
+				if (sel == c)
+					stack_clients(&s, c);
+			}
+		}
+	}
+	/* 4. Window with type Dock and not state Below and windows with state Above. */
+	for (s.i = 0; s.i < s.n; s.i++) {
+		if (!(c = s.cl[s.i]))
+			continue;
+		if (WTCHECK(c, WindowTypeDesk))
+			continue;
+		if ((WTCHECK(c, WindowTypeDock) && !c->is.below && !c->is.banned) || c->is.above)
+			stack_clients(&s, c);
+	}
+	/* 5. Windows (other than Desk or Dock) without state Below. */
+	/* floating above */
+	for (s.i = 0; s.i < s.n; s.i++) {
+		if (!(c = s.cl[s.i]))
+			continue;
+		if (WTCHECK(c, WindowTypeDesk))
+			continue;
+		if (WTCHECK(c, WindowTypeDock))
+			continue;
+		if (c->is.bastard || c->is.below)
+			continue;
+		if (isfloater(c))
+			stack_clients(&s, c);
+	}
+	/* tiled below */
+	for (s.i = 0; s.i < s.n; s.i++) {
+		if (!(c = s.cl[s.i]))
+			continue;
+		if (WTCHECK(c, WindowTypeDesk))
+			continue;
+		if (WTCHECK(c, WindowTypeDock))
+			continue;
+		if (c->is.bastard || c->is.below)
+			continue;
+		if (!isfloater(c))
+			stack_clients(&s, c);
+	}
+	/** 6. Windows with state Below (but not type Desk) and Dock not already stacked */
+	for (s.i = 0; s.i < s.n; s.i++) {
+		if (!(c = s.cl[s.i]))
+			continue;
+		if (WTCHECK(c, WindowTypeDesk))
+			continue;
+		if (WTCHECK(c, WindowTypeDock) || c->is.below)
+			stack_clients(&s, c);
+	}
+	/** 7. Windows with type Desk. **/
+	for (s.i = 0; s.i < s.n; s.i++) {
+		if (!(c = s.cl[s.i]))
+			continue;
+		if (WTCHECK(c, WindowTypeDesk))
+			stack_clients(&s, c);
+	}
+	assert(s.j == s.n);
+	free(s.cl); s.cl = NULL;
+
+	if (bcmp(s.ol, s.sl, s.n * sizeof(*s.ol))) {
+		XPRINTF("%s", "Old stacking order:\n");
+		for (c = scr->stack; c; c = c->snext)
+			XPRINTF("client frame 0x%08lx win 0x%08lx name %s%s\n",
+				c->frame, c->win, c->name,
+				c->is.bastard ? " (bastard)" : "");
+		scr->stack = s.sl[0];
+		for (s.i = 0; s.i < s.n - 1; s.i++)
+			s.sl[s.i]->snext = s.sl[s.i + 1];
+		s.sl[s.i]->snext = NULL;
+		XPRINTF("%s", "New stacking order:\n");
+		for (c = scr->stack; c; c = c->snext)
+			XPRINTF("client frame 0x%08lx win 0x%08lx name %s%s\n",
+				c->frame, c->win, c->name,
+				c->is.bastard ? " (bastard)" : "");
+	} else {
+		XPRINTF("%s", "No new stacking order\n");
+	}
+	free(s.ol); s.ol = NULL;
+	free(s.sl); s.sl = NULL;
+
+	if (!window_stack.members || (window_stack.count != s.n) ||
+	    bcmp(window_stack.members, s.wl, s.n * sizeof(*s.wl))) {
+		free(window_stack.members);
+		window_stack.members = s.wl;
+		window_stack.count = s.n;
+
+		XRestackWindows(dpy, s.wl, s.n);
+
+		ewmh_update_net_client_list_stacking();
+	} else {
+		XPRINTF("%s", "No new stacking order\n");
+		free(s.wl); s.wl = NULL;
+	}
+	discardcrossing();
+}
+
+#if 0
+static void
+restack_old()
 {
 	Client *c, **ol, **cl, **sl;
 	Window *wl;
@@ -2350,8 +2595,8 @@ restack()
 	 * Stacking order
 	 *
 	 * To obtain good interoperability betweeen different Desktop
-	 * Environments, the following layerd stacking order is
-	 * recommended, from the bottom:
+	 * Environments, the following layered stacking order is recommended,
+	 * from the bottom:
 	 *
 	 * - windows of type _NET_WM_TYPE_DESKTOP
 	 * - windows having state _NET_WM_STATE_BELOW
@@ -2361,6 +2606,26 @@ restack()
 	 *   _NET_WM_STATE_ABOVE
 	 * - focused windows having state _NET_WM_STATE_FULLSCREEN
 	 */
+	// Normally override-redirect: top to bottom
+	//
+	// WindowTypeDnd:-	override: window being dragged
+	// WindowTypeNotify:-	override: notification
+	// WindowTypeTooltip:-	override: tooltip
+	// WindowTypeDrop:-	override: drop down menu
+	// WindowTypePopup: -	override: popup menu
+	// WindowTypeCombo:-	override: combo box popup
+
+	// Normally managed: top to bottom
+	//
+	// WindowTypeSplash:	managed: splash display
+	// WindowTypeToolbar:-	managed: pinned toobar
+	// WindowTypeMenu:	managed: pinned menu
+	// WindowTypeDock:-	managed: dock or panel (but depends) on other settings
+	// WindowTypeDialog:	managed: dialog window
+	// WindowTypeUtil:	managed: persistent utility window
+	// WindowTypeNormal:	managed: normal windows
+	// WindowTypeDesk:-	managed: desktop
+
 	for (i = 0, j = 0, c = scr->stack; c; ol[i] = cl[i] = c, i++, c = c->snext) ;
 	/* focused windows having state _NET_WM_STATE_FULLSCREEN */
 	XPRINTF("%s", "LAYER: focused windows having state _NET_WM_STATE_FULLSCREEN:\n");
@@ -2564,6 +2829,7 @@ restack()
 	}
 	discardcrossing();
 }
+#endif
 
 static int
 segm_overlap(int min1, int max1, int min2, int max2)

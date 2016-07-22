@@ -2493,7 +2493,7 @@ restack()
 			continue;
 		if (WTCHECK(c, WindowTypeDock))
 			continue;
-		if (c->is.bastard || c->is.below)
+		if (c->is.below)
 			continue;
 		if (isfloater(c))
 			stack_clients(&s, c);
@@ -2506,7 +2506,7 @@ restack()
 			continue;
 		if (WTCHECK(c, WindowTypeDock))
 			continue;
-		if (c->is.bastard || c->is.below)
+		if (c->is.below)
 			continue;
 		if (!isfloater(c))
 			stack_clients(&s, c);
@@ -2979,10 +2979,6 @@ raisetiled(Client *c)
 {
 	if (c->is.bastard || c->is.dockapp || !isfloating(c, c->cview)) {
 		CPRINTF(c, "raising non-floating client on focus\n");
-		if (c->is.bastard || c->is.dockapp) {
-			c->is.below = False;
-			c->is.above = True;
-		}
 		raiseclient(c);
 	}
 }
@@ -2990,14 +2986,13 @@ raisetiled(Client *c)
 void
 lowertiled(Client *c)
 {
+#if 0
+	/* NEVER do this! */
 	if (c->is.bastard || c->is.dockapp || !isfloating(c, c->cview)) {
 		CPRINTF(c, "lowering non-floating client on loss of focus\n");
-		if (c->is.bastard || c->is.dockapp) {
-			c->is.below = True;
-			c->is.above = False;
-		}
 		lowerclient(c);
 	}
+#endif
 }
 
 

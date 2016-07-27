@@ -378,6 +378,7 @@ applystate(Client *c, XWMHints *wmh)
 		/* for windows that are not mapped */
 		c->is.dockapp = True;
 		c->is.above = False;
+		c->is.below = True;
 		c->skip.skip = -1U;
 		c->skip.arrange = False;
 		c->skip.sloppy = False;

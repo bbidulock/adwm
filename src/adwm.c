@@ -1039,6 +1039,10 @@ enternotify(XEvent *e)
 		return True;
 	} else if (ev->window == scr->root) {
 		DPRINTF("Not focusing root\n");
+		if (sel && (WTCHECK(sel, WindowTypeDock) || sel->is.dockapp || sel->is.bastard)) {
+			focus(NULL);
+			return True;
+		}
 		return False;
 	} else {
 		DPRINTF("Unknown entered window 0x%08lx\n", ev->window);

@@ -514,13 +514,13 @@ unban(Client *c, View *v)
 	}
 	c->cview = v;
 
+	if (!hide) {
+		if (c->is.dockapp)
+			XMapWindow(dpy, c->icon ? : c->win);
+		else
+			XMapWindow(dpy, c->win);
+	}
 	if (c->is.banned) {
-		if (!hide) {
-			if (c->is.dockapp)
-				XMapWindow(dpy, c->icon ? : c->win);
-			else
-				XMapWindow(dpy, c->win);
-		}
 		XMapWindow(dpy, c->frame);
 		c->is.banned = False;
 		setclientstate(c, NormalState);

@@ -2458,7 +2458,7 @@ restack()
 			stack_clients(&s, c);
 	}
 	/* 3. Dockapps when a dockapp is selected and docks when selected. */
-	if (sel && WTCHECK(sel, WindowTypeDock)) {
+	if (sel && (WTCHECK(sel, WindowTypeDock) || sel->is.dockapp)) {
 		if (sel->is.dockapp) {
 			for (s.i = 0; s.i < s.n; s.i++) {
 				if (!(c = s.cl[s.i]))
@@ -2481,7 +2481,7 @@ restack()
 			continue;
 		if (WTCHECK(c, WindowTypeDesk))
 			continue;
-		if ((WTCHECK(c, WindowTypeDock) && !c->is.below && !c->is.banned) || c->is.above)
+		if (((WTCHECK(c, WindowTypeDock) || c->is.dockapp) && !c->is.below && !c->is.banned) || c->is.above)
 			stack_clients(&s, c);
 	}
 	/* 5. Windows (other than Desk or Dock) without state Below. */
@@ -2491,7 +2491,7 @@ restack()
 			continue;
 		if (WTCHECK(c, WindowTypeDesk))
 			continue;
-		if (WTCHECK(c, WindowTypeDock))
+		if ((WTCHECK(c, WindowTypeDock) || c->is.dockapp))
 			continue;
 		if (c->is.below)
 			continue;
@@ -2504,7 +2504,7 @@ restack()
 			continue;
 		if (WTCHECK(c, WindowTypeDesk))
 			continue;
-		if (WTCHECK(c, WindowTypeDock))
+		if ((WTCHECK(c, WindowTypeDock) || c->is.dockapp))
 			continue;
 		if (c->is.below)
 			continue;
@@ -2517,7 +2517,7 @@ restack()
 			continue;
 		if (WTCHECK(c, WindowTypeDesk))
 			continue;
-		if (WTCHECK(c, WindowTypeDock) || c->is.below)
+		if ((WTCHECK(c, WindowTypeDock) || c->is.dockapp) || c->is.below)
 			stack_clients(&s, c);
 	}
 	/** 7. Windows with type Desk. **/

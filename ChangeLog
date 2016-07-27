@@ -1,5 +1,92 @@
 # created with git log --stat=76 -M -C|fmt -sct -w80
 
+commit d25ab4162eaf43809a4d3ffb8aed3a8fad4ba039
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu Jul 21 20:20:06 2016 -0600
+
+    stacking assertion and no mess with bastards
+
+ src/layout.c | 15 +++++----------
+ 1 file changed, 5 insertions(+), 10 deletions(-)
+
+commit 718203e4400ad95394cf34335acd80925b54c87b
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Jul 18 23:22:35 2016 -0600
+
+    remove old restack()
+
+ src/layout.c | 264 -------------------------------------------------------
+ 1 file changed, 264 deletions(-)
+
+commit a192e1a3a0e1feb85e3f1d030bd46cd1d444516c
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Jul 18 19:46:04 2016 -0600
+
+    better stacking
+
+ .gitignore   |  25 ++++++
+ Makefile.am  |   4 +-
+ configure.ac |   7 +-
+ src/adwm.c   |   4 +-
+ src/adwm.h   |   2 +
+ src/ewmh.c   | 112 +++++++++++++++++------
+ src/layout.c | 270 ++++++++++++++++++++++++++++++++++++++++++++++++++++++-
+ 7 files changed, 391 insertions(+), 33 deletions(-)
+
+commit 366be58c2e4d48c7d0e171d7b94dd86c1639adbb
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Jul 10 00:37:54 2016 -0600
+
+    stray period
+
+ README       | 2 +-
+ README.md    | 2 +-
+ README.md.in | 2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
+
+commit 7658d6728e9043a52e08a980e4cf1e2c2d46d1cb
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Jul 10 00:35:42 2016 -0600
+
+    better readme formatting
+
+ README       | 96 +++++++++++++++++++++++++++++++++-----------------------
+ README.md    | 96 +++++++++++++++++++++++++++++++++-----------------------
+ README.md.in | 96 +++++++++++++++++++++++++++++++++-----------------------
+ 3 files changed, 171 insertions(+), 117 deletions(-)
+
+commit 97ee0594aee9260d78fa1dc6087a152d673ccb82
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Jul 10 00:35:31 2016 -0600
+
+    git hates trailing space
+
+ gennews.sh | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+commit 4fb07b163ce058b5aff881b1ed6fee19f7298fee
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Jul 9 19:41:48 2016 -0600
+
+    no longer necessary
+
+ AUTHORS.in | 13 -------------
+ 1 file changed, 13 deletions(-)
+
+commit 180b832b05bf98b29f304d0de69f6ed47f40df6b
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Jul 9 19:36:27 2016 -0600
+
+    update release files
+
+ AUTHORS      |  2 +-
+ ChangeLog    | 33 +++++++++++++++++++++++-
+ NEWS         | 76 ++++++++++++++++----------------------------------------
+ README       |  4 +--
+ README.md    |  4 +--
+ configure.ac |  6 ++---
+ 6 files changed, 62 insertions(+), 63 deletions(-)
+
 commit ceca8430ba15f1f2ae77e9960b6d2b515a11b811
 Author: Brian Bidulock <bidulock@openss7.org>
 Date:   Sat Jul 9 19:34:21 2016 -0600

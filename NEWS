@@ -1,12 +1,28 @@
-adwm -- history of user-visible changes.  2016-07-09
+adwm -- history of user-visible changes.  2016-07-21
+
+Release adwm-0.6.4 released 2016-07-21
+--------------------------------------
+
+git shortlog -e -n -w80,6,8 0.6.3...0.6.4
+
+Brian Bidulock <bidulock@openss7.org> (7):
+      no longer necessary
+      git hates trailing space
+      better readme formatting
+      stray period
+      better stacking
+      remove old restack()
+      stacking assertion and no mess with bastards
+
 
 Release adwm-0.6.3 released 2016-07-09
 --------------------------------------
 
 git shortlog -e -n -w80,6,8 0.6.2...0.6.3
 
-Brian Bidulock <bidulock@openss7.org> (1):
+Brian Bidulock <bidulock@openss7.org> (2):
       simplify diestribution
+      update release files
 
 
 Release adwm-0.6.2 released 2016-07-08
@@ -143,14 +159,4 @@ Brian Bidulock <bidulock@openss7.org> (6):
       don't unmanage on real unmap events when shaded
       handle suppression of unmap notify differently
       updated release files
-
-
-Release adwm-0.5.3 released 2015-01-07
---------------------------------------
-
-git shortlog -e -n -w80,6,8 0.5.2...0.5.3
-
-Brian Bidulock <bidulock@openss7.org> (2):
-      better ICCCM 4.1.4 compliance
-      updated readme
 

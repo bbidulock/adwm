@@ -1280,14 +1280,14 @@ focus(Client *c)
 		/* drawclient does this does it not? */
 		XSetWindowBorder(dpy, sel->frame, scr->style.color.sel[ColBorder]);
 		drawclient(c);
-		if (c->is.shaded && scr->options.autoroll)
+		if ((c->is.shaded && scr->options.autoroll) || WTCHECK(c, WindowTypeDock) || c->is.dockapp)
 			arrange(c->cview);
 		raisetiled(c);
 		ewmh_update_net_window_state(c);
 	}
 	if (o && o != sel) {
 		drawclient(o);
-		if (o->is.shaded && scr->options.autoroll && isvisible(o, o->cview))
+		if (((o->is.shaded && scr->options.autoroll) || WTCHECK(o, WindowTypeDock) || o->is.dockapp) && isvisible(o, o->cview))
 			arrange(o->cview);
 		lowertiled(o);
 		ewmh_update_net_window_state(o);

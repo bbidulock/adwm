@@ -2481,7 +2481,7 @@ restack()
 			continue;
 		if (WTCHECK(c, WindowTypeDesk))
 			continue;
-		if (((WTCHECK(c, WindowTypeDock) || c->is.dockapp) && !c->is.below && !c->is.banned) || c->is.above)
+		if ((WTCHECK(c, WindowTypeDock) && !c->is.dockapp && !c->is.below && !c->is.banned) || c->is.above)
 			stack_clients(&s, c);
 	}
 	/* 5. Windows (other than Desk or Dock) without state Below. */

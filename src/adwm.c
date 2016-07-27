@@ -497,10 +497,20 @@ ban(Client *c)
 void
 unban(Client *c, View *v)
 {
+	Bool hide = False;
+
+	if (c->is.shaded)
+		hide = True;
+	if (v->barpos == StrutsOff) {
+		if (WTCHECK(c, WindowTypeDock) && (!sel || sel != c))
+			hide = True;
+		if (c->is.dockapp && sel && sel->is.dockapp)
+			hide = False;
+	}
 	c->cview = v;
 
 	if (c->is.banned) {
-		if (!c->is.shaded && (v->barpos != StrutsOff || (!WTCHECK(c, WindowTypeDock) && !c->is.dockapp))) {
+		if (!hide) {
 			if (c->is.dockapp)
 				XMapWindow(dpy, c->icon ? : c->win);
 			else

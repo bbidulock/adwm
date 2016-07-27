@@ -500,7 +500,7 @@ unban(Client *c, View *v)
 	c->cview = v;
 
 	if (c->is.banned) {
-		if (!c->is.shaded) {
+		if (!c->is.shaded && (v->barpos != StrutsOff || (!WTCHECK(c, WindowTypeDock) && !c->is.dockapp))) {
 			if (c->is.dockapp)
 				XMapWindow(dpy, c->icon ? : c->win);
 			else

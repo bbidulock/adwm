@@ -1362,6 +1362,8 @@ arrangedock(View *v)
 	static const unsigned max = 64;
 	Workarea wa;
 	Bool floating = VFEATURES(v, OVERLAP) ? True : False;
+	Bool hide = (v->barpos == StrutsOff) && (!sel || !sel->is.dockapp);
+	unsigned min = hide ? 2 : max;
 
 	if (!(m = v->curmon))
 		return;
@@ -1375,7 +1377,7 @@ arrangedock(View *v)
 		return;
 	n = (Container *) t->node.children.head;
 
-	b = scr->style.border;
+	b = hide ? scr->style.border : 0;
 	t->t.x = t->f.x = wa.x;
 	t->t.y = t->f.y = wa.y;
 	t->t.w = t->f.w = wa.w;
@@ -1425,9 +1427,9 @@ arrangedock(View *v)
 		switch (t->node.children.ori) {
 		case OrientLeft:
 		case OrientRight:
-			wa.w -= max + b + (i ? 0 : b);
+			wa.w -= min + b + (i ? 0 : b);
 			pt = wa.y;
-			gf.w = gt.w = max + 2 * b;
+			gf.w = gt.w = min + 2 * b;
 			dt = wa.h;
 			df = minor * (max + b) + b;
 			switch ((int) t->node.children.ori) {
@@ -1446,7 +1448,7 @@ arrangedock(View *v)
 					pf = wa.y + (wa.h - df);
 					break;
 				}
-				wa.x += max + b;
+				wa.x += min + b;
 				break;
 			case OrientRight:
 				gf.x = gt.x = wa.x + wa.w;
@@ -1471,9 +1473,9 @@ arrangedock(View *v)
 			break;
 		case OrientTop:
 		case OrientBottom:
-			wa.h -= max + b + (i ? 0 : b);
+			wa.h -= min + b + (i ? 0 : b);
 			pt = wa.x;
-			gf.h = gt.h = max + 2 * b;
+			gf.h = gt.h = min + 2 * b;
 			dt = wa.w;
 			df = minor * (max + b) + b;
 			switch ((int) t->node.children.ori) {
@@ -1492,7 +1494,7 @@ arrangedock(View *v)
 					pf = wa.x + (wa.w - df);
 					break;
 				}
-				wa.y += max + b;
+				wa.y += min + b;
 				break;
 			case OrientBottom:
 				gf.y = gt.y = wa.y + wa.h;

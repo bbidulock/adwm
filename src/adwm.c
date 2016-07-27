@@ -487,7 +487,10 @@ ban(Client *c)
 		XSelectInput(dpy, c->frame, FRAMEMASK);
 		XSync(dpy, False);
 #else
-		XUnmapWindow(dpy, c->win);
+		if (c->is.dockapp)
+			XUnmapWindow(dpy, c->icon ? : c->win);
+		else
+			XUnmapWindow(dpy, c->win);
 		XSync(dpy, False);
 		XCheckIfEvent(dpy, &ev, &check_unmapnotify, (XPointer) c);
 #endif
@@ -514,7 +517,12 @@ unban(Client *c, View *v)
 	}
 	c->cview = v;
 
-	if (!hide) {
+	if (hide) {
+		if (c->is.dockapp)
+			XUnmapWindow(dpy, c->icon ? : c->win);
+		else
+			XUnmapWindow(dpy, c->win);
+	} else {
 		if (c->is.dockapp)
 			XMapWindow(dpy, c->icon ? : c->win);
 		else

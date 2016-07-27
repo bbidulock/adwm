@@ -502,10 +502,15 @@ unban(Client *c, View *v)
 	if (c->is.shaded)
 		hide = True;
 	if (v->barpos == StrutsOff) {
-		if (WTCHECK(c, WindowTypeDock) && (!sel || sel != c))
-			hide = True;
-		if (c->is.dockapp && sel && sel->is.dockapp)
-			hide = False;
+		if (c->is.dockapp) {
+			if (!sel || !sel->is.dockapp)
+				hide = True;
+#if 0
+		} else if (WTCHECK(c, WindowTypeDock)) {
+			if (!sel || sel != c)
+				hide = True;
+#endif
+		}
 	}
 	c->cview = v;
 

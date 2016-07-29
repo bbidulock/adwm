@@ -3006,7 +3006,7 @@ ewmh_process_net_window_type(Client *c)
 		    WTCHECK(c, WindowTypeCombo) || WTCHECK(c, WindowTypeDnd)) {
 			c->is.bastard = True;
 			c->skip.skip = -1U;	/* skip everything */
-			c->user.can = 0;	/* no functionality */
+			c->user.can = 0;	/* no user functionality */
 			c->has.has = 0;	/* no decorations */
 			c->is.floater = True;
 		}
@@ -3025,11 +3025,7 @@ ewmh_process_net_window_type(Client *c)
 			c->is.bastard = True;
 			c->skip.skip = -1U;	/* skip everything */
 			c->skip.sloppy = False;
-			c->user.can = 0;	/* no functionality */
-			// c->prog.move = True;
-			// c->prog.size = True;
-			// c->prog.sizeh = True;
-			// c->prog.sizev = True;
+			c->user.can = 0;	/* no user functionality */
 			c->has.has = 0;	/* no decorations */
 			c->is.floater = True;
 		}

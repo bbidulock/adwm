@@ -1343,24 +1343,24 @@ mwmh_process_motif_wm_hints(Client *c)
 		if ((hints[0] & MWM_HINTS_FUNCTIONS) && n >= 2 &&
 		    !((hint = hints[1]) & MWM_FUNC_ALL)) {
 			if (!(hint & MWM_FUNC_MOVE))
-				c->can.move = False;
+				c->user.move = False;
 			if (!(hint & MWM_FUNC_RESIZE)) {
-				c->can.size = False;
-				c->can.fill = False;
-				c->can.max = False;
-				c->can.fill = False;
+				c->user.size = False;
+				c->user.fill = False;
+				c->user.max = False;
+				c->user.fill = False;
 			}
 			if (!(hint & MWM_FUNC_MINIMIZE)) {
-				c->can.min = False;
-				c->can.shade = False;
+				c->user.min = False;
+				c->user.shade = False;
 			}
 			if (!(hint & MWM_FUNC_MAXIMIZE)) {
-				c->can.max = False;
-				c->can.fill = False;
-				c->can.full = False;
+				c->user.max = False;
+				c->user.fill = False;
+				c->user.full = False;
 			}
 			if (!(hint & MWM_FUNC_CLOSE))
-				c->can.close = False;
+				c->user.close = False;
 		}
 		if ((hints[0] & MWM_HINTS_DECORATIONS) && n >= 3 &&
 		    !((hint = hints[2]) & MWM_DECOR_ALL)) {
@@ -1429,7 +1429,7 @@ mwmh_process_dt_wm_hints(Client *c)
 		if ((hints[0] & DTWM_HINTS_FUNCTIONS) && n >= 2 &&
 		    !((hint = hints[1]) && DTWM_FUNCTION_ALL)) {
 			if (!(hint & DTWM_FUNCTION_OCCUPY_WS))
-				c->can.tag = False;
+				c->user.tag = False;
 		}
 		if ((hints[0] & DTWM_HINTS_BEHAVIORS) && n >= 3) {
 			/* TODO treat subpanel stuff like a dock app */
@@ -1526,34 +1526,34 @@ ewmh_update_net_window_actions(Client *c)
 	int actions = 0;
 
 	XPRINTF("Updating _NET_WM_ALLOWED_ACTIONS for 0x%lx\n", c->win);
-	if (c->can.move)
+	if (c->user.move)
 		action[actions++] = _XA_NET_WM_ACTION_MOVE;
-	if (c->can.size)
+	if (c->user.size)
 		action[actions++] = _XA_NET_WM_ACTION_RESIZE;
-	if (c->can.min)
+	if (c->user.min)
 		action[actions++] = _XA_NET_WM_ACTION_MINIMIZE;
-	if (c->can.shade)
+	if (c->user.shade)
 		action[actions++] = _XA_NET_WM_ACTION_SHADE;
-	if (c->can.stick)
+	if (c->user.stick)
 		action[actions++] = _XA_NET_WM_ACTION_STICK;
-	if (c->can.maxh || c->can.max)
+	if (c->user.maxh || c->user.max)
 		action[actions++] = _XA_NET_WM_ACTION_MAXIMIZE_HORZ;
-	if (c->can.maxv || c->can.max)
+	if (c->user.maxv || c->user.max)
 		action[actions++] = _XA_NET_WM_ACTION_MAXIMIZE_VERT;
-	if (c->can.full)
+	if (c->user.full)
 		action[actions++] = _XA_NET_WM_ACTION_FULLSCREEN;
-	if (c->can.tag)
+	if (c->user.tag)
 		action[actions++] = _XA_NET_WM_ACTION_CHANGE_DESKTOP;
-	if (c->can.close)
+	if (c->user.close)
 		action[actions++] = _XA_NET_WM_ACTION_CLOSE;
-	if (c->can.above)
+	if (c->user.above)
 		action[actions++] = _XA_NET_WM_ACTION_ABOVE;
-	if (c->can.below)
+	if (c->user.below)
 		action[actions++] = _XA_NET_WM_ACTION_BELOW;
 	/* following two are non-standard */
-	if (c->can.fill)
+	if (c->user.fill)
 		action[actions++] = _XA_NET_WM_ACTION_FILL;
-	if (c->can.floats)
+	if (c->user.floats)
 		action[actions++] = _XA_NET_WM_ACTION_FLOAT;
 
 	XChangeProperty(dpy, c->win, _XA_NET_WM_ALLOWED_ACTIONS, XA_ATOM, 32,
@@ -1611,7 +1611,7 @@ ewmh_update_net_window_state(Client *c)
 		winstate[states++] = _XA_NET_WM_STATE_FOCUSED;
 
 	/* following are non-standard */
-	if (!c->can.move)
+	if (!c->user.move)
 		winstate[states++] = _XA_NET_WM_STATE_FIXED;
 	if (c->skip.arrange)
 		winstate[states++] = _XA_NET_WM_STATE_FLOATING;
@@ -1638,7 +1638,7 @@ ewmh_update_net_window_state(Client *c)
 		state |= WIN_STATE_HID_WORKSPACE;
 	if (c->is.icon && c->transfor)
 		state |= WIN_STATE_HID_TRANSIENT;
-	if (!c->can.move)
+	if (!c->user.move)
 		state |= WIN_STATE_FIXED_POSITION;
 	if (c->skip.arrange)
 		state |= WIN_STATE_ARRANGE_IGNORE;
@@ -1683,9 +1683,9 @@ wmh_process_state_mask(Client *c, unsigned int mask, unsigned int change)
 		/* read-only */
 	}
 	if (mask & WIN_STATE_FIXED_POSITION)
-		if (((change & WIN_STATE_FIXED_POSITION) && !c->can.move) ||
-		    (!(change & WIN_STATE_FIXED_POSITION) && c->can.move)) {
-			c->can.move = !c->can.move;
+		if (((change & WIN_STATE_FIXED_POSITION) && !c->user.move) ||
+		    (!(change & WIN_STATE_FIXED_POSITION) && c->user.move)) {
+			c->user.move = !c->user.move;
 			arrange(NULL);
 		}
 	if (mask & WIN_STATE_ARRANGE_IGNORE)
@@ -1711,22 +1711,26 @@ ewmh_process_state_atom(Client *c, Atom state, int set)
 		if ((set == _NET_WM_STATE_ADD && !c->is.sticky) ||
 		    (set == _NET_WM_STATE_REMOVE && c->is.sticky) ||
 		    (set == _NET_WM_STATE_TOGGLE))
-			togglesticky(c);
+			if (c->user.stick)
+				togglesticky(c);
 	} else if (state == _XA_NET_WM_STATE_MAXIMIZED_VERT) {
 		if ((set == _NET_WM_STATE_ADD && !c->is.maxv) ||
 		    (set == _NET_WM_STATE_REMOVE && c->is.maxv) ||
 		    (set == _NET_WM_STATE_TOGGLE))
-			togglemaxv(c);
+			if (c->user.maxv)
+				togglemaxv(c);
 	} else if (state == _XA_NET_WM_STATE_MAXIMIZED_HORZ) {
 		if ((set == _NET_WM_STATE_ADD && !c->is.maxh) ||
 		    (set == _NET_WM_STATE_REMOVE && c->is.maxh) ||
 		    (set == _NET_WM_STATE_TOGGLE))
-			togglemaxh(c);
+			if (c->user.maxh)
+				togglemaxh(c);
 	} else if (state == _XA_NET_WM_STATE_SHADED) {
 		if ((set == _NET_WM_STATE_ADD && !c->is.shaded) ||
 		    (set == _NET_WM_STATE_REMOVE && c->is.shaded) ||
 		    (set == _NET_WM_STATE_TOGGLE))
-			toggleshade(c);
+			if (c->user.shade)
+				toggleshade(c);
 	} else if (state == _XA_NET_WM_STATE_SKIP_TASKBAR) {
 		if ((set == _NET_WM_STATE_ADD && !c->skip.taskbar) ||
 		    (set == _NET_WM_STATE_REMOVE && c->skip.taskbar) ||
@@ -1746,14 +1750,17 @@ ewmh_process_state_atom(Client *c, Atom state, int set)
 		if ((set == _NET_WM_STATE_ADD && !c->is.hidden) ||
 		    (set == _NET_WM_STATE_REMOVE && c->is.hidden) ||
 		    (set == _NET_WM_STATE_TOGGLE))
-			togglehidden(c);
+			if (c->user.hide)
+				togglehidden(c);
 	} else if (state == _XA_NET_WM_STATE_FULLSCREEN) {
 		if ((set == _NET_WM_STATE_ADD || set == _NET_WM_STATE_TOGGLE)
 		    && !c->is.full) {
-			togglefull(c);
+			if (c->user.full)
+				togglefull(c);
 		} else if ((set == _NET_WM_STATE_REMOVE ||
 			    set == _NET_WM_STATE_TOGGLE) && c->is.full) {
-			togglefull(c);
+			if (c->user.full)
+				togglefull(c);
 		}
 		DPRINT;
 		arrange(nearview());
@@ -1762,12 +1769,14 @@ ewmh_process_state_atom(Client *c, Atom state, int set)
 		if ((set == _NET_WM_STATE_ADD && !c->is.above) ||
 		    (set == _NET_WM_STATE_REMOVE && c->is.above) ||
 		    (set == _NET_WM_STATE_TOGGLE))
-			toggleabove(c);
+			if (c->user.above)
+				toggleabove(c);
 	} else if (state == _XA_NET_WM_STATE_BELOW) {
 		if ((set == _NET_WM_STATE_ADD && !c->is.below) ||
 		    (set == _NET_WM_STATE_REMOVE && c->is.below) ||
 		    (set == _NET_WM_STATE_TOGGLE))
-			togglebelow(c);
+			if (c->user.below)
+				togglebelow(c);
 	} else if (state == _XA_NET_WM_STATE_DEMANDS_ATTENTION) {
 		if ((set == _NET_WM_STATE_ADD && !c->is.attn) ||
 		    (set == _NET_WM_STATE_REMOVE && c->is.attn) ||
@@ -1785,13 +1794,15 @@ ewmh_process_state_atom(Client *c, Atom state, int set)
 		if ((set == _NET_WM_STATE_ADD && !c->skip.arrange) ||
 		    (set == _NET_WM_STATE_REMOVE && c->skip.arrange) ||
 		    (set == _NET_WM_STATE_TOGGLE)) {
-			togglefloating(c);
+			if (c->user.floats)
+				togglefloating(c);
 		}
 	} else if (state == _XA_NET_WM_STATE_FILLED) {
 		if ((set == _NET_WM_STATE_ADD && !c->is.fill) ||
 		    (set == _NET_WM_STATE_REMOVE && c->is.fill) ||
 		    (set == _NET_WM_STATE_TOGGLE)) {
-			togglefill(c);
+			if (c->user.fill)
+				togglefill(c);
 		}
 	}
 }
@@ -2382,7 +2393,7 @@ ewmh_process_kde_net_window_type_override(Client *c)
 		c->is.floater = True;
 		c->skip.skip = -1U;	/* skip everything */
 		c->skip.sloppy = False;
-		c->can.can = 0;	/* no functionality */
+		c->user.can = 0;	/* no functionality */
 		c->has.has = 0;	/* no decorations */
 	}
 	if (data)
@@ -2413,12 +2424,14 @@ clientmessage(XEvent *e)
 	if ((c = getclient(ev->window, ClientWindow))) {
 		if (0) {
 		} else if (message_type == _XA_NET_CLOSE_WINDOW) {
-			killclient(c);
+			if (c->user.close)
+				killclient(c);
 		} else if (message_type == _XA_NET_ACTIVE_WINDOW ||
 			   message_type == _XA_WIN_FOCUS) {
 			c->is.icon = False;
 			c->is.hidden = False;
-			focus(c);
+			if (c->user.focus)
+				focus(c);
 			arrange(clientview(c));
 		} else if (message_type == _XA_NET_WM_STATE) {
 			ewmh_process_state_atom(c, (Atom) ev->data.l[1], ev->data.l[0]);
@@ -2441,7 +2454,8 @@ clientmessage(XEvent *e)
 			int index = ev->data.l[0];
 
 			if (-1 <= index && index < scr->ntags)
-				tagonly(c, index);
+				if (c->user.tag)
+					tagonly(c, index);
 		} else if (message_type == _XA_NET_WM_DESKTOP_MASK ||
 			   message_type == _XA_WIN_WORKSPACES) {
 			unsigned index = ev->data.l[0];
@@ -2449,6 +2463,8 @@ clientmessage(XEvent *e)
 			unsigned num = (scr->ntags + 31) >> 5;
 			unsigned i, j;
 
+			if (!c->user.tag)
+				return False;
 			if (0 > index || index >= num)
 				return False;
 			for (i = 0, j = index << 5; j < scr->ntags; i++, j++) {
@@ -2476,6 +2492,8 @@ clientmessage(XEvent *e)
 		} else if (message_type == _XA_WM_PROTOCOLS) {
 			/* TODO */
 		} else if (message_type == _XA_NET_WM_FULLSCREEN_MONITORS) {
+			if (!c->user.full)
+				return False;
 			if (!configuremonitors(e, c))
 				return False;
 			XChangeProperty(dpy, c->win, _XA_NET_WM_FULLSCREEN_MONITORS,
@@ -2487,22 +2505,24 @@ clientmessage(XEvent *e)
 			unsigned gravity = flags & 0xff;
 			XConfigureRequestEvent cev;
 
+			if (!c->user.move && !c->user.size)
+				return False;
 			if (source != 0 && source != 2)
 				return False;
 			cev.value_mask = 0;
-			if (flags & (1 << 8)) {
+			if (c->user.move && (flags & (1 << 8))) {
 				cev.value_mask |= CWX;
 				cev.x = ev->data.l[1];
 			}
-			if (flags & (1 << 9)) {
+			if (c->user.move && (flags & (1 << 9))) {
 				cev.value_mask |= CWY;
 				cev.y = ev->data.l[2];
 			}
-			if (flags & (1 << 10)) {
+			if (c->user.size && (flags & (1 << 10))) {
 				cev.value_mask |= CWWidth;
 				cev.width = ev->data.l[3];
 			}
-			if (flags & (1 << 11)) {
+			if (c->user.size && (flags & (1 << 11))) {
 				cev.value_mask |= CWHeight;
 				cev.height = ev->data.l[4];
 			}
@@ -2517,6 +2537,8 @@ clientmessage(XEvent *e)
 			int source = (int) ev->data.l[4];
 			XButtonEvent bev;
 
+			if (!c->user.move && !c->user.size)
+				return False;
 			if (source != 0 && source != 1 && source != 2)
 				return False;
 			if (direct < 0 || direct > 11)
@@ -2548,16 +2570,24 @@ clientmessage(XEvent *e)
 			case 5:	/* _NET_WM_MOVERESIZE_SIZE_BOTTOM */
 			case 6:	/* _NET_WM_MOVERESIZE_SIZE_BOTTOMLEFT */
 			case 7:	/* _NET_WM_MOVERESIZE_SIZE_LEFT */
+				if (!c->user.size)
+					return False;
 				mouseresize_from(c, direct, (XEvent *) &bev, False);
 				break;
 			case 8:	/* _NET_WM_MOVERESIZE_MOVE */
+				if (!c->user.move)
+					return False;
 				mousemove(c, (XEvent *) &bev, False);
 				break;
 			case 9:	/* _NET_WM_MOVERESIZE_SIZE_KEYBOARD */
+				if (!c->user.size)
+					return False;
 				/* TODO */
 				break;
 			case 10:	/* _NET_WM_MOVERESIZE_MOVE_KEYBOARD */
 				/* TODO */
+				if (!c->user.move)
+					return False;
 				break;
 			case 11:	/* _NET_WM_MOVERESIZE_CANCEL */
 				/* intercepted while moving or resizing */
@@ -2976,17 +3006,17 @@ ewmh_process_net_window_type(Client *c)
 		    WTCHECK(c, WindowTypeCombo) || WTCHECK(c, WindowTypeDnd)) {
 			c->is.bastard = True;
 			c->skip.skip = -1U;	/* skip everything */
-			c->can.can = 0;	/* no functionality */
+			c->user.can = 0;	/* no functionality */
 			c->has.has = 0;	/* no decorations */
 			c->is.floater = True;
 		}
 		if (WTCHECK(c, WindowTypeDialog) || WTCHECK(c, WindowTypeMenu)) {
 			c->skip.arrange = True;
 			c->is.floater = True;
-			c->can.arrange = False;
-			c->can.size = False;
+			c->prog.arrange = c->user.arrange = False;
+			c->user.size = False;
 			c->has.grips = False;
-			// c->can.move = False;
+			// c->user.move = False;
 		}
 		if (WTCHECK(c, WindowTypeToolbar) || WTCHECK(c, WindowTypeUtil)) {
 			c->skip.arrange = True;
@@ -2995,10 +3025,11 @@ ewmh_process_net_window_type(Client *c)
 			c->is.bastard = True;
 			c->skip.skip = -1U;	/* skip everything */
 			c->skip.sloppy = False;
-			c->can.can = 0;	/* no functionality */
-			c->can.move = True;
-			// c->can.sizeh = True;
-			// c->can.sizev = True;
+			c->user.can = 0;	/* no functionality */
+			// c->prog.move = True;
+			// c->prog.size = True;
+			// c->prog.sizeh = True;
+			// c->prog.sizev = True;
 			c->has.has = 0;	/* no decorations */
 			c->is.floater = True;
 		}

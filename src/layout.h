@@ -85,6 +85,7 @@ void incncolumns(View *v, int n);
 Bool mousemove(Client *c, XEvent *e, Bool toggle);
 Bool mouseresize_from(Client *c, int from, XEvent *e, Bool toggle);
 Bool mouseresize(Client *c, XEvent *e, Bool toggle);
+void moveresizeclient(Client *c, int dx, int dy, int dw, int dh, int gravity);
 void moveresizekb(Client *c, int dx, int dy, int dw, int dh, int gravity);
 void moveto(Client *c, RelativeDirection position);
 void moveby(Client *c, RelativeDirection direction, int amount);

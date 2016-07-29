@@ -59,61 +59,61 @@ buttonimage(AScreen *ds, Client *c, ElementType type)
 		name = "iconify";
 		present = c->has.but.min;
 		toggled = False;
-		enabled = c->can.min;
+		enabled = c->user.min;
 		break;
 	case MaximizeBtn:
 		name = "maximize";
 		present = c->has.but.max;
 		toggled = c->is.max || c->is.maxv || c->is.maxh || c->is.full;
-		enabled = c->can.max || c->can.maxv || c->can.maxh || c->can.full;
+		enabled = c->user.max || c->user.maxv || c->user.maxh || c->user.full;
 		break;
 	case CloseBtn:
 		name = "close";
 		present = c->has.but.close;
 		toggled = False;
-		enabled = c->can.close;
+		enabled = c->user.close;
 		break;
 	case ShadeBtn:
 		name = "shade";
 		present = c->has.but.shade;
 		toggled = c->is.shaded;
-		enabled = c->can.shade;
+		enabled = c->user.shade;
 		break;
 	case StickBtn:
 		name = "stick";
 		present = c->has.but.stick;
 		toggled = c->is.sticky;
-		enabled = c->can.stick;
+		enabled = c->user.stick;
 		break;
 	case LHalfBtn:
 		name = "lhalf";
 		present = c->has.but.half;
 		toggled = False;
-		enabled = c->can.size || c->can.sizev || c->can.sizeh;
+		enabled = c->user.size || c->user.sizev || c->user.sizeh;
 		break;
 	case RHalfBtn:
 		name = "rhalf";
 		present = c->has.but.half;
 		toggled = False;
-		enabled = c->can.size || c->can.sizev || c->can.sizeh;
+		enabled = c->user.size || c->user.sizev || c->user.sizeh;
 		break;
 	case FillBtn:
 		name = "fill";
 		present = c->has.but.fill;
 		toggled = c->is.fill;
-		enabled = c->can.fill || c->can.fillh || c->can.fillv;
+		enabled = c->user.fill || c->user.fillh || c->user.fillv;
 		break;
 	case FloatBtn:
 		name = "float";
 		present = c->has.but.floats;
 		toggled = c->is.floater || c->skip.arrange;
-		enabled = c->can.floats || c->can.arrange;
+		enabled = c->user.floats || c->user.arrange;
 		break;
 	case SizeBtn:
 		name = "resize";
 		present = c->has.but.size;
 		toggled = False;
-		enabled = c->can.size || c->can.sizev || c->can.sizeh;
+		enabled = c->user.size || c->user.sizev || c->user.sizeh;
 		break;
 	default:
 		name = "unknown";
@@ -716,7 +716,8 @@ b_menu(Client *c, XEvent *ev)
 static void
 b_min(Client *c, XEvent *ev)
 {
-	iconify(c);
+	if (c->user.min)
+		iconify(c);
 }
 
 static void
@@ -724,13 +725,16 @@ b_max(Client *c, XEvent *ev)
 {
 	switch (ev->xbutton.button) {
 	case Button1:
-		togglemax(c);
+		if (c->user.max)
+			togglemax(c);
 		break;
 	case Button2:
-		togglemaxv(c);
+		if (c->user.maxv)
+			togglemaxv(c);
 		break;
 	case Button3:
-		togglemaxh(c);
+		if (c->user.maxh)
+			togglemaxh(c);
 		break;
 	}
 }
@@ -738,7 +742,8 @@ b_max(Client *c, XEvent *ev)
 static void
 b_close(Client *c, XEvent *ev)
 {
-	killclient(c);
+	if (c->user.close)
+		killclient(c);
 }
 
 static void
@@ -746,14 +751,15 @@ b_shade(Client *c, XEvent *ev)
 {
 	switch (ev->xbutton.button) {
 	case Button1:
-		toggleshade(c);
+		if (c->user.shade)
+			toggleshade(c);
 		break;
 	case Button2:
-		if (!c->is.shaded)
+		if (c->user.shade && !c->is.shaded)
 			toggleshade(c);
 		break;
 	case Button3:
-		if (c->is.shaded)
+		if (c->user.shade && c->is.shaded)
 			toggleshade(c);
 		break;
 	}
@@ -762,17 +768,22 @@ b_shade(Client *c, XEvent *ev)
 static void
 b_stick(Client *c, XEvent *ev)
 {
-	togglesticky(c);
+	if (c->user.stick)
+		togglesticky(c);
 }
 
 static void
 b_lhalf(Client *c, XEvent *ev)
 {
+	if (c->user.move && c->user.size)
+		;
 }
 
 static void
 b_rhalf(Client *c, XEvent *ev)
 {
+	if (c->user.move && c->user.size)
+		;
 }
 
 static void
@@ -780,14 +791,15 @@ b_fill(Client *c, XEvent *ev)
 {
 	switch (ev->xbutton.button) {
 	case Button1:
-		togglefill(c);
+		if (c->user.fill)
+			togglefill(c);
 		break;
 	case Button2:
-		if (!c->is.fill)
+		if (c->user.fill && !c->is.fill)
 			togglefill(c);
 		break;
 	case Button3:
-		if (c->is.fill)
+		if (c->user.fill && c->is.fill)
 			togglefill(c);
 		break;
 	}
@@ -814,7 +826,8 @@ b_float(Client *c, XEvent *ev)
 static void
 b_resize(Client *c, XEvent *ev)
 {
-	m_resize(c, ev);
+	if (c->user.size)
+		m_resize(c, ev);
 }
 
 static void

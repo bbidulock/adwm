@@ -925,7 +925,7 @@ configureclient(XEvent *e, Client *c, int gravity)
 		dh = (ev->value_mask & CWHeight) ? ev->height - (g.h - g.t - g.g) : 0;
 		g.b = (ev->value_mask & CWBorderWidth) ? ev->border_width : g.b;
 
-		moveresizekb(c, dx, dy, dw, dh, gravity);
+		moveresizeclient(c, dx, dy, dw, dh, gravity);
 		/* TODO: check _XA_WIN_CLIENT_MOVING and handle moves between monitors */
 	} else {
 		ClientGeometry g;
@@ -2799,7 +2799,7 @@ restack_belowif(Client *c, Client *o)
 void
 toggleabove(Client *c)
 {
-	if (!c || (!c->can.above && c->is.managed))
+	if (!c || (!c->prog.above && c->is.managed))
 		return;
 	c->is.above = !c->is.above;
 	if (c->is.managed) {
@@ -2811,7 +2811,7 @@ toggleabove(Client *c)
 void
 togglebelow(Client *c)
 {
-	if (!c || (!c->can.below && c->is.managed))
+	if (!c || (!c->prog.below && c->is.managed))
 		return;
 	c->is.below = !c->is.below;
 	if (c->is.managed) {
@@ -3270,7 +3270,7 @@ move_begin(Client *c, View *v, Bool toggle, int move, IsUnion * was)
 {
 	Bool isfloater;
 
-	if (!c->can.move)
+	if (!c->user.move)
 		return False;
 
 	/* regrab pointer with move cursor */
@@ -3410,7 +3410,7 @@ mousemove(Client *c, XEvent *e, Bool toggle)
 			return moved;
 		}
 
-	if (!c->can.floats || c->is.dockapp)
+	if (!c->user.floats || c->is.dockapp)
 		toggle = False;
 
 	isfloater = (toggle || isfloating(c, v)) ? True : False;
@@ -3587,9 +3587,9 @@ findcorner(Client *c, int x_root, int y_root)
 		/* top */
 		if (x_root < cx) {
 			/* top-left */
-			if (!c->can.sizev)
+			if (!c->user.sizev)
 				from = CurResizeLeft;
-			else if (!c->can.sizeh)
+			else if (!c->user.sizeh)
 				from = CurResizeTop;
 			else {
 				if (dx < dy * 0.4) {
@@ -3602,9 +3602,9 @@ findcorner(Client *c, int x_root, int y_root)
 			}
 		} else {
 			/* top-right */
-			if (!c->can.sizev)
+			if (!c->user.sizev)
 				from = CurResizeRight;
-			else if (!c->can.sizeh)
+			else if (!c->user.sizeh)
 				from = CurResizeTop;
 			else {
 				if (dx < dy * 0.4) {
@@ -3620,9 +3620,9 @@ findcorner(Client *c, int x_root, int y_root)
 		/* bottom */
 		if (x_root < cx) {
 			/* bottom-left */
-			if (!c->can.sizev)
+			if (!c->user.sizev)
 				from = CurResizeLeft;
-			else if (!c->can.sizeh)
+			else if (!c->user.sizeh)
 				from = CurResizeBottom;
 			else {
 				if (dx < dy * 0.4) {
@@ -3635,9 +3635,9 @@ findcorner(Client *c, int x_root, int y_root)
 			}
 		} else {
 			/* bottom-right */
-			if (!c->can.sizev)
+			if (!c->user.sizev)
 				from = CurResizeRight;
-			else if (!c->can.sizeh)
+			else if (!c->user.sizeh)
 				from = CurResizeBottom;
 			else {
 				if (dx < dy * 0.4) {
@@ -3677,18 +3677,18 @@ resize_begin(Client *c, View *v, Bool toggle, int from, IsUnion * was)
 {
 	Bool isfloater;
 
-	if (!c->can.size)
+	if (!c->user.size)
 		return False;
 
 	switch (from) {
 	case CurResizeTop:
 	case CurResizeBottom:
-		if (!c->can.sizev)
+		if (!c->user.sizev)
 			return False;
 		break;
 	case CurResizeLeft:
 	case CurResizeRight:
-		if (!c->can.sizeh)
+		if (!c->user.sizeh)
 			return False;
 		break;
 	default:
@@ -3813,7 +3813,7 @@ mouseresize_from(Client *c, int from, XEvent *e, Bool toggle)
 			return resized;
 		}
 
-	if (!c->can.floats || c->is.dockapp)
+	if (!c->user.floats || c->is.dockapp)
 		toggle = False;
 
 	if (XGrabPointer(dpy, scr->root, False, MOUSEMASK, GrabModeAsync,
@@ -4038,7 +4038,7 @@ mouseresize(Client *c, XEvent *e, Bool toggle)
 {
 	int from;
 
-	if (!c->can.size || (!c->can.sizeh && !c->can.sizev)) {
+	if (!c->user.size || (!c->user.sizeh && !c->user.sizev)) {
 		XUngrabPointer(dpy, user_time);
 		return False;
 	}
@@ -4145,25 +4145,13 @@ putreference(int xr, int yr, Geometry *g, int gravity)
 }
 
 void
-moveresizekb(Client *c, int dx, int dy, int dw, int dh, int gravity)
+moveresizeclient(Client *c, int dx, int dy, int dw, int dh, int gravity)
 {
 	View *v;
 
-	/* FIXME: this just resizes and moves the window, it does handle changing
+	/* FIXME: this just resizes and moves the window, it does not handle changing
 	   monitors */
-	if (!c)
-		return;
-	if (!c->can.move) {
-		dx = 0;
-		dy = 0;
-	}
-#if 0
-	/* constraints will handle this */
-	if (!c->can.sizeh)
-		dw = 0;
-	if (!c->can.sizev)
-		dh = 0;
-#endif
+
 	if (!(dx || dy || dw || dh))
 		return;
 	if (!(v = clientview(c)))
@@ -4207,6 +4195,23 @@ moveresizekb(Client *c, int dx, int dy, int dw, int dh, int gravity)
 	updatefloat(c, NULL);
 }
 
+void
+moveresizekb(Client *c, int dx, int dy, int dw, int dh, int gravity)
+{
+	if (!c)
+		return;
+	if (!c->user.move) {
+		dx = 0;
+		dy = 0;
+	}
+	/* constraints should handle this */
+	if (!c->user.sizeh)
+		dw = 0;
+	if (!c->user.sizev)
+		dh = 0;
+	moveresizeclient(c, dx, dy, dw, dh, gravity);
+}
+
 static void
 getplace(Client *c, ClientGeometry *g)
 {
@@ -4236,7 +4241,7 @@ getplace(Client *c, ClientGeometry *g)
 static Client *
 nextplaced(Client *x, Client *c, View *v)
 {
-	for (; c && (c == x || c->is.bastard || c->is.dockapp || !c->can.floats
+	for (; c && (c == x || c->is.bastard || c->is.dockapp || !c->prog.floats
 		     || !isvisible(c, v)); c = c->snext) ;
 	return c;
 }
@@ -4833,7 +4838,7 @@ addclient(Client *c, Bool focusme, Bool raiseme)
 	CPRINTF(c, "initial geometry s: %dx%d+%d+%d:%d t %d g %d v %d\n",
 		c->s.w, c->s.h, c->s.x, c->s.y, c->s.b, c->c.t, c->c.g, c->c.v);
 
-	if (!c->s.x && !c->s.y && c->can.move && !c->is.dockapp) {
+	if (!c->s.x && !c->s.y && c->prog.move && !c->is.dockapp) {
 		/* put it on the monitor startup notification requested if not already
 		   placed with its group */
 		if (c->monitor && !clientview(c))
@@ -4848,7 +4853,7 @@ addclient(Client *c, Bool focusme, Bool raiseme)
 	CPRINTF(c, "placed geometry s: %dx%d+%d+%d:%d t %d g %d v %d\n",
 		c->s.w, c->s.h, c->s.x, c->s.y, c->s.b, c->c.t, c->c.g, c->c.h);
 
-	if (!c->can.move) {
+	if (!c->prog.move) {
 		int mx, my;
 		View *cv;
 
@@ -4926,7 +4931,7 @@ moveto(Client *c, RelativeDirection position)
 	Workarea w;
 	ClientGeometry g = { 0, };
 
-	if (!c || !c->can.move || !(v = c->cview))
+	if (!c || !c->prog.move || !(v = c->cview))
 		return;
 	if (!(m = v->curmon))
 		return;
@@ -4997,7 +5002,7 @@ moveby(Client *c, RelativeDirection direction, int amount)
 	Workarea w;
 	ClientGeometry g = { 0, };
 
-	if (!c || !c->can.move || !(v = c->cview))
+	if (!c || !c->prog.move || !(v = c->cview))
 		return;
 	if (!(m = v->curmon))
 		return;
@@ -5098,7 +5103,7 @@ snapto(Client *c, RelativeDirection direction)
 	Client *s, *ox, *oy;
 	int min1, max1, edge;
 
-	if (!c || !c->can.move || !(v = c->cview))
+	if (!c || !c->prog.move || !(v = c->cview))
 		return;
 	if (!(m = v->curmon))
 		return;
@@ -5323,7 +5328,7 @@ edgeto(Client *c, int direction)
 	Workarea w;
 	ClientGeometry g = { 0, };
 
-	if (!c || !c->can.move || !(v = c->cview))
+	if (!c || !c->prog.move || !(v = c->cview))
 		return;
 	if (!(m = v->curmon))
 		return;
@@ -5509,7 +5514,7 @@ togglefloating(Client *c)
 {
 	View *v;
 
-	if (!c || c->is.floater || !c->can.floats || !(v = c->cview))
+	if (!c || c->is.floater || !c->prog.floats || !(v = c->cview))
 		return;
 	c->skip.arrange = !c->skip.arrange;
 	if (c->is.managed) {
@@ -5524,7 +5529,7 @@ togglefill(Client *c)
 {
 	View *v;
 
-	if (!c || (!c->can.fill && c->is.managed) || !(v = c->cview))
+	if (!c || (!c->prog.fill && c->is.managed) || !(v = c->cview))
 		return;
 	c->is.fill = !c->is.fill;
 	if (c->is.managed) {
@@ -5539,7 +5544,7 @@ togglefull(Client *c)
 {
 	View *v;
 
-	if (!c || (!c->can.full && c->is.managed) || !(v = c->cview))
+	if (!c || (!c->prog.full && c->is.managed) || !(v = c->cview))
 		return;
 	if (!c->is.full) {
 		c->wasfloating = c->skip.arrange;
@@ -5562,7 +5567,7 @@ togglemax(Client *c)
 {
 	View *v;
 
-	if (!c || (!c->can.max && c->is.managed) || !(v = c->cview))
+	if (!c || (!c->prog.max && c->is.managed) || !(v = c->cview))
 		return;
 	c->is.max = !c->is.max;
 	if (c->is.managed) {
@@ -5577,7 +5582,7 @@ togglemaxv(Client *c)
 {
 	View *v;
 
-	if (!c || (!c->can.maxv && c->is.managed) || !(v = c->cview))
+	if (!c || (!c->prog.maxv && c->is.managed) || !(v = c->cview))
 		return;
 	c->is.maxv = !c->is.maxv;
 	if (c->is.managed) {
@@ -5591,7 +5596,7 @@ togglemaxh(Client *c)
 {
 	View *v;
 
-	if (!c || (!c->can.maxh && c->is.managed) || !(v = c->cview))
+	if (!c || (!c->prog.maxh && c->is.managed) || !(v = c->cview))
 		return;
 	c->is.maxh = !c->is.maxh;
 	ewmh_update_net_window_state(c);
@@ -5603,7 +5608,7 @@ toggleshade(Client *c)
 {
 	View *v;
 
-	if (!c || (!c->can.shade && c->is.managed) || !(v = c->cview))
+	if (!c || (!c->prog.shade && c->is.managed) || !(v = c->cview))
 		return;
 	c->is.shaded = !c->is.shaded;
 	if (c->is.managed) {

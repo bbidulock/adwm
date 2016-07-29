@@ -82,7 +82,7 @@ tag(Client *c, int index)
 {
 	if (!c)
 		return;
-	if (!c->can.tag && c->is.managed)
+	if (!c->prog.tag && c->is.managed)
 		return;
 	if (with_transients(c, &_tag, index)) {
 		arrangeneeded();
@@ -121,7 +121,7 @@ tagonly(Client *c, int index)
 {
 	if (!c)
 		return;
-	if (!c->can.tag && c->is.managed)
+	if (!c->prog.tag && c->is.managed)
 		return;
 	if (with_transients(c, &_tagonly, index)) {
 		arrangeneeded();
@@ -134,7 +134,7 @@ togglesticky(Client *c)
 {
 	View *v;
 
-	if (!c || (!c->can.stick && c->is.managed) || !(v = c->cview))
+	if (!c || (!c->prog.stick && c->is.managed) || !(v = c->cview))
 		return;
 
 	c->is.sticky = !c->is.sticky;
@@ -154,7 +154,7 @@ toggletag(Client *c, int index)
 {
 	unsigned long long tags;
 
-	if (!c || (!c->can.tag && c->is.managed))
+	if (!c || (!c->prog.tag && c->is.managed))
 		return;
 	tags = c->tags;
 	tags ^= (index == -1) ? ((1ULL << scr->ntags) - 1) : (1ULL << index);
@@ -208,7 +208,7 @@ focusview(View *v, int index)
 		toggleview(v, index);
 	for (c = scr->stack; c; c = c->snext)
 		if (((c->tags & tags) || c->is.sticky) &&
-		    !c->is.bastard && !c->is.dockapp && c->can.focus)
+		    !c->is.bastard && !c->is.dockapp && c->prog.focus)
 			break;
 	focus(c);
 }

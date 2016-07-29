@@ -792,7 +792,7 @@ struct Client {
 	IsUnion is;
 	HasUnion has;
 	WithUnion with;
-	CanUnion can;
+	CanUnion prog, user;
 	View *cview;
 	Leaf *leaves;
 	Client *next;

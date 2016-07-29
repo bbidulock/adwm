@@ -382,8 +382,10 @@ applystate(Client *c, XWMHints *wmh)
 		c->skip.skip = -1U;
 		c->skip.arrange = False;
 		c->skip.sloppy = False;
-		c->can.can = 0;	/* maybe move later */
-		c->can.move = True;
+		c->prog.can = 0;
+		c->prog.move = True;
+		c->user.can = 0;
+		c->user.move = True;
 		c->has.has = 0;
 		c->is.floater = True;
 		c->is.sticky = True;
@@ -1120,7 +1122,7 @@ expose(XEvent *e)
 Bool
 canfocus(Client *c)
 {
-	if (c && c->can.focus && !c->nonmodal && !c->is.banned)
+	if (c && c->prog.focus && !c->nonmodal && !c->is.banned)
 		return True;
 	return False;
 }
@@ -1163,9 +1165,9 @@ setfocus(Client *c)
 	/* more simple */
 	if (focusok(c)) {
 		CPRINTF(c, "setting focus\n");
-		if (c->can.focus & GIVE_FOCUS)
+		if (c->prog.focus & GIVE_FOCUS)
 			XSetInputFocus(dpy, c->win, RevertToPointerRoot, user_time);
-		if (c->can.focus & TAKE_FOCUS) {
+		if (c->prog.focus & TAKE_FOCUS) {
 			XEvent ce;
 
 			ce.xclient.type = ClientMessage;
@@ -1254,7 +1256,7 @@ focuschange(XEvent *e)
 	default:
 		if ((c = findclient(ev->window))) {
 			if (gave && c != gave && canfocus(gave)) {
-				if (took != gave && !(gave->can.focus & TAKE_FOCUS)) {
+				if (took != gave && !(gave->prog.focus & TAKE_FOCUS)) {
 					if (!c->leader || c->leader != gave->leader) {
 						_CPRINTF(c, "stole focus\n");
 						_CPRINTF(gave, "giving back focus\n");
@@ -1333,7 +1335,7 @@ focusicon()
 		return;
 	for (c = scr->clients;
 	     c && (!canfocus(c) || c->skip.focus || c->is.dockapp || !c->is.icon
-		   || !c->can.min || !isvisible(c, v)); c = c->next) ;
+		   || !c->prog.min || !isvisible(c, v)); c = c->next) ;
 	if (!c)
 		return;
 	if (!c->is.dockapp && c->is.icon) {
@@ -1466,7 +1468,7 @@ _iconify(Client *c, int dummy)
 void
 iconify(Client *c)
 {
-	if (!c || (!c->can.min && c->is.managed))
+	if (!c || (!c->prog.min && c->is.managed))
 		return;
 	if (with_transients(c, &_iconify, 0)) {
 		arrangeneeded();
@@ -1485,7 +1487,7 @@ iconifyall(View *v)
 			continue;
 		if (c->is.bastard || c->is.dockapp)
 			continue;
-		if (!c->can.min && c->is.managed)
+		if (!c->prog.min && c->is.managed)
 			continue;
 		any |= with_transients(c, &_iconify, 0);
 	}
@@ -1509,7 +1511,7 @@ _deiconify(Client *c, int dummy)
 void
 deiconify(Client *c)
 {
-	if (!c || (!c->can.min && c->is.managed))
+	if (!c || (!c->prog.min && c->is.managed))
 		return;
 	if (with_transients(c, &_deiconify, 0)) {
 		arrangeneeded();
@@ -1528,7 +1530,7 @@ deiconifyall(View *v)
 			continue;
 		if (c->is.bastard || c->is.dockapp)
 			continue;
-		if (!c->can.min && c->is.managed)
+		if (!c->prog.min && c->is.managed)
 			continue;
 		any |= with_transients(c, &_deiconify, 0);
 	}
@@ -1552,7 +1554,7 @@ _hide(Client *c, int dummy)
 void
 hide(Client *c)
 {
-	if (!c || (!c->can.hide && c->is.managed))
+	if (!c || (!c->prog.hide && c->is.managed))
 		return;
 	if (with_transients(c, &_hide, 0)) {
 		arrangeneeded();
@@ -1571,7 +1573,7 @@ hideall(View *v)
 			continue;
 		if (c->is.bastard || c->is.dockapp)
 			continue;
-		if (!c->can.hide && c->is.managed)
+		if (!c->prog.hide && c->is.managed)
 			continue;
 		any |= with_transients(c, &_hide, 0);
 	}
@@ -1595,7 +1597,7 @@ _show(Client *c, int dummy)
 void
 show(Client *c)
 {
-	if (!c || (!c->can.hide && c->is.managed))
+	if (!c || (!c->prog.hide && c->is.managed))
 		return;
 	if (with_transients(c, &_show, 0)) {
 		arrangeneeded();
@@ -1614,7 +1616,7 @@ showall(View *v)
 			continue;
 		if (c->is.bastard || c->is.dockapp)
 			continue;
-		if (!c->can.hide && c->is.managed)
+		if (!c->prog.hide && c->is.managed)
 			continue;
 		any |= with_transients(c, &_show, 0);
 	}
@@ -2059,7 +2061,8 @@ manage(Window w, XWindowAttributes * wa)
 	// c->is.is = 0;
 	// c->with.with = 0;
 	c->has.has = -1U;
-	c->can.can = -1U;
+	c->prog.can = -1U;
+	c->user.can = -1U;
 	// c->is.icon = False;
 	// c->is.hidden = False;
 	wmh = XGetWMHints(dpy, c->win);
@@ -2089,7 +2092,7 @@ manage(Window w, XWindowAttributes * wa)
 	applyatoms(c);
 
 	take_focus = checkatom(c->win, _XA_WM_PROTOCOLS, _XA_WM_TAKE_FOCUS) ? TAKE_FOCUS : 0;
-	c->can.focus = take_focus | GIVE_FOCUS;
+	c->prog.focus = take_focus | GIVE_FOCUS;
 
 	/* FIXME: we aren't check whether the client requests to be mapped in the IconicState or
 	   NormalState here, and we should.  It appears that previous code base was simply mapping
@@ -2100,7 +2103,7 @@ manage(Window w, XWindowAttributes * wa)
 
 	if (wmh) {
 		if (wmh->flags & InputHint)
-			c->can.focus = take_focus | (wmh->input ? GIVE_FOCUS : 0);
+			c->prog.focus = take_focus | (wmh->input ? GIVE_FOCUS : 0);
 		c->is.attn = (wmh->flags & XUrgencyHint) ? True : False;
 		if ((wmh->flags & WindowGroupHint) && (c->leader = wmh->window_group) != None) {
 			updategroup(c, c->leader, ClientGroup, &c->nonmodal);
@@ -2140,9 +2143,9 @@ manage(Window w, XWindowAttributes * wa)
 				   says such applications should act on the non-transient managed
 				   client and let the window manager decide what to do about the
 				   transients. */
-				c->can.min = False;	/* can't (de)iconify */
-				c->can.hide = False;	/* can't hide or show */
-				c->can.tag = False;	/* can't change desktops */
+				c->prog.min = c->user.min = False;	/* can't (de)iconify */
+				c->prog.hide = c->user.hide = False;	/* can't hide or show */
+				c->prog.tag = c->user.tag = False;	/* can't change desktops */
 			}
 			if (t)
 				c->tags = t->tags;
@@ -2166,12 +2169,12 @@ manage(Window w, XWindowAttributes * wa)
 		focusnew = False;
 
 	if (!c->is.floater)
-		c->is.floater = (!c->can.sizeh || !c->can.sizev);
+		c->is.floater = (!c->prog.sizeh || !c->prog.sizev);
 
 	if (c->has.title)
 		c->c.t = c->r.t = scr->style.titleheight;
 	else {
-		c->can.shade = False;
+		c->prog.shade = c->user.shade = False;
 		c->has.grips = False;
 	}
 	if (c->has.grips) {
@@ -4721,7 +4724,7 @@ togglestruts(View *v)
 void
 togglemin(Client *c)
 {
-	if (!c || (!c->can.min && c->is.managed))
+	if (!c || (!c->prog.min && c->is.managed))
 		return;
 	if (c->is.icon) {
 		deiconify(c);
@@ -4836,7 +4839,7 @@ unmanage(Client *c, WithdrawCause cause)
 	XSelectInput(dpy, c->frame, NoEventMask);
 	XUnmapWindow(dpy, c->frame);
 	XSetErrorHandler(xerrordummy);
-	c->can.focus = 0;
+	c->prog.focus = 0;
 	if (relfocus(c))
 		focus(sel);
 	c->is.managed = False;
@@ -5088,7 +5091,7 @@ updatehints(Client *c)
 
 	take_focus =
 	    checkatom(c->win, _XA_WM_PROTOCOLS, _XA_WM_TAKE_FOCUS) ? TAKE_FOCUS : 0;
-	c->can.focus = take_focus | GIVE_FOCUS;
+	c->prog.focus = take_focus | GIVE_FOCUS;
 
 	if ((wmh = XGetWMHints(dpy, c->win))) {
 
@@ -5097,7 +5100,7 @@ updatehints(Client *c)
 			ewmh_update_net_window_state(c);
 		}
 		if (wmh->flags & InputHint)
-			c->can.focus = take_focus | (wmh->input ? GIVE_FOCUS : 0);
+			c->prog.focus = take_focus | (wmh->input ? GIVE_FOCUS : 0);
 		if (wmh->flags & WindowGroupHint) {
 			leader = wmh->window_group;
 			if (c->leader != leader) {
@@ -5157,23 +5160,30 @@ updatesizehints(Client *c)
 	else
 		c->gravity = NorthWestGravity;
 	if (c->maxw && c->minw && c->maxw == c->minw) {
-		c->can.sizeh = False;
-		c->can.maxh = False;
-		c->can.fillh = False;
+		c->prog.sizeh = c->user.sizeh = False;
+		c->prog.maxh = c->user.maxh = False;
+		c->prog.fillh = c->user.fillh = False;
 	}
 	if (c->maxh && c->minh && c->maxh == c->minh) {
-		c->can.sizev = False;
-		c->can.maxv = False;
-		c->can.fillv = False;
+		c->prog.sizev = c->user.sizev = False;
+		c->prog.maxv = c->user.maxv = False;
+		c->prog.fillv = c->user.fillv = False;
 	}
-	if (!c->can.sizeh && !c->can.sizev) {
-		c->can.size = False;
+	if (!c->prog.sizeh && !c->prog.sizev) {
+		c->prog.size = False;
+	}
+	if (!c->user.sizeh && !c->user.sizev) {
+		c->user.size = False;
 		c->has.grips = False;
 	}
-	if (!c->can.maxh && !c->can.maxv)
-		c->can.max = False;
-	if (!c->can.fillh && !c->can.fillv)
-		c->can.fill = False;
+	if (!c->prog.maxh && !c->prog.maxv)
+		c->prog.max = False;
+	if (!c->user.maxh && !c->user.maxv)
+		c->user.max = False;
+	if (!c->prog.fillh && !c->prog.fillv)
+		c->prog.fill = False;
+	if (!c->user.fillh && !c->user.fillv)
+		c->user.fill = False;
 }
 
 void

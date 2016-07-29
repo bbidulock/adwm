@@ -1053,7 +1053,7 @@ enternotify(XEvent *e)
 	XCrossingEvent *ev = &e->xcrossing;
 	Client *c;
 
-	if (e->type != EnterNotify || ev->mode != NotifyNormal || ev->detail == NotifyInferior)
+	if (e->type != EnterNotify || ev->mode != NotifyNormal || (ev->detail == NotifyInferior && ev->window != scr->root))
 		return False;
 
 	if ((c = findclient(ev->window))) {

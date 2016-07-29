@@ -2968,7 +2968,6 @@ ewmh_process_net_window_type(Client *c)
 	}
 	if (!WTCHECK(c, WindowTypeNormal)) {
 		if (WTCHECK(c, WindowTypeDesk) ||
-		    WTCHECK(c, WindowTypeDock) ||
 		    WTCHECK(c, WindowTypeSplash) ||
 		    WTCHECK(c, WindowTypeDrop) ||
 		    WTCHECK(c, WindowTypePopup) ||
@@ -2977,8 +2976,6 @@ ewmh_process_net_window_type(Client *c)
 		    WTCHECK(c, WindowTypeCombo) || WTCHECK(c, WindowTypeDnd)) {
 			c->is.bastard = True;
 			c->skip.skip = -1U;	/* skip everything */
-			if (WTCHECK(c, WindowTypeDock))
-				c->skip.sloppy = False;
 			c->can.can = 0;	/* no functionality */
 			c->has.has = 0;	/* no decorations */
 			c->is.floater = True;
@@ -2993,6 +2990,17 @@ ewmh_process_net_window_type(Client *c)
 		}
 		if (WTCHECK(c, WindowTypeToolbar) || WTCHECK(c, WindowTypeUtil)) {
 			c->skip.arrange = True;
+		}
+		if (WTCHECK(c, WindowTypeDock)) {
+			c->is.bastard = True;
+			c->skip.skip = -1U;	/* skip everything */
+			c->skip.sloppy = False;
+			c->can.can = 0;	/* no functionality */
+			c->can.move = True;
+			// c->can.sizeh = True;
+			// c->can.sizev = True;
+			c->has.has = 0;	/* no decorations */
+			c->is.floater = True;
 		}
 	}
 }

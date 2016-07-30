@@ -1055,14 +1055,16 @@ enternotify(XEvent *e)
 	XCrossingEvent *ev = &e->xcrossing;
 	Client *c;
 
-	if (e->type != EnterNotify || ev->mode != NotifyNormal || (ev->detail == NotifyInferior && ev->window != scr->root))
+	if (e->type != EnterNotify || ev->mode != NotifyNormal)
 		return False;
 
 	if ((c = findclient(ev->window))) {
+		if (ev->detail == NotifyInferior)
+			return False;
 		CPRINTF(c, "EnterNotify received\n");
 		enterclient(e, c);
 		return True;
-	} else if (ev->window == scr->root) {
+	} else if (ev->window == scr->root && ev->detail == NotifyInferior) {
 		DPRINTF("Not focusing root\n");
 		if (sel && (WTCHECK(sel, WindowTypeDock) || sel->is.dockapp || sel->is.bastard)) {
 			focus(NULL);

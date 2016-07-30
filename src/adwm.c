@@ -2057,14 +2057,9 @@ manage(Window w, XWindowAttributes * wa)
 	XSaveContext(dpy, c->win, context[ClientWindow], (XPointer) c);
 	XSaveContext(dpy, c->win, context[ClientAny], (XPointer) c);
 	XSaveContext(dpy, c->win, context[ScreenContext], (XPointer) scr);
-	c->skip.skip = 0;
-	c->is.is = 0;
-	c->with.with = 0;
 	c->has.has = -1U;
 	c->prog.can = -1U;
 	c->user.can = -1U;
-	c->is.icon = False;
-	c->is.hidden = False;
 	wmh = XGetWMHints(dpy, c->win);
 	applystate(c, wmh);
 	if (c->is.dockapp)

@@ -106,6 +106,7 @@ char *atomnames[NATOMS] = {
 	"_NET_DESKTOP_MODE_MONOCLE",
 	"_NET_DESKTOP_MODE_TOP_TILED",
 	"_NET_DESKTOP_MODE_LEFT_TILED",
+	"_NET_DESKTOP_MODE_GRID",
 
 	"_NET_CLIENT_LIST_STACKING",
 	"_NET_WM_WINDOW_OPACITY",
@@ -1273,6 +1274,9 @@ ewmh_update_net_desktop_modes()
 			break;
 		case 'l':
 			data[i] = _XA_NET_DESKTOP_MODE_LEFT_TILED;
+			break;
+		case 'g':
+			data[i] = _XA_NET_DESKTOP_MODE_GRID;
 			break;
 		default:
 			data[i] = None;

@@ -43,6 +43,7 @@ enum {
 	CurDesk, WorkArea, DeskViewport, ShowingDesktop, DeskGeometry, DesksVisible,
 	MonitorGeometry, DeskModes, DeskModeFloating, DeskModeTiled,
 	DeskModeBottomTiled, DeskModeMonocle, DeskModeTopTiled, DeskModeLeftTiled,
+	DeskModeGrid,
 	ClientListStacking, WindowOpacity, MoveResizeWindow, RestackWindow,
 	WindowMoveResize, WindowExtents, HandledIcons, RequestFrameExt, VirtualRoots,
 	WindowType, WindowTypeDesk, WindowTypeDock, WindowTypeToolbar, WindowTypeMenu,
@@ -152,6 +153,7 @@ enum {
 #define _XA_NET_DESKTOP_MODE_MONOCLE		atom[DeskModeMonocle]
 #define _XA_NET_DESKTOP_MODE_TOP_TILED		atom[DeskModeTopTiled]
 #define _XA_NET_DESKTOP_MODE_LEFT_TILED		atom[DeskModeLeftTiled]
+#define _XA_NET_DESKTOP_MODE_GRID		atom[DeskModeGrid]
 
 #define _XA_NET_CLIENT_LIST_STACKING		atom[ClientListStacking]
 #define _XA_NET_WM_WINDOW_OPACITY		atom[WindowOpacity]

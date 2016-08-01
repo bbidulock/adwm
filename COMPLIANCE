@@ -74,6 +74,17 @@ _NET_VIRTUAL_ROOTS:			supported (trivial)
 _NET_DESKTOP_LAYOUT:			supported
 _NET_SHOWING_DESKTOP:			supported
 
+ Extensions:
+
+_NET_DESKTOP_MODES			supported
+	_NET_DESKTOP_MODE_FLOATING	supported
+	_NET_DESKTOP_MODE_TILED		supported
+	_NET_DESKTOP_MODE_BOTTOM_TILE	supported
+	_NET_DESKTOP_MODE_MONOCLE	supported
+	_NET_DESKTOP_MODE_TOP_TILED	supported
+	_NET_DESKTOP_MODE_LEFT_TILED	supported
+	_NET_DESKTOP_MODE_GRID		supported
+
 
 Section 4: Other Root Window Messages
 

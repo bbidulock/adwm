@@ -64,5 +64,5 @@ adwm_waimea_la_LIBADD =
 
 adwm_wmaker_la_SOURCES = adwm_wmaker.c
 adwm_wmaker_la_LDFLAGS = -module -export-dynamic -shared -rpath $(adwmmoddir) -avoid-version
-adwm_wmaker_la_LIBADD = $(IMLIB2_LIBS) $(XPM_LIBS) $(XFT_LIBS) $(X11_LIBS) -lm
+adwm_wmaker_la_LIBADD = 
 

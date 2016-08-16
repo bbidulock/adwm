@@ -28,39 +28,39 @@ adwmmod_LTLIBRARIES = \
 
 adwm_adwm_la_SOURCES = adwm_adwm.c
 adwm_adwm_la_LDFLAGS = -module -export-dynamic -shared -rpath $(adwmmoddir) -avoid-version
-adwm_adwm_la_LIBADD = $(IMLIB2_LIBS) $(XPM_LIBS) $(XFT_LIBS) $(X11_LIBS) -lm
+adwm_adwm_la_LIBADD = $(X11_LIBS)
 
 adwm_blackbox_la_SOURCES = adwm_blackbox.c
 adwm_blackbox_la_LDFLAGS = -module -export-dynamic -shared -rpath $(adwmmoddir) -avoid-version
-adwm_blackbox_la_LIBADD = $(IMLIB2_LIBS) $(XPM_LIBS) $(XFT_LIBS) $(X11_LIBS) -lm
+adwm_blackbox_la_LIBADD = $(X11_LIBS)
 
 adwm_fluxbox_la_SOURCES = adwm_fluxbox.c
 adwm_fluxbox_la_LDFLAGS =  -module -export-dynamic -shared -rpath $(adwmmoddir) -avoid-version
-adwm_fluxbox_la_LIBADD = $(IMLIB2_LIBS) $(XPM_LIBS) $(XFT_LIBS) $(X11_LIBS) -lm
+adwm_fluxbox_la_LIBADD = 
 
 adwm_icewm_la_SOURCES = adwm_icewm.c
 adwm_icewm_la_LDFLAGS = -module -export-dynamic -shared -rpath $(adwmmoddir) -avoid-version
-adwm_icewm_la_LIBADD = $(IMLIB2_LIBS) $(XPM_LIBS) $(XFT_LIBS) $(X11_LIBS) -lm
+adwm_icewm_la_LIBADD = 
 
 adwm_metacity_la_SOURCES = adwm_metacity.c
 adwm_metacity_la_LDFLAGS = -module -export-dynamic -shared -rpath $(adwmmoddir) -avoid-version
-adwm_metacity_la_LIBADD = $(IMLIB2_LIBS) $(XPM_LIBS) $(XFT_LIBS) $(X11_LIBS) -lm
+adwm_metacity_la_LIBADD = 
 
 adwm_mutter_la_SOURCES = adwm_mutter.c
 adwm_mutter_la_LDFLAGS = -module -export-dynamic -shared -rpath $(adwmmoddir) -avoid-version
-adwm_mutter_la_LIBADD = $(IMLIB2_LIBS) $(XPM_LIBS) $(XFT_LIBS) $(X11_LIBS) -lm
+adwm_mutter_la_LIBADD = 
 
 adwm_openbox_la_SOURCES = adwm_openbox.c
 adwm_openbox_la_LDFLAGS = -module -export-dynamic -shared -rpath $(adwmmoddir) -avoid-version
-adwm_openbox_la_LIBADD = $(IMLIB2_LIBS) $(XPM_LIBS) $(XFT_LIBS) $(X11_LIBS) -lm
+adwm_openbox_la_LIBADD = $(X11_LIBS)
 
 adwm_pekwm_la_SOURCES = adwm_pekwm.c
 adwm_pekwm_la_LDFLAGS = -module -export-dynamic -shared -rpath $(adwmmoddir) -avoid-version
-adwm_pekwm_la_LIBADD = $(IMLIB2_LIBS) $(XPM_LIBS) $(XFT_LIBS) $(X11_LIBS) -lm
+adwm_pekwm_la_LIBADD = 
 
 adwm_waimea_la_SOURCES = adwm_waimea.c
 adwm_waimea_la_LDFLAGS = -module -export-dynamic -shared -rpath $(adwmmoddir) -avoid-version
-adwm_waimea_la_LIBADD = $(IMLIB2_LIBS) $(XPM_LIBS) $(XFT_LIBS) $(X11_LIBS) -lm
+adwm_waimea_la_LIBADD = 
 
 adwm_wmaker_la_SOURCES = adwm_wmaker.c
 adwm_wmaker_la_LDFLAGS = -module -export-dynamic -shared -rpath $(adwmmoddir) -avoid-version

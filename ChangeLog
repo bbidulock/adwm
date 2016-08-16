@@ -1,5 +1,198 @@
 # created with git log --stat=76 -M -C|fmt -sct -w80
 
+commit 8bd9955876bd72e85c93e23454be02fda27d188a
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Aug 1 02:36:19 2016 -0600
+
+    document desktop modes
+
+ COMPLIANCE | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
+
+commit 439eff280323c332593eaa50892f1e545bc2f21e
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Aug 1 02:24:17 2016 -0600
+
+    add missing grid mode
+
+ src/adwm.h | 2 ++
+ src/ewmh.c | 4 ++++
+ 2 files changed, 6 insertions(+)
+
+commit 33e2d8e3ccb507566d26c4d9a430b131b5dbee29
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri Jul 29 21:01:56 2016 -0600
+
+    minor update to enternotify
+
+ src/adwm.c | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
+
+commit 92e4d3d0a1f1b190690e149bb4595075d6ae9aa4
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri Jul 29 19:17:36 2016 -0600
+
+    probably munged something up there
+
+ src/adwm.c | 5 -----
+ 1 file changed, 5 deletions(-)
+
+commit 01510d6e760f491bc8b0a28ebb072931e4148fff
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri Jul 29 15:35:54 2016 -0600
+
+    do not munge too many flags
+
+ src/adwm.c | 10 +++++-----
+ src/ewmh.c |  8 ++------
+ 2 files changed, 7 insertions(+), 11 deletions(-)
+
+commit d4935d4f0b72e0f624b01fbdce24a207a4c9ec28
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri Jul 29 15:27:53 2016 -0600
+
+    split programatic and user capabilities
+
+ src/adwm.c   |  88 ++++++++++++++++++---------------
+ src/adwm.h   |   2 +-
+ src/draw.c   |  59 +++++++++++++---------
+ src/ewmh.c   | 147 +++++++++++++++++++++++++++++++++----------------------
+ src/layout.c |  99 +++++++++++++++++++------------------
+ src/layout.h |   1 +
+ src/tags.c   |  10 ++--
+ 7 files changed, 233 insertions(+), 173 deletions(-)
+
+commit e911e85450d8f517c0d1026d1d3d683b80d7303b
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri Jul 29 12:06:45 2016 -0600
+
+    let docks move
+
+ src/ewmh.c | 14 +++++++++++---
+ 1 file changed, 11 insertions(+), 3 deletions(-)
+
+commit 6d4e4d7a592fc39dbdbf550cf2e1711a35516b31
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri Jul 29 11:55:42 2016 -0600
+
+    moving to root is NotifyInferior
+
+ src/adwm.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+commit e13136cae2f2c9aeafb4ee8c05c572afc62e8feb
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Jul 27 15:37:48 2016 -0600
+
+    always map and unmap dock apps on unban
+
+ src/adwm.c | 12 ++++++++++--
+ 1 file changed, 10 insertions(+), 2 deletions(-)
+
+commit efae4545ea80d35e48c1e51598db7ce16dc522f7
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Jul 27 15:11:07 2016 -0600
+
+    unhide regardless of banned state
+
+ src/adwm.c | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
+
+commit 1c2fee22cb6a264242107899da07d08c442b802c
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Jul 27 15:08:30 2016 -0600
+
+    just hide dockapps for now
+
+ src/adwm.c | 13 +++++++++----
+ 1 file changed, 9 insertions(+), 4 deletions(-)
+
+commit 3cc10d62c2bf1da6bf9c31e6dee9fc4a51e9a3b3
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Jul 27 15:00:54 2016 -0600
+
+    better hide logic
+
+ src/adwm.c | 12 +++++++++++-
+ 1 file changed, 11 insertions(+), 1 deletion(-)
+
+commit 452e3edc4307dad3a2df54d941dad1ef8963278c
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Jul 27 14:48:43 2016 -0600
+
+    do not map hidden dock app clients
+
+ src/adwm.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+commit fd1f2bb52f1f1d02c03e04066fc8a771c5dc6493
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Jul 27 14:41:46 2016 -0600
+
+    deselect bastards when pointer leaves
+
+ src/adwm.c | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+commit 085370e79143628da08a0a6ac1ffa606b5a37c45
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Jul 27 14:30:55 2016 -0600
+
+    need to rearrange when dock selected/deselected
+
+ src/adwm.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+commit 228883567bfcabbf2b73fbdc54803f13212be314
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Jul 27 14:19:57 2016 -0600
+
+    try shrinking hidden dock apps
+
+ src/layout.c | 16 +++++++++-------
+ 1 file changed, 9 insertions(+), 7 deletions(-)
+
+commit 09a82f7f5d77e3978e99be439c0372326750db31
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Jul 27 13:39:05 2016 -0600
+
+    also set below flag on dockapps
+
+ src/adwm.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+commit 24f963af52a4f0c62b8eaff17eb212120b240757
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Jul 27 13:27:18 2016 -0600
+
+    treat dockapps as though _NET_WM_STATE_BELOW set
+
+ src/layout.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+commit cbc7ec9c6a7070bc97a8b8c82da9fdec792b409f
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Jul 27 13:18:11 2016 -0600
+
+    dockapps do not have type dock set
+
+ src/layout.c | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
+
+commit 39981b8fa4e89d4aacddbb8891af94105e2485a7
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Jul 27 01:43:34 2016 -0600
+
+    update release files
+
+ AUTHORS      |  2 +-
+ ChangeLog    | 87 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ NEWS         | 30 +++++++++++--------
+ README       |  6 ++--
+ README.md    |  6 ++--
+ configure.ac |  6 ++--
+ 6 files changed, 115 insertions(+), 22 deletions(-)
+
 commit d25ab4162eaf43809a4d3ffb8aed3a8fad4ba039
 Author: Brian Bidulock <bidulock@openss7.org>
 Date:   Thu Jul 21 20:20:06 2016 -0600

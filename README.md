@@ -1,9 +1,9 @@
-[adwm -- read me first file.  2016-07-21]: #
+[adwm -- read me first file.  2016-08-01]: #
 
 adwm
 ====
 
-Package `adwm-0.6.4` was released under GPL license 2016-07-21.
+Package `adwm-0.6.5` was released under GPL license 2016-08-01.
 
 This was originally a fork of Echinus which in turn was a fork of `dwm(1)`, and
 borrows concepts from `velox(1)`, `awesome(1)` and `spectrwm(1)`.  The source
@@ -15,7 +15,7 @@ WMH (WinWM), MWMH (CDE/Motif), ICCCM 2.0 compliance and support.
 Release
 -------
 
-This is the `adwm-0.6.4` package, released 2016-07-21.  This release, and
+This is the `adwm-0.6.5` package, released 2016-08-01.  This release, and
 the latest version, can be obtained from [GitHub][1], using a command such as:
 
     $> git clone https://github.com/bbidulock/adwm.git

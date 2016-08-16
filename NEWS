@@ -1,11 +1,38 @@
-adwm -- history of user-visible changes.  2016-07-21
+adwm -- history of user-visible changes.  2016-08-01
 
-Release adwm-0.6.4 released 2016-07-21
+Release adwm-0.6.5 released 2016-08-01
+--------------------------------------
+
+git shortlog -e -n -w80,6,8 0.6.4...0.6.5
+
+Brian Bidulock <bidulock@openss7.org> (19):
+      dockapps do not have type dock set
+      treat dockapps as though _NET_WM_STATE_BELOW set
+      also set below flag on dockapps
+      try shrinking hidden dock apps
+      need to rearrange when dock selected/deselected
+      deselect bastards when pointer leaves
+      do not map hidden dock app clients
+      better hide logic
+      just hide dockapps for now
+      unhide regardless of banned state
+      always map and unmap dock apps on unban
+      moving to root is NotifyInferior
+      let docks move
+      split programatic and user capabilities
+      do not munge too many flags
+      probably munged something up there
+      minor update to enternotify
+      add missing grid mode
+      document desktop modes
+
+
+Release adwm-0.6.4 released 2016-07-27
 --------------------------------------
 
 git shortlog -e -n -w80,6,8 0.6.3...0.6.4
 
-Brian Bidulock <bidulock@openss7.org> (7):
+Brian Bidulock <bidulock@openss7.org> (8):
       no longer necessary
       git hates trailing space
       better readme formatting
@@ -13,6 +40,7 @@ Brian Bidulock <bidulock@openss7.org> (7):
       better stacking
       remove old restack()
       stacking assertion and no mess with bastards
+      update release files
 
 
 Release adwm-0.6.3 released 2016-07-09
@@ -145,18 +173,4 @@ Brian Bidulock <bidulock@openss7.org> (6):
       handle more buttons on root
       add missing pixmaps, fix default style
       release 0.5.5
-
-
-Release adwm-0.5.4 released 2015-07-10
---------------------------------------
-
-git shortlog -e -n -w80,6,8 0.5.3...0.5.4
-
-Brian Bidulock <bidulock@openss7.org> (6):
-      twiddle with backing_store and save_under
-      try to avoid using CurrentTime: breaks timing
-      try not grabbing scrolling buttons
-      don't unmanage on real unmap events when shaded
-      handle suppression of unmap notify differently
-      updated release files
 

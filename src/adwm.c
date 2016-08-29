@@ -506,19 +506,20 @@ unban(Client *c, View *v)
 
 	if (c->is.shaded)
 		hide = True;
-	if (v->barpos == StrutsOff) {
-		if (c->is.dockapp) {
-			if (!sel || !sel->is.dockapp)
-				hide = True;
+	if (v) {
+		if (v->barpos == StrutsOff) {
+			if (c->is.dockapp) {
+				if (!sel || !sel->is.dockapp)
+					hide = True;
 #if 0
-		} else if (WTCHECK(c, WindowTypeDock)) {
-			if (!sel || sel != c)
-				hide = True;
+			} else if (WTCHECK(c, WindowTypeDock)) {
+				if (!sel || sel != c)
+					hide = True;
 #endif
+			}
 		}
+		c->cview = v;
 	}
-	c->cview = v;
-
 	if (hide) {
 		if (c->is.dockapp)
 			XUnmapWindow(dpy, c->icon ? : c->win);

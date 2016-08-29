@@ -87,6 +87,8 @@ int xerror(Display *dpy, XErrorEvent *ee);
 int xerrordummy(Display *dsply, XErrorEvent *ee);
 int xerrorstart(Display *dsply, XErrorEvent *ee);
 int (*xerrorxlib) (Display *, XErrorEvent *);
+int xioerror(Display *dpy);
+int (*xioerrorxlib) (Display *);
 
 Bool issystray(Window win);
 void delsystray(Window win);
@@ -852,6 +854,7 @@ checkotherwm(AdwmOperations *ops)
 	XSync(dpy, False);
 	XSetErrorHandler(NULL);
 	xerrorxlib = XSetErrorHandler(xerror);
+	xioerrorxlib = XSetIOErrorHandler(xioerror);
 	XSync(dpy, False);
 }
 
@@ -966,7 +969,7 @@ destroynotify(XEvent *e)
 	XDestroyWindowEvent *ev = &e->xdestroywindow;
 
 	if ((c = getclient(ev->window, ClientWindow))) {
-		XPRINTF("unmanage destroyed window (%s)\n", c->name);
+		_CPRINTF(c, "unmanage destroyed window\n");
 		unmanage(c, CauseDestroyed);
 		return True;
 	}
@@ -2767,7 +2770,7 @@ reparentnotify(XEvent *e)
 
 	if ((c = getclient(ev->window, ClientWindow))) {
 		if (ev->parent != c->frame) {
-			DPRINTF("unmanage reparented window (%s)\n", c->name);
+			_CPRINTF(c, "unmanage reparented window\n");
 			unmanage(c, CauseReparented);
 		}
 		return True;
@@ -5369,6 +5372,15 @@ xerrorstart(Display *dsply, XErrorEvent *ee)
 {
 	otherwm = True;
 	return -1;
+}
+
+int
+xioerror(Display *dsply)
+{
+	dumpstack();
+	_DPRINTF("error is %s\n", strerror(errno));
+	errno = 0;
+	return xioerrorxlib(dsply);
 }
 
 AdwmOperations *

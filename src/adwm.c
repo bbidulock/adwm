@@ -1742,15 +1742,20 @@ findclient(Window fwind)
 long
 getstate(Window w)
 {
-	long ret = -1;
-	long *p = NULL;
-	unsigned long n;
+	int format, status;
+	long *ret = NULL, val = -1;
+	unsigned long extra, nitems = 0;
+	Atom real;
 
-	if ((p = getcard(w, _XA_WM_STATE, &n))) {
-		ret = *p;
-		XFree(p);
-	}
-	return ret;
+	/* note this deletes property on read */
+	status = XGetWindowProperty(dpy, w, _XA_WM_STATE, 0L, 1L, True, _XA_WM_STATE,
+				    &real, &format, &nitems, &extra,
+				    (unsigned char **) &ret);
+	if (status == Success && nitems > 0)
+		val = ret[0];
+	if (ret)
+		XFree(ret);
+	return (val);
 }
 
 const char *
@@ -2055,6 +2060,10 @@ manage(Window w, XWindowAttributes * wa)
 	Bool focusnew = True;
 	int take_focus;
 
+	if ((c = getclient(w, ClientAny))) {
+		_CPRINTF(c, "client already managed!\n");
+		return;
+	}
 	DPRINTF("managing window 0x%lx\n", w);
 	c = emallocz(sizeof(Client));
 	c->win = w;
@@ -2297,16 +2306,16 @@ manage(Window w, XWindowAttributes * wa)
 	// mask |= CWSaveUnder;
 
 	if (c->icon) {
+		if (haveext[XfixesBase])
+			XFixesChangeSaveSet(dpy, c->icon, SetModeInsert, SaveSetNearest, SaveSetUnmap);
+		else
+			XChangeSaveSet(dpy, c->icon, SetModeInsert);
 		twa.backing_store = Always;
 		mask |= CWBackingStore;
 		XChangeWindowAttributes(dpy, c->icon, mask, &twa);
 		XSelectInput(dpy, c->icon, CLIENTMASK);
 
 		XReparentWindow(dpy, c->icon, c->frame, c->r.x, c->r.y);
-		if (haveext[XfixesBase])
-			XFixesChangeSaveSet(dpy, c->icon, SetModeInsert, SaveSetNearest, SaveSetUnmap);
-		else
-			XChangeSaveSet(dpy, c->icon, SetModeInsert);
 		XConfigureWindow(dpy, c->icon, CWBorderWidth, &wc);
 		XMapWindow(dpy, c->icon);
 #if 0
@@ -2322,6 +2331,10 @@ manage(Window w, XWindowAttributes * wa)
 		}
 #endif
 	} else {
+		if (haveext[XfixesBase])
+			XFixesChangeSaveSet(dpy, c->win, SetModeInsert, SaveSetNearest, SaveSetMap);
+		else
+			XChangeSaveSet(dpy, c->win, SetModeInsert);
 		// twa.backing_store = NotUseful;
 		// mask |= CWBackingStore;
 		XChangeWindowAttributes(dpy, c->win, mask, &twa);
@@ -2332,10 +2345,6 @@ manage(Window w, XWindowAttributes * wa)
 			XReparentWindow(dpy, c->grips, c->frame, 0, c->c.h - c->c.g);
 		if (c->title)
 			XReparentWindow(dpy, c->title, c->frame, 0, 0);
-		if (haveext[XfixesBase])
-			XFixesChangeSaveSet(dpy, c->win, SetModeInsert, SaveSetRoot, SaveSetMap);
-		else
-			XChangeSaveSet(dpy, c->win, SetModeInsert);
 		XConfigureWindow(dpy, c->win, CWBorderWidth, &wc);
 		XMapWindow(dpy, c->win);
 	}
@@ -2409,28 +2418,50 @@ manage(Window w, XWindowAttributes * wa)
 	CPRINTF(c, "%-20s: %s\n", "has.but.half", c->has.but.half ? "true" : "false");
 	CPRINTF(c, "%-20s: %s\n", "with.struts", c->with.struts ? "true" : "false");
 	CPRINTF(c, "%-20s: %s\n", "with.time", c->with.time ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "can.move", c->can.move ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "can.size", c->can.size ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "can.sizev", c->can.sizev ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "can.sizeh", c->can.sizeh ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "can.min", c->can.min ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "can.max", c->can.max ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "can.maxv", c->can.maxv ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "can.maxh", c->can.maxh ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "can.close", c->can.close ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "can.shade", c->can.shade ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "can.stick", c->can.stick ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "can.full", c->can.full ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "can.above", c->can.above ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "can.below", c->can.below ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "can.fill", c->can.fill ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "can.fillh", c->can.fillh ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "can.fillv", c->can.fillv ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "can.floats", c->can.floats ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "can.hide", c->can.hide ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "can.tag", c->can.tag ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "can.arrange", c->can.arrange ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "can.focus", c->can.focus ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "prog.move", c->prog.move ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "prog.size", c->prog.size ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "prog.sizev", c->prog.sizev ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "prog.sizeh", c->prog.sizeh ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "prog.min", c->prog.min ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "prog.max", c->prog.max ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "prog.maxv", c->prog.maxv ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "prog.maxh", c->prog.maxh ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "prog.close", c->prog.close ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "prog.shade", c->prog.shade ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "prog.stick", c->prog.stick ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "prog.full", c->prog.full ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "prog.above", c->prog.above ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "prog.below", c->prog.below ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "prog.fill", c->prog.fill ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "prog.fillh", c->prog.fillh ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "prog.fillv", c->prog.fillv ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "prog.floats", c->prog.floats ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "prog.hide", c->prog.hide ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "prog.tag", c->prog.tag ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "prog.arrange", c->prog.arrange ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "prog.focus", c->prog.focus ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "user.move", c->user.move ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "user.size", c->user.size ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "user.sizev", c->user.sizev ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "user.sizeh", c->user.sizeh ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "user.min", c->user.min ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "user.max", c->user.max ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "user.maxv", c->user.maxv ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "user.maxh", c->user.maxh ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "user.close", c->user.close ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "user.shade", c->user.shade ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "user.stick", c->user.stick ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "user.full", c->user.full ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "user.above", c->user.above ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "user.below", c->user.below ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "user.fill", c->user.fill ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "user.fillh", c->user.fillh ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "user.fillv", c->user.fillv ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "user.floats", c->user.floats ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "user.hide", c->user.hide ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "user.tag", c->user.tag ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "user.arrange", c->user.arrange ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "user.focus", c->user.focus ? "true" : "false");
 	if (!c->is.bastard && (focusnew || (canfocus(c) && !canfocus(sel)))) {
 		DPRINTF
 		    ("Focusing newly managed %sclient: frame 0x%08lx win 0x%08lx name %s\n",
@@ -3714,50 +3745,73 @@ scan(void)
 {
 	unsigned int i, num;
 	Window *wins, d1, d2;
-	XWindowAttributes wa = { 0, };
 
 	wins = NULL;
 	if (XQueryTree(dpy, scr->root, &d1, &d2, &wins, &num)) {
 		for (i = 0; i < num; i++) {
+			XWindowAttributes wa = { 0, };
 			XWMHints *wmh = NULL;
+			long state = -1;
+			Client *c;
 
-			DPRINTF("scan checking window 0x%lx\n", wins[i]);
-			if (!XGetWindowAttributes(dpy, wins[i], &wa) ||
-			    wa.override_redirect || issystray(wins[i])
-			    || XGetTransientForHint(dpy, wins[i], &d1) ||
-			    ((wmh = XGetWMHints(dpy, wins[i])) &&
-			     (wmh->flags & WindowGroupHint) &&
-			     (wmh->window_group != wins[i]))) {
-				XFree(wmh);
+			if (!wins[i])
+				continue;
+
+			DPRINTF("scan checking window 0x%08lx\n", wins[i]);
+
+			if ((c = getclient(wins[i], ClientAny))) {
+				DPRINTF("-> deleting 0x%08lx (already managed by %s)\n", wins[i], c->name);
+				wins[i] = None;
 				continue;
 			}
-			DPRINTF("scan checking non-transient window 0x%lx\n", wins[i]);
-			if (wa.map_state == IsViewable
-			    || getstate(wins[i]) == IconicState
-			    || getstate(wins[i]) == NormalState)
-				manage(wins[i], &wa);
+			if (!XGetWindowAttributes(dpy, wins[i], &wa)) {
+				DPRINTF("-> deleting 0x%08lx (no window attributes)\n", wins[i]);
+				wins[i] = None;
+				continue;
+			}
+			if (wa.override_redirect) {
+				DPRINTF("-> deleting 0x%08lx (override redirect set)\n", wins[i]);
+				wins[i] = None;
+				continue;
+			}
+			if (issystray(wins[i])) {
+				DPRINTF("-> deleting 0x%08lx (is a system tray icon)\n", wins[i]);
+				wins[i] = None;
+				continue;
+			}
+			if ((wa.map_state != IsViewable) && ((state = getstate(wins[i])) != IconicState) && (state != NormalState)) {
+				DPRINTF("-> deleting 0x%08lx (not viewable and state = %ld)\n", wins[i], state);
+				wins[i] = None;
+				continue;
+			}
+			if (XGetTransientForHint(dpy, wins[i], &d1)) {
+				DPRINTF("-> skipping 0x%08lx (transient-for property set)\n", wins[i]);
+				continue;
+			}
+			if (!(wmh = XGetWMHints(dpy, wins[i])) ||
+					((wmh->flags & WindowGroupHint) && (wmh->window_group != wins[i])) ||
+					!(wmh->flags & IconWindowHint)) {
+				DPRINTF("-> skipping 0x%08lx (not group leader)\n", wins[i]);
+				if (wmh)
+					XFree(wmh);
+				continue;
+			}
+			DPRINTF("-> managing 0x%08lx\n", wins[i]);
+			manage(wins[i], &wa);
+			wins[i] = None;
 			if (wmh)
 				XFree(wmh);
 		}
 		for (i = 0; i < num; i++) {
-			XWMHints *wmh = NULL;
+			XWindowAttributes wa = { 0, };
 
-			DPRINTF("scan checking window 0x%lx\n", wins[i]);
-			/* now the transients and group members */
-			if (!XGetWindowAttributes(dpy, wins[i], &wa) ||
-			    wa.override_redirect || issystray(wins[i]))
+			if (!wins[i])
 				continue;
-			DPRINTF("scan checking transient window 0x%lx\n", wins[i]);
-			if ((XGetTransientForHint(dpy, wins[i], &d1) ||
-			     ((wmh = XGetWMHints(dpy, wins[i])) &&
-			      (wmh->flags & WindowGroupHint) &&
-			      (wmh->window_group != wins[i])))
-			    && (wa.map_state == IsViewable
-				|| getstate(wins[i]) == IconicState
-				|| getstate(wins[i]) == NormalState))
-				manage(wins[i], &wa);
-			if (wmh)
-				XFree(wmh);
+			if (!XGetWindowAttributes(dpy, wins[i], &wa))
+				continue;
+			DPRINTF("-> managing 0x%08lx\n", wins[i]);
+			manage(wins[i], &wa);
+			wins[i] = None;
 		}
 	}
 	if (wins)
@@ -4872,6 +4926,10 @@ unmanage(Client *c, WithdrawCause cause)
 		c->grips = None;
 	}
 	if (cause != CauseDestroyed) {
+		if (haveext[XfixesBase])
+			XFixesChangeSaveSet(dpy, c->icon ? c->icon : c->win, SetModeDelete, SaveSetNearest, SaveSetMap);
+		else
+			XChangeSaveSet(dpy, c->icon ? c->icon : c->win, SetModeDelete);
 		XSelectInput(dpy, c->win, CLIENTMASK & ~MAPPINGMASK);
 		XUngrabButton(dpy, Button1, AnyModifier, c->win);
 		XUngrabButton(dpy, Button2, AnyModifier, c->win);
@@ -5379,7 +5437,6 @@ xioerror(Display *dsply)
 {
 	dumpstack();
 	_DPRINTF("error is %s\n", strerror(errno));
-	errno = 0;
 	return xioerrorxlib(dsply);
 }
 

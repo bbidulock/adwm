@@ -1659,27 +1659,33 @@ wmh_process_state_mask(Client *c, unsigned int mask, unsigned int change)
 	if (mask & WIN_STATE_STICKY)
 		if (((change & WIN_STATE_STICKY) && !c->is.sticky) ||
 		    (!(change & WIN_STATE_STICKY) && c->is.sticky))
-			togglesticky(c);
+			if (c->user.stick)
+				togglesticky(c);
 	if (mask & WIN_STATE_MINIMIZED)
 		if (((change & WIN_STATE_MINIMIZED) && !c->is.icon) ||
 		    (!(change & WIN_STATE_MINIMIZED) && c->is.icon))
-			togglemin(c);
+			if (c->user.min)
+				togglemin(c);
 	if (mask & WIN_STATE_MAXIMIZED_VERT)
 		if (((change & WIN_STATE_MAXIMIZED_VERT) && !c->is.maxv) ||
 		    (!(change & WIN_STATE_MAXIMIZED_VERT) && c->is.maxv))
-			togglemaxv(c);
+			if (c->user.maxv)
+				togglemaxv(c);
 	if (mask & WIN_STATE_MAXIMIZED_HORIZ)
 		if (((change & WIN_STATE_MAXIMIZED_HORIZ) && !c->is.maxh) ||
 		    (!(change & WIN_STATE_MAXIMIZED_HORIZ) && c->is.maxh))
-			togglemaxh(c);
+			if (c->user.maxh)
+				togglemaxh(c);
 	if (mask & WIN_STATE_HIDDEN)
 		if (((change & WIN_STATE_HIDDEN) && !c->is.hidden) ||
 		    (!(change & WIN_STATE_HIDDEN) && c->is.hidden))
-			togglehidden(c);
+			if (c->user.hide)
+				togglehidden(c);
 	if (mask & WIN_STATE_SHADED)
 		if (((change & WIN_STATE_SHADED) && !c->is.shaded) ||
 		    (!(change & WIN_STATE_SHADED) && c->is.shaded))
-			toggleshade(c);
+			if (c->user.shade)
+				toggleshade(c);
 	if (mask & WIN_STATE_HID_WORKSPACE) {
 		/* read-only */
 	}
@@ -1695,7 +1701,8 @@ wmh_process_state_mask(Client *c, unsigned int mask, unsigned int change)
 	if (mask & WIN_STATE_ARRANGE_IGNORE)
 		if (((change & WIN_STATE_ARRANGE_IGNORE) && !c->skip.arrange) ||
 		    (!(change & WIN_STATE_ARRANGE_IGNORE) && c->skip.arrange))
-			togglefloating(c);
+			if (c->user.arrange)
+				togglefloating(c);
 }
 
 void

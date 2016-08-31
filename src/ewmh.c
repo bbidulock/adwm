@@ -525,7 +525,7 @@ ewmh_del_client(Client *c, WithdrawCause cause)
 			None
 		};
 		for (i = 0; props[i]; i++)
-			XDeleteProperty(dpy, scr->root, props[i]);
+			XDeleteProperty(dpy, c->win, props[i]);
 		/* fall through */
 	}
 	case CauseSwitching:
@@ -540,7 +540,7 @@ ewmh_del_client(Client *c, WithdrawCause cause)
 			None
 		};
 		for (i = 0; props[i]; i++)
-			XDeleteProperty(dpy, scr->root, props[i]);
+			XDeleteProperty(dpy, c->win, props[i]);
 		/* fall through */
 	}
 	case CauseRestarting:
@@ -551,7 +551,7 @@ ewmh_del_client(Client *c, WithdrawCause cause)
 			None
 		};
 		for (i = 0; props[i]; i++)
-			XDeleteProperty(dpy, scr->root, props[i]);
+			XDeleteProperty(dpy, c->win, props[i]);
 		/* fall through */
 		break;
 	}

@@ -1617,7 +1617,7 @@ ewmh_update_net_window_state(Client *c)
 	/* following are non-standard */
 	if (!c->user.move)
 		winstate[states++] = _XA_NET_WM_STATE_FIXED;
-	if (c->skip.arrange)
+	if (c->skip.arrange || c->is.floater)
 		winstate[states++] = _XA_NET_WM_STATE_FLOATING;
 	if (c->is.fill)
 		winstate[states++] = _XA_NET_WM_STATE_FILLED;
@@ -1644,7 +1644,7 @@ ewmh_update_net_window_state(Client *c)
 		state |= WIN_STATE_HID_TRANSIENT;
 	if (!c->user.move)
 		state |= WIN_STATE_FIXED_POSITION;
-	if (c->skip.arrange)
+	if (c->skip.arrange || c->is.floater)
 		state |= WIN_STATE_ARRANGE_IGNORE;
 
 	XChangeProperty(dpy, c->win, _XA_WIN_STATE, XA_CARDINAL, 32,

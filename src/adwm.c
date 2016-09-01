@@ -2026,6 +2026,120 @@ leavenotify(XEvent *e)
 	return True;
 }
 
+void
+show_client_state(Client *c)
+{
+	CPRINTF(c, "%-20s: 0x%08x\n", "wintype", c->wintype);
+#if 1
+	CPRINTF(c, "%-20s: 0x%08x\n", "skip.skip", c->skip.skip);
+#else
+	CPRINTF(c, "%-20s: %s\n", "skip.taskbar", c->skip.taskbar ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "skip.pager", c->skip.pager ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "skip.winlist", c->skip.winlist ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "skip.cycle", c->skip.cycle ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "skip.focus", c->skip.focus ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "skip.arrange", c->skip.arrange ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "skip.sloppy", c->skip.sloppy ? "true" : "false");
+#endif
+#if 1
+	CPRINTF(c, "%-20s: 0x%08x\n", "is.is", c->is.is);
+#else
+	CPRINTF(c, "%-20s: %s\n", "is.transient", c->is.transient ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "is.grptrans", c->is.grptrans ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "is.banned", c->is.banned ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "is.floater", c->is.floater ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "is.max", c->is.max ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "is.maxv", c->is.maxv ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "is.maxh", c->is.maxh ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "is.shaded", c->is.shaded ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "is.icon", c->is.icon ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "is.fill", c->is.fill ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "is.modal", c->is.modal ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "is.above", c->is.above ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "is.below", c->is.below ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "is.attn", c->is.attn ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "is.sticky", c->is.sticky ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "is.hidden", c->is.hidden ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "is.bastard", c->is.bastard ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "is.full", c->is.full ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "is.focused", c->is.focused ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "is.dockapp", c->is.dockapp ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "is.managed", c->is.managed ? "true" : "false");
+#endif
+#if 1
+	CPRINTF(c, "%-20s: 0x%08x\n", "has.has", c->has.has);
+#else
+	CPRINTF(c, "%-20s: %s\n", "has.border", c->has.border ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "has.grips", c->has.grips ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "has.title", c->has.title ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "has.but.menu", c->has.but.menu ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "has.but.min", c->has.but.min ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "has.but.max", c->has.but.max ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "has.but.close", c->has.but.close ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "has.but.size", c->has.but.size ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "has.but.shade", c->has.but.shade ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "has.but.fill", c->has.but.fill ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "has.but.floats", c->has.but.floats ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "has.but.half", c->has.but.half ? "true" : "false");
+#endif
+#if 0
+	CPRINTF(c, "%-20s: %s\n", "with.struts", c->with.struts ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "with.time", c->with.time ? "true" : "false");
+#endif
+#if 1
+	CPRINTF(c, "%-20s: 0x%08x\n", "prog.can", c->prog.can);
+#else
+	CPRINTF(c, "%-20s: %s\n", "prog.move", c->prog.move ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "prog.size", c->prog.size ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "prog.sizev", c->prog.sizev ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "prog.sizeh", c->prog.sizeh ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "prog.min", c->prog.min ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "prog.max", c->prog.max ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "prog.maxv", c->prog.maxv ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "prog.maxh", c->prog.maxh ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "prog.close", c->prog.close ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "prog.shade", c->prog.shade ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "prog.stick", c->prog.stick ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "prog.full", c->prog.full ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "prog.above", c->prog.above ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "prog.below", c->prog.below ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "prog.fill", c->prog.fill ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "prog.fillh", c->prog.fillh ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "prog.fillv", c->prog.fillv ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "prog.floats", c->prog.floats ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "prog.hide", c->prog.hide ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "prog.tag", c->prog.tag ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "prog.arrange", c->prog.arrange ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "prog.focus", c->prog.focus ? "true" : "false");
+#endif
+#if 1
+	CPRINTF(c, "%-20s: 0x%08x\n", "user.can", c->user.can);
+#else
+	CPRINTF(c, "%-20s: %s\n", "user.move", c->user.move ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "user.size", c->user.size ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "user.sizev", c->user.sizev ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "user.sizeh", c->user.sizeh ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "user.min", c->user.min ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "user.max", c->user.max ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "user.maxv", c->user.maxv ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "user.maxh", c->user.maxh ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "user.close", c->user.close ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "user.shade", c->user.shade ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "user.stick", c->user.stick ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "user.full", c->user.full ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "user.above", c->user.above ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "user.below", c->user.below ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "user.fill", c->user.fill ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "user.fillh", c->user.fillh ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "user.fillv", c->user.fillv ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "user.floats", c->user.floats ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "user.hide", c->user.hide ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "user.tag", c->user.tag ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "user.arrange", c->user.arrange ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "user.focus", c->user.focus ? "true" : "false");
+#endif
+}
+
 Bool latertime(Time time);
 
 /*
@@ -2375,92 +2489,7 @@ manage(Window w, XWindowAttributes * wa)
 		updategeom(NULL);
 	}
 	XSync(dpy, False);
-	CPRINTF(c, "%-20s: %s\n", "skip.taskbar", c->skip.taskbar ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "skip.pager", c->skip.pager ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "skip.winlist", c->skip.winlist ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "skip.cycle", c->skip.cycle ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "skip.focus", c->skip.focus ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "skip.arrange", c->skip.arrange ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "skip.sloppy", c->skip.sloppy ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "is.transient", c->is.transient ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "is.grptrans", c->is.grptrans ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "is.banned", c->is.banned ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "is.floater", c->is.floater ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "is.max", c->is.max ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "is.maxv", c->is.maxv ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "is.maxh", c->is.maxh ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "is.shaded", c->is.shaded ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "is.icon", c->is.icon ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "is.fill", c->is.fill ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "is.modal", c->is.modal ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "is.above", c->is.above ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "is.below", c->is.below ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "is.attn", c->is.attn ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "is.sticky", c->is.sticky ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "is.hidden", c->is.hidden ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "is.bastard", c->is.bastard ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "is.full", c->is.full ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "is.focused", c->is.focused ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "is.dockapp", c->is.dockapp ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "is.managed", c->is.managed ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "has.border", c->has.border ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "has.grips", c->has.grips ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "has.title", c->has.title ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "has.but.menu", c->has.but.menu ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "has.but.min", c->has.but.min ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "has.but.max", c->has.but.max ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "has.but.close", c->has.but.close ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "has.but.size", c->has.but.size ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "has.but.shade", c->has.but.shade ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "has.but.fill", c->has.but.fill ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "has.but.floats", c->has.but.floats ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "has.but.half", c->has.but.half ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "with.struts", c->with.struts ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "with.time", c->with.time ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "prog.move", c->prog.move ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "prog.size", c->prog.size ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "prog.sizev", c->prog.sizev ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "prog.sizeh", c->prog.sizeh ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "prog.min", c->prog.min ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "prog.max", c->prog.max ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "prog.maxv", c->prog.maxv ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "prog.maxh", c->prog.maxh ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "prog.close", c->prog.close ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "prog.shade", c->prog.shade ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "prog.stick", c->prog.stick ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "prog.full", c->prog.full ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "prog.above", c->prog.above ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "prog.below", c->prog.below ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "prog.fill", c->prog.fill ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "prog.fillh", c->prog.fillh ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "prog.fillv", c->prog.fillv ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "prog.floats", c->prog.floats ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "prog.hide", c->prog.hide ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "prog.tag", c->prog.tag ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "prog.arrange", c->prog.arrange ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "prog.focus", c->prog.focus ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "user.move", c->user.move ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "user.size", c->user.size ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "user.sizev", c->user.sizev ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "user.sizeh", c->user.sizeh ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "user.min", c->user.min ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "user.max", c->user.max ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "user.maxv", c->user.maxv ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "user.maxh", c->user.maxh ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "user.close", c->user.close ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "user.shade", c->user.shade ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "user.stick", c->user.stick ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "user.full", c->user.full ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "user.above", c->user.above ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "user.below", c->user.below ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "user.fill", c->user.fill ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "user.fillh", c->user.fillh ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "user.fillv", c->user.fillv ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "user.floats", c->user.floats ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "user.hide", c->user.hide ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "user.tag", c->user.tag ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "user.arrange", c->user.arrange ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "user.focus", c->user.focus ? "true" : "false");
+	show_client_state(c);
 	if (!c->is.bastard && (focusnew || (canfocus(c) && !canfocus(sel)))) {
 		DPRINTF
 		    ("Focusing newly managed %sclient: frame 0x%08lx win 0x%08lx name %s\n",

@@ -2277,7 +2277,7 @@ void
 wmh_process_win_window_state(Client *c)
 {
 	// wmh_process_win_window_hints(c);
-	wmh_process_win_layer(c);
+	// wmh_process_win_layer(c);
 	wmh_process_win_state(c);
 }
 
@@ -2930,8 +2930,7 @@ getwintype(Window win)
 				if (state[i] == atom[j])
 					ret |= WTFLAG(j);
 		XFree(state);
-	}
-	if ((layer = getcard(win, _XA_WIN_LAYER, &n))) {
+	} else if ((layer = getcard(win, _XA_WIN_LAYER, &n))) {
 		switch ((unsigned int) layer[0]) {
 		case WIN_LAYER_DESKTOP:
 			ret |= WTFLAG(WindowTypeDesk);
@@ -3004,39 +3003,34 @@ ewmh_process_net_window_type(Client *c)
 			   _NET_WM_WINDOW_TYPE_NORMAL. */
 			c->wintype |= WTFLAG(WindowTypeNormal);
 	}
-	if (!WTCHECK(c, WindowTypeNormal)) {
-		if (WTCHECK(c, WindowTypeDesk) ||
-		    WTCHECK(c, WindowTypeSplash) ||
-		    WTCHECK(c, WindowTypeDrop) ||
-		    WTCHECK(c, WindowTypePopup) ||
-		    WTCHECK(c, WindowTypeTooltip) ||
-		    WTCHECK(c, WindowTypeNotify) ||
-		    WTCHECK(c, WindowTypeCombo) || WTCHECK(c, WindowTypeDnd)) {
-			c->is.bastard = True;
-			c->skip.skip = -1U;	/* skip everything */
-			c->user.can = 0;	/* no user functionality */
-			c->has.has = 0;	/* no decorations */
-			c->is.floater = True;
-		}
-		if (WTCHECK(c, WindowTypeDialog) || WTCHECK(c, WindowTypeMenu)) {
-			c->skip.arrange = True;
-			c->is.floater = True;
-			c->prog.arrange = c->user.arrange = False;
-			c->user.size = False;
-			c->has.grips = False;
-			// c->user.move = False;
-		}
-		if (WTCHECK(c, WindowTypeToolbar) || WTCHECK(c, WindowTypeUtil)) {
-			c->skip.arrange = True;
-		}
-		if (WTCHECK(c, WindowTypeDock)) {
-			c->is.bastard = True;
-			c->skip.skip = -1U;	/* skip everything */
-			c->skip.sloppy = False;
-			c->user.can = 0;	/* no user functionality */
-			c->has.has = 0;	/* no decorations */
-			c->is.floater = True;
-		}
+	if (WTCHECK(c, WindowTypeDesk) ||
+	    WTCHECK(c, WindowTypeSplash) ||
+	    WTCHECK(c, WindowTypeDrop) ||
+	    WTCHECK(c, WindowTypePopup) ||
+	    WTCHECK(c, WindowTypeTooltip) ||
+	    WTCHECK(c, WindowTypeNotify) ||
+	    WTCHECK(c, WindowTypeCombo) || WTCHECK(c, WindowTypeDnd)) {
+		c->is.bastard = True;
+		c->skip.skip = -1U;	/* skip everything */
+		c->user.can = 0;	/* no user functionality */
+		c->has.has = 0;	/* no decorations */
+		c->is.floater = True;
+	} else if (WTCHECK(c, WindowTypeDialog) || WTCHECK(c, WindowTypeMenu)) {
+		c->skip.arrange = True;
+		c->is.floater = True;
+		c->prog.arrange = c->user.arrange = False;
+		c->user.size = False;
+		c->has.grips = False;
+		// c->user.move = False;
+	} else if (WTCHECK(c, WindowTypeToolbar) || WTCHECK(c, WindowTypeUtil)) {
+		c->skip.arrange = True;
+	} else if (WTCHECK(c, WindowTypeDock)) {
+		c->is.bastard = True;
+		c->skip.skip = -1U;	/* skip everything */
+		c->skip.sloppy = False;
+		c->user.can = 0;	/* no user functionality */
+		c->has.has = 0;	/* no decorations */
+		c->is.floater = True;
 	}
 }
 

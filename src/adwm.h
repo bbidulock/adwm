@@ -1208,6 +1208,8 @@ void unban(Client *c, View *v);
 extern Group window_stack;
 void unmanage(Client *c, WithdrawCause cause);
 
+void show_client_state(Client *c);
+
 #define LENGTH(x)		(sizeof(x)/sizeof(*x))
 #define _DPRINT			do { fprintf(stderr, "adwm: %s %s() %d\n",__FILE__,__func__, __LINE__); fflush(stderr); } while(0)
 #define _DPRINTF(args...)	do { fprintf(stderr, "adwm: %s %s():%d ", __FILE__,__func__, __LINE__); \

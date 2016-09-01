@@ -1634,7 +1634,7 @@ ewmh_update_net_window_state(Client *c)
 		state |= WIN_STATE_MAXIMIZED_VERT;
 	if (c->is.maxh || c->is.max)
 		state |= WIN_STATE_MAXIMIZED_HORIZ;
-	if (c->skip.taskbar || c->is.hidden)	/* not sure which */
+	if (c->skip.taskbar)
 		state |= WIN_STATE_HIDDEN;
 	if (c->is.shaded)
 		state |= WIN_STATE_SHADED;
@@ -1676,11 +1676,11 @@ wmh_process_state_mask(Client *c, unsigned int mask, unsigned int change)
 		    (!(change & WIN_STATE_MAXIMIZED_HORIZ) && c->is.maxh))
 			if (c->user.maxh)
 				togglemaxh(c);
-	if (mask & WIN_STATE_HIDDEN)
-		if (((change & WIN_STATE_HIDDEN) && !c->is.hidden) ||
-		    (!(change & WIN_STATE_HIDDEN) && c->is.hidden))
-			if (c->user.hide)
-				togglehidden(c);
+	if (mask & WIN_STATE_HIDDEN) {
+		if (((change & WIN_STATE_HIDDEN) && !c->skip.taskbar) ||
+		    (!(change & WIN_STATE_HIDDEN) && c->skip.taskbar))
+			toggletaskbar(c);
+	}
 	if (mask & WIN_STATE_SHADED)
 		if (((change & WIN_STATE_SHADED) && !c->is.shaded) ||
 		    (!(change & WIN_STATE_SHADED) && c->is.shaded))
@@ -1758,11 +1758,6 @@ ewmh_process_state_atom(Client *c, Atom state, int set)
 		   the request, since _NET_WM_STATE_HIDDEN is a function of some other
 		   aspect of the window such as minimization, rather than an independent
 		   state. */
-		if ((set == _NET_WM_STATE_ADD && !c->is.hidden) ||
-		    (set == _NET_WM_STATE_REMOVE && c->is.hidden) ||
-		    (set == _NET_WM_STATE_TOGGLE))
-			if (c->user.hide)
-				togglehidden(c);
 	} else if (state == _XA_NET_WM_STATE_FULLSCREEN) {
 		if ((set == _NET_WM_STATE_ADD || set == _NET_WM_STATE_TOGGLE)
 		    && !c->is.full) {

@@ -2992,6 +2992,8 @@ ewmh_process_net_window_type(Client *c)
 	c->wintype = getwintype(c->win);
 
 	if (!c->wintype) {
+		/* window type is meant to replace MOTIF_WM_HINTS */
+		mwmh_process_motif_wm_hints(c);
 		/* When _NET_WM_WINDOW_TYPE is not set: */
 		if (c->transfor)
 			/* Managed windows with WM_TRANSIENT_FOR set MUST be taken as

@@ -2093,7 +2093,6 @@ manage(Window w, XWindowAttributes * wa)
 	// c->tags = 0;
 	c->r.b = c->c.b = c->is.bastard ? 0 : scr->style.border;
 	/* XXX: had.border? */
-	mwmh_process_motif_wm_hints(c);
 
 	updatesizehints(c);
 	updatetitle(c);

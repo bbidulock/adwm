@@ -1,11 +1,23 @@
-adwm -- history of user-visible changes.  2016-08-31
+adwm -- history of user-visible changes.  2016-09-01
+
+Release adwm-0.6.7 released 2016-09-01
+--------------------------------------
+
+git shortlog -e -n -w80,6,8 0.6.6...0.6.7
+
+Brian Bidulock <bidulock@openss7.org> (4):
+      handle hidden state properly
+      process MOTIF_WM_HINTS only if no window type
+      try to address splash restart
+      fixed splash handling on restart
+
 
 Release adwm-0.6.6 released 2016-08-31
 --------------------------------------
 
 git shortlog -e -n -w80,6,8 0.6.5...0.6.6
 
-Brian Bidulock <bidulock@openss7.org> (7):
+Brian Bidulock <bidulock@openss7.org> (8):
       do not link unnecessary libraries
       missed one
       avoid null pointer error in unban() on restart
@@ -13,6 +25,7 @@ Brian Bidulock <bidulock@openss7.org> (7):
       cut and paste error
       fix application of user capabilitys for WinWM/WMH
       fix scanning behaviour on restart
+      update release files
 
 
 Release adwm-0.6.5 released 2016-08-16
@@ -159,20 +172,5 @@ Brian Bidulock <bidulock@openss7.org> (7):
       no antialiasing for issue #1
       fix issue #1
       do not need XInput2.h for now
-      update release files
-
-
-Release adwm-0.5.6 released 2016-02-11
---------------------------------------
-
-git shortlog -e -n -w80,6,8 0.5.5...0.5.6
-
-Brian Bidulock <bidulock@openss7.org> (7):
-      don't know why compiler missed this error
-      avoid error statement
-      silent make
-      better key parsing
-      more debugs
-      logic error
       update release files
 

@@ -1,5 +1,58 @@
 # created with git log --stat=76 -M -C|fmt -sct -w80
 
+commit 30323980ac535f0fa56ab3502650fbc68429329c
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu Sep 1 04:04:19 2016 -0600
+
+    fixed splash handling on restart
+
+ src/adwm.c | 201 +++++++++++++++++++++++++++++++++------------------------
+ src/adwm.h |   2 +
+ src/ewmh.c |  66 +++++++++----------
+ 3 files changed, 147 insertions(+), 122 deletions(-)
+
+commit 4ba9c8901c704e5ef83f5f0d1f1483772d307b25
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu Sep 1 02:57:06 2016 -0600
+
+    try to address splash restart
+
+ src/ewmh.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+commit d2a6d180313c900eb6071375cc5cc3a3e3d14e18
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu Sep 1 01:11:23 2016 -0600
+
+    process MOTIF_WM_HINTS only if no window type
+
+ src/adwm.c | 1 -
+ src/ewmh.c | 2 ++
+ 2 files changed, 2 insertions(+), 1 deletion(-)
+
+commit d8b7ad868df8e196afa13df928592d34c49f582a
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu Sep 1 00:52:09 2016 -0600
+
+    handle hidden state properly
+
+ src/ewmh.c | 17 ++++++-----------
+ 1 file changed, 6 insertions(+), 11 deletions(-)
+
+commit 31731d4c1127daa8e66320a724aed13eb1b57e90
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Aug 31 03:48:03 2016 -0600
+
+    update release files
+
+ AUTHORS      |  2 +-
+ ChangeLog    | 77 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ NEWS         | 36 +++++++++++++-------------
+ README       |  6 ++---
+ README.md    |  6 ++---
+ configure.ac |  6 ++---
+ 6 files changed, 106 insertions(+), 27 deletions(-)
+
 commit 7873315f65667178ed75484cf3aca2dd44b5e7f1
 Author: Brian Bidulock <bidulock@openss7.org>
 Date:   Wed Aug 31 00:08:07 2016 -0600

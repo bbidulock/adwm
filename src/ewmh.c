@@ -232,9 +232,11 @@ parse_startup_id(const char *id, char **launcher_p, char **launchee_p, char **ho
 			break;
 		tmp = strndup(q, p - q);
 		pid = strtoul(tmp, &endptr, 10);
-		free(tmp);
-		if (endptr && *endptr)
+		if (endptr && *endptr) {
+			free(tmp);
 			break;
+		}
+		free(tmp);
 		if (pid_p)
 			*pid_p = pid;
 		q = p + 1;
@@ -242,9 +244,11 @@ parse_startup_id(const char *id, char **launcher_p, char **launchee_p, char **ho
 			break;
 		tmp = strndup(q, p - q);
 		sequence = strtoul(tmp, &endptr, 10);
-		free(tmp);
-		if (endptr && *endptr)
+		if (endptr && *endptr) {
+			free(tmp);
 			break;
+		}
+		free(tmp);
 		if (sequence_p)
 			*sequence_p = sequence;
 		q = p + 1;

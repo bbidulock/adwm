@@ -1086,12 +1086,13 @@ dumpstack()
 {
 	void *buffer[32];
 	int nptr;
-	char **strings;
+	char **strings = NULL;
 	int i;
 
 	if ((nptr = backtrace(buffer, 32)) && (strings = backtrace_symbols(buffer, nptr)))
 		for (i = 0; i < nptr; i++)
 			fprintf(stderr, "%s\n", strings[i]);
+	free(strings);
 }
 
 void

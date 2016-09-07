@@ -2004,7 +2004,7 @@ find_startup_seq(Client *c)
 	while (0);
 	if (n) {
 		long workspace;
-		const char *id;
+		char *id;
 		Notify *np, **npp;
 
 		DPRINTF("FOUND STARTUP ID '%s'!\n",
@@ -2057,6 +2057,7 @@ find_startup_seq(Client *c)
 		if (np == n)
 			*npp = n->next;
 		n_del_notify(n);
+		free(id);
 	}
 	if (startup_id)
 		free(startup_id);
@@ -2413,7 +2414,7 @@ ewmh_process_kde_net_window_type_override(Client *c)
 void
 ewmh_update_kde_splash_progress()
 {
-	XEvent ev;
+	XEvent ev = { 0. };
 
 	ev.xclient.display = dpy;
 	ev.xclient.type = ClientMessage;

@@ -1,5 +1,47 @@
 # created with git log --stat=76 -M -C|fmt -sct -w80
 
+commit 6758d205346d794ff93b18b6b5331970cb029159
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Sep 10 01:16:40 2016 -0600
+
+    errno leading in and out of xserver
+
+ src/adwm.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+commit 9ef4515008b5163641dc3c094165122e49f2bcc3
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Sep 7 07:32:21 2016 -0600
+
+    fix memory leaks in invalid access
+
+ src/adwm.c | 3 ++-
+ src/ewmh.c | 5 +++--
+ 2 files changed, 5 insertions(+), 3 deletions(-)
+
+commit 9928105719bb38e4529b7c50c7ab44fb983e07e3
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Sep 7 06:02:11 2016 -0600
+
+    correct valgrind error invalid read size 1
+
+ src/ewmh.c | 12 ++++++++----
+ 1 file changed, 8 insertions(+), 4 deletions(-)
+
+commit a24b5cc38a8610713b5df567508ad15807e2937b
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Sep 5 16:57:37 2016 -0600
+
+    update release files
+
+ AUTHORS      |  2 +-
+ ChangeLog    | 53 +++++++++++++++++++++++++++++++++++++++++++++++++++++
+ NEWS         | 32 +++++++++++++++-----------------
+ README       |  6 +++---
+ README.md    |  6 +++---
+ configure.ac |  6 +++---
+ 6 files changed, 78 insertions(+), 27 deletions(-)
+
 commit 30323980ac535f0fa56ab3502650fbc68429329c
 Author: Brian Bidulock <bidulock@openss7.org>
 Date:   Thu Sep 1 04:04:19 2016 -0600

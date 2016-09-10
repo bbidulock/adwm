@@ -1,15 +1,27 @@
-adwm -- history of user-visible changes.  2016-09-01
+adwm -- history of user-visible changes.  2016-09-10
 
-Release adwm-0.6.7 released 2016-09-01
+Release adwm-0.6.8 released 2016-09-10
+--------------------------------------
+
+git shortlog -e -n -w80,6,8 0.6.7...0.6.8
+
+Brian Bidulock <bidulock@openss7.org> (3):
+      correct valgrind error invalid read size 1
+      fix memory leaks in invalid access
+      errno leading in and out of xserver
+
+
+Release adwm-0.6.7 released 2016-09-05
 --------------------------------------
 
 git shortlog -e -n -w80,6,8 0.6.6...0.6.7
 
-Brian Bidulock <bidulock@openss7.org> (4):
+Brian Bidulock <bidulock@openss7.org> (5):
       handle hidden state properly
       process MOTIF_WM_HINTS only if no window type
       try to address splash restart
       fixed splash handling on restart
+      update release files
 
 
 Release adwm-0.6.6 released 2016-08-31
@@ -158,19 +170,4 @@ Brian Bidulock <bidulock@openss7.org> (4):
       clear all crossing events
       update release files
       update release file
-
-
-Release adwm-0.5.7 released 2016-04-01
---------------------------------------
-
-git shortlog -e -n -w80,6,8 0.5.6...0.5.7
-
-Brian Bidulock <bidulock@openss7.org> (7):
-      add option whether to use veil
-      adjust keysrc for issue #1
-      better xsesssions file
-      no antialiasing for issue #1
-      fix issue #1
-      do not need XInput2.h for now
-      update release files
 

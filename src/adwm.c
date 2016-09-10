@@ -3688,8 +3688,10 @@ run(void)
 		}
 
 		if (poll(&pfd, 1, -1) == -1) {
-			if (errno == EAGAIN || errno == EINTR || errno == ERESTART)
+			if (errno == EAGAIN || errno == EINTR || errno == ERESTART) {
+				errno = 0;
 				continue;
+			}
 			cleanup(CauseRestarting);
 			eprint("%s", "poll failed: %s\n", strerror(errno));
 			exit(EXIT_FAILURE);

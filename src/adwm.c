@@ -865,6 +865,7 @@ cleanup(WithdrawCause cause)
 	for (scr = screens; scr < screens + nscr; scr++) {
 		while (scr->stack) {
 			unban(scr->stack, NULL);
+			DPRINTF("unmanage cleanup\n");
 			unmanage(scr->stack, cause);
 		}
 	}
@@ -3578,6 +3579,7 @@ quit(const char *arg)
 {
 	running = False;
 	if (arg) {
+		DPRINTF("cleanup switching\n");
 		cleanup(CauseSwitching);
 		execlp("sh", "sh", "-c", arg, NULL);
 		eprint("Can't exec '%s': %s\n", arg, strerror(errno));
@@ -3589,6 +3591,7 @@ restart(const char *arg)
 {
 	running = False;
 	if (arg) {
+		DPRINTF("cleanup switching\n");
 		cleanup(CauseSwitching);
 		execlp("sh", "sh", "-c", arg, NULL);
 		eprint("Can't exec '%s': %s\n", arg, strerror(errno));
@@ -3601,6 +3604,7 @@ restart(const char *arg)
 		for (i = 0; i < cargc; i++)
 			argv[i] = strdup(cargv[i]);
 
+		DPRINTF("cleanup restarting\n");
 		cleanup(CauseRestarting);
 		execvp(argv[0], argv);
 		eprint("Can't restart: %s\n", strerror(errno));
@@ -3692,12 +3696,16 @@ run(void)
 				errno = 0;
 				continue;
 			}
-			cleanup(CauseRestarting);
 			eprint("%s", "poll failed: %s\n", strerror(errno));
 			exit(EXIT_FAILURE);
 		} else {
 			if (pfd.revents & (POLLNVAL | POLLHUP | POLLERR)) {
-				cleanup(CauseRestarting);
+				if (pfd.revents & POLLNVAL)
+					DPRINTF("POLLNVAL bit set!\n");
+				if (pfd.revents & POLLHUP)
+					DPRINTF("POLLHUP bit set!\n");
+				if (pfd.revents & POLLERR)
+					DPRINTF("POLLERR bit set!\n");
 				eprint("%s", "poll error\n");
 				exit(EXIT_FAILURE);
 			}
@@ -5153,17 +5161,18 @@ unmapnotify(XEvent *e)
 	XUnmapEvent *ev = &e->xunmap;
 
 	if ((c = getclient(ev->window, ClientWindow))) {
+		CPRINTF(c, "self-unmapped window\n");
 		if (ev->send_event) {
 			/* synthetic */
 			if (ev->event == event_scr->root) {
-				CPRINTF(c, "unmanage self-unmapped window\n");
+				CPRINTF(c, "unmanage self-unmapped window (synthetic)\n");
 				unmanage(c, CauseUnmapped);
 				return True;
 			}
 		} else {
 			/* real event */
 			if (ev->event == c->frame && c->is.managed) {
-				CPRINTF(c, "unmanage self-unmapped window\n");
+				CPRINTF(c, "unmanage self-unmapped window (real event)\n");
 				unmanage(c, CauseUnmapped);
 				return True;
 			}
@@ -5598,6 +5607,7 @@ main(int argc, char *argv[])
 		}
 	DPRINTF("%s", "entering main event loop\n");
 	run();
+	DPRINTF("cleanup quitting\n");
 	cleanup(CauseQuitting);
 
 	XCloseDisplay(dpy);

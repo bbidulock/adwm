@@ -3701,11 +3701,11 @@ run(void)
 		} else {
 			if (pfd.revents & (POLLNVAL | POLLHUP | POLLERR)) {
 				if (pfd.revents & POLLNVAL)
-					DPRINTF("POLLNVAL bit set!\n");
+					_DPRINTF("POLLNVAL bit set!\n");
 				if (pfd.revents & POLLHUP)
-					DPRINTF("POLLHUP bit set!\n");
+					_DPRINTF("POLLHUP bit set!\n");
 				if (pfd.revents & POLLERR)
-					DPRINTF("POLLERR bit set!\n");
+					_DPRINTF("POLLERR bit set!\n");
 				eprint("%s", "poll error\n");
 				exit(EXIT_FAILURE);
 			}

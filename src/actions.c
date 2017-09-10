@@ -878,7 +878,7 @@ static void
 k_setscrgeneric(XEvent *e, Key *k, void (*func) (XEvent *, Key *, AScreen *))
 {
 	switch (k->any) {
-		AScreen *s = NULL;
+		AScreen *s;
 		Window w, proot;
 		unsigned int mask;
 		int d;

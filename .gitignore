@@ -24,7 +24,6 @@ config.sub
 configure
 configure.ac.bak
 configure.scan
-COPYING
 core
 cscope.*
 depcomp
@@ -38,7 +37,6 @@ en@quot.po
 ewmhpanel
 *.gmo
 insert-header.sin
-INSTALL
 _install/
 *.la
 .libs/

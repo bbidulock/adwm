@@ -1,10 +1,10 @@
 adwm -- todo file.  2016-07-07
 
-- [X] bug reports
-- [X] fix GNOME (and other DE's) compatibility
-- [X] fix issues with tagging on multihead (anything left?)
-- [X] fix focus problems
-- [X] do code cleanup
+- [x] bug reports
+- [x] fix GNOME (and other DE's) compatibility
+- [x] fix issues with tagging on multihead (anything left?)
+- [x] fix focus problems
+- [x] do code cleanup
 
 
 - [ ] remove need for title and grips sub-windows and just draw these on
@@ -18,7 +18,7 @@ adwm -- todo file.  2016-07-07
 - [ ] make imlib2 a prerequisite
 - [ ] display icons in title bar
 
-- [.] convert layouts to tree format and support i3/herbstluftwm, bspwm
+- [ ] convert layouts to tree format and support i3/herbstluftwm, bspwm
       and vim modes
 - [ ] apply tree format to floating windows and floating window
       placement.
@@ -26,25 +26,25 @@ adwm -- todo file.  2016-07-07
 - [ ] add ability to float from any layout without disturbing tree model
       for tiled layout
 - [ ] add a tree per layout type to the view
-- [X] make layouts loadable modules
+- [x] make layouts loadable modules
 
-- [X] add window menu
+- [x] add window menu
       (use xde-winmenu(1))
-- [X] add root menu
+- [x] add root menu
       (use xde-menu(1))
-- [X] add window list menu
+- [x] add window list menu
       (use xde-winlist(1))
-- [.] add window cycle display
+- [ ] add window cycle display
       (use xde-cycle(1))
-- [X] add desktop cycle display
+- [x] add desktop cycle display
       (use xde-pager(1))
-- [X] add per-desktop (per-view) background
+- [x] add per-desktop (per-view) background
       (use xde-setbg(1))
 
 - [ ] fixup restart behaviour
 - [ ] add session management
 
-- [X] showing desktop mode in fluxbox(1) is per desktop, we should do
+- [x] showing desktop mode in fluxbox(1) is per desktop, we should do
       the same and make showing desktop mode only apply to a view.
 
 - [ ] when resizing windows frame is resizing faster than the client

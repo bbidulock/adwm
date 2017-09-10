@@ -48,8 +48,8 @@ following commands:
     $> git clone https://github.com/bbidulock/@PACKAGE@.git @PACKAGE@
     $> cd @PACKAGE@
     $> ./autogen.sh
-    $> ./configure --prefix=/usr --mandir=/usr/share/man
-    $> make V=0
+    $> ./configure
+    $> make
     $> make DESTDIR="$pkgdir" install
 
 This will configure, compile and install @PACKAGE@ the quickest.  For those who

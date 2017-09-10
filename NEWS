@@ -1,14 +1,44 @@
-adwm -- history of user-visible changes.  2016-09-10
+adwm -- history of user-visible changes.  2017-09-10
+
+Release adwm-0.6.9 released 2017-09-10
+--------------------------------------
+
+git shortlog -e -n -w80,6,8 0.6.8...0.6.9
+
+Brian Bidulock <bidulock@openss7.org> (21):
+      don't try to cleanup on poll error
+      show cause of poll error
+      silent now default
+      autoconf upgrade
+      be quieter when building
+      use newer make flags
+      also substitute branch
+      full path
+      suspend gnits until version number shortened
+      exempt for now
+      substitute branch too
+      little x's for markdown task lists
+      convert to markdown
+      better markdown task lists
+      try this
+      try that
+      back to this
+      proper asciidoc comment
+      break lines
+      add several cross-referenced files
+      new defaults, less wordy
+
 
 Release adwm-0.6.8 released 2016-09-10
 --------------------------------------
 
 git shortlog -e -n -w80,6,8 0.6.7...0.6.8
 
-Brian Bidulock <bidulock@openss7.org> (3):
+Brian Bidulock <bidulock@openss7.org> (4):
       correct valgrind error invalid read size 1
       fix memory leaks in invalid access
       errno leading in and out of xserver
+      update release files
 
 
 Release adwm-0.6.7 released 2016-09-05
@@ -158,16 +188,4 @@ Brian Bidulock <bidulock@openss7.org> (6):
       missed header file
       avoid signed/unsigned comparisons
       update release files
-
-
-Release adwm-0.5.8 released 2016-05-18
---------------------------------------
-
-git shortlog -e -n -w80,6,8 0.5.7...0.5.8
-
-Brian Bidulock <bidulock@openss7.org> (4):
-      do not respond to grabs
-      clear all crossing events
-      update release files
-      update release file
 

@@ -1,9 +1,9 @@
-[adwm -- read me first file.  2016-09-10]: #
+[adwm -- read me first file.  2017-09-10]: #
 
 adwm
 ====
 
-Package `adwm-0.6.8` was released under GPL license 2016-09-10.
+Package `adwm-0.6.9` was released under GPL license 2017-09-10.
 
 This was originally a fork of Echinus which in turn was a fork of `dwm(1)`, and
 borrows concepts from `velox(1)`, `awesome(1)` and `spectrwm(1)`.  The source
@@ -15,7 +15,7 @@ WMH (WinWM), MWMH (CDE/Motif), ICCCM 2.0 compliance and support.
 Release
 -------
 
-This is the `adwm-0.6.8` package, released 2016-09-10.  This release, and
+This is the `adwm-0.6.9` package, released 2017-09-10.  This release, and
 the latest version, can be obtained from [GitHub][1], using a command such as:
 
     $> git clone https://github.com/bbidulock/adwm.git
@@ -48,8 +48,8 @@ following commands:
     $> git clone https://github.com/bbidulock/adwm.git adwm
     $> cd adwm
     $> ./autogen.sh
-    $> ./configure --prefix=/usr --mandir=/usr/share/man
-    $> make V=0
+    $> ./configure
+    $> make
     $> make DESTDIR="$pkgdir" install
 
 This will configure, compile and install adwm the quickest.  For those who
@@ -77,12 +77,12 @@ Report issues on GitHub [here][2].
 
 [1]: https://github.com/bbidulock/adwm
 [2]: https://github.com/bbidulock/adwm/issues
-[3]: NEWS
-[4]: ChangeLog
-[5]: TODO
-[6]: COMPLIANCE
-[7]: INSTALL
-[8]: LICENSE
-[9]: COPYING
+[3]: https://github.com/bbidulock/adwm/blob/0.6.9/NEWS
+[4]: https://github.com/bbidulock/adwm/blob/0.6.9/ChangeLog
+[5]: https://github.com/bbidulock/adwm/blob/0.6.9/TODO
+[6]: https://github.com/bbidulock/adwm/blob/0.6.9/COMPLIANCE
+[7]: https://github.com/bbidulock/adwm/blob/0.6.9/INSTALL
+[8]: https://github.com/bbidulock/adwm/blob/0.6.9/LICENSE
+[9]: https://github.com/bbidulock/adwm/blob/0.6.9/COPYING
 
 [ vim: set ft=markdown sw=4 tw=80 nocin nosi fo+=tcqlorn: ]: #

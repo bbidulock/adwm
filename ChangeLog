@@ -1,5 +1,210 @@
 # created with git log --stat=76 -M -C|fmt -sct -w80
 
+commit 3ad87bd9d14bbfff44a45f05f56a0c0117e92406
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Sep 10 15:50:15 2017 -0600
+
+    new defaults, less wordy
+
+ README.md.in | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+commit ef876e4feca3b27c000e4e38a9a95e452f483ef7
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Sep 10 15:48:17 2017 -0600
+
+    add several cross-referenced files
+
+ .gitignore |   2 -
+ COPYING    | 674 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ INSTALL    | 370 +++++++++++++++++++++++++++++++
+ 3 files changed, 1044 insertions(+), 2 deletions(-)
+
+commit cd9931434fdaf93ea3c20bfdaeecea65287b0df9
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Sep 10 15:40:38 2017 -0600
+
+    break lines
+
+ TODO | 19 +++++++++++++------
+ 1 file changed, 13 insertions(+), 6 deletions(-)
+
+commit 37efd66a9b24fd28df81f3faf8c1628488579e16
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Sep 10 15:39:03 2017 -0600
+
+    proper asciidoc comment
+
+ TODO | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+commit b03230ab8600924d901a514038c85eb9d5a161a9
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Sep 10 15:36:52 2017 -0600
+
+    back to this
+
+ TODO | 60 ++++++++++++++++++++++++++++++------------------------------
+ 1 file changed, 30 insertions(+), 30 deletions(-)
+
+commit 23103a58b88a234efcd3bcc0d5b1b38fd278f1b0
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Sep 10 15:34:59 2017 -0600
+
+    try that
+
+ TODO | 58 +++++++++++++++++++++++++++++-----------------------------
+ 1 file changed, 29 insertions(+), 29 deletions(-)
+
+commit 50810e12fed2e5c795a512ce3de415bd9efd4ed3
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Sep 10 15:33:26 2017 -0600
+
+    try this
+
+ TODO | 86 +++++++++++++++++++++++++++-------------------------------------
+ 1 file changed, 36 insertions(+), 50 deletions(-)
+
+commit f113578ee22da402e0940c5bec111dbb84d8be9c
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Sep 10 15:30:20 2017 -0600
+
+    better markdown task lists
+
+ TODO | 100 +++++++++++++++++++++++++++++++--------------------------------
+ 1 file changed, 50 insertions(+), 50 deletions(-)
+
+commit 0122f62940b4aa9f5266cecd7d511d9b0a2242e9
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Sep 10 15:28:20 2017 -0600
+
+    convert to markdown
+
+ TODO | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+commit 0022c67bd947980c60f42ff3590fafa301c8cc7f
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Sep 10 15:25:46 2017 -0600
+
+    little x's for markdown task lists
+
+ TODO | 28 ++++++++++++++--------------
+ 1 file changed, 14 insertions(+), 14 deletions(-)
+
+commit b8eae599ef8fa763bcc7b363dc17c2ed4cfc1559
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Sep 10 15:19:49 2017 -0600
+
+    substitute branch too
+
+ Makefile.am | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+commit e471c89bab8de5654365a4a6c08e4a2abd65b076
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Sep 10 15:10:57 2017 -0600
+
+    exempt for now
+
+ src/Makefile.am | 2 ++
+ 1 file changed, 2 insertions(+)
+
+commit d77ceb7ecfe5ea0cc20c3a158485103136388e99
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Sep 10 15:02:07 2017 -0600
+
+    suspend gnits until version number shortened
+
+ configure.ac | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+commit c5dc2f556421ac6f39b90d30a39980e7b0067010
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Sep 10 14:58:15 2017 -0600
+
+    full path
+
+ README.md.in | 14 +++++++-------
+ 1 file changed, 7 insertions(+), 7 deletions(-)
+
+commit 44178f621b588df9119a2edacf28e7600c814dd5
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Sep 10 14:56:41 2017 -0600
+
+    also substitute branch
+
+ autogen.sh | 9 +++++++++
+ 1 file changed, 9 insertions(+)
+
+commit a3c4c4e34c5ed4b37aace80183e653483a8f44e9
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Sep 10 14:56:18 2017 -0600
+
+    use newer make flags
+
+ configure.sh | 18 +++++++++++-------
+ 1 file changed, 11 insertions(+), 7 deletions(-)
+
+commit 4edcf1b7c66fcc55afbde6bf876e9577e4683fcf
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Sep 10 14:55:30 2017 -0600
+
+    be quieter when building
+
+ Makefile.am | 17 ++++++++++-------
+ 1 file changed, 10 insertions(+), 7 deletions(-)
+
+commit 3dfd503847140581cbcfa8331c84412efc3cd4fd
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Sep 10 14:53:14 2017 -0600
+
+    autoconf upgrade
+
+ configure.ac | 50 ++++++++++++++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 48 insertions(+), 2 deletions(-)
+
+commit a355de862c960258dd218915b161d3d63b17ff63
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Sep 10 13:08:51 2017 -0600
+
+    silent now default
+
+ rebuild.sh | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+commit bfabcb65346804c598e42e85cd9f303662bb3487
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu Dec 8 16:12:19 2016 -0700
+
+    show cause of poll error
+
+ src/adwm.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+commit 7da26d58d2f953918a275c1cd7bffc646cf3b94a
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Sep 11 07:39:08 2016 -0600
+
+    don't try to cleanup on poll error
+
+ src/adwm.c | 18 ++++++++++++++----
+ 1 file changed, 14 insertions(+), 4 deletions(-)
+
+commit b058111e72720e7b900e4ec56528875b3b4b3ee4
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Sep 10 01:54:04 2016 -0600
+
+    update release files
+
+ AUTHORS      |  2 +-
+ ChangeLog    | 42 ++++++++++++++++++++++++++++++++++++++++++
+ NEWS         | 33 +++++++++++++++------------------
+ README       |  6 +++---
+ README.md    |  6 +++---
+ configure.ac |  6 +++---
+ 6 files changed, 67 insertions(+), 28 deletions(-)
+
 commit 6758d205346d794ff93b18b6b5331970cb029159
 Author: Brian Bidulock <bidulock@openss7.org>
 Date:   Sat Sep 10 01:16:40 2016 -0600

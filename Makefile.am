@@ -27,7 +27,7 @@ dist-hook:
 		)>$(distdir)/NEWS ; \
 	fi ; \
 	chmod u+w $(distdir)/{README.md,README} ; \
-	sed -r -e 's:\@PACKAGE\@:$(PACKAGE):g;s:\@VERSION\@:$(VERSION):g;s:\@DATE\@:$(DATE):g' $(distdir)/README.md.in >$(distdir)/README.md ; \
+	sed -r -e 's:\@PACKAGE\@:$(PACKAGE):g;s:\@VERSION\@:$(VERSION):g;s:\@DATE\@:$(DATE):g;s:\@BRANCH\@:$(BRANCH):g' $(distdir)/README.md.in >$(distdir)/README.md ; \
 	cat $(distdir)/README.md | fmt -sct -w80 -g72 >$(distdir)/README
 
 ChangeLog:
@@ -56,7 +56,7 @@ NEWS:
 	else touch $@ ; fi
 
 README.md: README.md.in
-	$(AM_V_GEN)sed -r -e 's:\@PACKAGE\@:$(PACKAGE):g;s:\@VERSION\@:$(VERSION):g;s:\@DATE\@:$(DATE):g' $< >$@
+	$(AM_V_GEN)sed -r -e 's:\@PACKAGE\@:$(PACKAGE):g;s:\@VERSION\@:$(VERSION):g;s:\@DATE\@:$(DATE):g;s:\@BRANCH\@:$(BRANCH):g' $< >$@
 
 README: README.md
 	$(AM_V_GEN)cat $< | fmt -sct -w80 -g72 >$@

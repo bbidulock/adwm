@@ -1,4 +1,4 @@
-adwm -- todo file.  2016-07-07
+[adwm -- todo file.  2016-07-07]: #
 
 - [x] bug reports
 - [x] fix GNOME (and other DE's) compatibility
@@ -51,4 +51,4 @@ adwm -- todo file.  2016-07-07
       (due to synchronization).  Change resizing behaviour to not resize
       the frame until the client responds to the resize request.
 
-# vim: set ft=asciidoc tw=72 nocin nosi fo+=tcqlorn:
+[ vim: set ft=markdown tw=72 nocin nosi fo+=tcqlorn: ]: #

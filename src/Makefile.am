@@ -4,6 +4,8 @@ AM_CPPFLAGS = -include autoconf.h
 
 bin_PROGRAMS = adwm
 
+AM_INSTALLCHECK_STD_OPTIONS_EXEMPT = adwm
+
 adwm_SOURCES = adwm.h actions.h config.h draw.h ewmh.h layout.h parse.h resource.h tags.h texture.h util.h \
 	       adwm.c actions.c config.c draw.c ewmh.c layout.c parse.c resource.c tags.c texture.c
 adwm_LDADD = $(IMLIB2_LIBS) $(XPM_LIBS) $(SN_LIBS) $(XINERAMA_LIBS) $(XSYNC_LIBS) $(XRANDR_LIBS) $(XFT_LIBS) $(XFIXES_LIBS) $(X11_LIBS) -lm

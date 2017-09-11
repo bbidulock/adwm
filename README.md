@@ -7,7 +7,7 @@ Package `adwm-0.6.9` was released under GPLv3 license 2017-09-10.
 
 This was originally a fork of Echinus which in turn was a fork of `dwm(1)`, and
 borrows concepts from `velox(1)`, `awesome(1)` and `spectrwm(1)`.  The source
-for __`adwm`__ is hosted on [GitHub][1].  What it includes is a full
+for `adwm` is hosted on [GitHub][1].  What it includes is a full
 rewrite with significant updates and additions resulting in full EWMH (NetwM),
 WMH (WinWM), MWMH (CDE/Motif), ICCCM 2.0 compliance and support.
 
@@ -43,7 +43,7 @@ in the file [COPYING][9].
 Quick Start
 -----------
 
-The quickest and easiest way to get __`adwm`__ up and running is to run the
+The quickest and easiest way to get `adwm` up and running is to run the
 following commands:
 
     $> git clone https://github.com/bbidulock/adwm.git
@@ -53,7 +53,7 @@ following commands:
     $> make
     $> make DESTDIR="$pkgdir" install
 
-This will configure, compile and install __`adwm`__ the quickest.  For those who
+This will configure, compile and install `adwm` the quickest.  For those who
 like to spend the extra 15 seconds reading `./configure --help`, some compile
 time options can be turned on and off before the build.
 

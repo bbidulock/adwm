@@ -1,9 +1,9 @@
 [@PACKAGE@ -- read me first file.  @DATE@]: #
 
 @PACKAGE@
-====
+===============
 
-Package `@PACKAGE@-@VERSION@` was released under GPL license @DATE@.
+Package `@PACKAGE@-@VERSION@` was released under GPLv3 license @DATE@.
 
 This was originally a fork of Echinus which in turn was a fork of `dwm(1)`, and
 borrows concepts from `velox(1)`, `awesome(1)` and `spectrwm(1)`.  The source
@@ -23,19 +23,20 @@ the latest version, can be obtained from [GitHub][1], using a command such as:
 Please see the [NEWS][3] file for release notes and history of user visible
 changes for the current version, and the [ChangeLog][4] file for a more
 detailed history of implementation changes.  The [TODO][5] file lists features
-not yet implemented and other outstanding items.  The file [COMPLIANCE][6]
-lists the current state of XDG compliance.
+not yet implemented and other outstanding items.
+
+The file [COMPLIANCE][6] lists the current state of EWMH/ICCCM compliance.
 
 Please see the [INSTALL][7] file for installation instructions.
 
-When working from `git(1)`, follow the instructions in this file.  An
-abbreviated installation procedure that works for most applications appears
-below.
+When working from `git(1)`, please use this file.  An abbreviated
+installation procedure that works for most applications appears below.
 
 `echinus(1)` and `dwm(1)` were published under the MIT/X Consortium
 License that can be found in the file [LICENSE][8].  As over 90% of the source
 file lines have been supplied or replaced and the remaining 10% is not subject
-to copyright, this release is published under the GPL license that can be found
+to copyright.
+This release is published under GPLv3.  Please see the license
 in the file [COPYING][9].
 
 
@@ -45,7 +46,7 @@ Quick Start
 The quickest and easiest way to get @PACKAGE@ up and running is to run the
 following commands:
 
-    $> git clone https://github.com/bbidulock/@PACKAGE@.git @PACKAGE@
+    $> git clone https://github.com/bbidulock/@PACKAGE@.git
     $> cd @PACKAGE@
     $> ./autogen.sh
     $> ./configure
@@ -54,8 +55,7 @@ following commands:
 
 This will configure, compile and install @PACKAGE@ the quickest.  For those who
 like to spend the extra 15 seconds reading `./configure --help`, some compile
-time options can be turned on and off before the build.  @PACKAGE@, however,
-does not provide any compile time options of its own.
+time options can be turned on and off before the build.
 
 For general information on GNU's `./configure`, see the file [INSTALL][7].
 
@@ -85,4 +85,4 @@ Report issues on GitHub [here][2].
 [8]: https://github.com/bbidulock/@PACKAGE@/blob/@BRANCH@/LICENSE
 [9]: https://github.com/bbidulock/@PACKAGE@/blob/@BRANCH@/COPYING
 
-[ vim: set ft=markdown sw=4 tw=80 nocin nosi fo+=tcqlorn: ]: #
+[ vim: set ft=markdown sw=4 tw=80 nocin nosi fo+=tcqlorn spell: ]: #

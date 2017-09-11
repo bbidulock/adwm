@@ -43,7 +43,7 @@ in the file [COPYING][9].
 Quick Start
 -----------
 
-The quickest and easiest way to get adwm up and running is to run the
+The quickest and easiest way to get __`adwm`__ up and running is to run the
 following commands:
 
     $> git clone https://github.com/bbidulock/adwm.git
@@ -53,7 +53,7 @@ following commands:
     $> make
     $> make DESTDIR="$pkgdir" install
 
-This will configure, compile and install adwm the quickest.  For those who
+This will configure, compile and install __`adwm`__ the quickest.  For those who
 like to spend the extra 15 seconds reading `./configure --help`, some compile
 time options can be turned on and off before the build.
 

@@ -1,15 +1,15 @@
 
 adwm.man: adwm.1
-	sed 's,[@]PACKAGE[@],$(PACKAGE),g;s,[@]VERSION[@],$(VERSION),g' $< >$@
+	sed 's,[@]PACKAGE[@],$(PACKAGE),g;s,[@]VERSION[@],$(VERSION),g;s,[@]DATE[@],$(DATE),g;s,[@]BRANCH[@],$(BRANCH),g' $< >$@
 
 adwm-keys.man: adwm-keys.1
-	sed 's,[@]PACKAGE[@],$(PACKAGE),g;s,[@]VERSION[@],$(VERSION),g' $< >$@
+	sed 's,[@]PACKAGE[@],$(PACKAGE),g;s,[@]VERSION[@],$(VERSION),g;s,[@]DATE[@],$(DATE),g;s,[@]BRANCH[@],$(BRANCH),g' $< >$@
 
 adwm-style.man: adwm-style.1
-	sed 's,[@]PACKAGE[@],$(PACKAGE),g;s,[@]VERSION[@],$(VERSION),g' $< >$@
+	sed 's,[@]PACKAGE[@],$(PACKAGE),g;s,[@]VERSION[@],$(VERSION),g;s,[@]DATE[@],$(DATE),g;s,[@]BRANCH[@],$(BRANCH),g' $< >$@
 
 adwm-config.man: adwm-config.1
-	sed 's,[@]PACKAGE[@],$(PACKAGE),g;s,[@]VERSION[@],$(VERSION),g' $< >$@
+	sed 's,[@]PACKAGE[@],$(PACKAGE),g;s,[@]VERSION[@],$(VERSION),g;s,[@]DATE[@],$(DATE),g;s,[@]BRANCH[@],$(BRANCH),g' $< >$@
 
 nodist_man1_MANS = adwm.man adwm-keys.man adwm-style.man adwm-config.man
 

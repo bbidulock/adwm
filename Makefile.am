@@ -10,12 +10,12 @@ dist_noinst_SCRIPTS = gennews.sh autogen.sh configure.sh rebuild.sh dist.sh
 DISTCLEANFILES = ChangeLog AUTHORS NEWS README README.md README.html README.txt
 
 dist-hook:
-	if test -x "`which git 2>/dev/null`" -a -d "$(srcdir)/.git" ; then \
+	$(AM_V_GEN)if test -x "`which git 2>/dev/null`" -a -d "$(srcdir)/.git" ; then \
 		chmod u+w $(distdir)/{ChangeLog,AUTHORS,NEWS} ; \
 		( cd $(srcdir) ; \
-		  echo -e "# created with git log --stat=76 -M -C|fmt -sct -w80\n" ; \
-		  git log --stat=76 -M -C|fmt -sct -w80 \
-		)>$(distdir)/ChangeLog ; \
+		  echo -e "# created with git log --stat=76 -M -C -500|fmt -sct -w80\n" ; \
+		  git log --stat=76 -M -C -500|fmt -sct -w80 \
+		)|head -10000>$(distdir)/ChangeLog ; \
 		( cd $(srcdir) ; \
 		  echo "$(PACKAGE) -- authors file.  $(DATE)" ; \
 		  echo "" ; \
@@ -33,9 +33,9 @@ dist-hook:
 ChangeLog:
 	$(AM_V_GEN)if test -x "`which git 2>/dev/null`" -a -d "$(srcdir)/.git" ; then \
 		( cd $(srcdir) ; \
-		  echo -e "# created with git log --stat=76 -M -C|fmt -sct -w80\n" ; \
-		  git log --stat=76 -M -C|fmt -sct -w80 \
-		)>$@ ; \
+		  echo -e "# created with git log --stat=76 -M -C -500|fmt -sct -w80\n" ; \
+		  git log --stat=76 -M -C -500|fmt -sct -w80 \
+		)|head -10000>$@ ; \
 	else touch $@ ; fi
 
 AUTHORS:

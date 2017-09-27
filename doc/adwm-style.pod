@@ -175,6 +175,20 @@ Adwm*B<margin>: I<0>
 
 =item B<opacity> I<E<lt>floatE<gt>>
 
+Specifies the window opacity for windows in the B<normal> state.  Window
+in the B<selected> state are always set to opaque.  This is for use
+compositors: B<adwm> does not perform any transparency nor
+pseudo-transparency on its own.  The value can be a floating point
+number between 0.0 and 1.0, where 0.0 is completely transparent and 1.0
+is opaque.  The default value is 0.9.
+Example:
+
+=over
+
+Adwm*B<opacity>: I<0.9>
+
+=back
+
 =item B<outline> I<E<lt>numberE<gt>>
 
 Specifies the number of pixels to use to outline the title bar and
@@ -405,7 +419,7 @@ Specifies to which button the style elements apply and can be one of:
 
 =over
 
-B<> B<meu>       window menu button;
+B<> B<menu>      window menu button;
  B<iconify>   minimize button;
  B<maximize>  maximize button;
  B<close>     close button;

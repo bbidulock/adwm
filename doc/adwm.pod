@@ -30,7 +30,7 @@ top-to-bottom) can be selected.  The layout can be rotated, or windows
 can be rotated through the layout.  The focus can be cycled between the
 windows.
 
-In tile layout, windows are orgnanized into to zones: a master zone that
+In tile layout, windows are organized into to zones: a master zone that
 has a fixed number of windows that are laid out in their own
 orientation, and a slave zone that holds the remaining windows.  The
 proportion allotted to zones can be adjusted, the number of masters

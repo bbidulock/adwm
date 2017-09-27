@@ -1,44 +1,59 @@
 
-adwm.man: adwm.1
-	sed 's,[@]PACKAGE[@],$(PACKAGE),g;s,[@]VERSION[@],$(VERSION),g;s,[@]DATE[@],$(DATE),g;s,[@]BRANCH[@],$(BRANCH),g' $< >$@
+adwm_pod_files = \
+	adwm.pod \
+	adwm-config.pod \
+	adwm-keys.pod \
+	adwm-style.pod
 
-adwm-keys.man: adwm-keys.1
-	sed 's,[@]PACKAGE[@],$(PACKAGE),g;s,[@]VERSION[@],$(VERSION),g;s,[@]DATE[@],$(DATE),g;s,[@]BRANCH[@],$(BRANCH),g' $< >$@
+adwm_man1_files = \
+	adwm.man
 
-adwm-style.man: adwm-style.1
-	sed 's,[@]PACKAGE[@],$(PACKAGE),g;s,[@]VERSION[@],$(VERSION),g;s,[@]DATE[@],$(DATE),g;s,[@]BRANCH[@],$(BRANCH),g' $< >$@
+adwm_man5_files = \
+	adwm-keys.man \
+	adwm-style.man \
+	adwm-config.man
 
-adwm-config.man: adwm-config.1
-	sed 's,[@]PACKAGE[@],$(PACKAGE),g;s,[@]VERSION[@],$(VERSION),g;s,[@]DATE[@],$(DATE),g;s,[@]BRANCH[@],$(BRANCH),g' $< >$@
-
-nodist_man1_MANS = adwm.man adwm-keys.man adwm-style.man adwm-config.man
+dist_man1_MANS = $(adwm_man1_files)
+dist_man5_MANS = $(adwm_man5_files)
 
 SUFFIXES = .man .pod
 
-adwm.1.man: MANNAME = ADWM
-adwm.1.man: adwm.1.pod
+adwm.man: MANTITLE = User Commands
+adwm.man: MANSECTION = 1
+adwm.man: adwm.pod
 
-adwm-keys.1.man: MANNAME = ADWM-KEYS
-adwm-keys.1.man: adwm-keys.1.pod
+adwm-config.man: MANTITLE = File Formats
+adwm-config.man: MANSECTION = 5
+adwm-config.man: adwm-config.pod
+
+adwm-keys.man: MANTITLE = File Formats
+adwm-keys.man: MANSECTION = 5
+adwm-keys.man: adwm-keys.pod
+
+adwm-style.man: MANTITLE = File Formats
+adwm-style.man: MANSECTION = 5
+adwm-style.man: adwm-style.pod
+
 
 .pod.man:
-	pod2man --center="User Commands" \
+	$(AM_V_GEN)pod2man \
+		--center="$(MANTITLE)" \
 		--date="$(DATE)" \
 		--errors="none" \
 		--fixed="CW" \
 		--fixedbold="CB" \
 		--fixeditalic="CI" \
 		--fixedbolditalic="CX" \
-		--name="$(MANNAME)" \
 		--nourls \
 		--release="$(PACKAGE) $(VERSION)" \
-		--section="1" \
-		$< >$@
+		--section="$(MANSECTION)" \
+		$< \
+		|sed 's,[@]PACKAGE[@],$(PACKAGE),g;s,[@]VERSION[@],$(VERSION),g;s,[@]DATE[@],$(DATE),g;s,[@]BRANCH[@],$(BRANCH),g' \
+		>$@
 
-pods: adwm.1.man adwm-keys.1.man
+CLEANFILES = $(adwm_man1_files) $(adwm_man5_files)
 
-CLEANFILES = adwm.man adwm-keys.man adwm-style.man adwm-config.man adwm.1.man adwm-keys.1.man
+DISTCLEANFILES = $(adwm_man1_files) $(adwm_man5_files)
 
-EXTRA_DIST = adwm.1 adwm-keys.1 adwm-style.1 adwm-config.1 adwm.1.pod adwm-keys.1.pod
+EXTRA_DIST = $(adwm_pod_files)
 
-.PHONY: pods

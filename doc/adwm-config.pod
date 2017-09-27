@@ -1,0 +1,843 @@
+=head1 NAME
+
+B<@PACKAGE@-config> -- advanced dynamic window manager for X: configuration
+
+=head1 SYNOPSIS
+
+F<$HOME/.adwm/adwmrc>
+
+=head1 DESCRIPTION
+
+B<@PACKAGE@> is a light-weight reparenting, dynamic tiling/stacking
+window manager intended on being fully controllable using only the
+keyboard: the objective of all dynamic tiling window managers.  However,
+B<@PACKAGE@> also supports regular stacking floating window management
+as well, and point actions are supported on decorative borders.
+
+Customization of configuration is defined in an X Resource formatted
+configuration file.  Configuration is part of a main configuration file.
+It is typical to place the configuration file in a file named F<adwmrc>
+in the main directory (e.g. in the F<$HOME/.adwm/adwmrc> file).  See
+L</FILES>, below.  Configuration directives (some of which are
+compatible with L<echinus(1)>), are described below under
+L</DIRECTIVES>.
+
+Key bindings are typically placed in a separate file, as described in
+L<adwm-keys(5)>.  Style elements (for decorative borders and the dock)
+are normally placed in a separate file, also, as described in
+L<adwm-style(5)>.
+
+=head1 SYNTAX
+
+The general syntax of configuration directives, as specified directly in
+the B<@PACKAGE@> resource file, is as follows:
+
+=over
+
+=over
+
+=item Adwm*B<directive>: I<E<lt>valueE<gt>>
+
+=back
+
+=back
+
+Where the fields are defined as follows:
+
+=over
+
+=item B<directive>
+
+One of the directives described under L</DIRECTIVES>.
+
+=item I<E<lt>valueE<gt>> = {I<E<lt>pixmapE<gt>>|I<E<lt>fontE<gt>>|I<E<lt>colorE<gt>>|I<E<lt>numberE<gt>>|I<E<lt>stringE<gt>>}
+
+The value depends on the directive that is being specified.  Typically the
+value is a path and name of a pixmap file, an X11 true-type or bitmapped
+font specification, an X11 color specification, a number, a string, or a
+specially formatted value, as follows:
+
+=over 10
+
+=item I<E<lt>pixmapE<gt>>
+
+Pixmaps are specified with a full or relative path and file name.  When
+the path is relative, it is relative to the directory in which the style
+file resides.  Example:
+
+=over
+
+Adwm*B<button.iconify.pixmap>: I<pixmaps/min_focused.xpm>
+
+=back
+
+=item I<E<lt>fontE<gt>>
+
+Fonts are specified with an XFT formatted font specification string.
+Example:
+
+=over
+
+Adwm*B<normal.font>: I<Liberation Snas:size=9:medium>
+
+=back
+
+=item I<E<lt>colorE<gt>>
+
+Colors are specified as X resource colors.  This can be a color name or
+color specification.  Example:
+
+=over
+
+Adwm*B<selected.shadow>: I<#394870>
+
+=back
+
+=item I<E<lt>numberE<gt>>
+
+A decimal number.  Example:
+
+=over
+
+=over
+
+=item Adwm*B<title>: I<15>
+
+=item Adwm*B<grips>: I<3>
+
+=item
+
+=back
+
+=back
+
+=item I<E<lt>stringE<gt>>
+
+A specially formatted string as specified by the directive definition.
+Example:
+
+=over
+
+Adwm*B<titlelayout>: I<EFASLN  RIMC>
+
+=back
+
+=back
+
+=back
+
+=head1 DIRECTIVES
+
+The configuration directives are defined below.  Each heading provides
+the format of the directive resource (without the C<Adwm*> portion) and
+the possible arguments for each directive, in accordance with the
+directive syntax described above under L</SYNTAX>.
+
+=head2 FILE DIRECTIVES
+
+File directives specify where to find other configuration files.
+Although all directives, key bindings and style elements can be located
+in a single configuration file, it is convenient to separate key
+bindings and style elements into separate files.  The main configuration
+file is loaded first, then the key bindings file, and lastly the style
+elements file.  The file directives specifying the location of the last
+two files are as follows:
+
+=over
+
+=item B<keysFile> I<E<lt>pathE<gt>>
+
+Specifies the path and filename, I<E<lt>pathE<gt>>, of a file from which
+to read key bindings.  The path may be absolute or relative: when
+relative, the path is considered relative to the directory that contains
+the configuration file in which the declaration resides.  The default is
+F<keysrc>, that is, the file named F<keysrc> in the same directory as
+the main configuration file.  Example:
+
+=over
+
+Adwm*B<keysFile>: I<keysrc>
+
+=back
+
+=item B<styleFile> I<E<lt>pathE<gt>>
+
+Specifies the path and filename, I<E<lt>pathE<gt>>, of a file from which
+to read style elements.  The path may be absolute or relative: when
+relative, the path is considered relative to the directory that contains
+the configuration file in which the declaration resides.  The default is
+F<stylerc>, that is, the file named F<stylerc> in the same directory as
+the main configuration file.  Example:
+
+=over
+
+Adwm*B<styleFile>: I<stylerc>
+
+=back
+
+=back
+
+=head2 TAG DIRECTIVES
+
+Tag directives affect the number of views (desktops) presented by the
+window manager and names and layouts associated with those views.  The
+tag directives are as follows:
+
+=over
+
+=item B<tags.number> I<E<lt>numberE<gt>>
+
+Specifies the number of tags (i.e. desktops) available.  The default
+number is five (5).  Example:
+
+=over
+
+Adwm*B<tags.number>: I<7>
+
+=back
+
+=item [B<screenE<lt>sE<gt>.>]B<tags.nameE<lt>nE<gt>> I<E<lt>stringE<gt>>
+
+Specifies the name associated with each tag (i.e. desktop), for a
+specific screen, B<E<lt>sE<gt>>, or for all screens.  Tags are indexed
+from zero (0) to the total number of tags minus one.  Example:
+
+=over
+
+=over
+
+=item Adwm*B<tags.number>: I<7>
+
+=item Adwm*B<tags.name0>: I<main>
+
+=item Adwm*B<tags.name1>: I<web>
+
+=item Adwm*B<tags.name2>: I<doc>
+
+=item Adwm*B<tags.name3>: I<dev>
+
+=item Adwm*B<tags.name4>: I<scr>
+
+=item Adwm*B<tags.name5>: I<gfx>
+
+=item Adwm*B<tags.name6>: I<misc>
+
+=item
+
+=back
+
+=back
+
+=item [B<screenE<lt>sE<gt>.>]B<deflayout> I<E<lt>layoutE<gt>>
+
+Specifies the default layout for views that have no layout defined for
+them.  The argument, I<E<lt>layoutE<gt>>, is a single lowercase ascii
+character that designates the layout, that can be one of the following:
+
+B<> B<'i'>  stacking window arrangement;
+ B<'t'>  tiled arrangement with master on left;
+ B<'b'>  tiled arrangement with master on bottom;
+ B<'u'>  tiled arrangement with master on top;
+ B<'l'>  tiled arrangement with master on right;
+ B<'m'>  monacle mode tiled arrangement;
+ B<'f'>  stacking window arrangement; and,
+ B<'g'>  grid tiled arrangement with columns.
+
+The default value is B<'i'>: that is, stacking window arrangement.
+Example:
+
+=over
+
+Adwm*B<deflayout>: I<l>
+
+=back
+
+=item [B<screenE<lt>sE<gt>.>]B<tags.layoutE<lt>nE<gt>> I<E<lt>layoutE<gt>>
+
+Specifies the layout for a single view (optionally on a given screen).
+When unspecified for a view, defaults to the setting of the B<deflayout>
+(usually floating/stacking).  This is only the default setting for the
+view at startup: it is possible to use the key bindings to change the
+layout for a view.  The argument, I<E<lt>layoutE<gt>>, is a single
+lowercase ascii character that designates the layout, that can be one of
+the following:
+
+B<> B<'i'>  stacking window arrangement;
+ B<'t'>  tiled arrangement with master on left;
+ B<'b'>  tiled arrangement with master on bottom;
+ B<'u'>  tiled arrangement with master on top;
+ B<'l'>  tiled arrangement with master on right;
+ B<'m'>  monacle mode tiled arrangement;
+ B<'f'>  stacking window arrangement; and,
+ B<'g'>  grid tiled arrangement with columns.
+
+Example:
+
+=over
+
+=over
+
+=item Adwm*B<tags.layout1>: I<m>
+
+=item Adwm*B<tags.layout3>: I<b>
+
+=item
+
+=back
+
+=back
+
+=back
+
+=head2 MOUSE DIRECTIVES
+
+Mouse directives affect the actions of button clicks on the root window,
+or on the menu button in the title bar of client windows.  These
+directives are normally specified in the F<keysFile> instead of the main
+configuration file: see L<adwm-keys(5)>; however, they are also
+addressed here.
+
+Mouse directives apply to buttons pressed on the root window or on the
+menu button on a client window title bar.  It is possible to specify
+different commands to execute based upon the screen on which the button
+is clicked by using the [B<screenE<lt>sE<gt>.>] syntax (where
+B<E<lt>sE<gt>> is the number of the screen indexed from zero).
+
+=over
+
+=item [B<screenE<lt>sE<gt>.>]B<command> I<E<lt>shell-commandE<gt>>
+
+Specifies the shell command to execute when button 3 (right button) is
+pressed on the root window.  The default is C<xterm>.  (The default is
+consistent with the behaviour of many tiling window managers, as most
+dynamic window managers do not support a root menu.)
+Example:
+
+=over
+
+Adwm*B<command>: I<xde-menu -P -b 3>
+
+=back
+
+B<Note:> This directive is normally specified in the F<keysFile> instead
+of the main configuration file.
+
+=item [B<screenE<lt>sE<gt>.>]B<command2> I<E<lt>shell-commandE<gt>>
+
+Specifies the shell command to execute when button 2 (middle button) is
+pressed on the root window.  The default is to not execute a shell
+command.
+Example:
+
+=over
+
+Adwm*B<command2>: I<xde-wkspmenu -p -b 2>
+
+=back
+
+B<Note:> This directive is normally specified in the F<keysFile> instead
+of the main configuration file.
+
+=item [B<screenE<lt>sE<gt>.>]B<command3> I<E<lt>shell-commandE<gt>>
+
+Specifies the shell command to execute when button 1 (left button) is
+press on the root window.  The default is to not execute a shell
+command.
+Example:
+
+=over
+
+Adwm*B<command3>: I<xde-winlist -p -b 1 --hidden>
+
+=back
+
+B<Note:> This directive is normally specified in the F<keysFile> instead
+of the main configuration file.
+
+=item [B<screenE<lt>sE<gt>.>]B<menucommand> I<E<lt>shell-commandE<gt>>
+
+Specifies the shell command to execute when a button is pressed on the
+C<menu> button in the title bar.  The default is to not execute a shell
+command.
+Example:
+
+=over
+
+Adwm*B<menucommand>: I<xde-winmenu -p -b 1>
+
+=back
+
+B<Note:> This directive is normally specified in the F<keysFile> instead
+of the main configuration file.
+
+=back
+
+=head2 GENERAL DIRECTIVES
+
+General directives affect primarily the general look and feel of the
+window manager.  With the exception of B<useveil>, general directives
+can be applied to all screens, or to a specific screen using the
+[B<screenE<lt>sE<gt>.>] syntax, where B<E<lt>sE<gt>> is the number of
+the screen, indexed from zero, to which to apply the directive.  The
+general directives are as follows:
+
+=over
+
+=item B<useveil> I<E<lt>boolE<gt>>
+
+B<@PACKAGE@> has the ability to raise a parent-relative window (veil)
+over the desktop work area before configuring window and then dropping
+the veil after windows are reconfigured.  This serves to avoid
+unnecessary exposure events and to speed reconfiguration of the layout.
+On some versions of the X server, this has the reverse effect and causes
+flickering and unnecessary exposure events.  This option is present so
+that the veil behaviour can be set appropriately for a specific system.
+
+The I<E<lt>boolE<gt>> value can be zero (0), indicating false, or
+non-zero (1), indicating true.  The default is zero (0): that is, the
+veil will not be used by default.
+Example:
+
+=over
+
+Adwm*B<useveil>: I<0>
+
+=back
+
+=item [B<screenE<lt>sE<gt>.>]B<attachaside> I<E<lt>boolE<gt>>
+
+Specifies whether newly created windows are attached on the master or
+slave side of the tiled layout.  The I<E<lt>boolE<gt>> value can be zero
+(0), indicating true, or non-zero (1), indicating false.  When true,
+newly created windows will be attached as slaves; when false, attached
+as master.  The default is one (1): that is, newly created windows will
+be attached as slaves.
+Example:
+
+=over
+
+=over
+
+=item Adwm*B<attachaside>: I<0>
+
+=item !I normally like attaching new windows as master
+
+=item
+
+=back
+
+=back
+
+=item [B<screenE<lt>sE<gt>.>]B<decoratetiled> I<E<lt>boolE<gt>>
+
+Specifies whether to decorate tiled windows (by default) in tiled
+layouts.  Normally, tiled windows are not decorated with a title bar and
+resize grips.  The I<E<lt>boolE<gt>> value can be zero (0), indicating
+false, or non-zero (1), indicating true.  When true, tiled windows are
+decorated by default; when false, they are not.  The default value is
+zero (0): that is, tiled windows are not decorated by default.
+Example:
+
+=over
+
+Adwm*B<decoratetiled>: I<0>
+
+=back
+
+=item [B<screenE<lt>sE<gt>.>]B<decoratemax> I<E<lt>boolE<gt>>
+
+Specifies whether to decorate maximized windows (by default).  Normally,
+maximized windows are decorated when they are floaters, or in floating
+layouts.  However, when windows are maximized, more real estate can be
+provided to the window by not decorating them.  The I<E<lt>boolE<gt>>
+value can be zero (0), indicating false, or non-zero (1), indicating
+true.  When true, maximized windows will be decorated; when false, they
+will not.  The default value is one (1): that is, maximized windows are
+decorated by default.
+Example:
+
+=over
+
+Adwm*B<decoratemax>: I<0>
+
+=back
+
+B<Note:> Windows that fill the available work area in tiled layouts
+(including C<monacle> mode) are not maximized windows.
+
+=item [B<screenE<lt>sE<gt>.>]B<hidebastards> I<E<lt>boolE<gt>>
+
+Specifies whether to hide bastards (remove struts) or turn struts off.
+The I<E<lt>boolE<gt>> value can be zero (0), indicating false; or
+non-zero (1), indicating true.  When true, hides struts rather than
+turning them off; false, turns struts off rather than hiding them.  The
+default value is zero (0): that is, turn struts off rather than hiding
+them.
+
+Applications with struts are dock and panel applications that occupy the
+edge of the screen.  When struts are on, these applications occupy their
+reserved area and the work area on the screen is reduced.  When struts
+are off, these applications occupy the edge of the screen; but, the work
+area is not reduced.  When struts are hidden, they work area of the
+screen is not reduced; however, the applications owning the struts are
+not displayed.
+
+This directive affects primarily the response to the B<struts> key
+binding as described in L<adwm-keys(5)>.  Setting this value to true has
+the effect of applying or removing struts; whereas, the value of false,
+provides for exposing and hiding struts.
+Example:
+
+=over
+
+Adwm*B<hidebastards>: I<1>
+
+=back
+
+=item [B<screenE<lt>sE<gt>.>]B<strutsactive> I<E<lt>boolE<gt>>
+
+Specifies whether struts (panels and dock) should default to shown or
+hidden.  The I<E<lt>boolE<gt>> value can be zero (0), indicating false,
+or non-zero(1), indicating true.  When true, struts default to shown;
+false, hidden.  The default value is one (1): that is, struts are shown
+by default.
+Example:
+
+=over
+
+Adwm*B<strutsactive>: I<0>
+
+=back
+
+=item [B<screenE<lt>sE<gt>.>]B<autoroll> I<E<lt>boolE<gt>>
+
+Specifies whether shaded windows (windows that are rolled up inside
+their title bars) should be automatically unshaded when the window takes
+focus (is selected).  The I<E<lt>boolE<gt>> value can be zero (0),
+indicating false, or non-zero (1), indicating true.  When true, windows
+will automatically be unshaded on being selected.
+Example:
+
+=over
+
+Adwm*B<autoroll>: I<0>
+
+=back
+
+=item [B<screenE<lt>sE<gt>.>]B<sloppy> I<E<lt>boolE<gt>>
+
+Specifies the focus model to use.
+The argument, I<E<lt>modelE<gt>>, is an integer value that can be one of
+the following:
+
+I<> I<Clk2Focus(0)>     click in windows to focus them;
+ I<SloppyFocus(1)>   focus follows mouse (floating windows only);
+ I<AllSloppy(2)>     focus follows mouse (all windows); and,
+ I<SloppyRaise(3)>   focus follows mouse and window is raised.
+
+The default value is zero (0): that is, click to focus.
+Example:
+
+=over
+
+Adwm*B<sloppy>: I<2>
+
+=back
+
+B<Note:> The most tested focus model is I<AllSloppy(2)>.  This is
+primarily because it is the model that I use every day; all day long.
+
+=item [B<screenE<lt>sE<gt>.>]B<snap> I<E<lt>boolE<gt>>
+
+Speicifies the snap distance in pixels to be used when moving floating
+windows.  When moving windows, when a window edge comes within
+I<E<lt>pixelsE<gt>> of a similarly oriented edge of another windows, or
+the edge of the monitor or desktop work area, then window will snap to
+that position.  Set to zero (0) to defeat snapping altogether.  The
+default valid is five (5) pixels.
+Example:
+
+=over
+
+Adwm*B<snap>: I<5>
+
+=back
+
+=item [B<screenE<lt>sE<gt>.>]B<dragdistance> I<E<lt>pixelsE<gt>>
+
+When B<@PACKAGE@> receives a click on a title bar or resize grip, the
+action performed can depend on whether the pointer is dragged or whether
+the button is simply clicked.  When clicking a mouse button, the pointer
+may mechanically move a small amount making it difficult to click in a
+title bar or resize grip.  The drag distance, I<E<lt>pixelsE<gt>>, is
+the distance that the pointer can move while a button is depressed
+without the window manager considering the action to be a drag.  This
+applies to all drags supported by the window manager.  The default value
+is five (5) pixels.
+Example:
+
+=over
+
+Adwm*B<dragdistance>: I<5>
+
+=back
+
+=item [B<screenE<lt>sE<gt>.>]B<mwfact> I<E<lt>floatE<gt>>
+
+Specifies the factor for the width of the master area in tiled layouts.
+The argument is a floating point number between 0.1 and 0.9 (inclusive)
+that specifies the proportion of the width of the work area allocated to
+the master.  The default is 0.6 (60% of the width of the work area).
+Example:
+
+=over
+
+Adwm*B<mwfact>: I<0.6>
+
+=back
+
+=item [B<screenE<lt>sE<gt>.>]B<mhfact> I<E<lt>floatE<gt>>
+
+Specifies the factor for the height of the master area in tiled layouts.
+The argument is a floating point number between 0.1 and 0.9 (inclusive)
+that specifies the proportion of the height of the work area allocated to
+the master.  The default is 1.0 (100% of the height of the work area).
+Example:
+
+=over
+
+Adwm*B<mhfact>: I<1.0>
+
+=back
+
+B<Note:> This is the default value for new layouts; nevertheless, the
+value is not currently used.
+
+=item [B<screenE<lt>sE<gt>.>]B<nmaster> I<E<lt>numberE<gt>>
+
+Specifies the default number of master windows in master/slave tiled
+layouts.  Tiled layouts have a fixed number of masters and a variable
+number of slaves.  This directive sets the default number of masters.
+The number of masters in a layout can be changed using the B<nmaster>
+key binding described in L<adwm-keys(5)>.  The default number is one
+(1).  Only values between 1 and 10 (inclusive) are permitted.
+Example:
+
+=over
+
+Adwm*B<nmaster>: I<1>
+
+=back
+
+=item [B<screenE<lt>sE<gt>.>]B<ncolumns> I<E<lt>numberE<gt>>
+
+Specifies the default number of columns (rows) in grid tiled layouts.
+Grid layouts have a fixed number of rows or columns over which viewed
+windows are distributed.  This directive sets the default number.  The
+number of columns (rows) in a layout can be changed using the
+B<ncolumns> key binding described in L<adwm-keys(5)>.  The default
+number is three (3).  Only values between 1 and 10 (inclusive) are
+permitted.
+Example:
+
+=over
+
+Adwm*B<ncolumns>: I<3>
+
+=back
+
+=item [B<screenE<lt>sE<gt>.>]B<opacity> I<E<lt>floatE<gt>>
+
+Not currently used.
+
+=back
+
+=head2 DOCK DIRECTIVES
+
+The dock is an area that contains Window Maker dock applications.  The
+following directives specify the position and orientation of the dock.
+
+=over
+
+=item [B<screenE<lt>sE<gt>.>]B<dock.position> I<E<lt>positionE<gt>>
+
+Specifies the position of the dock on the screen.  The argument,
+I<E<lt>positionE<gt>>, is an integer value that can be one of the
+following:
+
+I<> I<DockNone(0)>       default (same as I<DockEast(1)>);
+ I<DockEast(1)>       centered right on the screen;
+ I<DockNorthEast(2)>  top right on the screen;
+ I<DockNorth(3)>      centered top on the screen;
+ I<DockNorthWest(4)>  top left on the screen;
+ I<DockWest(5)>       centered left on the screen;
+ I<DockSouthWest(6)>  bottom left on the screen;
+ I<DockSouth(7)>      centered bottom on the screen; and,
+ I<DockSouthEast(8)>  bottom right on the screen.
+
+The default value is I<DockNone(8)>: that is, the dock is centered on
+the right of the screen.
+Example:
+
+=over
+
+Adwm*B<dock.position>: I<0>
+
+=back
+
+=item [B<screenE<lt>sE<gt>.>]B<dock.orient> I<E<lt>orientationE<gt>>
+
+Specifies the orientation of the dock on the screen.  The argument,
+I<E<lt>orientationE<gt>>, is an integer value that can be one of the
+following:
+
+I<> I<DockHorz(0)>  the dock is filled horizontally; and,
+ I<DockVert(1)>  the dock is filled vertically.
+
+The default value is chosen based on B<dock.position>, and is chosen so
+that the dock extends along the edge of the screen.
+Example:
+
+=over
+
+Adwm*B<dock.orient>: I<1>
+
+=back
+
+=item [B<screenE<lt>sE<gt>.>]B<dock.monitor> I<E<lt>monitorE<gt>>
+
+Specifies the monitor (in a multi-head setup) that will be used to
+contain the dock.  The argument, I<E<lt>monitorE<gt>>, is a value
+between zero (0) and the number of monitors (inclusive).
+
+The special value zero (0) indicates that the monitor for the dock
+should be automatically chosen based on B<dock.position>.  When chosen
+automatically, the monitor selected for the dock will be the monitor
+closest to the dock position on the screen.  The other values indicate
+the monitor number of the monitor that should be contain the dock,
+indexed at one (1).
+
+The default value is zero (0): that is, the dock monitor is chosen
+automatically.
+Example:
+
+=over
+
+Adwm*B<dock.monitor>: I<0>
+
+=back
+
+=item [B<screenE<lt>sE<gt>.>]B<dock.appE<lt>nE<gt>> I<E<lt>res_nameE<gt>> I<E<lt>res_classE<gt>> I<E<lt>wm_commandE<gt>>
+
+Specifies the relative position of dock applications in the dock.  Dock
+applications with a value of B<E<lt>nE<gt>> that is lower are placed
+earlier in the dock; higher, placed later.  The arguments (separated by
+a single space) are interpreted as follows:
+
+I<> I<res_name>    resource name in B<WM_CLASS> property;
+ I<res_class>   resource class in B<WM_CLASS> property; and,
+ I<wm_command>  command in B<WM_COMMAND> property.
+
+Example:
+
+=over
+
+=over
+
+=item Adwm*B<dock.app0>:  I<wmclockmon DockApp wmclockmon>
+
+=item Adwm*B<dock.app1>:  I<wmblob DockApp wmblob>
+
+=item Adwm*B<dock.app2>:  I<wmnd wmnd wmnd>
+
+=item Adwm*B<dock.app3>:  I<wmcore wmcore wmcore>
+
+=item Adwm*B<dock.app4>:  I<wmcpuload DockApp wmcpuload>
+
+=item Adwm*B<dock.app5>:  I<wmtimer wmtimer wmtimer>
+
+=item Adwm*B<dock.app6>:  I<wmsysmon wmsysmon wmsysmon>
+
+=item Adwm*B<dock.app7>:  I<wmtimer wmtimer wmtimer>
+
+=item Adwm*B<dock.app8>:  I<wmbubble wmbubble wmbubble>
+
+=item Adwm*B<dock.app9>:  I<wmmixer WMMixer wmmixer>
+
+=item Adwm*B<dock.app10>: I<wmnet WMNET wmnet>
+
+=item Adwm*B<dock.app11>: I<wmCalClock wmCalClock wmCalClock>
+
+=item
+
+=back
+
+=back
+
+=back
+
+=head1 DEFAULTS
+
+The default configuration is provided in the default configuration file,
+typically, F<$HOME/.adwm/addwmrc>.  A system default configuration file
+is provided in F</usr/share/adwm/adwmrc>.  See L</FILES>, below.
+
+=head1 FILES
+
+=over
+
+=item F<$HOME/.adwm/adwmrc>
+
+The location of the default user's configuration file.
+
+=item F<$HOME/.adwm/keysrc>
+
+The location of the default user's key bindings file.
+
+=item F<$HOME/.adwm/stylerc>
+
+The location of the default user's style file.
+
+=item F<$HOME/.adwm/styles/Default/stylerc>
+
+The location of the default user's themed style file.
+
+=item F</usr/share/adwm/adwmrc>
+
+The location of the system default configuration file.
+
+=item F</usr/share/adwm/keysrc>
+
+The location of the system default key bindings file.
+
+=item F</usr/share/adwm/stylerc>
+
+The location of the system default style file.
+
+=item F</usr/share/adwm/style/Default/stylerc>
+
+The location of the system default themed style file.
+
+=back
+
+=head1 SEE ALSO
+
+L<adwm(1)>,
+L<adwm-config(5)>,
+L<adwm-keys(5)>,
+L<adwm-styles(5)>,
+L<xde-menu(1)>,
+L<xde-wkspmenu(1)>,
+L<xde-winlist(1)>.
+
+=head1 BUGS
+
+No outstanding bugs.
+
+=head1 AUTHOR
+
+Brian Bidulock <bidulock@openss7.org>
+
+=cut
+
+# vim: set nocin ft=pod tw=72 spell:

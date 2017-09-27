@@ -804,4 +804,4 @@ Brian Bidulock <bidulock@openss7.org>
 
 =cut
 
-# vim: set ft=pod tw=72:
+# vim: set ft=pod tw=72 spell:

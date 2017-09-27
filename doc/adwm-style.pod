@@ -1,6 +1,6 @@
 =head1 NAME
 
-@PACKAGE@-style -- advanced dynamic window manager for X: styles
+adwm-style -- advanced dynamic window manager for X: styles
 
 =head1 SYNOPSIS
 
@@ -8,22 +8,22 @@ F<$HOME/.adwm/stylerc>
 
 =head1 DESCRIPTION
 
-B<@PACKAGE@> is a light-weight, reparenting, dynamic tiling/stacking
-window manager, intended on being fully controllable using only the
-keyboard: the objective of all dynamic tiling window managers.  However,
-B<@PACKAGE@> also supports regular stacking floating window management
-as well, and decorative frames are applied to windows in a number of
-circumstances.  To control the styling of the decorative border,
-B<@PACKAGE@> supports customizable style elements.
+B<adwm> is a light-weight, reparenting, dynamic tiling/stacking window
+manager, intended on being fully controllable using only the keyboard:
+the objective of all dynamic tiling window managers.  However, B<adwm>
+also supports regular stacking floating window management as well, and
+decorative frames are applied to windows in a number of circumstances.
+To control the styling of the decorative border, B<adwm> supports
+customizable style elements.
 
 Decorative window borders can contain title text as well as buttons
 (defined as pixmaps) that can perform a number of predefined actions ont
 he window around which they appear.  Customizable style elements exist
 to determine which pixmaps are displayed and under which conditions.
 
-B<@PACKAGE@> directly supports a WindowMaker style "dock".  Window Maker
-dock applications are reparented into tiles within the dock.  These
-types also support customizable style elements.
+B<adwm> directly supports a WindowMaker style "dock".  Window Maker dock
+applications are reparented into tiles within the dock.  These types
+also support customizable style elements.
 
 Customizable style elements are defined in an X Resource formatted
 configuration file.  Styles can either be part of the main configuration
@@ -35,7 +35,7 @@ the F<$HOME/.adwm/stylerc> file).  See L</FILES>, below.
 =head1 SYNTAX
 
 The general syntax of style elements, as specified directly in the
-B<@PACKAGE@> resource file, is as follows:
+B<adwm> resource file, is as follows:
 
 =over
 
@@ -405,4 +405,4 @@ Brian Bidulock <bidulock@openss7.org>
 
 =cut
 
-# vim: set ft=pod tw=72 spell:
+# vim: set nocin ft=pod tw=72 spell:

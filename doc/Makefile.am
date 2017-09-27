@@ -18,26 +18,26 @@ dist_man5_MANS = $(adwm_man5_files)
 
 SUFFIXES = .man .pod
 
-adwm.man: MANTITLE = User Commands
-adwm.man: MANSECTION = 1
+adwm.man: TITLE = User Commands
+adwm.man: SECTION = 1
 adwm.man: adwm.pod
 
-adwm-config.man: MANTITLE = File Formats
-adwm-config.man: MANSECTION = 5
+adwm-config.man: TITLE = File Formats
+adwm-config.man: SECTION = 5
 adwm-config.man: adwm-config.pod
 
-adwm-keys.man: MANTITLE = File Formats
-adwm-keys.man: MANSECTION = 5
+adwm-keys.man: TITLE = File Formats
+adwm-keys.man: SECTION = 5
 adwm-keys.man: adwm-keys.pod
 
-adwm-style.man: MANTITLE = File Formats
-adwm-style.man: MANSECTION = 5
+adwm-style.man: TITLE = File Formats
+adwm-style.man: SECTION = 5
 adwm-style.man: adwm-style.pod
 
 
 .pod.man:
 	$(AM_V_GEN)pod2man \
-		--center="$(MANTITLE)" \
+		--center="$(TITLE)" \
 		--date="$(DATE)" \
 		--errors="none" \
 		--fixed="CW" \
@@ -46,10 +46,8 @@ adwm-style.man: adwm-style.pod
 		--fixedbolditalic="CX" \
 		--nourls \
 		--release="$(PACKAGE) $(VERSION)" \
-		--section="$(MANSECTION)" \
-		$< \
-		|sed 's,[@]PACKAGE[@],$(PACKAGE),g;s,[@]VERSION[@],$(VERSION),g;s,[@]DATE[@],$(DATE),g;s,[@]BRANCH[@],$(BRANCH),g' \
-		>$@
+		--section="$(SECTION)" \
+		$< >$@
 
 CLEANFILES = $(adwm_man1_files) $(adwm_man5_files)
 

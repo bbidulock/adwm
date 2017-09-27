@@ -1,6 +1,6 @@
 =head1 NAME
 
-B<@PACKAGE@-config> -- advanced dynamic window manager for X: configuration
+B<adwm-config> -- advanced dynamic window manager for X: configuration
 
 =head1 SYNOPSIS
 
@@ -8,11 +8,11 @@ F<$HOME/.adwm/adwmrc>
 
 =head1 DESCRIPTION
 
-B<@PACKAGE@> is a light-weight reparenting, dynamic tiling/stacking
-window manager intended on being fully controllable using only the
-keyboard: the objective of all dynamic tiling window managers.  However,
-B<@PACKAGE@> also supports regular stacking floating window management
-as well, and point actions are supported on decorative borders.
+B<adwm> is a light-weight re-parenting, dynamic tiling/stacking window
+manager intended on being fully controllable using only the keyboard:
+the objective of all dynamic tiling window managers.  However, B<adwm>
+also supports regular stacking floating window management as well, and
+point actions are supported on decorative borders.
 
 Customization of configuration is defined in an X Resource formatted
 configuration file.  Configuration is part of a main configuration file.
@@ -30,7 +30,7 @@ L<adwm-style(5)>.
 =head1 SYNTAX
 
 The general syntax of configuration directives, as specified directly in
-the B<@PACKAGE@> resource file, is as follows:
+the B<adwm> resource file, is as follows:
 
 =over
 
@@ -231,7 +231,7 @@ from zero (0) to the total number of tags minus one.  Example:
 =item [B<screenE<lt>sE<gt>.>]B<deflayout> I<E<lt>layoutE<gt>>
 
 Specifies the default layout for views that have no layout defined for
-them.  The argument, I<E<lt>layoutE<gt>>, is a single lowercase ascii
+them.  The argument, I<E<lt>layoutE<gt>>, is a single lowercase ASCII
 character that designates the layout, that can be one of the following:
 
 B<> B<'i'>  stacking window arrangement;
@@ -259,7 +259,7 @@ When unspecified for a view, defaults to the setting of the B<deflayout>
 (usually floating/stacking).  This is only the default setting for the
 view at startup: it is possible to use the key bindings to change the
 layout for a view.  The argument, I<E<lt>layoutE<gt>>, is a single
-lowercase ascii character that designates the layout, that can be one of
+lowercase ASCII character that designates the layout, that can be one of
 the following:
 
 B<> B<'i'>  stacking window arrangement;
@@ -385,11 +385,11 @@ general directives are as follows:
 
 =item B<useveil> I<E<lt>boolE<gt>>
 
-B<@PACKAGE@> has the ability to raise a parent-relative window (veil)
-over the desktop work area before configuring window and then dropping
-the veil after windows are reconfigured.  This serves to avoid
-unnecessary exposure events and to speed reconfiguration of the layout.
-On some versions of the X server, this has the reverse effect and causes
+B<adwm> has the ability to raise a parent-relative window (veil) over
+the desktop work area before configuring window and then dropping the
+veil after windows are reconfigured.  This serves to avoid unnecessary
+exposure events and to speed reconfiguration of the layout.  On some
+versions of the X server, this has the reverse effect and causes
 flickering and unnecessary exposure events.  This option is present so
 that the veil behaviour can be set appropriately for a specific system.
 
@@ -565,15 +565,15 @@ Adwm*B<snap>: I<5>
 
 =item [B<screenE<lt>sE<gt>.>]B<dragdistance> I<E<lt>pixelsE<gt>>
 
-When B<@PACKAGE@> receives a click on a title bar or resize grip, the
-action performed can depend on whether the pointer is dragged or whether
-the button is simply clicked.  When clicking a mouse button, the pointer
-may mechanically move a small amount making it difficult to click in a
-title bar or resize grip.  The drag distance, I<E<lt>pixelsE<gt>>, is
-the distance that the pointer can move while a button is depressed
-without the window manager considering the action to be a drag.  This
-applies to all drags supported by the window manager.  The default value
-is five (5) pixels.
+When B<adwm> receives a click on a title bar or resize grip, the action
+performed can depend on whether the pointer is dragged or whether the
+button is simply clicked.  When clicking a mouse button, the pointer may
+mechanically move a small amount making it difficult to click in a title
+bar or resize grip.  The drag distance, I<E<lt>pixelsE<gt>>, is the
+distance that the pointer can move while a button is depressed without
+the window manager considering the action to be a drag.  This applies to
+all drags supported by the window manager.  The default value is five
+(5) pixels.
 Example:
 
 =over
@@ -645,10 +645,6 @@ Example:
 Adwm*B<ncolumns>: I<3>
 
 =back
-
-=item [B<screenE<lt>sE<gt>.>]B<opacity> I<E<lt>floatE<gt>>
-
-Not currently used.
 
 =back
 

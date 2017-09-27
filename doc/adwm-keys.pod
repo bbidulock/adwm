@@ -1,74 +1,402 @@
 =head1 NAME
 
-adwm-keys
+adwm-keys -- advanced dynamic window manager for X: key bindings
+
+=head1 SYNOPSIS
+
+F<$HOME/.adwm/keysrc>
 
 =head1 DESCRIPTION
 
-=head2 SYNTAX
+B<adwm> is a light-weight re-parenting, dynamic tiling/stacking window
+manager intended on being fully controllable using only the keyboard:
+the objective of all dynamic tiling window managers.  However, B<adwm>
+also supports regular stacking floating window management as well,
+though key bindings are supported for almost every action that can be
+achieved with the mouse.
 
-=head2 COMMANDS
+Customizable key bindings are defined in an X Resource formatted
+configuration file.  Key bindings can either be part of the main
+configuration file, or they can be included or referenced from the main
+configuration file.  It is typical to place the key bindings in a file
+named F<keysrc> in the same directory as the main configuration file
+(e.g. in the F<$HOME/.adwm/keysrc> file), or to place the file beneath a
+theme directory.
+
+=head1 SYNTAX
+
+The general syntax of key bindings, as specified directly in the B<adwm>
+resource file, is as follows:
+
+=over
+
+=over
+
+=item Adwm*B<E<lt>functionE<gt>>: I<E<lt>bindingsE<gt>>
+
+=back
+
+=back
+
+Where the fields are defined as follows:
+
+=over
+
+=item B<E<lt>functionE<gt>>
+
+One of the functions described under L</FUNCTIONS>.
+
+=item I<E<lt>bindingsE<gt>>
+
+Bindings are defined by the following lazy EBNF:
+
+=over
+
+=item I<E<lt>bindingsE<gt>> = I<E<lt>bindingE<gt>>[C<,>I<E<lt>bindingE<gt>>]*
+
+Bindings are a list of individual bindings separated by a comma (C<,>).
+
+=item I<E<lt>bindingE<gt>> = I<E<lt>keychainE<gt>>[C<=>I<E<lt>parametersE<gt>>]
+
+Each binding is a key chain specification followed by optional equal
+sign (C<=>) and parameters of the function.
+
+=item I<E<lt>parametersE<gt>> = ?
+
+Parameters are any arguments defined by the B<E<lt>functionE<gt>> but
+cannot contain a comma (C<,>).  The parameters, if any, are defined for
+each of the functions, below, under L</FUNCTIONS>.  Some examples are a
+number or a shell command.
+
+=item I<E<lt>keychainE<gt>> = I<E<lt>keyspecE<gt>>[C<:>I<E<lt>keyspecE<gt>>]*
+
+A key chain is a list of key specifications separated by a colon (C<:>).
+
+=item I<E<lt>keyspecE<gt>> = [I<E<lt>modifiersE<gt>>C<+>]I<E<lt>keynameE<gt>>
+
+Each key specification is an optional list of modifiers followed by a
+plus sign (C<+>), and a key name.
+
+=item I<E<lt>modifiersE<gt>> = {C<C>|C<S>|C<A>|C<W>|C<M>|C<N>}+
+
+Modifiers are a list of uppercase ASCII characters defined as follows:
+
+B<>    B<'C'>  the control key;
+    B<'S'>  the shift key;
+    B<'A'>  the alt key;
+    B<'W'>  the windows key;
+    B<'M'>  the meta key (can be alt or windows key);
+    B<'N'>  the non-meta key (can be windows or alt key).
+
+=item I<E<lt>keynameE<gt>> = literal
+
+A literal key name that can be any key name defined by X libraries: for
+example, C<'a'> or C<'Left'>.
+
+=back
+
+=back
+
+=head2 FUNCTIONS
+
+Following are the functions that are defined for B<adwm>.  Each function
+performs some window manager action on the workspace, a client on the
+workspace, or on the window manager itself.
 
 =over
 
 =item B<quit>
 
+When invoked, this function causes B<adwm> to stop and exit.
+Example (default):
+
+=over
+
+Adwm*B<quit>: I<AC + p : End, AC + q, WS + q>
+
+=back
+
 =item B<restart>
 
-todo
+When invoked, this function causes B<adwm> to re-execute itself with the
+same initial arguments that were originally passed.
+Example (default):
+
+=over
+
+Adwm*B<restart>: I<AC + p : Next, AC + p : Prior = twm, AS + q, WC + r>
+
+=back
 
 =item B<killclient>
 
-todo
+When invoked, the client owning the currently selected window will be
+killed.
+Example (default):
+
+=over
+
+Adwm*B<killclient>: I<A + F4, A + q, AC + a : q : f, AC + a : q : k, AC + a : q : q, AS + c, W + q, W + x, WS + c, WS + x>
+
+=back
 
 =item B<zoom>
 
+When invoked, the currently selected window will be made the master (if
+it is currently a slave); otherwise, if the currently selected window is
+already a master, it will be made a slave and the first slave will be
+made the master.  In this way, the B<zoom> function can toggle the
+active window to and from the master position in the tiled layout.  It
+does not have much effect in other layouts.
+Example (default):
+
+=over
+
+Adwm*B<zoom>: I<A + Return, W + Return, WC + Return>
+
+=back
+
+=item B<reload>
+
+When invoked, asks B<adwm> to reload its configuration, style and key
+bindings from files.  If the configuration has changed (e.g. the style
+has changed), this will effect the change.
+Example (default):
+
+=over
+
+Adwm*B<reload>: I<AC + p : Delete>
+
+=back
+
+=item B<initscr>
+
+Example (default):
+
+=over
+
+Adwm*B<initscr>: I<WS + i>
+
+=back
+
 =item B<moveright>
+
+Moves the selected window right in the layout.
 
 =item B<moveleft>
 
+Moves the selected window left in the layout.
+
 =item B<moveup>
+
+Moves the selected window up in the layout.
 
 =item B<movedown>
 
-todo
+Moves the selected window down in the layout.
 
-=item B<resizedecx>
+Example (default):
 
-=item B<resizedecy>
+=over
 
-=item B<resizeincx>
+=over
 
-=item B<resizeincy>
+=item Adwm*B<moveright>: I<W  + bracketright>
 
-todo
+=item Adwm*B<moveleft>:  I<W  + bracketleft>
+
+=item Adwm*B<moveup>:    I<WS + bracketleft>
+
+=item Adwm*B<movedown>:  I<WS + bracketright>
+
+=item
+
+=back
+
+=back
+
+
+=item B<resizedecx> [{C<+>|C<->}][I<E<lt>pixelsE<gt>>][C<%>]
+
+Resizes the selected window by reducing its width by I<E<lt>pixelsE<gt>>.
+
+=item B<resizedecy> [{C<+>|C<->}][I<E<lt>pixelsE<gt>>][C<%>]
+
+Resizes the selected window by reducing its height by I<E<lt>pixelsE<gt>>.
+
+=item B<resizeincx> [{C<+>|C<->}][I<E<lt>pixelsE<gt>>][C<%>]
+
+Resizes the selected window by increasing its width by I<E<lt>pixelsE<gt>>.
+
+=item B<resizeincy> [{C<+>|C<->}][I<E<lt>pixelsE<gt>>][C<%>]
+
+Resizes the selected window by increasing its height by I<E<lt>pixelsE<gt>>.
+
+Example (default):
+
+=over
+
+=over
+
+=item Adwm*B<resizedecx>: I<AC + a : Left,  AS + a, W  + minus>
+
+=item Adwm*B<resizedecy>: I<AC + a : Down,  AS + s, WS + minus>
+
+=item Adwm*B<resizeincx>: I<AC + a : Right, AS + d, W  + equal>
+
+=item Adwm*B<resizeincy>: I<AC + a : Up,    AS + w, WS + equal>
+
+=item
+
+=back
+
+=back
+
+=item B<begmove>
+
+Begins a keyboard-based move of the selected window.  The arrow keys are
+used to move the window.  Press B<Esc> to complete the move.
+
+=item B<begsize>
+
+Begins a keyboard-based resize of the selected window.  The arrow keys
+are used to resize the window.  Press B<Esc> to complete the resize.
+
+=item B<begmoveresize>
+
+Begins a keyboard-based move and resize of the selected window.  The
+arrow kyes are used to move the window.  The arrow keys with the control
+key held are used to resize the window.  Press B<Esc> to complete the
+move and resize.
+Example (default):
+
+=over
+
+=over
+
+=item Adwm*B<begmove>: I<A + F7, WS + m>
+
+=item Adwm*B<begsize>: I<A + F8, AC + a : Return>
+
+=item !Adwm*B<begmoveresize>: I<WS + m>
+
+=item !Adwm*B<begmoveresize>: I<AC + a : Return>
+
+=item
+
+=back
+
+=back
 
 =item B<togglemonitor>
 
-todo
+Warp pointer to the previous monitor.
+Example (default):
+
+=over
+
+!Adwm*B<togglemonitor>: I<A + grave>
+
+=back
 
 =item B<appendtag>
 
+Create another tag (workspace, view) and add it to the list of
+workspaces.
+
 =item B<rmlasttag>
 
-todo
+Remove the last tag (workspace, view) on the list of workspaces.  Any
+windows on the workspace will be moved to the last remaining workspace.
+
+Example (default):
+
+=over
+
+=over
+
+=item Adwm*B<appendtag>: I<AC + equal>
+
+=item Adwm*B<rmlasttag>: I<AC + minus>
+
+=item
+
+=back
+
+=back
+
+=item B<flipview>
 
 =item B<rotateview>
 
 =item B<unrotateview>
 
-todo
+Reorients the view.  If the master is on the left, B<flipview> flips the
+master to the right; top to bottom; etc.  If the master is on the left,
+B<rotateview> will rotate it clockwise, to the bottom; B<unrotateview>,
+counterclockwise to the top.  Each key press will rotate an additional
+90 degrees or flip the view again.
+Example (default):
+
+=over
+
+=over
+
+=item Adwm*B<flipview>:		I<WS + backslash>
+
+=item Adwm*B<rotateview>:	I<A + y>
+
+=item Adwm*B<unrotateview>:	I<AS + y>
+
+=item
+
+=back
+
+=back
 
 =item B<rotatezone>
 
 =item B<unrotatezone>
 
-todo
+Rotate the masters or stacking area windows through tiling positions
+clockwise (B<rotatezone>) or counterclockwise (B<unrotatezone>).
+Example (default):
+
+=over
+
+=over
+
+=item Adwm*B<rotatezone>:	I<AC + y>
+
+=item Adwm*B<unrotatezone>:	I<ACS + y>
+
+=item
+
+=back
+
+=back
 
 =item B<rotatewins>
 
 =item B<unrotatewins>
 
-todo
+Rotate windows through tiling positions clockwise (B<rotatewins>) or
+counterclockwise (B<unrotatewins>).
+Example (default):
+
+=over
+
+=over
+
+=item Adwm*B<rotatewins>:	I<A + e>
+
+=item Adwm*B<unrotatewins>:	I<AS + e>
+
+=item
+
+=back
+
+=back
 
 =item B<raise>
 
@@ -76,9 +404,49 @@ todo
 
 =item B<raiselower>
 
-todo
+=item B<raisetiled>
 
-=item B<E<lt>prefixE<gt>E<lt>settingE<gt>> [[+-]value[%]]
+Raise the selected window (B<raise>); lower the selected window
+(B<lower>); raise the selected window if not on top, otherwise lower it
+to the bottom (B<raiselower>); raise a tiled window above floating
+windows (B<raisetiled>).
+Example (default):
+
+=over
+
+=over
+
+=item Adwm*B<raise>:		I<A + Up, AC + a : S + r, AC + a : r>
+
+=item Adwm*B<lower>:		I<A + Down, AC + a : S + l, AC + a : l>
+
+=item Adwm*B<raiselower>:	I<A + Home, A + Left, AC + a : u>
+
+=item Adwm*B<raisetiled>:	I<WS + r>
+
+=item
+
+=back
+
+=back
+
+=item B<E<lt>prefixE<gt>E<lt>settingE<gt>> [[+-]I<value>[%]]
+
+Increments, decrements or sets some primary window manager settings that
+affect the layout and overall appearance of the work area and windows.
+The components of the functions are as follows:
+
+=over
+
+=item B<E<lt>prefixE<gt>>
+
+B<E<lt>prefixE<gt>> can be one of:
+
+B<>    B<set>  Set the count or factor to I<value>.
+    B<inc>  Increase the count or factor by I<value>
+    B<dec>  Decrease the count or factor by I<value>.
+
+=item B<E<lt>settingE<gt>>
 
 B<E<lt>settingE<gt>> can be one of:
 
@@ -89,89 +457,275 @@ B<E<lt>settingE<gt>> can be one of:
 Set, increase or decrease the master width factor.  The default when
 I<factor> is not specified is to set the factor to 60%, or increase or
 decrease the factor by 5%.
+Example (default):
+
+=over
+
+=over
+
+=item Adwm*B<decmwfact>:		I<A + h, W + h>
+
+=item Adwm*B<incmwfact>:		I<A + l, W + l>
+
+=item
+
+=back
+
+=back
 
 =item B<nmaster>
 
 Set, increase or decrease the number of masters by I<value>.  The
 default when I<value> is not specified is to set the number to 1, or
 increase or decrease the number by 1.
+Example (default):
+
+=over
+
+=over
+
+=item Adwm*B<decnmaster>:	I<AS + j, W + period, WS + l>
+
+=item Adwm*B<incnmaster>:	I<AS + k, W + comma, WS + h>
+
+=item
+
+=back
+
+=back
 
 =item B<nocolumn>
 
 Set, increase or decrease the number of columns (or rows) in the
 stacking area.  The default when number is not specified is to set the
 number to 1, or increase or decrease the number by 1.
+Example (default):
+
+=over
+
+=over
+
+=item Adwm*B<decncolumns>:	I<WC + l, WS + period>
+
+=item Adwm*B<incncolumns>:	I<WC + h, WS + comma>
+
+=item
+
+=back
+
+=back
 
 =item B<margin>
 
 Set, increase or decrease the margin between tiled windows in pixels.
 The default when I<value> is not specified is to set the number to 0, or
 increase or decrease the number by 1.
-
-=item B<border>
-
-=back
-
-B<E<lt>prefixE<gt>> can be one of:
+Example (default):
 
 =over
 
-=item B<set>
+=over
 
-Set the count or factor to B<value>.
+=item Adwm*B<decmargin>:		I<WAS + m>
 
-=item B<inc>
+=item Adwm*B<incmargin>:		I<WA + m>
 
-Increase the count or factor by B<value>
+=item
 
-=item B<dec>
+=back
 
-Decrease the count or factor by B<value>.
+=back
+
+=item B<border>
+
+Set, increase or decrease the borders around windows in pixels.  The
+default when I<value> is not specified is to set the number to 0, or
+increase or decrease the number by 1.
+Example (default):
+
+=over
+
+=over
+
+=item Adwm*B<decborder>:		I<WAS + b>
+
+=item Adwm*B<incborder>:		I<WA + b>
+
+=item
+
+=back
+
+=back
+
+=back
+
+=item [[+-]I<value>[%]]
+
+Specifies the value for the function.  Can be a floating point number or
+a percentage (with the C<%>) for B<mwfact>.  Is a count (integer number)
+or number of pixels for the other functions.  The C<+> and C<-> can be
+used with B<set> to achieve the same effect as B<inc> and B<dec>.
 
 =back
 
 =item B<[E<lt>prefixE<gt>]E<lt>stateE<gt>[E<lt>suffixE<gt>] [0|1]>
 
+=over
+
+=item B<E<lt>prefixE<gt>>
+
+The I<E<lt>prefixE<gt>> indicates the nature of the state change and may
+be one of the following:
+
+B<>    B<set>     sets the corresponding state;
+    B<unset>   resets the corresponding state;
+    B<toggle>  toggles the corresponding state.
+
+The default action if the prefix is not specified is to set the
+corresponding state (i.e. B<set> is implied).
+
+=item B<E<lt>stateE<gt>>
+
 The I<E<lt>stateE<gt>> indicates which state to change and may be one of
 the following:
 
-=over
+The following states apply to the selected window:
+
+=over 14
 
 =item B<floating>
 
+A window can be in a floating or a tiled state.  Toggling this state
+changes a window back and forth from floating to tiled in tiled layouts.
+
 =item B<fill>
+
+Windows can be set to fill the available workspace in floating layouts.
 
 =item B<full>
 
+Window can be in a full-screen mode where they fill one or more entire
+screens and are placed on top when they have the keyboard focus.
+
 =item B<max>
+
+A window can be maximized in both directions.  When maximized, the
+window fills the entire workspace (but perhaps not struts).  This is for
+a single screen/monitor and is different that B<full>.
 
 =item B<maxv>
 
+A window can be maximized in the vertical direction.
+
 =item B<maxh>
 
-=item B<shade>
+A window can be maximized in the horizontal direction.
 
-=item B<shaded>
+=item B<shade>/B<shaded>
 
-=item B<hide>
+A window can be shaded (rolled up into the title bar).
 
-=item B<hidden>
+=item B<hide>/B<hidden>
 
-=item B<iconify>
+A window can be hidden from the desktop.
 
-=item B<min>
+=item B<iconify>/B<min>
+
+A window can be iconified or minimized.
 
 =item B<above>
 
+A window can be set to stay above normal windows.
+
 =item B<below>
+
+A window can be set to stay below normal windows.
 
 =item B<pager>
 
+A window can be set to not appear in the pager.
+
 =item B<taskbar>
+
+A window can be set to not appear on the task bar.
+
+=back
+
+The following states apply to the entire view (workspace):
+
+=over 14
 
 =item B<showing>
 
+A workspace can be showing the desktop or not.
+
 =item B<struts>
+
+A workspace can be showing struts (panels and docks) or not.
+
+=item B<dectiled>
+
+A workspace can be decorating tiled windows or not.
+
+=back
+
+=item B<E<lt>suffixE<gt>>
+
+The optional suffix can be one of the following:
+
+B<>    B<all>  indicates all windows or workspaces.
+
+=back
+
+Example (default):
+
+=over
+
+=over
+
+=item Adwm*B<togglefloating>:  I<AS + space, W + t, WC + space>
+
+=item Adwm*B<togglefill>:	  I<AC + a : g : g, CS + Down>
+
+=item Adwm*B<togglefillh>:	  I<AC + a : g : h>
+
+=item Adwm*B<togglefillv>:	  I<AC + a : g : v>
+
+=item Adwm*B<togglefull>:	  I<A + F11, AC + a : f, W + f>
+
+=item Adwm*B<togglemaxv>:	  I<AC + a : m : v, AS + F10, CS + Up>
+
+=item Adwm*B<togglemaxh>:	  I<AC + a : m : h, CS + Right>
+
+=item Adwm*B<togglemax>:	  I<A + F10, AC + a : m : m, CS + Left, W + m>
+
+=item Adwm*B<unmax>:		  I<A + F5, WC + n>
+
+=item Adwm*B<toggleshade>:	  I<A + F12, A + s, AC + a : s>
+
+=item Adwm*B<hide>:		  I<AS + F12, AS + h>
+
+=item Adwm*B<hideall>:		  I<AS + F11>
+
+=item !Adwm*B<togglehidden>:	  I<CS + underscore>
+
+=item Adwm*B<iconify>:		  I<A + F9, AS + m, W + i, W + n, W + w>
+
+=item Adwm*B<iconifyall>:	  I<AS + F9>
+
+=item Adwm*B<uniconify>:	  I<WS + w>
+
+=item Adwm*B<toggleabove>:	  I<A + Right, AC + a : o>
+
+=item Adwm*B<togglebelow>:	  I<AC + a : b>
+
+=item Adwm*B<toggleselect>:	  I<W + z>
+
+=item Adwm*B<togglesticky>:	  I<AC + a : a, AC + s>
+
+=item
+
+=back
 
 =back
 
@@ -186,4 +740,4 @@ Brian Bidulock <bidulock@openss7.org>
 
 =cut
 
-# vim: set ft=pod tw=72 spell:
+# vim: set nocin ft=pod tw=72 spell:

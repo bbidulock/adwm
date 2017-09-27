@@ -30,7 +30,8 @@ configuration file.  Styles can either be part of the main configuration
 file, or they can be included or referenced from the main configuration
 file.  It is typical to place the style elements in a file named
 F<stylerc> in the same directory as the main configuration file (e.g. in
-the F<$HOME/.adwm/stylerc> file).  See L</FILES>, below.
+the F<$HOME/.adwm/stylerc> file), or to place the file beneath a theme
+directory.  See L</FILES>, below.
 
 =head1 SYNTAX
 
@@ -41,7 +42,7 @@ B<adwm> resource file, is as follows:
 
 =over
 
-=item Adwm*B<element>: I<E<lt>valueE<gt>>
+=item Adwm*B<E<lt>elementE<gt>>: I<E<lt>valueE<gt>>
 
 =back
 
@@ -51,7 +52,7 @@ Where the fields are defined as follows:
 
 =over
 
-=item B<element>
+=item B<E<lt>elementE<gt>>
 
 One of the elements described under L</ELEMENTS>.
 

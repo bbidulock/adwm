@@ -10,29 +10,33 @@ F<$HOME/.adwm/keysrc>
 
 B<adwm> is a light-weight re-parenting, dynamic tiling/stacking window
 manager intended on being fully controllable using only the keyboard:
-the objective of all dynamic tiling window managers.  However, B<adwm>
-also supports regular stacking floating window management as well,
-though key bindings are supported for almost every action that can be
-achieved with the mouse.
+the objective of all dynamic tiling window managers.  To achieve this
+objective, B<adwm> supports both simple single-press key bindings as
+well as key chains.
 
-Customizable key bindings are defined in an X Resource formatted
-configuration file.  Key bindings can either be part of the main
-configuration file, or they can be included or referenced from the main
-configuration file.  It is typical to place the key bindings in a file
-named F<keysrc> in the same directory as the main configuration file
-(e.g. in the F<$HOME/.adwm/keysrc> file), or to place the file beneath a
-theme directory.
+Single key bindings are key bindings on the root window that perform
+some action in response to a single key press.  Key chaining is when an
+Emacs-like sequence of keys need to be pressed for the action to be
+performed.
+
+Key bindings are defined in an X Resource formatted configuration file.
+Key bindings can either be part of the main configuration file, or they
+can be included or referenced from the main configuration file: see the
+B<keysFile> directive in L<adwm-config(5)>.  It is typical to place the
+key bindings in a filed named F<keysrc> in the same directory as the
+main configuration file (e.g. in the F<$HOME/.adwm/keysrc> file).  See
+L</FILES>, below.
 
 =head1 SYNTAX
 
-The general syntax of key bindings, as specified directly in the B<adwm>
+The general syntax of key commands, as specified directly in the B<adwm>
 resource file, is as follows:
 
 =over
 
 =over
 
-=item Adwm*B<E<lt>functionE<gt>>: I<E<lt>bindingsE<gt>>
+=item Adwm*B<command>: I<E<lt>list<gt>>
 
 =back
 
@@ -40,134 +44,202 @@ resource file, is as follows:
 
 Where the fields are defined as follows:
 
+=over 8
+
+=item B<command>
+
+One of the functions described under L</COMMANDS>.
+
+=item I<E<lt>listE<gt>> = I<E<lt>bindingE<gt>> [, I<...>]
+
+A list of one or more key values, separated by commas.  The list
+represents the list of key bindings associated with the B<command>.
+Each I<E<lt>bindingE<gt>> in the list represents a single key bniding to
+the B<command> with arguments.
+
+=item I<E<lt>bindingE<gt>> = I<E<lt>chainE<gt>> [= I<E<lt>argsE<gt>>]
+
+A key chain followed by an optional equal-sign and key arguments list.
+The I<E<lt>chainE<gt>> specifies the sequence of key presses necessary
+to invoke the B<command>, and the I<E<lt>argsE<gt>> specify the
+arguments to B<command> that are associated with this key binding,
+described for each B<command>, below, under L</COMMANDS>.
+
+=item I<E<lt>argsE<gt>> = I<E<lt>argE<gt>>[ I<...>]
+
+A list of key arguments separated by spaces.  Individual key arguments
+cannot contain the comma, color nor space characters.
+
+=item I<E<lt>chainE<gt>> = I<E<lt>specE<gt>>[: I<...>]
+
+A list of one or more key specifications, separated by colons.  Each
+I<E<lt>specE<gt>> specifies a key press combination that must occur in
+sequence to cause the B<command> action to be performed.
+
+Example: I<W + w : h>
+
+=item I<E<lt>specE<gt>> = [I<E<lt>modifiersE<gt>> + ]I<E<lt>symbolE<gt>>
+
+An optional set of modifiers and a plus-sign, followed by a key symbol.
+The I<E<lt>symbolE<gt>> is the name of the key symbol;
+I<E<lt>modifiersE<gt>> is a string containing one ore more of the
+following characters:
+    B<A>  The Alt key.
+    B<C>  The Control key.
+    B<S>  The Shift key.
+    B<W>  The Windows key.
+    B<M>  The Mod key (definable: defaults to B<A>).
+    B<N>  The not Mod key.  B<W> when Mod key is B<A>.
+
+=back
+
+Note that whitespace is optional (except in the arguments list where
+arguments are separated by spaces).
+
+The following is an example of vim-like window key movement key chains:
+
+=over 8
+
 =over
 
-=item B<E<lt>functionE<gt>>
+=item Adwm*B<movetoW>: I<W+w:h, CS+w:h>
 
-One of the functions described under L</FUNCTIONS>.
+=item Adwm*B<movetoN>: I<W+w:j, CS+w:j>
 
-=item I<E<lt>bindingsE<gt>>
+=item Adwm*B<movetoS>: I<W+w:k, CS+w:k>
 
-Bindings are defined by the following lazy EBNF:
+=item Adwm*B<movetoE>: I<W+w:l, CS+w:l>
 
-=over
-
-=item I<E<lt>bindingsE<gt>> = I<E<lt>bindingE<gt>>[C<,>I<E<lt>bindingE<gt>>]*
-
-Bindings are a list of individual bindings separated by a comma (C<,>).
-
-=item I<E<lt>bindingE<gt>> = I<E<lt>keychainE<gt>>[C<=>I<E<lt>parametersE<gt>>]
-
-Each binding is a key chain specification followed by optional equal
-sign (C<=>) and parameters of the function.
-
-=item I<E<lt>parametersE<gt>> = ?
-
-Parameters are any arguments defined by the B<E<lt>functionE<gt>> but
-cannot contain a comma (C<,>).  The parameters, if any, are defined for
-each of the functions, below, under L</FUNCTIONS>.  Some examples are a
-number or a shell command.
-
-=item I<E<lt>keychainE<gt>> = I<E<lt>keyspecE<gt>>[C<:>I<E<lt>keyspecE<gt>>]*
-
-A key chain is a list of key specifications separated by a colon (C<:>).
-
-=item I<E<lt>keyspecE<gt>> = [I<E<lt>modifiersE<gt>>C<+>]I<E<lt>keynameE<gt>>
-
-Each key specification is an optional list of modifiers followed by a
-plus sign (C<+>), and a key name.
-
-=item I<E<lt>modifiersE<gt>> = {C<C>|C<S>|C<A>|C<W>|C<M>|C<N>}+
-
-Modifiers are a list of uppercase ASCII characters defined as follows:
-
-B<>    B<'C'>  the control key;
-    B<'S'>  the shift key;
-    B<'A'>  the alt key;
-    B<'W'>  the windows key;
-    B<'M'>  the meta key (can be alt or windows key);
-    B<'N'>  the non-meta key (can be windows or alt key).
-
-=item I<E<lt>keynameE<gt>> = literal
-
-A literal key name that can be any key name defined by X libraries: for
-example, C<'a'> or C<'Left'>.
+=item 
 
 =back
 
 =back
 
-=head2 FUNCTIONS
+=head1 COMMANDS
 
-Following are the functions that are defined for B<adwm>.  Each function
+Following are the commands that are defined for B<adwm>.  Each command
 performs some window manager action on the workspace, a client on the
 workspace, or on the window manager itself.
 
+There are four commands that are used with preset mouse bindings and the
+remainder are for use with key bindings.  The commands are described
+below.  Each heading provides the format of the command resource
+(without the C<Adwm*> portion) and the possible arguments to each
+binding.
+
+=head2 MOUSE BINDINGS
+
+There are four commands that are used with preset mouse bindings
+(clicking on root window, title bar or menu button).  The commands are
+described below.
+
 =over
 
-=item B<quit>
+=item B<command> I<shell-command>
 
-When invoked, this function causes B<adwm> to stop and exit.
-Example (default):
+Specifies a shell command that will be executed when button 3 (right
+button) is clicked on the root window.
 
 =over
 
-Adwm*B<quit>: I<AC + p : End, AC + q, WS + q>
+=over
+
+=item Adwm*B<command>: I<xterm>
+
+=item Adwm*B<command>: I<xde-menu -P -b 3>
+
+=item
 
 =back
 
-=item B<restart>
+=back
 
-When invoked, this function causes B<adwm> to re-execute itself with the
-same initial arguments that were originally passed.
-Example (default):
+=item B<command2> I<shell-command>
+
+Specifies a shell command that will be executed when button 2 (middle
+button) is clicked on the root window.
 
 =over
 
-Adwm*B<restart>: I<AC + p : Next, AC + p : Prior = twm, AS + q, WC + r>
+Adwm*B<comand2>: I<xde-wkspmenu -p -b 2>
 
 =back
 
-=item B<killclient>
+=item B<command3> I<shell-command>
 
-When invoked, the client owning the currently selected window will be
-killed.
-Example (default):
+Specifies a shell command that will be executed when button 1 (left
+button) is clicked on the root window.
 
 =over
 
-Adwm*B<killclient>: I<A + F4, A + q, AC + a : q : f, AC + a : q : k, AC + a : q : q, AS + c, W + q, W + x, WS + c, WS + x>
+Adwm*B<command3>: I<xde-winlist -p -b 1 --hidden>
 
 =back
 
-=item B<zoom>
+=item B<menucommand> I<shell-command>
 
-When invoked, the currently selected window will be made the master (if
-it is currently a slave); otherwise, if the currently selected window is
-already a master, it will be made a slave and the first slave will be
-made the master.  In this way, the B<zoom> function can toggle the
-active window to and from the master position in the tiled layout.  It
-does not have much effect in other layouts.
-Example (default):
+Specifies a shell command that will be executed when button 1 (left
+button) is clicked on the menu button in a window's title bar.
 
 =over
 
-Adwm*B<zoom>: I<A + Return, W + Return, WC + Return>
+Adwm*B<menucommand>: I<xde-winmenu -p -b 1 --hidden>
 
 =back
+
+=head2 KEY BINDINGS
+
+The remaining commands are key bindings.  The commands are described
+below.  Each heading provides the format of the command resource
+(without the C<Adwm*> portion) and the possible arguments to each key
+binding, in accordance with the key binding syntax described above under
+L</SYNTAX>.
+
+=back
+
+=over
+
+=item B<quit> [I<command>]
+
+Causes B<adwm> to quit.  When I<command> is specified, executes
+I<command> instead of quitting.
+
+Default: Adwm*B<quit>: I<AC + p : End, AC + q, WS + q>
+
+=item B<restart> [I<command>]
+
+Causes B<adwm> to restart.  When I<command> is specified, executes
+I<command> instead of restarting.
+
+Default: Adwm*B<restart>: I<AC + p : Next, AC + p : Prior = twm, AS + q, WC + r>
 
 =item B<reload>
 
-When invoked, asks B<adwm> to reload its configuration, style and key
-bindings from files.  If the configuration has changed (e.g. the style
-has changed), this will effect the change.
-Example (default):
+Causes B<adwm> to reload configuration files.
 
-=over
+Default: Adwm*B<reload>: I<AC + p : Delete>
 
-Adwm*B<reload>: I<AC + p : Delete>
+=item B<killclient>
 
-=back
+Closes the selected client.  The behaviour of B<adwm> when closing
+clients is to first attempt a close request to the client and upon the
+next attempt, kills the client process if the process identifier of the
+client is known, the client supports the B<_NET_WM_PING> protocol, and
+has not responded to a ping since the latest attempt to close the
+client.
+
+Default: Adwm*B<killclient>: I<A + F4, A + q, AC + a : q : f, AC + a : q : k, AC + a : q : q, AS + c, W + q, W + x, WS + c, WS + x>
+
+=item B<zoom>
+
+Zooms the selected client.  When in tile layout, and the selected client
+is a master, this makes the first unselected slave client in the
+stacking area the current master; when the selected client is in the
+stacking area, makes it the new master.
+
+Default:
+Adwm*B<zoom>: I<A + Return, W + Return, WC + Return>
 
 =item B<initscr>
 
@@ -179,78 +251,63 @@ Adwm*B<initscr>: I<WS + i>
 
 =back
 
-=item B<moveright>
+=item B<moveE<lt>directionE<gt>> [I<dx> I<dy> I<dw> I<dh>]
 
-Moves the selected window right in the layout.
+Moves the selected client in the B<E<lt>directionE<gt>> by the amounts
+specified.
 
-=item B<moveleft>
+B<E<lt>directionE<gt>> can be one of:
+    B<right>  Moves the selected client to the right.
+    B<left>   Moves the selected client to the left.
+    B<up>     Moves the selected client upward.
+    B<down>   Moves the selected client downward.
 
-Moves the selected window left in the layout.
+The optional arguments specify the movement and resize of the window and
+consists of four positive or negative integers as follows:
+    I<dx>  offset to apply to the window x-coordinate position;
+    I<dy>  offset to apply to the window y-coordinate position;
+    I<dw>  number of pixels to add to the window width;
+    I<dh>  number of pixels to add to the window height.
 
-=item B<moveup>
+Note that the practice of specifying more arguments than are necessar is
+for backward compatibility.  The default when unspecified is 5 pixels in
+the appropriate dimension.
 
-Moves the selected window up in the layout.
+Defaults:
+    Adwm*B<moveright>: I<W  + bracketright>
+    Adwm*B<moveleft>:  I<W  + bracketleft>
+    Adwm*B<moveup>:    I<WS + bracketleft>
+    Adwm*B<movedown>:  I<WS + bracketright>
 
-=item B<movedown>
+=item B<resizeE<lt>howE<gt>E<lt>axisE<gt>> [I<dx> I<dy> I<dw> I<dh>]
 
-Moves the selected window down in the layout.
+Resizes the selected client by B<E<lt>howE<gt>> along B<E<lt>axisE<gt>>
+in the amounts specified.
 
-Example (default):
+B<E<lt>howE<gt>> can be one of:
+    B<dec>  Decrease the size of the window.
+    B<inc>  Increase the size of the window.
 
-=over
+B<E<lt>axisE<gt>> can be one of:
+    B<x>  Resize the window horizontally.
+    B<y>  Resize the window vertically.
 
-=over
+The optional arguments specify the movement and resize of the window and
+consists of four positive or negative integers as follows:
+    I<dx>  offset to apply to the window x-coordinate position;
+    I<dy>  offset to apply to the window y-coordinate position;
+    I<dw>  number of pixels to add to the window width;
+    I<dh>  number of pixels to add to the window height.
 
-=item Adwm*B<moveright>: I<W  + bracketright>
+Note that the practice of specifying more arguments than are necessary
+is for backward compatibility.  The default when unspecified is 5 pixels
+in the appropriate dimension.
 
-=item Adwm*B<moveleft>:  I<W  + bracketleft>
-
-=item Adwm*B<moveup>:    I<WS + bracketleft>
-
-=item Adwm*B<movedown>:  I<WS + bracketright>
-
-=item
-
-=back
-
-=back
-
-
-=item B<resizedecx> [{C<+>|C<->}][I<E<lt>pixelsE<gt>>][C<%>]
-
-Resizes the selected window by reducing its width by I<E<lt>pixelsE<gt>>.
-
-=item B<resizedecy> [{C<+>|C<->}][I<E<lt>pixelsE<gt>>][C<%>]
-
-Resizes the selected window by reducing its height by I<E<lt>pixelsE<gt>>.
-
-=item B<resizeincx> [{C<+>|C<->}][I<E<lt>pixelsE<gt>>][C<%>]
-
-Resizes the selected window by increasing its width by I<E<lt>pixelsE<gt>>.
-
-=item B<resizeincy> [{C<+>|C<->}][I<E<lt>pixelsE<gt>>][C<%>]
-
-Resizes the selected window by increasing its height by I<E<lt>pixelsE<gt>>.
-
-Example (default):
-
-=over
-
-=over
-
-=item Adwm*B<resizedecx>: I<AC + a : Left,  AS + a, W  + minus>
-
-=item Adwm*B<resizedecy>: I<AC + a : Down,  AS + s, WS + minus>
-
-=item Adwm*B<resizeincx>: I<AC + a : Right, AS + d, W  + equal>
-
-=item Adwm*B<resizeincy>: I<AC + a : Up,    AS + w, WS + equal>
-
-=item
-
-=back
-
-=back
+Defaults:
+    Adwm*B<resizedecx>: I<AC + a : Left,  AS + a, W  + minus>
+    Adwm*B<resizedecy>: I<AC + a : Down,  AS + s, WS + minus>
+    Adwm*B<resizeincx>: I<AC + a : Right, AS + d, W  + equal>
+    Adwm*B<resizeincy>: I<AC + a : Up,    AS + w, WS + equal>
 
 =item B<begmove>
 
@@ -268,471 +325,578 @@ Begins a keyboard-based move and resize of the selected window.  The
 arrow kyes are used to move the window.  The arrow keys with the control
 key held are used to resize the window.  Press B<Esc> to complete the
 move and resize.
-Example (default):
 
-=over
-
-=over
-
-=item Adwm*B<begmove>: I<A + F7, WS + m>
-
-=item Adwm*B<begsize>: I<A + F8, AC + a : Return>
-
-=item !Adwm*B<begmoveresize>: I<WS + m>
-
-=item !Adwm*B<begmoveresize>: I<AC + a : Return>
-
-=item
-
-=back
-
-=back
+Defaults:
+    Adwm*B<begmove>: I<A + F7, WS + m>
+    Adwm*B<begsize>: I<A + F8, AC + a : Return>
+    !Adwm*B<begmoveresize>: I<WS + m>
+    !Adwm*B<begmoveresize>: I<AC + a : Return>
 
 =item B<togglemonitor>
 
-Warp pointer to the previous monitor.
-Example (default):
+Toggles the current monitor by warping the pointer to its last position
+in the next monitor from the current monitor and sets the keyboard focus
+to the last window that was focused in that monitor.  If there is only
+one monitor, this does nothing.
 
-=over
-
-!Adwm*B<togglemonitor>: I<A + grave>
+Default: Adwm*B<togglemonitor>: I<A + grave>
 
 =back
 
 =item B<appendtag>
 
-Create another tag (workspace, view) and add it to the list of
-workspaces.
+Appends a new tag (workspace) to the list, increasing the number of
+desktops by one.  The maximum number of tags (workspaces) is set by
+configuration at 64.
+
+Default: Adwm*B<appendtag>: I<AC + equal>
 
 =item B<rmlasttag>
 
-Remove the last tag (workspace, view) on the list of workspaces.  Any
-windows on the workspace will be moved to the last remaining workspace.
+Removes the last tag (workspace) from the list, decreasing the number of
+desktops by one.  Any windows that were tagged only for the removed tag
+are tagged, instead, to the last tag on the list.  The first tag
+(workspace) cannot be removed.
 
-Example (default):
+Default: Adwm*B<rmlasttag>: I<AC + minus>
 
-=over
+=item B<resetview>
 
-=over
+Reset the view to its default settings for columns, rows, master width
+factor, orientation, etc.  B<resetview> is primarily for compatability
+with L<spectrwm(1)>.
 
-=item Adwm*B<appendtag>: I<AC + equal>
+Default: Adwm*B<resetview>: I<WS + space>
 
-=item Adwm*B<rmlasttag>: I<AC + minus>
+=item B<flipview>, B<rotateview>, B<unrotateview>
 
-=item
+Rotates (180-degrees, CW or CCW) the current view.  The view is the
+current tiling layout.  For master-stacking area layouts, this means
+that the master zone rotates from right-stacking, to bottom-stacking,
+toe left-stacking, to top-stacking and around again.  B<flipview> is
+primarily for compatibility with L<spectrwm(1)>.
 
-=back
+Defaults:
+    Adwm*B<flipview>:     I<WS + backslash>
+    Adwm*B<rotateview>:   I<A + y>
+    Adwm*B<unrotateview>: I<AS + y>
 
-=back
+=item B<flipzone>, B<rotatezone>, B<unrotatezone>
 
-=item B<flipview>
+Rotates (180-degrees, CW or CCW) the current zone.  The zone is either
+the master, stacking, grid or monocle area.
 
-=item B<rotateview>
+Defaults:
+    Adwm*B<rotatezone>:   I<AC + y>
+    Adwm*B<unrotatezone>: I<ACS + y>
 
-=item B<unrotateview>
+=item B<flipwins>, B<rotatewins>, B<unrotatewins>
 
-Reorients the view.  If the master is on the left, B<flipview> flips the
-master to the right; top to bottom; etc.  If the master is on the left,
-B<rotateview> will rotate it clockwise, to the bottom; B<unrotateview>,
-counterclockwise to the top.  Each key press will rotate an additional
-90 degrees or flip the view again.
-Example (default):
+Rotates (180-degrees, CW or CCW) the window in the current view.  That
+is, the windows rotate through the current tiling positions, rather than
+the tiling positions rotating about the screen.
 
-=over
+Defaults:
+    Adwm*B<rotatewins>:   I<A + e>
+    Adwm*B<unrotatewins>: I<AS + e>
 
-=over
+=item B<raise>, B<lower>, B<raiselower>, B<raisetiled>
 
-=item Adwm*B<flipview>:		I<WS + backslash>
+Raises the selected window to the top of the stacking order; lowers the
+selected window to the bottom of the stacking order; or when the
+selected window is not on top, raise it to the top; otherwise, it lower
+it to the bottom; or raise tiled window over floating windows.
 
-=item Adwm*B<rotateview>:	I<A + y>
-
-=item Adwm*B<unrotateview>:	I<AS + y>
-
-=item
-
-=back
-
-=back
-
-=item B<rotatezone>
-
-=item B<unrotatezone>
-
-Rotate the masters or stacking area windows through tiling positions
-clockwise (B<rotatezone>) or counterclockwise (B<unrotatezone>).
-Example (default):
-
-=over
-
-=over
-
-=item Adwm*B<rotatezone>:	I<AC + y>
-
-=item Adwm*B<unrotatezone>:	I<ACS + y>
-
-=item
-
-=back
-
-=back
-
-=item B<rotatewins>
-
-=item B<unrotatewins>
-
-Rotate windows through tiling positions clockwise (B<rotatewins>) or
-counterclockwise (B<unrotatewins>).
-Example (default):
-
-=over
-
-=over
-
-=item Adwm*B<rotatewins>:	I<A + e>
-
-=item Adwm*B<unrotatewins>:	I<AS + e>
-
-=item
-
-=back
-
-=back
-
-=item B<raise>
-
-=item B<lower>
-
-=item B<raiselower>
-
-=item B<raisetiled>
-
-Raise the selected window (B<raise>); lower the selected window
-(B<lower>); raise the selected window if not on top, otherwise lower it
-to the bottom (B<raiselower>); raise a tiled window above floating
-windows (B<raisetiled>).
-Example (default):
-
-=over
-
-=over
-
-=item Adwm*B<raise>:		I<A + Up, AC + a : S + r, AC + a : r>
-
-=item Adwm*B<lower>:		I<A + Down, AC + a : S + l, AC + a : l>
-
-=item Adwm*B<raiselower>:	I<A + Home, A + Left, AC + a : u>
-
-=item Adwm*B<raisetiled>:	I<WS + r>
-
-=item
-
-=back
-
-=back
+Defaults:
+    Adwm*B<raise>:      I<A + Up, AC + a : S + r, AC + a : r>
+    Adwm*B<lower>:      I<A + Down, AC + a : S + l, AC + a : l>
+    Adwm*B<raiselower>: I<A + Home, A + Left, AC + a : u>
+    Adwm*B<raisetiled>: I<WS + r>
 
 =item B<E<lt>prefixE<gt>E<lt>settingE<gt>> [[+-]I<value>[%]]
 
-Increments, decrements or sets some primary window manager settings that
-affect the layout and overall appearance of the work area and windows.
-The components of the functions are as follows:
-
-=over
-
-=item B<E<lt>prefixE<gt>>
+Set, increment or decrement various view layout parameters.
 
 B<E<lt>prefixE<gt>> can be one of:
-
-B<>    B<set>  Set the count or factor to I<value>.
+    B<set>  Set the count or factor to I<value>.
     B<inc>  Increase the count or factor by I<value>
     B<dec>  Decrease the count or factor by I<value>.
 
-=item B<E<lt>settingE<gt>>
-
 B<E<lt>settingE<gt>> can be one of:
 
-=over
+=over 10
 
 =item B<mwfact>
 
 Set, increase or decrease the master width factor.  The default when
 I<factor> is not specified is to set the factor to 60%, or increase or
 decrease the factor by 5%.
-Example (default):
-
-=over
-
-=over
-
-=item Adwm*B<decmwfact>:		I<A + h, W + h>
-
-=item Adwm*B<incmwfact>:		I<A + l, W + l>
-
-=item
-
-=back
-
-=back
 
 =item B<nmaster>
 
 Set, increase or decrease the number of masters by I<value>.  The
 default when I<value> is not specified is to set the number to 1, or
 increase or decrease the number by 1.
-Example (default):
-
-=over
-
-=over
-
-=item Adwm*B<decnmaster>:	I<AS + j, W + period, WS + l>
-
-=item Adwm*B<incnmaster>:	I<AS + k, W + comma, WS + h>
-
-=item
-
-=back
-
-=back
 
 =item B<nocolumn>
 
 Set, increase or decrease the number of columns (or rows) in the
 stacking area.  The default when number is not specified is to set the
 number to 1, or increase or decrease the number by 1.
-Example (default):
-
-=over
-
-=over
-
-=item Adwm*B<decncolumns>:	I<WC + l, WS + period>
-
-=item Adwm*B<incncolumns>:	I<WC + h, WS + comma>
-
-=item
-
-=back
-
-=back
 
 =item B<margin>
 
 Set, increase or decrease the margin between tiled windows in pixels.
 The default when I<value> is not specified is to set the number to 0, or
 increase or decrease the number by 1.
-Example (default):
-
-=over
-
-=over
-
-=item Adwm*B<decmargin>:		I<WAS + m>
-
-=item Adwm*B<incmargin>:		I<WA + m>
-
-=item
-
-=back
-
-=back
 
 =item B<border>
 
 Set, increase or decrease the borders around windows in pixels.  The
 default when I<value> is not specified is to set the number to 0, or
 increase or decrease the number by 1.
-Example (default):
-
-=over
-
-=over
-
-=item Adwm*B<decborder>:		I<WAS + b>
-
-=item Adwm*B<incborder>:		I<WA + b>
-
-=item
 
 =back
 
-=back
-
-=back
-
-=item [[+-]I<value>[%]]
-
-Specifies the value for the function.  Can be a floating point number or
-a percentage (with the C<%>) for B<mwfact>.  Is a count (integer number)
-or number of pixels for the other functions.  The C<+> and C<-> can be
-used with B<set> to achieve the same effect as B<inc> and B<dec>.
-
-=back
+Defaults:
+    Adwm*B<decmwfact>:   I<A + h, W + h>
+    Adwm*B<incmwfact>:   I<A + l, W + l>
+    Adwm*B<decnmaster>:  I<AS + j, W + period, WS + l>
+    Adwm*B<incnmaster>:  I<AS + k, W + comma, WS + h>
+    Adwm*B<decncolumns>: I<WC + l, WS + period>
+    Adwm*B<incncolumns>: I<WC + h, WS + comma>
+    Adwm*B<decmargin>:   I<WAS + m>
+    Adwm*B<incmargin>:   I<WA + m>
+    Adwm*B<decborder>:   I<WAS + b>
+    Adwm*B<incborder>:   I<WA + b>
 
 =item B<[E<lt>prefixE<gt>]E<lt>stateE<gt>[E<lt>suffixE<gt>] [0|1]>
 
-=over
+The optional I<E<lt>prefixE<gt>> indicates whether to set, unset or
+toggle the state and is one of (defaulting to B<set>):
+    B<set>       Sets the corresponding state.
+    B<un>        Unsets the corresponding state.
+    B<de>        Unsets the corresponding state.
+    B<unset>     Unsets the corresponding state.
+    B<toggle>    Toggles the corresponding state.
 
-=item B<E<lt>prefixE<gt>>
+The I<E<lt>stateE<gt>> indicates which state to change and is one of:
+    B<floating>  The window is floating (or tiled).
+    B<fill>      The window fills the available area.
+    B<full>      The window is fullscreen.
+    B<max>       The window is maximized.
+    B<maxv>      The window is maximized vertically.
+    B<maxh>      The window is maximized horizontally.
+    B<shade>     The window is shaded.
+    B<shaded>    The window is shaded.
+    B<hide>      The window is hidden.
+    B<hidden>    The window is hidden.
+    B<iconify>   The window is iconified (minimized).
+    B<min>       The window is iconified (minimized).
+    B<above>     The window is placed above others.
+    B<below>     The window is placed below others.
+    B<pager>     The window appears in the pager.
+    B<taskbar>   The window appears in the task bar.
+    B<>
+    B<showing>   The layout is showing the desktop.
+    B<struts>    The layout is showing panels/docks.
+    B<dectiled>  The layout decorates tiled windows.
 
-The I<E<lt>prefixE<gt>> indicates the nature of the state change and may
-be one of the following:
+The optional I<E<lt>suffixE<gt>> indicates to which windows or layouts the
+setting applies and is one of (defaulting to B<sel>):
+    B<sel>       The current window or layout.
+    B<ptr>       The window or layout under the pointer.
+    B<all>       All windows or layouts on current monitor.
+    B<other>     All other windows or layouts on current monitor.
+    B<any>       All windows or layouts on any monitor.
+    B<every>     All windows or layouts.
 
-B<>    B<set>     sets the corresponding state;
-    B<unset>   resets the corresponding state;
-    B<toggle>  toggles the corresponding state.
+Defaults:
+    Adwm*B<togglefloating>: I<AS + space, W + t, WC + space>
+    Adwm*B<togglefill>:     I<AC + a : g : g, CS + Down>
+    Adwm*B<togglefillh>:    I<AC + a : g : h>
+    Adwm*B<togglefillv>:    I<AC + a : g : v>
+    Adwm*B<togglefull>:     I<A + F11, AC + a : f, W + f>
+    Adwm*B<togglemaxv>:     I<AC + a : m : v, AS + F10, CS + Up>
+    Adwm*B<togglemaxh>:     I<AC + a : m : h, CS + Right>
+    Adwm*B<togglemax>:      I<A + F10, AC + a : m : m, CS + Left, W + m>
+    Adwm*B<unmax>:          I<A + F5, WC + n>
+    Adwm*B<toggleshade>:    I<A + F12, A + s, AC + a : s>
+    Adwm*B<hide>:           I<AS + F12, AS + h>
+    Adwm*B<hideall>:        I<AS + F11>
+    !Adwm*B<togglehidden>:  I<CS + underscore>
+    Adwm*B<iconify>:        I<A + F9, AS + m, W + i, W + n, W + w>
+    Adwm*B<iconifyall>:     I<AS + F9>
+    Adwm*B<uniconify>:      I<WS + w>
+    Adwm*B<toggleabove>:    I<A + Right, AC + a : o>
+    Adwm*B<togglebelow>:    I<AC + a : b>
+    Adwm*B<toggleselect>:   I<W + z>
+    Adwm*B<togglesticky>:   I<AC + a : a, AC + s>
 
-The default action if the prefix is not specified is to set the
-corresponding state (i.e. B<set> is implied).
+=item B<E<lt>movementE<gt>E<lt>suffixE<gt>> [I<increment>]
 
-=item B<E<lt>stateE<gt>>
+B<E<lt>movementE<gt>> indicates the type of movement to perform and is
+one of:
+    B<moveto>  Moves the window to the 3x3 grid position.
+    B<snapto>  Moves the window toward 3x3 grid position, stop at obstacle.
+    B<edgeto>  Moves the window to the corresponding edges.
+    B<moveby>  Moves the window in direction by I<increment> (default 1).
 
-The I<E<lt>stateE<gt>> indicates which state to change and may be one of
-the following:
+B<E<lt>suffixE<gt>> indicates the position or direction to which to move
+and is one of:
+    B<NW>  The upper-left corner of the monitor.
+    B<N>   The upper edge of the monitor.
+    B<NE>  The upper-right corner of the monitor.
+    B<W>   The left edge of the monitor.
+    B<C>   The center of the monitor.
+    B<E>   The right edge of the monitor.
+    B<SW>  The lower-left corner of the monitor.
+    B<S>   The lower edge of the monitor.
+    B<SE>  The lower-right corner of the monitor.
+    B<R>   The initial static position of the window.
+    B<L>   The last position of the window.
 
-The following states apply to the selected window:
+Defaults:
+    Adwm*B<movetoSW>: I<AC + KP_1, AC + c : z>
+    Adwm*B<movetoS>:  I<AC + KP_2, AC + c : b, AC + c : x>
+    Adwm*B<movetoSE>: I<AC + KP_3, AC + c : c, AC + c : m>
+    Adwm*B<movetoW>:  I<AC + KP_4, AC + c : a>
+    Adwm*B<movetoC>:  I<AC + KP_5, AC + c : h, AC + c : s>
+    Adwm*B<movetoE>:  I<AC + KP_6, AC + c : d, AC + c : l>
+    Adwm*B<movetoNW>: I<AC + KP_7, AC + c : q>
+    Adwm*B<movetoN>:  I<AC + KP_8, AC + c : w, AC + c : y>
+    Adwm*B<movetoNE>: I<AC + KP_9, AC + c : e, AC + c : p>
+    B<>
+    Adwm*B<snaptoSW>: I<ACS + KP_1>
+    Adwm*B<snaptoS>:  I<ACS + KP_2>
+    Adwm*B<snaptoSE>: I<ACS + KP_3>
+    Adwm*B<snaptoW>:  I<ACS + KP_4>
+    Adwm*B<snaptoE>:  I<ACS + KP_6>
+    Adwm*B<snaptoNW>: I<ACS + KP_7>
+    Adwm*B<snaptoN>:  I<ACS + KP_8>
+    Adwm*B<snaptoNE>: I<ACS + KP_9>
+    B<>
+    Adwm*B<edgetoE>:  I<AC + c : S + d, AC + c : S + l>
+    Adwm*B<edgetoN>:  I<AC + c : S + w, AC + c : S + y>
+    Adwm*B<edgetoS>:  I<AC + c : S + b, AC + c : S + x>
+    Adwm*B<edgetoW>:  I<AC + c : S + a>
 
-=over 14
+=item B<E<lt>tagactionE<gt>>[B<E<lt>suffixE<gt>>] [I<tag>|[+-]I<increment>]
 
-=item B<floating>
+B<E<lt>tagactionE<gt>> indicates the tag action to perform and can be
+one of:
 
-A window can be in a floating or a tiled state.  Toggling this state
-changes a window back and forth from floating to tiled in tiled layouts.
+=over 12
 
-=item B<fill>
+=item B<view>
 
-Windows can be set to fill the available workspace in floating layouts.
+View the corresponding tag on the current monitor.  This has the effect
+of changing to the corresponding desktop/workspace.
 
-=item B<full>
+=item B<focusview>
 
-Window can be in a full-screen mode where they fill one or more entire
-screens and are placed on top when they have the keyboard focus.
+Switch to the view of the corresponding tag and focus the firs window in
+the view.
 
-=item B<max>
+=item B<toggleview>
 
-A window can be maximized in both directions.  When maximized, the
-window fills the entire workspace (but perhaps not struts).  This is for
-a single screen/monitor and is different that B<full>.
+Toggle viewing the corresponding tag on the current monitor.  This does
+not change desktop/workspace, just changes which windows are shown on
+the current desktop/workspace.
 
-=item B<maxv>
+=item B<tag>
 
-A window can be maximized in the vertical direction.
+Tag the selected window with the corresponding tag.  This has the effect
+of sending the window to the desktop/workspace corresponding to the tag.
 
-=item B<maxh>
+=item B<toggletag>
 
-A window can be maximized in the horizontal direction.
+Toggle the corresponding tag on the selected window.  This affects on
+which desktops/workspaces the window is displayed.
 
-=item B<shade>/B<shaded>
+=item B<taketo>
 
-A window can be shaded (rolled up into the title bar).
+Tag the selected window with only the corresponding tag and switch the
+view on the current monitor to that of the tag.  This has the effect of
+taking the window to the desktop/workspace corresponding to the tag.
 
-=item B<hide>/B<hidden>
+=item B<sendto>
 
-A window can be hidden from the desktop.
-
-=item B<iconify>/B<min>
-
-A window can be iconified or minimized.
-
-=item B<above>
-
-A window can be set to stay above normal windows.
-
-=item B<below>
-
-A window can be set to stay below normal windows.
-
-=item B<pager>
-
-A window can be set to not appear in the pager.
-
-=item B<taskbar>
-
-A window can be set to not appear on the task bar.
+Tag the selected window with only the corresponding tag.  This has the
+effect of sending the window to the desktop/workspace without following
+it.
 
 =back
 
-The following states apply to the entire view (workspace):
+The optional B<E<lt>suffixE<gt>> is one of:
+    B<#>      The tag index number, #, starting at 1.
+    B<next>   The next tag.
+    B<prev>   The previous tag.
+    B<last>   The previously selected tag.
+    B<up>     The tag above (w/o wrapping).
+    B<down>   The tag below (w/o wrapping).
+    B<left>   The tag to the left (w/o wrapping).
+    B<right>  The tag to the right (w/o wrapping).
+    B<NW>     The upper-left tag (wrapping).
+    B<N>      The upper tag (wrapping).
+    B<NE>     The upper-right tag (wrapping).
+    B<W>      The left tag (wrapping).
+    B<E>      The right tag (wrapping).
+    B<SW>     The lower-left tag (wrapping).
+    B<S>      The lower tag (wrapping).
+    B<SE>     The lower-right tag (wrapping).
 
-=over 14
+Defaults: (B<...> interior ranges deleted for brevity)
+    Adwm*B<view0>:             I<A + 1, C + F1, W + 1>
+    Adwm*B<view1>:             I<A + 2, C + F2, W + 2>
+    B<...>                     I<...>
+    Adwm*B<view9>:             I<A + 0, C + F10, W + 0>
+    Adwm*B<view10>:            I<A + bracketleft, C + F11>
+    Adwm*B<view11>:            I<A + bracketright, C + F12>
+    Adwm*B<viewnext>:          I<AC + Right, W + Up>
+    Adwm*B<viewprev>:          I<AC + Left, W + Down>
+    Adwm*B<viewlast>:          I<W + Escape, WS + Up>
+    Adwm*B<viewup>:            I<AC + Up, AC + k, W + Page_Up>
+    Adwm*B<viewdown>:          I<AC + Down, AC + j, W + Page_Down>
+    Adwm*B<viewleft>:          I<AC + h, W + Home>
+    Adwm*B<viewright>:         I<AC + l, W + End>
+    B<>
+    Adwm*B<toggleview0>:       I<AC + 1, WC + 1>
+    Adwm*B<toggleview1>:       I<AC + 2, WC + 2>
+    B<...>                     I<...>
+    Adwm*B<toggleview9>:       I<AC + 0, WC + 0>
+    Adwm*B<toggleview10>:      I<AC + bracketleft, WC + bracketleft>
+    Adwm*B<toggleview11>:      I<AC + bracketright, WC + bracketright>
+    B<>
+    Adwm*B<tag0>:              I<AS + 1>
+    Adwm*B<tag1>:              I<AS + 2>
+    B<...>                     I<...>
+    Adwm*B<tag9>:              I<AS + 0>
+    Adwm*B<tag10>:             I<AS + bracketleft>
+    Adwm*B<tag11>:             I<AS + bracketright>
+    B<>
+    Adwm*B<toggletag0>:        I<ACS + 1, WCS + 1>
+    Adwm*B<toggletag1>:        I<ACS + 2, WCS + 2>
+    B<...>                     I<...>
+    Adwm*B<toggletag9>:        I<ACS + 0, WCS + 0>
+    Adwm*B<toggletag10>:       I<ACS + bracketleft, WCS + bracketleft>
+    Adwm*B<toggletag11>:       I<ACS + bracketright, WCS + bracketright>
+    B<>
+    Adwm*B<sendto0>:           I<W + F1, WS + 1>
+    Adwm*B<sendto1>:           I<W + F2, WS + 2>
+    B<...>                     I<...>
+    Adwm*B<sendto9>:           I<W + F10, WS + 0>
+    Adwm*B<sendto10>:          I<W + F11, WS + F1>
+    Adwm*B<sendto11>:          I<W + F12, WS + F2>
+    Adwm*B<sendto12>:          I<WS + F3>
+    Adwm*B<sendto13>:          I<WS + F4>
+    B<...>                     I<...>
+    Adwm*B<sendto21>:          I<WS + F12>
+    Adwm*B<sendtoup>:          I<AS + Up>
+    Adwm*B<sendtodown>:        I<AS + Down>
+    Adwm*B<sendtoleft>:        I<AS + Left>
+    Adwm*B<sendtoright>:       I<AS + Right>
+    B<>
+    Adwm*B<taketo0>:           I<WC + F1>
+    Adwm*B<taketo1>:           I<WC + F2>
+    B<...>                     I<...>
+    Adwm*B<taketo11>:          I<WC + F12>
+    Adwm*B<taketonext>:        I<ACS + Right, W + a, WC + Right>
+    Adwm*B<taketoprev>:        I<ACS + Left, WC + Left, WS + Down>
+    Adwm*B<taketoup>:          I<ACS + Up, WC + Up, WS + Page_Up>
+    Adwm*B<taketodown>:        I<ACS + Down, WC + Down, WS + Page_Down>
+    Adwm*B<taketoleft>:        I<WS + Home>
+    Adwm*B<taketoright>:       I<WS + End>
 
-=item B<showing>
+=item [B<E<lt>prefixE<gt>>]B<E<lt>cycleE<gt>>[B<E<lt>suffixE<gt>>][B<E<lt>rangeE<gt>>]
 
-A workspace can be showing the desktop or not.
+B<E<lt>cycleE<gt>> specifies the action to perform and the range of
+windows on which the action may be performed and is one of:
+    B<focus>   Select client, tiled order.
+    B<client>  Select client, client list order.
+    B<stack>   Select client, stacking order.
+    B<group>   Select client of same class, tiled order.
+    B<tab>     Select client tag, tab order.
+    B<panel>   Select panels, tiled order.
+    B<dock>    Select dock application, tiled order.
+    B<swap>    Swap with other client, tiled order.
 
-=item B<struts>
+The optional B<E<lt>prefixE<gt>> indicates the form of cycling and can
+be one of:
 
-A workspace can be showing struts (panels and docks) or not.
+=over 8
 
-=item B<dectiled>
+=item B<"">
 
-A workspace can be decorating tiled windows or not.
+The window is selected immediately once the key is pressed and the cycle
+completes.
+
+=item B<cycle>
+
+The window is selected immediately once the key is pressed, however, the
+cycle does not complete until a modifier key is pressed or released or a
+new key is pressed.  This form also displays a cycle window (available
+window list) while the cycle is active.
 
 =back
 
-=item B<E<lt>suffixE<gt>>
+The optional B<E<lt>suffixE<gt>> indicates which client to select and is
+one of:
+    B<"">      Select window by tag argument (from 1).
+    B<#>       Select window by index (from 0).
+    B<main>    Select the master window (focus only).
+    B<urgent>  Select next urgent window (focus only).
+    B<icon>    Select next iconified window in order.
+    B<next>    Select next window in order.
+    B<prev>    Select previous window in order.
+    B<last>    Select last selected window.
+    B<up>      Select window above.
+    B<down>    Select window below.
+    B<left>    Select window to the left.
+    B<right>   Select window to the right.
+    B<NW>      Select window above and to the left.
+    B<N>       Select window above.
+    B<NE>      Select window above and to the right.
+    B<W>       Select window to the left.
+    B<E>       Select window to the right.
+    B<SW>      Select window below and to the left.
+    B<S>       Select window below.
+    B<SE>      Select window below and to the right.
 
-The optional suffix can be one of the following:
+An optional B<E<lt>rangeE<gt>> indicates the range of clients to make
+available for selection and is one of:
+    B<"">     All focusable windows on current monitor.
+    B<act>    All activatable windows on current monitor.
+    B<all>    All windows on the current monitor.
+    B<any>    All windows on any monitor.
+    B<every>  All windows in any view.
 
-B<>    B<all>  indicates all windows or workspaces.
+Defaults:
+    Adwm*B<focusnext>:   I<A + j, A + Escape, A + Tab, W + Tab, W + j>
+    Adwm*B<focusprev>:   I<A + k, AS + Escape, AS + Tab, W + k, WS + Tab>
+    Adwm*B<focusurgent>: I<W + u>
+    Adwm*B<groupnext>:   I<A + grave, A + F6, W + grave>
+    Adwm*B<groupprev>:   I<AS + grave, AS + F6, WS + grave>
+    Adwm*B<panelnext>:   I<AC + Escape>
+    Adwm*B<panelprev>:   I<ACS + Escape>
+    Adwm*B<docknext>:    I<AC + Tab>
+    Adwm*B<dockprev>:    I<ACS + Tab>
+    Adwm*B<swapnext>:    I<WS + j>
+    Adwm*B<swapprev>:    I<WS + k>
+
+
+=item B<setlayoutE<lt>cE<gt>>
+
+Set the monitor layout for the current monitor to the specified layout,
+B<E<lt>cE<gt>>, where B<E<lt>cE<gt>> is one of:
+    B<m>     "monacle" showing on window at a time.
+    B<f, i>  "floating" stacked windows.
+    B<t>     "tiled" with master left, stacking right.
+    B<b>     "tiled" with master bottom, stacking top.
+    B<l>     "tiled" with master right, stacking left.
+    B<u>     "tiled" with master top, stacking bottm.
+    B<g>     "tiled" with windows in rows and columns.
+
+Defaults:
+    Adwm*B<setlayoutm>: I<A + m>
+    Adwm*B<setlayoutf>: I<A + f, AS + F4>
+    Adwm*B<setlayouti>: I<A + i, AS + F7>
+    Adwm*B<setlayoutt>: I<A + r, AS + F3>
+    Adwm*B<setlayoutb>: I<A + w>
+    Adwm*B<setlayoutl>: I<A + t>
+    Adwm*B<setlayoutu>: I<A + u, AS + F2>
+    Adwm*B<setlayoutg>: I<A + g>
+
+
+=item B<spawnE<lt>nE<gt>> I<E<lt>commandE<gt>>
+
+Spawns the n'th command argument.  B<E<lt>n<gt>> can be from 0 to 63.
+
+Defaults:
+    Adwm*B<spawn0>:  I<AC + t = xdg-launch roxterm>
+    Adwm*B<spawn1>:  I<AC + w = xdg-launch firefox>
+    Adwm*B<spawn2>:  I<AC + f = xdg-launch pcmanfm>
+    Adwm*B<spawn3>:  I<AC + r = xde-run>
+    Adwm*B<spawn4>:  I<AC + v = xdg-launch gvim>
+    Adwm*B<spawn5>:  I<AC + n = xdg-launch uxterm>
+    Adwm*B<spawn6>:  I<AC + m = xde-menu -P>
+    Adwm*B<spawn7>:  I<A + space = xde-winmenu -w active -W center>
+    Adwm*B<spawn8>:  I<A + F1 = xdg-launch uxterm>
+    Adwm*B<spawn9>:  I<A + F2 = xde-run>
+    Adwm*B<spawn10>: I<A + Print = scrot -s>
+    Adwm*B<spawn11>: I<A + x = xdg-launch uxterm>
+    Adwm*B<spawn12>: I<AC + Delete = xde-logout>
+    Adwm*B<spawn13>: I<AC + Return = xdg-launch uxterm>
+    Adwm*B<spawn14>: I<AC + e : c = xde-run>
+    Adwm*B<spawn15>: I<AC + e : e = xdg-launch uxterm>
+    Adwm*B<spawn16>: I<AC + e : l = xdg-launch xde-xlock>
+    Adwm*B<spawn17>: I<AC + e : s = scrot -s>
+    Adwm*B<spawn18>: I<AC + p : d = xde-run>
+    Adwm*B<spawn19>: I<AC + x = xdg-launch uxterm>
+    Adwm*B<spawn20>: I<AS + Return = xdg-launch uxterm>
+    Adwm*B<spawn21>: I<C + Escape = xde-menu -P>
+    Adwm*B<spawn22>: I<F11 = xde-winlist>
+    Adwm*B<spawn23>: I<F12 = xde-menu -P>
+    Adwm*B<spawn24>: I<S + Escape = xde-winmenu -w active -W center>
+    Adwm*B<spawn25>: I<W + e = xdg-launch pcmanfm>
+    Adwm*B<spawn26>: I<W + p = xde-menu -P>
+    Adwm*B<spawn27>: I<W + r = xde-run>
+    Adwm*B<spawn28>: I<W + s = scrot>
+    Adwm*B<spawn29>: I<W + slash = xde-findws>
+    Adwm*B<spawn30>: I<WS + Delete = xdg-launch xde-xlock>
+    Adwm*B<spawn31>: I<WS + Return = xdg-launch uxterm>
+    Adwm*B<spawn32>: I<WS + s = scrot -s>
+    Adwm*B<spawn33>: I<WS + slash = xde-namews>
+    Adwm*B<spawn34>: I<XF86MonBrightnessUp = xbrightness +4096>
+    Adwm*B<spawn35>: I<XF86MonBrightnessDown = xbrightness -4096>
+    Adwm*B<spawn36>: I<C + XF86MonBrightnessUp = xbacklight -inc 5>
+    Adwm*B<spawn37>: I<C + XF86MonBrightnessDown = xbacklight -dec 5>
+    Adwm*B<spawn38>: I<XF86AudioRaiseVolume = amixer sset Master\\,0 5%+>
+    Adwm*B<spawn39>: I<XF86AudioLowerVolume = amixer sset Master\\,0 5%->
+    Adwm*B<spawn40>: I<XF86AudioMute = amixer sset Master\\,0 toggle>
+    Adwm*B<spawn41>: I<CWA + Left = xrandr -o left>
+    Adwm*B<spawn42>: I<CWA + Right = xrandr -o right>
+    Adwm*B<spawn43>: I<CWA + Down = xrandr -o inverted>
+    Adwm*B<spawn44>: I<CWA + Up = xrandr -o normal>
 
 =back
 
-Example (default):
+=head1 DEFAULTS
 
-=over
+The default key bindings are provided in the default key file,
+F</usr/share/adwm/keysrc>, but may be overridden by the style (e.g. the
+default style located in F</usr/share/adwm/styles/Default/keysrc>) and
+ultimately overridden by keys specified by the user in the user file
+(typically located at F<$HOME/.adwm/keysrc>).
 
-=over
+The defaults are, in general, very vim-like in key binding and effect
+(but, of course, must include a modifier different from vim unless you
+want to lose all vim functionality).  Also, most window managers based
+on L<dwm(1)> follow a common thread of defaults.
 
-=item Adwm*B<togglefloating>:  I<AS + space, W + t, WC + space>
+So that users of other window managers and systems do not have problems
+initially using L<adwm(1)> before they get used to the more advanced key
+bindings, a full set of Gnome2/Windows95-like key bindings are also
+provided.  Specific default key bindings for advanced features provided
+by some window managers (such as L<openbox(1)>, L<pekwm(1)>,
+L<blackbox(1)>, L<fluxbox(1)>, L<icewm(1)>) are also provided to smooth
+transition, or to make L<adwm(1)> immediately usable to these users as
+well.
 
-=item Adwm*B<togglefill>:	  I<AC + a : g : g, CS + Down>
+=head1 SEE ALSO
 
-=item Adwm*B<togglefillh>:	  I<AC + a : g : h>
-
-=item Adwm*B<togglefillv>:	  I<AC + a : g : v>
-
-=item Adwm*B<togglefull>:	  I<A + F11, AC + a : f, W + f>
-
-=item Adwm*B<togglemaxv>:	  I<AC + a : m : v, AS + F10, CS + Up>
-
-=item Adwm*B<togglemaxh>:	  I<AC + a : m : h, CS + Right>
-
-=item Adwm*B<togglemax>:	  I<A + F10, AC + a : m : m, CS + Left, W + m>
-
-=item Adwm*B<unmax>:		  I<A + F5, WC + n>
-
-=item Adwm*B<toggleshade>:	  I<A + F12, A + s, AC + a : s>
-
-=item Adwm*B<hide>:		  I<AS + F12, AS + h>
-
-=item Adwm*B<hideall>:		  I<AS + F11>
-
-=item !Adwm*B<togglehidden>:	  I<CS + underscore>
-
-=item Adwm*B<iconify>:		  I<A + F9, AS + m, W + i, W + n, W + w>
-
-=item Adwm*B<iconifyall>:	  I<AS + F9>
-
-=item Adwm*B<uniconify>:	  I<WS + w>
-
-=item Adwm*B<toggleabove>:	  I<A + Right, AC + a : o>
-
-=item Adwm*B<togglebelow>:	  I<AC + a : b>
-
-=item Adwm*B<toggleselect>:	  I<W + z>
-
-=item Adwm*B<togglesticky>:	  I<AC + a : a, AC + s>
-
-=item
-
-=back
-
-=back
-
-
-=back
-
-=head1 HISTORY
+L<adwm(1)>,
+L<adwm-config(1)>,
+L<spectrwm(1)>,
+L<dwm(1)>,
+L<openbox(1)>,
+L<pekwm(1)>,
+L<blackbox(1)>,
+L<fluxbox(1)>,
+L<icewm(1)>,
+L<xde-winmenu(1)>,
+L<xde-menu(1)>,
+L<xde-wkspmenu(1)>.
 
 =head1 AUTHOR
 

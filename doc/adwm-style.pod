@@ -8,7 +8,7 @@ F<$HOME/.adwm/stylerc>
 
 =head1 DESCRIPTION
 
-B<adwm> is a light-weight, reparenting, dynamic tiling/stacking window
+B<adwm> is a light-weight, re-parenting, dynamic tiling/stacking window
 manager, intended on being fully controllable using only the keyboard:
 the objective of all dynamic tiling window managers.  However, B<adwm>
 also supports regular stacking floating window management as well, and
@@ -21,9 +21,9 @@ Decorative window borders can contain title text as well as buttons
 he window around which they appear.  Customizable style elements exist
 to determine which pixmaps are displayed and under which conditions.
 
-B<adwm> directly supports a WindowMaker style "dock".  Window Maker dock
-applications are reparented into tiles within the dock.  These types
-also support customizable style elements.
+B<adwm> directly supports a Window Maker style "dock".  Window Maker
+dock applications are re-parented into tiles within the dock.  These
+types also support customizable style elements.
 
 Customizable style elements are defined in an X Resource formatted
 configuration file.  Styles can either be part of the main configuration
@@ -173,6 +173,8 @@ Adwm*B<margin>: I<0>
 
 =back
 
+=item B<opacity> I<E<lt>floatE<gt>>
+
 =item B<outline> I<E<lt>numberE<gt>>
 
 Specifies the number of pixels to use to outline the title bar and
@@ -192,6 +194,75 @@ Example:
 =over
 
 Adwm*B<spacing>: I<1>
+
+=back
+
+=item B<titlelayout> I<E<lt>layoutE<gt>>
+
+Specifies the layout of features on the title bar.  The value is a
+specially formatted string of space separated uppercase ASCII characters
+representing the features:
+
+=over
+
+I<E<lt>layoutE<gt>> = [I<E<lt>leftE<gt>>][{" "|"-"}[I<E<lt>centerE<gt>>][{" "|"-"}[I<E<lt>rightE<gt>>]]]
+
+=back
+
+The fields in the I<E<lt>layoutE<gt>> are as follows:
+
+=over 12
+
+=item [I<E<lt>leftE<gt>>]
+
+A string of uppercase ASCII characters that specify the order of
+features to place to the left on the title bar.
+
+=item [I<E<lt>centerE<gt>>]
+
+A string of uppercase ASCII characters that specify the order of
+features to place in the center on the title bar.
+
+=item [I<E<lt>rightE<gt>>]
+
+A string of uppercase ASCII characters that specify the order of
+features to place to the right on the title bar.
+
+=back
+
+The uppercase ASCII character codes for the various features are:
+
+=over
+
+B<> B<'E'>  a menu button;
+ B<'I'>  an iconify button;
+ B<'M'>  a maximize button;
+ B<'C'>  a close button;
+ B<'S'>  a shade button;
+ B<'A'>  a sticky button;
+ B<'L'>  a left-half maximus button;
+ B<'R'>  a right-half maximus button;
+ B<'X'>  a fill button;
+ B<'F'>  a float/tile button;
+ B<'Z'>  a resize button;
+ B<'T'>  title tags;
+ B<'N'>  title name; and,
+ B<'|'>  title separator.
+
+B<Note:> When B<'N'> is placed in I<E<lt>leftE<gt>>, the title will be
+left justified; in I<E<lt>centerE<gt>>, centered; in I<E<lt>rightE<gt>>,
+right justified.  Characters can be repeated, but it doesn't make much
+sense to do so.
+
+=back
+
+The default when unspecified is simply: C<N  IMC>.
+
+Example:
+
+=over
+
+Adwm*B<titlelayout>: I<EFASLN  RIMC>
 
 =back
 
@@ -215,12 +286,35 @@ Adwm*B<grips>: I<3>
 
 =back
 
-=item B<E<lt>windowstateE<gt>>.B<E<lt>elementE<gt>> I<E<lt>valueE<gt>>
+=item [B<E<lt>windowstateE<gt>.>]B<E<lt>elementE<gt>> I<E<lt>valueE<gt>>
 
 Specifies the style elements for the title bar, title, buttons and
 resize grips in one of two possible states: (normal and selected).
+The fields are as follows:
 
-B<E<lt>windowstateE<gt>> may be one of:
+=over
+
+=item [B<E<lt>windowstateE<gt>.>]
+
+When B<E<lt>windowstateE<gt>> is not specified, the value applies to the
+default for both states.
+When specified, B<E<lt>windowstateE<gt>> may be one of:
+
+=over
+
+=item B<normal>
+
+The window is in the normal state: that is, it is not selected.
+
+=item B<selected>
+
+The window is in the selected state.
+
+=back
+
+=item B<E<lt>elementE<gt>>
+
+B<E<lt>elementE<gt>> may be one of:
 
 =over
 
@@ -251,6 +345,8 @@ background color of title bar and grips; and,
 =item B<fg> I<E<lt>colorE<gt>>
 
 foreground color of the title.
+
+=back
 
 =back
 
@@ -307,15 +403,21 @@ states.
 
 Specifies to which button the style elements apply and can be one of:
 
-B<>    B<iconify>   minimize button;
-    B<maximize>  maximize button;
-    B<close>     close button;
-    B<shade>     window shade button;
-    B<stick>     window pin button;
-    B<lhalf>     left-half maximus button;
-    B<rhalf>     right-half maximus button;
-    B<float>     float/tiled button; and,
-    B<meu>       window menu button.
+=over
+
+B<> B<meu>       window menu button;
+ B<iconify>   minimize button;
+ B<maximize>  maximize button;
+ B<close>     close button;
+ B<shade>     window shade button;
+ B<stick>     window pin button;
+ B<lhalf>     left-half maximus button;
+ B<rhalf>     right-half maximus button;
+ B<fill>      fill button; and,
+ B<float>     float/tiled button; and,
+ B<resize>    resize button.
+ 
+=back
 
 =item [B<.toggle>]
 
@@ -332,11 +434,18 @@ are disabled for some windows (e.g. windows that cannot be resized).
 
 Specifies the state of the button and can be one of the following:
 
-B<>    B<..>       normal state of the button;
-    B<pressed>  while a mouse button is held down on the button;
-    B<hovered>  while the point is hovering over the button;
-    B<focused>  while the window is focussed; and,
-    B<unfocus>  when the window is not focused.
+=over
+
+B<> B<..>       normal state of the button;
+ B<pressed>  while a mouse button is held down on the button;
+ B<hovered>  while the point is hovering over the button;
+ B<focused>  while the window is focussed; and,
+ B<unfocus>  when the window is not focused.
+
+B<Note:> The combination of B<disabled> with B<pressed> is not
+interpreted.
+
+=back
 
 =back
 
@@ -346,39 +455,41 @@ Example:
 
 =over
 
-=item Adwm*B<button.shade.pixmap>: I<sfocus.xpm>
+=item Adwm*B<button.shade.pixmap>: I<pixmaps/shade_focused.xpm>
 
-=item Adwm*B<button.shade.pressed.pixmap>: I<spress.xpm>
+=item Adwm*B<button.shade.pressed.pixmap>: I<pixmaps/shade_pressed.xpm>
 
-=item Adwm*B<button.shade.hovered.pixmap>: I<shover.xpm>
+=item Adwm*B<button.shade.hovered.pixmap>: I<pixmaps/shade_hovered.xpm>
 
-=item Adwm*B<button.shade.focused.pixmap>: I<sfocus.xpm>
+=item Adwm*B<button.shade.focused.pixmap>: I<pixmaps/shade_focused.xpm>
 
-=item Adwm*B<button.shade.unfocus.pixmap>: I<sunfoc.xpm>
+=item Adwm*B<button.shade.unfocus.pixmap>: I<pixmaps/shade_unfocus.xpm>
 
-=item Adwm*B<button.shade.disabled.hovered>: I<sunfoc.xpm>
+=item Adwm*B<button.shade.disabled.hovered.pixmap>: I<pixmaps/shade_unfocus.xpm>
 
-=item Adwm*B<button.shade.disabled.focused>: I<sunfoc.xpm>
+=item Adwm*B<button.shade.disabled.focused.pixmap>: I<pixmaps/shade_unfocus.xpm>
 
-=item Adwm*B<button.shade.disabled.unfocus>: I<sunfoc.xpm>
+=item Adwm*B<button.shade.disabled.unfocus.pixmap>: I<pixmaps/shade_unfocus.xpm>
 
-=item
+=item 
 
-=item Adwm*B<button.shade.toggled.pixmap>: I<Ufocus.xpm>
+=item Adwm*B<button.shade.toggled.pixmap>: I<pixmaps/unshade_focused.xpm>
 
-=item Adwm*B<button.shade.toggled.pressed.pixmap>: I<Upress.xpm>
+=item Adwm*B<button.shade.toggled.pressed.pixmap>: I<pixmaps/unshade_pressed.xpm>
 
-=item Adwm*B<button.shade.toggled.hovered.pixmap>: I<Uhover.xpm>
+=item Adwm*B<button.shade.toggled.hovered.pixmap>: I<pixmaps/unshade_hovered.xpm>
 
-=item Adwm*B<button.shade.toggled.focused.pixmap>: I<Ufocus.xpm>
+=item Adwm*B<button.shade.toggled.focused.pixmap>: I<pixmaps/unshade_focused.xpm>
 
-=item Adwm*B<button.shade.toggled.unfocus.pixmap>: I<Uunfoc.xpm>
+=item Adwm*B<button.shade.toggled.unfocus.pixmap>: I<pixmaps/unshade_unfocus.xpm>
 
-=item Adwm*B<button.shade.toggled.disabled.hovered>: I<Uunfoc.xpm>
+=item Adwm*B<button.shade.toggled.disabled.hovered.pixmap>: I<pixmaps/unshade_unfocus.xpm>
 
-=item Adwm*B<button.shade.toggled.disabled.focused>: I<Uunfoc.xpm>
+=item Adwm*B<button.shade.toggled.disabled.focused.pixmap>: I<pixmaps/unshade_unfocus.xpm>
 
-=item Adwm*B<button.shade.toggled.disabled.unfocus>: I<Uunfoc.xpm>
+=item Adwm*B<button.shade.toggled.disabled.unfocus.pixmap>: I<pixmaps/unshade_unfocus.xpm>
+
+=item 
 
 =back
 

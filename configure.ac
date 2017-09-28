@@ -239,6 +239,10 @@ AC_DEFINE_UNQUOTED([SYSCONFPATH],["$pkgconfdir"],[System configuration path.])
 AC_OUTPUT([Makefile
 	   src/Makefile
 	   doc/Makefile
+	   doc/adwm.1
+	   doc/adwm-config.5
+	   doc/adwm-keys.5
+	   doc/adwm-style.5
 	   data/Makefile])
 
 # vim: set ft=config:

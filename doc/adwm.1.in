@@ -704,3 +704,11 @@ parsekey() doesn't handle non-alphanumeric keysyms.
 Please resport bugs to <https://github.com/bbidulock/@PACKAGE@/issues>.
 .Sh AUTHORS
 .An Brian Bidulock Aq bidulock@openss7.org
+.Sh LICENSE
+.Nm @PACKAGE@
+is licensed under the GNU General Public License Version 3 or later.
+.sp
+See the
+.Pa COPYING
+file in the distribution.
+.\" vim: set sw=4 et nocin:

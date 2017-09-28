@@ -6,8 +6,7 @@
 .Nm @PACKAGE@-style
 .Nd advanced dynamic window manager for X: styles
 .Sh SYNOPSIS
-.Nm @PACKAGE@-style
-.Bl -item -offset indent
+.Bl -item -compact
 .It
 .Pa $HOME/.adwm/stylerc
 .It
@@ -265,3 +264,11 @@ typically,
 No outstanding bugs.
 .Sh AUTHORS
 .An Brian Bidulock Aq bidulock@openss7.org
+.Sh LICENSE
+.Nm @PACKAGE@
+is licensed under the GNU General Public License Version 3 or later.
+.sp
+See the
+.Pa COPYING
+file in the distribution.
+.\" vim: set sw=4 et nocin:

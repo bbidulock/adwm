@@ -1,12 +1,20 @@
-\".Dd $Mdocdate$
-.Dd @DATE@
+.Dd $Mdocdate$
 .Dt ADWM-CONFIG \&5 "File Formats"
 .Os @PACKAGE@ @VERSION@
 .Sh NAME
 .Nm @PACKAGE@-config
 .Nd advanced dynamic window manager for X: configuration
 .Sh SYNOPSIS
-.Nm @PACKAGE@-config
+.Bl -item -compact
+.It
+.Pa $HOME/.adwm/adwmrc
+.It
+.Pa $HOME/.adwm/styles/Default/adwmrc
+.It
+.Pa @pkgconfdir@/adwmrc
+.It
+.Pa @pkgconfdir@/styles/Default/adwmrc
+.El
 .Sh DESCRIPTION
 .Nm @PACKAGE@
 is a ligth-weight reparenting, dynamic tiling/stacking window
@@ -43,6 +51,61 @@ The general syntax of configuration directives, as specified
 directly in the
 .Nm @PACKAGE@
 resource file, is as follows:
+.Pp
+.Dl Adwm* Ns Cm directive Ns Li : Ar <value>
+.Pp
+Where the fields are defined as follows:
+.Pp
+.Bl -tag -width "XX"
+.It Cm directive
+One of the directives described under
+.Sx DIRECTIVES .
+.It Ar <value> Li = Li { Ns Ar <pixmap> Ns Li | Ns Ar <font> Ns Li | Ns Ar <color> Ns Li | Ns Ar <number> Ns Li | Ns Ar <string> Ns Li | Ns Ar <bool> Ns Li |
+The value depends on the directive that is specified.  Typically, the value is a [path and name of a
+pixmap file, an X11 true-type or bitmapped font specification, and X11 color specification, a
+number, a string, a boolean, or a specially formatted value as follows:
+.Pp
+.Bl -tag -width "XX" -compact
+.It Ar <pixmap>
+Pixmaps are specified with a full or lative path and file name.  When the path is relative, it is
+realtive to the directory in which the configuration file resides.
+.Pp
+Example:
+.Dl Adwm* Ns Cm button.iconify.pixmap Ns Li : Pa pixmaps/min_focused.xpm
+.It Ar <font>
+Fonts are specified with an Fontconfig pattern string or an X Logical Font Description (XFLD)
+formatted font specification string.  See
+.Xr FcParseName 3
+and
+.Xr xft 3 .
+.Pp
+Example:
+.Dl Adwm* Ns Cm normal.font Ns Li : Ar "Liberation Sans:size=9:medium"
+.It Ar <color>
+Colors are specified as X resource colors.  This can be a color name or color specification.  For
+the possible format of colors, see
+.Xr XParseColor 3 .
+.Pp
+Example:
+.Dl Adwm* Ns Cm selected.shadow Ns Li : Ar #394870
+.It Ar <number>
+A decimal number.
+.Pp
+Example:
+.Dl Adwm* Ns Cm title Ns Li : Ar 15
+.Dl Adwm* Ns Cm grips Ns Li : Ar 3
+.It Ar <string>
+A specially formatted string as specified by the directive definition.
+.Pp
+Example:
+.Dl Adwm* Ns Cm titlelayout Ns Li : Ar "EFASLN  RIMC"
+.It Ar <bool>
+A boolean value taking either zero (0) or one (1) as an argument.
+.Pp
+Example:
+.Dl Adwm* Ns Cm dectiled Ns Li : Ar 0
+.El
+.El
 .Sh DIRECTIVES
 The configuration directives are defined below.  Each heading
 provides the format of the directive resource (without the
@@ -72,6 +135,7 @@ The default is
 that is, the file named
 .Pa keysrc
 in the same directory as the main configuration file.
+.Pp
 Example:
 .Dl Adwm* Ns Cm keysFile Ns Li : Pa keysrc
 .It Cm styleFile Pa <path>
@@ -86,6 +150,7 @@ The default is
 that is, the file named
 .Pa stylerc
 in the same directory as the main configuration file.
+.Pp
 Example:
 .Dl Adwm* Ns Cm styleFile Ns Li : Pa stylerc
 .El
@@ -97,6 +162,7 @@ those views.  The tag directives are as follows:
 .It Cm tags.number Ar <number>
 Specifies the number of tags (i.e. desktops) available.
 The default number is five (5).
+.Pp
 Example:
 .Dl Adwm* Ns Cm tags.number Ns Li : Ar 7
 .It Li [ Ns Cm screen<s>. Ns Li ] Ns Cm tags.name<n> Ar <string>
@@ -106,6 +172,7 @@ for a specific screen,
 or for all screens.
 Tags are indexed from zero (0) to the total number of tags
 minus one.
+.Pp
 Example:
 .Dl Adwm* Ns Cm tags.number Ns Li : Ar 7
 .Dl Adwm* Ns Cm tags.name0 Ns Li : Ar main
@@ -122,6 +189,7 @@ The argument,
 .Ar <layout> ,
 is a single lowercase ascii character that designates the layout, that
 can be one of the following:
+.Pp
 .Bl -tag -width ".Cm 'm'" -compact
 .It Cm 'i'
 stacking window arrangement;
@@ -144,6 +212,7 @@ grid tiled arrangement with columns.
 The default value is
 .Cm 'i' :
 that is, stacking window arrangement.
+.Pp
 Example:
 .Dl Adwm* Ns Cm deflayout Ns Li : Ar l
 .It Li [ Ns Cm screen<s>. Ns Li ] Ns Cm tags.layout<n> Ar <layout>
@@ -157,6 +226,7 @@ The argument,
 .Ar <layout> ,
 is a single lowercase ascii character that designates the layout, that
 can be one of the following:
+.Pp
 .Bl -tag -width ".Cm 'm'" -compact
 .It Cm 'i'
 stacking window arrangement;
@@ -206,6 +276,7 @@ The default is
 (The default is consistent with the behaviour of many tiling
 window managers, as most dynamic window managers do not
 support a root menu.)
+.Pp
 Example:
 .Dl Adwm* Ns Cm command Ns Li : Ar "xde-menu -P -b 3"
 .Pp
@@ -217,6 +288,7 @@ instead of the main configuration file.
 Specifies the shell command to execute when button 2 (middle
 button) is pressed on the root window.
 The default is to not execute a shell command.
+.Pp
 Example:
 .Dl Adwm* Ns Cm command2 Ns Li : Ar "xde-wkspmenu -p -b 2"
 .Pp
@@ -228,6 +300,7 @@ instead of the main configuration file.
 Specifies the shell command to execute when button 1 (left
 button) is pressed on the root window.
 The default is to not execute a shell command.
+.Pp
 Example:
 .Dl !Adwm* Ns Cm command3 Ns Li : Ar "xde-winlist -p -b 1 --hidden"
 .Pp
@@ -239,6 +312,7 @@ instead of the main configuration file.
 Specifies the shell command to execute when a button is
 pressed on the \(lqmenu\(rq button in the title bar.
 The default is to not execute a shell command.
+.Pp
 Example:
 .Dl Adwm* Ns Cm menucommand Ns Li : Ar "xde-winmenu -p -b 1"
 .Pp
@@ -275,10 +349,11 @@ system.
 .Pp
 The
 .Ar <bool>
-value can be zero (0), indicating true, or non-zero (1),
-indicating false.
+value can be zero (0), indicating false, or non-zero (1),
+indicating true.
 The default is zero (0): that is, the veil will not be used by
 default.
+.Pp
 Example:
 .Dl Adwm* Ns Cm useveil Ns Li : Ar 0
 .It Li [ Ns Cm screen<s>. Ns Li ] Ns Cm attachaside Ar <bool>
@@ -286,12 +361,13 @@ Specifies whether newly created windows are attached on the
 master or slave side of the layout.
 The
 .Ar <bool>
-value can be zero (0), indicating true, or non-zero (1),
-indicating false.
+value can be zero (0), indicating false, or non-zero (1),
+indicating true.
 When true, newly created windows will be attached as slaves;
 when false, attached as master.
 The default is one (1): that is, newly created windows will be
 attached as slaves.
+.Pp
 Example:
 .Dl Adwm* Ns Cm attachaside Ns Li : Ar 0
 .Dl !I normally like attaching new windows as master
@@ -301,12 +377,13 @@ tiled layouts.  Normally, tiled windows are not decorated with
 a title bar and resize grips.
 The
 .Ar <bool>
-value can be zero (0), indicating true, or non-zero (1),
-indicating false.
+value can be zero (0), indicating false, or non-zero (1),
+indicating true.
 When true, tiled windows are decorated by default; when false,
 they are not.
 The default value is zero (0): that is, tiled windows are not
 decorated by default.
+.Pp
 Example:
 .Dl Adwm* Ns Cm decoratetiled Ns Li : Ar 0
 .Pp
@@ -326,12 +403,13 @@ maximized, more real estate can be provided to the window by
 not decorating them.
 The
 .Ar <bool>
-value can be zero (0), indicating true, or non-zero (1),
-indicating false.
+value can be zero (0), indicating false, or non-zero (1),
+indicating true.
 When true, maximized windows will be decorated; when false,
 they will not.
 The default value is one (1): that is, maximized windows are
 decorated by default.
+.Pp
 Example:
 .Dl Adwm* Ns Cm decoratemax Ns Li : Ar 1
 .Pp
@@ -344,8 +422,8 @@ Specifies whether to hide bastards (remove struts) or turn
 struts off.
 The
 .Ar <bool>
-value can be zero (0), indicating true, or non-zero (1),
-indicating false.
+value can be zero (0), indicating false, or non-zero (1),
+indicating true.
 When true, hides struts rather than turning them off;
 false, turns struts off rahter than hiding them.
 The default value is zero (0): that is, turn struts off rather
@@ -367,6 +445,7 @@ key binding as described in
 Setting this value to true has the effect of applying or
 removing struts; whereas, the value of false, provides for
 exposing and hiding struts.
+.Pp
 Example:
 .Dl Adwm* Ns Cm hidebastards Ns Li : Ar 1
 .It Li [ Ns Cm screen<s>. Ns Li ] Ns Cm strutsactive Ar <bool>
@@ -374,10 +453,11 @@ Specifies whether struts (panels and dock) should default to
 shown or hidden.
 The
 .Ar <bool>
-value can be zero (0), indicating true, or non-zero (1),
-indicating false.
+value can be zero (0), indicating false, or non-zero (1),
+indicating true.
 When true, struts default to shown; false, hidden.
 The default value is one (1): that is, struts are shown by default.
+.Pp
 Example:
 .Dl Adwm* Ns Cm strutsactive Ns Li : Ar 1
 .Pp
@@ -393,11 +473,12 @@ their title bars) should automatically be unshaded when the window
 takes focus (is selected).
 The
 .Ar <bool>
-value can be zero (0), indicating true, or non-zero (1),
-indicating false.
+value can be zero (0), indicating false, or non-zero (1),
+indicating true.
 When true, windows will automatically be unshaded; false, will not.
 The default is zero (0): that is, shaded windows will not be
 automatically unshaded on being selected.
+.Pp
 Example:
 .Dl Adwm* Ns Cm autoroll Ns Li : Ar 1
 .It Li [ Ns Cm screen<s>. Ns Li ] Ns Cm sloppy Ar <model>
@@ -405,6 +486,7 @@ The default value is zero (0): that is, click to focus.
 The argument,
 .Ar <model> ,
 is an integer value that can be one of the following:
+.Pp
 .Bl -tag -width ".Ar SloppyRaise(3)" -compact
 .It Ar "Clk2Focus(0)"
 click in windows to focus them;
@@ -429,6 +511,7 @@ of a similarly oriented edge of another window, or the edge of
 the monitor or desktop work area, the window will snap to that
 position.
 The default value is five (5) pixels.
+.Pp
 Example:
 .Dl Adwm* Ns Cm snap Ns Li : Ar 5
 .It Li [ Ns Cm screen<s>. Ns Li ] Ns Cm dragdistance Ar <pixels>
@@ -443,7 +526,9 @@ The drag distance, in pixels, is the distance that the pointer
 can move while a button is depressed without the window
 manager considering the action to be a drag.  This applies to
 all drags supported by the window manager.  The default
-value is five (5) pixels.  Example:
+value is five (5) pixels.
+.Pp
+Example:
 .Dl Adwm* Ns Cm dragdistance Ns Li : Ar 5
 .It Li [ Ns Cm screen<s>. Ns Li ] Ns Cm mwfact Ar <float>
 Specifies the factor for the width of the master area in
@@ -451,6 +536,7 @@ tiled layouts.  The argument is a floating point number
 between 0.1 and 0.9 (inclusive) that specifies the proportion
 of the width of the work area allocated to the master.  The
 default is 0.6 (60% of the width of the work area).
+.Pp
 Example:
 .Dl Adwm* Ns Cm mwfact Ns Li : Ar 0.6
 .Pp
@@ -467,6 +553,7 @@ tiled layouts.  The argument is a floating point number
 between 0.1 and 0.9 (inclusive) that specifies the proportion
 of the height of the work area allocated to the master.  The
 default is 1.0 (100% of the height of the work area).
+.Pp
 Example:
 .Dl Adwm* Ns Cm mhfact Ns Li : Ar 0.5
 .Pp
@@ -485,6 +572,7 @@ key binding described in
 .Xr adwm-keys 5 .
 The default number is one (1).  Only values between 1 and 10
 (inclusive) are permitted.
+.Pp
 Example:
 .Dl Adwm* Ns Cm nmaster Ns Li : Ar 1
 .It Li [ Ns Cm screen<s>. Ns Li ] Ns Cm ncolumns Ar <number>
@@ -498,6 +586,7 @@ key binding described in
 .Xr adwm-keys 5 .
 The default number is three (3).  Only values between 1 and 10
 (inclusive) are permitted.
+.Pp
 Example:
 .Dl Adwm* Ns Cm ncolumns Ns Li : Ar 3
 .El
@@ -512,6 +601,7 @@ Specifies the position of the dock on the screen.
 The argument,
 .Ar <position> ,
 is an integer value that can be one of the following:
+.Pp
 .Bl -tag -width ".Ar DockSouthWest(0)" -compact
 .It Ar "DockNone(0)"
 default (same as
@@ -542,6 +632,7 @@ Specifies the orientation of the dock on the screen.
 The argument,
 .Ar "<orientation>" ,
 is an integer value that can be one of the following:
+.Pp
 .Bl -tag -width ".Ar DockVert(1)" -compact
 .It Ar DockHorz(0)
 the dock is filled horizontally;
@@ -570,7 +661,9 @@ The other values indicate the monitor number of the monitor
 that should contain the dock.
 .Pp
 The default value is zero (0): that is, the dock monitor is
-chosen automatically.  Example:
+chosen automatically.
+.Pp
+Example:
 .Dl Adwm* Ns Cm dock.monitor Ns Li : Ar 0
 .It Li [ Ns Cm screen<s>. Ns Li ] Ns Cm dock.app<n> Ar "<res_name> <res_class> <wm_command>"
 Specifies the relative position of dock applications in the
@@ -652,3 +745,11 @@ The location of the system default themed style file.
 No outstanding bugs.
 .Sh AUTHORS
 .An Brian Bidulock Aq bidulock@openss7.org
+.Sh LICENSE
+.Nm @PACKAGE@
+is licensed under the GNU General Public License Version 3 or later.
+.sp
+See the
+.Pa COPYING
+file in the distribution.
+.\" vim: set sw=4 et nocin:

@@ -1,4 +1,5 @@
-.Dd $Mdocdate$
+\".Dd $Mdocdate$
+.Dd @DATE@
 .Dt ADWM-STYLE \&5 "File Formats"
 .Os @PACKAGE@ @VERSION@
 .Sh NAME
@@ -6,6 +7,16 @@
 .Nd advanced dynamic window manager for X: styles
 .Sh SYNOPSIS
 .Nm @PACKAGE@-style
+.Bl -item -offset indent
+.It
+.Pa $HOME/.adwm/stylerc
+.It
+.Pa $HOME/.adwm/styles/Default/stylerc
+.It
+.Pa @pkgconfdir@/stylerc
+.It
+.Pa @pkgconfdir@/styles/Default/stylerc
+.El
 .Sh DESCRIPTION
 .Nm @PACKAGE@
 is a light-weight, reparenting, dynamic tiling/stacking window manager,
@@ -37,7 +48,9 @@ style elements in a file named
 .Pa stylerc
 in the same directory as the main configuration file (e.g. in the
 .Pa $HOME/.adwm/stylerc
-file).  See \(lqFILES,\(rq below.
+file).  See
+.Sx FILES ,
+below.
 .Sh SYNTAX
 The general syntax of style elements, as specified directly in
 the
@@ -50,46 +63,35 @@ Where the fields are defined as follows:
 .Pp
 .Bl -tag -width "Xx" -compact
 .It Cm element
-One of the elements described under \(lqELEMENTS.\(rq
-
+One of the elements described under
+.Sx ELEMENTS .
 .It Ar <value> Li = { Ns Ar <pixmap> Ns Li | Ns Ar <font> Ns Li | Ns Ar <color> Ns Li | Ns Ar <number> Ns Li | Ns Ar <string> Ns Li }
 The value depends on the element that is being specified.  Typically
 the value is a path and name of a pixmap file, an X11 true-type or
 bitmapped font specification, an X11 color specification, a number, a
 string, or a specially formatted value.
-
 .It Ar <pixmap>
 Pixmaps are specified with a full or relative path and file name.
 When the path is relative, it is relative to the directory in which
 the style file resides.  Example:
-
 .Dl "Adwm*" Ns Cm button.iconify.pixmap Ns Li : Pa pixmaps/min_focused.xpm
-
 .It Ar <font>
 Fonts are specified with an XFT parsable font specification string.
 Example:
-
 .Dl "Adwm*" Ns Cm normal.font Ns Li : Ar Liberation Sans:size=9:medium
-
 .It Ar <color>
 Colors are specified as X resource colors.  This can be a color name
 or color specification.
 Example:
-
 .Dl "Adwm*" Ns Cm selected.shadow Ns Li : Ar #394870
-
 .It Ar <number>
 A decimal number. Example:
-
 .Dl Adwm* Ns Cm title Ns Li : Ar 15
 .Dl Adwm* Ns Cm grips Ns Li : Ar 3
-
 .It Ar <string>
 A specially formatted string as specified by the element definition.
 Example:
-
 .Dl Adwm* Ns Cm titlelayout Ns Li : Ar "EFASLN  RIMC"
-
 .El
 .Sh ELEMENTS
 .Pp
@@ -97,50 +99,36 @@ The style elements are defined below.  Each heading provides the
 format of the command resource (without the
 .Li \(lqAdwm*\(rq
 portion) and the possible arguments for each element, in accordance
-with the element syntax described above under \(lqSTYNAX.\(rq
-
+with the element syntax described above under
+.Sx SYNTAX .
 .Bl -tag -width "XX"
 .It Cm font Ar <font>
 Specifies the font to be used for title bar text.  Example:
-
 .Dl Adwm* Ns Cm font Ns Li : Ar "Liberation Sans:size=8:medium"
-
 .It Cm border Ar <number>
 Specifies the number of pixels of border that surrounds the title bar
 and resize grips.  Typically set to one (1).  Example:
-
 .Dl Adwm* Ns Cm border Ns Li : Ar 1
-
 .It Cm margin Ar <number>
 Specifies the margin between the titlebar elements and the titlebar
 border.  Typically set to zero (0) to conserve screen real estate.
 Example:
-
 .Dl Adwm* Ns Cm margin Ns Li : Ar 0
-
 .It Cm outline Ar <number>
 Specifies the number of pixels to use to outline the title bar and
 resize grips.  Example:
-
 .Dl Adwm* Ns Cm outline Ns Li : Ar 1
-
 .It Cm spacing Ar <number>
 Specifies the number of pixels,
 .Ar <number> ,
 to be used between titlebar elements. Example:
-
 .Dl Adwm* Ns Cm spacing Ns Li : Ar 1
-
 .It Cm title Ar <number>
 Specifes the height of the title bar in pixels.  Example:
-
 .Dl Adwm* Ns Cm title Ns Li : Ar 15
-
 .It Cm grips Ar <number>
 Specifies the height of the resize groups in pixels.  Example:
-
 .Dl Adwm* Ns Cm grips Ns Li : Ar 3
-
 .It Cm <windowstate>.<element> Ar <value>
 Specifies the style elements for the title bar, title, buttons and
 resize grips in one of two possible states (normal and selected).
@@ -176,7 +164,6 @@ foreground color of the title.
 .El
 .Pp
 Example:
-
 .Dl Adwm* Ns Cm selected.font Ns Li : Ar "  Liberation Sans:size=9:medium"
 .Dl Adwm* Ns Cm selected.drop Ns Li : Ar "  1"
 .Dl Adwm* Ns Cm selected.shadow Ns Li : Ar "#394870"
@@ -184,7 +171,6 @@ Example:
 .Dl Adwm* Ns Cm selected.button Ns Li : Ar "#f0f0f0"
 .Dl Adwm* Ns Cm selected.bg Ns Li : Ar "    #161616"
 .Dl Adwm* Ns Cm selected.fg Ns Li : Ar "    #c0e0ff"
-
 .Dl Adwm* Ns Cm normal.font Ns Li : Ar "    Liberation Sans:size=9:medium"
 .Dl Adwm* Ns Cm normal.drop Ns Li : Ar "    1"
 .Dl Adwm* Ns Cm normal.shadow Ns Li : Ar "  #373737"
@@ -192,7 +178,6 @@ Example:
 .Dl Adwm* Ns Cm normal.button Ns Li : Ar "  #9c9c9c"
 .Dl Adwm* Ns Cm normal.bg Ns Li : Ar "      #373737"
 .Dl Adwm* Ns Cm normal.fg Ns Li : Ar "      #a9a9a9"
-
 .It Cm button.<button> Ns Li [ Ns Cm .toggled Ns Li ][ Ns Cm .disabled Ns Li ] Ns Cm .<state>.pixmap Ar <pixmap>
 Specifies the pixmap to be use for various buttons in various
 states.
@@ -248,7 +233,6 @@ when the is not focused.
 .El
 .Pp
 Example:
-
 .Dl Adwm* Ns Cm button.shade.pixmap Ns Li : Pa sfocus.xpm
 .Dl Adwm* Ns Cm button.shade.pressed.pixmap Ns Li : Pa spress.xpm
 .Dl Adwm* Ns Cm button.shade.hovered.pixmap Ns Li : Pa shover.xpm
@@ -257,7 +241,6 @@ Example:
 .Dl Adwm* Ns Cm button.shade.disabled.hovered.pixmap Ns Li : Pa sunfoc.xpm
 .Dl Adwm* Ns Cm button.shade.disabled.focused.pixmap Ns Li : Pa sunfoc.xpm
 .Dl Adwm* Ns Cm button.shade.disabled.unfocus.pixmap Ns Li : Pa sunfoc.xpm
-
 .Dl Adwm* Ns Cm button.shade.toggled.pixmap Ns Li : Pa Ufocus.xpm
 .Dl Adwm* Ns Cm button.shade.toggled.pressed.pixmap Ns Li : Pa Upress.xpm
 .Dl Adwm* Ns Cm button.shade.toggled.hovered.pixmap Ns Li : Pa Uhover.xpm
@@ -266,14 +249,13 @@ Example:
 .Dl Adwm* Ns Cm button.shade.toggled.disabled.hovered.pixmap Ns Li : Pa Uunfoc.xpm
 .Dl Adwm* Ns Cm button.shade.toggled.disabled.focused.pixmap Ns Li : Pa Uunfoc.xpm
 .Dl Adwm* Ns Cm button.shade.toggled.disabled.unfocus.pixmap Ns Li : Pa Uunfoc.xpm
-
 .El
 .Sh DEFAULTS
 The default style is provided in the default style file,
 typically,
 .Pa "$HOME/.adwm/stylerc" .
 .Sh SEE ALSO
-.Rb
+.Rs
 .Xr adwm 1 ,
 .Xr adwm-config 5 ,
 .Xr adwm-keys 5 ,

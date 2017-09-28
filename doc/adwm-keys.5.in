@@ -1,5 +1,6 @@
-.Dd $Mdocdate$
-.Dt ADWM-KEYS \&1 "User Commands"
+\".Dd $Mdocdate$
+.Dd @DATE@
+.Dt ADWM-KEYS \&5 "File Formats"
 .Os @PACKAGE@ @VERSION@
 .Sh NAME
 .Nm @PACKAGE@-keys
@@ -29,7 +30,9 @@ It is typical to place the key binding in a file named
 .Pa keysrc
 in the same directory as the main configuration file (e.g. in the
 .Pa "$HOME/.adwm/keysrc"
-file).  See \(lqFILES\(rq, below.
+file).  See
+.Sx FILES ,
+below.
 .Sh SYNTAX
 .Pp
 The general syntax of key commands, as specified directly in the
@@ -42,8 +45,8 @@ where the fields are defined as follows:
 .Pp
 .Bl -tag -width Ds -compact
 .It Cm command
-One of the commands described under \(lqCOMMANDS\(rq.
-
+One of the commands described under
+.Sx COMMANDS .
 .It Ar <list> Li = Ar <binding> Op Li , Ar ...
 A list of one or more key values, separated by commas.
 The list represents the list of key bindings associated with the
@@ -53,7 +56,6 @@ Each
 in the list represents a single key binding to the
 .Cm command
 with arguments.
-
 .It Ar <binding> Li = Ar <chain> Op Li = Ar <args>
 A key chain followed by an optional equal-sign and key arguments list.
 The
@@ -66,12 +68,11 @@ specify the arguments to
 .Cm command
 that are associated with this key binding, described for each
 .Cm command ,
-below, under \(lqCOMMANDS\(rq.
-
+below, under
+.Sx COMMANDS .
 .It Ar <args> Li = Ar <arg> Ns Op Li " " Ar ...
 A list of key arguments separated by spaces.  Individual key arguments cannot contain
 the comma, colon nor space characters.
-
 .It Ar <chain> Li = Ar <spec> Op Li : Ar ...
 A list of one or more key specifications, separated by colons.  Each
 .Ar <spec>
@@ -81,7 +82,6 @@ action to be performed.
 .Pp
 Example:
 .Dl Ar "W + w : h"
-
 .It Ar <spec> Li = [ Ns Ar <modifiers> Li "+ ]" Ns Ar <symbol>
 An optional set of modifiers and a plus-sign, followed by a key symbol.
 The
@@ -155,23 +155,19 @@ described below.
 .It Cm command Ar shell-command
 Specifies a shell command that will be executed when button 3 (right
 button) is clicked on the root window.
-
 .Dl "Adwm*" Ns Cm command Ns Li : Ar "xterm"
 .Dl "Adwm*" Ns Cm command Ns Li : Ar "xde-menu -P -b 3"
 .It Cm command2 Ar shell-command
 Specifies a shell command that will be executed when button 2 (middle
 button) is clicked on the root window.
-
 .Dl "Adwm*" Ns Cm command2 Ns Li : Ar "xde-wkspmenu -p -b 2"
 .It Cm command3 Ar shell-command
 Specifies a shell command that will be executed when button 1 (left
 button) is clicked on the root window.
-
 .Dl "Adwm*" Ns Cm command3 Ns Li : Ar "xde-winlist -p -b 1 --hidden"
 .It Cm menucommand Ar shell-command
 Specifies a shell command that will be executed when button 1 (left
 button) is clicked on the menu button in a window's title bar.
-
 .Dl "Adwm*" Ns Cm menucommand Ns Li : Ar "xde-winmenu -p -b 1 --hidden"
 .El
 .Ss KEY BINDINGS
@@ -180,8 +176,8 @@ below.
 Each heading provides the format of the command resource (without the
 .Li "Adwm*"
 portion) and the possible arguments to each key binding, in accordance
-with the key binding sytnax described above under \(lqSYNTAX\(rq.
-
+with the key binding sytnax described above under
+.Sx SYNTAX .
 .Bl -tag -width "XX"
 .It Cm quit Op Ar command
 Causes
@@ -195,7 +191,6 @@ instead of quitting.
 .Pp
 Default:
 .Cm Adwm*quit Ns : Ar "CA + q" , Ar "WS + q"
-
 .It Cm restart Op Ar command
 Causes
 .Nm @PACKAGE@
@@ -208,12 +203,10 @@ instead of restarting.
 .Pp
 Default:
 .Cm Adwm*restart Ns : Ar "AS + q"
-
 .It Cm reload
 Causes
 .Nm @PACKAGE@
 to reload configuration files.
-
 .It Cm killclient
 Closes the selected client.  The behaviour of
 .Nm @PACKAGE@
@@ -226,7 +219,6 @@ client.
 .Pp
 Default:
 .Cm Adwm*killclient Ns : Ar "AS + c"
-
 .It Cm zoom
 Zooms the selected client.  When in tile layout, and the selected client is a
 master, this makes the first unselected slave client in the stacking area the current
@@ -234,7 +226,6 @@ master; when the selected client is in the stacking area, makes it the new maste
 .Pp
 Default:
 .Cm Adwm*zoom Ns : Ar "A + Return"
-
 .It Cm move<direction> Op Ar "dx dy dw dh"
 Moves the selected client in the
 .Cm <direction>
@@ -276,7 +267,6 @@ Defaults:
 .Dl Cm Adwm*movedown Ns : Ar "W + j" Li = 0 5
 .Dl Cm Adwm*moveup Ns : Ar "W + k" Li = 0 -5
 .Dl Cm Adwm*moveright Ns : Ar "W + l" Li = 5
-
 .It Cm resize<how><axis> Op Ar "dx dy dw dh"
 Resizes the selected client by
 .Cm <how>
@@ -304,7 +294,7 @@ Resize the window horizontally.
 .It Cm y
 Resize the window vertically.
 .El
-.PP
+.Pp
 The optional arguments specify the movement and resize of the window and consists of
 four positive or negative integers as follows:
 .Pp
@@ -327,7 +317,6 @@ Defaults:
 .Dl Cm Adwm*resizedecy Ns : Ar "WS + k" = 0 0 0 -5
 .Dl Cm Adwm*resizeincx Ns : Ar "WS + l" = 0 0 5 0
 .Dl Cm Adwm*resizeincy Ns : Ar "WS + j" = 0 0 0 5
-
 .It Cm togglemonitor
 Toggles the current monitor by warping the pointer to the its last position in the
 next monitor from the current monitor and sets the keyboard focus to the last window
@@ -335,14 +324,12 @@ that was focused in that monitor.  If there is only one monitor, this does nothi
 .Pp
 Default:
 .Cm Adwm*togglemonitor Ns : Ar "A + grave"
-
 .It Cm appendtag
 Appends a new tag (workspace) to the list, increasing the number of desktops by one.
 The maximum number of tags (workspaces) is set by configuration at 64.
 .Pp
 Default:
 .Cm Adwm*appendtag Ns : Ar "CAS + Right"
-
 .It Cm rmlasttag
 Removes the last tag (workspace) from the list, decreasing the number of desktops by
 one.  Any windows that were tagged only for the removed tag are tagged, instead, to
@@ -350,7 +337,6 @@ the last tag on the list.  The first tag (workspace) cannot be removed.
 .Pp
 Default:
 .Cm Adwm*rmlasttag Ns : Ar "CAS + Left"
-
 .It Cm resetview
 Reset the view to its default settings for columns, rows, master width factor,
 orientation, etc.
@@ -360,7 +346,6 @@ is primarily for compatability with
 .Pp
 Defaults:
 .Dl Cm Adwm*resetview Ns : Ar "WS + space"
-
 .It Cm flipview Ns , Cm rotateview Ns , Cm unrotateview
 Rotates (180-degrees, CW or CCW) the current view.  The view is the current tiling layout.  For
 master-stacking area layouts, this means that the master zone rotates from rigth-stacking, to
@@ -373,7 +358,6 @@ Defaults:
 .Dl Cm Adwm*flipview Ns : Ar "WS + backslash"
 .Dl Cm Adwm*rotateview Ns : Ar "A + y"
 .Dl Cm Adwm*unrotateview Ns : Ar "AS + y"
-
 .It Cm flipzone Ns , Cm rotatezone Ns , Cm unrotatezone
 Rotates (180-degrees, CW or CCW) the current zone.  The zone is either the master, stacking, grid or
 monocle area.
@@ -381,7 +365,6 @@ monocle area.
 Defaults:
 .Dl Cm Adwm*rotatezone Ns : Ar "CA + y"
 .Dl Cm Adwm*unrotatezone Ns : Ar "CAS + y"
-
 .It Cm flipwins Ns , Cm rotatewins Ns , Cm unrotatewins
 Rotates (180-degrees, CW or CCW) the windows in the current view.  That is, the windows rotate
 through the current tiling positions, rather than the tiling positions rotating about the screen.
@@ -389,7 +372,6 @@ through the current tiling positions, rather than the tiling positions rotating 
 Defaults:
 .Dl Cm Adwm*rotatewins Ns : Ar "A + e"
 .Dl Cm Adwm*unrotatewins Ns : Ar "AS + e"
-
 .It Cm raise
 Raises the selected window to the top of the stacking order.
 .It Cm lower
@@ -402,7 +384,6 @@ Defaults:
 .Dl Cm Adwm*raise Ns : Ar "A + Up"
 .Dl Cm Adwm*lower Ns : Ar "A + Down"
 .Dl Cm Adwm*raiselower Ns : Ar "AS + space"
-
 .It Cm <prefix><setting> Op [+-] Ns Ar value Ns [%]
 Set, increment or decrment various view layout parameters.
 .Pp
@@ -431,12 +412,10 @@ to set the factor to
 .Li 60% ,
 or increase or decrease the factor by
 .Li 5% .
-
 .It Cm nmaster
 Set, increase or decrease the number of masters when in tile mode.  The default when
 number is not specified is to set the number to 1, or increase or decrease the
 factory by 1.
-
 .It Cm ncolumn
 Set, increase or decrease the number of columns (or rows) in the stacking area when
 in grid mode.  The default when number is not specified is to set the number to 1, or
@@ -445,11 +424,9 @@ Note that this is an alias for
 .Cm nmaster
 and only one need be set (typically just
 .Cm nmaster ).
-
 .It Cm margin
 Set, increase or decrease the margin between tiled windows in pixels.  The default when
 number is not specified is to set the number to 0, or increase or decrease the number by 1.
-
 .It Cm border
 Set, increase or decrease the border around decorated windows in pixels.  The default when
 number is not specified is to set the number to the value set by the style, or increase or
@@ -467,8 +444,6 @@ Defaults:
 .Dl Cm Adwm*incmargin Ns : Ar "WA + m"
 .Dl Cm Adwm*decborder Ns : Ar "WAS + b"
 .Dl Cm Adwm*incborder Ns : Ar "WA + b"
-
-
 .It Cm [<prefix>]<state>[<suffix>] [0|1]
 .Pp
 The
@@ -565,7 +540,6 @@ Defaults:
 .Dl Cm Adwm*toggleshowing Ns : Ar "CA + Return"
 .Dl Cm Adwm*togglestruts Ns : Ar "A + b"
 .Dl Cm Adwm*toggledectiled Ns : Ar "A + d"
-
 .It Cm <movement><suffix> [increment]
 .Pp
 .Cm <movement>
@@ -623,27 +597,21 @@ can be one of the following:
 .It Cm view
 View the corresponding tag on the current monitor.  This has the effect of changing to the
 corresponding desktop/workspace.
-
 .It Cm focusview
 Switch to the view of the corresponding tag and focus the first window in the view.
-
 .It Cm toggleview
 Toggle viewing the corresponding tag on the current monitor.  This does not change
 desktop/workspace, just changes which windows are shown on the current desktop/workspace.
-
 .It Cm tag
 Tag the selected window with the corresponding tag.  This has the effect of sending the window
 to the desktop/workspace corresponding to the tag.
-
 .It Cm toggletag
 Toggle the corresponding tag on the selected window.  This affects on which desktops/workspaces
 the window is displayed.
-
 .It Cm taketo
 Tag the selected window with only the corresponding tag and switch the view on the current monitor
 to that of the tag.  This has the effect of taking the window to the desktop/workspace
 corresponding to the tag.
-
 .It Cm sendto
 Tag the selected window with only the corresponding tag.  This has the effect of sending the window
 to the desktop/workspace without following it.
@@ -695,30 +663,23 @@ Defaults:
 .Dl Cm Adwm*viewprevtag Ns : Ar "A + Tab"
 .Dl Cm Adwm*viewlefttag Ns : Ar "CA + Left"
 .Dl Cm Adwm*viewrighttag Ns : Ar "CA + Right"
-
 .Dl Cm Adwm*view0 Ns : Ar "A + F1" , "C + F1" , "W + F1" , "A + 1"
 .Dl Cm Adwm*view1 Ns : Ar "A + F2" , "C + F2" , "W + F2" , "A + 2"
 .Dl ...
 .Dl Cm Adwm*view11 Ns : Ar "A + F12" , "C + F12" , "W + F12"
-
 .Dl Cm Adwm*toggleview0 Ns : Ar "CA + 1"
 .Dl Cm Adwm*toggleview1 Ns : Ar "CA + 2"
 .Dl ...
 .Dl Cm Adwm*toggleview9 Ns : Ar "CA + 0"
-
 .Dl Cm Adwm*focusview6 Ns : Ar "A + s"
-
 .Dl Cm Adwm*tag0 Ns : Ar "AS + 1"
 .Dl Cm Adwm*tag1 Ns : Ar "AS + 2"
 .Dl ...
 .Dl Cm Adwm*tag9 Ns : Ar "AS + 0"
-
 .Dl Cm Adwm*toggletag0 Ns : Ar "CAS + 1"
 .Dl Cm Adwm*toggletag1 Ns : Ar "CAS + 2"
 .Dl ...
 .Dl Cm Adwm*toggletag9 Ns : Ar "CAS + 0"
-
-
 .It Cm [<prefix>]<cycle>[<suffix>][<range>]
 .Pp
 .Cm <cycle>
@@ -908,9 +869,9 @@ Default:
 .El
 .Sh DEFAULTS
 The default key bindings are provided in the default key file,
-.Pa /usr/share/adwm/keysrc ,
+.Pa @pkgconfdir@/keysrc ,
 but may be overridden by the style (e.g. the default style located in
-.Pa /usr/share/adwm/styles/default/keysrc )
+.Pa @pkgconfdir@/styles/default/keysrc )
 and ultimately overridden by keys specified by the user in the user
 file (typically located in
 .Pa $HOME/.adwm/keysrc Ns ).
@@ -936,7 +897,7 @@ are also provided to smooth transition, or to make
 .Xr adwm 1
 immediately usable to these users as well.
 .Sh SEE ALSO
-.Rb
+.Rs
 .Xr adwm 1 ,
 .Xr adwm-config 5 ,
 .Xr spectrwm 1 ,

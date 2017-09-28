@@ -1,4 +1,6 @@
-.Dd $Mdocdate$
+.\".Dd $Mdocdate$
+.Dd @DATE@
+.\".Dt ADWM \&1 "User Commands"
 .Dt ADWM \&1 "User Commands"
 .Os @PACKAGE@ @VERSION@
 .Sh NAME
@@ -40,7 +42,7 @@ By default,
 loads the configuration file from
 .Pa ~/.@PACKAGE@/@PACKAGE@rc,
 if present, then looks for the system-wide configuration file
-.Pa /usr/share/@PACKAGE@/@PACKAGE@rc .
+.Pa @pkgconfdir@/@PACKAGE@rc .
 .El
 .Pp
 The following notation is used in this page:
@@ -682,8 +684,20 @@ To show the title centered and the close button on the right:
 is fully EWMH (NetWM), WMH (WinWM), MWMH (Motif/DTWM) and ICCCM 2.0 compliant,
 so you can use your favourite panel or pager. 
 .Sh SEE ALSO
-.Xr adwm-keys 1 ,
-.Xr xdg-dmenu 1 .
+.Rs
+.Xr adwm-config 5 ,
+.Xr adwm-keys 5 ,
+.Xr adwm-style 5 ,
+.Xr xde-dmenu 1 ,
+.Xr xde-identify 1 ,
+.Xr xde-xlock 1 ,
+.Xr xde-namews 1 ,
+.Xr xde-searchws 1 ,
+.Xr xde-searchwin 1 ,
+.Xr xde-menu 1 ,
+.Xr xde-wkspmenu 1 ,
+.Xr xde-winmenu 1 .
+.Re
 .Sh BUGS
 parsekey() doesn't handle non-alphanumeric keysyms.
 .Pp

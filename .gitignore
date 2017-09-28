@@ -1,11 +1,15 @@
 *~
 aclocal.m4
 adwm
+adwm.1
 adwm.1.man
 adwm-config.man
+adwm-config.5
 adwm-keys.man
+adwm-keys.5
 adwm.man
 adwm-style.man
+adwm-style.5
 autoconf.h
 autoconf.h.in
 autoconf.h.in~

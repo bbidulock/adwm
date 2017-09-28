@@ -1,0 +1,692 @@
+.Dd $Mdocdate$
+.Dt ADWM \&1 "User Commands"
+.Os @PACKAGE@ @VERSION@
+.Sh NAME
+.Nm @PACKAGE@
+.Nd advanced dynamic window manager for X
+.Sh SYNOPSIS
+.Nm @PACKAGE@
+.Bk -words
+.Op Fl v
+.Op Fl f Ar conf
+.Ek
+.Sh DESCRIPTION
+.Nm
+is a lightweight window manager for X based on dwm's source code.
+It manages windows in maximized, floating and tiled layouts.
+Either layout can be applied dynamically, optimizing the environment for the
+application in use and the task performed.
+.Pp
+In maximized layout only one window can be seen at the moment, but you
+can switch between them with hotkeys.
+In floating layout windows can be resized and moved freely.
+Dialog windows are always managed floating, regardless of the layout applied.
+.Pp
+Windows are grouped by tags. Each window can be tagged with one or
+multiple tags. Selecting certain tags displays all windows with these tags.
+.Pp
+.Nm
+draws a small border around windows to indicate the focus state and an
+optional titlebar.
+.Pp
+The options are as follows:
+.Bl -tag -width "XXXXXXXXXXXX"
+.It Fl v
+Prints version information to standard output, then exits.
+.It Fl f Ar conf
+Specifies an alternative configuration file.
+By default,
+.Nm
+loads the configuration file from
+.Pa ~/.@PACKAGE@/@PACKAGE@rc,
+if present, then looks for the system-wide configuration file
+.Pa /usr/share/@PACKAGE@/@PACKAGE@rc .
+.El
+.Pp
+The following notation is used in this page:
+.Pp
+.Bl -tag -width Ds -offset indent -compact
+.It Ic A
+Alt.
+.It Ic C
+Control.
+.It Ic S
+Shift.
+.It Ic W
+Windows key.
+.It Ic M
+Mod key (definable to one of the above).
+.It Ic M1
+Left mouse button.
+.It Ic M2
+Middle mouse button.
+.It Ic M3
+Right mouse button.
+.El
+.Sh BINDINGS
+The default mouse bindings are:
+.Pp
+.Bl -tag -width "XXXXXXXX" -offset indent -compact
+.It Ic M1
+When pressed on the titlebar, focuses window and raises it on top of the stack.
+.It Ic M2
+When pressed on the titlebar, resizes window.
+.It Ic M3
+When pressed on the root window, draws a rectangle to start a terminal in it.
+.It Ic A-M1
+Moves current window while dragging.
+Tiled windows will be toggled to the floating state.
+.It Ic A-M2
+Zooms/cycles current window to/from master area.
+If it is floating (but not fixed) it will be toggled to the tiled state,
+instead.
+.It Ic A-M3
+Resizes current window while dragging.
+Tiled windows will be toggled to the floating state.
+.El
+.Pp
+The default key bindings are:
+.Pp
+.Bl -tag -width "XXXXXXXXXXXX" -offset indent -compact
+.It Ic A + [F1..Fn]
+Views all windows with n-th tag.
+.It Ic A + Return
+Zooms/cycles current window to/from master area (tiled layout only).
+.It Ic A + space
+Toggles between tiled and floating layout (affects all windows).
+.It Ic A + Tab
+Toggles to the previously selected tags.
+.It Ic A + b
+Toggles on/off statusbar space.
+.It Ic A + f
+Enables floating mode.
+.It Ic A + h
+Decreases the master area width about 5% (tiled layout only).
+.It Ic A + i
+Enables floating mode.
+.It Ic A + j
+Focuses next window.
+.It Ic A + k
+Focuses previous window.
+.It Ic A + l
+Increases the master are width about 5% (tiled layout only).
+.It Ic A + m
+Enables maximized (monocle) mode.
+.It Ic A + r
+Enables tiled mode.
+.It Ic A + t
+Starts xterm.
+.It Ic A + w
+Enables bottom-tiled mode.
+.It Ic AC + [1..n]
+Adds/removes all windows with n-th tag to/from the view.
+.It Ic AC + q
+Quits
+.Nm .
+.It Ic ACS + [1..n]
+Adds/removes n-th tag to/from current window.
+.It Ic AS + [1..n]
+Applies n-th tag to current window.
+.It Ic AS + c
+Closes focused window.
+.El
+.Pp
+Additional default key bindings consistent with
+.Xr spectrwm 1
+are as follows:
+.Pp
+.Bl -tag -width "XXXXXXXXXXXXXXXXXXXX" -offset indent -compact
+.It Ic "WS + Return"
+term
+.It Ic "W + p"
+menu
+.It Ic "WS + q"
+quit
+.It Ic "W + space"
+layoutnext
+.It Ic "WS + backslash"
+flipview
+.It Ic "WS + space"
+resetview
+.It Ic "W + h"
+decmwfact
+.It Ic "W + l"
+incmwfact
+.It Ic "W + comma"
+incnmaster
+.It Ic "W + period"
+decnmaster
+.It Ic "WS + comma"
+incncolumn
+.It Ic "WS + period"
+decncolumn
+.It Ic "W + Return"
+zoom
+.It Ic "W + j, W + Tab"
+focusnext
+.It Ic "W + k, WS + Tab"
+focusprev
+.It Ic "W + m"
+focusmain
+.It Ic "W + u"
+focusurgent
+.It Ic "WS + j"
+swapnext
+.It Ic "WS + k"
+swapprev
+.It Ic "W + b"
+togglestruts
+.It Ic "WS + b"
+togglestrutsall
+.It Ic "W + x"
+killclient
+.It Ic "WS + x"
+killclient
+.It Ic "W + " Ns Op Ar "1-9,0,F1-F12"
+viewtag 1 to 22
+.It Ic "WS + " Ns Op Ar "1-9,0,F1-F12"
+sendto 1 to 22
+.It Ic "W + " Ns Op Ar "KP_1-KP_9"
+monitor 1 to 9
+.It Ic "WS + " Ns Op Ar "KP_1-KP_9"
+sendtomon 1 to 9
+.It Ic "W + Right"
+focusnextwin
+.It Ic "W + Left"
+focusprevwin
+.It Ic "W + Up"
+focusnext
+.It Ic "W + Down"
+focusprev
+.It Ic "WS + a"
+sendtonext
+.It Ic "WS + Left"
+sendtoprev
+.It Ic "WS + Up"
+viewlast
+.It Ic "WS + Right"
+monitornext
+.It Ic "WS + Down"
+monitorprev
+.It Ic "W + s"
+spawn
+.Dq scrot -s
+.It Ic "WS + s"
+spawn
+.Dq scrot
+.It Ic "WS + v"
+spawn
+.Dq xde-identify|gxmessage -file -
+.It Ic "W + t"
+togglefloating
+.It Ic "WS + Delete"
+spawn
+.Dq xde-xlock -l
+.It Ic "WS + i"
+spawn
+.Dq /bin/true
+.It Ic "W + w"
+iconify
+.It Ic "WS + w"
+uniconify
+.It Ic "W + e"
+togglemax
+.It Ic "WS + r"
+toggleraisetiled
+.It Ic "W + v"
+button 2
+.It Ic "W + minus"
+decresizex
+.It Ic "W + equal"
+incresizex
+.It Ic "WS + minus"
+decresizey
+.It Ic "WS + equal"
+incresizey
+.It Ic "W + bracketleft"
+decmovex
+.It Ic "W + bracketright"
+incmovex
+.It Ic "WS + bracketleft"
+decmovey
+.It Ic "WS + bracketright"
+incmovey
+.It Ic "WS + slash"
+spawn
+.Dq xde-namews
+.It Ic "W + slash"
+spawn
+.Dq xde-searchws
+.It Ic "W + f"
+spawn
+.Dq xde-searchwin
+.El
+.Ss CUSTOMIZATION
+The configuration file is a set of X resources (with a class of Adwm),
+which are described in the sections below.
+.Pp
+Every relative path specified is relative to the directory of the
+configuration file.
+.Ss MAIN SETTINGS
+.Bl -tag -width Ds
+.It Ic attachaside
+Set new windows as slave or master.
+.Bl -column "Character" "Meaning" -offset indent
+.It Sy "Value" Ta Sy "Meaning"
+.It Li "0" Ta "New windows as master"
+.It Li "1" Ta "New masters as slave"
+.El
+.It Ic deflayout
+Layout applied to tag if not explicitly set by tags.layout later.
+.Bl -column "Character" "Meaning" -offset indent
+.It Sy "Value" Ta Sy "Meaning"
+.It Li "b" Ta "Bottom Stack"
+.It Li "f" Ta "Floating"
+.It Li "i" Ta "Ifloating"
+.It Li "m" Ta "Maximized"
+.It Li "t" Ta "Tiled"
+.It Li "g" Ta "Grid"
+.El
+.It Ic modkey
+Choose modkey.
+.It Ic mwfact
+Space occupied by master window in tiled layout (fraction of 1).
+.It Ic nmaster
+Number of clients in master area in tiled layout.
+.It Ic sloppy
+Sets the type of sloppy focus to use.
+.Bl -column "Number" "Meaning" -offset indent
+.It Sy "Value" Ta Sy "Meaning"
+.It Li "0" Ta "Click to focus"
+.It Li "1" Ta "Sloppy focus for floating clients"
+.It Li "2" Ta "Sloppy focus for everything"
+.It Li "3" Ta "Sloppy focus and raise on focus"
+.El
+.El
+.Ss BORDER SETTINGS
+.Bl -tag -width Ds
+.It Ic border
+Width of the border (in pixels).
+.El
+.Ss BUTTON SETTINGS
+In the settings that follow, '*' can be replaced by the 'name' as follows:
+.Bl -column "maximize" "State" -offset indent
+.It Sy "Name" Ta Sy "Toggle State"
+.It Li "close" Ta "-"
+.It Li "iconify" Ta "-"
+.It Li "maximize" Ta "maximized vertical or horizontal"
+.It Li "shade" Ta "shaded"
+.It Li "stick" Ta "sticky"
+.It Li "fill" Ta "filled"
+.It Li "float" Ta "floating"
+.It Li "resize" Ta "-"
+.El
+.Bl -tag -width Ds
+.It Ic button.*.button[n].action
+Where [n] is a digit between 1 and 5 inclusive indicating the action
+to perform when the mouse button is released over the titlebar button.
+.It Ic button.*.pixmap
+Sets the default pixmap for the buttons in the titlebar.  All other pixmaps (with
+the exception of disabled pixmaps) ultimately default to this pixmap when unspecified.
+.It Ic button.*.pressed.pixmap
+Sets the pixmap for the button while pressed.
+.It Ic button.*[.toggled][.disabled].focus.pixmap
+Sets the pixmap for the button while the client window is focused,
+optionally while the button is in the toggled or disabled state.
+Toggled pixmaps default to non-toggled pixmaps.  A missing disabled pixmap
+causes the button to dissapear instead.
+Focus pixmaps default to the default pixmap.
+.It Ic button.*[.toggled][.disabled].unfocus.pixmap
+Sets the pixmap for the button while the client window is unfocused,
+optionally while the button is in the toggled or disabled state.
+Toggled pixmaps default to non-toggled pixmaps.  A missing disabled pixmap
+causes the button to dissapear instead.
+Unfocus pixmaps default to focused pixmaps.
+.It Ic button.*[.toggled][.disabled].hover.pixmap
+Sets the pixmap for the button while the pointer is hovering over the button,
+optionally while the button is in the toggled or disabled state.
+Toggled pixmaps default to non-toggled pixmaps.  A missing disabled pixmap
+causes the button to dissapear instead.
+Hover pixmaps default to focused pixmaps.
+.El
+.Ss COLOR SETTINGS
+.Bl -tag -width Ds
+.It Ic normal.bg
+Sets the titlebar background for unfocused windows.
+.It Ic normal.border
+Sets the color of a small border around each unfocused window.
+.It Ic normal.button
+Sets the button foreground for unfocused windows.
+.It Ic normal.fg
+Sets the titlebar foreground for unfocused windows.
+.It Ic normal.shadow
+Sets the titlebar drop shadow color for unfocused windows.
+.It Ic selected.bg
+.It Ic selected.border
+.It Ic selected.button
+.It Ic selected.fg
+.It Ic selected.shadow
+Sets color options for focused windows.
+.El
+.Ss HACKS SETTINGS
+.Bl -tag -width Ds
+.It Ic hidebastards
+Hide panels, pagers and others with togglestruts function.
+.El
+.Ss KEY AND MOUSE BINDING SETTINGS
+.Bl -tag -width Ds
+.It Ic ACSW + key_or_button [ = options][, ACSW + key_or_button [ = options]] ...
+Binds key or button to the specified command (see
+.Sx "COMMANDS" Ns ).
+Spaces are mandatory.
+.Pp
+Key is taken from the X11 files (usually located under an include directory)
+.Pa keysym.h
+and,
+.Pa XF86keysym.h
+and removing the XK_ prefix before use.
+.Pp
+Button is one of 'Button1', 'Button2', 'Button3', 'Button4' or 'Button5', indicating
+the mouse button to bind, followed by a single space and one
+of 'Window', 'Frame', 'Title' or 'Root', indicating where the button press must occur.
+.Pp
+Commands options are specified after an equal sign.
+.Pp
+Additional key bindings for the same command, with the same or different
+options, can be specified following a comma.
+.El
+.Ss MISC SETTINGS
+.Bl -tag -width Ds
+.It Ic command
+Application to run on right click (Button 3) on root window.
+The default without a configuration file is
+.Sy Ic xterm ,
+(defined by the
+.Sy COMMAND
+configuration macro).
+The default configuration file defines this to
+.Sy Ic "xde-menu -P -b 3" ,
+which will display a root menu at the pointer location.
+.It Ic command2
+Application to run on middle click (Button 2) on root window.
+The default without a configuration file is
+.Sy NULL ,
+(defined by the
+.Sy COMMAND2
+configuration macro).  The default configuration file sets this to
+.Sy Ic "xde-wkspcmenu -p -b 2" ,
+which will display a menu of workspaces and windows at the pointer location.
+.It Ic command3
+Application to run on left click (Button 1) on root window.  (Note: this setting is not recommended
+as Button 1 is used to cancel other menus and will still launch the application associated with this
+command.)
+The default without a configuration file is
+.Sy NULL ,
+(defined by the
+.Sy COMMAND3
+configuration macro).  The default configuration file does not set this.
+.It Ic menucommand
+Application to run when the menu icon on the title bar is clicked (Button 1).
+The default with no configuration file is
+.Sy NULL ,
+(defined by the
+.Sy MENUCOMMAND
+configuration macro).  The default configuration file sets this to
+.Sy Ic "xde-winmenu -p -b 1" ,
+which will display a menu of window actions in the upper left corner of the window.
+.It Ic opacity
+Opacity value for inactive windows (xcompmgr needed).
+.El
+.Ss TAGS SETTINGS
+.Bl -tag -width Ds
+.It Ic tags.layout{...}
+Layout per tag on start (see
+.Ic deflayout )
+.Ns .
+.It Ic tags.name{...}
+Names of the tags.
+.It Ic tags.number
+Number of tags.
+.El
+.Ss TITLE SETTINGS
+.Bl -tag -width Ds
+.It Ic decoratetiled
+If one (1), draw titles on windows (by default) in tiled mode.
+The default without a configuration file is zero (0), (defined by the
+.Sy DECORATETILED
+configuration macro).
+The value can be toggled with key bindings.
+.It Ic decoratemax
+If one (1), draw titles on maximized windows (by default).
+.PP
+The default without a configuration file is one (1), (defined by the
+.Sy DECORATEMAX
+configuration macro).
+The value can be toggled with key bindings.
+.It Ic font
+Titlebar font.
+.It Ic normal.drop
+Drop shadow in pixels (typically 1, default 0) for unfocused window fonts.
+.It Ic normal.font
+Titlebar font for unfocused windows.
+.It Ic selected.drop
+Drop shadow in pixels (typically 1, default 0) for focused window fonts.
+.It Ic selected.font
+Titlebar font for focused windows.
+.It Ic spacing
+Spacing in pixels between titlebar elements.
+.It Ic title
+Titlebar height.  The default is defined by the
+.Sy TITLEHEIGHT
+configuration macro, which defaults to zero (0).
+.It Ic titlelayout
+Titlebar consists of 3 parts separated with dashes or spaces.
+Left is aligned to left, center to center and right to right (obviously).
+Default value is "N  IMC" meaning name on the left iconify, maximize and
+close buttons on right (note 2 spaces).
+.Bl -column "Character" "Meaning" -offset indent
+.It Sy "Value" Ta Sy "Meaning"
+.It Li "dash" Ta "skip space (space can't be used as first character)"
+.It Li "space" Ta "Same as the above"
+.It Li "I" Ta "Iconify"
+.It Li "M" Ta "Maximize"
+.It Li "C" Ta "Close"
+.It Li "S" Ta "Shade"
+.It Li "A" Ta "Stick"
+.It Li "L" Ta "Left half"
+.It Li "R" Ta "Right half"
+.It Li "X" Ta "Fill"
+.It Li "F" Ta "Float"
+.It Li "Z" Ta "Size"
+.It Li "N" Ta "Window name"
+.It Li "T" Ta "Tagbar"
+.It Li "|" Ta "Separator"
+.El
+.El
+.Ss COMMANDS
+.Bl -tag -width "XX"
+.It Ic appendtag , rmlasttag
+Appends a new tag or removes the last defined tag.  Effectivley increases
+or decreases the number of "desktops".
+.It Ic "{set|inc|dec}mwfact [-+]factor"
+Sets, increases or decreases the master window factor.  Without the
+leading  '-' or '+', sets the factor.
+The default when
+.Ic factor
+is not specified is to set the factor to 60%,
+or increase or decrease the factor by 5%.
+.Pp
+Defaults:
+.Dl Sy "Adwm*decmwfact: A + h, W + h"
+.Dl Sy "Adwm*incmwfact: A + l, W + l"
+.It Ic "{set|inc|dec}nmaster [-+]value"
+Sets, increases or decreases the number of master windows by
+.Ic value .
+When the
+.Ic value
+is zero (0), sets the default number of master windows.
+The default when
+.Ic value
+is not specified is to set the number of masters to one (1), or increase or
+decrease the number of masters by one (1).
+.Pp
+Defaults:
+.Dl Sy "Adwm*decnmaster: AS + j, W + period, WS + l"
+.Dl Sy "Adwm*incnmaster: AS + k, W + comma, WS + h"
+.It Ic "{set|inc|dec}ncolumns [-+]value"
+Set, increase or decrease the number of columns (or rows) in the grid layout.
+The default when
+.Ic value
+is not specified, is to set the number of columns (rows) to one (1), or
+increase or decrease the number by one (1).
+.Pp
+Defaults:
+.Dl Sy "Adwm*decncolumns: WC + l, WS + period"
+.Dl Sy "Adwm*incncolumns: WC + h, WS + comma"
+.It Ic "{set|inc|dec}margin [-+]pixels"
+Set, increase or decrease the margin between tiled windows by
+.Ic pixels .
+The default when
+.Ic pixels
+is not specified is to set the number to zero (0), or to increase or decrease
+the number by one (1).
+.It Ic "{set|inc|dec}border [-+]pixels"
+Set, increase or decrease the window border around window by
+.Ic pixels .
+The default when
+.Ic pixels
+is not specifies is to set the number to one (1), or to increase or decrease
+the number by one (1).
+.It Ic "{[set]|{un|de|unset}|toggle}floating[sel|ptr|all|any|every]"
+.Pp
+Examples:
+.Dl Sy "Adwm*togglefloating: AS + space, W + t, WC + space"
+.It Ic "{[set]|{un|de|unset}|toggle}fill[sel|ptr|all|any|every]"
+.Pp
+Examples:
+.Dl Sy "Adwm*togglefill: AC + a : g : g, CS + Down"
+.It Ic "{[set]|{un|de|unset}|toggle}full[sel|ptr|all|any|every]"
+.It Ic "{[set]|{un|de|unset}|toggle}max[sel|ptr|all|any|every]"
+.It Ic "{[set]|{un|de|unset}|toggle}maxv[sel|ptr|all|any|every]"
+.It Ic "{[set]|{un|de|unset}|toggle}maxh[sel|ptr|all|any|every]"
+.It Ic "{[set]|{un|de|unset}|toggle}shade[d][sel|ptr|all|any|every]"
+.It Ic "{[set]|{un|de|unset}|toggle}{hide|hidden}[sel|ptr|all|any|every]"
+.It Ic "{[set]|{un|de|unset}|toggle}{min|iconify}[sel|ptr|all|any|every]"
+.It Ic "{[set]|{un|de|unset}|toggle}above[sel|ptr|all|any|every]"
+.It Ic "{[set]|{un|de|unset}|toggle}below[sel|ptr|all|any|every]"
+.It Ic "{[set]|{un|de|unset}|toggle}pager[sel|ptr|all|any|every]"
+.It Ic "{[set]|{un|de|unset}|toggle}taskbar[sel|ptr|all|any|every]"
+.It Ic "{[set]|{un|de|unset}|toggle}showing[sel|ptr|all|any|every]"
+.It Ic "{[set]|{un|de|unset}|toggle}struts[sel|ptr|all|any|every]"
+.It Ic "{[set]|{un|de|unset}|toggle}dectiled[sel|ptr|all|any|every]"
+.It Ic "{[set]|{un|de|unset}|toggle}sticky[sel|ptr|all|any|every]"
+.It Ic focusicon
+Focuses the next iconified window.
+.It Ic focusnext
+.It Ic focusprev
+Focuses next or previous window.
+.It Ic focusview#
+Toggles view number # and focuses the first client in it.
+.It Ic iconify
+Iconifies the current focused window.
+.It Ic killclient
+Closes current focused window.
+.It Ic movedown
+.It Ic moveleft
+.It Ic moveright
+.It Ic moveup Ar x y w h
+Moves the window by the specified number of pixels in the specified direction.
+.It Ic restart [arguments]
+Restarts.  Can be given an optional arguments to restart with different
+command line arguments.
+.Nm .
+.It Ic quit [command]
+Exits.  Can be given an optional command to start a different window manager.
+.Nm .
+.It Ic resizedecx
+.It Ic resizedecy
+.It Ic resizeincx
+.It Ic rezizeincy Ar x y w h
+Resizes the window by the specified number of pixels in the specified
+direction.
+.It Ic rotateview
+.It Ic unrotateview
+Rotates the current tiling layout in the clockwise or counter clockwise directions.
+.It Ic rotatezone
+.It Ic unrotatezone
+Rotates the zone of the selected window (the master zone, slave zone,
+or grid orientation) in the clockwise or counter clockwise direction.
+.It Ic rotatewins
+.It Ic unrotatewins
+Rotates the currently tiled window through the available positions in the
+clockwise or counter clockwise directions.
+.It Ic rule# Ar class.title tag isfloating hastitle
+Sets a rule for the specified window class or title.
+NULL indicates that no tag is needed.
+.It Ic spawn#
+Runs specified program (upto 64).
+.It Ic tag#
+Tags current window with tag number #.
+.It Ic toggledectiled
+Toggles decoration of tiled windows.
+.It Ic togglefill
+Toggles filling the available area with a floating window.
+.It Ic togglefloating
+Toggles floating or tiled mode.
+.It Ic togglehidden
+Toggles hiding the currently focused window.
+.It Ic togglemaxh
+.It Ic togglemaxv
+Toggles maximization of the currently focused window in the
+horizontal or vertical directions.
+.It Ic togglemonitor
+Switches from one monitor to another.
+.It Ic toggleshade
+Toggles the shading and unshading of the currently focused window.
+.It Ic togglestruts
+.Nm
+has no bar, but this command switches the area on top or bottom which won't
+be covered by windows in tiled on monocle mode.
+.It Ic toggleview#
+Toggles view number #.
+.It Ic view#
+Views tag number #.
+.It Ic viewlefttag
+.It Ic viewrighttag
+Views tag on left or right.
+.It Ic viewprevtag
+View previous tag set.
+.It Ic zoom
+Zooms the currently focused window.  If it is a master, it
+becomes a slave; and visa versa.
+.El
+.Sh EXAMPLES
+To move a window five pixels to the right:
+.Pp
+.Dl Adwm*moveright: AS + l = +5 0 0 0
+.Pp
+To resize a window five pixels down:
+.Pp
+.Dl Adwm*resizedecy: AS + v = 0 0 0 -5
+.Pp
+To make mplayer float and with a title by default:
+.Dl Adwm*rule0: Mplayer.* NULL 1 1
+.Pp
+To spawn an xterm when A + T is pressed:
+.Dl Adwm*spawn0: A + t = xterm
+.Pp
+To show the title centered and the close button on the right:
+.Dl Adwm*titlelayout: -T-C
+.Sh STANDARDS
+.Nm
+is fully EWMH (NetWM), WMH (WinWM), MWMH (Motif/DTWM) and ICCCM 2.0 compliant,
+so you can use your favourite panel or pager. 
+.Sh SEE ALSO
+.Xr adwm-keys 1 ,
+.Xr xdg-dmenu 1 .
+.Sh BUGS
+parsekey() doesn't handle non-alphanumeric keysyms.
+.Pp
+Please resport bugs to <https://github.com/bbidulock/@PACKAGE@/issues>.
+.Sh AUTHORS
+.An Brian Bidulock Aq bidulock@openss7.org

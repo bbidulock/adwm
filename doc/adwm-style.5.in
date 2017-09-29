@@ -19,31 +19,30 @@
 .Sh DESCRIPTION
 .Nm @PACKAGE@
 is a light-weight, reparenting, dynamic tiling/stacking window manager,
-intended on being fully controllable using only the keyboard:
-the objective of all dynamic tiling window managers.  However,
+intended on being fully controllable using only the keyboard: the
+objective of all dynamic tiling window managers.  However,
 .Nm @PACKAGE@
-also supports regular stacking floating window management as
-well, and decorative frames are applied to windows in a number of
-circumstances.  To control the styling of the decorative border,
+also supports regular stacking floating window management as well, and
+decorative frames are applied to windows in a number of circumstances.
+To control the styling of the decorative border,
 .Nm @PACKAGE@
 supports customizable style elements.
 .Pp
-Deocrative window borders can contain title text as well as
-buttons (defined as pixmaps) that can perform a number of
-predefined actions on the window around which they appear.
-Customizable style elements exist to determine which pixmaps are
-displayed and under which condition.
-.Pp
+Decorative window borders can contain title text as well as buttons
+(defined as pixmaps) that can perform a number of predefined actions on
+the window around which they appear.  Customizable style elements exist
+to determine which pixmaps are displayed and under which conditions.
+Also,
 .Nm @PACKAGE@
-directly supports a WindowMaker style \(lqdock\(rq.  Window Maker
-dock applications are reparented into tiles within the dock.
-These types also support customizable style elements.
+directly supports a Window Maker style
+.Dq dock .
+Window Maker dock applications are re-parented into tiles within the
+dock.  These types also support customizable style elements.
 .Pp
-Customizable style elements are defined in an X Resource
-formatted configuration file.  Styles can either be part of the
-main configuration file, or they can be included or referenced
-from the main configuration file.  It is typical to place the
-style elements in a file named
+Customizable style elements are defined in an X Resource formatted
+configuration file.  Styles can either be part of the main configuration
+file, or they can be included or referenced from the main configuration
+file.  It is typical to place the style elements in a file named
 .Pa stylerc
 in the same directory as the main configuration file (e.g. in the
 .Pa $HOME/.adwm/stylerc
@@ -56,41 +55,60 @@ the
 .Nm @PACKAGE@
 resource file, is as follows:
 .Pp
-.Dl "Adwm*" Ns Cm element Ns Li : Ar <value>
+.Dl Adwm* Ns Cm element Ns Li : Ar <value>
 .Pp
 Where the fields are defined as follows:
 .Pp
-.Bl -tag -width "Xx" -compact
+.Bl -tag -width "XX"
 .It Cm element
 One of the elements described under
 .Sx ELEMENTS .
-.It Ar <value> Li = { Ns Ar <pixmap> Ns Li | Ns Ar <font> Ns Li | Ns Ar <color> Ns Li | Ns Ar <number> Ns Li | Ns Ar <string> Ns Li }
-The value depends on the element that is being specified.  Typically
-the value is a path and name of a pixmap file, an X11 true-type or
+.It Ar <value> Li = Li { Ns Ar <pixmap> Ns Li | Ns Ar <font> Ns Li | Ns Ar <color> Ns Li | Ns Ar <number> Ns Li | Ns Ar <string> Ns Li | Ns Ar <bool> Ns Li }
+The value depends on the element that is specified.  Typically the
+value is a path and name of a pixmap file, an X11 true-type or
 bitmapped font specification, an X11 color specification, a number, a
-string, or a specially formatted value.
+string, a boolean, or a specially formatted value as follows:
+.Pp
+.Bl -tag -width "XXXXXXXX"
 .It Ar <pixmap>
-Pixmaps are specified with a full or relative path and file name.
-When the path is relative, it is relative to the directory in which
-the style file resides.  Example:
-.Dl "Adwm*" Ns Cm button.iconify.pixmap Ns Li : Pa pixmaps/min_focused.xpm
+Pixmaps are specified with a full or relative path and file name.  When
+the path is relative, it is relative to the directory in which the
+style file resides.
+.Pp
+Example:
+.Li Adwm* Ns Cm button.iconify.pixmap Ns Li : Pa pixmaps/min_focused.xpm
 .It Ar <font>
-Fonts are specified with an XFT parsable font specification string.
+Fonts are specified with an Fontconfig pattern string or an X Logical
+Font Description (XFLD) formatted font specification string.  See
+.Xr FcParseName 3
+and
+.Xr xft 3 .
+.Pp
 Example:
-.Dl "Adwm*" Ns Cm normal.font Ns Li : Ar Liberation Sans:size=9:medium
+.Li Adwm* Ns Cm normal.font Ns Li : Ar "Liberation Sans:size=9:medium"
 .It Ar <color>
-Colors are specified as X resource colors.  This can be a color name
-or color specification.
+Colors are specified as X resource colors.  This can be a color name or
+color specification.  For the possible format of colors, see
+.Xr XParseColor 3 .
+.Pp
 Example:
-.Dl "Adwm*" Ns Cm selected.shadow Ns Li : Ar #394870
+.Li Adwm* Ns Cm selected.shadow Ns Li : Ar #394870
 .It Ar <number>
-A decimal number. Example:
-.Dl Adwm* Ns Cm title Ns Li : Ar 15
-.Dl Adwm* Ns Cm grips Ns Li : Ar 3
+A decimal number.
+.Pp
+Example:
+.Li Adwm* Ns Cm title Ns Li : Ar 15
 .It Ar <string>
 A specially formatted string as specified by the element definition.
+.Pp
 Example:
-.Dl Adwm* Ns Cm titlelayout Ns Li : Ar "EFASLN  RIMC"
+.Li Adwm* Ns Cm titlelayout Ns Li : Ar "EFASLN  RIMC"
+.It Ar <bool>
+A boolean value taking either zero (0) or one (1) as an argument.
+.Pp
+Example:
+.Li Adwm* Ns Cm dectiled Ns Li : Ar 0
+.El
 .El
 .Sh ELEMENTS
 .Pp
@@ -100,42 +118,70 @@ format of the command resource (without the
 portion) and the possible arguments for each element, in accordance
 with the element syntax described above under
 .Sx SYNTAX .
+.Ss TITLE-BAR STYLE ELEMENTS
+.Cm @PACKAGE@
+has a number of title-bar style elements that can be used to theme the
+decorative border that may be placed around client windows.  Some
+settings (such as backgrounds) are also applicable to the dock.
 .Bl -tag -width "XX"
 .It Cm font Ar <font>
-Specifies the font to be used for title bar text.  Example:
-.Dl Adwm* Ns Cm font Ns Li : Ar "Liberation Sans:size=8:medium"
-.It Cm border Ar <number>
-Specifies the number of pixels of border that surrounds the title bar
-and resize grips.  Typically set to one (1).  Example:
-.Dl Adwm* Ns Cm border Ns Li : Ar 1
-.It Cm margin Ar <number>
-Specifies the margin between the titlebar elements and the titlebar
-border.  Typically set to zero (0) to conserve screen real estate.
+Specifies the font to be used for title bar text.
+.Pp
 Example:
-.Dl Adwm* Ns Cm margin Ns Li : Ar 0
-.It Cm outline Ar <number>
-Specifies the number of pixels to use to outline the title bar and
-resize grips.  Example:
-.Dl Adwm* Ns Cm outline Ns Li : Ar 1
-.It Cm spacing Ar <number>
+.Li Adwm* Ns Cm font Ns Li : Ar "Liberation Sans:size=8:medium"
+.It Cm border Ar <pixels>
 Specifies the number of pixels,
-.Ar <number> ,
-to be used between titlebar elements. Example:
-.Dl Adwm* Ns Cm spacing Ns Li : Ar 1
-.It Cm title Ar <number>
-Specifes the height of the title bar in pixels.  Example:
-.Dl Adwm* Ns Cm title Ns Li : Ar 15
-.It Cm grips Ar <number>
-Specifies the height of the resize groups in pixels.  Example:
-.Dl Adwm* Ns Cm grips Ns Li : Ar 3
+.Ar <pixels> ,
+of border that surrounds the title bar,
+resize grips and dock application tiles.
+Typically set to one (1).
+.Pp
+Example:
+.Li Adwm* Ns Cm border Ns Li : Ar 1
+.It Cm margin Ar <pixels>
+Specifies the number of pixels,
+.Ar <pixels> ,
+to use as a margin between the title bar
+elements and the title bar border.
+Typically set to zero (0) to conserve screen real estate.
+.Pp
+Example:
+.Li Adwm* Ns Cm margin Ns Li : Ar 0
+.It Cm outline Ar <pixels>
+Specifies the number of pixels,
+.Ar <pixels> ,
+to use to outline the title bar and
+resize grips.
+Typically set to one (1).
+.Pp
+Example:
+.Li Adwm* Ns Cm outline Ns Li : Ar 1
+.It Cm spacing Ar <pixels>
+Specifies the number of pixels,
+.Ar <pixels> ,
+to be used between title bar elements.
+.Pp
+Example:
+.Li Adwm* Ns Cm spacing Ns Li : Ar 1
+.It Cm title Ar <pixels>
+Specifies the height of the title bar in pixels,
+.Ar <pixels> .
+.Pp
+Example:
+.Li Adwm* Ns Cm title Ns Li : Ar 15
+.It Cm grips Ar <pixels>
+Specifies the height of the resize groups in pixels,
+.Ar <pixels> .
+.Pp
+Example:
+.Li Adwm* Ns Cm grips Ns Li : Ar 3
 .It Cm <windowstate>.<element> Ar <value>
 Specifies the style elements for the title bar, title, buttons and
 resize grips in one of two possible states (normal and selected).
 .Pp
 .Cm <windowstate>
 can be one of:
-.Pp
-.Bl -tag -width ".Cm selected" -compact
+.Bl -tag -width ".Cm selected" -compact -offset indent
 .It Cm normal
 the window is in the normal state; or,
 .It Cm selected
@@ -144,8 +190,7 @@ the window is in the selected state.
 .Pp
 .Cm <element>
 can be one of:
-.Pp
-.Bl -tag -width ".Cm shadow Ar <color>" -compact
+.Bl -tag -width ".Cm shadow Ar <color>" -compact -offset indent
 .It Cm font Ar <font>
 font for the title;
 .It Cm drop Ar <number>
@@ -161,6 +206,14 @@ background color of title bar and grips;
 .It Cm fg Ar <color>
 foreground color of the title.
 .El
+.Pp
+.Sy Note:
+The
+.Cm border ,
+.Cm bg
+and
+.Cm fg
+style elements also apply to dock application tiles.
 .Pp
 Example:
 .Dl Adwm* Ns Cm selected.font Ns Li : Ar "  Liberation Sans:size=9:medium"
@@ -185,8 +238,7 @@ states.
 .It Cm <button>
 Specifies to which button the style elements apply and
 can be one of:
-.Pp
-.Bl -tag -width ".Cm maximize" -compact
+.Bl -tag -width ".Cm maximize" -compact -offset indent
 .It Cm iconify
 minimize button;
 .It Cm maximize
@@ -215,10 +267,9 @@ Used optionally for buttons that can be disabled (e.g.  maximize)
 that are disabled for some windows (e.g. windows that cannot be
 resized).
 .It Cm <state>
-Specifies the state of the button and can be one of the following:
-.Pp
-.Bl -tag -width ".Cm hovered" -compact
-.It Cm ''
+Specifies the state of the button and can be one of:
+.Bl -tag -width ".Cm hovered" -compact -offset indent
+.It Dq
 normal state of the button;
 .It Cm pressed
 while a mouse button is held down on the button;
@@ -249,6 +300,134 @@ Example:
 .Dl Adwm* Ns Cm button.shade.toggled.disabled.focused.pixmap Ns Li : Pa Uunfoc.xpm
 .Dl Adwm* Ns Cm button.shade.toggled.disabled.unfocus.pixmap Ns Li : Pa Uunfoc.xpm
 .El
+.Ss DOCK STYLE ELEMENTS
+.Cm @PACKAGE@
+has a number of dock style elements that can be used to theme the dock
+that contains Window Maker dock applications.  Style elements control
+the position and orientation of the dock as well as which dock
+applications are contained in the dock and in which order.
+.Bl -tag -width "XX"
+.It Li [ Ns Cm screen<s>. Ns Li ] Ns Cm dock.position Ar <position>
+Specifies the position of the dock on the screen.
+The argument,
+.Ar <position> ,
+is an integer value that can be one of the following:
+.Pp
+.Bl -tag -width ".Ar DockSouthWest(0)" -compact -offset indent
+.It Ar "DockNone(0)"
+default (same as
+.Ar "DockEast(1)" Ns );
+.It Ar "DockEast(1)"
+centered right on the screen;
+.It Ar "DockNorthEast(2)"
+top right on the screen;
+.It Ar "DockNorth(3)"
+centered top on the screen;
+.It Ar "DockNorthWest(4)"
+top left on the screen;
+.It Ar "DockWest(5)"
+centered left on the screen;
+.It Ar "DockSouthWest(6)"
+bottom left on the screen;
+.It Ar "DockSouth(7)"
+centered bottom on the screen;
+.It Ar "DockSouthEast(9)"
+bottom right on the screen.
+.El
+.Pp
+The default value is
+.Ar "DockNone(0)" :
+that is, the dock is centered on the right of the screen.
+.Pp
+Example:
+.Li Adwm* Ns Cm dock.position Ns Li : Ar 0
+.It Li [ Ns Cm screen<s>. Ns Li ] Ns Cm dock.orient Ar <orientation>
+Specifies the orientation of the dock on the screen.
+The argument,
+.Ar "<orientation>" ,
+is an integer value that can be one of the following:
+.Pp
+.Bl -tag -width ".Ar DockVert(1)" -compact -offset indent
+.It Ar DockHorz(0)
+the dock is filled horizontally;
+.It Ar DockVert(1)
+the dock is filled vertically.
+.El
+.Pp
+The default value is chosen based on
+.Cm "dock.position" ,
+and is chosen so that the dock extends along the edge of the
+screen.
+.Pp
+Example:
+.Li Adwm* Ns Cm dock.orient Ns Li : Ar 1
+.It Li [ Ns Cm screen<s>. Ns Li ] Ns Cm dock.monitor Ar <monitor>
+Specifies the monitor (in a multi-head setup) that will be
+used to contain the dock.  The argument,
+.Ar <monitor> ,
+is a value between zero (0) and the number of monitors
+(inclusive).
+.Pp
+The special value zero (0) indicates that the
+monitor for the dock should be automatically chosen based on
+.Cm "dock.position" .
+When chosen automatically, the monitor selected for the dock
+will be the monitor closest to the dock position on the
+screen.
+The other values indicate the monitor number of the monitor
+that should contain the dock.
+.Pp
+The default value is zero (0): that is, the dock monitor is
+chosen automatically.
+.Pp
+Example:
+.Li Adwm* Ns Cm dock.monitor Ns Li : Ar 0
+.It Li [ Ns Cm screen<s>. Ns Li ] Ns Cm dock.app<n> Ar "<res_name> <res_class> <wm_command>"
+Specifies the relative position of dock applications in the
+dock.
+Dock applications with a value of
+.Cm <n>
+that is lower are placed earlier in the dock; higher, placed
+later.
+The arguments (separated by a single space) are interpreted as
+follows:
+.Pp
+.Bl -tag -width ".Ar <wm_command>" -compact -offset indent
+.It Ar "<res_name>"
+resource name in
+.Cm "WM_CLASS"
+property;
+.It Ar "<res_class>"
+resource class in
+.Cm "WM_CLASS"
+property;
+.It Ar "<wm_command>"
+command in
+.Cm "WM_COMMAND"
+property.
+.El
+.Pp
+Example:
+.Dl Adwm* Ns Cm dock.app0 Ns Li : Ar " wmclockmon DockApp wmclockmon"
+.Dl Adwm* Ns Cm dock.app1 Ns Li : Ar " wmblob DockApp wmblob"
+.Dl Adwm* Ns Cm dock.app2 Ns Li : Ar " wmnd wmnd wmnd"
+.Dl Adwm* Ns Cm dock.app3 Ns Li : Ar " wmcore wmcore wmcore"
+.Dl Adwm* Ns Cm dock.app4 Ns Li : Ar " wmcpuload DockApp wmcpuload"
+.Dl Adwm* Ns Cm dock.app5 Ns Li : Ar " wmtimer wmtimer wmtimer"
+.Dl Adwm* Ns Cm dock.app6 Ns Li : Ar " wmsysmon wmsysmon wmsysmon"
+.Dl Adwm* Ns Cm dock.app7 Ns Li : Ar " wmtimer wmtimer wmtimer"
+.Dl Adwm* Ns Cm dock.app8 Ns Li : Ar " wmbubble wmbubble wmbubble"
+.Dl Adwm* Ns Cm dock.app9 Ns Li : Ar " wmmixer WMMixer wmmixer"
+.Dl Adwm* Ns Cm dock.app10 Ns Li : Ar "wmnet WMNET wmnet"
+.Dl Adwm* Ns Cm dock.app11 Ns Li : Ar "wmCalClock wmCalClock wmCalClock"
+.Pp
+.Sy Note:
+No defaults are provided in the default
+.Pa adwmrc
+file.  These resources, if defined at all, should likely be defined in the
+.Cm styleFile
+associated with the current style, as it is a themeable item.
+.El
 .Sh DEFAULTS
 The default style is provided in the default style file,
 typically,
@@ -271,4 +450,4 @@ is licensed under the GNU General Public License Version 3 or later.
 See the
 .Pa COPYING
 file in the distribution.
-.\" vim: set sw=4 et nocin:
+.\" vim: set sw=4 et nocin tw=72 spell:

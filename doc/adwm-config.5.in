@@ -35,7 +35,7 @@ in the main directory (e.g. in the
 file).  See
 .Sx FILES ,
 below.
-Configuration directives (some of which are comatible with
+Configuration directives (some of which are compatible with
 .Xr echinus 1 ),
 are described below under
 .Sx DIRECTIVES .
@@ -44,11 +44,11 @@ Key bindings are typically placed in a separate file, as
 described in
 .Xr adwm-keys 5 .
 Style elements (for decorative borders and the dock) are
-normally placed in a separate file, aslo, as described in
+normally placed in a separate file, also, as described in
 .Xr adwm-style 5 .
 .Sh SYNTAX
-The general syntax of configuration directives, as specified
-directly in the
+The general syntax of configuration directives, as specified directly in
+the
 .Nm @PACKAGE@
 resource file, is as follows:
 .Pp
@@ -60,50 +60,51 @@ Where the fields are defined as follows:
 .It Cm directive
 One of the directives described under
 .Sx DIRECTIVES .
-.It Ar <value> Li = Li { Ns Ar <pixmap> Ns Li | Ns Ar <font> Ns Li | Ns Ar <color> Ns Li | Ns Ar <number> Ns Li | Ns Ar <string> Ns Li | Ns Ar <bool> Ns Li |
-The value depends on the directive that is specified.  Typically, the value is a [path and name of a
-pixmap file, an X11 true-type or bitmapped font specification, and X11 color specification, a
-number, a string, a boolean, or a specially formatted value as follows:
+.It Ar <value> Li = Li { Ns Ar <pixmap> Ns Li | Ns Ar <font> Ns Li | Ns Ar <color> Ns Li | Ns Ar <number> Ns Li | Ns Ar <string> Ns Li | Ns Ar <bool> Ns Li }
+The value depends on the directive that is specified.  Typically, the
+value is a path and name of a pixmap file, an X11 true-type or
+bitmapped font specification, an X11 color specification, a number, a
+string, a boolean, or a specially formatted value as follows:
 .Pp
-.Bl -tag -width "XX" -compact
+.Bl -tag -width "XXXXXXXX"
 .It Ar <pixmap>
-Pixmaps are specified with a full or lative path and file name.  When the path is relative, it is
-realtive to the directory in which the configuration file resides.
-.Pp
+Pixmaps are specified with a full or relative path and file name.  When
+the path is relative, it is relative to the directory in which the
+configuration file resides.
+.sp 0
 Example:
-.Dl Adwm* Ns Cm button.iconify.pixmap Ns Li : Pa pixmaps/min_focused.xpm
+.Li Adwm* Ns Cm button.iconify.pixmap Ns Li : Pa pixmaps/min_focused.xpm
 .It Ar <font>
-Fonts are specified with an Fontconfig pattern string or an X Logical Font Description (XFLD)
-formatted font specification string.  See
+Fonts are specified with an Fontconfig pattern string or an X Logical
+Font Description (XFLD) formatted font specification string.  See
 .Xr FcParseName 3
 and
 .Xr xft 3 .
-.Pp
+.sp 0
 Example:
-.Dl Adwm* Ns Cm normal.font Ns Li : Ar "Liberation Sans:size=9:medium"
+.Li Adwm* Ns Cm normal.font Ns Li : Ar "Liberation Sans:size=9:medium"
 .It Ar <color>
-Colors are specified as X resource colors.  This can be a color name or color specification.  For
-the possible format of colors, see
+Colors are specified as X resource colors.  This can be a color name or
+color specification.  For the possible format of colors, see
 .Xr XParseColor 3 .
-.Pp
+.sp 0
 Example:
-.Dl Adwm* Ns Cm selected.shadow Ns Li : Ar #394870
+.Li Adwm* Ns Cm selected.shadow Ns Li : Ar #394870
 .It Ar <number>
 A decimal number.
-.Pp
+.sp 0
 Example:
-.Dl Adwm* Ns Cm title Ns Li : Ar 15
-.Dl Adwm* Ns Cm grips Ns Li : Ar 3
+.Li Adwm* Ns Cm title Ns Li : Ar 15
 .It Ar <string>
 A specially formatted string as specified by the directive definition.
-.Pp
+.sp 0
 Example:
-.Dl Adwm* Ns Cm titlelayout Ns Li : Ar "EFASLN  RIMC"
+.Li Adwm* Ns Cm titlelayout Ns Li : Ar "EFASLN  RIMC"
 .It Ar <bool>
 A boolean value taking either zero (0) or one (1) as an argument.
-.Pp
+.sp 0
 Example:
-.Dl Adwm* Ns Cm dectiled Ns Li : Ar 0
+.Li Adwm* Ns Cm dectiled Ns Li : Ar 0
 .El
 .El
 .Sh DIRECTIVES
@@ -281,7 +282,7 @@ for a suitable root window menu for
 .Cm @PACKAGE@ .
 .Pp
 Default:
-.Dl Adwm* Ns Cm command Ns Li : Ar "xde-menu -P -b 3"
+.Li Adwm* Ns Cm command Ns Li : Ar "xde-menu -P -b 3"
 .It Li [ Ns Cm screen<s>. Ns Li ] Ns Cm command2 Ar <shell-command>
 Specifies the shell command to execute when button 2 (middle
 button) is pressed on the root window.
@@ -292,7 +293,7 @@ for a suitable workspace menu for
 .Cm @PACKAGE@ .
 .Pp
 Default:
-.Dl Adwm* Ns Cm command2 Ns Li : Ar "xde-wkspmenu -p -b 2"
+.Li Adwm* Ns Cm command2 Ns Li : Ar "xde-wkspmenu -p -b 2"
 .It Li [ Ns Cm screen<s>. Ns Li ] Ns Cm command3 Ar <shell-command>
 Specifies the shell command to execute when button 1 (left
 button) is pressed on the root window.
@@ -303,7 +304,7 @@ for a suitable window list menu for
 .Cm @PACKAGE@ .
 .Pp
 Default:
-.Dl "! Adwm*" Ns Cm command3 Ns Li : Ar "xde-winlist -p -b 1 --hidden"
+.Li "! Adwm*" Ns Cm command3 Ns Li : Ar "xde-winlist -p -b 1 --hidden"
 .Pp
 .Sy Note:
 This command is commented out in the default
@@ -319,7 +320,7 @@ for a suitable window menu for
 .Cm @PACKAGE@ .
 .Pp
 Default:
-.Dl Adwm* Ns Cm menucommand Ns Li : Ar "xde-winmenu -p -b 1"
+.Li Adwm* Ns Cm menucommand Ns Li : Ar "xde-winmenu -p -b 1"
 .El
 .Ss GENERAL DIRECTIVES
 General directives affect primarily the general look and feel of the
@@ -802,4 +803,4 @@ is licensed under the GNU General Public License Version 3 or later.
 See the
 .Pa COPYING
 file in the distribution.
-.\" vim: set sw=4 et nocin:
+.\" vim: set sw=4 et nocin tw=72 spell:

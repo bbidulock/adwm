@@ -138,7 +138,7 @@ that is, the file named
 in the same directory as the main configuration file.
 .Pp
 Default:
-.Dl Adwm* Ns Cm keysFile Ns Li : Pa keysrc
+.Li Adwm* Ns Cm keysFile Ns Li : Pa keysrc
 .It Cm styleFile Pa <path>
 Specifies the path and filename,
 .Pa <path> ,
@@ -153,7 +153,7 @@ that is, the file named
 in the same directory as the main configuration file.
 .Pp
 Default:
-.Dl Adwm* Ns Cm styleFile Ns Li : Pa stylerc
+.Li Adwm* Ns Cm styleFile Ns Li : Pa stylerc
 .El
 .Ss TAG DIRECTIVES
 Tag directives affect the number of views (desktops) presented
@@ -165,7 +165,7 @@ Specifies the number of tags (i.e. desktops) available.
 The default number is five (5).
 .Pp
 Default:
-.Dl Adwm* Ns Cm tags.number Ns Li : Ar 7
+.Li Adwm* Ns Cm tags.number Ns Li : Ar 7
 .It Li [ Ns Cm screen<s>. Ns Li ] Ns Cm tags.name<n> Ar <string>
 Specifies the name associated with each tag (i.e. desktop),
 for a specific screen,
@@ -190,7 +190,7 @@ The argument,
 is a single lowercase ascii character that designates the layout, that
 can be one of the following:
 .Pp
-.Bl -tag -width ".Cm 'm'" -compact
+.Bl -tag -width ".Cm 'm'" -compact -offset indent
 .It Cm 'i'
 stacking window arrangement;
 .It Cm 't'
@@ -214,7 +214,7 @@ The default value is
 that is, stacking window arrangement.
 .Pp
 Default:
-.Dl Adwm* Ns Cm deflayout Ns Li : Ar l
+.Li Adwm* Ns Cm deflayout Ns Li : Ar l
 .It Li [ Ns Cm screen<s>. Ns Li ] Ns Cm tags.layout<n> Ar <layout>
 Specifies the layout for a single view (optionally on a given screen).
 When unspecified for a view, defaults to the setting of the
@@ -227,7 +227,7 @@ The argument,
 is a single lowercase ascii character that designates the layout, that
 can be one of the following:
 .Pp
-.Bl -tag -width ".Cm 'm'" -compact
+.Bl -tag -width ".Cm 'm'" -compact -offset indent
 .It Cm 'i'
 stacking window arrangement;
 .It Cm 't'
@@ -356,7 +356,7 @@ The default is zero (0): that is, the veil will not be used by
 default.
 .Pp
 Default:
-.Dl Adwm* Ns Cm useveil Ns Li : Ar 0
+.Li Adwm* Ns Cm useveil Ns Li : Ar 0
 .It Li [ Ns Cm screen<s>. Ns Li ] Ns Cm attachaside Ar <bool>
 Specifies whether newly created windows are attached on the
 master or slave side of the layout.
@@ -368,10 +368,10 @@ When true, newly created windows will be attached as slaves;
 when false, attached as master.
 The default is one (1): that is, newly created windows will be
 attached as slaves.
+I normally like attaching new windows as master
 .Pp
 Default:
-.Dl Adwm* Ns Cm attachaside Ns Li : Ar 0
-.Dl !I normally like attaching new windows as master
+.Li Adwm* Ns Cm attachaside Ns Li : Ar 0
 .It Li [ Ns Cm screen<s>. Ns Li ] Ns Cm decoratetiled Ar <bool>
 Specifies whether to decorate tiled windows (by default) in
 tiled layouts.  Normally, tiled windows are not decorated with
@@ -386,7 +386,7 @@ The default value is zero (0): that is, tiled windows are not
 decorated by default.
 .Pp
 Default:
-.Dl Adwm* Ns Cm decoratetiled Ns Li : Ar 0
+.Li Adwm* Ns Cm decoratetiled Ns Li : Ar 0
 .Pp
 .Sy Note:
 the setting of this directive can be changed on a view-by-view
@@ -412,7 +412,7 @@ The default value is one (1): that is, maximized windows are
 decorated by default.
 .Pp
 Default:
-.Dl Adwm* Ns Cm decoratemax Ns Li : Ar 1
+.Li Adwm* Ns Cm decoratemax Ns Li : Ar 1
 .Pp
 .Sy Note:
 windows that fill the available work area in tiled
@@ -448,7 +448,7 @@ removing struts; whereas, the value of false, provides for
 exposing and hiding struts.
 .Pp
 Default:
-.Dl Adwm* Ns Cm hidebastards Ns Li : Ar 1
+.Li Adwm* Ns Cm hidebastards Ns Li : Ar 1
 .It Li [ Ns Cm screen<s>. Ns Li ] Ns Cm strutsactive Ar <bool>
 Specifies whether struts (panels and dock) should default to
 shown or hidden.
@@ -460,7 +460,7 @@ When true, struts default to shown; false, hidden.
 The default value is one (1): that is, struts are shown by default.
 .Pp
 Default:
-.Dl Adwm* Ns Cm strutsactive Ns Li : Ar 1
+.Li Adwm* Ns Cm strutsactive Ns Li : Ar 1
 .Pp
 .Sy Note:
 this setting only affects the default for views.  The actual
@@ -481,14 +481,14 @@ The default is zero (0): that is, shaded windows will not be
 automatically unshaded on being selected.
 .Pp
 Default:
-.Dl Adwm* Ns Cm autoroll Ns Li : Ar 1
+.Li Adwm* Ns Cm autoroll Ns Li : Ar 1
 .It Li [ Ns Cm screen<s>. Ns Li ] Ns Cm sloppy Ar <model>
 The default value is zero (0): that is, click to focus.
 The argument,
 .Ar <model> ,
 is an integer value that can be one of the following:
 .Pp
-.Bl -tag -width ".Ar SloppyRaise(3)" -compact
+.Bl -tag -width ".Ar SloppyRaise(3)" -compact -offset indent
 .It Ar "Clk2Focus(0)"
 click in windows to focus them;
 .It Ar "SloppyFloat(1)"
@@ -502,7 +502,7 @@ focus follows mouse and window are raised.
 The default, when unspecified, is zero (0), or click-to-focus.
 .Pp
 Default:
-.Dl Adwm* Ns Cm sloppy Ns Li : Ar 2
+.Li Adwm* Ns Cm sloppy Ns Li : Ar 2
 .Pp
 .Sy Note:
 the most tested focus model is
@@ -519,7 +519,7 @@ position.
 The default value is five (5) pixels.
 .Pp
 Default:
-.Dl Adwm* Ns Cm snap Ns Li : Ar 5
+.Li Adwm* Ns Cm snap Ns Li : Ar 5
 .It Li [ Ns Cm screen<s>. Ns Li ] Ns Cm dragdistance Ar <pixels>
 When
 .Nm @PACKAGE@
@@ -535,7 +535,7 @@ all drags supported by the window manager.  The default
 value is five (5) pixels.
 .Pp
 Default:
-.Dl Adwm* Ns Cm dragdistance Ns Li : Ar 5
+.Li Adwm* Ns Cm dragdistance Ns Li : Ar 5
 .It Li [ Ns Cm screen<s>. Ns Li ] Ns Cm mwfact Ar <float>
 Specifies the factor for the width of the master area in
 tiled layouts.  The argument is a floating point number
@@ -550,7 +550,7 @@ key binding defined in
 .Xr adwm-keys 5 .
 .Pp
 Default:
-.Dl Adwm* Ns Cm mwfact Ns Li : Ar 0.6
+.Li Adwm* Ns Cm mwfact Ns Li : Ar 0.6
 .It Li [ Ns Cm screen<s>. Ns Li ] Ns Cm mhfact Ar <float>
 Specifies the factor for the height of the master area in
 tiled layouts.  The argument is a floating point number
@@ -562,7 +562,7 @@ the default value for new layouts; nevertheless the value is
 not currently used.
 .Pp
 Default:
-.Dl Adwm* Ns Cm mhfact Ns Li : Ar 1.0
+.Li Adwm* Ns Cm mhfact Ns Li : Ar 1.0
 .It Li [ Ns Cm screen<s>. Ns Li ] Ns Cm nmaster Ar <number>
 Specifies the default number of master windows in master/slave
 tiled layouts.  Tiled layouts have a fixed number of masters
@@ -576,7 +576,7 @@ The default number is one (1).  Only values between 1 and 10
 (inclusive) are permitted.
 .Pp
 Default:
-.Dl Adwm* Ns Cm nmaster Ns Li : Ar 1
+.Li Adwm* Ns Cm nmaster Ns Li : Ar 1
 .It Li [ Ns Cm screen<s>. Ns Li ] Ns Cm ncolumns Ar <number>
 Specifies the default number of columns (rows) in grid tiled
 layouts.  Grid layouts have a fixed number of rows or columns
@@ -589,8 +589,8 @@ key binding described in
 The default number is three (3).  Only values between 1 and 10
 (inclusive) are permitted.
 .Pp
-Example:
-.Dl Adwm* Ns Cm ncolumns Ns Li : Ar 3
+Default:
+.Li Adwm* Ns Cm ncolumns Ns Li : Ar 3
 .El
 .Ss DOCK DIRECTIVES
 The dock is an area that contains Window Maker dock
@@ -604,7 +604,7 @@ The argument,
 .Ar <position> ,
 is an integer value that can be one of the following:
 .Pp
-.Bl -tag -width ".Ar DockSouthWest(0)" -compact
+.Bl -tag -width ".Ar DockSouthWest(0)" -compact -offset indent
 .It Ar "DockNone(0)"
 default (same as
 .Ar "DockEast(1)" Ns );
@@ -631,14 +631,14 @@ The default value is
 that is, the dock is centered on the right of the screen.
 .Pp
 Default:
-.Dl Adwm* Ns Cm dock.position Ns Li : Ar 0
+.Li Adwm* Ns Cm dock.position Ns Li : Ar 0
 .It Li [ Ns Cm screen<s>. Ns Li ] Ns Cm dock.orient Ar <orientation>
 Specifies the orientation of the dock on the screen.
 The argument,
 .Ar "<orientation>" ,
 is an integer value that can be one of the following:
 .Pp
-.Bl -tag -width ".Ar DockVert(1)" -compact
+.Bl -tag -width ".Ar DockVert(1)" -compact -offset indent
 .It Ar DockHorz(0)
 the dock is filled horizontally;
 .It Ar DockVert(1)
@@ -651,7 +651,7 @@ and is chosen so that the dock extends along the edge of the
 screen.
 .Pp
 Default:
-.Dl Adwm* Ns Cm dock.orient Ns Li : Ar 1
+.Li Adwm* Ns Cm dock.orient Ns Li : Ar 1
 .It Li [ Ns Cm screen<s>. Ns Li ] Ns Cm dock.monitor Ar <monitor>
 Specifies the monitor (in a multi-head setup) that will be
 used to contain the dock.  The argument,
@@ -672,7 +672,7 @@ The default value is zero (0): that is, the dock monitor is
 chosen automatically.
 .Pp
 Default:
-.Dl Adwm* Ns Cm dock.monitor Ns Li : Ar 0
+.Li Adwm* Ns Cm dock.monitor Ns Li : Ar 0
 .It Li [ Ns Cm screen<s>. Ns Li ] Ns Cm dock.app<n> Ar "<res_name> <res_class> <wm_command>"
 Specifies the relative position of dock applications in the
 dock.
@@ -683,7 +683,7 @@ later.
 The arguments (separated by a single space) are interpreted as
 follows:
 .Pp
-.Bl -tag -width ".Ar <wm_command>" -compact
+.Bl -tag -width ".Ar <wm_command>" -compact -offset indent
 .It Ar "<res_name>"
 resource name in
 .Cm "WM_CLASS"

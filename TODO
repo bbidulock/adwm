@@ -1,4 +1,6 @@
-adwm -- todo file.  2016-07-07
+adwm -- todo file.  2017-09-30
+
+General tasks:
 
 - [x] bug reports
 - [x] fix GNOME (and other DE's) compatibility
@@ -6,18 +8,25 @@ adwm -- todo file.  2016-07-07
 - [x] fix focus problems
 - [x] do code cleanup
 
+Window resize grips:
 
 - [ ] remove need for title and grips sub-windows and just draw these on
       the frame window.
 - [ ] add ability to have resize grips all the way around the window in
       DTWM/MWM/TWM/CTWM/VTWM fashion
 
+Decoration styles:
+
 - [ ] use imlib2 to draw title and resize grips
 - [ ] use imlib2 to optimally update exposures on the frame
 - [ ] convert as many gradients as possible to use imlib2
 - [ ] make imlib2 a prerequisite
 - [ ] display icons in title bar
+- [ ] provide a different button pressed pixmap for each mouse button.
 
+Internal layout mechanism:
+
+- [x] make layouts loadable modules
 - [ ] convert layouts to tree format and support i3/herbstluftwm, bspwm
       and vim modes
 - [ ] apply tree format to floating windows and floating window placement.
@@ -25,17 +34,25 @@ adwm -- todo file.  2016-07-07
 - [ ] add ability to float from any layout without disturbing tree model
       for tiled layout
 - [ ] add a tree per layout type to the view
-- [x] make layouts loadable modules
+- [ ] provide ability to drag dock apps around to reorder them.
+
+User feedback:
 
 - [x] add window menu (use xde-winmenu(1))
 - [x] add root menu (use xde-menu(1))
 - [x] add window list menu (use xde-winlist(1))
-- [ ] add window cycle display (use xde-cycle(1))
 - [x] add desktop cycle display (use xde-pager(1))
 - [x] add per-desktop (per-view) background (use xde-setbg(1))
+- [ ] add window cycle display (use xde-cycle(1))
+
+Session control:
 
 - [ ] fixup restart behaviour
 - [ ] add session management
+- [ ] implement separate file for dock app list.
+- [ ] implement function to save dock app list.
+
+Behaviour:
 
 - [x] showing desktop mode in fluxbox(1) is per desktop, we should do
       the same and make showing desktop mode only apply to a view.
@@ -44,4 +61,15 @@ adwm -- todo file.  2016-07-07
       (due to synchronization).  Change resizing behaviour to not resize
       the frame until the client responds to the resize request.
 
-// vim: set ft=asciidoc tw=72 nocin nosi fo+=tcqlorn:
+- [ ] implement lhalf and rhalf button functions.
+- [ ] switch to lhalf or rhalf at screen/monitor edges (no _Ctrl_ key).
+- [ ] defeat snap when moving with _Ctrl_ key.
+- [ ] move window to adjacent desktop at screen/monitor edges (_Ctrl_
+      key depressed.
+- [ ] implement kill behavior with _Button2_ and _Button3_ on close
+      button.
+- [ ] fix broken rollup function.
+- [ ] fix auto-hide struts behavior
+
+
+// vim: set ft=asciidoc tw=72 nocin nosi fo+=tcqlorn spell:

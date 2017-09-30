@@ -1,5 +1,4 @@
-\".Dd $Mdocdate$
-.Dd @DATE@
+.Dd $Mdocdate$
 .Dt ADWM-STYLE \&5 "File Formats"
 .Os @PACKAGE@ @VERSION@
 .Sh NAME
@@ -8,9 +7,9 @@
 .Sh SYNOPSIS
 .Bl -item -compact
 .It
-.Pa $HOME/.adwm/stylerc
+.Pa ~/.adwm/stylerc
 .It
-.Pa $HOME/.adwm/styles/Default/stylerc
+.Pa ~/.adwm/styles/Default/stylerc
 .It
 .Pa @pkgconfdir@/stylerc
 .It
@@ -18,15 +17,28 @@
 .El
 .Sh DESCRIPTION
 .Nm @PACKAGE@
-is a light-weight, reparenting, dynamic tiling/stacking window manager,
+is a light-weight, re-parenting, dynamic tiling/stacking window manager,
 intended on being fully controllable using only the keyboard: the
 objective of all dynamic tiling window managers.  However,
 .Nm @PACKAGE@
 also supports regular stacking floating window management as well, and
-decorative frames are applied to windows in a number of circumstances.
-To control the styling of the decorative border,
-.Nm @PACKAGE@
-supports customizable style elements.
+decorative frames are applied to windows in a number of circumstances:
+the window is
+.Pp
+.Bl -enum -compact
+.It
+fixed (i.e. it must float);
+.It
+displayed in a floating layout;
+.It
+maximized and
+.Cm decoratemax
+is set for the view;
+.It
+viewed with
+.Cm decoratetiled
+set.
+.El
 .Pp
 Decorative window borders can contain title text as well as buttons
 (defined as pixmaps) that can perform a number of predefined actions on
@@ -37,15 +49,19 @@ Also,
 directly supports a Window Maker style
 .Dq dock .
 Window Maker dock applications are re-parented into tiles within the
-dock.  These types also support customizable style elements.
+dock.
 .Pp
+To control the styling of the decorative border, title bar, resize
+grips and dock tiles,
+.Nm @PACKAGE@
+supports customizable style elements.
 Customizable style elements are defined in an X Resource formatted
 configuration file.  Styles can either be part of the main configuration
 file, or they can be included or referenced from the main configuration
 file.  It is typical to place the style elements in a file named
 .Pa stylerc
 in the same directory as the main configuration file (e.g. in the
-.Pa $HOME/.adwm/stylerc
+.Pa ~/.adwm/stylerc
 file).  See
 .Sx FILES ,
 below.
@@ -170,7 +186,7 @@ Specifies the height of the title bar in pixels,
 Example:
 .Li Adwm* Ns Cm title Ns Li : Ar 15
 .It Cm grips Ar <pixels>
-Specifies the height of the resize groups in pixels,
+Specifies the height of the resize grips in pixels,
 .Ar <pixels> .
 .Pp
 Example:
@@ -431,7 +447,7 @@ associated with the current style, as it is a themeable item.
 .Sh DEFAULTS
 The default style is provided in the default style file,
 typically,
-.Pa "$HOME/.adwm/stylerc" .
+.Pa "~/.adwm/stylerc" .
 .Sh SEE ALSO
 .Rs
 .Xr adwm 1 ,
@@ -441,6 +457,19 @@ typically,
 .Re
 .Sh BUGS
 No outstanding bugs.
+.Sh HISTORY
+.Xr dwm 1
+did not re-parent and had no option for title bars.
+.Xr echinus 1
+styles were quit simplistic: they did not provide different colors for
+selected and deselected windows.  They did not provide advanced font
+handling for the title bar; also, frame decorations did not include
+resize grips and only crude title bar buttons with no configurable
+placement.
+.Pp
+To meet the objective of being a fully functional overlapping window
+manager in floating layouts, additional style elements were provided to
+provide a sufficient overlapping experience.
 .Sh AUTHORS
 .An Brian Bidulock Aq bidulock@openss7.org
 .Sh LICENSE

@@ -70,5 +70,8 @@ README.txt: README.html
 NOTES.html: NOTES
 	$(AM_V_GEN)$(ASCIIDOC) -o - $< >$@
 
+TODO.html: TODO
+	$(AM_V_GEN)$(ASCIIDOC) -o - $< >$@
+
 EXTRA_DIST += README.echinus LICENSE
 

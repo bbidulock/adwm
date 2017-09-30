@@ -768,8 +768,20 @@ b_shade(Client *c, XEvent *ev)
 static void
 b_stick(Client *c, XEvent *ev)
 {
-	if (c->user.stick)
-		togglesticky(c);
+	switch (ev->xbutton.button) {
+	case Button1:
+		if (c->user.stick)
+			togglesticky(c);
+		break;
+	case Button2:
+		if (c->user.stick && !c->is.sticky)
+			togglesticky(c);
+		break;
+	case Button3:
+		if (c->user.stick && c->is.sticky)
+			togglesticky(c);
+		break;
+	}
 }
 
 static void

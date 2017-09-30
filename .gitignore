@@ -3,13 +3,13 @@ aclocal.m4
 adwm
 adwm.1
 adwm.1.man
-adwm-config.man
 adwm-config.5
-adwm-keys.man
+adwm-config.man
 adwm-keys.5
+adwm-keys.man
 adwm.man
-adwm-style.man
 adwm-style.5
+adwm-style.man
 autoconf.h
 autoconf.h.in
 autoconf.h.in~
@@ -73,3 +73,4 @@ tags
 *.tar.*
 _test/
 *.tmp
+TODO.html

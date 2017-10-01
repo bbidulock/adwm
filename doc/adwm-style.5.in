@@ -1,6 +1,6 @@
 .Dd @MDOCDATE@
 .Dt ADWM-STYLE \&5 "File Formats"
-.Os @PACKAGE@ @VERSION@
+.Os @PACKAGE_STRING@
 .Sh NAME
 .Nm @PACKAGE@-style
 .Nd advanced dynamic window manager for X: styles
@@ -16,11 +16,11 @@
 .Pa @pkgconfdir@/styles/Default/stylerc
 .El
 .Sh DESCRIPTION
-.Nm @PACKAGE@
+.Nm @PACKAGE_NAME@
 is a light-weight, re-parenting, dynamic tiling/stacking window manager,
 intended on being fully controllable using only the keyboard: the
 objective of all dynamic tiling window managers.  However,
-.Nm @PACKAGE@
+.Nm @PACKAGE_NAME@
 also supports regular stacking floating window management as well, and
 decorative frames are applied to windows in a number of circumstances:
 the window is
@@ -45,7 +45,7 @@ Decorative window borders can contain title text as well as buttons
 the window around which they appear.  Customizable style elements exist
 to determine which pixmaps are displayed and under which conditions.
 Also,
-.Nm @PACKAGE@
+.Nm @PACKAGE_NAME@
 directly supports a Window Maker style
 .Dq dock .
 Window Maker dock applications are re-parented into tiles within the
@@ -53,7 +53,7 @@ dock.
 .Pp
 To control the styling of the decorative border, title bar, resize
 grips and dock tiles,
-.Nm @PACKAGE@
+.Nm @PACKAGE_NAME@
 supports customizable style elements.
 Customizable style elements are defined in an X Resource formatted
 configuration file.  Styles can either be part of the main configuration
@@ -68,7 +68,7 @@ below.
 .Sh SYNTAX
 The general syntax of style elements, as specified directly in
 the
-.Nm @PACKAGE@
+.Nm @PACKAGE_NAME@
 resource file, is as follows:
 .Pp
 .Dl Adwm* Ns Cm element Ns Li : Ar <value>
@@ -499,7 +499,7 @@ provide a sufficient overlapping experience.
 .Sh AUTHORS
 .An Brian Bidulock Aq bidulock@openss7.org
 .Sh LICENSE
-.Nm @PACKAGE@
+.Nm @PACKAGE_NAME@
 is licensed under the GNU General Public License Version 3 or later.
 .sp
 See the

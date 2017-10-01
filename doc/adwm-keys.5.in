@@ -1,6 +1,6 @@
 .Dd @MDOCDATE@
 .Dt ADWM-KEYS \&5 "File Formats"
-.Os @PACKAGE@ @VERSION@
+.Os @PACKAGE_STRING@
 .Sh NAME
 .Nm @PACKAGE@-keys
 .Nd advanced dynamic window manager for X: key bindings
@@ -16,12 +16,12 @@
 .Pa @pkgconfdir@/styles/Default/keysrc
 .El
 .Sh DESCRIPTION
-.Nm @PACKAGE@
+.Nm @PACKAGE_NAME@
 is a light-weight, reparenting, dynamic tiling/stacking window
 manager intended on being fully controllable using only the
 keyboard: the objective of all dynamic tiling window managers.
 To acheive this objective,
-.Nm @PACKAGE@
+.Nm @PACKAGE_NAME@
 supports both simple single-press key bindings as well as key chains.
 .Pp
 Single key bindings are key bindings on the root window that perform some action in
@@ -44,7 +44,7 @@ below.
 .Sh SYNTAX
 .Pp
 The general syntax of key commands, as specified directly in the
-.Nm @PACKAGE@
+.Nm @PACKAGE_NAME@
 resource file, is as follows:
 .Pp
 .Dl Li "Adwm*" Ns Cm command Ns Li : Ar <list>
@@ -235,7 +235,7 @@ with the key binding sytnax described above under
 .It Cm viewprevtag
 .It Cm quit Op Ar shell-command
 Causes
-.Nm @PACKAGE@
+.Nm @PACKAGE_NAME@
 to quit.
 When
 .Ar shell-command
@@ -247,7 +247,7 @@ Default:
 .Li Adwm* Ns Cm quit Ns Li : Ar "AC + p : End, AC + q, WS + q"
 .It Cm restart Op Ar shell-command
 Causes
-.Nm @PACKAGE@
+.Nm @PACKAGE_NAME@
 to restart.
 When
 .Ar shell-command
@@ -259,14 +259,14 @@ Default:
 .Li Adwm* Ns Cm restart Ns Li : Ar "AC + p : Next, AC + p : Prior = twm, AS + q, WC + r"
 .It Cm reload
 Causes
-.Nm @PACKAGE@
+.Nm @PACKAGE_NAME@
 to reload configuration files.
 .Pp
 Default:
 .Li Adwm* Ns Cm reload Ns Li : Ar "AC + p : Delete"
 .It Cm killclient
 Closes the selected client.  The behaviour of
-.Nm @PACKAGE@
+.Nm @PACKAGE_NAME@
 when closing clients is to first attempt a close request to the client and upon the
 next attempt, kills the client process if the process identifier of the client is
 known, the client supports the
@@ -1168,7 +1168,7 @@ No outstanding bugs.
 .Sh AUTHORS
 .An Brian Bidulock Aq bidulock@openss7.org
 .Sh LICENSE
-.Nm @PACKAGE@
+.Nm @PACKAGE_NAME@
 is licensed under the GNU General Public License Version 3 or later.
 .sp
 See the

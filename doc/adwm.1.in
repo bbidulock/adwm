@@ -884,4 +884,4 @@ is licensed under the GNU General Public License Version 3 or later.
 See the
 .Pa COPYING
 file in the distribution.
-.\" vim: set sw=4 et nocin tw=72 spell:
+.\" vim: set ft=nroff sw=4 et nocin tw=72 spell:

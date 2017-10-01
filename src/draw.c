@@ -70,7 +70,7 @@ buttonimage(AScreen *ds, Client *c, ElementType type)
 	case CloseBtn:
 		name = "close";
 		present = c->has.but.close;
-		toggled = False;
+		toggled = c->is.closing || c->is.killing;
 		enabled = c->user.close;
 		break;
 	case ShadeBtn:
@@ -88,13 +88,13 @@ buttonimage(AScreen *ds, Client *c, ElementType type)
 	case LHalfBtn:
 		name = "lhalf";
 		present = c->has.but.half;
-		toggled = False;
+		toggled = c->is.lhalf;
 		enabled = c->user.size || c->user.sizev || c->user.sizeh;
 		break;
 	case RHalfBtn:
 		name = "rhalf";
 		present = c->has.but.half;
-		toggled = False;
+		toggled = c->is.rhalf;
 		enabled = c->user.size || c->user.sizev || c->user.sizeh;
 		break;
 	case FillBtn:
@@ -112,7 +112,7 @@ buttonimage(AScreen *ds, Client *c, ElementType type)
 	case SizeBtn:
 		name = "resize";
 		present = c->has.but.size;
-		toggled = False;
+		toggled = c->is.moveresize;
 		enabled = c->user.size || c->user.sizev || c->user.sizeh;
 		break;
 	default:
@@ -716,8 +716,19 @@ b_menu(Client *c, XEvent *ev)
 static void
 b_min(Client *c, XEvent *ev)
 {
-	if (c->user.min)
+	if (!c->user.min)
+		return;
+	switch (ev->xbutton.button) {
+	case Button1:
 		iconify(c);
+		break;
+	case Button2:
+		iconify(c);	/* reserved for hide window */
+		break;
+	case Button3:
+		iconify(c);	/* reserved for withdraw window */
+		break;
+	}
 }
 
 static void
@@ -742,24 +753,38 @@ b_max(Client *c, XEvent *ev)
 static void
 b_close(Client *c, XEvent *ev)
 {
-	if (c->user.close)
+	if (!c->user.close)
+		return;
+	switch (ev->xbutton.button) {
+	case Button1:
 		killclient(c);
+		break;
+	case Button2:
+		killproc(c);
+		/* reserved for kill */
+		break;
+	case Button3:
+		killxclient(c);
+		/* reserved for xkill */
+		break;
+	}
 }
 
 static void
 b_shade(Client *c, XEvent *ev)
 {
+	if (!c->user.shade)
+		return;
 	switch (ev->xbutton.button) {
 	case Button1:
-		if (c->user.shade)
-			toggleshade(c);
+		toggleshade(c);
 		break;
 	case Button2:
-		if (c->user.shade && !c->is.shaded)
+		if (!c->is.shaded)
 			toggleshade(c);
 		break;
 	case Button3:
-		if (c->user.shade && c->is.shaded)
+		if (c->is.shaded)
 			toggleshade(c);
 		break;
 	}
@@ -768,17 +793,18 @@ b_shade(Client *c, XEvent *ev)
 static void
 b_stick(Client *c, XEvent *ev)
 {
+	if (!c->user.stick)
+		return;
 	switch (ev->xbutton.button) {
 	case Button1:
-		if (c->user.stick)
-			togglesticky(c);
+		togglesticky(c);
 		break;
 	case Button2:
-		if (c->user.stick && !c->is.sticky)
+		if (!c->is.sticky)
 			togglesticky(c);
 		break;
 	case Button3:
-		if (c->user.stick && c->is.sticky)
+		if (c->is.sticky)
 			togglesticky(c);
 		break;
 	}
@@ -787,15 +813,37 @@ b_stick(Client *c, XEvent *ev)
 static void
 b_lhalf(Client *c, XEvent *ev)
 {
-	if (c->user.move && c->user.size)
-		;
+	if (!c->user.move || !c->user.size)
+		return;
+	switch (ev->xbutton.button) {
+	case Button1:
+		/* reserved for toggle left half */
+		break;
+	case Button2:
+		/* reserved for set left half */
+		break;
+	case Button3:
+		/* reserved for clear left half */
+		break;
+	}
 }
 
 static void
 b_rhalf(Client *c, XEvent *ev)
 {
-	if (c->user.move && c->user.size)
-		;
+	if (!c->user.move || !c->user.size)
+		return;
+	switch (ev->xbutton.button) {
+	case Button1:
+		/* reserved for toggle right half */
+		break;
+	case Button2:
+		/* reserved for set right half */
+		break;
+	case Button3:
+		/* reserved for clear right half */
+		break;
+	}
 }
 
 static void
@@ -947,8 +995,8 @@ initbuttons()
 		} },
 		[CloseBtn]	= { "button.close",	CLOSEPIXMAP,	{
 			[Button1-Button1] = { NULL,		b_close		},
-			[Button2-Button1] = { NULL,		NULL		},
-			[Button3-Button1] = { NULL,		NULL		},
+			[Button2-Button1] = { NULL,		b_close		},
+			[Button3-Button1] = { NULL,		b_close		},
 			[Button4-Button1] = { NULL,		NULL		},
 			[Button5-Button1] = { NULL,		NULL		},
 		} },

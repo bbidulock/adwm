@@ -2657,6 +2657,10 @@ clientmessage(XEvent *e)
 					XDeleteContext(dpy, c->win, context[ClientPing]);
 				if ((c = getclient(ev->data.l[2], ClientDead)))
 					XDeleteContext(dpy, c->win, context[ClientDead]);
+				if ((c = getclient(ev->data.l[2], ClientWindow))) {
+					c->is.pinging = 0;
+					c->is.killing = 0;
+				}
 			}
 		}
 	} else {

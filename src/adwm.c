@@ -1924,6 +1924,16 @@ keypress(XEvent *e)
 }
 
 void
+killproc(Client *c)
+{
+}
+
+void
+killxclient(Client *c)
+{
+}
+
+void
 killclient(Client *c)
 {
 	int signal = SIGTERM;
@@ -1950,6 +1960,7 @@ killclient(Client *c)
 
 				XSaveContext(dpy, c->win, context[ClientPing],
 					     (XPointer) c);
+				c->is.pinging = 1;
 			}
 
 			if (checkatom(c->win, _XA_WM_PROTOCOLS, _XA_WM_DELETE_WINDOW)) {
@@ -1984,6 +1995,7 @@ killclient(Client *c)
 			if (!strcmp(hostname, machine)) {
 				XSaveContext(dpy, c->win, context[ClientDead],
 					     (XPointer) c);
+				c->is.killing = 1;
 				kill(pid, signal);
 				free(machine);
 				return;

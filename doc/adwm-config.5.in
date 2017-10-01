@@ -1,4 +1,4 @@
-.Dd $Mdocdate$
+.Dd @MDOCDATE@
 .Dt ADWM-CONFIG \&5 "File Formats"
 .Os @PACKAGE@ @VERSION@
 .Sh NAME
@@ -7,9 +7,9 @@
 .Sh SYNOPSIS
 .Bl -item -compact
 .It
-.Pa $HOME/.adwm/adwmrc
+.Pa ~/.adwm/adwmrc
 .It
-.Pa $HOME/.adwm/styles/Default/adwmrc
+.Pa ~/.adwm/styles/Default/adwmrc
 .It
 .Pa @pkgconfdir@/adwmrc
 .It
@@ -31,7 +31,7 @@ configuration file.  It is typical to place the configuration
 file an a file named
 .Pa adwmrc
 in the main directory (e.g. in the
-.Pa $HOME/.adwm/adwmrc
+.Pa ~/.adwm/adwmrc
 file).  See
 .Sx FILES ,
 below.
@@ -722,7 +722,7 @@ associated with the current style, as it is a themeable item.
 .Sh DEFAULTS
 The default configuration is provided in the default
 configuration file, typically,
-.Pa "$HOME/.adwm/adwmrc" .
+.Pa "~/.adwm/adwmrc" .
 A system default configuration file is provided in
 .Pa "@pkgconfdir@/adwmrc" ,
 a listing of which appears below.
@@ -755,13 +755,13 @@ Adwm*tags.layout3: b
 .Ed
 .Sh FILES
 .Bl -tag -width "XX"
-.It Pa $HOME/.adwm/adwmrc
+.It Pa ~/.adwm/adwmrc
 The location of the default user's configuration file.
-.It Pa $HOME/.adwm/keysrc
+.It Pa ~/.adwm/keysrc
 The location of the default user's key bindings file.
-.It Pa $HOME/.adwm/stylerc
+.It Pa ~/.adwm/stylerc
 The location of the default user's style file.
-.It Pa $HOME/.adwm/styles/Default/stylerc
+.It Pa ~/.adwm/styles/Default/stylerc
 The location of the default user's themed style file.
 .It Pa @pkgconfdir@/adwmrc
 The location of the system default configuration file.
@@ -794,6 +794,15 @@ The location of the system default themed style file.
 .Re
 .Sh BUGS
 No outstanding bugs.
+.Sh HISTORY
+.Cm @PACKAGE@
+configuration began with the simple X Resource scheme provided by
+`echinus(1)` and quickly grew from there to support the advanced
+features of ADWM.  The same basic X Resource scheme is supported and an
+`echinus(1)` resource file will work with ADWM (substituting
+.Ic Adwm*
+for
+.Ic Echinus* Ns ).
 .Sh AUTHORS
 .An Brian Bidulock Aq bidulock@openss7.org
 .Sh LICENSE

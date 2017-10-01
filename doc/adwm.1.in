@@ -1,6 +1,4 @@
-.\".Dd $Mdocdate$
-.Dd @DATE@
-.\".Dt ADWM \&1 "User Commands"
+.Dd @MDOCDATE@
 .Dt ADWM \&1 "User Commands"
 .Os @PACKAGE@ @VERSION@
 .Sh NAME
@@ -14,7 +12,11 @@
 .Ek
 .Sh DESCRIPTION
 .Nm
-is a lightweight window manager for X based on dwm's source code.
+is a lightweight window manager for X inspired by
+.Xr echinus 1 ,
+.Xr spectrwm 1 
+and
+.Xr dwm 1 .
 It manages windows in maximized, floating and tiled layouts.
 Either layout can be applied dynamically, optimizing the environment for the
 application in use and the task performed.
@@ -29,10 +31,10 @@ multiple tags. Selecting certain tags displays all windows with these tags.
 .Pp
 .Nm
 draws a small border around windows to indicate the focus state and an
-optional titlebar.
+optional title bar and resize grips.
 .Pp
 The options are as follows:
-.Bl -tag -width "XXXXXXXXXXXX"
+.Bl -tag -width ".Fl f Ar conf"
 .It Fl v
 Prints version information to standard output, then exits.
 .It Fl f Ar conf
@@ -47,7 +49,7 @@ if present, then looks for the system-wide configuration file
 .Pp
 The following notation is used in this page:
 .Pp
-.Bl -tag -width Ds -offset indent -compact
+.Bl -tag -width "XX" -offset indent -compact
 .It Ic A
 Alt.
 .It Ic C
@@ -64,28 +66,160 @@ Left mouse button.
 Middle mouse button.
 .It Ic M3
 Right mouse button.
+.It Ic M4
+Scroll wheel up.
+.It Ic M5
+Scroll wheel down.
 .El
-.Sh BINDINGS
-The default mouse bindings are:
+.Ss MOUSE BINDINGS
 .Pp
-.Bl -tag -width "XXXXXXXX" -offset indent -compact
+Mouse bindings
+for clicks on the root window
+(first three buttons configurable)
+are as follows:
+.Pp
+.Bl -tag -width ".Ic M2" -offset indent -compact
 .It Ic M1
-When pressed on the titlebar, focuses window and raises it on top of the stack.
+Does nothing by default..
 .It Ic M2
-When pressed on the titlebar, resizes window.
+Pops the view menu,
+.Xr xde-wkspmenu 1 ,
+by default.
 .It Ic M3
-When pressed on the root window, draws a rectangle to start a terminal in it.
-.It Ic A-M1
-Moves current window while dragging.
-Tiled windows will be toggled to the floating state.
-.It Ic A-M2
-Zooms/cycles current window to/from master area.
-If it is floating (but not fixed) it will be toggled to the tiled state,
-instead.
-.It Ic A-M3
-Resizes current window while dragging.
-Tiled windows will be toggled to the floating state.
+Pops the root menu,
+.Xr xde-menu 1 ,
+by default.
+.It Ic M4
+Scroll up advances to the next view (workspace).
+.It Ic M5
+Scroll down retreats to the previous view (workspace).
 .El
+.Pp
+.Bd -ragged -offset indent -compact
+.Sy Note:
+ADWM leave a one pixel gap between the workspace and the edge of the
+screen or monitor.  It also creates a barrier extending 10% from each
+corner along each edge of the monitor.  This allows the user to move the
+pointer to any edge (near a corner on multi-head setups) and be over the
+root window in tiled layouts.  However, this does not work over panels
+or the dock which are above the root window for that one pixel.
+.Ed
+.Pp
+Mouse bindings on the title bar (except on buttons) or anywhere on the
+client window with the
+.Ic Alt
+key pressed, are as follows:
+.Pp
+.Bl -tag -width ".Ic M2" -offset indent -compact
+.It Ic M1
+Makes tiled windows float and moves them while dragging.
+.It Ic M2
+Makes floating windows tiled and toggles them as master.
+.It Ic M3
+Makes tiled windows float and resizes them while dragging.
+.It Ic M4
+Scroll up rolls up the window.
+.It Ic M5
+Scroll down rolls down the window.
+.El
+.Pp
+Mouse bindings on the resize grips, window border, or title bar margins
+are as follows:
+.Pp
+.Bl -tag -width ".Ic M2" -offset indent -compact
+.It Ic M1
+Resizes the window while dragging.
+.El
+.Pp
+Mouse bindings for click on title bar buttons are as follows:
+.Pp
+.Bl -column ".Ar maximize" "M1" "" -offset indent -compact
+.It Ar menu     Ta Ic M1 Ta Pop window menu.
+.It             Ta Ic M2 Ta Pop window menu.
+.It             Ta Ic M3 Ta Pop window menu.
+.El
+.Bl -column ".Ar maximize" "M1" "" -offset indent -compact
+.It Ar iconify  Ta Ic M1 Ta Minimize the window.
+.It             Ta Ic M2 Ta [1] (reserved for hide the window).
+.It             Ta Ic M3 Ta [2] (reserved for withdraw the window).
+.El
+.Bl -column ".Ar maximize" "M1" "" -offset indent -compact
+.It Ar maximize Ta Ic M1 Ta Toggle maximized.
+.It             Ta Ic M2 Ta Toggle maximized vertical.
+.It             Ta Ic M3 Ta Toggle maximized horizontal.
+.El
+.Bl -column ".Ar maximize" "M1" "" -offset indent -compact
+.It Ar close    Ta Ic M1 Ta Close the window.
+.It             Ta Ic M2 Ta [3] (reserved for xkill).
+.It             Ta Ic M3 Ta [4] (reserved for kill).
+.El
+.Bl -column ".Ar maximize" "M1" "" -offset indent -compact
+.It Ar shade    Ta Ic M1 Ta Toggle shade.
+.It             Ta Ic M2 Ta Roll up.
+.It             Ta Ic M3 Ta Roll down.
+.El
+.Bl -column ".Ar maximize" "M1" "" -offset indent -compact
+.It Ar stick    Ta Ic M1 Ta Toggle sticky.
+.It             Ta Ic M2 Ta Pin window.
+.It             Ta Ic M3 Ta Unpin window.
+.El
+.Bl -column ".Ar maximize" "M1" "" -offset indent -compact
+.It Ar lhalf    Ta Ic M1 Ta [5] (reserved for left half placement toggle)
+.It             Ta Ic M2 Ta [5] (reserved for left half placement)
+.It             Ta Ic M3 Ta [5] (reserved for restore from left half)
+.El
+.Bl -column ".Ar maximize" "M1" "" -offset indent -compact
+.It Ar rhalf    Ta Ic M1 Ta [5] (reserved for right half placement toggle)
+.It             Ta Ic M2 Ta [5] (reserved for right half placement)
+.It             Ta Ic M3 Ta [5] (reserved for restore from right half)
+.El
+.Bl -column ".Ar maximize" "M1" "" -offset indent -compact
+.It Ar fill     Ta Ic M1 Ta Toggle fill.
+.It             Ta Ic M2 Ta Fill available space.
+.It             Ta Ic M3 Ta Restore from fill.
+.El
+.Bl -column ".Ar maximize" "M1" "" -offset indent -compact
+.It Ar float    Ta Ic M1 Ta Toggle floating/tiled.
+.It             Ta Ic M2 Ta Make window floating.
+.It             Ta Ic M3 Ta Make window tiled.
+.El
+.Bl -column ".Ar maximize" "M1" "" -offset indent -compact
+.It Ar size     Ta Ic M1 Ta Begin mouse resize.
+.It             Ta Ic M2 Ta Begin mouse resize.
+.It             Ta Ic M3 Ta Begin mouse resize.
+.El
+.Bd -ragged -offset indent -compact
+.Pp
+.Sy Notes:
+.Bl -tag -width "[1]"
+.It [1]
+The middle button pressed on the
+.Ar iconify
+button is reserved for hiding the window.  Hidden windows are not placed
+in in the window list nor on the task bar.
+.It [2]
+The right button pressed on the
+.Ar iconify
+button is reserved for withdrawing the window.  Withdrawn windows are
+treated as dock applications.
+.It [3]
+The middle button pressed on the
+.Ar close
+button is reserved for killing the X client associated with the window.
+.It [4]
+The right button pressed on the
+.Ar close
+button is reserved for killing the process associated with the window.
+.It [5]
+The
+.Ar lhalf
+and
+.Ar rhalf
+actions have not yet been implemented.
+When implemented, the left button will used to toggle the state; the
+middle, to set the state; and, the right, to clear.
+.El
+.Ed
 .Pp
 The default key bindings are:
 .Pp
@@ -270,7 +404,7 @@ which are described in the sections below.
 Every relative path specified is relative to the directory of the
 configuration file.
 .Ss MAIN SETTINGS
-.Bl -tag -width Ds
+.Bl -tag -width "XX"
 .It Ic attachaside
 Set new windows as slave or master.
 .Bl -column "Character" "Meaning" -offset indent
@@ -306,7 +440,7 @@ Sets the type of sloppy focus to use.
 .El
 .El
 .Ss BORDER SETTINGS
-.Bl -tag -width Ds
+.Bl -tag -width "XX"
 .It Ic border
 Width of the border (in pixels).
 .El
@@ -323,12 +457,12 @@ In the settings that follow, '*' can be replaced by the 'name' as follows:
 .It Li "float" Ta "floating"
 .It Li "resize" Ta "-"
 .El
-.Bl -tag -width Ds
+.Bl -tag -width "XX"
 .It Ic button.*.button[n].action
 Where [n] is a digit between 1 and 5 inclusive indicating the action
-to perform when the mouse button is released over the titlebar button.
+to perform when the mouse button is released over the title bar button.
 .It Ic button.*.pixmap
-Sets the default pixmap for the buttons in the titlebar.  All other pixmaps (with
+Sets the default pixmap for the buttons in the title bar.  All other pixmaps (with
 the exception of disabled pixmaps) ultimately default to this pixmap when unspecified.
 .It Ic button.*.pressed.pixmap
 Sets the pixmap for the button while pressed.
@@ -336,50 +470,74 @@ Sets the pixmap for the button while pressed.
 Sets the pixmap for the button while the client window is focused,
 optionally while the button is in the toggled or disabled state.
 Toggled pixmaps default to non-toggled pixmaps.  A missing disabled pixmap
-causes the button to dissapear instead.
+causes the button to disappear instead.
 Focus pixmaps default to the default pixmap.
 .It Ic button.*[.toggled][.disabled].unfocus.pixmap
 Sets the pixmap for the button while the client window is unfocused,
 optionally while the button is in the toggled or disabled state.
 Toggled pixmaps default to non-toggled pixmaps.  A missing disabled pixmap
-causes the button to dissapear instead.
+causes the button to disappear instead.
 Unfocus pixmaps default to focused pixmaps.
 .It Ic button.*[.toggled][.disabled].hover.pixmap
 Sets the pixmap for the button while the pointer is hovering over the button,
 optionally while the button is in the toggled or disabled state.
 Toggled pixmaps default to non-toggled pixmaps.  A missing disabled pixmap
-causes the button to dissapear instead.
+causes the button to disappear instead.
 Hover pixmaps default to focused pixmaps.
 .El
 .Ss COLOR SETTINGS
-.Bl -tag -width Ds
-.It Ic normal.bg
-Sets the titlebar background for unfocused windows.
-.It Ic normal.border
+Color settings affect the colors of the decorative borders, title bars,
+separators, outlines, backgrounds, foregrounds, dock application tiles
+and borders, and drop shadows, as follows:
+.Pp
+.Bl -tag -width "XX" -compact
+.It Ic bg Ar <color>
+Sets the title bar background default.
+.It Ic border Ar <color>
+Sets the color of a small border around each window default.
+.It Ic button Ar <color>
+Sets the button foreground default.
+.It Ic fg Ar <color>
+Sets the title bar foreground default.
+.It Ic shadow Ar <color>
+Sets the title bar drop shadow color default.
+.El
+.Pp
+.Bl -tag -width "XX" -compact
+.It Ic normal.bg Ar <color>
+Sets the title bar background for unfocused windows.
+.It Ic normal.border Ar <color>
 Sets the color of a small border around each unfocused window.
-.It Ic normal.button
+.It Ic normal.button Ar <color>
 Sets the button foreground for unfocused windows.
-.It Ic normal.fg
-Sets the titlebar foreground for unfocused windows.
-.It Ic normal.shadow
-Sets the titlebar drop shadow color for unfocused windows.
-.It Ic selected.bg
-.It Ic selected.border
-.It Ic selected.button
-.It Ic selected.fg
-.It Ic selected.shadow
-Sets color options for focused windows.
+.It Ic normal.fg Ar <color>
+Sets the title bar foreground for unfocused windows.
+.It Ic normal.shadow Ar <color>
+Sets the title bar drop shadow color for unfocused windows.
+.El
+.Pp
+.Bl -tag -width "XX" -compact
+.It Ic selected.bg Ar <color>
+Sets the title bar background for selected windows.
+.It Ic selected.border Ar <color>
+Sets the color of a small border around each selected window.
+.It Ic selected.button Ar <color>
+Sets the button foreground for selected windows.
+.It Ic selected.fg Ar <color>
+Sets the title bar foreground for selected windows.
+.It Ic selected.shadow Ar <color>
+Sets the title bar drop shadow color for selected windows.
 .El
 .Ss HACKS SETTINGS
-.Bl -tag -width Ds
-.It Ic hidebastards
+.Bl -tag -width "XX"
+.It Ic hidebastards Ar <bool>
 Hide panels, pagers and others with togglestruts function.
 .El
 .Ss KEY AND MOUSE BINDING SETTINGS
-.Bl -tag -width Ds
+.Bl -tag -width "XX"
 .It Ic ACSW + key_or_button [ = options][, ACSW + key_or_button [ = options]] ...
 Binds key or button to the specified command (see
-.Sx "COMMANDS" Ns ).
+.Sx "COMMANDS" ).
 Spaces are mandatory.
 .Pp
 Key is taken from the X11 files (usually located under an include directory)
@@ -397,28 +555,34 @@ Commands options are specified after an equal sign.
 Additional key bindings for the same command, with the same or different
 options, can be specified following a comma.
 .El
-.Ss MISC SETTINGS
-.Bl -tag -width Ds
-.It Ic command
+.Ss MOUSE SETTINGS
+.Bl -tag -width "XX" -compact
+.It Ic command Op Ar shell-command
 Application to run on right click (Button 3) on root window.
 The default without a configuration file is
-.Sy Ic xterm ,
+.Sy Dq Ic xterm ,
 (defined by the
 .Sy COMMAND
 configuration macro).
 The default configuration file defines this to
-.Sy Ic "xde-menu -P -b 3" ,
+.Sy Dq Ic "xde-menu -P -b 3" ,
 which will display a root menu at the pointer location.
-.It Ic command2
+See
+.Xr xde-menu 1
+for more information.
+.It Ic command2 Op Ar shell-command
 Application to run on middle click (Button 2) on root window.
 The default without a configuration file is
 .Sy NULL ,
 (defined by the
 .Sy COMMAND2
 configuration macro).  The default configuration file sets this to
-.Sy Ic "xde-wkspcmenu -p -b 2" ,
+.Sy Dq Ic "xde-wkspmenu -p -b 2" ,
 which will display a menu of workspaces and windows at the pointer location.
-.It Ic command3
+See
+.Xr xde-wkspmenu 1
+for more information.
+.It Ic command3 Op Ar shell-command
 Application to run on left click (Button 1) on root window.  (Note: this setting is not recommended
 as Button 1 is used to cancel other menus and will still launch the application associated with this
 command.)
@@ -427,61 +591,69 @@ The default without a configuration file is
 (defined by the
 .Sy COMMAND3
 configuration macro).  The default configuration file does not set this.
-.It Ic menucommand
+.It Ic menucommand Op Ar shell-command
 Application to run when the menu icon on the title bar is clicked (Button 1).
 The default with no configuration file is
 .Sy NULL ,
 (defined by the
 .Sy MENUCOMMAND
 configuration macro).  The default configuration file sets this to
-.Sy Ic "xde-winmenu -p -b 1" ,
+.Sy Dq Ic "xde-winmenu -p -b 1" ,
 which will display a menu of window actions in the upper left corner of the window.
-.It Ic opacity
+See
+.Xr xde-winmenu 1
+for more information.
+.El
+.Ss MISC SETTINGS
+.Bl -tag -width "XX" -compact
+.It Ic opacity Ar <float>
 Opacity value for inactive windows (xcompmgr needed).
 .El
 .Ss TAGS SETTINGS
-.Bl -tag -width Ds
-.It Ic tags.layout{...}
+.Bl -tag -width "XX" -compact
+.It Ic tags.layout<n> Ar <layout>
 Layout per tag on start (see
 .Ic deflayout )
 .Ns .
-.It Ic tags.name{...}
+.It Ic tags.name<n> Ar <string>
 Names of the tags.
-.It Ic tags.number
+.It Ic tags.number Ar <number>
 Number of tags.
 .El
 .Ss TITLE SETTINGS
-.Bl -tag -width Ds
-.It Ic decoratetiled
+.Bl -tag -width "XX" -compact
+.It Ic decoratetiled Ar <bool>
 If one (1), draw titles on windows (by default) in tiled mode.
 The default without a configuration file is zero (0), (defined by the
 .Sy DECORATETILED
 configuration macro).
 The value can be toggled with key bindings.
-.It Ic decoratemax
+.It Ic decoratemax Ar <bool>
 If one (1), draw titles on maximized windows (by default).
 .PP
 The default without a configuration file is one (1), (defined by the
 .Sy DECORATEMAX
 configuration macro).
 The value can be toggled with key bindings.
-.It Ic font
+.It Ic drop Ar <pixels>
+Drop shadow in pixels (typically 1, default 0).
+.It Ic font Ar <font>
 Titlebar font.
-.It Ic normal.drop
+.It Ic normal.drop Ar <pixels>
 Drop shadow in pixels (typically 1, default 0) for unfocused window fonts.
-.It Ic normal.font
+.It Ic normal.font Ar <font>
 Titlebar font for unfocused windows.
-.It Ic selected.drop
+.It Ic selected.drop Ar <pixels>
 Drop shadow in pixels (typically 1, default 0) for focused window fonts.
-.It Ic selected.font
+.It Ic selected.font Ar <font>
 Titlebar font for focused windows.
-.It Ic spacing
-Spacing in pixels between titlebar elements.
-.It Ic title
+.It Ic spacing Ar <pixels>
+Spacing in pixels between title bar elements.
+.It Ic title Ar <pixels>
 Titlebar height.  The default is defined by the
 .Sy TITLEHEIGHT
 configuration macro, which defaults to zero (0).
-.It Ic titlelayout
+.It Ic titlelayout Ar <string>
 Titlebar consists of 3 parts separated with dashes or spaces.
 Left is aligned to left, center to center and right to right (obviously).
 Default value is "N  IMC" meaning name on the left iconify, maximize and
@@ -702,6 +874,7 @@ so you can use your favourite panel or pager.
 parsekey() doesn't handle non-alphanumeric keysyms.
 .Pp
 Please resport bugs to <https://github.com/bbidulock/@PACKAGE@/issues>.
+.Sh HISTORY
 .Sh AUTHORS
 .An Brian Bidulock Aq bidulock@openss7.org
 .Sh LICENSE
@@ -711,4 +884,4 @@ is licensed under the GNU General Public License Version 3 or later.
 See the
 .Pa COPYING
 file in the distribution.
-.\" vim: set sw=4 et nocin:
+.\" vim: set sw=4 et nocin tw=72 spell:

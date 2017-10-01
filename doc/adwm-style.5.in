@@ -1,4 +1,4 @@
-.Dd $Mdocdate$
+.Dd @MDOCDATE@
 .Dt ADWM-STYLE \&5 "File Formats"
 .Os @PACKAGE@ @VERSION@
 .Sh NAME

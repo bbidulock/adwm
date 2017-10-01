@@ -6,11 +6,10 @@ adwm
 Package `adwm-0.6.9` was released under GPLv3 license 2017-09-10.
 
 This was originally a fork of Echinus which in turn was a fork of `dwm(1)`, and
-borrows concepts from `velox(1)`, `awesome(1)` and `spectrwm(1)`.  The source
-for `adwm` is hosted on [GitHub][1].  What it includes is a full
+borrows concepts from `velox(1)`, `awesome(1)`, `spectrwm(1)` and `wmii(1)`.
+The source for `adwm` is hosted on [GitHub][1].  What it includes is a full
 rewrite with significant updates and additions resulting in full EWMH (NetwM),
 WMH (WinWM), MWMH (CDE/Motif), ICCCM 2.0 compliance and support.
-
 
 Release
 -------
@@ -67,6 +66,59 @@ Read the manual page after installation:
 
     man adwm
 
+
+Features
+--------
+
+Following are some of the features provided by `adwm(1)` not provided by similar
+window managers:
+
+General:
+
+- full NetWM/EWMH, WinWM/WMH (gnome), OSF/Motif and ICCCM 2.0 compliance;
+- full support for client and global modality;
+- full RANDR and Xinerama compliance with full support for multi-head setups;
+- full support for Window Maker dock applications in floating and tiling modes;
+- window manager based auto-hide for panels and docks (struts);
+- three focus models: click-to-focus, sloppy and all-sloppy;
+- soon to come X11R6 session management;
+- very wide array of available key-binding actions;
+- key-binding defaults consistent with a wide array of light-weight and popular
+  window managers.
+
+Views, Workspaces and Desktops:
+
+- view/tag based workspaces and desktops;
+- scroll wheel support for switching desktops;
+- key bindings for switching desktops observes EMWH desktop layout.
+
+Floating/stacking mode:
+
+- smart cascading placement algorithm;
+- window decorations: title bar, resize grips, wide array of configurable
+  buttons.;
+- themed buttons include hovered, toggled, pressed, focused and unfocused
+  pixmaps.;
+- multiple mouse actions per title bar button based on mouse button pressed.;
+- separate click and click-drag actions for title bar, borders and grips.;
+- windows can snap to other windows and workspace/monitor boundaries.;
+- key bindings for moving and resizing windows without using the mouse.
+- drop shadowed XFT text in title bars, with separate color selection for
+  active and inactive windows;
+- dragging of windows between monitor;
+- `metacity(1)`-like drag-to-left, -right or -top functions to optimize
+  single-desktop operation.
+
+Tiling modes:
+
+- per-monitor tiling layouts for multi-head setups;
+- multiple tiling modes including master/stacking, monocle and grid (but, no
+  dwindle or centered-master modes, yet);
+- adjustable window borders and inter-window margins;
+- one pixel open space around dynamic desktop area for clicking on the root
+  window in tiled modes;
+- ability to drag-and-swap windows in tiling layouts (ala `awesome(1)`,
+  `wmii(1)` and `spectrwm(1)`);
 
 Issues
 ------

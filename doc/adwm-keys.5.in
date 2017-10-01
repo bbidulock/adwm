@@ -1,5 +1,4 @@
-\".Dd $Mdocdate$
-.Dd @DATE@
+.Dd $Mdocdate$
 .Dt ADWM-KEYS \&5 "File Formats"
 .Os @PACKAGE@ @VERSION@
 .Sh NAME
@@ -8,9 +7,9 @@
 .Sh SYNOPSIS
 .Bl -item -compact
 .It
-.Pa $HOME/.adwm/keysrc
+.Pa ~/.adwm/keysrc
 .It
-.Pa $HOME/.adwm/styles/Default/keysrc
+.Pa ~/.adwm/styles/Default/keysrc
 .It
 .Pa @pkgconfdir@/keysrc
 .It
@@ -38,7 +37,7 @@ directive in
 It is typical to place the key binding in a file named
 .Pa keysrc
 in the same directory as the main configuration file (e.g. in the
-.Pa "$HOME/.adwm/keysrc"
+.Pa "~/.adwm/keysrc"
 file).  See
 .Sx FILES ,
 below.
@@ -234,26 +233,26 @@ with the key binding sytnax described above under
 .Sx SYNTAX .
 .Bl -tag -width "XX"
 .It Cm viewprevtag
-.It Cm quit Op Ar command
+.It Cm quit Op Ar shell-command
 Causes
 .Nm @PACKAGE@
 to quit.
 When
-.Ar command
+.Ar shell-command
 is specified, executes
-.Ar command
+.Ar shell-command
 instead of quitting.
 .Pp
 Default:
 .Li Adwm* Ns Cm quit Ns Li : Ar "AC + p : End, AC + q, WS + q"
-.It Cm restart Op Ar command
+.It Cm restart Op Ar shell-command
 Causes
 .Nm @PACKAGE@
 to restart.
 When
-.Ar command
+.Ar shell-command
 is specified, executes
-.Ar command
+.Ar shell-command
 instead of restarting.
 .Pp
 Default:
@@ -1011,10 +1010,10 @@ All windows in any view.
 .El
 .Pp
 Examples:
-.Dl Adwm*focusnext: A + j
-.Dl Adwm*focusprev: A + k
-.Dl Adwm*cyclefocusnextevery: WAC + j
-.Dl Adwm*cyclefocusprevevery: WAC + k
+.Dl Adwm* Ns Cm focusnext Ns : Ar "A + j"
+.Dl Adwm* Ns Cm focusprev Ns : Ar "A + k"
+.Dl Adwm* Ns Cm cyclefocusnextevery Ns : Ar "WAC + j"
+.Dl Adwm* Ns Cm cyclefocusprevevery Ns : Ar "WAC + k"
 .Pp
 .It Cm setlayout<c>
 Set the monitor layout for the current monintor to the specified layout,
@@ -1048,34 +1047,70 @@ with windows in rows and columns.
 .El
 .Pp
 Defaults:
-.Dl Cm Adwm*setlayoutm Ns : Ar "A + m"
-.Dl Cm Adwm*setlayoutf Ns : Ar "A + f"
-.Dl Cm Adwm*setlayouti Ns : Ar "A + i"
-.Dl Cm Adwm*setlayoutt Ns : Ar "A + r"
-.Dl Cm Adwm*setlayoutb Ns : Ar "A + w"
-.Dl Cm Adwm*setlayoutl Ns : Ar "A + t"
-.Dl Cm Adwm*setlayoutu Ns : Ar "A + u"
-.Dl Cm Adwm*setlayoutg Ns : Ar "A + g"
+.Dl Adwm* Ns Cm setlayoutm Ns : Ar "A + m"
+.Dl Adwm* Ns Cm setlayoutf Ns : Ar "A + f"
+.Dl Adwm* Ns Cm setlayouti Ns : Ar "A + i"
+.Dl Adwm* Ns Cm setlayoutt Ns : Ar "A + r"
+.Dl Adwm* Ns Cm setlayoutb Ns : Ar "A + w"
+.Dl Adwm* Ns Cm setlayoutl Ns : Ar "A + t"
+.Dl Adwm* Ns Cm setlayoutu Ns : Ar "A + u"
+.Dl Adwm* Ns Cm setlayoutg Ns : Ar "A + g"
 .Pp
-.It Cm spawn<n> <command>
+.It Cm spawn<n> Ar shell-command
 Spawns the n'th command argument.
 .Cm <n>
 can be from 0 to 63.
 .Pp
 Defaults:
-.Dl Cm Adwm*spawn0 Ns : Ar "CA + t" Li = roxterm
-.Dl Cm Adwm*spawn1 Ns : Ar "CA + w" Li = firefox
-.Dl Cm Adwm*spawn2 Ns : Ar "CA + f" Li = pcmanfm
-.Dl Cm Adwm*spawn3 Ns : Ar "CA + r" Li = xde-run
-.Dl Cm Adwm*spawn4 Ns : Ar "CA + v" Li = gvim
-.Dl Cm Adwm*spawn5 Ns : Ar "CA + n" Li = uxterm
-.Dl Cm Adwm*spawn6 Ns : Ar "CA + m" Li = xdg-traymenu -p
-.Dl Cm Adwm*spawn7 Ns : Ar "WS + Return" Li = xde-term
-.Dl Cm Adwm*spawn8 Ns : Ar "W + p" Li = xde-traymenu -p
+.Dl Adwm* Ns Cm spawn0 Ns Li : Ar "AC + t = xdg-launch roxterm"
+.Dl Adwm* Ns Cm spawn1 Ns Li : Ar "AC + w = xdg-launch firefox"
+.Dl Adwm* Ns Cm spawn2 Ns Li : Ar "AC + f = xdg-launch pcmanfm"
+.Dl Adwm* Ns Cm spawn3 Ns Li : Ar "AC + r = xde-run"
+.Dl Adwm* Ns Cm spawn4 Ns Li : Ar "AC + v = xdg-launch gvim"
+.Dl Adwm* Ns Cm spawn5 Ns Li : Ar "AC + n = xdg-launch uxterm"
+.Dl Adwm* Ns Cm spawn6 Ns Li : Ar "AC + m = xde-menu -P"
+.Dl Adwm* Ns Cm spawn7 Ns Li : Ar "A + space = xde-winmenu -w active -W center"
+.Dl Adwm* Ns Cm spawn8 Ns Li : Ar "A + F1 = xdg-launch uxterm"
+.Dl Adwm* Ns Cm spawn9 Ns Li : Ar "A + F2 = xde-run"
+.Dl Adwm* Ns Cm spawn10 Ns Li : Ar "A + Print = scrot -s"
+.Dl Adwm* Ns Cm spawn11 Ns Li : Ar "A + x = xdg-launch uxterm"
+.Dl Adwm* Ns Cm spawn12 Ns Li : Ar "AC + Delete = xde-logout"
+.Dl Adwm* Ns Cm spawn13 Ns Li : Ar "AC + Return = xdg-launch uxterm"
+.Dl Adwm* Ns Cm spawn14 Ns Li : Ar "AC + e : c = xde-run"
+.Dl Adwm* Ns Cm spawn15 Ns Li : Ar "AC + e : e = xdg-launch uxterm"
+.Dl Adwm* Ns Cm spawn16 Ns Li : Ar "AC + e : l = xdg-launch xde-xlock"
+.Dl Adwm* Ns Cm spawn17 Ns Li : Ar "AC + e : s = scrot -s"
+.Dl Adwm* Ns Cm spawn18 Ns Li : Ar "AC + p : d = xde-run"
+.Dl Adwm* Ns Cm spawn19 Ns Li : Ar "AC + x = xdg-launch uxterm"
+.Dl Adwm* Ns Cm spawn20 Ns Li : Ar "AS + Return = xdg-launch uxterm"
+.Dl Adwm* Ns Cm spawn21 Ns Li : Ar "C + Escape = xde-menu -P"
+.Dl Adwm* Ns Cm spawn22 Ns Li : Ar "F11 = xde-winlist"
+.Dl Adwm* Ns Cm spawn23 Ns Li : Ar "F12 = xde-menu -P"
+.Dl Adwm* Ns Cm spawn24 Ns Li : Ar "S + Escape = xde-winmenu -w active -W center"
+.Dl Adwm* Ns Cm spawn25 Ns Li : Ar "W + e = xdg-launch pcmanfm"
+.Dl Adwm* Ns Cm spawn26 Ns Li : Ar "W + p = xde-menu -P"
+.Dl Adwm* Ns Cm spawn27 Ns Li : Ar "W + r = xde-run"
+.Dl Adwm* Ns Cm spawn28 Ns Li : Ar "W + s = scrot"
+.Dl Adwm* Ns Cm spawn29 Ns Li : Ar "W + slash = xde-findws"
+.Dl Adwm* Ns Cm spawn30 Ns Li : Ar "WS + Delete = xdg-launch xde-xlock"
+.Dl Adwm* Ns Cm spawn31 Ns Li : Ar "WS + Return = xdg-launch uxterm"
+.Dl Adwm* Ns Cm spawn32 Ns Li : Ar "WS + s = scrot -s"
+.Dl Adwm* Ns Cm spawn33 Ns Li : Ar "WS + slash = xde-namews"
+.Dl Adwm* Ns Cm spawn34 Ns Li : Ar "XF86MonBrightnessUp = xbrightness +4096"
+.Dl Adwm* Ns Cm spawn35 Ns Li : Ar "XF86MonBrightnessDown = xbrightness -4096"
+.Dl Adwm* Ns Cm spawn36 Ns Li : Ar "C + XF86MonBrightnessUp = xbacklight -inc 5"
+.Dl Adwm* Ns Cm spawn37 Ns Li : Ar "C + XF86MonBrightnessDown = xbacklight -dec 5"
+.Dl Adwm* Ns Cm spawn38 Ns Li : Ar "XF86AudioRaiseVolume = amixer sset Master\\,0 5%+"
+.Dl Adwm* Ns Cm spawn39 Ns Li : Ar "XF86AudioLowerVolume = amixer sset Master\\,0 5%-"
+.Dl Adwm* Ns Cm spawn40 Ns Li : Ar "XF86AudioMute = amixer sset Master\\,0 toggle"
+.Dl Adwm* Ns Cm spawn41 Ns Li : Ar "CWA + Left = xrandr -o left"
+.Dl Adwm* Ns Cm spawn42 Ns Li : Ar "CWA + Right = xrandr -o right"
+.Dl Adwm* Ns Cm spawn43 Ns Li : Ar "CWA + Down = xrandr -o inverted"
+.Dl Adwm* Ns Cm spawn44 Ns Li : Ar "CWA + Up = xrandr -o normal"
 .Pp
-.It Cm command Ar command
+.It Cm command Ar shell-command
 This is not a key binding.  It specifies a command, 
-.Ar command ,
+.Ar shell-command ,
 to execute when a mouse button is pressed on the root window.  The default pops an
 XDG root menu.
 .Pp
@@ -1093,7 +1128,7 @@ but may be overridden by the style (e.g. the default style located in
 .Pa @pkgconfdir@/styles/default/keysrc )
 and ultimately overridden by keys specified by the user in the user
 file (typically located in
-.Pa $HOME/.adwm/keysrc Ns ).
+.Pa ~/.adwm/keysrc Ns ).
 .Pp
 The defaults are, in general, very vim-like in key binding and effect (but, of course,
 must include a modifier different from vim unless you want to lose all vim
@@ -1129,6 +1164,7 @@ immediately usable to these users as well.
 .Re
 .Sh BUGS
 No outstanding bugs.
+.Sh HISTORY
 .Sh AUTHORS
 .An Brian Bidulock Aq bidulock@openss7.org
 .Sh LICENSE
@@ -1138,4 +1174,4 @@ is licensed under the GNU General Public License Version 3 or later.
 See the
 .Pa COPYING
 file in the distribution.
-.\" vim: set sw=4 et nocin:
+.\" vim: set sw=4 et nocin tw=72 spell:

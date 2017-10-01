@@ -76,7 +76,7 @@ window managers:
 General:
 
 - full NetWM/EWMH, WinWM/WMH (gnome), OSF/Motif and ICCCM 2.0 compliance;
-- full support for client and global modality;
+- full support for ICCCM 2.0 client and global modality;
 - full RANDR and Xinerama compliance with full support for multi-head setups;
 - full support for Window Maker dock applications in floating and tiling modes;
 - window manager based auto-hide for panels and docks (struts);

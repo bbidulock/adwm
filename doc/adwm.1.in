@@ -1,5 +1,5 @@
 .Dd @MDOCDATE@
-.Dt ADWM \&1 "User Commands"
+.Dt @PACKAGE_NAME@ \&1 "User Commands"
 .Os @PACKAGE_STRING@
 .Sh NAME
 .Nm @PACKAGE@
@@ -32,6 +32,7 @@ multiple tags. Selecting certain tags displays all windows with these tags.
 .Nm @PACKAGE_NAME@
 draws a small border around windows to indicate the focus state and an
 optional title bar and resize grips.
+.Sh OPTIONS
 .Pp
 The options are as follows:
 .Bl -tag -width ".Fl f Ar conf"
@@ -40,13 +41,95 @@ Prints version information to standard output, then exits.
 .It Fl f Ar conf
 Specifies an alternative configuration file.
 By default,
-.Nm @PACKAGE_NAME@
+.Nm
 loads the configuration file from
 .Pa ~/.@PACKAGE@/@PACKAGE@rc,
 if present, then looks for the system-wide configuration file
 .Pa @pkgconfdir@/@PACKAGE@rc .
 .El
-.Ss FEATURES
+.Sh FEATURES
+Following are some of the features provided by
+.Nm @PACKAGE_NAME@
+not provided by similar window managers:
+.Pp
+.Sy General:
+.Pp
+.Bl -bullet -compact
+.It
+full NetWM/EWMH, WinWM/WMH (gnome), OSF/Motif and ICCCM 2.0 compliance;
+.It
+full support for ICCCM 2.0 client and global modality;
+.It
+full RANDR and Xinerama compliance with full support for multi-head setups;
+.It
+full support for Window Maker dock applications in floating and tiling modes;
+.It
+window manager based auto-hide for panels and docks (struts);
+.It
+three focus models: click-to-focus, sloppy and all-sloppy;
+.It
+soon to come X11R6 session management;
+.It
+very wide array of available key-binding actions;
+.It
+key-binding defaults consistent with a wide array of light-weight and popular window managers.
+.El
+.Pp
+.Sy "Views, Workspaces and Desktops:"
+.Pp
+.Bl -bullet -compact
+.It
+view/tag based workspaces and desktops;
+.It
+scroll wheel support for switching desktops;
+.It
+key bindings for switching desktops observes EMWH desktop layout.
+.El
+.Pp
+.Sy "Floating/stacking mode:"
+.Pp
+.Bl -bullet -compact
+.It
+smart cascading placement algorithm;
+.It
+window decorations: title bar, resize grips, wide array of configurable buttons.;
+.It
+themed buttons include hovered, toggled, pressed, focused and unfocused pixmaps.;
+.It
+multiple mouse actions per title bar button based on mouse button pressed.;
+.It
+separate click and click-drag actions for title bar, borders and grips.;
+.It
+windows can snap to other windows and workspace/monitor boundaries.;
+.It
+key bindings for moving and resizing windows without using the mouse.
+.It
+drop shadowed XFT text in title bars, with separate color selection for active and inactive windows;
+.It
+dragging of windows between monitor;
+.It
+.Xr metacity 1 -like
+drag-to-left, -right or -top functions to optimize single-desktop operation.
+.El
+.Pp
+.Sy "Tiling modes:"
+.Pp
+.Bl -bullet -compact
+.It
+per-monitor tiling layouts for multi-head setups;
+.It
+multiple tiling modes including master/stacking, monocle and grid (but, no dwindle or centered-master modes, yet);
+.It
+adjustable window borders and inter-window margins;
+.It
+one pixel open space around dynamic desktop area for clicking on the root window in tiled modes;
+.It
+ability to drag-and-swap windows in tiling layouts (ala
+.Xr awesome 1 ,
+.Xr wmii 1
+and
+.Xr spectrwm 1 Ns ).
+.El
 .Ss CONVENTIONS
 .Pp
 The following notation is used in this page:
@@ -99,7 +182,8 @@ Scroll down retreats to the previous view (workspace).
 .Pp
 .Bd -ragged -offset indent -compact
 .Sy Note:
-ADWM leave a one pixel gap between the workspace and the edge of the
+.Nm @PACKAGE_NAME@
+leaves a one pixel gap between the workspace and the edge of the
 screen or monitor.  It also creates a barrier extending 10% from each
 corner along each edge of the monitor.  This allows the user to move the
 pointer to any edge (near a corner on multi-head setups) and be over the
@@ -853,15 +937,66 @@ spawn
 .\" .Pp
 .\" To show the title centered and the close button on the right:
 .\" .Dl Adwm*titlelayout: -T-C
+.Sh FILES
+.Bl -tag -width "XX"
+.It Pa ~/.@PACKAGE@/@PACKAGE@rc
+The location of the default user's configuration file.
+.sp 0
+See
+.Xr @PACKAGE@-config 5
+for a description of this file.
+.It Pa ~/.@PACKAGE@/keysrc
+The location of the default user's key bindings file.
+.sp 0
+See
+.Xr @PACKAGE@-keys 5
+for a description of this file.
+.It Pa ~/.@PACKAGE@/stylerc
+The location of the default user's style file.
+.sp 0
+See
+.Xr @PACKAGE@-style 5
+for a description of this file.
+.It Pa ~/.@PACKAGE@/styles/Default/stylerc
+The location of the default user's themed style file.
+.sp 0
+See
+.Xr @PACKAGE@-style 5
+for a description of this file.
+.It Pa @pkgconfdir@/@PACKAGE@rc
+The location of the system default configuration file.
+.sp 0
+See
+.Xr @PACKAGE@-config 5
+for a description of this file.
+.It Pa @pkgconfdir@/keysrc
+The location of the system default key bindings file.
+.sp 0
+See
+.Xr @PACKAGE@-keys 5
+for a description of this file.
+.It Pa @pkgconfdir@/styles/Default/keysrc
+The location of the system default themed key bindings file.
+.sp 0
+See
+.Xr @PACKAGE@-keys 5
+for a description of this file.
+.It Pa @pkgconfdir@/styles/Default/stylerc
+The location of the system default themed style file.
+.sp 0
+See
+.Xr @PACKAGE@-style 5
+for a description of this file.
+.El
 .Sh STANDARDS
 .Nm @PACKAGE_NAME@
 is fully EWMH (NetWM), WMH (WinWM), MWMH (Motif/DTWM) and ICCCM 2.0 compliant,
 so you can use your favourite panel or pager. 
 .Sh SEE ALSO
 .Rs
-.Xr adwm-config 5 ,
-.Xr adwm-keys 5 ,
-.Xr adwm-style 5 ,
+.Xr @PACKAGE@-config 5 ,
+.Xr @PACKAGE@-keys 5 ,
+.Xr @PACKAGE@-style 5 ,
 .Xr xde-dmenu 1 ,
 .Xr xde-identify 1 ,
 .Xr xde-xlock 1 ,

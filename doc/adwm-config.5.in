@@ -1,5 +1,5 @@
 .Dd @MDOCDATE@
-.Dt ADWM-CONFIG \&5 "File Formats"
+.Dt @PACKAGE_NAME@-CONFIG \&5 "File Formats"
 .Os @PACKAGE_STRING@
 .Sh NAME
 .Nm @PACKAGE@-config
@@ -7,13 +7,13 @@
 .Sh SYNOPSIS
 .Bl -item -compact
 .It
-.Pa ~/.adwm/adwmrc
+.Pa ~/.@PACKAGE@/@PACKAGE@rc
 .It
-.Pa ~/.adwm/styles/Default/adwmrc
+.Pa ~/.@PACKAGE@/styles/Default/@PACKAGE@rc
 .It
-.Pa @pkgconfdir@/adwmrc
+.Pa @pkgconfdir@/@PACKAGE@rc
 .It
-.Pa @pkgconfdir@/styles/Default/adwmrc
+.Pa @pkgconfdir@/styles/Default/@PACKAGE@rc
 .El
 .Sh DESCRIPTION
 .Nm @PACKAGE_NAME@
@@ -29,9 +29,9 @@ Customization of configuration is defined in an X Resource
 formatted configuration file.  Configuration is part of a main
 configuration file.  It is typical to place the configuration
 file an a file named
-.Pa adwmrc
+.Pa @PACKAGE@rc
 in the main directory (e.g. in the
-.Pa ~/.adwm/adwmrc
+.Pa ~/.@PACKAGE@/@PACKAGE@rc
 file).  See
 .Sx FILES ,
 below.
@@ -42,10 +42,10 @@ are described below under
 .Pp
 Key bindings are typically placed in a separate file, as
 described in
-.Xr adwm-keys 5 .
+.Xr @PACKAGE@-keys 5 .
 Style elements (for decorative borders and the dock) are
 normally placed in a separate file, also, as described in
-.Xr adwm-style 5 .
+.Xr @PACKAGE@-style 5 .
 .Sh SYNTAX
 The general syntax of configuration directives, as specified directly in
 the
@@ -256,7 +256,7 @@ root window, or on the menu button in the title bar of client
 windows.  These directivees are normally specified in the
 .Cm keysFile
 instead of the main configuration file: see
-.Xr adwm-keys 5 ;
+.Xr @PACKAGE@-keys 5 ;
 however, they are also addressed here.
 .Pp
 Mouse directive apply to button pressed on the root window or
@@ -393,7 +393,7 @@ the setting of this directive can be changed on a view-by-view
 basis using the 
 .Cm dectiled
 key binding described in
-.Xr adwm-keys 5 .
+.Xr @PACKAGE@-keys 5 .
 The setting of this directive merely sets the defaults for all
 views on the specified screen at startup.
 .It Li [ Ns Cm screen<s>. Ns Li ] Ns Cm decoratemax Ar <bool>
@@ -442,7 +442,7 @@ struts are not displayed.
 This directive affects primarily the response to the
 .Cm struts
 key binding as described in
-.Xr adwm-keys 5 .
+.Xr @PACKAGE@-keys 5 .
 Setting this value to true has the effect of applying or
 removing struts; whereas, the value of false, provides for
 exposing and hiding struts.
@@ -467,7 +467,7 @@ this setting only affects the default for views.  The actual
 setting for a particular view can be altered using the
 .Cm struts
 key binding as described in
-.Xr adwm-keys 5 .
+.Xr @PACKAGE@-keys 5 .
 .It Li [ Ns Cm screen<s>. Ns Li ] Ns Cm autoroll Ar <bool>
 Specifies whether shaded windows (window that are rolled up inside
 their title bars) should automatically be unshaded when the window
@@ -547,7 +547,7 @@ the default value for new layouts; the value for specific
 views can be changed using the
 .Cm mwfact
 key binding defined in
-.Xr adwm-keys 5 .
+.Xr @PACKAGE@-keys 5 .
 .Pp
 Default:
 .Li Adwm* Ns Cm mwfact Ns Li : Ar 0.6
@@ -571,7 +571,7 @@ default number of masters.  The number of masters in a layout
 can be changed using the
 .Cm nmaster
 key binding described in
-.Xr adwm-keys 5 .
+.Xr @PACKAGE@-keys 5 .
 The default number is one (1).  Only values between 1 and 10
 (inclusive) are permitted.
 .Pp
@@ -585,7 +585,7 @@ sets the default number.  The number of columns (rows) in a
 layout can be changed using the
 .Cm ncolumns
 key binding described in
-.Xr adwm-keys 5 .
+.Xr @PACKAGE@-keys 5 .
 The default number is three (3).  Only values between 1 and 10
 (inclusive) are permitted.
 .Pp
@@ -714,7 +714,7 @@ Example:
 .Pp
 .Sy Note:
 No defaults are provided in the default
-.Pa adwmrc
+.Pa @PACKAGE@rc
 file.  These resources, if defined at all, should likely be defined in the
 .Cm styleFile
 associated with the current style, as it is a themeable item.
@@ -722,9 +722,9 @@ associated with the current style, as it is a themeable item.
 .Sh DEFAULTS
 The default configuration is provided in the default
 configuration file, typically,
-.Pa "~/.adwm/adwmrc" .
+.Pa "~/.@PACKAGE@/@PACKAGE@rc" .
 A system default configuration file is provided in
-.Pa "@pkgconfdir@/adwmrc" ,
+.Pa "@pkgconfdir@/@PACKAGE@rc" ,
 a listing of which appears below.
 .Pp
 .Bd -literal -unfilled -offset indent
@@ -755,15 +755,15 @@ Adwm*tags.layout3: b
 .Ed
 .Sh FILES
 .Bl -tag -width "XX"
-.It Pa ~/.adwm/adwmrc
+.It Pa ~/.@PACKAGE@/@PACKAGE@rc
 The location of the default user's configuration file.
-.It Pa ~/.adwm/keysrc
+.It Pa ~/.@PACKAGE@/keysrc
 The location of the default user's key bindings file.
-.It Pa ~/.adwm/stylerc
+.It Pa ~/.@PACKAGE@/stylerc
 The location of the default user's style file.
-.It Pa ~/.adwm/styles/Default/stylerc
+.It Pa ~/.@PACKAGE@/styles/Default/stylerc
 The location of the default user's themed style file.
-.It Pa @pkgconfdir@/adwmrc
+.It Pa @pkgconfdir@/@PACKAGE@rc
 The location of the system default configuration file.
 .It Pa @pkgconfdir@/keysrc
 The location of the system default key bindings file.
@@ -775,8 +775,8 @@ The location of the system default themed style file.
 .Sh SEE ALSO
 .Rs
 .Xr echinus 1 ,
-.Xr adwm-keys 5 ,
-.Xr adwm-style 5 ,
+.Xr @PACKAGE@-keys 5 ,
+.Xr @PACKAGE@-style 5 ,
 .Xr FcParseName 3 ,
 .Xr xft 3 ,
 .Xr XParseColor 3 ,
@@ -784,7 +784,7 @@ The location of the system default themed style file.
 .Xr xde-wkspmenu 1 ,
 .Xr xde-winlist 1 ,
 .Xr xde-winmenu 1 ,
-.Xr adwm 1 ,
+.Xr @PACKAGE@ 1 ,
 .Xr dwm 1 ,
 .Xr openbox 1 ,
 .Xr pekwm 1 ,
@@ -798,8 +798,12 @@ No outstanding bugs.
 .Cm @PACKAGE@
 configuration began with the simple X Resource scheme provided by
 `echinus(1)` and quickly grew from there to support the advanced
-features of ADWM.  The same basic X Resource scheme is supported and an
-`echinus(1)` resource file will work with ADWM (substituting
+features of
+.Nm @PACKAGE_NAME@ .
+The same basic X Resource scheme is supported and an
+`echinus(1)` resource file will work with
+.Nm @PACKAGE_NAME@
+(substituting
 .Ic Adwm*
 for
 .Ic Echinus* Ns ).

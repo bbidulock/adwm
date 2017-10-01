@@ -1,5 +1,5 @@
 .Dd @MDOCDATE@
-.Dt ADWM-KEYS \&5 "File Formats"
+.Dt @PACKAGE_NAME@-KEYS \&5 "File Formats"
 .Os @PACKAGE_STRING@
 .Sh NAME
 .Nm @PACKAGE@-keys
@@ -7,9 +7,9 @@
 .Sh SYNOPSIS
 .Bl -item -compact
 .It
-.Pa ~/.adwm/keysrc
+.Pa ~/.@PACKAGE@/keysrc
 .It
-.Pa ~/.adwm/styles/Default/keysrc
+.Pa ~/.@PACKAGE@/styles/Default/keysrc
 .It
 .Pa @pkgconfdir@/keysrc
 .It
@@ -33,11 +33,11 @@ Key bindings can either being part of the main confguration file, or
 they can be included or referenced from the main configuration file: see the
 .Cm keysFile
 directive in
-.Xr adwm-config 5 .
+.Xr @PACKAGE@-config 5 .
 It is typical to place the key binding in a file named
 .Pa keysrc
 in the same directory as the main configuration file (e.g. in the
-.Pa "~/.adwm/keysrc"
+.Pa "~/.@PACKAGE@/keysrc"
 file).  See
 .Sx FILES ,
 below.
@@ -1116,7 +1116,7 @@ XDG root menu.
 .Pp
 Note that additional keybindings with commands can be specified on the
 same line following a comma, commas in commands must be escaped with
-two backslashes (one for xrdb and one for adwm).
+two backslashes (one for xrdb and one for @PACKAGE@).
 .Pp
 Default:
 .Li Adwm* Ns Cm command Ns : Ar "xdg-traymenu -p -b 1"
@@ -1128,7 +1128,7 @@ but may be overridden by the style (e.g. the default style located in
 .Pa @pkgconfdir@/styles/default/keysrc )
 and ultimately overridden by keys specified by the user in the user
 file (typically located in
-.Pa ~/.adwm/keysrc Ns ).
+.Pa ~/.@PACKAGE@/keysrc Ns ).
 .Pp
 The defaults are, in general, very vim-like in key binding and effect (but, of course,
 must include a modifier different from vim unless you want to lose all vim
@@ -1138,7 +1138,7 @@ follow a common thread of defaults.
 .Pp
 So that users of other window managers and systems do not have problems initially
 using
-.Xr adwm 1
+.Xr @PACKAGE@ 1
 before they get used to the more advance key bindings, a full set of
 Gnome2/Windows95-like key bindings are also provided.  Specific default key bindings
 for advanced features provided by some window managers (such as
@@ -1148,12 +1148,12 @@ for advanced features provided by some window managers (such as
 .Xr fluxbox 1 ,
 .Xr icewm 1 )
 are also provided to smooth transition, or to make
-.Xr adwm 1
+.Xr @PACKAGE@ 1
 immediately usable to these users as well.
 .Sh SEE ALSO
 .Rs
-.Xr adwm 1 ,
-.Xr adwm-config 5 ,
+.Xr @PACKAGE@ 1 ,
+.Xr @PACKAGE@-config 5 ,
 .Xr spectrwm 1 ,
 .Xr dwm 1 ,
 .Xr openbox 1 ,

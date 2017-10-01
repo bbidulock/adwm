@@ -1,5 +1,5 @@
 .Dd @MDOCDATE@
-.Dt ADWM-STYLE \&5 "File Formats"
+.Dt @PACKAGE_NAME@-STYLE \&5 "File Formats"
 .Os @PACKAGE_STRING@
 .Sh NAME
 .Nm @PACKAGE@-style
@@ -7,9 +7,9 @@
 .Sh SYNOPSIS
 .Bl -item -compact
 .It
-.Pa ~/.adwm/stylerc
+.Pa ~/.@PACKAGE@/stylerc
 .It
-.Pa ~/.adwm/styles/Default/stylerc
+.Pa ~/.@PACKAGE@/styles/Default/stylerc
 .It
 .Pa @pkgconfdir@/stylerc
 .It
@@ -61,7 +61,7 @@ file, or they can be included or referenced from the main configuration
 file.  It is typical to place the style elements in a file named
 .Pa stylerc
 in the same directory as the main configuration file (e.g. in the
-.Pa ~/.adwm/stylerc
+.Pa ~/.@PACKAGE@/stylerc
 file).  See
 .Sx FILES ,
 below.
@@ -465,7 +465,7 @@ Example:
 .Pp
 .Sy Note:
 No defaults are provided in the default
-.Pa adwmrc
+.Pa @PACKAGE@rc
 file.  These resources, if defined at all, should likely be defined in the
 .Cm styleFile
 associated with the current style, as it is a themeable item.
@@ -473,13 +473,13 @@ associated with the current style, as it is a themeable item.
 .Sh DEFAULTS
 The default style is provided in the default style file,
 typically,
-.Pa "~/.adwm/stylerc" .
+.Pa "~/.@PACKAGE@/stylerc" .
 .Sh SEE ALSO
 .Rs
-.Xr adwm 1 ,
-.Xr adwm-config 5 ,
-.Xr adwm-keys 5 ,
-.Xr adwm-style 5 .
+.Xr @PACKAGE@ 1 ,
+.Xr @PACKAGE@-config 5 ,
+.Xr @PACKAGE@-keys 5 ,
+.Xr @PACKAGE@-style 5 .
 .Re
 .Sh BUGS
 No outstanding bugs.

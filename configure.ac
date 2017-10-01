@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.69])
-AC_INIT([adwm],[0.6.9],[https://github.com/bbidulock/adwm/issues])
+AC_INIT([ADWM],[0.6.9],[https://github.com/bbidulock/adwm/issues],[adwm],[https://github.com/bbidulock/adwm])
 AC_REVISION([0.6.9])
 
 AC_CONFIG_SRCDIR([src/adwm.h])

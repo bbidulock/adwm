@@ -118,7 +118,9 @@ drag-to-left, -right or -top functions to optimize single-desktop operation.
 .It
 per-monitor tiling layouts for multi-head setups;
 .It
-multiple tiling modes including master/stacking, monocle and grid (but, no dwindle or centered-master modes, yet);
+multiple tiling layouts including master/stacking, monocle and grid (but, no dwindle or centered-master modes, yet);
+.It
+key bindings for rotating tiling layouts and also for rotating windows through tiling layouts;
 .It
 adjustable window borders and inter-window margins;
 .It
@@ -157,6 +159,72 @@ Scroll wheel up.
 Scroll wheel down.
 .El
 .Ss MOUSE BINDINGS
+.Pp
+Following are the default mouse bindings:
+.Pp
+.Bl -column ".Sy Button" "maximize.button" ".Sy Motion" "floating" ".Sy Action" -compact -offset indent
+.It Sy Button Ta Sy Where Ta Sy Motion Ta Sy Layout Ta Sy Action
+.It Ic   M1 Ta title bar       Ta click  Ta floating Ta raise/lower window
+.It         Ta title bar       Ta drag   Ta floating Ta moves window
+.It         Ta title bar       Ta click  Ta tiled    Ta toggles floating
+.It         Ta title bar       Ta drag   Ta tiled    Ta floats and moves
+.It         Ta grips           Ta drag   Ta \(em     Ta resizes
+.\" .It         Ta menu.button     Ta \(em   Ta \(em     Ta pops window menu
+.\" .It         Ta iconify.button  Ta \(em   Ta \(em     Ta minimizes window
+.\" .It         Ta maximize.button Ta \(em   Ta \(em     Ta toggle maximized
+.\" .It         Ta close.button    Ta \(em   Ta \(em     Ta closes window
+.\" .It         Ta shade.button    Ta \(em   Ta \(em     Ta toggle shaded
+.\" .It         Ta stick.button    Ta \(em   Ta \(em     Ta toggle sticky
+.\" .It         Ta lhalf.button    Ta \(em   Ta \(em     Ta toggle left half
+.\" .It         Ta rhalf.button    Ta \(em   Ta \(em     Ta toggle right half
+.\" .It         Ta fill.button     Ta \(em   Ta \(em     Ta toggle filled
+.\" .It         Ta float.button    Ta \(em   Ta \(em     Ta toggle floating
+.\" .It         Ta size.button     Ta \(em   Ta \(em     Ta begin mouse resize
+.It Ic A-M1 Ta window          Ta click  Ta floating Ta raise/lower window
+.It         Ta window          Ta drag   Ta floating Ta moves window
+.It         Ta window          Ta click  Ta tiled    Ta toggles floating
+.It         Ta window          Ta drag   Ta tiled    Ta floats and moves
+.It Ic   M2 Ta root            Ta click  Ta any      Ta pops view/workspace menu
+.It         Ta title bar       Ta click  Ta \(em     Ta tile and toggle master
+.It         Ta title bar       Ta drag   Ta floating Ta moves window
+.It         Ta title bar       Ta drag   Ta tiled    Ta tiles and places tile
+.\" .It         Ta menu.button     Ta \(em   Ta \(em     Ta pops window menu
+.\" .It         Ta iconify.button  Ta \(em   Ta \(em     Ta hides window
+.\" .It         Ta maximize.button Ta \(em   Ta \(em     Ta toggle maximized vertical
+.\" .It         Ta close.button    Ta \(em   Ta \(em     Ta kills client
+.\" .It         Ta shade.button    Ta \(em   Ta \(em     Ta rolls up window
+.\" .It         Ta stick.button    Ta \(em   Ta \(em     Ta pin window
+.\" .It         Ta lhalf.button    Ta \(em   Ta \(em     Ta flip left half
+.\" .It         Ta rhalf.button    Ta \(em   Ta \(em     Ta flip right half
+.\" .It         Ta fill.button     Ta \(em   Ta \(em     Ta fill available space
+.\" .It         Ta float.button    Ta \(em   Ta \(em     Ta float window
+.\" .It         Ta size.button     Ta \(em   Ta \(em     Ta begin mouse resize
+.It Ic A-M2 Ta window          Ta click  Ta \(em     Ta tile and toggle master
+.It         Ta window          Ta drag   Ta floating Ta moves window
+.It         Ta window          Ta drag   Ta tiled    Ta tiles and places tile
+.It Ic   M3 Ta root            Ta click  Ta \(em     Ta pops root menu
+.It         Ta title bar       Ta click  Ta \(em     Ta float window
+.It         Ta title bar       Ta drag   Ta \(em     Ta resizes
+.\" .It         Ta menu.button     Ta \(em   Ta \(em     Ta pops window menu
+.\" .It         Ta iconify.button  Ta \(em   Ta \(em     Ta withdraws window
+.\" .It         Ta maximize.button Ta \(em   Ta \(em     Ta toggle maximized horizontal
+.\" .It         Ta close.button    Ta \(em   Ta \(em     Ta kills process
+.\" .It         Ta shade.button    Ta \(em   Ta \(em     Ta rolls down window
+.\" .It         Ta stick.button    Ta \(em   Ta \(em     Ta unpin window
+.\" .It         Ta lhalf.button    Ta \(em   Ta \(em     Ta restore from left half
+.\" .It         Ta rhalf.button    Ta \(em   Ta \(em     Ta restore from right half
+.\" .It         Ta fill.button     Ta \(em   Ta \(em     Ta restore from fill
+.\" .It         Ta float.button    Ta \(em   Ta \(em     Ta tile window
+.\" .It         Ta size.button     Ta \(em   Ta \(em     Ta begin mouse resize
+.It Ic A-M3 Ta window          Ta click  Ta \(em     Ta \(em
+.It         Ta window          Ta drag   Ta \(em     Ta resizes
+.It Ic   M4 Ta root            Ta scroll Ta \(em     Ta next view/workspace
+.It         Ta title bar       Ta scroll Ta \(em     Ta rolls up window
+.It Ic A-M4 Ta window          Ta scroll Ta \(em     Ta rolls up window
+.It Ic   M5 Ta root            Ta scroll Ta \(em     Ta previous view/workspace
+.It         Ta title bar       Ta scroll Ta \(em     Ta rolls down window
+.It Ic A-M5 Ta window          Ta scroll Ta \(em     Ta rolls down window
+.El
 .Pp
 Mouse bindings
 for clicks on the root window
@@ -200,7 +268,7 @@ key pressed, are as follows:
 .It Ic M1
 Makes tiled windows float and moves them while dragging.
 .It Ic M2
-Makes floating windows tiled and toggles them as master.
+Makes tile window and toggles as master, or place tile while dragging.
 .It Ic M3
 Makes tiled windows float and resizes them while dragging.
 .It Ic M4
@@ -219,57 +287,78 @@ Resizes the window while dragging.
 .Pp
 Mouse bindings for click on title bar buttons are as follows:
 .Pp
-.Bl -column ".Ar maximize" "M1" "" -offset indent -compact
+.Bl -column ".Ar maximize" ".Sy Button" ".Sy Action" -compact -offset indent
+.It Sy Control Ta Sy Button Ta Sy Action
 .It Ar menu     Ta Ic M1 Ta Pop window menu.
 .It             Ta Ic M2 Ta Pop window menu.
 .It             Ta Ic M3 Ta Pop window menu.
 .El
-.Bl -column ".Ar maximize" "M1" "" -offset indent -compact
+.Pp
+.Bl -column ".Ar maximize" ".Sy Button" ".Sy Action" -compact -offset indent
+.It Sy Control Ta Sy Button Ta Sy Action
 .It Ar iconify  Ta Ic M1 Ta Minimize the window.
 .It             Ta Ic M2 Ta [1] (reserved for hide the window).
 .It             Ta Ic M3 Ta [2] (reserved for withdraw the window).
 .El
-.Bl -column ".Ar maximize" "M1" "" -offset indent -compact
+.Pp
+.Bl -column ".Ar maximize" ".Sy Button" ".Sy Action" -compact -offset indent
+.It Sy Control Ta Sy Button Ta Sy Action
 .It Ar maximize Ta Ic M1 Ta Toggle maximized.
 .It             Ta Ic M2 Ta Toggle maximized vertical.
 .It             Ta Ic M3 Ta Toggle maximized horizontal.
 .El
-.Bl -column ".Ar maximize" "M1" "" -offset indent -compact
+.Pp
+.Bl -column ".Ar maximize" ".Sy Button" ".Sy Action" -compact -offset indent
+.It Sy Control Ta Sy Button Ta Sy Action
 .It Ar close    Ta Ic M1 Ta Close the window.
 .It             Ta Ic M2 Ta [3] (reserved for xkill).
 .It             Ta Ic M3 Ta [4] (reserved for kill).
 .El
-.Bl -column ".Ar maximize" "M1" "" -offset indent -compact
+.Pp
+.Bl -column ".Ar maximize" ".Sy Button" ".Sy Action" -compact -offset indent
+.It Sy Control Ta Sy Button Ta Sy Action
 .It Ar shade    Ta Ic M1 Ta Toggle shade.
 .It             Ta Ic M2 Ta Roll up.
 .It             Ta Ic M3 Ta Roll down.
 .El
-.Bl -column ".Ar maximize" "M1" "" -offset indent -compact
+.Pp
+.Bl -column ".Ar maximize" ".Sy Button" ".Sy Action" -compact -offset indent
+.It Sy Control Ta Sy Button Ta Sy Action
 .It Ar stick    Ta Ic M1 Ta Toggle sticky.
 .It             Ta Ic M2 Ta Pin window.
 .It             Ta Ic M3 Ta Unpin window.
 .El
-.Bl -column ".Ar maximize" "M1" "" -offset indent -compact
+.Pp
+.Bl -column ".Ar maximize" ".Sy Button" ".Sy Action" -compact -offset indent
+.It Sy Control Ta Sy Button Ta Sy Action
 .It Ar lhalf    Ta Ic M1 Ta [5] (reserved for left half placement toggle)
 .It             Ta Ic M2 Ta [5] (reserved for left half placement)
 .It             Ta Ic M3 Ta [5] (reserved for restore from left half)
 .El
-.Bl -column ".Ar maximize" "M1" "" -offset indent -compact
+.Pp
+.Bl -column ".Ar maximize" ".Sy Button" ".Sy Action" -compact -offset indent
+.It Sy Control Ta Sy Button Ta Sy Action
 .It Ar rhalf    Ta Ic M1 Ta [5] (reserved for right half placement toggle)
 .It             Ta Ic M2 Ta [5] (reserved for right half placement)
 .It             Ta Ic M3 Ta [5] (reserved for restore from right half)
 .El
-.Bl -column ".Ar maximize" "M1" "" -offset indent -compact
+.Pp
+.Bl -column ".Ar maximize" ".Sy Button" ".Sy Action" -compact -offset indent
+.It Sy Control Ta Sy Button Ta Sy Action
 .It Ar fill     Ta Ic M1 Ta Toggle fill.
 .It             Ta Ic M2 Ta Fill available space.
 .It             Ta Ic M3 Ta Restore from fill.
 .El
-.Bl -column ".Ar maximize" "M1" "" -offset indent -compact
+.Pp
+.Bl -column ".Ar maximize" ".Sy Button" ".Sy Action" -compact -offset indent
+.It Sy Control Ta Sy Button Ta Sy Action
 .It Ar float    Ta Ic M1 Ta Toggle floating/tiled.
 .It             Ta Ic M2 Ta Make window floating.
 .It             Ta Ic M3 Ta Make window tiled.
 .El
-.Bl -column ".Ar maximize" "M1" "" -offset indent -compact
+.Pp
+.Bl -column ".Ar maximize" ".Sy Button" ".Sy Action" -compact -offset indent
+.It Sy Control Ta Sy Button Ta Sy Action
 .It Ar size     Ta Ic M1 Ta Begin mouse resize.
 .It             Ta Ic M2 Ta Begin mouse resize.
 .It             Ta Ic M3 Ta Begin mouse resize.

@@ -1819,5 +1819,5 @@ coverage of other defaults as possible.
 2.	Openbox version of A-F10 togglemax is not really toggle.
 
 
-# vim: set ft=asciidoc tw=72 nocin nosi fo+=tcqlorn:
+// vim: set ft=asciidoc tw=72 nocin nosi fo+=tcqlorn:
 

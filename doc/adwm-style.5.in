@@ -90,6 +90,11 @@ string, a boolean, or a specially formatted value as follows:
 Pixmaps are specified with a full or relative path and file name.  When
 the path is relative, it is relative to the directory in which the
 style file resides.
+Pixmaps can be formatted as
+.Pa .xbm
+or
+.Pa .xpm
+files.
 .Pp
 Example:
 .Li Adwm* Ns Cm button.iconify.pixmap Ns Li : Pa pixmaps/min_focused.xpm
@@ -246,9 +251,23 @@ Example:
 .Dl Adwm* Ns Cm normal.button Ns Li : Ar "  #9c9c9c"
 .Dl Adwm* Ns Cm normal.bg Ns Li : Ar "      #373737"
 .Dl Adwm* Ns Cm normal.fg Ns Li : Ar "      #a9a9a9"
-.It Cm button.<button> Ns Li [ Ns Cm .toggled Ns Li ][ Ns Cm .disabled Ns Li ] Ns Cm .<state>.pixmap Ar <pixmap>
+.It Cm button.<button> Ns Li [ Ns Cm .toggled Ns Li ][ Ns Cm .disabled Ns Li ] Ns Cm .<state> Ns Li [ Ns Cm .b<n> Ns Li ] Ns Cm .pixmap Ar <pixmap>
+.Pp
 Specifies the pixmap to be use for various buttons in various
-states.
+states.  Pixmaps are specified with a full or relative path and file
+name.  When the path is relative, it is relative to the directory in
+which the style file resides.  Pixmaps can be formatted as
+.Pa .xbm
+or
+.Pa .xpm
+files.  When formatted as
+.Pa .xbm
+files, the
+.Cm fg
+and
+.Cm bg
+resources specify the colors for the foreground and background,
+respectively.
 .Pp
 .Bl -tag -width "XX"
 .It Cm <button>
@@ -296,6 +315,13 @@ when the window is focused;
 .It Cm unfocus
 when the is not focused.
 .El
+.It Li [ Ns Cm .b<n> Ns Li ]
+When
+.Cm <state> is Cm pressed ,
+an optional button number,
+.Cm <n> ,
+can be provided to specify a pressed pixmap that is different for each
+button.  (But, this functionality has not yet been implemented.)
 .El
 .Pp
 Example:
@@ -329,30 +355,30 @@ The argument,
 .Ar <position> ,
 is an integer value that can be one of the following:
 .Pp
-.Bl -tag -width ".Ar DockSouthWest(0)" -compact -offset indent
-.It Ar "DockNone(0)"
+.Bl -tag -width ".Ar 0 Li - Cm DockSouthWest" -compact -offset indent
+.It Ar 0 Li - Cm DockNone
 default (same as
-.Ar "DockEast(1)" Ns );
-.It Ar "DockEast(1)"
+.Cm DockEast Ns );
+.It Ar 1 Li - Cm DockEast
 centered right on the screen;
-.It Ar "DockNorthEast(2)"
+.It Ar 2 Li - Cm DockNorthEast
 top right on the screen;
-.It Ar "DockNorth(3)"
+.It Ar 3 Li - Cm DockNorth
 centered top on the screen;
-.It Ar "DockNorthWest(4)"
+.It Ar 4 Li - Cm DockNorthWest
 top left on the screen;
-.It Ar "DockWest(5)"
+.It Ar 5 Li - Cm DockWest
 centered left on the screen;
-.It Ar "DockSouthWest(6)"
+.It Ar 6 Li - Cm DockSouthWest
 bottom left on the screen;
-.It Ar "DockSouth(7)"
+.It Ar 7 Li - Cm DockSouth
 centered bottom on the screen;
-.It Ar "DockSouthEast(9)"
+.It Ar 8 Li - Cm DockSouthEast
 bottom right on the screen.
 .El
 .Pp
 The default value is
-.Ar "DockNone(0)" :
+.Ar 0 Ns , Cm DockNone Ns :
 that is, the dock is centered on the right of the screen.
 .Pp
 Example:
@@ -363,10 +389,10 @@ The argument,
 .Ar "<orientation>" ,
 is an integer value that can be one of the following:
 .Pp
-.Bl -tag -width ".Ar DockVert(1)" -compact -offset indent
-.It Ar DockHorz(0)
+.Bl -tag -width ".Ar 0 Li - Cm DockVert" -compact -offset indent
+.It Ar 0 Li - Cm DockHorz
 the dock is filled horizontally;
-.It Ar DockVert(1)
+.It Ar 1 Li - Cm DockVert
 the dock is filled vertically.
 .El
 .Pp

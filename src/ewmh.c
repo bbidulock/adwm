@@ -167,6 +167,8 @@ char *atomnames[NATOMS] = {
 	"_NET_WM_STATE_FIXED",
 	"_NET_WM_STATE_FLOATING",
 	"_NET_WM_STATE_FILLED",
+	"_NET_WM_STATE_MAXIMUS_LEFT",
+	"_NET_WM_STATE_MAXIMUS_RIGHT",
 
 	"_NET_WM_ALLOWED_ACTIONS",
 	"_NET_WM_ACTION_ABOVE",
@@ -183,6 +185,8 @@ char *atomnames[NATOMS] = {
 	"_NET_WM_ACTION_STICK",
 	"_NET_WM_ACTION_FLOAT",
 	"_NET_WM_ACTION_FILL",
+	"_NET_WM_ACTION_MAXIMUS_LEFT",
+	"_NET_WM_ACTION_MAXIMUS_RIGHT",
 
 	"_NET_SUPPORTING_WM_CHECK",
 	"_NET_CLOSE_WINDOW",
@@ -1558,31 +1562,37 @@ ewmh_update_net_window_actions(Client *c)
 		action[actions++] = _XA_NET_WM_ACTION_ABOVE;
 	if (c->user.below)
 		action[actions++] = _XA_NET_WM_ACTION_BELOW;
-	/* following two are non-standard */
+	/* following four are non-standard */
 	if (c->user.fill)
 		action[actions++] = _XA_NET_WM_ACTION_FILL;
 	if (c->user.floats)
 		action[actions++] = _XA_NET_WM_ACTION_FLOAT;
+	if (c->user.size)
+		action[actions++] = _XA_NET_WM_ACTION_MAXIMUS_LEFT;
+	if (c->user.size)
+		action[actions++] = _XA_NET_WM_ACTION_MAXIMUS_RIGHT;
 
 	XChangeProperty(dpy, c->win, _XA_NET_WM_ALLOWED_ACTIONS, XA_ATOM, 32,
 			PropModeReplace, (unsigned char *) action, actions);
 }
 
-#define WIN_STATE_STICKY          (1<<0)	/* everyone knows sticky */
-#define WIN_STATE_MINIMIZED       (1<<1)	/* Reserved - definition is unclear */
-#define WIN_STATE_MAXIMIZED_VERT  (1<<2)	/* window in maximized V state */
-#define WIN_STATE_MAXIMIZED_HORIZ (1<<3)	/* window in maximized H state */
-#define WIN_STATE_HIDDEN          (1<<4)	/* not on taskbar but window visible */
-#define WIN_STATE_SHADED          (1<<5)	/* shaded (MacOS / Afterstep style) */
-#define WIN_STATE_HID_WORKSPACE   (1<<6)	/* not on current desktop */
-#define WIN_STATE_HID_TRANSIENT   (1<<7)	/* owner of transient is hidden */
-#define WIN_STATE_FIXED_POSITION  (1<<8)	/* window is fixed in position even */
-#define WIN_STATE_ARRANGE_IGNORE  (1<<9)	/* ignore for auto arranging */
+#define WIN_STATE_STICKY          (1<< 0)	/* everyone knows sticky */
+#define WIN_STATE_MINIMIZED       (1<< 1)	/* Reserved - definition is unclear */
+#define WIN_STATE_MAXIMIZED_VERT  (1<< 2)	/* window is maximized V state */
+#define WIN_STATE_MAXIMIZED_HORIZ (1<< 3)	/* window is maximized H state */
+#define WIN_STATE_HIDDEN          (1<< 4)	/* not on taskbar but window visible */
+#define WIN_STATE_SHADED          (1<< 5)	/* shaded (MacOS / Afterstep style) */
+#define WIN_STATE_HID_WORKSPACE   (1<< 6)	/* not on current desktop */
+#define WIN_STATE_HID_TRANSIENT   (1<< 7)	/* owner of transient is hidden */
+#define WIN_STATE_FIXED_POSITION  (1<< 8)	/* window is fixed in position even */
+#define WIN_STATE_ARRANGE_IGNORE  (1<< 9)	/* ignore for auto arranging */
+#define WIN_STATE_MAXIMUS_LEFT    (1<<10)	/* window is maximus L state */
+#define WIN_STATE_MAXIMUS_RIGHT   (1<<11)	/* window is maximus R state */
 
 void
 ewmh_update_net_window_state(Client *c)
 {
-	long winstate[16];
+	long winstate[20];
 	int states = 0;
 	unsigned long state = 0;
 
@@ -1625,6 +1635,10 @@ ewmh_update_net_window_state(Client *c)
 		winstate[states++] = _XA_NET_WM_STATE_FLOATING;
 	if (c->is.fill)
 		winstate[states++] = _XA_NET_WM_STATE_FILLED;
+	if (c->is.lhalf)
+		winstate[states++] = _XA_NET_WM_STATE_MAXIMUS_LEFT;
+	if (c->is.rhalf)
+		winstate[states++] = _XA_NET_WM_STATE_MAXIMUS_RIGHT;
 
 	XChangeProperty(dpy, c->win, _XA_NET_WM_STATE, XA_ATOM, 32,
 			PropModeReplace, (unsigned char *) winstate, states);
@@ -1650,6 +1664,10 @@ ewmh_update_net_window_state(Client *c)
 		state |= WIN_STATE_FIXED_POSITION;
 	if (c->skip.arrange || c->is.floater)
 		state |= WIN_STATE_ARRANGE_IGNORE;
+	if (c->is.lhalf)
+		state |= WIN_STATE_MAXIMUS_LEFT;
+	if (c->is.rhalf)
+		state |= WIN_STATE_MAXIMUS_RIGHT;
 
 	XChangeProperty(dpy, c->win, _XA_WIN_STATE, XA_CARDINAL, 32,
 			PropModeReplace, (unsigned char *) &state, 1);
@@ -1707,6 +1725,20 @@ wmh_process_state_mask(Client *c, unsigned int mask, unsigned int change)
 		    (!(change & WIN_STATE_ARRANGE_IGNORE) && c->skip.arrange))
 			if (c->user.arrange)
 				togglefloating(c);
+	if (mask & WIN_STATE_MAXIMUS_LEFT)
+		if (((change & WIN_STATE_MAXIMUS_LEFT) && !c->is.lhalf) ||
+		    (!(change & WIN_STATE_MAXIMUS_LEFT) && c->is.lhalf)) {
+			if (c->user.size)
+				togglelhalf(c);
+			arrange(NULL);
+		}
+	if (mask & WIN_STATE_MAXIMUS_RIGHT)
+		if (((change & WIN_STATE_MAXIMUS_RIGHT) && !c->is.rhalf) ||
+		    (!(change & WIN_STATE_MAXIMUS_RIGHT) && c->is.rhalf)) {
+			if (c->user.size)
+				togglerhalf(c);
+			arrange(NULL);
+		}
 }
 
 void
@@ -1813,6 +1845,20 @@ ewmh_process_state_atom(Client *c, Atom state, int set)
 		    (set == _NET_WM_STATE_TOGGLE)) {
 			if (c->user.fill)
 				togglefill(c);
+		}
+	} else if (state == _XA_NET_WM_STATE_MAXIMUS_LEFT) {
+		if ((set == _NET_WM_STATE_ADD && !c->is.lhalf) ||
+		    (set == _NET_WM_STATE_REMOVE && c->is.lhalf) ||
+		    (set == _NET_WM_STATE_TOGGLE)) {
+			if (c->user.size)
+				togglelhalf(c);
+		}
+	} else if (state == _XA_NET_WM_STATE_MAXIMUS_RIGHT) {
+		if ((set == _NET_WM_STATE_ADD && !c->is.rhalf) ||
+		    (set == _NET_WM_STATE_REMOVE && c->is.rhalf) ||
+		    (set == _NET_WM_STATE_TOGGLE)) {
+			if (c->user.size)
+				togglerhalf(c);
 		}
 	}
 }

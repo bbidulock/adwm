@@ -89,13 +89,13 @@ buttonimage(AScreen *ds, Client *c, ElementType type)
 		name = "lhalf";
 		present = c->has.but.half;
 		toggled = c->is.lhalf;
-		enabled = c->user.size || c->user.sizev || c->user.sizeh;
+		enabled = c->user.size && c->user.move;
 		break;
 	case RHalfBtn:
 		name = "rhalf";
 		present = c->has.but.half;
 		toggled = c->is.rhalf;
-		enabled = c->user.size || c->user.sizev || c->user.sizeh;
+		enabled = c->user.size && c->user.move;
 		break;
 	case FillBtn:
 		name = "fill";
@@ -736,15 +736,15 @@ b_max(Client *c, XEvent *ev)
 {
 	switch (ev->xbutton.button) {
 	case Button1:
-		if (c->user.max)
+		if (c->user.max || (c->user.size && c->user.move))
 			togglemax(c);
 		break;
 	case Button2:
-		if (c->user.maxv)
+		if (c->user.maxv || ((c->user.size || c->user.sizev) && c->user.move))
 			togglemaxv(c);
 		break;
 	case Button3:
-		if (c->user.maxh)
+		if (c->user.maxh || ((c->user.size || c->user.sizeh) && c->user.move))
 			togglemaxh(c);
 		break;
 	}
@@ -777,17 +777,19 @@ b_shade(Client *c, XEvent *ev)
 		return;
 	switch (ev->xbutton.button) {
 	case Button1:
-		toggleshade(c);
 		break;
 	case Button2:
-		if (!c->is.shaded)
-			toggleshade(c);
+		if (c->is.shaded)
+			return;
 		break;
 	case Button3:
-		if (c->is.shaded)
-			toggleshade(c);
+		if (!c->is.shaded)
+			return;
+		break;
+	default:
 		break;
 	}
+	toggleshade(c);
 }
 
 static void
@@ -797,17 +799,19 @@ b_stick(Client *c, XEvent *ev)
 		return;
 	switch (ev->xbutton.button) {
 	case Button1:
-		togglesticky(c);
 		break;
 	case Button2:
-		if (!c->is.sticky)
-			togglesticky(c);
+		if (c->is.sticky)
+			return;
 		break;
 	case Button3:
-		if (c->is.sticky)
-			togglesticky(c);
+		if (!c->is.sticky)
+			return;
 		break;
+	default:
+		return;
 	}
+	togglesticky(c);
 }
 
 static void
@@ -817,15 +821,19 @@ b_lhalf(Client *c, XEvent *ev)
 		return;
 	switch (ev->xbutton.button) {
 	case Button1:
-		/* reserved for toggle left half */
 		break;
 	case Button2:
-		/* reserved for set left half */
+		if (c->is.lhalf)
+			return;
 		break;
 	case Button3:
-		/* reserved for clear left half */
+		if (!c->is.lhalf)
+			return;
 		break;
+	default:
+		return;
 	}
+	togglelhalf(c);
 }
 
 static void
@@ -835,34 +843,41 @@ b_rhalf(Client *c, XEvent *ev)
 		return;
 	switch (ev->xbutton.button) {
 	case Button1:
-		/* reserved for toggle right half */
 		break;
 	case Button2:
-		/* reserved for set right half */
+		if (c->is.rhalf)
+			return;
 		break;
 	case Button3:
-		/* reserved for clear right half */
+		if (!c->is.rhalf)
+			return;
 		break;
+	default:
+		return;
 	}
+	togglerhalf(c);
 }
 
 static void
 b_fill(Client *c, XEvent *ev)
 {
+	if (!c->user.fill)
+		return;
 	switch (ev->xbutton.button) {
 	case Button1:
-		if (c->user.fill)
-			togglefill(c);
 		break;
 	case Button2:
-		if (c->user.fill && !c->is.fill)
-			togglefill(c);
+		if (c->is.fill)
+			return;
 		break;
 	case Button3:
-		if (c->user.fill && c->is.fill)
-			togglefill(c);
+		if (!c->is.fill)
+			return;
 		break;
+	default:
+		return;
 	}
+	togglefill(c);
 }
 
 static void
@@ -870,17 +885,19 @@ b_float(Client *c, XEvent *ev)
 {
 	switch (ev->xbutton.button) {
 	case Button1:
-		togglefloating(c);
 		break;
 	case Button2:
-		if (!c->skip.arrange)
-			togglefloating(c);
+		if (c->skip.arrange)
+			return;
 		break;
 	case Button3:
-		if (c->skip.arrange)
-			togglefloating(c);
+		if (!c->skip.arrange)
+			return;
 		break;
+	default:
+		return;
 	}
+	togglefloating(c);
 }
 
 static void

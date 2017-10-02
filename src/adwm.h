@@ -58,11 +58,12 @@ enum {
 	WindowStateMaxH, WindowStateShaded, WindowStateNoTaskbar, WindowStateNoPager,
 	WindowStateHidden, WindowStateFs, WindowStateAbove, WindowStateBelow,
 	WindowStateAttn, WindowStateFocused, WindowStateFixed, WindowStateFloating,
-	WindowStateFilled,
+	WindowStateFilled, WindowStateMaxL, WindowStateMaxR,
 	WindowActions, WindowActionAbove, WindowActionBelow, WindowActionChangeDesk,
 	WindowActionClose, WindowActionFs, WindowActionMaxH, WindowActionMaxV,
 	WindowActionMin, WindowActionMove, WindowActionResize, WindowActionShade,
-	WindowActionStick, WindowActionFloat, WindowActionFill,
+	WindowActionStick, WindowActionFloat, WindowActionFill, WindowActionMaxL,
+	WindowActionMaxR,
 	WMCheck, CloseWindow, WindowPing, Supported,
 	SystemTrayWindows, WindowFrameStrut, WindowForSysTray, WindowTypeOverride,
 	KdeSplashProgress, WindowChangeState,
@@ -214,6 +215,8 @@ enum {
 #define _XA_NET_WM_STATE_FIXED			atom[WindowStateFixed]
 #define _XA_NET_WM_STATE_FLOATING		atom[WindowStateFloating]
 #define _XA_NET_WM_STATE_FILLED			atom[WindowStateFilled]
+#define _XA_NET_WM_STATE_MAXIMUS_LEFT		atom[WindowStateMaxL]
+#define _XA_NET_WM_STATE_MAXIMUS_RIGHT		atom[WindowStateMaxR]
 
 #define _XA_NET_WM_ALLOWED_ACTIONS		atom[WindowActions]
 #define _XA_NET_WM_ACTION_ABOVE			atom[WindowActionAbove]
@@ -230,6 +233,8 @@ enum {
 #define _XA_NET_WM_ACTION_STICK			atom[WindowActionStick]
 #define _XA_NET_WM_ACTION_FLOAT			atom[WindowActionFloat]
 #define _XA_NET_WM_ACTION_FILL			atom[WindowActionFill]
+#define _XA_NET_WM_ACTION_MAXIMUS_LEFT		atom[WindowActionMaxL]
+#define _XA_NET_WM_ACTION_MAXIMUS_RIGHT		atom[WindowActionMaxR]
 
 #define _XA_NET_SUPPORTING_WM_CHECK		atom[WMCheck]
 #define _XA_NET_CLOSE_WINDOW			atom[CloseWindow]

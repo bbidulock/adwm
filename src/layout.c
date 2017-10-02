@@ -5653,7 +5653,8 @@ togglelhalf(Client *c)
 
 	if (!c || (!c->prog.size && c->is.managed) || !(v = c->cview))
 		return;
-	c->is.lhalf = !c->is.lhalf;
+	if ((c->is.lhalf = !c->is.lhalf))
+		c->is.rhalf = 0;
 	if (c->is.managed) {
 		ewmh_update_net_window_state(c);
 		updatefloat(c, v);
@@ -5667,7 +5668,8 @@ togglerhalf(Client *c)
 
 	if (!c || (!c->prog.size && c->is.managed) || !(v = c->cview))
 		return;
-	c->is.rhalf = !c->is.rhalf;
+	if ((c->is.rhalf = !c->is.rhalf))
+		c->is.lhalf = 0;
 	if (c->is.managed) {
 		ewmh_update_net_window_state(c);
 		updatefloat(c, v);

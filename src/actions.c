@@ -83,7 +83,9 @@ m_spawn3(Client *c, XEvent *e)
 void
 m_zoom(Client *c, XEvent *e)
 {
-	zoomfloat(c);
+	focus(c);
+	if (!mousemove(c, e, False))
+		zoomfloat(c);
 }
 
 void

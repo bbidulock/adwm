@@ -84,7 +84,7 @@ void
 m_zoom(Client *c, XEvent *e)
 {
 	focus(c);
-	if (!mousemove(c, e, False))
+	if (!mousemove(c, e, (e->xbutton.state & ControlMask) ? True : False))
 		zoomfloat(c);
 }
 

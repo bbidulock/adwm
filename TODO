@@ -63,7 +63,7 @@ Behaviour:
       (Not sure I want to do this one: current behaviour is ok.)
 
 * [x] implement lhalf and rhalf button functions.
-* [x] switch to lhalf or rhalf at screen/monitor edges.
+* [x] switch to lhalf or rhalf at screen/monitor edges (no _Ctrl_).
 * [x] defeat snap when moving with _Ctrl_ key.
 * [ ] move window to adjacent desktop at screen/monitor edges (_Ctrl_
       key depressed.

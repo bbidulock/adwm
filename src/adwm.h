@@ -323,7 +323,13 @@ typedef enum {
 typedef enum {
 	ButtonImageDefault,
 	ButtonImagePressed,
+	ButtonImagePressedB1,
+	ButtonImagePressedB2,
+	ButtonImagePressedB3,
 	ButtonImageToggledPressed,
+	ButtonImageToggledPressedB1,
+	ButtonImageToggledPressedB2,
+	ButtonImageToggledPressedB3,
 	ButtonImageHover,
 	ButtonImageFocus,
 	ButtonImageUnfocus,

@@ -1075,7 +1075,13 @@ initstyle_ADWM(void)
 			/* *INDENT-OFF* */
 			[ButtonImageDefault]		    = { "",				""			    },
 			[ButtonImagePressed]		    = { ".pressed",			".Pressed"		    },
+			[ButtonImagePressedB1]		    = { ".pressed.b1",			".Pressed.B1"		    },
+			[ButtonImagePressedB2]		    = { ".pressed.b2",			".Pressed.B2"		    },
+			[ButtonImagePressedB3]		    = { ".pressed.b3",			".Pressed.B3"		    },
 			[ButtonImageToggledPressed]	    = { ".toggled.pressed",		".Toggled.Pressed"	    },
+			[ButtonImageToggledPressedB1]	    = { ".toggled.pressed.b1",		".Toggled.Pressed.B1"	    },
+			[ButtonImageToggledPressedB2]	    = { ".toggled.pressed.b2",		".Toggled.Pressed.B2"	    },
+			[ButtonImageToggledPressedB3]	    = { ".toggled.pressed.b3",		".Toggled.Pressed.B3"	    },
 			[ButtonImageHover]		    = { ".hovered",			".Hovered"		    },
 			[ButtonImageFocus]		    = { ".focused",			".Focused"		    },
 			[ButtonImageUnfocus]		    = { ".unfocus",			".Unfocus"		    },

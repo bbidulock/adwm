@@ -129,7 +129,7 @@ buttonimage(AScreen *ds, Client *c, ElementType type)
 	}
 
 	ec = &c->element[type];
-	pressed = ec->pressed ? True : False;
+	pressed = ec->pressed;
 	hovered = ec->hovered;
 	focused = (c == sel);
 
@@ -139,9 +139,33 @@ buttonimage(AScreen *ds, Client *c, ElementType type)
 		return NULL;
 	}
 
+	if (pressed == 0x1 && toggled && e->image[ButtonImageToggledPressedB1].present) {
+		XPRINTF("button %s assigned toggled.pressed.b1 image\n", name);
+		return &e->image[ButtonImageToggledPressedB1];
+	}
+	if (pressed == 0x2 && toggled && e->image[ButtonImageToggledPressedB2].present) {
+		XPRINTF("button %s assigned toggled.pressed.b2 image\n", name);
+		return &e->image[ButtonImageToggledPressedB2];
+	}
+	if (pressed == 0x4 && toggled && e->image[ButtonImageToggledPressedB3].present) {
+		XPRINTF("button %s assigned toggled.pressed.b3 image\n", name);
+		return &e->image[ButtonImageToggledPressedB3];
+	}
 	if (pressed && toggled && e->image[ButtonImageToggledPressed].present) {
 		XPRINTF("button %s assigned toggled.pressed image\n", name);
 		return &e->image[ButtonImageToggledPressed];
+	}
+	if (pressed == 0x1 && e->image[ButtonImagePressedB1].present) {
+		XPRINTF("button %s assigned pressed.b1 image\n", name);
+		return &e->image[ButtonImagePressedB1];
+	}
+	if (pressed == 0x2 && e->image[ButtonImagePressedB2].present) {
+		XPRINTF("button %s assigned pressed.b2 image\n", name);
+		return &e->image[ButtonImagePressedB2];
+	}
+	if (pressed == 0x4 && e->image[ButtonImagePressedB3].present) {
+		XPRINTF("button %s assigned pressed.b3 image\n", name);
+		return &e->image[ButtonImagePressedB3];
 	}
 	if (pressed && e->image[ButtonImagePressed].present) {
 		XPRINTF("button %s assigned pressed image\n", name);

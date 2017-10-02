@@ -25,21 +25,21 @@ static KeyItem KeyItems[] = {
 	/* *INDENT-OFF* */
 	{ "viewprevtag",	k_viewprevtag,	 NULL		},
 	{ "quit",		k_quit,		 NULL		}, /* arg is new command */
-	{ "restart", 		k_restart,	 NULL		}, /* arg is new command */
+	{ "restart",		k_restart,	 NULL		}, /* arg is new command */
 	{ "reload",		k_reload,	 NULL		},
 	{ "killclient",		k_killclient,	 NULL		},
 	{ "focusmain",		k_focusmain,	 NULL		},
 	{ "focusurgent",	k_focusurgent,	 NULL		},
-	{ "zoom", 		k_zoom,		 NULL		},
-	{ "moveright", 		k_moveresizekb,	 "+5 +0 +0 +0"	}, /* arg is delta geometry */
-	{ "moveleft", 		k_moveresizekb,	 "-5 +0 +0 +0"	}, /* arg is delta geometry */
-	{ "moveup", 		k_moveresizekb,	 "+0 -5 +0 +0"	}, /* arg is delta geometry */
-	{ "movedown", 		k_moveresizekb,	 "+0 +5 +0 +0"	}, /* arg is delta geometry */
-	{ "resizedecx", 	k_moveresizekb,	 "+3 +0 -6 +0"	}, /* arg is delta geometry */
-	{ "resizeincx", 	k_moveresizekb,	 "-3 +0 +6 +0"	}, /* arg is delta geometry */
-	{ "resizedecy", 	k_moveresizekb,	 "+0 +3 +0 -6"	}, /* arg is delta geometry */
-	{ "resizeincy", 	k_moveresizekb,	 "+0 -3 +0 +6"	}, /* arg is delta geometry */
-	{ "togglemonitor", 	k_togglemonitor, NULL		},
+	{ "zoom",		k_zoom,		 NULL		},
+	{ "moveright",		k_moveresizekb,	 "+5 +0 +0 +0"	}, /* arg is delta geometry */
+	{ "moveleft",		k_moveresizekb,	 "-5 +0 +0 +0"	}, /* arg is delta geometry */
+	{ "moveup",		k_moveresizekb,	 "+0 -5 +0 +0"	}, /* arg is delta geometry */
+	{ "movedown",		k_moveresizekb,	 "+0 +5 +0 +0"	}, /* arg is delta geometry */
+	{ "resizedecx",		k_moveresizekb,	 "+3 +0 -6 +0"	}, /* arg is delta geometry */
+	{ "resizeincx",		k_moveresizekb,	 "-3 +0 +6 +0"	}, /* arg is delta geometry */
+	{ "resizedecy",		k_moveresizekb,	 "+0 +3 +0 -6"	}, /* arg is delta geometry */
+	{ "resizeincy",		k_moveresizekb,	 "+0 -3 +0 +6"	}, /* arg is delta geometry */
+	{ "togglemonitor",	k_togglemonitor, NULL		},
 	{ "appendtag",		k_appendtag,	 NULL		},
 	{ "rmlasttag",		k_rmlasttag,	 NULL		},
 	{ "flipview",		k_flipview,	 NULL		},
@@ -51,7 +51,7 @@ static KeyItem KeyItems[] = {
 	{ "flipwins",		k_flipwins,	 NULL		},
 	{ "rotatewins",		k_rotatewins,	 NULL		},
 	{ "unrotatewins",	k_unrotatewins,	 NULL		},
-	{ "raise",		k_raise	,	 NULL		},
+	{ "raise",		k_raise,	 NULL		},
 	{ "lower",		k_lower,	 NULL		},
 	{ "raiselower",		k_raiselower,	 NULL		}
 	/* *INDENT-ON* */
@@ -114,6 +114,8 @@ static KeyItem KeyItemsByState[] = {
 	{ "max",		k_setmax	 },
 	{ "maxv",		k_setmaxv	 },
 	{ "maxh",		k_setmaxh	 },
+	{ "lhalf",		k_setlhalf	 },
+	{ "rhalf",		k_setrhalf	 },
 	{ "shade",		k_setshade	 },
 	{ "shaded",		k_setshade	 },
 	{ "hide",		k_sethidden	 },

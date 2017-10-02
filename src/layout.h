@@ -45,6 +45,8 @@ struct Arrangement {
 	void (*togglemax)(Client *c);
 	void (*togglemaxv)(Client *c);
 	void (*togglemaxh)(Client *c);
+	void (*togglelhalf)(Client *c);
+	void (*togglerhalf)(Client *c);
 	void (*toggleshade)(Client *c);
 	void (*toggledectiled)(Client *c);
 };
@@ -106,6 +108,8 @@ void togglefull(Client *c);
 void togglemax(Client *c);
 void togglemaxv(Client *c);
 void togglemaxh(Client *c);
+void togglelhalf(Client *c);
+void togglerhalf(Client *c);
 void toggleshade(Client *c);
 void toggledectiled(View *v);
 void zoom(Client *c);

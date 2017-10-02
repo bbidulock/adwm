@@ -540,6 +540,8 @@ static KeyItem KeyItemsByState[] = {
 	{ "max",		k_setmax	 },
 	{ "maxv",		k_setmaxv	 },
 	{ "maxh",		k_setmaxh	 },
+	{ "lhalf",		k_setlhalf	 },
+	{ "rhalf",		k_setrhalf	 },
 	{ "shade",		k_setshade	 },
 	{ "shaded",		k_setshade	 },
 	{ "hide",		k_sethidden	 },

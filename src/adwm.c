@@ -2065,6 +2065,8 @@ show_client_state(Client *c)
 	CPRINTF(c, "%-20s: %s\n", "is.max", c->is.max ? "true" : "false");
 	CPRINTF(c, "%-20s: %s\n", "is.maxv", c->is.maxv ? "true" : "false");
 	CPRINTF(c, "%-20s: %s\n", "is.maxh", c->is.maxh ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "is.lhalf", c->is.lhalf ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "is.rhalf", c->is.rhalf ? "true" : "false");
 	CPRINTF(c, "%-20s: %s\n", "is.shaded", c->is.shaded ? "true" : "false");
 	CPRINTF(c, "%-20s: %s\n", "is.icon", c->is.icon ? "true" : "false");
 	CPRINTF(c, "%-20s: %s\n", "is.fill", c->is.fill ? "true" : "false");
@@ -2111,6 +2113,8 @@ show_client_state(Client *c)
 	CPRINTF(c, "%-20s: %s\n", "prog.max", c->prog.max ? "true" : "false");
 	CPRINTF(c, "%-20s: %s\n", "prog.maxv", c->prog.maxv ? "true" : "false");
 	CPRINTF(c, "%-20s: %s\n", "prog.maxh", c->prog.maxh ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "prog.lhalf", c->prog.lhalf ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "prog.rhalf", c->prog.rhalf ? "true" : "false");
 	CPRINTF(c, "%-20s: %s\n", "prog.close", c->prog.close ? "true" : "false");
 	CPRINTF(c, "%-20s: %s\n", "prog.shade", c->prog.shade ? "true" : "false");
 	CPRINTF(c, "%-20s: %s\n", "prog.stick", c->prog.stick ? "true" : "false");
@@ -2137,6 +2141,8 @@ show_client_state(Client *c)
 	CPRINTF(c, "%-20s: %s\n", "user.max", c->user.max ? "true" : "false");
 	CPRINTF(c, "%-20s: %s\n", "user.maxv", c->user.maxv ? "true" : "false");
 	CPRINTF(c, "%-20s: %s\n", "user.maxh", c->user.maxh ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "user.lhalf", c->user.lhalf ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "user.rhalf", c->user.rhalf ? "true" : "false");
 	CPRINTF(c, "%-20s: %s\n", "user.close", c->user.close ? "true" : "false");
 	CPRINTF(c, "%-20s: %s\n", "user.shade", c->user.shade ? "true" : "false");
 	CPRINTF(c, "%-20s: %s\n", "user.stick", c->user.stick ? "true" : "false");

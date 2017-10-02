@@ -1088,6 +1088,26 @@ calc_fill(Client *c, View *v, Workarea *wa, ClientGeometry *g)
 }
 
 static void
+calc_lhalf(Client *c, Workarea *wa, ClientGeometry *g)
+{
+	g->x = wa->x;
+	g->y = wa->y;
+	g->w = wa->w >> 1;
+	g->h = wa->h;
+	g->b = scr->style.border;
+}
+
+static void
+calc_rhalf(Client *c, Workarea *wa, ClientGeometry *g)
+{
+	g->x = wa->x + (wa->w >> 1);
+	g->y = wa->y;
+	g->w = wa->w >> 1;
+	g->h = wa->h;
+	g->b = scr->style.border;
+}
+
+static void
 calc_max(Client *c, Workarea *wa, ClientGeometry *g)
 {
 	g->x = wa->x;
@@ -1214,6 +1234,12 @@ updatefloat(Client *c, View *v)
 	} else {
 		if (c->is.max) {
 			calc_max(c, &wa, &g);
+			CPRINTF(c, "g: %dx%d+%d+%d:%d\n", g.w, g.h, g.x, g.y, g.b);
+		} else if (c->is.lhalf) {
+			calc_lhalf(c, &wa, &g);
+			CPRINTF(c, "g: %dx%d+%d+%d:%d\n", g.w, g.h, g.x, g.y, g.b);
+		} else if (c->is.rhalf) {
+			calc_rhalf(c, &wa, &g);
 			CPRINTF(c, "g: %dx%d+%d+%d:%d\n", g.w, g.h, g.x, g.y, g.b);
 		} else if (c->is.fill) {
 			calc_fill(c, v, &wa, &g);
@@ -3292,6 +3318,10 @@ move_begin(Client *c, View *v, Bool toggle, int move, IsUnion * was)
 			c->is.maxh = False;
 		if ((was->fill = c->is.fill))
 			c->is.fill = False;
+		if ((was->lhalf = c->is.lhalf))
+			c->is.lhalf = False;
+		if ((was->rhalf = c->is.rhalf))
+			c->is.rhalf = False;
 		if ((was->shaded = c->is.shaded))
 			c->is.shaded = False;
 		if (!isfloater) {
@@ -3335,6 +3365,8 @@ move_cancel(Client *c, View *v, ClientGeometry *orig, IsUnion * was)
 			c->is.maxv = was->maxv;
 			c->is.maxh = was->maxh;
 			c->is.fill = was->fill;
+			c->is.lhalf = was->lhalf;
+			c->is.rhalf = was->rhalf;
 			c->is.shaded = was->shaded;
 		}
 		if (wasfloating) {
@@ -3368,6 +3400,8 @@ move_finish(Client *c, View *v, IsUnion * was)
 			c->is.maxv = was->maxv;
 			c->is.maxh = was->maxh;
 			c->is.fill = was->fill;
+			c->is.lhalf = was->lhalf;
+			c->is.rhalf = was->rhalf;
 			c->is.shaded = was->shaded;
 		}
 		if (wasfloating)
@@ -3714,6 +3748,10 @@ resize_begin(Client *c, View *v, Bool toggle, int from, IsUnion * was)
 			c->is.maxh = False;
 		if ((was->fill = c->is.fill))
 			c->is.fill = False;
+		if ((was->lhalf = c->is.lhalf))
+			c->is.lhalf = False;
+		if ((was->rhalf = c->is.rhalf))
+			c->is.rhalf = False;
 		if ((was->shaded = c->is.shaded))
 			c->is.shaded = False;
 		if (!isfloater) {
@@ -3755,6 +3793,8 @@ resize_cancel(Client *c, View *v, ClientGeometry *orig, IsUnion * was)
 			c->is.maxv = was->maxv;
 			c->is.maxh = was->maxh;
 			c->is.fill = was->fill;
+			c->is.lhalf = was->lhalf;
+			c->is.rhalf = was->rhalf;
 			c->is.shaded = was->shaded;
 		}
 		if (wasfloating) {
@@ -4181,6 +4221,8 @@ moveresizeclient(Client *c, int dx, int dy, int dw, int dh, int gravity)
 			c->is.maxv = False;
 			c->is.maxh = False;
 			c->is.fill = False;
+			c->is.lhalf = False;
+			c->is.rhalf = False;
 			ewmh_update_net_window_state(c);
 		}
 		c->r.x = g.x;
@@ -4285,7 +4327,8 @@ qsort_cascade(const void *a, const void *b)
 static ClientGeometry *
 place_geom(Client *c)
 {
-	if (c->is.max || c->is.maxv || c->is.maxh || c->is.fill || c->is.full)
+	if (c->is.max || c->is.maxv || c->is.maxh || c->is.fill || c->is.full ||
+			c->is.lhalf || c->is.rhalf)
 		return &c->c;
 	return &c->r;
 }
@@ -5601,6 +5644,34 @@ togglemaxh(Client *c)
 	c->is.maxh = !c->is.maxh;
 	ewmh_update_net_window_state(c);
 	updatefloat(c, v);
+}
+
+void
+togglelhalf(Client *c)
+{
+	View *v;
+
+	if (!c || (!c->prog.size && c->is.managed) || !(v = c->cview))
+		return;
+	c->is.lhalf = !c->is.lhalf;
+	if (c->is.managed) {
+		ewmh_update_net_window_state(c);
+		updatefloat(c, v);
+	}
+}
+
+void
+togglerhalf(Client *c)
+{
+	View *v;
+
+	if (!c || (!c->prog.size && c->is.managed) || !(v = c->cview))
+		return;
+	c->is.rhalf = !c->is.rhalf;
+	if (c->is.managed) {
+		ewmh_update_net_window_state(c);
+		updatefloat(c, v);
+	}
 }
 
 void

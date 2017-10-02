@@ -700,6 +700,56 @@ k_setmaxh(XEvent *e, Key *k)
 }
 
 static void
+c_setlhalf(XEvent *e, Key *k, Client *c)
+{
+	switch (k->set) {
+	case SetFlagSetting:
+		if (c->is.lhalf)
+			return;
+		break;
+	case UnsetFlagSetting:
+		if (!c->is.lhalf)
+			return;
+		break;
+	default:
+	case ToggleFlagSetting:
+		break;
+	}
+	togglelhalf(c);
+}
+
+void
+k_setlhalf(XEvent *e, Key *k)
+{
+	return k_setgeneric(e, k, &c_setlhalf);
+}
+
+static void
+c_setrhalf(XEvent *e, Key *k, Client *c)
+{
+	switch (k->set) {
+	case SetFlagSetting:
+		if (c->is.rhalf)
+			return;
+		break;
+	case UnsetFlagSetting:
+		if (!c->is.rhalf)
+			return;
+		break;
+	default:
+	case ToggleFlagSetting:
+		break;
+	}
+	togglerhalf(c);
+}
+
+void
+k_setrhalf(XEvent *e, Key *k)
+{
+	return k_setgeneric(e, k, &c_setrhalf);
+}
+
+static void
 c_setshade(XEvent *e, Key *k, Client *c)
 {
 	switch (k->set) {

@@ -49,6 +49,8 @@ void k_setfull(XEvent *e, Key *k);
 void k_setmax(XEvent *e, Key *k);
 void k_setmaxv(XEvent *e, Key *k);
 void k_setmaxh(XEvent *e, Key *k);
+void k_setlhalf(XEvent *e, Key *k);
+void k_setrhalf(XEvent *e, Key *k);
 void k_setshade(XEvent *e, Key *k);
 void k_sethidden(XEvent *e, Key *k);
 void k_setmin(XEvent *e, Key *k);

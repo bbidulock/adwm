@@ -42,6 +42,8 @@ static void togglefull_TILE(Client *c);
 static void togglemax_TILE(Client *c);
 static void togglemaxv_TILE(Client *c);
 static void togglemaxh_TILE(Client *c);
+static void togglelhalf_TILE(Client *c);
+static void togglerhalf_TILE(Client *c);
 static void toggleshade_TILE(Client *c);
 static void toggledectiled_TILE(Client *c);
 
@@ -66,6 +68,8 @@ Arangement adwm_arrangement = {
 	.togglemax = &togglemax_TILE,
 	.togglemaxv = &togglemaxv_TILE,
 	.togglemaxh = &togglemaxh_TILE,
+	.togglelhalf = &togglelhalf_TILE,
+	.togglerhalf = &togglerhalf_TILE,
 	.toggleshade = &toggleshade_TILE,
 	.toggledectiled = &toggledectiled_TILE,
 };
@@ -364,6 +368,8 @@ raiselower_TILE(Client *c)
  *	calc_max()
  *	calc_maxv()
  *	calc_maxh()
+ *	calc_lhalf()
+ *	calc_rhalf()
  *	get_decor()
  *
  * setlayout() ?
@@ -380,6 +386,8 @@ raiselower_TILE(Client *c)
  * togglemax() ? <= could toggle leaf
  * togglemaxv() ? <= could toggle leaf
  * togglemaxh() ? <= could toggle leaf
+ * togglelhalf() ? <= could toggle leaf
+ * togglerhalf() ? <= could toggle leaf
  * toggleshade() ? <= could toggle leaf
  * togglesticky() ? <= could toggle leaf ??
  * togglemin() ? <= could toggle leaf ??
@@ -804,6 +812,8 @@ arrange_TILE(Monitor *cm)
  *	togglemax()
  *	togglemaxv()
  *	togglemaxh()
+ *	togglelhalf()
+ *	togglerhalf()
  *	toggleshade()
  * k_floating()
  * k_tiled()
@@ -939,6 +949,16 @@ togglemaxv_TILE(Client *c)
 
 static void
 togglemaxh_TILE(Client *c)
+{
+}
+
+static void
+togglelhalf(Client *c)
+{
+}
+
+static void
+togglerhalf(Client *c)
 {
 }
 

@@ -720,11 +720,11 @@ typedef union {
 		unsigned floater:1;
 		unsigned maxv:1;
 		unsigned maxh:1;
+		unsigned lhalf:1;
+		unsigned rhalf:1;
 		unsigned shaded:1;
 		unsigned icon:1;
 		unsigned fill:1;
-		unsigned lhalf:1;
-		unsigned rhalf:1;
 		unsigned modal:2;
 		unsigned above:1;
 		unsigned below:1;

@@ -3547,100 +3547,101 @@ mousemove(Client *c, XEvent *e, Bool toggle)
 				getworkarea(nv->curmon, &wa);
 				sc = nv->curmon->sc;
 
-				if (ev.xmotion.y_root == sc.y && c->user.max) {
-					if (!c->is.max || c->is.lhalf || c->is.rhalf) {
-						c->is.max = True;
-						c->is.lhalf = False;
-						c->is.rhalf = False;
-						c->c = o;
-						c->r = r;
-						ewmh_update_net_window_state(c);
-						updatefloat(c, v);
-						restack();
-					}
-				} else if (ev.xmotion.x_root == sc.x && c->user.move && c->user.size) {
-					if (c->is.max || !c->is.lhalf || c->is.rhalf) {
-						c->is.max = False;
-						c->is.lhalf = True;
-						c->is.rhalf = False;
-						c->c = o;
-						c->r = r;
-						ewmh_update_net_window_state(c);
-						updatefloat(c, v);
-					}
-				} else if (ev.xmotion.x_root == sc.x + sc.w - 1 && c->user.move && c->user.size) {
-					if (c->is.max || c->is.lhalf || !c->is.rhalf) {
-						c->is.max = False;
-						c->is.lhalf = False;
-						c->is.rhalf = True;
-						c->c = o;
-						c->r = r;
-						ewmh_update_net_window_state(c);
-						updatefloat(c, v);
-					}
-				} else {
-					if (c->is.max || c->is.lhalf || c->is.rhalf) {
-						c->is.max = False;
-						c->is.lhalf = False;
-						c->is.rhalf = False;
-						ewmh_update_net_window_state(c);
-					}
-				}
-				if (!c->is.max && !c->is.lhalf && !c->is.rhalf &&
-						scr->options.snap && !(ev.xmotion.state & ControlMask)) {
-					int nx2 = n.x + c->c.w + 2 * c->c.b;
-					int ny2 = n.y + c->c.h + 2 * c->c.b;
-
-					if (abs(n.x - wa.x) < scr->options.snap)
-						n.x = wa.x;
-					else if (abs(nx2 - (wa.x + wa.w)) < scr->options.snap)
-						n.x = (wa.x + wa.w) - (c->c.w + 2 * c->c.b);
-					else if (abs(n.x - sc.x) < scr->options.snap)
-						n.x = sc.x;
-					else if (abs(nx2 - (sc.x + sc.w)) < scr->options.snap)
-						n.x = (sc.x + sc.w) - (c->c.w + 2 * c->c.b);
-					else
-						for (s = event_scr->stack; s; s = s->snext) {
-							int sx = s->c.x;
-							int sy = s->c.y;
-							int sx2 = s->c.x + s->c.w + 2 * s->c.b;
-							int sy2 = s->c.y + s->c.h + 2 * s->c.b;
-
-							if (wind_overlap(n.y, ny2, sy, sy2)) {
-								if (abs(n.x - sx) < scr->options.snap)
-									n.x = sx;
-								else if (abs(nx2 - sx2) < scr->options.snap)
-									n.x = sx2 - (c->c.h + 2 * c->c.b);
-								else
-									continue;
-								break;
-							}
+				if (!(ev.xmotion.state & ControlMask)) {
+					if (ev.xmotion.y_root == sc.y && c->user.max) {
+						if (!c->is.max || c->is.lhalf || c->is.rhalf) {
+							c->is.max = True;
+							c->is.lhalf = False;
+							c->is.rhalf = False;
+							c->c = o;
+							c->r = r;
+							ewmh_update_net_window_state(c);
+							updatefloat(c, v);
+							restack();
 						}
-					if (abs(n.y - wa.y) < scr->options.snap)
-						n.y = wa.y;
-					else if (abs(ny2 - (wa.y + wa.h)) < scr->options.snap)
-						n.y = (wa.y + wa.h) - (c->c.h + 2 * c->c.b);
-					else if (abs(n.y - sc.y) < scr->options.snap)
-						n.y = sc.y;
-					else if (abs(ny2 - (sc.y + sc.h)) < scr->options.snap)
-						n.y = (sc.y + sc.h) - (c->c.h + 2 * c->c.b);
-					else
-						for (s = event_scr->stack; s; s = s->snext) {
-							int sx = s->c.x;
-							int sy = s->c.y;
-							int sx2 = s->c.x + s->c.w + 2 * s->c.b;
-							int sy2 = s->c.y + s->c.h + 2 * s->c.b;
-
-							if (wind_overlap(n.x, nx2, sx, sx2)) {
-								if (abs(n.y - sy) < scr->options.snap)
-									n.y = sy;
-								else if (abs(ny2 - sy2) < scr->options.snap)
-									n.y = sy2 - (c->c.h + 2 * c->c.b);
-								else
-									continue;
-								break;
-							}
+					} else if (ev.xmotion.x_root == sc.x && c->user.move && c->user.size) {
+						if (c->is.max || !c->is.lhalf || c->is.rhalf) {
+							c->is.max = False;
+							c->is.lhalf = True;
+							c->is.rhalf = False;
+							c->c = o;
+							c->r = r;
+							ewmh_update_net_window_state(c);
+							updatefloat(c, v);
 						}
+					} else if (ev.xmotion.x_root == sc.x + sc.w - 1 && c->user.move && c->user.size) {
+						if (c->is.max || c->is.lhalf || !c->is.rhalf) {
+							c->is.max = False;
+							c->is.lhalf = False;
+							c->is.rhalf = True;
+							c->c = o;
+							c->r = r;
+							ewmh_update_net_window_state(c);
+							updatefloat(c, v);
+						}
+					} else {
+						if (c->is.max || c->is.lhalf || c->is.rhalf) {
+							c->is.max = False;
+							c->is.lhalf = False;
+							c->is.rhalf = False;
+							ewmh_update_net_window_state(c);
+						}
+						if (scr->options.snap) {
+							int nx2 = n.x + c->c.w + 2 * c->c.b;
+							int ny2 = n.y + c->c.h + 2 * c->c.b;
+
+							if (abs(n.x - wa.x) < scr->options.snap)
+								n.x = wa.x;
+							else if (abs(nx2 - (wa.x + wa.w)) < scr->options.snap)
+								n.x = (wa.x + wa.w) - (c->c.w + 2 * c->c.b);
+							else if (abs(n.x - sc.x) < scr->options.snap)
+								n.x = sc.x;
+							else if (abs(nx2 - (sc.x + sc.w)) < scr->options.snap)
+								n.x = (sc.x + sc.w) - (c->c.w + 2 * c->c.b);
+							else
+								for (s = event_scr->stack; s; s = s->snext) {
+									int sx = s->c.x;
+									int sy = s->c.y;
+									int sx2 = s->c.x + s->c.w + 2 * s->c.b;
+									int sy2 = s->c.y + s->c.h + 2 * s->c.b;
+
+									if (wind_overlap(n.y, ny2, sy, sy2)) {
+										if (abs(n.x - sx) < scr->options.snap)
+											n.x = sx;
+										else if (abs(nx2 - sx2) < scr->options.snap)
+											n.x = sx2 - (c->c.h + 2 * c->c.b);
+										else
+											continue;
+										break;
+									}
+								}
+							if (abs(n.y - wa.y) < scr->options.snap)
+								n.y = wa.y;
+							else if (abs(ny2 - (wa.y + wa.h)) < scr->options.snap)
+								n.y = (wa.y + wa.h) - (c->c.h + 2 * c->c.b);
+							else if (abs(n.y - sc.y) < scr->options.snap)
+								n.y = sc.y;
+							else if (abs(ny2 - (sc.y + sc.h)) < scr->options.snap)
+								n.y = (sc.y + sc.h) - (c->c.h + 2 * c->c.b);
+							else
+								for (s = event_scr->stack; s; s = s->snext) {
+									int sx = s->c.x;
+									int sy = s->c.y;
+									int sx2 = s->c.x + s->c.w + 2 * s->c.b;
+									int sy2 = s->c.y + s->c.h + 2 * s->c.b;
+
+									if (wind_overlap(n.x, nx2, sx, sx2)) {
+										if (abs(n.y - sy) < scr->options.snap)
+											n.y = sy;
+										else if (abs(ny2 - sy2) < scr->options.snap)
+											n.y = sy2 - (c->c.h + 2 * c->c.b);
+										else
+											continue;
+										break;
+									}
+								}
+						}
+					}
 				}
 			}
 			if (event_scr != scr)

@@ -60,13 +60,14 @@ Behaviour:
 * [ ] when resizing windows frame is resizing faster than the client
       (due to synchronization).  Change resizing behaviour to not resize
       the frame until the client responds to the resize request.
+      (Not sure I want to do this one: current behaviour is ok.)
 
-* [ ] implement lhalf and rhalf button functions.
+* [x] implement lhalf and rhalf button functions.
 * [ ] switch to lhalf or rhalf at screen/monitor edges (no _Ctrl_ key).
-* [ ] defeat snap when moving with _Ctrl_ key.
+* [x] defeat snap when moving with _Ctrl_ key.
 * [ ] move window to adjacent desktop at screen/monitor edges (_Ctrl_
       key depressed.
-* [ ] implement kill behavior with _Button2_ and _Button3_ on close
+* [x] implement kill behavior with _Button2_ and _Button3_ on close
       button.
 * [ ] fix broken rollup function.
 * [ ] fix auto-hide struts behavior

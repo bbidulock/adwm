@@ -22,7 +22,7 @@ Decoration styles:
 * [ ] convert as many gradients as possible to use imlib2
 * [ ] make imlib2 a prerequisite
 * [ ] display icons in title bar
-* [ ] provide a different button pressed pixmap for each mouse button.
+* [x] provide a different button pressed pixmap for each mouse button.
 
 Internal layout mechanism:
 

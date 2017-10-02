@@ -1,5 +1,5 @@
 /* XPM */
-static char * close_focused_xpm[] = {
+static char * xkill_focused_xpm[] = {
 "16 12 6 1",
 "#	c #394870",
 ";	c #6B7172",

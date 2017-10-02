@@ -1,5 +1,5 @@
 /* XPM */
-static char * close_unfocus_xpm[] = {
+static char * xkill_unfocus_xpm[] = {
 "16 12 6 1",
 "#	c #394870",
 ";	c #394870",

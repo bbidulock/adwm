@@ -2598,7 +2598,7 @@ restack()
 static int
 segm_overlap(int min1, int max1, int min2, int max2)
 {
-	int tmp, res = 0;
+	int tmp;
 
 	if (min1 > max1) {
 		tmp = min1;
@@ -2610,19 +2610,32 @@ segm_overlap(int min1, int max1, int min2, int max2)
 		min2 = max2;
 		max2 = tmp;
 	}
-	if (min1 <= min2 && max1 >= min2)
-		// min1 min2 (max2?) max1 (max2?)
-		res = (max2 <= max1) ? max2 - min2 : max1 - min2;
-	else if (min1 <= max2 && max1 >= max2)
-		// (min2?) min1 (min2?) max2 max1
-		res = (min2 >= min1) ? max2 - min2 : max2 - min1;
-	else if (min2 <= min1 && max2 >= min1)
-		// min2 min1 (max1?) max2 (max1?)
-		res = (max1 <= max2) ? max1 - min1 : max2 - min1;
-	else if (min2 <= max1 && max2 >= max1)
-		// (min1?) min2 (min1?) max1 max2
-		res = (min1 <= min2) ? max1 - min2 : max1 - min1;
-	return res;
+	if (min2 >= max1 || min1 >= max2) {
+		// min1 ------------------------ max1 min2 ------------------------ max2
+		// min2 ------------------------ max2 min1 ------------------------ max1
+		return (0);
+	}
+	if (min1 <= min2) {
+		if (max1 <= max2) {
+			// min1 ------------------------ max1
+			// min2 ------------------------ max2
+			return (max1 - min2);
+		} else {
+			// min1 ------------------------------------------------ max1
+			// min2 ------------------------ max2
+			return (max2 - min2);
+		}
+	} else {
+		if (max1 <= max2) {
+			// min1 ------------------------ max1
+			// min2 ------------------------------------------------ max2
+			return (max1 - min1);
+		} else {
+			// min1 ------------------------ max1
+			// min2 ------------------------ max2
+			return (max2 - min1);
+		}
+	}
 }
 
 static Bool
@@ -3396,15 +3409,16 @@ move_finish(Client *c, View *v, IsUnion * was)
 	if (isfloating(c, v)) {
 		if (was->is) {
 			c->is.full = was->full;
-			c->is.max = was->max;
-			c->is.maxv = was->maxv;
-			c->is.maxh = was->maxh;
+			if (was->maxv ^ was->maxh) {
+				c->is.maxv = was->maxv;
+				c->is.maxh = was->maxh;
+			}
 			c->is.fill = was->fill;
 			c->is.shaded = was->shaded;
 		}
-		if (wasfloating)
+		if (wasfloating) {
 			updatefloat(c, v);
-		else
+		} else
 			arrange(v);
 	} else
 		arrange(v);
@@ -3419,7 +3433,7 @@ mousemove(Client *c, XEvent *e, Bool toggle)
 	int dx, dy;
 	int x_root, y_root;
 	View *v, *nv;
-	ClientGeometry n = { 0, }, o = { 0, };
+	ClientGeometry n = { 0, }, o = { 0, }, r = { 0, };
 	Bool moved = False, isfloater;
 	int move = CurMove;
 	IsUnion was = {.is = 0 };
@@ -3456,6 +3470,7 @@ mousemove(Client *c, XEvent *e, Bool toggle)
 
 	n = c->c;
 	o = c->c;
+	r = c->r;
 
 	for (;;) {
 		Client *s;
@@ -3526,58 +3541,85 @@ mousemove(Client *c, XEvent *e, Bool toggle)
 			}
 			n.x = o.x + dx;
 			n.y = o.y + dy;
-			if (nv && scr->options.snap && !(ev.xmotion.state & ControlMask)) {
-				Workarea w;
-				int nx2 = n.x + c->c.w + 2 * c->c.b;
-				int ny2 = n.y + c->c.h + 2 * c->c.b;
+			if (nv && isfloater) {
+				Workarea wa, sc;
+				
+				getworkarea(nv->curmon, &wa);
+				sc = nv->curmon->sc;
 
-				getworkarea(nv->curmon, &w);
-				if (abs(n.x - w.x) < scr->options.snap)
-					n.x += w.x - n.x;
-				else if (abs(nx2 - (w.x + w.w)) < scr->options.snap)
-					n.x += (w.x + w.w) - nx2;
-				else
-					for (s = event_scr->stack; s; s = s->snext) {
-						int sx = s->c.x;
-						int sy = s->c.y;
-						int sx2 = s->c.x + s->c.w + 2 * s->c.b;
-						int sy2 = s->c.y + s->c.h + 2 * s->c.b;
+				if (ev.xmotion.y_root == sc.y) {
+					c->is.max = True;
+					c->is.lhalf = False;
+					c->is.rhalf = False;
+				} else if (ev.xmotion.x_root == sc.x) {
+					c->is.max = False;
+					c->is.lhalf = True;
+					c->is.rhalf = False;
+				} else if (ev.xmotion.x_root == sc.x + sc.w - 1) {
+					c->is.max = False;
+					c->is.lhalf = False;
+					c->is.rhalf = True;
+				} else if (c->is.max || c->is.lhalf || c->is.rhalf) {
+					c->is.max = False;
+					c->is.lhalf = False;
+					c->is.rhalf = False;
+				}
+				if (!c->is.max && !c->is.lhalf && !c->is.rhalf &&
+						scr->options.snap && !(ev.xmotion.state & ControlMask)) {
+					int nx2 = n.x + c->c.w + 2 * c->c.b;
+					int ny2 = n.y + c->c.h + 2 * c->c.b;
 
-						if (wind_overlap(n.y, ny2, sy, sy2)) {
-							if (abs(n.x - sx) <
-							    scr->options.snap)
-								n.x += sx - n.x;
-							else if (abs(nx2 - sx2) <
-								 scr->options.snap)
-								n.x += sx2 - nx2;
-							else
-								continue;
-							break;
+					if (abs(n.x - wa.x) < scr->options.snap)
+						n.x = wa.x;
+					else if (abs(nx2 - (wa.x + wa.w)) < scr->options.snap)
+						n.x = (wa.x + wa.w) - (c->c.w + 2 * c->c.b);
+					else if (abs(n.x - sc.x) < scr->options.snap)
+						n.x = sc.x;
+					else if (abs(nx2 - (sc.x + sc.w)) < scr->options.snap)
+						n.x = (sc.x + sc.w) - (c->c.w + 2 * c->c.b);
+					else
+						for (s = event_scr->stack; s; s = s->snext) {
+							int sx = s->c.x;
+							int sy = s->c.y;
+							int sx2 = s->c.x + s->c.w + 2 * s->c.b;
+							int sy2 = s->c.y + s->c.h + 2 * s->c.b;
+
+							if (wind_overlap(n.y, ny2, sy, sy2)) {
+								if (abs(n.x - sx) < scr->options.snap)
+									n.x = sx;
+								else if (abs(nx2 - sx2) < scr->options.snap)
+									n.x = sx2 - (c->c.h + 2 * c->c.b);
+								else
+									continue;
+								break;
+							}
 						}
-					}
-				if (abs(n.y - w.y) < scr->options.snap)
-					n.y += w.y - n.y;
-				else if (abs(ny2 - (w.y + w.h)) < scr->options.snap)
-					n.y += (w.y + w.h) - ny2;
-				else
-					for (s = event_scr->stack; s; s = s->snext) {
-						int sx = s->c.x;
-						int sy = s->c.y;
-						int sx2 = s->c.x + s->c.w + 2 * s->c.b;
-						int sy2 = s->c.y + s->c.h + 2 * s->c.b;
+					if (abs(n.y - wa.y) < scr->options.snap)
+						n.y = wa.y;
+					else if (abs(ny2 - (wa.y + wa.h)) < scr->options.snap)
+						n.y = (wa.y + wa.h) - (c->c.h + 2 * c->c.b);
+					else if (abs(n.y - sc.y) < scr->options.snap)
+						n.y = sc.y;
+					else if (abs(ny2 - (sc.y + sc.h)) < scr->options.snap)
+						n.y = (sc.y + sc.h) - (c->c.h + 2 * c->c.b);
+					else
+						for (s = event_scr->stack; s; s = s->snext) {
+							int sx = s->c.x;
+							int sy = s->c.y;
+							int sx2 = s->c.x + s->c.w + 2 * s->c.b;
+							int sy2 = s->c.y + s->c.h + 2 * s->c.b;
 
-						if (wind_overlap(n.x, nx2, sx, sx2)) {
-							if (abs(n.y - sy) <
-							    scr->options.snap)
-								n.y += sy - n.y;
-							else if (abs(ny2 - sy2) <
-								 scr->options.snap)
-								n.y += sy2 - ny2;
-							else
-								continue;
-							break;
+							if (wind_overlap(n.x, nx2, sx, sx2)) {
+								if (abs(n.y - sy) < scr->options.snap)
+									n.y = sy;
+								else if (abs(ny2 - sy2) < scr->options.snap)
+									n.y = sy2 - (c->c.h + 2 * c->c.b);
+								else
+									continue;
+								break;
+							}
 						}
-					}
+				}
 			}
 			if (event_scr != scr)
 				reparentclient(c, event_scr, n.x, n.y);
@@ -3589,8 +3631,14 @@ mousemove(Client *c, XEvent *e, Bool toggle)
 				v = nv;
 			}
 			DPRINTF("CALLING reconfigure()\n");
-			reconfigure(c, &n, False);
-			save(c);
+			if (isfloater && (c->is.max || c->is.lhalf || c->is.rhalf)) {
+				c->c = o;
+				c->r = r;
+				updatefloat(c, v);
+			} else {
+				reconfigure(c, &n, False);
+				save(c);
+			}
 			continue;
 		}
 		XUngrabPointer(dpy, ev.xmotion.time);

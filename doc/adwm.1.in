@@ -162,69 +162,41 @@ Scroll wheel down.
 .Pp
 Following are the default mouse bindings:
 .Pp
-.Bl -column ".Sy Button" "maximize.button" ".Sy Motion" "floating" ".Sy Action" -compact -offset indent
+.Bl -column ".Sy Button" "maximize.button" ".Sy Motion" "floating" ".Sy Action" -compact
 .It Sy Button Ta Sy Where Ta Sy Motion Ta Sy Layout Ta Sy Action
 .It Ic   M1 Ta title bar       Ta click  Ta floating Ta raise/lower window
-.It         Ta title bar       Ta drag   Ta floating Ta moves window
-.It         Ta title bar       Ta click  Ta tiled    Ta toggles floating
-.It         Ta title bar       Ta drag   Ta tiled    Ta floats and moves
-.It         Ta grips           Ta drag   Ta \(em     Ta resizes
-.\" .It         Ta menu.button     Ta \(em   Ta \(em     Ta pops window menu
-.\" .It         Ta iconify.button  Ta \(em   Ta \(em     Ta minimizes window
-.\" .It         Ta maximize.button Ta \(em   Ta \(em     Ta toggle maximized
-.\" .It         Ta close.button    Ta \(em   Ta \(em     Ta closes window
-.\" .It         Ta shade.button    Ta \(em   Ta \(em     Ta toggle shaded
-.\" .It         Ta stick.button    Ta \(em   Ta \(em     Ta toggle sticky
-.\" .It         Ta lhalf.button    Ta \(em   Ta \(em     Ta toggle left half
-.\" .It         Ta rhalf.button    Ta \(em   Ta \(em     Ta toggle right half
-.\" .It         Ta fill.button     Ta \(em   Ta \(em     Ta toggle filled
-.\" .It         Ta float.button    Ta \(em   Ta \(em     Ta toggle floating
-.\" .It         Ta size.button     Ta \(em   Ta \(em     Ta begin mouse resize
+.It         Ta title bar       Ta drag   Ta floating Ta move window
+.It         Ta title bar       Ta click  Ta tiled    Ta toggle floating
+.It         Ta title bar       Ta drag   Ta tiled    Ta float and move
+.It         Ta grips           Ta drag   Ta \(em     Ta resize
 .It Ic A-M1 Ta window          Ta click  Ta floating Ta raise/lower window
+.It         Ta window          Ta drag   Ta floating Ta move window
+.It         Ta window          Ta click  Ta tiled    Ta toggle floating
+.It         Ta window          Ta drag   Ta tiled    Ta float and move
+.It Ic   M2 Ta root            Ta click  Ta any      Ta pop view menu
+.It         Ta title bar       Ta click  Ta \(em     Ta tile swap master
+.It         Ta title bar       Ta drag   Ta floating Ta move window
+.It         Ta title bar       Ta drag   Ta tiled    Ta tile and place
+.It Ic A-M2 Ta window          Ta click  Ta \(em     Ta tile swap master
 .It         Ta window          Ta drag   Ta floating Ta moves window
-.It         Ta window          Ta click  Ta tiled    Ta toggles floating
-.It         Ta window          Ta drag   Ta tiled    Ta floats and moves
-.It Ic   M2 Ta root            Ta click  Ta any      Ta pops view/workspace menu
-.It         Ta title bar       Ta click  Ta \(em     Ta tile and toggle master
-.It         Ta title bar       Ta drag   Ta floating Ta moves window
-.It         Ta title bar       Ta drag   Ta tiled    Ta tiles and places tile
-.\" .It         Ta menu.button     Ta \(em   Ta \(em     Ta pops window menu
-.\" .It         Ta iconify.button  Ta \(em   Ta \(em     Ta hides window
-.\" .It         Ta maximize.button Ta \(em   Ta \(em     Ta toggle maximized vertical
-.\" .It         Ta close.button    Ta \(em   Ta \(em     Ta kills client
-.\" .It         Ta shade.button    Ta \(em   Ta \(em     Ta rolls up window
-.\" .It         Ta stick.button    Ta \(em   Ta \(em     Ta pin window
-.\" .It         Ta lhalf.button    Ta \(em   Ta \(em     Ta flip left half
-.\" .It         Ta rhalf.button    Ta \(em   Ta \(em     Ta flip right half
-.\" .It         Ta fill.button     Ta \(em   Ta \(em     Ta fill available space
-.\" .It         Ta float.button    Ta \(em   Ta \(em     Ta float window
-.\" .It         Ta size.button     Ta \(em   Ta \(em     Ta begin mouse resize
-.It Ic A-M2 Ta window          Ta click  Ta \(em     Ta tile and toggle master
-.It         Ta window          Ta drag   Ta floating Ta moves window
-.It         Ta window          Ta drag   Ta tiled    Ta tiles and places tile
-.It Ic   M3 Ta root            Ta click  Ta \(em     Ta pops root menu
+.It         Ta window          Ta drag   Ta tiled    Ta tile and place
+.It Ic   M3 Ta root            Ta click  Ta \(em     Ta pop root menu
 .It         Ta title bar       Ta click  Ta \(em     Ta float window
-.It         Ta title bar       Ta drag   Ta \(em     Ta resizes
-.\" .It         Ta menu.button     Ta \(em   Ta \(em     Ta pops window menu
-.\" .It         Ta iconify.button  Ta \(em   Ta \(em     Ta withdraws window
-.\" .It         Ta maximize.button Ta \(em   Ta \(em     Ta toggle maximized horizontal
-.\" .It         Ta close.button    Ta \(em   Ta \(em     Ta kills process
-.\" .It         Ta shade.button    Ta \(em   Ta \(em     Ta rolls down window
-.\" .It         Ta stick.button    Ta \(em   Ta \(em     Ta unpin window
-.\" .It         Ta lhalf.button    Ta \(em   Ta \(em     Ta restore from left half
-.\" .It         Ta rhalf.button    Ta \(em   Ta \(em     Ta restore from right half
-.\" .It         Ta fill.button     Ta \(em   Ta \(em     Ta restore from fill
-.\" .It         Ta float.button    Ta \(em   Ta \(em     Ta tile window
-.\" .It         Ta size.button     Ta \(em   Ta \(em     Ta begin mouse resize
+.It         Ta title bar       Ta drag   Ta \(em     Ta resize
 .It Ic A-M3 Ta window          Ta click  Ta \(em     Ta \(em
-.It         Ta window          Ta drag   Ta \(em     Ta resizes
-.It Ic   M4 Ta root            Ta scroll Ta \(em     Ta next view/workspace
-.It         Ta title bar       Ta scroll Ta \(em     Ta rolls up window
-.It Ic A-M4 Ta window          Ta scroll Ta \(em     Ta rolls up window
-.It Ic   M5 Ta root            Ta scroll Ta \(em     Ta previous view/workspace
-.It         Ta title bar       Ta scroll Ta \(em     Ta rolls down window
-.It Ic A-M5 Ta window          Ta scroll Ta \(em     Ta rolls down window
+.It         Ta window          Ta drag   Ta \(em     Ta resize
+.It Ic   M4 Ta root            Ta scroll Ta \(em     Ta next view
+.It         Ta title bar       Ta scroll Ta \(em     Ta roll up window
+.It Ic A-M4 Ta window          Ta scroll Ta \(em     Ta roll up window
+.It Ic   M5 Ta root            Ta scroll Ta \(em     Ta previous view
+.It         Ta title bar       Ta scroll Ta \(em     Ta roll down window
+.It Ic A-M5 Ta window          Ta scroll Ta \(em     Ta roll down window
 .El
+.Pp
+.Sy Note:
+While moving an floating window, if the top edge of the current monitor
+is reached, the window will be maximized; left edge, window will be
+left-halved; right edge, right-halved.
 .Pp
 Mouse bindings
 for clicks on the root window

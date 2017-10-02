@@ -36,6 +36,9 @@ Adwm*button.close.pixmap:				close_focused.xpm
 
 Adwm*button.iconify.pixmap:				pixmaps/min_focused.xpm
 Adwm*button.iconify.pressed.pixmap:			pixmaps/min_pressed.xpm
+Adwm*button.iconify.pressed.b1.pixmap:			pixmaps/min_pressed.xpm
+Adwm*button.iconify.pressed.b2.pixmap:			pixmaps/min_pressed.xpm
+Adwm*button.iconify.pressed.b3.pixmap:			pixmaps/min_pressed.xpm
 Adwm*button.iconify.hovered.pixmap:			pixmaps/min_hovered.xpm
 Adwm*button.iconify.focused.pixmap:			pixmaps/min_focused.xpm
 Adwm*button.iconify.unfocus.pixmap:			pixmaps/min_unfocus.xpm
@@ -45,6 +48,9 @@ Adwm*button.iconify.disabled.unfocus.pixmap:		pixmaps/min_unfocus.xpm
 
 Adwm*button.maximize.pixmap:				pixmaps/max_focused.xpm
 Adwm*button.maximize.pressed.pixmap:			pixmaps/max_pressed.xpm
+Adwm*button.maximize.pressed.b1.pixmap:			pixmaps/max_pressed.xpm
+Adwm*button.maximize.pressed.b2.pixmap:			pixmaps/unmax_pressed.xpm
+Adwm*button.maximize.pressed.b3.pixmap:			pixmaps/max_pressed.xpm
 Adwm*button.maximize.hovered.pixmap:			pixmaps/max_hovered.xpm
 Adwm*button.maximize.focused.pixmap:			pixmaps/max_focused.xpm
 Adwm*button.maximize.unfocus.pixmap:			pixmaps/max_unfocus.xpm
@@ -54,6 +60,9 @@ Adwm*button.maximize.disabled.unfocus.pixmap:		pixmaps/max_unfocus.xpm
 
 Adwm*button.maximize.toggled.pixmap:			pixmaps/unmax_focused.xpm
 Adwm*button.maximize.toggled.pressed.pixmap:		pixmaps/unmax_pressed.xpm
+Adwm*button.maximize.toggled.pressed.b1.pixmap:		pixmaps/unmax_pressed.xpm
+Adwm*button.maximize.toggled.pressed.b2.pixmap:		pixmaps/max_pressed.xpm
+Adwm*button.maximize.toggled.pressed.b3.pixmap:		pixmaps/unmax_pressed.xpm
 Adwm*button.maximize.toggled.hovered.pixmap:		pixmaps/unmax_hovered.xpm
 Adwm*button.maximize.toggled.focused.pixmap:		pixmaps/unmax_focused.xpm
 Adwm*button.maximize.toggled.unfocus.pixmap:		pixmaps/unmax_unfocus.xpm
@@ -63,6 +72,9 @@ Adwm*button.maximize.toggled.disabled.unfocus.pixmap:	pixmaps/unmax_unfocus.xpm
 
 Adwm*button.close.pixmap:				pixmaps/close_focused.xpm
 Adwm*button.close.pressed.pixmap:			pixmaps/close_pressed.xpm
+Adwm*button.close.pressed.b1.pixmap:			pixmaps/close_pressed.xpm
+Adwm*button.close.pressed.b2.pixmap:			pixmaps/close_pressed.xpm
+Adwm*button.close.pressed.b3.pixmap:			pixmaps/close_pressed.xpm
 Adwm*button.close.hovered.pixmap:			pixmaps/close_hovered.xpm
 Adwm*button.close.focused.pixmap:			pixmaps/close_focused.xpm
 Adwm*button.close.unfocus.pixmap:			pixmaps/close_unfocus.xpm
@@ -70,8 +82,23 @@ Adwm*button.close.disabled.hovered.pixmap:		pixmaps/close_unfocus.xpm
 Adwm*button.close.disabled.focused.pixmap:		pixmaps/close_unfocus.xpm
 Adwm*button.close.disabled.unfocus.pixmap:		pixmaps/close_unfocus.xpm
 
+Adwm*button.close.toggled.pixmap:			pixmaps/xkill_focused.xpm
+Adwm*button.close.toggled.pressed.pixmap:		pixmaps/xkill_pressed.xpm
+Adwm*button.close.toggled.pressed.b1.pixmap:		pixmaps/xkill_pressed.xpm
+Adwm*button.close.toggled.pressed.b2.pixmap:		pixmaps/xkill_pressed.xpm
+Adwm*button.close.toggled.pressed.b3.pixmap:		pixmaps/xkill_pressed.xpm
+Adwm*button.close.toggled.hovered.pixmap:		pixmaps/xkill_hovered.xpm
+Adwm*button.close.toggled.focused.pixmap:		pixmaps/xkill_focused.xpm
+Adwm*button.close.toggled.unfocus.pixmap:		pixmaps/xkill_unfocus.xpm
+Adwm*button.close.toggled.disabled.hovered.pixmap:	pixmaps/xkill_unfocus.xpm
+Adwm*button.close.toggled.disabled.focused.pixmap:	pixmaps/xkill_unfocus.xpm
+Adwm*button.close.toggled.disabled.unfocus.pixmap:	pixmaps/xkill_unfocus.xpm
+
 Adwm*button.shade.pixmap:				pixmaps/shade_focused.xpm
 Adwm*button.shade.pressed.pixmap:			pixmaps/shade_pressed.xpm
+Adwm*button.shade.pressed.b1.pixmap:			pixmaps/shade_pressed.xpm
+Adwm*button.shade.pressed.b2.pixmap:			pixmaps/unshade_pressed.xpm
+Adwm*button.shade.pressed.b3.pixmap:			pixmaps/shade_pressed.xpm
 Adwm*button.shade.hovered.pixmap:			pixmaps/shade_hovered.xpm
 Adwm*button.shade.focused.pixmap:			pixmaps/shade_focused.xpm
 Adwm*button.shade.unfocus.pixmap:			pixmaps/shade_unfocus.xpm
@@ -81,6 +108,9 @@ Adwm*button.shade.disabled.unfocus.pixmap:		pixmaps/shade_unfocus.xpm
 
 Adwm*button.shade.toggled.pixmap:			pixmaps/unshade_focused.xpm
 Adwm*button.shade.toggled.pressed.pixmap:		pixmaps/unshade_pressed.xpm
+Adwm*button.shade.toggled.pressed.b1.pixmap:		pixmaps/unshade_pressed.xpm
+Adwm*button.shade.toggled.pressed.b2.pixmap:		pixmaps/shade_pressed.xpm
+Adwm*button.shade.toggled.pressed.b3.pixmap:		pixmaps/unshade_pressed.xpm
 Adwm*button.shade.toggled.hovered.pixmap:		pixmaps/unshade_hovered.xpm
 Adwm*button.shade.toggled.focused.pixmap:		pixmaps/unshade_focused.xpm
 Adwm*button.shade.toggled.unfocus.pixmap:		pixmaps/unshade_unfocus.xpm
@@ -90,6 +120,9 @@ Adwm*button.shade.toggled.disabled.unfocus.pixmap:	pixmaps/unshade_unfocus.xpm
 
 Adwm*button.stick.pixmap:				pixmaps/stick_focused.xpm
 Adwm*button.stick.pressed.pixmap:			pixmaps/stick_pressed.xpm
+Adwm*button.stick.pressed.b1.pixmap:			pixmaps/stick_pressed.xpm
+Adwm*button.stick.pressed.b2.pixmap:			pixmaps/stuck_pressed.xpm
+Adwm*button.stick.pressed.b3.pixmap:			pixmaps/stick_pressed.xpm
 Adwm*button.stick.hovered.pixmap:			pixmaps/stick_hovered.xpm
 Adwm*button.stick.focused.pixmap:			pixmaps/stick_focused.xpm
 Adwm*button.stick.unfocus.pixmap:			pixmaps/stick_unfocus.xpm
@@ -99,6 +132,9 @@ Adwm*button.stick.disabled.unfocus.pixmap:		pixmaps/stick_unfocus.xpm
 
 Adwm*button.stick.toggled.pixmap:			pixmaps/stuck_focused.xpm
 Adwm*button.stick.toggled.pressed.pixmap:		pixmaps/stuck_pressed.xpm
+Adwm*button.stick.toggled.pressed.b1.pixmap:		pixmaps/stuck_pressed.xpm
+Adwm*button.stick.toggled.pressed.b2.pixmap:		pixmaps/stick_pressed.xpm
+Adwm*button.stick.toggled.pressed.b3.pixmap:		pixmaps/stuck_pressed.xpm
 Adwm*button.stick.toggled.hovered.pixmap:		pixmaps/stuck_hovered.xpm
 Adwm*button.stick.toggled.focused.pixmap:		pixmaps/stuck_focused.xpm
 Adwm*button.stick.toggled.unfocus.pixmap:		pixmaps/stuck_unfocus.xpm
@@ -108,6 +144,9 @@ Adwm*button.stick.toggled.disabled.unfocus.pixmap:	pixmaps/stuck_unfocus.xpm
 
 Adwm*button.lhalf.pixmap:				pixmaps/lhalf_focused.xpm
 Adwm*button.lhalf.pressed.pixmap:			pixmaps/lhalf_pressed.xpm
+Adwm*button.lhalf.pressed.b1.pixmap:			pixmaps/lhalf_pressed.xpm
+Adwm*button.lhalf.pressed.b2.pixmap:			pixmaps/lhalf_pressed.xpm
+Adwm*button.lhalf.pressed.b3.pixmap:			pixmaps/lback_pressed.xpm
 Adwm*button.lhalf.hovered.pixmap:			pixmaps/lhalf_hovered.xpm
 Adwm*button.lhalf.focused.pixmap:			pixmaps/lhalf_focused.xpm
 Adwm*button.lhalf.unfocus.pixmap:			pixmaps/lhalf_unfocus.xpm
@@ -115,8 +154,23 @@ Adwm*button.lhalf.disabled.hovered.pixmap:		pixmaps/lhalf_unfocus.xpm
 Adwm*button.lhalf.disabled.focused.pixmap:		pixmaps/lhalf_unfocus.xpm
 Adwm*button.lhalf.disabled.unfocus.pixmap:		pixmaps/lhalf_unfocus.xpm
 
+Adwm*button.lhalf.toggled.pixmap:			pixmaps/lback_focused.xpm
+Adwm*button.lhalf.toggled.pressed.pixmap:		pixmaps/lback_pressed.xpm
+Adwm*button.lhalf.toggled.pressed.b1.pixmap:		pixmaps/lback_pressed.xpm
+Adwm*button.lhalf.toggled.pressed.b2.pixmap:		pixmaps/lhalf_pressed.xpm
+Adwm*button.lhalf.toggled.pressed.b3.pixmap:		pixmaps/lback_pressed.xpm
+Adwm*button.lhalf.toggled.hovered.pixmap:		pixmaps/lback_hovered.xpm
+Adwm*button.lhalf.toggled.focused.pixmap:		pixmaps/lback_focused.xpm
+Adwm*button.lhalf.toggled.unfocus.pixmap:		pixmaps/lback_unfocus.xpm
+Adwm*button.lhalf.toggled.disabled.hovered.pixmap:	pixmaps/lback_unfocus.xpm
+Adwm*button.lhalf.toggled.disabled.focused.pixmap:	pixmaps/lback_unfocus.xpm
+Adwm*button.lhalf.toggled.disabled.unfocus.pixmap:	pixmaps/lback_unfocus.xpm
+
 Adwm*button.rhalf.pixmap:				pixmaps/rhalf_focused.xpm
 Adwm*button.rhalf.pressed.pixmap:			pixmaps/rhalf_pressed.xpm
+Adwm*button.rhalf.pressed.b1.pixmap:			pixmaps/rhalf_pressed.xpm
+Adwm*button.rhalf.pressed.b2.pixmap:			pixmaps/rback_pressed.xpm
+Adwm*button.rhalf.pressed.b3.pixmap:			pixmaps/rhalf_pressed.xpm
 Adwm*button.rhalf.hovered.pixmap:			pixmaps/rhalf_hovered.xpm
 Adwm*button.rhalf.focused.pixmap:			pixmaps/rhalf_focused.xpm
 Adwm*button.rhalf.unfocus.pixmap:			pixmaps/rhalf_unfocus.xpm
@@ -124,8 +178,23 @@ Adwm*button.rhalf.disabled.hovered.pixmap:		pixmaps/rhalf_unfocus.xpm
 Adwm*button.rhalf.disabled.focused.pixmap:		pixmaps/rhalf_unfocus.xpm
 Adwm*button.rhalf.disabled.unfocus.pixmap:		pixmaps/rhalf_unfocus.xpm
 
+Adwm*button.rhalf.toggled.pixmap:			pixmaps/rback_focused.xpm
+Adwm*button.rhalf.toggled.pressed.pixmap:		pixmaps/rback_pressed.xpm
+Adwm*button.rhalf.toggled.pressed.b1.pixmap:		pixmaps/rback_pressed.xpm
+Adwm*button.rhalf.toggled.pressed.b2.pixmap:		pixmaps/rhalf_pressed.xpm
+Adwm*button.rhalf.toggled.pressed.b3.pixmap:		pixmaps/rback_pressed.xpm
+Adwm*button.rhalf.toggled.hovered.pixmap:		pixmaps/rback_hovered.xpm
+Adwm*button.rhalf.toggled.focused.pixmap:		pixmaps/rback_focused.xpm
+Adwm*button.rhalf.toggled.unfocus.pixmap:		pixmaps/rback_unfocus.xpm
+Adwm*button.rhalf.toggled.disabled.hovered.pixmap:	pixmaps/rback_unfocus.xpm
+Adwm*button.rhalf.toggled.disabled.focused.pixmap:	pixmaps/rback_unfocus.xpm
+Adwm*button.rhalf.toggled.disabled.unfocus.pixmap:	pixmaps/rback_unfocus.xpm
+
 Adwm*button.float.pixmap:				pixmaps/float_focused.xpm
 Adwm*button.float.pressed.pixmap:			pixmaps/float_pressed.xpm
+Adwm*button.float.pressed.b1.pixmap:			pixmaps/float_pressed.xpm
+Adwm*button.float.pressed.b2.pixmap:			pixmaps/tile_pressed.xpm
+Adwm*button.float.pressed.b3.pixmap:			pixmaps/float_pressed.xpm
 Adwm*button.float.hovered.pixmap:			pixmaps/float_hovered.xpm
 Adwm*button.float.focused.pixmap:			pixmaps/float_focused.xpm
 Adwm*button.float.unfocus.pixmap:			pixmaps/float_unfocus.xpm
@@ -135,6 +204,9 @@ Adwm*button.float.disabled.unfocus.pixmap:		pixmaps/float_unfocus.xpm
 
 Adwm*button.float.toggled.pixmap:			pixmaps/tile_focused.xpm
 Adwm*button.float.toggled.pressed.pixmap:		pixmaps/tile_pressed.xpm
+Adwm*button.float.toggled.pressed.b1.pixmap:		pixmaps/tile_pressed.xpm
+Adwm*button.float.toggled.pressed.b2.pixmap:		pixmaps/float_pressed.xpm
+Adwm*button.float.toggled.pressed.b3.pixmap:		pixmaps/tile_pressed.xpm
 Adwm*button.float.toggled.hovered.pixmap:		pixmaps/tile_hovered.xpm
 Adwm*button.float.toggled.focused.pixmap:		pixmaps/tile_focused.xpm
 Adwm*button.float.toggled.unfocus.pixmap:		pixmaps/tile_unfocus.xpm
@@ -144,6 +216,9 @@ Adwm*button.float.toggled.disabled.unfocus.pixmap:	pixmaps/tile_unfocus.xpm
 
 Adwm*button.menu.pixmap:				pixmaps/menu_focused.xpm
 Adwm*button.menu.pressed.pixmap:			pixmaps/menu_pressed.xpm
+Adwm*button.menu.pressed.b1.pixmap:			pixmaps/menu_pressed.xpm
+Adwm*button.menu.pressed.b2.pixmap:			pixmaps/menu_pressed.xpm
+Adwm*button.menu.pressed.b3.pixmap:			pixmaps/menu_pressed.xpm
 Adwm*button.menu.hovered.pixmap:			pixmaps/menu_hovered.xpm
 Adwm*button.menu.focused.pixmap:			pixmaps/menu_focused.xpm
 Adwm*button.menu.unfocus.pixmap:			pixmaps/menu_unfocus.xpm

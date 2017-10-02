@@ -3400,8 +3400,6 @@ move_finish(Client *c, View *v, IsUnion * was)
 			c->is.maxv = was->maxv;
 			c->is.maxh = was->maxh;
 			c->is.fill = was->fill;
-			c->is.lhalf = was->lhalf;
-			c->is.rhalf = was->rhalf;
 			c->is.shaded = was->shaded;
 		}
 		if (wasfloating)

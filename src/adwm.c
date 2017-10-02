@@ -135,7 +135,7 @@ void (*actions[LastOn][Button5-Button1+1][2]) (Client *, XEvent *) = {
 	[OnClientTitle]	 = {
 					/* ButtonPress	    ButtonRelease */
 		[Button1-Button1] =	{ m_move,	    NULL	    },
-		[Button2-Button1] =	{ NULL,		    m_zoom	    },
+		[Button2-Button1] =	{ m_zoom,	    NULL	    },
 		[Button3-Button1] =	{ m_resize,	    NULL	    },
 		[Button4-Button1] =	{ NULL,		    m_shade	    },
 		[Button5-Button1] =	{ NULL,		    m_shade	    },

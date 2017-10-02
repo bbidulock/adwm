@@ -1,5 +1,5 @@
 /* XPM */
-static char * lhalf_xpm[] = {
+static char * lhalf_hovered_xpm[] = {
 "16 12 4 1",
 " 	c None",
 ".	c #161616",

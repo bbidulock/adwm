@@ -451,35 +451,42 @@ inittags_ADWM(void)
 typedef struct {
 	const char *name;
 	void (*action) (XEvent *e, Key *k);
+	char *arg;
 } KeyItem;
 
 static KeyItem KeyItems[] = {
 	/* *INDENT-OFF* */
-	{ "viewprevtag",	k_viewprevtag	 },
-	{ "quit",		k_quit		 }, /* arg is new command */
-	{ "restart",		k_restart	 }, /* arg is new command */
-	{ "killclient",		k_killclient	 },
-	{ "zoom",		k_zoom		 },
-	{ "moveright",		k_moveresizekb	 }, /* arg is delta geometry */
-	{ "moveleft",		k_moveresizekb	 }, /* arg is delta geometry */
-	{ "moveup",		k_moveresizekb	 }, /* arg is delta geometry */
-	{ "movedown",		k_moveresizekb	 }, /* arg is delta geometry */
-	{ "resizedecx",		k_moveresizekb	 }, /* arg is delta geometry */
-	{ "resizeincx",		k_moveresizekb	 }, /* arg is delta geometry */
-	{ "resizedecy",		k_moveresizekb	 }, /* arg is delta geometry */
-	{ "resizeincy",		k_moveresizekb	 }, /* arg is delta geometry */
-	{ "togglemonitor",	k_togglemonitor	 },
-	{ "appendtag",		k_appendtag	 },
-	{ "rmlasttag",		k_rmlasttag	 },
-	{ "rotateview",		k_rotateview	 },
-	{ "unrotateview",	k_unrotateview	 },
-	{ "rotatezone",		k_rotatezone	 },
-	{ "unrotatezone",	k_unrotatezone	 },
-	{ "rotatewins",		k_rotatewins	 },
-	{ "unrotatewins",	k_unrotatewins	 },
-	{ "raise",		k_raise		 },
-	{ "lower",		k_lower		 },
-	{ "raiselower",		k_raiselower	 }
+	{ "viewprevtag",	k_viewprevtag,	 NULL		},
+	{ "quit",		k_quit,		 NULL		}, /* arg is new command */
+	{ "restart",		k_restart,	 NULL		}, /* arg is new command */
+	{ "reload",		k_reload,	 NULL		},
+	{ "killclient",		k_killclient,	 NULL		},
+	{ "focusmain",		k_focusmain,	 NULL		},
+	{ "focusurgent",	k_focusurgent,	 NULL		},
+	{ "zoom",		k_zoom,		 NULL		},
+	{ "moveright",		k_moveresizekb,	 "+5 +0 +0 +0"	}, /* arg is delta geometry */
+	{ "moveleft",		k_moveresizekb,	 "-5 +0 +0 +0"	}, /* arg is delta geometry */
+	{ "moveup",		k_moveresizekb,	 "+0 -5 +0 +0"	}, /* arg is delta geometry */
+	{ "movedown",		k_moveresizekb,	 "+0 +5 +0 +0"	}, /* arg is delta geometry */
+	{ "resizedecx",		k_moveresizekb,	 "+3 +0 -6 +0"	}, /* arg is delta geometry */
+	{ "resizeincx",		k_moveresizekb,	 "-3 +0 +6 +0"	}, /* arg is delta geometry */
+	{ "resizedecy",		k_moveresizekb,	 "+0 +3 +0 -6"	}, /* arg is delta geometry */
+	{ "resizeincy",		k_moveresizekb,	 "+0 -3 +0 +6"	}, /* arg is delta geometry */
+	{ "togglemonitor",	k_togglemonitor, NULL		},
+	{ "appendtag",		k_appendtag,	 NULL		},
+	{ "rmlasttag",		k_rmlasttag,	 NULL		},
+	{ "flipview",		k_flipview,	 NULL		},
+	{ "rotateview",		k_rotateview,	 NULL		},
+	{ "unrotateview",	k_unrotateview,	 NULL		},
+	{ "flipzone",		k_flipzone,	 NULL		},
+	{ "rotatezone",		k_rotatezone,	 NULL		},
+	{ "unrotatezone",	k_unrotatezone,	 NULL		},
+	{ "flipwins",		k_flipwins,	 NULL		},
+	{ "rotatewins",		k_rotatewins,	 NULL		},
+	{ "unrotatewins",	k_unrotatewins,	 NULL		},
+	{ "raise",		k_raise,	 NULL		},
+	{ "lower",		k_lower,	 NULL		},
+	{ "raiselower",		k_raiselower,	 NULL		}
 	/* *INDENT-ON* */
 };
 
@@ -498,7 +505,7 @@ static KeyItem KeyItemsByAmt[] = {
 	/* *INDENT-OFF* */
 	{ "mwfact",		k_setmwfactor	 },
 	{ "nmaster",		k_setnmaster	 },
-	{ "ncolumns",		k_setnmaster	 },
+	{ "ncolumns",		k_setncolumns	 },
 	{ "margin",		k_setmargin	 },
 	{ "border",		k_setborder	 }
 	/* *INDENT-ON* */
@@ -526,9 +533,9 @@ static const struct {
 	{ "",		FocusClient	},
 	{ "sel",	ActiveClient	},
 	{ "ptr",	PointerClient	},
-	{ "all",	AllClients	}, /* all on current monitor */
-	{ "any",	AnyClient	}, /* clients on any monitor */
-	{ "every",	EveryClient	}  /* clients on every workspace */
+	{ "all",	AllClients	},	/* all on current monitor */
+	{ "any",	AnyClient	},	/* clients on any monitor */
+	{ "every",	EveryClient	}	/* clients on every workspace */
 	/* *INDENT-ON* */
 };
 
@@ -554,7 +561,8 @@ static KeyItem KeyItemsByState[] = {
 	{ "taskbar",		k_settaskbar	 },
 	{ "showing",		k_setshowing	 },
 	{ "struts",		k_setstruts	 },
-	{ "dectiled",		k_setdectiled	 }
+	{ "dectiled",		k_setdectiled	 },
+	{ "sticky",		k_setsticky	 }
 	/* *INDENT-ON* */
 };
 
@@ -591,11 +599,11 @@ static const struct {
 	WhichClient any;
 } list_which[] = {
 	/* *INDENT-OFF* */
-	{ "",		FocusClient	}, /* focusable, same monitor */
-	{ "act",	ActiveClient	}, /* activatable (incl. icons), same monitor */
-	{ "all",	AllClients	}, /* all clients (incl. icons), same mon */
-	{ "any",	AnyClient	}, /* any client on any monitor */
-	{ "every",	EveryClient	}  /* all clients, all desktops */
+	{ "",		FocusClient	},	/* focusable, same monitor */
+	{ "act",	ActiveClient	},	/* activatable (incl. icons), same monitor */
+	{ "all",	AllClients	},	/* all clients (incl. icons), same mon */
+	{ "any",	AnyClient	},	/* any client on any monitor */
+	{ "every",	EveryClient	}	/* all clients, all desktops */
 	/* *INDENT-ON* */
 };
 
@@ -637,14 +645,14 @@ static const struct {
 
 static KeyItem KeyItemsByList[] = {
 	/* *INDENT-OFF* */
-	{ "focus",		k_focus		},
-	{ "client",		k_client	},
-	{ "stack",		k_stack		},
-	{ "group",		k_group		},
-	{ "tab",		k_tab		},
-	{ "panel",		k_panel		},
-	{ "dock",		k_dock		},
-	{ "swap",		k_swap		}
+	{ "focus",	k_focus		},
+	{ "client",	k_client	},
+	{ "stack",	k_stack		},
+	{ "group",	k_group		},
+	{ "tab",	k_tab		},
+	{ "panel",	k_panel		},
+	{ "dock",	k_dock		},
+	{ "swap",	k_swap		}
 	/* *INDENT-ON* */
 };
 
@@ -675,12 +683,13 @@ static const struct {
 
 static KeyItem KeyItemsByTag[] = {
 	/* *INDENT-OFF* */
-	{"view",		k_view		},
-	{"toggleview",		k_toggleview	},
-	{"focusview",		k_focusview	},
-	{"tag",			k_tag		},
-	{"toggletag",		k_toggletag	},
-	{"taketo",		k_taketo	}
+	{"view",	k_view		},
+	{"toggleview",	k_toggleview	},
+	{"focusview",	k_focusview	},
+	{"tag",		k_tag		},
+	{"toggletag",	k_toggletag	},
+	{"taketo",	k_taketo	},
+	{"sendto",	k_sendto	}
 	/* *INDENT-ON* */
 };
 
@@ -724,10 +733,8 @@ initkeys_ADWM(void)
 
 	xresdb = xkeysdb;
 
+	freekeys();
 	initmodkey();
-#if 0
-	scr->keys = ecalloc(LENGTH(KeyItems), sizeof(Key *));
-#endif
 	/* global functions */
 	for (i = 0; i < LENGTH(KeyItems); i++) {
 		Key key = { 0, };
@@ -738,7 +745,7 @@ initkeys_ADWM(void)
 		if (!(res = readres(name, capclass(clas), NULL)))
 			continue;
 		key.func = KeyItems[i].action;
-		key.arg = NULL;
+		key.arg = KeyItems[i].arg;
 		parsekeys(res, &key);
 	}
 	/* increment, decrement and set functions */
@@ -907,7 +914,7 @@ initkeys_ADWM(void)
 		if (!(res = readres(name, capclass(clas), NULL)))
 			continue;
 		key.func = k_setlayout;
-		key.arg = strdup(&layouts[i].symbol);
+		key.arg = name + 9;
 		parsekeys(res, &key);
 	}
 	/* spawn */

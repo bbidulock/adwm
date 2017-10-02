@@ -3547,22 +3547,44 @@ mousemove(Client *c, XEvent *e, Bool toggle)
 				getworkarea(nv->curmon, &wa);
 				sc = nv->curmon->sc;
 
-				if (ev.xmotion.y_root == sc.y) {
-					c->is.max = True;
-					c->is.lhalf = False;
-					c->is.rhalf = False;
-				} else if (ev.xmotion.x_root == sc.x) {
-					c->is.max = False;
-					c->is.lhalf = True;
-					c->is.rhalf = False;
-				} else if (ev.xmotion.x_root == sc.x + sc.w - 1) {
-					c->is.max = False;
-					c->is.lhalf = False;
-					c->is.rhalf = True;
-				} else if (c->is.max || c->is.lhalf || c->is.rhalf) {
-					c->is.max = False;
-					c->is.lhalf = False;
-					c->is.rhalf = False;
+				if (ev.xmotion.y_root == sc.y && c->user.max) {
+					if (!c->is.max || c->is.lhalf || c->is.rhalf) {
+						c->is.max = True;
+						c->is.lhalf = False;
+						c->is.rhalf = False;
+						c->c = o;
+						c->r = r;
+						ewmh_update_net_window_state(c);
+						updatefloat(c, v);
+						restack();
+					}
+				} else if (ev.xmotion.x_root == sc.x && c->user.move && c->user.size) {
+					if (c->is.max || !c->is.lhalf || c->is.rhalf) {
+						c->is.max = False;
+						c->is.lhalf = True;
+						c->is.rhalf = False;
+						c->c = o;
+						c->r = r;
+						ewmh_update_net_window_state(c);
+						updatefloat(c, v);
+					}
+				} else if (ev.xmotion.x_root == sc.x + sc.w - 1 && c->user.move && c->user.size) {
+					if (c->is.max || c->is.lhalf || !c->is.rhalf) {
+						c->is.max = False;
+						c->is.lhalf = False;
+						c->is.rhalf = True;
+						c->c = o;
+						c->r = r;
+						ewmh_update_net_window_state(c);
+						updatefloat(c, v);
+					}
+				} else {
+					if (c->is.max || c->is.lhalf || c->is.rhalf) {
+						c->is.max = False;
+						c->is.lhalf = False;
+						c->is.rhalf = False;
+						ewmh_update_net_window_state(c);
+					}
 				}
 				if (!c->is.max && !c->is.lhalf && !c->is.rhalf &&
 						scr->options.snap && !(ev.xmotion.state & ControlMask)) {
@@ -3630,12 +3652,8 @@ mousemove(Client *c, XEvent *e, Bool toggle)
 				arrange(NULL);
 				v = nv;
 			}
-			DPRINTF("CALLING reconfigure()\n");
-			if (isfloater && (c->is.max || c->is.lhalf || c->is.rhalf)) {
-				c->c = o;
-				c->r = r;
-				updatefloat(c, v);
-			} else {
+			if (!isfloater || (!c->is.max && !c->is.lhalf && !c->is.rhalf)) {
+				DPRINTF("CALLING reconfigure()\n");
 				reconfigure(c, &n, False);
 				save(c);
 			}
@@ -5688,8 +5706,10 @@ togglemaxh(Client *c)
 	if (!c || (!c->prog.maxh && c->is.managed) || !(v = c->cview))
 		return;
 	c->is.maxh = !c->is.maxh;
-	ewmh_update_net_window_state(c);
-	updatefloat(c, v);
+	if (c->is.managed) {
+		ewmh_update_net_window_state(c);
+		updatefloat(c, v);
+	}
 }
 
 void
@@ -5697,7 +5717,7 @@ togglelhalf(Client *c)
 {
 	View *v;
 
-	if (!c || (!c->prog.size && c->is.managed) || !(v = c->cview))
+	if (!c || ((!c->prog.size || !c->prog.move) && c->is.managed) || !(v = c->cview))
 		return;
 	if ((c->is.lhalf = !c->is.lhalf))
 		c->is.rhalf = 0;
@@ -5712,7 +5732,7 @@ togglerhalf(Client *c)
 {
 	View *v;
 
-	if (!c || (!c->prog.size && c->is.managed) || !(v = c->cview))
+	if (!c || ((!c->prog.size || !c->prog.move) && c->is.managed) || !(v = c->cview))
 		return;
 	if ((c->is.rhalf = !c->is.rhalf))
 		c->is.lhalf = 0;

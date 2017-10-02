@@ -543,6 +543,10 @@ The window is maximized.
 The window is vertically maximized.
 .It Cm maxh
 The window is horizontally maximized.
+.It Cm lhalf
+The window is left-halved.
+.It Cm rhalf
+The window is right-halved.
 .It Cm shade
 The window is shaded.
 .It Cm shaded
@@ -619,12 +623,14 @@ Defaults:
 .Dl Adwm* Ns Cm togglefull Ns Li : Ar "A + F11, AC + a : f, W + f"
 .Dl Adwm* Ns Cm togglemaxv Ns Li : Ar "AC + a : m : v, AS + F10, CS + Up"
 .Dl Adwm* Ns Cm togglemaxh Ns Li : Ar "AC + a : m : h, CS + Right"
-.Dl Adwm* Ns Cm togglemax Ns Li : Ar "A + F10, AC + a : m : m, CS + Left, W + m"
+.Dl Adwm* Ns Cm togglemax Ns Li : Ar "A + F10, AC + a : m : m, CS + Left, W + m, WA + Up"
 .Dl Adwm* Ns Cm unmax Ns Li : Ar "A + F5, WC + n"
+.Dl Adwm* Ns Cm togglelhalf Ns Li : Ar "WA + Left"
+.Dl Adwm* Ns Cm togglerhalf Ns Li : Ar "WA + Right"
 .Dl Adwm* Ns Cm toggleshade Ns Li : Ar "A + F12, A + s, AC + a : s"
 .Dl Adwm* Ns Cm hide Ns Li : Ar "AS + F12, AS + h"
 .Dl Adwm* Ns Cm hideall Ns Li : Ar "AS + F11"
-.Dl !Adwm* Ns Cm togglehidden Ns Li : Ar "CS + underscore"
+.Dl Adwm* Ns Cm togglehidden Ns Li : Ar "WA + Down"
 .Dl Adwm* Ns Cm iconify Ns Li : Ar "A + F9, AS + m, W + i, W + n, W + w"
 .Dl Adwm* Ns Cm iconifyall Ns Li : Ar "AS + F9"
 .Dl Adwm* Ns Cm uniconify Ns Li : Ar "WS + w"

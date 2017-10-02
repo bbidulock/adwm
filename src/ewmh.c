@@ -2385,8 +2385,6 @@ ewmh_process_net_window_sync_request_counter(Client *c)
 
 			if (c->sync.alarm) {
 				CPRINTF(c, "allocated alarm 0x%08lx\n", c->sync.alarm);
-				XSaveContext(dpy, c->sync.alarm, context[ClientSync],
-					     (XPointer) c);
 				XSaveContext(dpy, c->sync.alarm, context[ClientAny],
 					     (XPointer) c);
 				XSaveContext(dpy, c->sync.alarm, context[ScreenContext],
@@ -2699,10 +2697,6 @@ clientmessage(XEvent *e)
 		} else if (message_type == _XA_WM_PROTOCOLS) {
 			if (0) {
 			} else if (ev->data.l[0] == _XA_NET_WM_PING) {
-				if ((c = getclient(ev->data.l[2], ClientPing)))
-					XDeleteContext(dpy, c->win, context[ClientPing]);
-				if ((c = getclient(ev->data.l[2], ClientDead)))
-					XDeleteContext(dpy, c->win, context[ClientDead]);
 				if ((c = getclient(ev->data.l[2], ClientWindow))) {
 					c->is.pinging = 0;
 					c->is.killing = 0;

@@ -286,9 +286,6 @@ enum {
 	ClientSession,
 	ClientAny,
 	SysTrayWindows,
-	ClientPing,
-	ClientDead,
-	ClientSync,
 	ScreenContext,
 	PartLast
 };					/* client parts */

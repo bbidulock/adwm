@@ -1924,25 +1924,44 @@ keypress(XEvent *e)
 }
 
 void
-killproc(Client *c)
+killxclient(Client *c)
 {
+	XKillClient(dpy, c->win);
 }
 
 void
-killxclient(Client *c)
+killproc(Client *c)
 {
+	pid_t pid = 0;
+	char *machine = NULL;
+
+	/* NOTE: Before killing the client we should attempt to kill the process using
+	   the _NET_WM_PID and WM_CLIENT_MACHINE because XKillClient might still leave
+	   the process hanging. Try using SIGTERM first, following up with SIGKILL */
+
+	if ((pid = getnetpid(c)) && (machine = getclientmachine(c))) {
+		char hostname[65] = { 0, };
+
+		gethostname(hostname, 64);
+		if (!strcmp(hostname, machine)) {
+			kill(pid, c->is.killing ? SIGKILL : SIGTERM);
+			c->is.killing = 1;
+			free(machine);
+			return;
+		}
+		free(machine);
+	}
+	killxclient(c);
 }
 
 void
 killclient(Client *c)
 {
-	int signal = SIGTERM;
-
 	if (!c)
 		return;
-	if (!getclient(c->win, ClientDead)) {
-		if (!getclient(c->win, ClientPing)) {
-			if (checkatom(c->win, _XA_WM_PROTOCOLS, _XA_NET_WM_PING)) {
+	if (!c->is.killing) {
+		if (checkatom(c->win, _XA_WM_PROTOCOLS, _XA_NET_WM_PING)) {
+			if (!c->is.pinging) {
 				XEvent ev;
 
 				/* Give me a ping: one ping only.... Red October */
@@ -1957,13 +1976,11 @@ killclient(Client *c)
 				ev.xclient.data.l[3] = 0;
 				ev.xclient.data.l[4] = 0;
 				XSendEvent(dpy, c->win, False, NoEventMask, &ev);
-
-				XSaveContext(dpy, c->win, context[ClientPing],
-					     (XPointer) c);
 				c->is.pinging = 1;
 			}
-
-			if (checkatom(c->win, _XA_WM_PROTOCOLS, _XA_WM_DELETE_WINDOW)) {
+		}
+		if (checkatom(c->win, _XA_WM_PROTOCOLS, _XA_WM_DELETE_WINDOW)) {
+			if (!c->is.closing) {
 				XEvent ev;
 
 				ev.type = ClientMessage;
@@ -1976,34 +1993,12 @@ killclient(Client *c)
 				ev.xclient.data.l[3] = 0;
 				ev.xclient.data.l[4] = 0;
 				XSendEvent(dpy, c->win, False, NoEventMask, &ev);
+				c->is.closing = 1;
 				return;
 			}
-		}
-	} else
-		signal = SIGKILL;
-	/* NOTE: Before killing the client we should attempt to kill the process using
-	   the _NET_WM_PID and WM_CLIENT_MACHINE because XKillClient might still leave
-	   the process hanging. Try using SIGTERM first, following up with SIGKILL */
-	{
-		pid_t pid = 0;
-		char *machine = NULL;
-
-		if ((pid = getnetpid(c)) && (machine = getclientmachine(c))) {
-			char hostname[65] = { 0, };
-
-			gethostname(hostname, 64);
-			if (!strcmp(hostname, machine)) {
-				XSaveContext(dpy, c->win, context[ClientDead],
-					     (XPointer) c);
-				c->is.killing = 1;
-				kill(pid, signal);
-				free(machine);
-				return;
-			}
-			free(machine);
 		}
 	}
-	XKillClient(dpy, c->win);
+	killproc(c);
 }
 
 static Bool
@@ -2803,7 +2798,7 @@ alarmnotify(XEvent *e)
 	XWindowChanges wc = { 0, };
 	unsigned mask = 0;
 
-	if (!(c = getclient(ae->alarm, ClientSync))) {
+	if (!(c = getclient(ae->alarm, ClientAny))) {
 		XPRINTF("Recevied alarm notify for unknown alarm 0x%08lx\n", ae->alarm);
 		return False;
 	}
@@ -4961,7 +4956,6 @@ unmanage(Client *c, WithdrawCause cause)
 	if (c->sync.alarm) {
 		c->sync.waiting = False;
 		XSyncDestroyAlarm(dpy, c->sync.alarm);
-		XDeleteContext(dpy, c->sync.alarm, context[ClientSync]);
 		XDeleteContext(dpy, c->sync.alarm, context[ClientAny]);
 		XDeleteContext(dpy, c->sync.alarm, context[ScreenContext]);
 		c->sync.alarm = None;
@@ -5037,8 +5031,6 @@ unmanage(Client *c, WithdrawCause cause)
 	XDeleteContext(dpy, c->frame, context[ScreenContext]);
 	XDeleteContext(dpy, c->win, context[ClientWindow]);
 	XDeleteContext(dpy, c->win, context[ClientAny]);
-	XDeleteContext(dpy, c->win, context[ClientPing]);
-	XDeleteContext(dpy, c->win, context[ClientDead]);
 	XDeleteContext(dpy, c->win, context[ScreenContext]);
 	if (c->icon) {
 		XDeleteContext(dpy, c->icon, context[ClientIcon]);

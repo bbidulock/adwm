@@ -761,11 +761,9 @@ b_close(Client *c, XEvent *ev)
 		break;
 	case Button2:
 		killproc(c);
-		/* reserved for kill */
 		break;
 	case Button3:
 		killxclient(c);
-		/* reserved for xkill */
 		break;
 	}
 }

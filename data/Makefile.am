@@ -22,6 +22,10 @@ nobase_dist_pkgdata_DATA = \
 	styles/Default/pixmaps/close_hovered.xpm \
 	styles/Default/pixmaps/close_pressed.xpm \
 	styles/Default/pixmaps/close_unfocus.xpm \
+	styles/Default/pixmaps/xkill_focused.xpm \
+	styles/Default/pixmaps/xkill_hovered.xpm \
+	styles/Default/pixmaps/xkill_pressed.xpm \
+	styles/Default/pixmaps/xkill_unfocus.xpm \
 	styles/Default/pixmaps/float_focused.xpm \
 	styles/Default/pixmaps/float_hovered.xpm \
 	styles/Default/pixmaps/float_pressed.xpm \
@@ -30,6 +34,10 @@ nobase_dist_pkgdata_DATA = \
 	styles/Default/pixmaps/lhalf_hovered.xpm \
 	styles/Default/pixmaps/lhalf_pressed.xpm \
 	styles/Default/pixmaps/lhalf_unfocus.xpm \
+	styles/Default/pixmaps/lback_focused.xpm \
+	styles/Default/pixmaps/lback_hovered.xpm \
+	styles/Default/pixmaps/lback_pressed.xpm \
+	styles/Default/pixmaps/lback_unfocus.xpm \
 	styles/Default/pixmaps/max_focused.xpm \
 	styles/Default/pixmaps/max_hovered.xpm \
 	styles/Default/pixmaps/max_pressed.xpm \
@@ -46,6 +54,10 @@ nobase_dist_pkgdata_DATA = \
 	styles/Default/pixmaps/rhalf_hovered.xpm \
 	styles/Default/pixmaps/rhalf_pressed.xpm \
 	styles/Default/pixmaps/rhalf_unfocus.xpm \
+	styles/Default/pixmaps/rback_focused.xpm \
+	styles/Default/pixmaps/rback_hovered.xpm \
+	styles/Default/pixmaps/rback_pressed.xpm \
+	styles/Default/pixmaps/rback_unfocus.xpm \
 	styles/Default/pixmaps/shade_focused.xpm \
 	styles/Default/pixmaps/shade_hovered.xpm \
 	styles/Default/pixmaps/shade_pressed.xpm \

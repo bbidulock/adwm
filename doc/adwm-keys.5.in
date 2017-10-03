@@ -113,7 +113,7 @@ The
 key.
 .It Li W
 The
-.Li Windows
+.Li Super (Windows)
 key.
 .It Li M
 The
@@ -149,12 +149,44 @@ The following is an example of vim-like window key movement key chains:
 .Dl "Adwm*" Ns Cm movetoS Ns Li : Ar "W+w:k, CS+w:k"
 .Dl "Adwm*" Ns Cm movetoE Ns Li : Ar "W+w:l, CS+w:l"
 .Sh COMMANDS
-There are four commands that are used with preset mouse bindings and
-the remainder are for use with key bindings.  The commands are
-described below.
-Each heading provides the format of the command resource (without the
+There is one command that is used to set the modifier key; four commands
+that are used with preset mouse bindings; and, the remainder are for use
+with key bindings.  The commands are described below.  Each heading
+provides the format of the command resource (without the
 .Li "Adwm*"
 portion) and the possible arguments to each mouse binding.
+.Ss MOD KEY
+There is one command to set the modifier key.
+.Pp
+.Bl -tag -width "XX"
+.It Cm modkey Li { Ns Ar A Ns Li | Ns Ar W Ns Li }
+This sets the sense of
+the
+.Ic M
+and
+.Ic N
+key modifier specifications.  When set to
+.Ic 'A' ,
+.Ic M
+is
+.Ic A
+and
+.Ic N
+is
+.Ic W;
+when set to
+.Ic 'W' ,
+.Ic M
+is
+.Ic W
+and
+.Ic N
+is
+.Ic A .
+.Pp
+Default:
+.Li Adwm* Ns Cm modkey Ns Li : Ar A
+.El
 .Ss MOUSE BINDINGS
 There are four commands that are used with preset mouse bindings
 (clicking on root window, titlebar or menu button).  The commands are
@@ -276,8 +308,6 @@ client.
 .Pp
 Default:
 .Li Adwm* Ns Cm killclient Ns Li : Ar "A+F4, A+q, AC+a:q:f, AC+a:q:k, AC+a:q:q, AS+c, W+q, W+x, WS+c, WS+x"
-.It Cm focusmain
-.It Cm focusurgent
 .It Cm zoom
 Zooms the selected client.  When in tile layout, and the selected client is a
 master, this makes the first unselected slave client in the stacking area the current
@@ -1015,11 +1045,18 @@ All windows on any monitor.
 All windows in any view.
 .El
 .Pp
-Examples:
-.Dl Adwm* Ns Cm focusnext Ns : Ar "A + j"
-.Dl Adwm* Ns Cm focusprev Ns : Ar "A + k"
-.Dl Adwm* Ns Cm cyclefocusnextevery Ns : Ar "WAC + j"
-.Dl Adwm* Ns Cm cyclefocusprevevery Ns : Ar "WAC + k"
+Defaults:
+.Dl Adwm* Ns Cm focusnext Ns Li : Ar "A + j, A + Escape, A + Tab, W + Tab, W + j"
+.Dl Adwm* Ns Cm focusprev Ns Li : Ar "A + k, AS + Escape, AS + Tab, W + k, WS + Tab"
+.Dl Adwm* Ns Cm focusurgent Ns Li : Ar "W + u"
+.Dl Adwm* Ns Cm groupnext Ns Li : Ar "A + grave, A + F6, W + grave"
+.Dl Adwm* Ns Cm groupprev Ns Li : Ar "AS + grave, AS + F6, WS + grave"
+.Dl Adwm* Ns Cm panelnext Ns Li : Ar "AC + Escape"
+.Dl Adwm* Ns Cm panelprev Ns Li : Ar "ACS + Escape"
+.Dl Adwm* Ns Cm docknext Ns Li : Ar "AC + Tab"
+.Dl Adwm* Ns Cm dockprev Ns Li : Ar "ACS + Tab"
+.Dl Adwm* Ns Cm swapnext Ns Li : Ar "WS + j"
+.Dl Adwm* Ns Cm swapprev Ns Li : Ar "WS + k"
 .Pp
 .It Cm setlayout<c>
 Set the monitor layout for the current monintor to the specified layout,
@@ -1062,6 +1099,49 @@ Defaults:
 .Dl Adwm* Ns Cm setlayoutu Ns : Ar "A + u"
 .Dl Adwm* Ns Cm setlayoutg Ns : Ar "A + g"
 .Pp
+.It Cm layout Ns Li { Ns Cm next Ns Li | Ns Cm prev Ns Li }
+Cycle the current monitor layout to the next or previous available
+layout.  This is for compatibility with
+.Xr awesome 1 ,
+.Xr dwm 1 ,
+.Xr spectrwm 1 ,
+.Xr velox 1 ,
+.Xr xdwm 1 .
+.Pp
+Defaults:
+.Dl Adwm* Cm layoutnext Ns Li : Ar "W + space"
+.Dl Adwm* Cm layoutprev Ns Li : Ar "WS + space"
+.Pp
+.Sy Note:
+These functions are not currently implemented.
+(See
+.Pa TODO Ns ).
+.It Cm arrange Ns Li [ Ns Cm icons Ns Li ]
+Rearranges windows in floating modes (or icons, when specified). This is
+for compatibility with
+.Xr icewm 1 .
+.Nm @PACKAGE@
+does not support icons on the desktop directly, so the
+.Cm arrangeicons
+function is not implemented.
+.Pp
+Defaults:
+.Dl Adwm* Ns Cm arrange Ns Li : Ar "AS + F5"
+.Dl Adwm* Ns Cm arrangeicons Ns Li : Ar "AS + F8"
+.Pp
+.Sy Note:
+These functions are not currently implemented.
+(See
+.Pa TODO Ns ).
+.It Cm togglefocus
+Toggles the focus between the currently focused window and the
+previous focused window.
+This is for compatibility with 
+.Xr velox 1 .
+.Sy Note:
+This function is not currently implemented.
+(See
+.Pa TODO Ns ).
 .It Cm spawn<n> Ar shell-command
 Spawns the n'th command argument.
 .Cm <n>

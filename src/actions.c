@@ -12,6 +12,7 @@
 #include "adwm.h"
 #include "layout.h"
 #include "tags.h"
+#include "parse.h" /* for showchain */
 #include "actions.h" /* verification */
 
 void
@@ -93,9 +94,9 @@ k_chain(XEvent *e, Key *key)
 {
 	Key *k = NULL;
 
-	if (XGrabKeyboard
-	    (dpy, scr->root, GrabModeSync, False, GrabModeAsync, e->xkey.time)) {
-		DPRINTF("Could not grab keyboard\n");
+	DPRINTF("Grabbing keyboard\n");
+	if (XGrabKeyboard(dpy, scr->root, GrabModeSync, False, GrabModeAsync, e->xkey.time)) {
+		_DPRINTF("Could not grab keyboard\n");
 		return;
 	}
 
@@ -113,27 +114,36 @@ k_chain(XEvent *e, Key *key)
 			Key *kp;
 
 		case KeyRelease:
+			DPRINTF("KeyRelease: 0x%02lx %s\n", mod, XKeysymToString(keysym));
 			/* a key release other than the active key is a release of a
 			   modifier indicating a stop */
 			if (k && k->keysym != keysym) {
+				DPRINTF("KeyRelease: stopping sequence\n");
 				if (k->stop)
 					k->stop(&ev, k);
 				return;
 			}
 			break;
 		case KeyPress:
+			DPRINTF("KeyPress: 0x%02lx %s\n", mod, XKeysymToString(keysym));
 			/* a press of a different key, even a modifier, or a press of the 
 			   same key with a different modifier mask indicates a stop of
 			   the current sequence and the potential start of a new one */
 			if (k && (k->keysym != keysym || k->mod != mod)) {
+				DPRINTF("KeyPress: stopping sequence\n");
 				if (k->stop)
 					k->stop(&ev, k);
 				return;
 			}
-			for (kp = key->cnext; !k && kp; kp = kp->cnext)
+			for (kp = key->chain; !k && kp; kp = kp->cnext) {
+				DPRINTF("KeyPress: checking 0x%02lx %s against 0x%02lx %s\n",
+						mod, XKeysymToString(keysym),
+						kp->mod, XKeysymToString(kp->keysym));
 				if (kp->keysym == keysym && kp->mod == mod)
 					k = kp;
+			}
 			if (k) {
+				DPRINTF("KeyPress: activating action for chain: %s\n", showchain(k));
 				if (k->func)
 					k->func(&ev, k);
 				if (k->chain || !k->stop)
@@ -142,8 +152,10 @@ k_chain(XEvent *e, Key *key)
 			}
 			/* Use the Escape key without modifiers to escape from a key
 			   chain. */
-			if (keysym == XK_Escape && !mod)
+			if (keysym == XK_Escape && !mod) {
+				DPRINTF("Escape KeyPress: stopping sequence\n");
 				return;
+			}
 			/* unrecognized key presses must be ignored because they may just 
 			   be a modifier being pressed */
 			break;

@@ -43,7 +43,7 @@ User feedback:
 * [x] add window list menu (use xde-winlist(1))
 * [x] add desktop cycle display (use xde-pager(1))
 * [x] add per-desktop (per-view) background (use xde-setbg(1))
-* [ ] add window cycle display (use xde-cycle(1))
+* [x] add window cycle display (use xde-cycle(1))
 
 Session control:
 
@@ -57,7 +57,7 @@ Behaviour:
 * [x] showing desktop mode in fluxbox(1) is per desktop, we should do
       the same and make showing desktop mode only apply to a view.
 
-* [ ] when resizing windows frame is resizing faster than the client
+* [x] when resizing windows frame is resizing faster than the client
       (due to synchronization).  Change resizing behaviour to not resize
       the frame until the client responds to the resize request.
       (Not sure I want to do this one: current behaviour is ok.)
@@ -70,7 +70,7 @@ Behaviour:
 * [x] implement kill behavior with _Button2_ and _Button3_ on close
       button.
 * [ ] fix broken rollup function.
-* [ ] fix broken key chains.
+* [x] fix broken key chains.
 * [ ] fix auto-hide struts behavior
 
 

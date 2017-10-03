@@ -70,6 +70,7 @@ Behaviour:
 * [x] implement kill behavior with _Button2_ and _Button3_ on close
       button.
 * [ ] fix broken rollup function.
+* [ ] fix broken key chains.
 * [ ] fix auto-hide struts behavior
 
 

@@ -132,10 +132,10 @@ Adwm*toggledectiled:	A + d
 ! moveby		- move increment in direction
 ! moveto		- move to position in 3x3 grid
 Adwm*movetoSW:		AC + KP_1, AC + c : z
-Adwm*movetoS:		AC + KP_2, AC + c : b, AC + c : x
+Adwm*movetoS:		AC + KP_2, AC + c : x, AC + c : b
 Adwm*movetoSE:		AC + KP_3, AC + c : c, AC + c : m
 Adwm*movetoW:		AC + KP_4, AC + c : a
-Adwm*movetoC:		AC + KP_5, AC + c : h, AC + c : s
+Adwm*movetoC:		AC + KP_5, AC + c : s, AC + c : h
 Adwm*movetoE:		AC + KP_6, AC + c : d, AC + c : l
 Adwm*movetoNW:		AC + KP_7, AC + c : q
 Adwm*movetoN:		AC + KP_8, AC + c : w, AC + c : y
@@ -153,7 +153,7 @@ Adwm*snaptoNE:		ACS + KP_9
 ! edgeto		- move to the corresponding edge
 Adwm*edgetoE:		AC + c : S + d, AC + c : S + l
 Adwm*edgetoN:		AC + c : S + w, AC + c : S + y
-Adwm*edgetoS:		AC + c : S + b, AC + c : S + x
+Adwm*edgetoS:		AC + c : S + x, AC + c : S + b
 Adwm*edgetoW:		AC + c : S + a
 ! fill			- grow in the corresponding direction
 Adwm*fillleft:		W + Left

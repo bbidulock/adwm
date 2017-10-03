@@ -3433,7 +3433,7 @@ mousemove(Client *c, XEvent *e, Bool toggle)
 	int dx, dy;
 	int x_root, y_root;
 	View *v, *nv;
-	ClientGeometry n = { 0, }, o = { 0, }, r = { 0, };
+	ClientGeometry n = { 0, }, o = { 0, };
 	Bool moved = False, isfloater;
 	int move = CurMove;
 	IsUnion was = {.is = 0 };
@@ -3470,7 +3470,6 @@ mousemove(Client *c, XEvent *e, Bool toggle)
 
 	n = c->c;
 	o = c->c;
-	r = c->r;
 
 	for (;;) {
 		Client *s;
@@ -3553,9 +3552,10 @@ mousemove(Client *c, XEvent *e, Bool toggle)
 							c->is.max = True;
 							c->is.lhalf = False;
 							c->is.rhalf = False;
-							c->c = o;
-							c->r = r;
 							ewmh_update_net_window_state(c);
+							DPRINTF("CALLING reconfigure()\n");
+							reconfigure(c, &o, False);
+							save(c);
 							updatefloat(c, v);
 							restack();
 						}
@@ -3564,9 +3564,10 @@ mousemove(Client *c, XEvent *e, Bool toggle)
 							c->is.max = False;
 							c->is.lhalf = True;
 							c->is.rhalf = False;
-							c->c = o;
-							c->r = r;
 							ewmh_update_net_window_state(c);
+							DPRINTF("CALLING reconfigure()\n");
+							reconfigure(c, &o, False);
+							save(c);
 							updatefloat(c, v);
 						}
 					} else if (ev.xmotion.x_root == sc.x + sc.w - 1 && c->user.move && c->user.size) {
@@ -3574,9 +3575,10 @@ mousemove(Client *c, XEvent *e, Bool toggle)
 							c->is.max = False;
 							c->is.lhalf = False;
 							c->is.rhalf = True;
-							c->c = o;
-							c->r = r;
 							ewmh_update_net_window_state(c);
+							DPRINTF("CALLING reconfigure()\n");
+							reconfigure(c, &o, False);
+							save(c);
 							updatefloat(c, v);
 						}
 					} else {

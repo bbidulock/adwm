@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 cd "$(dirname "$0")"
 
@@ -11,8 +11,10 @@ if [ -x "`which git 2>/dev/null`" -a -d .git ]; then
 	DATE=$(git show -s --format=%ci HEAD^{commit}|awk '{print$1}')
 	MDOCDATE=$(perl -MDate::Format -MDate::Parse -E 'print time2str("%B %e, %Y", str2time("'"$DATE"'"))'|sed 's,  , ,')
 	BRANCH=$(git tag --sort=-creatordate|head -1)
+	GNITS="gnits "
 	if [ "$VERSION" != "$BRANCH" ]; then
 		BRANCH="master"
+		GNITS=""
 	fi
 	sed -i.bak configure.ac -r \
 		-e "s:AC_INIT\([[]$PACKAGE[]],[[][^]]*[]]:AC_INIT([$PACKAGE],[$VERSION]:
@@ -20,7 +22,8 @@ if [ -x "`which git 2>/dev/null`" -a -d .git ]; then
 		    s:^DATE=.*$:DATE='$DATE':
 		    s:^MDOCDATE=.*$:MDOCDATE='$MDOCDATE':
 		    s:^BRANCH=.*$:BRANCH='$BRANCH':
-		    s:^AM_GNU_GETTEXT_VERSION.*:AM_GNU_GETTEXT_VERSION([$GTVERSION]):"
+		    s:^AM_GNU_GETTEXT_VERSION.*:AM_GNU_GETTEXT_VERSION([$GTVERSION]):
+		    s:^AM_INIT_AUTOMAKE\([[](gnits )?:AM_INIT_AUTOMAKE([$GNITS:"
 	subst="s:%%PACKAGE%%:$PACKAGE:g
 	       s:%%VERSION%%:$VERSION:g
 	       s:%%DATE%%:$DATE:g

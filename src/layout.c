@@ -3589,59 +3589,121 @@ mousemove(Client *c, XEvent *e, Bool toggle)
 							ewmh_update_net_window_state(c);
 						}
 						if (scr->options.snap) {
-							int nx2 = n.x + c->c.w + 2 * c->c.b;
-							int ny2 = n.y + c->c.h + 2 * c->c.b;
+							int nx2 = n.x + n.w + 2 * n.b;
+							int ny2 = n.y + n.h + 2 * n.b;
 
-							if (abs(n.x - wa.x) < scr->options.snap)
+							if (abs(n.x - wa.x) < scr->options.snap) {
+								DPRINTF("snapping left edge to workspace left edge\n");
 								n.x = wa.x;
-							else if (abs(nx2 - (wa.x + wa.w)) < scr->options.snap)
-								n.x = (wa.x + wa.w) - (c->c.w + 2 * c->c.b);
-							else if (abs(n.x - sc.x) < scr->options.snap)
+							} else if (abs(nx2 - (wa.x + wa.w)) < scr->options.snap) {
+								DPRINTF("snapping right edge to workspace right edge\n");
+								n.x = (wa.x + wa.w) - (n.w + 2 * n.b);
+							} else if (abs(n.x - sc.x) < scr->options.snap) {
+								DPRINTF("snapping left edge to screen left edge\n");
 								n.x = sc.x;
-							else if (abs(nx2 - (sc.x + sc.w)) < scr->options.snap)
-								n.x = (sc.x + sc.w) - (c->c.w + 2 * c->c.b);
-							else
-								for (s = event_scr->stack; s; s = s->snext) {
-									int sx = s->c.x;
-									int sy = s->c.y;
+							} else if (abs(nx2 - (sc.x + sc.w)) < scr->options.snap) {
+								DPRINTF("snapping right edge to screen right edge\n");
+								n.x = (sc.x + sc.w) - (n.w + 2 * n.b);
+							} else {
+								Bool done;
+
+								for (done = False, s = event_scr->stack; s && !done; s = s->snext) {
 									int sx2 = s->c.x + s->c.w + 2 * s->c.b;
 									int sy2 = s->c.y + s->c.h + 2 * s->c.b;
 
-									if (wind_overlap(n.y, ny2, sy, sy2)) {
-										if (abs(n.x - sx) < scr->options.snap)
-											n.x = sx;
-										else if (abs(nx2 - sx2) < scr->options.snap)
-											n.x = sx2 - (c->c.h + 2 * c->c.b);
-										else
+									if (s == c)
+										continue;
+									if (wind_overlap(n.y, ny2, s->c.y, sy2)) { 
+										if (abs(n.x - sx2) < scr->options.snap) {
+											CPRINTF(s, "snapping left edge to other window right edge");
+											n.x = sx2;
+											done = True;
+										} else if (abs(nx2 - s->c.x) < scr->options.snap) {
+											CPRINTF(s, "snapping right edge to other window left edge");
+											n.x = s->c.x - (n.w + 2 * n.b);
+											done = True;
+										} else
 											continue;
 										break;
 									}
 								}
-							if (abs(n.y - wa.y) < scr->options.snap)
+								for (done = False, s = event_scr->stack; s && !done; s = s->snext) {
+									int sx2 = s->c.x + s->c.w + 2 * s->c.b;
+									int sy2 = s->c.y + s->c.h + 2 * s->c.b;
+
+									if (s == c)
+										continue;
+									if (wind_overlap(n.y, ny2, s->c.y, sy2)) { 
+										if (abs(n.x - s->c.x) < scr->options.snap) {
+											CPRINTF(s, "snapping left edge to other window left edge");
+											n.x = s->c.x;
+											done = True;
+										} else if (abs(nx2 - sx2) < scr->options.snap) {
+											CPRINTF(s, "snapping right edge to other window right edge");
+											n.x = sx2 - (n.w + 2 * n.b);
+											done = True;
+										} else
+											continue;
+										break;
+									}
+								}
+							}
+							if (abs(n.y - wa.y) < scr->options.snap) {
+								DPRINTF("snapping top edge to workspace top edge\n");
 								n.y = wa.y;
-							else if (abs(ny2 - (wa.y + wa.h)) < scr->options.snap)
-								n.y = (wa.y + wa.h) - (c->c.h + 2 * c->c.b);
-							else if (abs(n.y - sc.y) < scr->options.snap)
+							} else if (abs(ny2 - (wa.y + wa.h)) < scr->options.snap) {
+								DPRINTF("snapping bottom edge to workspace bottom edge\n");
+								n.y = (wa.y + wa.h) - (n.h + 2 * n.b);
+							} else if (abs(n.y - sc.y) < scr->options.snap) {
+								DPRINTF("snapping top edge to screen top edge\n");
 								n.y = sc.y;
-							else if (abs(ny2 - (sc.y + sc.h)) < scr->options.snap)
-								n.y = (sc.y + sc.h) - (c->c.h + 2 * c->c.b);
-							else
-								for (s = event_scr->stack; s; s = s->snext) {
-									int sx = s->c.x;
-									int sy = s->c.y;
+							} else if (abs(ny2 - (sc.y + sc.h)) < scr->options.snap) {
+								DPRINTF("snapping bottom edge to screen bottom edge\n");
+								n.y = (sc.y + sc.h) - (n.h + 2 * n.b);
+							} else {
+								Bool done;
+
+								for (done = False, s = event_scr->stack; s && !done; s = s->snext) {
 									int sx2 = s->c.x + s->c.w + 2 * s->c.b;
 									int sy2 = s->c.y + s->c.h + 2 * s->c.b;
 
-									if (wind_overlap(n.x, nx2, sx, sx2)) {
-										if (abs(n.y - sy) < scr->options.snap)
-											n.y = sy;
-										else if (abs(ny2 - sy2) < scr->options.snap)
-											n.y = sy2 - (c->c.h + 2 * c->c.b);
-										else
+									if (s == c)
+										continue;
+									if (wind_overlap(n.x, nx2, s->c.x, sx2)) {
+										if (abs(n.y - sy2) < scr->options.snap) {
+											CPRINTF(s, "snapping top edge to other window bottom edge");
+											n.y = sy2;
+											done = True;
+										} else if (abs(ny2 - s->c.y) < scr->options.snap) {
+											CPRINTF(s, "snapping bottom edge to other window top edge");
+											n.y = s->c.y - (n.h + 2 * n.b);
+											done = True;
+										} else
 											continue;
 										break;
 									}
 								}
+								for (done = False, s = event_scr->stack; s && !done; s = s->snext) {
+									int sx2 = s->c.x + s->c.w + 2 * s->c.b;
+									int sy2 = s->c.y + s->c.h + 2 * s->c.b;
+
+									if (s == c)
+										continue;
+									if (wind_overlap(n.x, nx2, s->c.x, sx2)) {
+										if (abs(n.y - s->c.y) < scr->options.snap) {
+											CPRINTF(s, "snapping top edge to other window top edge");
+											n.y = s->c.y;
+											done = True;
+										} else if (abs(ny2 - sy2) < scr->options.snap) {
+											CPRINTF(s, "snapping bottom edge to other window bottom edge");
+											n.y = sy2 - (n.h + 2 * n.b);
+											done = True;
+										} else
+											continue;
+										break;
+									}
+								}
+							}
 						}
 					}
 				}

@@ -370,8 +370,8 @@ middle, to set the state; and, the right, to clear.
 .Pp
 The default key bindings are:
 .Pp
-.Bl -tag -width "XXXXXXXXXXXX" -offset indent -compact
-.It Ic A + [F1..Fn]
+.Bl -tag -width "XXXXXXXXXXXXXXXXX" -offset indent -compact
+.It Ic A + Li { Ns Ar 1-9,0,[,] Ns Li }
 Views all windows with n-th tag.
 .It Ic A + Return
 Zooms/cycles current window to/from master area (tiled layout only).
@@ -401,14 +401,14 @@ Enables tiled mode.
 Starts xterm.
 .It Ic A + w
 Enables bottom-tiled mode.
-.It Ic AC + [1..n]
+.It Ic AC + Li { Ns Ar 1-n Ns Li }
 Adds/removes all windows with n-th tag to/from the view.
 .It Ic AC + q
 Quits
 .Nm @PACKAGE_NAME@ .
-.It Ic ACS + [1..n]
+.It Ic ACS + Li { Ns Ar 1-9,0,[,] Ns Li }
 Adds/removes n-th tag to/from current window.
-.It Ic AS + [1..n]
+.It Ic AS + Li { Ns Ar 1-9,0,[,] Ns Li }
 Applies n-th tag to current window.
 .It Ic AS + c
 Closes focused window.
@@ -430,7 +430,7 @@ layoutnext
 .It Ic "WS + backslash"
 flipview
 .It Ic "WS + space"
-resetview
+resetview/layoutprev
 .It Ic "W + h"
 decmwfact
 .It Ic "W + l"
@@ -491,6 +491,9 @@ viewlast
 monitornext
 .It Ic "WS + Down"
 monitorprev
+.It Ic WS + Delete
+spawn
+.Dq xde-xlock
 .It Ic "W + s"
 spawn
 .Dq scrot -s
@@ -498,6 +501,7 @@ spawn
 spawn
 .Dq scrot
 .It Ic "WS + v"
+(version)
 spawn
 .Dq xde-identify|gxmessage -file -
 .It Ic "W + t"
@@ -506,6 +510,7 @@ togglefloating
 spawn
 .Dq xde-xlock -l
 .It Ic "WS + i"
+(initscr)
 spawn
 .Dq /bin/true
 .It Ic "W + w"
@@ -543,6 +548,66 @@ spawn
 .It Ic "W + f"
 spawn
 .Dq xde-searchwin
+.El
+.Pp
+Additional default key bindings consistent with
+.Xr fluxbox 1 ,
+.Xr blackbox 1 ,
+.Xr pekwm 1 ,
+are as follows:
+.Pp
+.Bl -tag -width "XXXXXXXXXXXXXXXXXXXX" -offset indent -compact
+.It Ic C + Li [ Ns Ar F1-F12 Ns Li ]
+view 0 to 11
+.It Ic C + Escape
+spawn
+.Dq xde-menu -P
+.It Ic CS + Left
+togglemax
+.It Ic CS + Right
+togglemaxh
+.It Ic CS + Up
+togglemaxv
+.It Ic WC + Left
+.It Ic WC + Right
+.It Ic WC + Up
+.It Ic WC + Down
+.El
+.Pp
+Additional default key bindings consistent with
+.Xr awesome 1 ,
+.Xr spectrwm 1 ,
+.Xr velox 1 ,
+are as follows:
+.Pp
+.Bl -tag -width "XXXXXXXXXXXXXXXXXXXX" -offset indent -compact
+.It Ic WS + c
+killclient
+.It Ic WS + h
+incnmaster
+.It Ic WS + j
+swapnext/taketonext
+.It Ic WS + k
+swapprev/taketoprev
+.It Ic WS + l
+decnmaster
+.It Ic WS + q
+quit
+.El
+.Pp
+Additional default key bindings consistent with
+.Xr gnome 1 ,
+.Xr icewm 1 ,
+.Xr metacity 1 ,
+are as follows:
+.Pp
+.Bl -tag -width "XXXXXXXXXXXXXXXXXXXX" -offset indent -compact
+.It Ic WS + Down
+taketoprev
+.It Ic WS + Page_Down
+taketodown
+.It Ic WS + Page_Up
+taketoup
 .El
 .\" .Ss CUSTOMIZATION
 .\" The configuration file is a set of X resources (with a class of Adwm),
@@ -1058,15 +1123,21 @@ so you can use your favourite panel or pager.
 .Xr @PACKAGE@-config 5 ,
 .Xr @PACKAGE@-keys 5 ,
 .Xr @PACKAGE@-style 5 ,
+.Xr awesome 1 ,
+.Xr dwm 1 ,
+.Xr echinus 1 ,
+.Xr metacity 1 ,
+.Xr spectrwm 1 ,
+.Xr wmii 1 ,
 .Xr xde-dmenu 1 ,
 .Xr xde-identify 1 ,
-.Xr xde-xlock 1 ,
-.Xr xde-namews 1 ,
-.Xr xde-searchws 1 ,
-.Xr xde-searchwin 1 ,
 .Xr xde-menu 1 ,
+.Xr xde-namews 1 ,
+.Xr xde-searchwin 1 ,
+.Xr xde-searchws 1 ,
+.Xr xde-winmenu 1 ,
 .Xr xde-wkspmenu 1 ,
-.Xr xde-winmenu 1 .
+.Xr xde-xlock 1 .
 .Re
 .Sh BUGS
 parsekey() doesn't handle non-alphanumeric keysyms.

@@ -3995,7 +3995,6 @@ mouseresize_from(Client *c, int from, XEvent *e, Bool toggle)
 	n = c->c;
 
 	for (;;) {
-		Workarea w;
 		int rx, ry, nx2, ny2;
 		unsigned int snap;
 		Client *s;
@@ -4132,48 +4131,53 @@ mouseresize_from(Client *c, int from, XEvent *e, Bool toggle)
 				ry = n.y + n.h / 2 + c->c.b;
 				break;
 			}
-			if ((snap =
-			     (ev.xmotion.state & ControlMask) ? 0 : scr->options.snap)) {
+			if ((snap = (ev.xmotion.state & ControlMask) ? 0 : scr->options.snap)) {
 				if ((nv = getview(rx, ry))) {
-					getworkarea(nv->curmon, &w);
-					if (abs(rx - w.x) < snap)
-						n.x += w.x - rx;
+					Workarea wa, sc;
+
+					getworkarea(nv->curmon, &wa);
+					sc = nv->curmon->sc;
+
+					if (abs(rx - wa.x) < snap)
+						n.x += wa.x - rx;
+					else if (abs(rx - sc.x) < snap)
+						n.x += sc.x - rx;
 					else
 						for (s = scr->stack; s; s = s->next) {
 							int sx = s->c.x;
 							int sy = s->c.y;
-							int sx2 =
-							    s->c.x + s->c.w + 2 * s->c.b;
-							int sy2 =
-							    s->c.y + s->c.h + 2 * s->c.b;
-							if (wind_overlap
-							    (n.y, ny2, sy, sy2)) {
+							int sx2 = s->c.x + s->c.w + 2 * s->c.b;
+							int sy2 = s->c.y + s->c.h + 2 * s->c.b;
+
+							if (s == c)
+								continue;
+							if (wind_overlap(n.y, ny2, sy, sy2)) {
 								if (abs(rx - sx) < snap)
 									n.x += sx - rx;
-								else if (abs(rx - sx2) <
-									 snap)
+								else if (abs(rx - sx2) < snap)
 									n.x += sx2 - rx;
 								else
 									continue;
 								break;
 							}
 						}
-					if (abs(ry - w.y) < snap)
-						n.y += w.y - ry;
+					if (abs(ry - wa.y) < snap)
+						n.y += wa.y - ry;
+					else if (abs(ry - sc.y) < snap)
+						n.y += sc.y - ry;
 					else
 						for (s = scr->stack; s; s = s->next) {
 							int sx = s->c.x;
 							int sy = s->c.y;
-							int sx2 =
-							    s->c.x + s->c.w + 2 * s->c.b;
-							int sy2 =
-							    s->c.y + s->c.h + 2 * s->c.b;
-							if (wind_overlap
-							    (n.x, nx2, sx, sx2)) {
+							int sx2 = s->c.x + s->c.w + 2 * s->c.b;
+							int sy2 = s->c.y + s->c.h + 2 * s->c.b;
+
+							if (s == c)
+								continue;
+							if (wind_overlap(n.x, nx2, sx, sx2)) {
 								if (abs(ry - sy) < snap)
 									n.y += sy - ry;
-								else if (abs(ry - sy2) <
-									 snap)
+								else if (abs(ry - sy2) < snap)
 									n.y += sy2 - ry;
 								else
 									continue;

@@ -528,17 +528,17 @@ typedef enum {
 } Justify;
 
 enum {
-	CurResizeTopLeft,
-	CurResizeTop,
-	CurResizeTopRight,
-	CurResizeRight,
-	CurResizeBottomRight,
-	CurResizeBottom,
-	CurResizeBottomLeft,
-	CurResizeLeft,
-	CurMove,
-	CurNormal,
-	CurLast
+	CursorTopLeft,
+	CursorTop,
+	CursorTopRight,
+	CursorRight,
+	CursorBottomRight,
+	CursorBottom,
+	CursorBottomLeft,
+	CursorLeft,
+	CursorEvery,
+	CursorNormal,
+	CursorLast
 };					/* cursor */
 
 enum {
@@ -1212,7 +1212,7 @@ Bool with_transients(Client *c, Bool (*each) (Client *, int), int data);
 Bool canfocus(Client *c);
 Group *getleader(Window leader, int group);
 void updategeom(Monitor *m);
-extern Cursor cursor[CurLast];
+extern Cursor cursor[CursorLast];
 extern int ebase[BaseLast];
 Bool handle_event(XEvent *ev);
 View *closestview(int x, int y);

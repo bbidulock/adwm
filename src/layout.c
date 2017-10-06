@@ -3302,31 +3302,31 @@ findcorner_size(Client *c, int x_root, int y_root)
 		if (x_root < cx) {
 			/* top-left */
 			if (!c->user.sizev)
-				from = CurResizeLeft;
+				from = CursorLeft;
 			else if (!c->user.sizeh)
-				from = CurResizeTop;
+				from = CursorTop;
 			else {
 				if (dx < dy * 0.4) {
-					from = CurResizeTop;
+					from = CursorTop;
 				} else if (dy < dx * 0.4) {
-					from = CurResizeLeft;
+					from = CursorLeft;
 				} else {
-					from = CurResizeTopLeft;
+					from = CursorTopLeft;
 				}
 			}
 		} else {
 			/* top-right */
 			if (!c->user.sizev)
-				from = CurResizeRight;
+				from = CursorRight;
 			else if (!c->user.sizeh)
-				from = CurResizeTop;
+				from = CursorTop;
 			else {
 				if (dx < dy * 0.4) {
-					from = CurResizeTop;
+					from = CursorTop;
 				} else if (dy < dx * 0.4) {
-					from = CurResizeRight;
+					from = CursorRight;
 				} else {
-					from = CurResizeTopRight;
+					from = CursorTopRight;
 				}
 			}
 		}
@@ -3335,31 +3335,31 @@ findcorner_size(Client *c, int x_root, int y_root)
 		if (x_root < cx) {
 			/* bottom-left */
 			if (!c->user.sizev)
-				from = CurResizeLeft;
+				from = CursorLeft;
 			else if (!c->user.sizeh)
-				from = CurResizeBottom;
+				from = CursorBottom;
 			else {
 				if (dx < dy * 0.4) {
-					from = CurResizeBottom;
+					from = CursorBottom;
 				} else if (dy < dx * 0.4) {
-					from = CurResizeLeft;
+					from = CursorLeft;
 				} else {
-					from = CurResizeBottomLeft;
+					from = CursorBottomLeft;
 				}
 			}
 		} else {
 			/* bottom-right */
 			if (!c->user.sizev)
-				from = CurResizeRight;
+				from = CursorRight;
 			else if (!c->user.sizeh)
-				from = CurResizeBottom;
+				from = CursorBottom;
 			else {
 				if (dx < dy * 0.4) {
-					from = CurResizeBottom;
+					from = CursorBottom;
 				} else if (dy < dx * 0.4) {
-					from = CurResizeRight;
+					from = CursorRight;
 				} else {
-					from = CurResizeBottomRight;
+					from = CursorBottomRight;
 				}
 			}
 		}
@@ -3412,7 +3412,7 @@ findcorner_move(Client *c, int x_root, int y_root)
 	dy = (float) c->c.w * 0.10;
 	dy = (dy < 5) ? 5 : ((dy > 20) ? 20 : dy);
 
-	from = CurMove;
+	from = CursorEvery;
 
 	if (y_root < cy) {
 		/* somewhere toward the top */
@@ -3421,20 +3421,20 @@ findcorner_move(Client *c, int x_root, int y_root)
 			/* somewhere toward the left */
 			bx = c->c.x + c->c.b + (int) dy;
 			if ((x_root < bx) && (y_root < by && y_root > bt))
-				from = CurResizeTopLeft;
+				from = CursorTopLeft;
 			else if (y_root < by && y_root > bt)
-				from = CurResizeTop;
+				from = CursorTop;
 			else if (x_root < bx)
-				from = CurResizeLeft;
+				from = CursorLeft;
 		} else {
 			/* somewhere toward the right */
 			bx = c->c.x + c->c.b + c->c.w - (int) dy;
 			if ((x_root > bx) && (y_root < by && y_root > bt))
-				from = CurResizeTopRight;
+				from = CursorTopRight;
 			else if (y_root < by && y_root > bt)
-				from = CurResizeTop;
+				from = CursorTop;
 			else if (x_root > bx)
-				from = CurResizeRight;
+				from = CursorRight;
 		}
 	} else {
 		/* somewhere toward the bottom */
@@ -3443,20 +3443,20 @@ findcorner_move(Client *c, int x_root, int y_root)
 			/* somewhere toward the left */
 			bx = c->c.x + c->c.b + (int) dy;
 			if ((x_root < bx) && (y_root > by && y_root < bg))
-				from = CurResizeBottomLeft;
+				from = CursorBottomLeft;
 			else if (y_root > by && y_root < bg)
-				from = CurResizeBottom;
+				from = CursorBottom;
 			else if (x_root < bx)
-				from = CurResizeLeft;
+				from = CursorLeft;
 		} else {
 			/* somewhere toward the right */
 			bx = c->c.x + c->c.b + c->c.w - (int) dy;
 			if ((x_root > bx) && (y_root > by && y_root < bg))
-				from = CurResizeBottomRight;
+				from = CursorBottomRight;
 			if (y_root > by && y_root < bg)
-				from = CurResizeBottom;
+				from = CursorBottom;
 			if (x_root > bx)
-				from = CurResizeRight;
+				from = CursorRight;
 		}
 	}
 	return (from);
@@ -3612,7 +3612,7 @@ mousemove_from(Client *c, int from, XEvent *e, Bool toggle)
 	View *v, *nv;
 	ClientGeometry n = { 0, }, o = { 0, };
 	Bool moved = False, isfloater;
-	int move = CurMove;
+	int move = CursorEvery;
 	IsUnion was = {.is = 0 };
 
 	x_root = e->xbutton.x_root;
@@ -3952,13 +3952,13 @@ resize_begin(Client *c, View *v, Bool toggle, int from, IsUnion * was)
 		return False;
 
 	switch (from) {
-	case CurResizeTop:
-	case CurResizeBottom:
+	case CursorTop:
+	case CursorBottom:
 		if (!c->user.sizev)
 			return False;
 		break;
-	case CurResizeLeft:
-	case CurResizeRight:
+	case CursorLeft:
+	case CursorRight:
 		if (!c->user.sizeh)
 			return False;
 		break;
@@ -4149,7 +4149,7 @@ mouseresize_from(Client *c, int from, XEvent *e, Bool toggle)
 				n = c->c;
 			}
 			switch (from) {
-			case CurResizeTopLeft:
+			case CursorTopLeft:
 				n.w = o.w + dx;
 				n.h = o.h + dy;
 				constrain(c, &n);
@@ -4160,7 +4160,7 @@ mouseresize_from(Client *c, int from, XEvent *e, Bool toggle)
 				rx = n.x;
 				ry = n.y;
 				break;
-			case CurResizeTop:
+			case CursorTop:
 				n.w = o.w;
 				n.h = o.h + dy;
 				constrain(c, &n);
@@ -4171,7 +4171,7 @@ mouseresize_from(Client *c, int from, XEvent *e, Bool toggle)
 				rx = n.x + n.w / 2 + c->c.b;
 				ry = n.y;
 				break;
-			case CurResizeTopRight:
+			case CursorTopRight:
 				n.w = o.w - dx;
 				n.h = o.h + dy;
 				constrain(c, &n);
@@ -4182,7 +4182,7 @@ mouseresize_from(Client *c, int from, XEvent *e, Bool toggle)
 				rx = n.x + n.w + 2 * c->c.b;
 				ry = n.y;
 				break;
-			case CurResizeRight:
+			case CursorRight:
 				n.w = o.w - dx;
 				n.h = o.h;
 				constrain(c, &n);
@@ -4194,7 +4194,7 @@ mouseresize_from(Client *c, int from, XEvent *e, Bool toggle)
 				ry = n.y + n.h / 2 + c->c.b;
 				break;
 			default:
-			case CurResizeBottomRight:
+			case CursorBottomRight:
 				n.w = o.w - dx;
 				n.h = o.h - dy;
 				constrain(c, &n);
@@ -4205,7 +4205,7 @@ mouseresize_from(Client *c, int from, XEvent *e, Bool toggle)
 				rx = n.x + n.w + 2 * c->c.b;
 				ry = n.y + n.h + 2 * c->c.b;
 				break;
-			case CurResizeBottom:
+			case CursorBottom:
 				n.w = o.w;
 				n.h = o.h - dy;
 				constrain(c, &n);
@@ -4216,7 +4216,7 @@ mouseresize_from(Client *c, int from, XEvent *e, Bool toggle)
 				rx = n.x + n.w + 2 * c->c.b;
 				ry = n.y + n.h + 2 * c->c.b;
 				break;
-			case CurResizeBottomLeft:
+			case CursorBottomLeft:
 				n.w = o.w + dx;
 				n.h = o.h - dy;
 				constrain(c, &n);
@@ -4227,7 +4227,7 @@ mouseresize_from(Client *c, int from, XEvent *e, Bool toggle)
 				rx = n.x;
 				ry = n.y + n.h + 2 * c->c.b;
 				break;
-			case CurResizeLeft:
+			case CursorLeft:
 				n.w = o.w + dx;
 				n.h = o.h;
 				constrain(c, &n);

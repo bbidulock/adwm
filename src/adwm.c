@@ -115,7 +115,7 @@ Client *took;				/* took focus last */
 Group window_stack = { NULL, 0, 0 };
 
 XContext context[PartLast];
-Cursor cursor[CurLast];
+Cursor cursor[CursorLast];
 int ebase[BaseLast];
 Bool haveext[BaseLast];
 Rule **rules;
@@ -883,16 +883,16 @@ cleanup(WithdrawCause cause)
 		XUngrabKey(dpy, AnyKey, AnyModifier, scr->root);
 	}
 
-	XFreeCursor(dpy, cursor[CurResizeTopLeft]);
-	XFreeCursor(dpy, cursor[CurResizeTop]);
-	XFreeCursor(dpy, cursor[CurResizeTopRight]);
-	XFreeCursor(dpy, cursor[CurResizeRight]);
-	XFreeCursor(dpy, cursor[CurResizeBottomRight]);
-	XFreeCursor(dpy, cursor[CurResizeBottom]);
-	XFreeCursor(dpy, cursor[CurResizeBottomLeft]);
-	XFreeCursor(dpy, cursor[CurResizeLeft]);
-	XFreeCursor(dpy, cursor[CurMove]);
-	XFreeCursor(dpy, cursor[CurNormal]);
+	XFreeCursor(dpy, cursor[CursorTopLeft]);
+	XFreeCursor(dpy, cursor[CursorTop]);
+	XFreeCursor(dpy, cursor[CursorTopRight]);
+	XFreeCursor(dpy, cursor[CursorRight]);
+	XFreeCursor(dpy, cursor[CursorBottomRight]);
+	XFreeCursor(dpy, cursor[CursorBottom]);
+	XFreeCursor(dpy, cursor[CursorBottomLeft]);
+	XFreeCursor(dpy, cursor[CursorLeft]);
+	XFreeCursor(dpy, cursor[CursorEvery]);
+	XFreeCursor(dpy, cursor[CursorNormal]);
 
 	XSetInputFocus(dpy, PointerRoot, RevertToPointerRoot, CurrentTime);
 	XSync(dpy, False);
@@ -4665,16 +4665,16 @@ setup(char *conf, AdwmOperations *ops)
 	char *owd;
 
 	/* init cursors */
-	cursor[CurResizeTopLeft] = XCreateFontCursor(dpy, XC_top_left_corner);
-	cursor[CurResizeTop] = XCreateFontCursor(dpy, XC_top_side);
-	cursor[CurResizeTopRight] = XCreateFontCursor(dpy, XC_top_right_corner);
-	cursor[CurResizeRight] = XCreateFontCursor(dpy, XC_right_side);
-	cursor[CurResizeBottomRight] = XCreateFontCursor(dpy, XC_bottom_right_corner);
-	cursor[CurResizeBottom] = XCreateFontCursor(dpy, XC_bottom_side);
-	cursor[CurResizeBottomLeft] = XCreateFontCursor(dpy, XC_bottom_left_corner);
-	cursor[CurResizeLeft] = XCreateFontCursor(dpy, XC_left_side);
-	cursor[CurMove] = XCreateFontCursor(dpy, XC_fleur);
-	cursor[CurNormal] = XCreateFontCursor(dpy, XC_left_ptr);
+	cursor[CursorTopLeft] = XCreateFontCursor(dpy, XC_top_left_corner);
+	cursor[CursorTop] = XCreateFontCursor(dpy, XC_top_side);
+	cursor[CursorTopRight] = XCreateFontCursor(dpy, XC_top_right_corner);
+	cursor[CursorRight] = XCreateFontCursor(dpy, XC_right_side);
+	cursor[CursorBottomRight] = XCreateFontCursor(dpy, XC_bottom_right_corner);
+	cursor[CursorBottom] = XCreateFontCursor(dpy, XC_bottom_side);
+	cursor[CursorBottomLeft] = XCreateFontCursor(dpy, XC_bottom_left_corner);
+	cursor[CursorLeft] = XCreateFontCursor(dpy, XC_left_side);
+	cursor[CursorEvery] = XCreateFontCursor(dpy, XC_fleur);
+	cursor[CursorNormal] = XCreateFontCursor(dpy, XC_left_ptr);
 
 	/* init modifier map */
 	modmap = XGetModifierMapping(dpy);
@@ -4688,7 +4688,7 @@ setup(char *conf, AdwmOperations *ops)
 
 	/* select for events */
 	wa.event_mask = ROOTMASK;
-	wa.cursor = cursor[CurNormal];
+	wa.cursor = cursor[CursorNormal];
 	for (scr = screens; scr < screens + nscr; scr++) {
 		XChangeWindowAttributes(dpy, scr->root, CWEventMask | CWCursor, &wa);
 		XSelectInput(dpy, scr->root, wa.event_mask);

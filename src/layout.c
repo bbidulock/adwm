@@ -4252,7 +4252,7 @@ mouseresize_from(Client *c, int from, XEvent *e, Bool toggle)
 				/* allowed to resize vertical and horizontal */
 				n.w = o.w + dx;
 				n.h = o.h + dy;
-				constrain(c, &n);
+				/* edges that move: left, top */
 				n.x = o.x + o.w - n.w;
 				n.y = o.y + o.h - n.h;
 				/* snap top and left */
@@ -4265,7 +4265,7 @@ mouseresize_from(Client *c, int from, XEvent *e, Bool toggle)
 				/* only allowed to resize vertical */
 				n.w = o.w;
 				n.h = o.h + dy;
-				constrain(c, &n);
+				/* edges that move: !left, top */
 				n.x = o.x;
 				n.y = o.y + o.h - n.h;
 				/* snap top */
@@ -4278,7 +4278,7 @@ mouseresize_from(Client *c, int from, XEvent *e, Bool toggle)
 				/* allowed to resize vertical and horizontal */
 				n.w = o.w - dx;
 				n.h = o.h + dy;
-				constrain(c, &n);
+				/* edges that move: !left, top */
 				n.x = o.x;
 				n.y = o.y + o.h - n.h;
 				/* snap top and right */
@@ -4291,7 +4291,7 @@ mouseresize_from(Client *c, int from, XEvent *e, Bool toggle)
 				/* only allowed to resize horizontal */
 				n.w = o.w - dx;
 				n.h = o.h;
-				constrain(c, &n);
+				/* edges that move: !left, !top */
 				n.x = o.x;
 				n.y = o.y;
 				/* snap right */
@@ -4305,7 +4305,7 @@ mouseresize_from(Client *c, int from, XEvent *e, Bool toggle)
 				/* allowed to resize vertical and horizontal */
 				n.w = o.w - dx;
 				n.h = o.h - dy;
-				constrain(c, &n);
+				/* edges that move: !left, !top */
 				n.x = o.x;
 				n.y = o.y;
 				/* snap bottom and right */
@@ -4318,7 +4318,7 @@ mouseresize_from(Client *c, int from, XEvent *e, Bool toggle)
 				/* only allowed to resize vertical */
 				n.w = o.w;
 				n.h = o.h - dy;
-				constrain(c, &n);
+				/* edges that move: !left, !top */
 				n.x = o.x;
 				n.y = o.y;
 				/* snap bottom */
@@ -4331,7 +4331,7 @@ mouseresize_from(Client *c, int from, XEvent *e, Bool toggle)
 				/* allowed to resize vertical and horizontal */
 				n.w = o.w + dx;
 				n.h = o.h - dy;
-				constrain(c, &n);
+				/* edges that move: left, !top */
 				n.x = o.x + o.w - n.w;
 				n.y = o.y;
 				/* snap bottom and left */
@@ -4344,7 +4344,7 @@ mouseresize_from(Client *c, int from, XEvent *e, Bool toggle)
 				/* only allowed to resize horizontal */
 				n.w = o.w + dx;
 				n.h = o.h;
-				constrain(c, &n);
+				/* edges that move: left, !top */
 				n.x = o.x + o.w - n.w;
 				n.y = o.y;
 				/* snap left */
@@ -4367,16 +4367,16 @@ mouseresize_from(Client *c, int from, XEvent *e, Bool toggle)
 
 						if (sl && (abs(n.x - wa.x) < snap)) {
 							DPRINTF("snapping left edge to workspace left edge\n");
-							n.x = wa.x;
+							n.w += wa.x - n.x;
 						} else if (sr && (abs(nx2 - (wa.x + wa.w)) < snap)) {
 							DPRINTF("snapping right edge to workspace right edge\n");
-							n.x = (wa.x + wa.w) - (n.w + 2 * n.b);
+							n.w += (wa.x + wa.w) - nx2;
 						} else if (sl && (abs(n.x - sc.x) < snap)) {
 							DPRINTF("snapping left edge to screen left edge\n");
-							n.x = sc.x;
+							n.w += sc.x - n.x;
 						} else if (sr && (abs(nx2 - (sc.x + sc.w)) < snap)) {
 							DPRINTF("snapping right edge to screen right edge\n");
-							n.x = (sc.x + sc.w) - (n.w + 2 * n.b);
+							n.w += (sc.x + sc.w) - nx2;
 						} else {
 							Bool done = False;
 
@@ -4389,11 +4389,11 @@ mouseresize_from(Client *c, int from, XEvent *e, Bool toggle)
 								if (wind_overlap(n.y, ny2, s->c.y, sy2)) {
 									if (sl && (abs(n.x - sx2) < snap)) {
 										CPRINTF(s, "snapping left edge to other window right edge");
-										n.x = sx2;
+										n.w += sx2 - n.x;
 										done = True;
 									} else if (sr && (abs(nx2 - s->c.x) < snap)) {
 										CPRINTF(s, "snapping right edge to other window left edge");
-										n.x = s->c.x - (n.w + 2 * n.b);
+										n.w += s->c.x - nx2;
 										done = True;
 									} else
 										continue;
@@ -4409,11 +4409,11 @@ mouseresize_from(Client *c, int from, XEvent *e, Bool toggle)
 								if (wind_overlap(n.y, ny2, s->c.y, sy2)) {
 									if (sl && (abs(n.x - s->c.x) < snap)) {
 										CPRINTF(s, "snapping left edge to other window left edge");
-										n.x = s->c.x;
+										n.w += s->c.x - n.x;
 										done = True;
 									} else if (sr && (abs(nx2 - sx2) < snap)) {
 										CPRINTF(s, "snapping right edge to other window right edge");
-										n.x = sx2 - (n.w + 2 * n.b);
+										n.w += sx2 - nx2;
 										done = True;
 									} else
 										continue;
@@ -4423,16 +4423,16 @@ mouseresize_from(Client *c, int from, XEvent *e, Bool toggle)
 						}
 						if (st && (abs(n.y - wa.y) < snap)) {
 							DPRINTF("snapping top edge to workspace top edge\n");
-							n.y = wa.y;
+							n.h += wa.y - n.y;
 						} else if (sb && (abs(ny2 - (wa.y + wa.h)) < snap)) {
 							DPRINTF("snapping bottom edge to workspace bottom edge\n");
-							n.y = (wa.y + wa.h) - (n.h + 2 * n.b);
+							n.h += (wa.y + wa.h) - ny2;
 						} else if (st && (abs(n.y - sc.y) < snap)) {
 							DPRINTF("snapping top edge to screen top edge\n");
-							n.y = sc.y;
+							n.h += sc.y - n.y;
 						} else if (sb && (abs(ny2 - (sc.y + sc.h)) < snap)) {
 							DPRINTF("snapping bottom edge to screen bottom edge\n");
-							n.y = (sc.y + sc.h) - (n.h + 2 * n.b);
+							n.h += (sc.y + sc.h) - ny2;
 						} else {
 							Bool done;
 
@@ -4445,11 +4445,11 @@ mouseresize_from(Client *c, int from, XEvent *e, Bool toggle)
 								if (wind_overlap(n.x, nx2, s->c.x, sx2)) {
 									if (st && (abs(n.y - sy2) < snap)) {
 										CPRINTF(s, "snapping top edge to other window bottom edge");
-										n.y = sy2;
+										n.h += sy2 - n.y;
 										done = True;
 									} else if (sb && (abs(ny2 - s->c.y) < snap)) {
 										CPRINTF(s, "snapping bottom edge to other window top edge");
-										n.y = s->c.y - (n.h + 2 * n.b);
+										n.h += s->c.y - ny2;
 										done = True;
 									} else
 										continue;
@@ -4465,11 +4465,11 @@ mouseresize_from(Client *c, int from, XEvent *e, Bool toggle)
 								if (wind_overlap(n.x, nx2, s->c.x, sx2)) {
 									if (st && (abs(n.y - s->c.y) < snap)) {
 										CPRINTF(s, "snapping top edge to other window top edge");
-										n.y = s->c.y;
+										n.h += s->c.y - n.y;
 										done = True;
 									} else if (sb && (abs(ny2 - sy2) < snap)) {
 										CPRINTF(s, "snapping bottom edge to other window bottom edge");
-										n.y = sy2 - (n.h + 2 * n.b);
+										n.h += sy2 - ny2;
 										done = True;
 									} else
 										continue;
@@ -4479,6 +4479,51 @@ mouseresize_from(Client *c, int from, XEvent *e, Bool toggle)
 						}
 					}
 				}
+			}
+			/* apply constraints */
+			constrain(c, &n);
+			switch (from) {
+			case CursorTopLeft:
+				/* edges that move: left, top */
+				n.x = o.x + o.w - n.w;
+				n.y = o.y + o.h - n.h;
+				break;
+			case CursorTop:
+				/* edges that move: !left, top */
+				n.x = o.x;
+				n.y = o.y + o.h - n.h;
+				break;
+			case CursorTopRight:
+				/* edges that move: !left, top */
+				n.x = o.x;
+				n.y = o.y + o.h - n.h;
+				break;
+			case CursorRight:
+				/* edges that move: !left, !top */
+				n.x = o.x;
+				n.y = o.y;
+				break;
+			default:
+			case CursorBottomRight:
+				/* edges that move: !left, !top */
+				n.x = o.x;
+				n.y = o.y;
+				break;
+			case CursorBottom:
+				/* edges that move: !left, !top */
+				n.x = o.x;
+				n.y = o.y;
+				break;
+			case CursorBottomLeft:
+				/* edges that move: left, !top */
+				n.x = o.x + o.w - n.w;
+				n.y = o.y;
+				break;
+			case CursorLeft:
+				/* edges that move: left, !top */
+				n.x = o.x + o.w - n.w;
+				n.y = o.y;
+				break;
 			}
 			if (n.w < MINWIDTH)
 				n.w = MINWIDTH;

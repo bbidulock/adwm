@@ -3285,6 +3285,88 @@ onstacked(Client *c, View *v, int cx, int cy)
 	return (c->is.dockapp ? ondockapp(c, v, cx, cy) : ontiled(c, v, cx, cy));
 }
 
+static int
+findcorner(Client *c, int x_root, int y_root)
+{
+	int cx, cy, from;
+	float dx, dy;
+
+	/* TODO: if we are on the resize handles we need to consider grip width */
+	cx = c->c.x + c->c.w / 2;
+	cy = c->c.y + c->c.h / 2;
+	dx = (float) abs(cx - x_root) / (float) c->c.w;
+	dy = (float) abs(cy - y_root) / (float) c->c.h;
+
+	if (y_root < cy) {
+		/* top */
+		if (x_root < cx) {
+			/* top-left */
+			if (!c->user.sizev)
+				from = CurResizeLeft;
+			else if (!c->user.sizeh)
+				from = CurResizeTop;
+			else {
+				if (dx < dy * 0.4) {
+					from = CurResizeTop;
+				} else if (dy < dx * 0.4) {
+					from = CurResizeLeft;
+				} else {
+					from = CurResizeTopLeft;
+				}
+			}
+		} else {
+			/* top-right */
+			if (!c->user.sizev)
+				from = CurResizeRight;
+			else if (!c->user.sizeh)
+				from = CurResizeTop;
+			else {
+				if (dx < dy * 0.4) {
+					from = CurResizeTop;
+				} else if (dy < dx * 0.4) {
+					from = CurResizeRight;
+				} else {
+					from = CurResizeTopRight;
+				}
+			}
+		}
+	} else {
+		/* bottom */
+		if (x_root < cx) {
+			/* bottom-left */
+			if (!c->user.sizev)
+				from = CurResizeLeft;
+			else if (!c->user.sizeh)
+				from = CurResizeBottom;
+			else {
+				if (dx < dy * 0.4) {
+					from = CurResizeBottom;
+				} else if (dy < dx * 0.4) {
+					from = CurResizeLeft;
+				} else {
+					from = CurResizeBottomLeft;
+				}
+			}
+		} else {
+			/* bottom-right */
+			if (!c->user.sizev)
+				from = CurResizeRight;
+			else if (!c->user.sizeh)
+				from = CurResizeBottom;
+			else {
+				if (dx < dy * 0.4) {
+					from = CurResizeBottom;
+				} else if (dy < dx * 0.4) {
+					from = CurResizeRight;
+				} else {
+					from = CurResizeBottomRight;
+				}
+			}
+		}
+	}
+	return from;
+}
+
 static Bool
 ismoveevent(Display *display, XEvent *event, XPointer arg)
 {
@@ -3428,7 +3510,7 @@ move_finish(Client *c, View *v, IsUnion * was)
 /* TODO: handle movement across EWMH desktops */
 
 Bool
-mousemove(Client *c, XEvent *e, Bool toggle)
+mousemove_from(Client *c, int from, XEvent *e, Bool toggle)
 {
 	int dx, dy;
 	int x_root, y_root;
@@ -3734,86 +3816,17 @@ mousemove(Client *c, XEvent *e, Bool toggle)
 	return moved;
 }
 
-static int
-findcorner(Client *c, int x_root, int y_root)
+Bool
+mousemove(Client *c, XEvent *e, Bool toggle)
 {
-	int cx, cy, from;
-	float dx, dy;
+	int from;
 
-	/* TODO: if we are on the resize handles we need to consider grip width */
-	cx = c->c.x + c->c.w / 2;
-	cy = c->c.y + c->c.h / 2;
-	dx = (float) abs(cx - x_root) / (float) c->c.w;
-	dy = (float) abs(cy - y_root) / (float) c->c.h;
-
-	if (y_root < cy) {
-		/* top */
-		if (x_root < cx) {
-			/* top-left */
-			if (!c->user.sizev)
-				from = CurResizeLeft;
-			else if (!c->user.sizeh)
-				from = CurResizeTop;
-			else {
-				if (dx < dy * 0.4) {
-					from = CurResizeTop;
-				} else if (dy < dx * 0.4) {
-					from = CurResizeLeft;
-				} else {
-					from = CurResizeTopLeft;
-				}
-			}
-		} else {
-			/* top-right */
-			if (!c->user.sizev)
-				from = CurResizeRight;
-			else if (!c->user.sizeh)
-				from = CurResizeTop;
-			else {
-				if (dx < dy * 0.4) {
-					from = CurResizeTop;
-				} else if (dy < dx * 0.4) {
-					from = CurResizeRight;
-				} else {
-					from = CurResizeTopRight;
-				}
-			}
-		}
-	} else {
-		/* bottom */
-		if (x_root < cx) {
-			/* bottom-left */
-			if (!c->user.sizev)
-				from = CurResizeLeft;
-			else if (!c->user.sizeh)
-				from = CurResizeBottom;
-			else {
-				if (dx < dy * 0.4) {
-					from = CurResizeBottom;
-				} else if (dy < dx * 0.4) {
-					from = CurResizeLeft;
-				} else {
-					from = CurResizeBottomLeft;
-				}
-			}
-		} else {
-			/* bottom-right */
-			if (!c->user.sizev)
-				from = CurResizeRight;
-			else if (!c->user.sizeh)
-				from = CurResizeBottom;
-			else {
-				if (dx < dy * 0.4) {
-					from = CurResizeBottom;
-				} else if (dy < dx * 0.4) {
-					from = CurResizeRight;
-				} else {
-					from = CurResizeBottomRight;
-				}
-			}
-		}
+	if (!c->user.move) {
+		XUngrabPointer(dpy, user_time);
+		return False;
 	}
-	return from;
+	from = findcorner(c, e->xbutton.x_root, e->xbutton.y_root);
+	return mousemove_from(c, from, e, toggle);
 }
 
 static Bool

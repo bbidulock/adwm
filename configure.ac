@@ -235,6 +235,8 @@ AC_DEFINE([DEFNCOLUMNS],[3],[Number of columns in grid layout.])
 AC_DEFINE([SNAP],[5],[Snap pixel distance.])
 AC_DEFINE([DECORATETILED],[0],[Set to 1 to draw titles (by default) in tiled layouts.])
 AC_DEFINE([DECORATEMAX],[1],[Set to 1 to draw titles (by default) on maximized windows.])
+AC_DEFINE([VGRIPMAX],[40],[Virtual grip maximum size in pixels.])
+AC_DEFINE([VGRIPMIN],[20],[Virtual grip minimum size in pixels.])
 
 AC_DEFINE_UNQUOTED([MAXTAGS],[(sizeof(unsigned long long) * 8)],[Maximum number of tags.])
 AC_DEFINE_UNQUOTED([SYSCONFPATH],["$pkgconfdir"],[System configuration path.])

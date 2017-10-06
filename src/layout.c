@@ -3374,24 +3374,24 @@ findcorner_size(Client *c, int x_root, int y_root)
   * 
   * 1. Left edge grabbed will move horizontally only and only snap to the left
   *    edge of the window.  The left edge includes the left window border and
-  *    extends 10% of the width of the window to a maximum of 20 pixels and a
-  *    minimum of 5 pixels.
+  *    extends 10% of the width of the window to a maximum of 40 pixels and a
+  *    minimum of 20 pixels.
   *
   * 2. Right edge grabbed will move horizontally only and only snap to the right
   *    edge of the window.  The right edge includes the right window border and
-  *    extends 10% of the width of the window to a maximum of 20 pixels and a
-  *    minimum of 5 pixels.
+  *    extends 10% of the width of the window to a maximum of 40 pixels and a
+  *    minimum of 20 pixels.
   *
   * 3. Top edge grabbed will move vertically only and only snap to the top edge
   *    of the window.  The top edge includes the margin (when decorated) or top
   *    border (when not decorated) but never includes the title bar.  The top
-  *    edge extends 10% of the height of the window to a maximum of 20 pixels
-  *    and a minimum of 5 pixels.
+  *    edge extends 10% of the height of the window to a maximum of 40 pixels
+  *    and a minimum of 20 pixels.
   *
   * 4. Bottom edge grabbed will move vertically only and only snap to the bottom
   *    edge of the window.  The bottom edge includes the bottom border and
-  *    extends 10% of the height of the window to a maximum of 20 pixels and a
-  *    minimum of 5 pixels.
+  *    extends 10% of the height of the window to a maximum of 40 pixels and a
+  *    minimum of 20 pixels.
   *
   * 5. Otherwise, normal move is being performed.
   */
@@ -3408,9 +3408,9 @@ findcorner_move(Client *c, int x_root, int y_root)
 	bg = c->c.y + c->c.b + c->c.h - c->c.g;
 
 	dx = (float) c->c.w * 0.10;
-	dx = (dx < 5) ? 5 : ((dx > 20) ? 20 : dx);
+	dx = (dx < VGRIPMIN) ? VGRIPMIN : ((dx > VGRIPMAX) ? VGRIPMAX : dx);
 	dy = (float) c->c.w * 0.10;
-	dy = (dy < 5) ? 5 : ((dy > 20) ? 20 : dy);
+	dy = (dy < VGRIPMIN) ? VGRIPMIN : ((dy > VGRIPMAX) ? VGRIPMAX : dy);
 
 	from = CursorEvery;
 

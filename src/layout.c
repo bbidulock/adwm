@@ -3286,7 +3286,7 @@ onstacked(Client *c, View *v, int cx, int cy)
 }
 
 static int
-findcorner(Client *c, int x_root, int y_root)
+findcorner_size(Client *c, int x_root, int y_root)
 {
 	int cx, cy, from;
 	float dx, dy;
@@ -3365,6 +3365,101 @@ findcorner(Client *c, int x_root, int y_root)
 		}
 	}
 	return from;
+}
+
+/** @brief - find corner for moving window
+  *
+  * There are virtual grips over the window along the edges of the window that
+  * change the behaviour of moving:
+  * 
+  * 1. Left edge grabbed will move horizontally only and only snap to the left
+  *    edge of the window.  The left edge includes the left window border and
+  *    extends 10% of the width of the window to a maximum of 20 pixels and a
+  *    minimum of 5 pixels.
+  *
+  * 2. Right edge grabbed will move horizontally only and only snap to the right
+  *    edge of the window.  The right edge includes the right window border and
+  *    extends 10% of the width of the window to a maximum of 20 pixels and a
+  *    minimum of 5 pixels.
+  *
+  * 3. Top edge grabbed will move vertically only and only snap to the top edge
+  *    of the window.  The top edge includes the margin (when decorated) or top
+  *    border (when not decorated) but never includes the title bar.  The top
+  *    edge extends 10% of the height of the window to a maximum of 20 pixels
+  *    and a minimum of 5 pixels.
+  *
+  * 4. Bottom edge grabbed will move vertically only and only snap to the bottom
+  *    edge of the window.  The bottom edge includes the bottom border and
+  *    extends 10% of the height of the window to a maximum of 20 pixels and a
+  *    minimum of 5 pixels.
+  *
+  * 5. Otherwise, normal move is being performed.
+  */
+static int
+findcorner_move(Client *c, int x_root, int y_root)
+{
+	int cx, cy, bx, by, bt, bg, from;
+	float dx, dy;
+
+	cx = c->c.x + c->c.w / 2;
+	cy = c->c.y + c->c.h / 2;
+
+	bt = c->c.y + c->c.t ? (c->c.b + c->c.t) : 0;
+	bg = c->c.y + c->c.b + c->c.h - c->c.g;
+
+	dx = (float) c->c.w * 0.10;
+	dx = (dx < 5) ? 5 : ((dx > 20) ? 20 : dx);
+	dy = (float) c->c.w * 0.10;
+	dy = (dy < 5) ? 5 : ((dy > 20) ? 20 : dy);
+
+	from = CurMove;
+
+	if (y_root < cy) {
+		/* somewhere toward the top */
+		by = bt + (int) dx;
+		if (x_root < cx) {
+			/* somewhere toward the left */
+			bx = c->c.x + c->c.b + (int) dy;
+			if ((x_root < bx) && (y_root < by && y_root > bt))
+				from = CurResizeTopLeft;
+			else if (y_root < by && y_root > bt)
+				from = CurResizeTop;
+			else if (x_root < bx)
+				from = CurResizeLeft;
+		} else {
+			/* somewhere toward the right */
+			bx = c->c.x + c->c.b + c->c.w - (int) dy;
+			if ((x_root > bx) && (y_root < by && y_root > bt))
+				from = CurResizeTopRight;
+			else if (y_root < by && y_root > bt)
+				from = CurResizeTop;
+			else if (x_root > bx)
+				from = CurResizeRight;
+		}
+	} else {
+		/* somewhere toward the bottom */
+		by = bg - (int) dx;
+		if (x_root < cx) {
+			/* somewhere toward the left */
+			bx = c->c.x + c->c.b + (int) dy;
+			if ((x_root < bx) && (y_root > by && y_root < bg))
+				from = CurResizeBottomLeft;
+			else if (y_root > by && y_root < bg)
+				from = CurResizeBottom;
+			else if (x_root < bx)
+				from = CurResizeLeft;
+		} else {
+			/* somewhere toward the right */
+			bx = c->c.x + c->c.b + c->c.w - (int) dy;
+			if ((x_root > bx) && (y_root > by && y_root < bg))
+				from = CurResizeBottomRight;
+			if (y_root > by && y_root < bg)
+				from = CurResizeBottom;
+			if (x_root > bx)
+				from = CurResizeRight;
+		}
+	}
+	return (from);
 }
 
 static Bool
@@ -3825,7 +3920,7 @@ mousemove(Client *c, XEvent *e, Bool toggle)
 		XUngrabPointer(dpy, user_time);
 		return False;
 	}
-	from = findcorner(c, e->xbutton.x_root, e->xbutton.y_root);
+	from = findcorner_move(c, e->xbutton.x_root, e->xbutton.y_root);
 	return mousemove_from(c, from, e, toggle);
 }
 
@@ -4228,7 +4323,7 @@ mouseresize(Client *c, XEvent *e, Bool toggle)
 		XUngrabPointer(dpy, user_time);
 		return False;
 	}
-	from = findcorner(c, e->xbutton.x_root, e->xbutton.y_root);
+	from = findcorner_size(c, e->xbutton.x_root, e->xbutton.y_root);
 	return mouseresize_from(c, from, e, toggle);
 }
 

@@ -84,6 +84,7 @@ void incnmaster(View *v, int n);
 void setncolumns(View *v, int n);
 void decncolumns(View *v, int n);
 void incncolumns(View *v, int n);
+Bool mousemove_from(Client *c, int from, XEvent *e, Bool toggle);
 Bool mousemove(Client *c, XEvent *e, Bool toggle);
 Bool mouseresize_from(Client *c, int from, XEvent *e, Bool toggle);
 Bool mouseresize(Client *c, XEvent *e, Bool toggle);

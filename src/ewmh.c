@@ -2625,14 +2625,14 @@ clientmessage(XEvent *e)
 			case 5:	/* _NET_WM_MOVERESIZE_SIZE_BOTTOM */
 			case 6:	/* _NET_WM_MOVERESIZE_SIZE_BOTTOMLEFT */
 			case 7:	/* _NET_WM_MOVERESIZE_SIZE_LEFT */
-				if (!c->user.size)
+				if (!c->user.size || (!c->user.sizeh && !c->user.sizev))
 					return False;
 				mouseresize_from(c, direct, (XEvent *) &bev, False);
 				break;
 			case 8:	/* _NET_WM_MOVERESIZE_MOVE */
 				if (!c->user.move)
 					return False;
-				mousemove(c, (XEvent *) &bev, False);
+				mousemove_from(c, CursorEvery, (XEvent *) &bev, False);
 				break;
 			case 9:	/* _NET_WM_MOVERESIZE_SIZE_KEYBOARD */
 				if (!c->user.size)

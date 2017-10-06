@@ -3654,6 +3654,8 @@ mousemove_from(Client *c, int from, XEvent *e, Bool toggle)
 	o = c->c;
 
 	for (;;) {
+		Bool sl, sr, st, sb;
+		int snap;
 		Client *s;
 		XEvent ev;
 
@@ -3723,25 +3725,94 @@ mousemove_from(Client *c, int from, XEvent *e, Bool toggle)
 			switch (from) {
 			default:
 			case CursorEvery:
-			case CursorTopLeft:
-			case CursorTopRight:
-			case CursorBottomLeft:
-			case CursorBottomRight:
-				/* allowed to move in all directions */
+				/* allowed to move vertical and horizontal */
 				n.x = o.x + dx;
 				n.y = o.y + dy;
+				/* snap left, top, bottom, right */
+				sl = True;
+				st = True;
+				sr = True;
+				sb = True;
+				break;
+			case CursorTopLeft:
+				/* allowed to move vertical and horizontal */
+				n.x = o.x + dx;
+				n.y = o.y + dy;
+				/* snap top and left */
+				sl = True;
+				st = True;
+				sr = False;
+				sb = False;
+				break;
+			case CursorTopRight:
+				/* allowed to move vertical and horizontal */
+				n.x = o.x + dx;
+				n.y = o.y + dy;
+				/* snap top and right */
+				sl = False;
+				st = True;
+				sr = True;
+				sb = False;
+				break;
+			case CursorBottomLeft:
+				/* allowed to move vertical and horizontal */
+				n.x = o.x + dx;
+				n.y = o.y + dy;
+				/* snap bottom and left */
+				sl = True;
+				st = False;
+				sr = False;
+				sb = True;
+				break;
+			case CursorBottomRight:
+				/* allowed to move vertical and horizontal */
+				n.x = o.x + dx;
+				n.y = o.y + dy;
+				/* snap bottom and right */
+				sl = False;
+				st = False;
+				sr = True;
+				sb = True;
 				break;
 			case CursorTop:
+				/* only allowed to move vertical */
+				n.x = o.x;
+				n.y = o.y + dy;
+				/* snap top */
+				sl = False;
+				st = True;
+				sr = False;
+				sb = False;
+				break;
 			case CursorBottom:
 				/* only allowed to move vertical */
 				n.x = o.x;
 				n.y = o.y + dy;
+				/* snap bottom */
+				sl = False;
+				st = False;
+				sr = False;
+				sb = True;
 				break;
 			case CursorLeft:
+				/* only allowed to move horizontal */
+				n.x = o.x + dx;
+				n.y = o.y;
+				/* snap left */
+				sl = True;
+				st = False;
+				sr = False;
+				sb = False;
+				break;
 			case CursorRight:
 				/* only allowed to move horizontal */
 				n.x = o.x + dx;
 				n.y = o.y;
+				/* snap right */
+				sl = False;
+				st = False;
+				sr = True;
+				sb = False;
 				break;
 			}
 			if (nv && isfloater) {
@@ -3786,8 +3857,6 @@ mousemove_from(Client *c, int from, XEvent *e, Bool toggle)
 							updatefloat(c, v);
 						}
 					} else {
-						int snap;
-
 						if (c->is.max || c->is.lhalf || c->is.rhalf) {
 							c->is.max = False;
 							c->is.lhalf = False;
@@ -3797,38 +3866,6 @@ mousemove_from(Client *c, int from, XEvent *e, Bool toggle)
 						if ((snap = scr->options.snap)) {
 							int nx2 = n.x + n.w + 2 * n.b;
 							int ny2 = n.y + n.h + 2 * n.b;
-							Bool sl, sr, st, sb; /* snap edges */
-
-							switch (from) {
-							default:
-							case CursorEvery:
-								sl = True; sr = True; st = True; sb = True;
-								break;
-							case CursorTopLeft:
-								sl = True; sr = False; st = True; sb = False;
-								break;
-							case CursorTop:
-								sl = False; sr = False; st = True; sb = False;
-								break;
-							case CursorTopRight:
-								sl = False; sr = True; st = True; sb = False;
-								break;
-							case CursorRight:
-								sl = False; sr = True; st = False; sb = False;
-								break;
-							case CursorBottomRight:
-								sl = False; sr = True; st = False; sb = True;
-								break;
-							case CursorBottom:
-								sl = False; sr = False; st = False; sb = True;
-								break;
-							case CursorBottomLeft:
-								sl = True; sr = False; st = False; sb = True;
-								break;
-							case CursorLeft:
-								sl = True; sr = False; st = False; sb = False;
-								break;
-							}
 
 							if (sl && (abs(n.x - wa.x) < snap)) {
 								DPRINTF("snapping left edge to workspace left edge\n");
@@ -3843,9 +3880,9 @@ mousemove_from(Client *c, int from, XEvent *e, Bool toggle)
 								DPRINTF("snapping right edge to screen right edge\n");
 								n.x = (sc.x + sc.w) - (n.w + 2 * n.b);
 							} else {
-								Bool done;
+								Bool done = False;
 
-								for (done = False, s = event_scr->stack; s && !done; s = s->snext) {
+								for (s = event_scr->stack; s && !done; s = s->snext) {
 									int sx2 = s->c.x + s->c.w + 2 * s->c.b;
 									int sy2 = s->c.y + s->c.h + 2 * s->c.b;
 
@@ -3865,7 +3902,7 @@ mousemove_from(Client *c, int from, XEvent *e, Bool toggle)
 										break;
 									}
 								}
-								for (done = False, s = event_scr->stack; s && !done; s = s->snext) {
+								for (s = event_scr->stack; s && !done; s = s->snext) {
 									int sx2 = s->c.x + s->c.w + 2 * s->c.b;
 									int sy2 = s->c.y + s->c.h + 2 * s->c.b;
 
@@ -4164,8 +4201,8 @@ mouseresize_from(Client *c, int from, XEvent *e, Bool toggle)
 	n = c->c;
 
 	for (;;) {
-		int rx, ry, nx2, ny2;
-		unsigned int snap;
+		Bool sl, st, sr, sb;
+		int snap;
 		Client *s;
 		XEvent ev;
 
@@ -4209,150 +4246,238 @@ mouseresize_from(Client *c, int from, XEvent *e, Bool toggle)
 					break;
 				n = c->c;
 			}
+			nv = getview(ev.xmotion.x_root, ev.xmotion.y_root);
 			switch (from) {
 			case CursorTopLeft:
+				/* allowed to resize vertical and horizontal */
 				n.w = o.w + dx;
 				n.h = o.h + dy;
 				constrain(c, &n);
 				n.x = o.x + o.w - n.w;
 				n.y = o.y + o.h - n.h;
-				nx2 = n.x + n.w + 2 * c->c.b;
-				ny2 = n.y + n.h + 2 * c->c.b;
-				rx = n.x;
-				ry = n.y;
+				/* snap top and left */
+				sl = True;
+				st = True;
+				sr = False;
+				sb = False;
 				break;
 			case CursorTop:
+				/* only allowed to resize vertical */
 				n.w = o.w;
 				n.h = o.h + dy;
 				constrain(c, &n);
 				n.x = o.x;
 				n.y = o.y + o.h - n.h;
-				nx2 = n.x + n.w + 2 * c->c.b;
-				ny2 = n.y + n.h + 2 * c->c.b;
-				rx = n.x + n.w / 2 + c->c.b;
-				ry = n.y;
+				/* snap top */
+				sl = False;
+				st = True;
+				sr = False;
+				sb = False;
 				break;
 			case CursorTopRight:
+				/* allowed to resize vertical and horizontal */
 				n.w = o.w - dx;
 				n.h = o.h + dy;
 				constrain(c, &n);
 				n.x = o.x;
 				n.y = o.y + o.h - n.h;
-				nx2 = n.x + n.w + 2 * c->c.b;
-				ny2 = n.y + n.h + 2 * c->c.b;
-				rx = n.x + n.w + 2 * c->c.b;
-				ry = n.y;
+				/* snap top and right */
+				sl = False;
+				st = True;
+				sr = True;
+				sb = False;
 				break;
 			case CursorRight:
+				/* only allowed to resize horizontal */
 				n.w = o.w - dx;
 				n.h = o.h;
 				constrain(c, &n);
 				n.x = o.x;
 				n.y = o.y;
-				nx2 = n.x + n.w + 2 * c->c.b;
-				ny2 = n.y + n.h + 2 * c->c.b;
-				rx = n.x + n.w + 2 * c->c.b;
-				ry = n.y + n.h / 2 + c->c.b;
+				/* snap right */
+				sl = False;
+				st = False;
+				sr = True;
+				sb = False;
 				break;
 			default:
 			case CursorBottomRight:
+				/* allowed to resize vertical and horizontal */
 				n.w = o.w - dx;
 				n.h = o.h - dy;
 				constrain(c, &n);
 				n.x = o.x;
 				n.y = o.y;
-				nx2 = n.x + n.w + 2 * c->c.b;
-				ny2 = n.y + n.h + 2 * c->c.b;
-				rx = n.x + n.w + 2 * c->c.b;
-				ry = n.y + n.h + 2 * c->c.b;
+				/* snap bottom and right */
+				sl = False;
+				st = False;
+				sr = True;
+				sb = True;
 				break;
 			case CursorBottom:
+				/* only allowed to resize vertical */
 				n.w = o.w;
 				n.h = o.h - dy;
 				constrain(c, &n);
 				n.x = o.x;
 				n.y = o.y;
-				nx2 = n.x + n.w + 2 * c->c.b;
-				ny2 = n.y + n.h + 2 * c->c.b;
-				rx = n.x + n.w + 2 * c->c.b;
-				ry = n.y + n.h + 2 * c->c.b;
+				/* snap bottom */
+				sl = False;
+				st = False;
+				sr = False;
+				sb = True;
 				break;
 			case CursorBottomLeft:
+				/* allowed to resize vertical and horizontal */
 				n.w = o.w + dx;
 				n.h = o.h - dy;
 				constrain(c, &n);
 				n.x = o.x + o.w - n.w;
 				n.y = o.y;
-				nx2 = n.x + n.w + 2 * c->c.b;
-				ny2 = n.y + n.h + 2 * c->c.b;
-				rx = n.x;
-				ry = n.y + n.h + 2 * c->c.b;
+				/* snap bottom and left */
+				sl = True;
+				st = False;
+				sr = False;
+				sb = True;
 				break;
 			case CursorLeft:
+				/* only allowed to resize horizontal */
 				n.w = o.w + dx;
 				n.h = o.h;
 				constrain(c, &n);
 				n.x = o.x + o.w - n.w;
 				n.y = o.y;
-				nx2 = n.x + n.w + 2 * c->c.b;
-				ny2 = n.y + n.h + 2 * c->c.b;
-				rx = n.x;
-				ry = n.y + n.h / 2 + c->c.b;
+				/* snap left */
+				sl = True;
+				st = False;
+				sr = False;
+				sb = False;
 				break;
 			}
-			if ((snap = (ev.xmotion.state & ControlMask) ? 0 : scr->options.snap)) {
-				if ((nv = getview(rx, ry))) {
-					Workarea wa, sc;
+			if (nv) {
+				Workarea wa, sc;
 
-					getworkarea(nv->curmon, &wa);
-					sc = nv->curmon->sc;
+				getworkarea(nv->curmon, &wa);
+				sc = nv->curmon->sc;
 
-					if (abs(rx - wa.x) < snap)
-						n.x += wa.x - rx;
-					else if (abs(rx - sc.x) < snap)
-						n.x += sc.x - rx;
-					else
-						for (s = scr->stack; s; s = s->next) {
-							int sx = s->c.x;
-							int sy = s->c.y;
-							int sx2 = s->c.x + s->c.w + 2 * s->c.b;
-							int sy2 = s->c.y + s->c.h + 2 * s->c.b;
+				if (!(ev.xmotion.state & ControlMask)) {
+					if ((snap = scr->options.snap)) {
+						int nx2 = n.x + n.w + 2 * c->c.b;
+						int ny2 = n.y + n.h + 2 * c->c.b;
 
-							if (s == c)
-								continue;
-							if (wind_overlap(n.y, ny2, sy, sy2)) {
-								if (abs(rx - sx) < snap)
-									n.x += sx - rx;
-								else if (abs(rx - sx2) < snap)
-									n.x += sx2 - rx;
-								else
+						if (sl && (abs(n.x - wa.x) < snap)) {
+							DPRINTF("snapping left edge to workspace left edge\n");
+							n.x = wa.x;
+						} else if (sr && (abs(nx2 - (wa.x + wa.w)) < snap)) {
+							DPRINTF("snapping right edge to workspace right edge\n");
+							n.x = (wa.x + wa.w) - (n.w + 2 * n.b);
+						} else if (sl && (abs(n.x - sc.x) < snap)) {
+							DPRINTF("snapping left edge to screen left edge\n");
+							n.x = sc.x;
+						} else if (sr && (abs(nx2 - (sc.x + sc.w)) < snap)) {
+							DPRINTF("snapping right edge to screen right edge\n");
+							n.x = (sc.x + sc.w) - (n.w + 2 * n.b);
+						} else {
+							Bool done = False;
+
+							for (s = event_scr->stack; s && !done; s = s->next) {
+								int sx2 = s->c.x + s->c.w + 2 * s->c.b;
+								int sy2 = s->c.y + s->c.h + 2 * s->c.b;
+
+								if (s == c)
 									continue;
-								break;
+								if (wind_overlap(n.y, ny2, s->c.y, sy2)) {
+									if (sl && (abs(n.x - sx2) < snap)) {
+										CPRINTF(s, "snapping left edge to other window right edge");
+										n.x = sx2;
+										done = True;
+									} else if (sr && (abs(nx2 - s->c.x) < snap)) {
+										CPRINTF(s, "snapping right edge to other window left edge");
+										n.x = s->c.x - (n.w + 2 * n.b);
+										done = True;
+									} else
+										continue;
+									break;
+								}
+							}
+							for (s = event_scr->stack; s && !done; s = s->next) {
+								int sx2 = s->c.x + s->c.w + 2 * s->c.b;
+								int sy2 = s->c.y + s->c.h + 2 * s->c.b;
+
+								if (s == c)
+									continue;
+								if (wind_overlap(n.y, ny2, s->c.y, sy2)) {
+									if (sl && (abs(n.x - s->c.x) < snap)) {
+										CPRINTF(s, "snapping left edge to other window left edge");
+										n.x = s->c.x;
+										done = True;
+									} else if (sr && (abs(nx2 - sx2) < snap)) {
+										CPRINTF(s, "snapping right edge to other window right edge");
+										n.x = sx2 - (n.w + 2 * n.b);
+										done = True;
+									} else
+										continue;
+									break;
+								}
 							}
 						}
-					if (abs(ry - wa.y) < snap)
-						n.y += wa.y - ry;
-					else if (abs(ry - sc.y) < snap)
-						n.y += sc.y - ry;
-					else
-						for (s = scr->stack; s; s = s->next) {
-							int sx = s->c.x;
-							int sy = s->c.y;
-							int sx2 = s->c.x + s->c.w + 2 * s->c.b;
-							int sy2 = s->c.y + s->c.h + 2 * s->c.b;
+						if (st && (abs(n.y - wa.y) < snap)) {
+							DPRINTF("snapping top edge to workspace top edge\n");
+							n.y = wa.y;
+						} else if (sb && (abs(ny2 - (wa.y + wa.h)) < snap)) {
+							DPRINTF("snapping bottom edge to workspace bottom edge\n");
+							n.y = (wa.y + wa.h) - (n.h + 2 * n.b);
+						} else if (st && (abs(n.y - sc.y) < snap)) {
+							DPRINTF("snapping top edge to screen top edge\n");
+							n.y = sc.y;
+						} else if (sb && (abs(ny2 - (sc.y + sc.h)) < snap)) {
+							DPRINTF("snapping bottom edge to screen bottom edge\n");
+							n.y = (sc.y + sc.h) - (n.h + 2 * n.b);
+						} else {
+							Bool done;
 
-							if (s == c)
-								continue;
-							if (wind_overlap(n.x, nx2, sx, sx2)) {
-								if (abs(ry - sy) < snap)
-									n.y += sy - ry;
-								else if (abs(ry - sy2) < snap)
-									n.y += sy2 - ry;
-								else
+							for (done = False, s = event_scr->stack; s && !done; s = s->snext) {
+								int sx2 = s->c.x + s->c.w + 2 * s->c.b;
+								int sy2 = s->c.y + s->c.h + 2 * s->c.b;
+
+								if (s == c)
 									continue;
-								break;
+								if (wind_overlap(n.x, nx2, s->c.x, sx2)) {
+									if (st && (abs(n.y - sy2) < snap)) {
+										CPRINTF(s, "snapping top edge to other window bottom edge");
+										n.y = sy2;
+										done = True;
+									} else if (sb && (abs(ny2 - s->c.y) < snap)) {
+										CPRINTF(s, "snapping bottom edge to other window top edge");
+										n.y = s->c.y - (n.h + 2 * n.b);
+										done = True;
+									} else
+										continue;
+									break;
+								}
+							}
+							for (done = False, s = event_scr->stack; s && !done; s = s->snext) {
+								int sx2 = s->c.x + s->c.w + 2 * s->c.b;
+								int sy2 = s->c.y + s->c.h + 2 * s->c.b;
+
+								if (s == c)
+									continue;
+								if (wind_overlap(n.x, nx2, s->c.x, sx2)) {
+									if (st && (abs(n.y - s->c.y) < snap)) {
+										CPRINTF(s, "snapping top edge to other window top edge");
+										n.y = s->c.y;
+										done = True;
+									} else if (sb && (abs(ny2 - sy2) < snap)) {
+										CPRINTF(s, "snapping bottom edge to other window bottom edge");
+										n.y = sy2 - (n.h + 2 * n.b);
+										done = True;
+									} else
+										continue;
+									break;
+								}
 							}
 						}
+					}
 				}
 			}
 			if (n.w < MINWIDTH)

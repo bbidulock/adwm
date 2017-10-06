@@ -66,7 +66,7 @@ Behaviour:
 * [x] switch to lhalf or rhalf at screen/monitor edges (no _Ctrl_).
 * [x] defeat snap when moving with _Ctrl_ key.
 * [x] fix snapping while moving
-* [ ] fix snapping while resizing
+* [x] fix snapping while resizing
 * [ ] move window to adjacent desktop at screen/monitor edges (_Ctrl_
       key depressed.
 * [x] implement kill behavior with _Button2_ and _Button3_ on close

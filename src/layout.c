@@ -3866,25 +3866,31 @@ mousemove_from(Client *c, int from, XEvent *e, Bool toggle)
 						if ((snap = scr->options.snap)) {
 							int nx2 = n.x + n.w + 2 * n.b;
 							int ny2 = n.y + n.h + 2 * n.b;
+							int wax2 = wa.x + wa.w;
+							int way2 = wa.y + wa.h;
+							int scx2 = sc.x + sc.w;
+							int scy2 = sc.y + sc.h;
+							int waxc = wa.x + wa.w / 2;
+							int wayc = wa.y + wa.h / 2;
 
 							if (sl && (abs(n.x - wa.x) < snap)) {
 								DPRINTF("snapping left edge to workspace left edge\n");
-								n.x = wa.x;
-							} else if (sr && (abs(nx2 - (wa.x + wa.w)) < snap)) {
+								n.x += wa.x - n.x;
+							} else if (sr && (abs(nx2 - wax2) < snap)) {
 								DPRINTF("snapping right edge to workspace right edge\n");
-								n.x = (wa.x + wa.w) - (n.w + 2 * n.b);
+								n.x += wax2 - nx2;
 							} else if (sl && (abs(n.x - sc.x) < snap)) {
 								DPRINTF("snapping left edge to screen left edge\n");
-								n.x = sc.x;
-							} else if (sr && (abs(nx2 - (sc.x + sc.w)) < snap)) {
+								n.x += sc.x - n.x;
+							} else if (sr && (abs(nx2 - scx2) < snap)) {
 								DPRINTF("snapping right edge to screen right edge\n");
-								n.x = (sc.x + sc.w) - (n.w + 2 * n.b);
-							} else if (sl && (abs(n.x - (wa.x + wa.w / 2)) < snap)) {
+								n.x += scx2 - nx2;
+							} else if (sl && (abs(n.x - waxc) < snap)) {
 								DPRINTF("snapping left edge to workspace center line\n");
-								n.x = (wa.x + wa.w / 2);
-							} else if (sr && (abs(nx2 - (wa.x + wa.w / 2)) < snap)) {
+								n.x += waxc - n.x;
+							} else if (sr && (abs(nx2 - waxc) < snap)) {
 								DPRINTF("snapping right edge to workspace center line\n");
-								n.x = (wa.x + wa.w / 2) - (n.w + 2 * n.b);
+								n.x += waxc - nx2;
 							} else {
 								Bool done = False;
 
@@ -3931,22 +3937,22 @@ mousemove_from(Client *c, int from, XEvent *e, Bool toggle)
 							}
 							if (st && (abs(n.y - wa.y) < snap)) {
 								DPRINTF("snapping top edge to workspace top edge\n");
-								n.y = wa.y;
-							} else if (sb && (abs(ny2 - (wa.y + wa.h)) < snap)) {
+								n.y += wa.y - n.y;
+							} else if (sb && (abs(ny2 - way2) < snap)) {
 								DPRINTF("snapping bottom edge to workspace bottom edge\n");
-								n.y = (wa.y + wa.h) - (n.h + 2 * n.b);
+								n.y += way2 - ny2;
 							} else if (st && (abs(n.y - sc.y) < snap)) {
 								DPRINTF("snapping top edge to screen top edge\n");
-								n.y = sc.y;
-							} else if (sb && (abs(ny2 - (sc.y + sc.h)) < snap)) {
+								n.y += sc.y - n.y;
+							} else if (sb && (abs(ny2 - scy2) < snap)) {
 								DPRINTF("snapping bottom edge to screen bottom edge\n");
-								n.y = (sc.y + sc.h) - (n.h + 2 * n.b);
-							} else if (st && (abs(n.y - (wa.y + wa.h / 2)) < snap)) {
+								n.y += scy2 - ny2;
+							} else if (st && (abs(n.y - wayc) < snap)) {
 								DPRINTF("snapping left edge to workspace center line\n");
-								n.y = (wa.y + wa.w / 2);
-							} else if (sb && (abs(ny2 - (wa.y + wa.h / 2)) < snap)) {
+								n.y += wayc - n.y;
+							} else if (sb && (abs(ny2 - wayc) < snap)) {
 								DPRINTF("snapping right edge to workspace center line\n");
-								n.y = (wa.y + wa.h / 2) - (n.h + 2 * n.b);
+								n.y += wayc - ny2;
 							} else {
 								Bool done;
 
@@ -3963,7 +3969,7 @@ mousemove_from(Client *c, int from, XEvent *e, Bool toggle)
 											done = True;
 										} else if (sb && (abs(ny2 - s->c.y) < snap)) {
 											CPRINTF(s, "snapping bottom edge to other window top edge");
-											n.y = s->c.y - (n.h + 2 * n.b);
+											n.y += s->c.y - ny2;
 											done = True;
 										} else
 											continue;
@@ -3983,7 +3989,7 @@ mousemove_from(Client *c, int from, XEvent *e, Bool toggle)
 											done = True;
 										} else if (sb && (abs(ny2 - sy2) < snap)) {
 											CPRINTF(s, "snapping bottom edge to other window bottom edge");
-											n.y = sy2 - (n.h + 2 * n.b);
+											n.y += sy2 - ny2;
 											done = True;
 										} else
 											continue;
@@ -4376,25 +4382,31 @@ mouseresize_from(Client *c, int from, XEvent *e, Bool toggle)
 					if ((snap = scr->options.snap)) {
 						int nx2 = n.x + n.w + 2 * c->c.b;
 						int ny2 = n.y + n.h + 2 * c->c.b;
+						int wax2 = wa.x + wa.w;
+						int way2 = wa.y + wa.h;
+						int scx2 = sc.x + sc.w;
+						int scy2 = sc.y + sc.h;
+						int waxc = wa.x + wa.w / 2;
+						int wayc = wa.y + wa.h / 2;
 
 						if (sl && (abs(n.x - wa.x) < snap)) {
 							DPRINTF("snapping left edge to workspace left edge\n");
 							n.w += wa.x - n.x;
-						} else if (sr && (abs(nx2 - (wa.x + wa.w)) < snap)) {
+						} else if (sr && (abs(nx2 - wax2) < snap)) {
 							DPRINTF("snapping right edge to workspace right edge\n");
-							n.w += (wa.x + wa.w) - nx2;
+							n.w += wax2 - nx2;
 						} else if (sl && (abs(n.x - sc.x) < snap)) {
 							DPRINTF("snapping left edge to screen left edge\n");
 							n.w += sc.x - n.x;
-						} else if (sr && (abs(nx2 - (sc.x + sc.w)) < snap)) {
+						} else if (sr && (abs(nx2 - scx2) < snap)) {
 							DPRINTF("snapping right edge to screen right edge\n");
-							n.w += (sc.x + sc.w) - nx2;
-						} else if (sl && (abs(n.x - (wa.x + wa.w / 2)))) {
+							n.w += scx2 - nx2;
+						} else if (sl && (abs(n.x - waxc))) {
 							DPRINTF("snapping left edge to workspace center line\n");
-							n.w += (wa.x + wa.w / 2) - n.x;
-						} else if (sr && (abs(nx2 - (wa.x + wa.w / 2)))) {
+							n.w += waxc - n.x;
+						} else if (sr && (abs(nx2 - waxc))) {
 							DPRINTF("snapping right edge to workspace center line\n");
-							n.w += (wa.x + wa.w / 2) - nx2;
+							n.w += waxc - nx2;
 						} else {
 							Bool done = False;
 
@@ -4442,21 +4454,21 @@ mouseresize_from(Client *c, int from, XEvent *e, Bool toggle)
 						if (st && (abs(n.y - wa.y) < snap)) {
 							DPRINTF("snapping top edge to workspace top edge\n");
 							n.h += wa.y - n.y;
-						} else if (sb && (abs(ny2 - (wa.y + wa.h)) < snap)) {
+						} else if (sb && (abs(ny2 - way2) < snap)) {
 							DPRINTF("snapping bottom edge to workspace bottom edge\n");
-							n.h += (wa.y + wa.h) - ny2;
+							n.h += way2 - ny2;
 						} else if (st && (abs(n.y - sc.y) < snap)) {
 							DPRINTF("snapping top edge to screen top edge\n");
 							n.h += sc.y - n.y;
-						} else if (sb && (abs(ny2 - (sc.y + sc.h)) < snap)) {
+						} else if (sb && (abs(ny2 - scy2) < snap)) {
 							DPRINTF("snapping bottom edge to screen bottom edge\n");
-							n.h += (sc.y + sc.h) - ny2;
-						} else if (st && (abs(n.y - (wa.y + wa.h / 2)))) {
+							n.h += scy2 - ny2;
+						} else if (st && (abs(n.y - wayc))) {
 							DPRINTF("snapping top edge to workspace center line\n");
-							n.h += (wa.y + wa.h / 2) - n.y;
-						} else if (sb && (abs(ny2 - (wa.y + wa.h / 2)))) {
+							n.h += wayc - n.y;
+						} else if (sb && (abs(ny2 - wayc))) {
 							DPRINTF("snapping bottom edge to workspace center line\n");
-							n.h += (wa.y + wa.h / 2) - ny2;
+							n.h += wayc - ny2;
 						} else {
 							Bool done;
 

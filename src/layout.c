@@ -3699,6 +3699,7 @@ mousemove_from(Client *c, int from, XEvent *e, Bool toggle)
 					break;
 				}
 				n = c->c;
+				o = c->c;
 			}
 			nv = getview(ev.xmotion.x_root, ev.xmotion.y_root);
 			if (c->is.dockapp || !isfloater) {
@@ -3729,90 +3730,63 @@ mousemove_from(Client *c, int from, XEvent *e, Bool toggle)
 				n.x = o.x + dx;
 				n.y = o.y + dy;
 				/* snap left, top, bottom, right */
-				sl = True;
-				st = True;
-				sr = True;
-				sb = True;
+				sl = True; st = True; sr = True; sb = True;
 				break;
 			case CursorTopLeft:
 				/* allowed to move vertical and horizontal */
 				n.x = o.x + dx;
 				n.y = o.y + dy;
 				/* snap top and left */
-				sl = True;
-				st = True;
-				sr = False;
-				sb = False;
+				sl = True; st = True; sr = False; sb = False;
 				break;
 			case CursorTopRight:
 				/* allowed to move vertical and horizontal */
 				n.x = o.x + dx;
 				n.y = o.y + dy;
 				/* snap top and right */
-				sl = False;
-				st = True;
-				sr = True;
-				sb = False;
+				sl = False; st = True; sr = True; sb = False;
 				break;
 			case CursorBottomLeft:
 				/* allowed to move vertical and horizontal */
 				n.x = o.x + dx;
 				n.y = o.y + dy;
 				/* snap bottom and left */
-				sl = True;
-				st = False;
-				sr = False;
-				sb = True;
+				sl = True; st = False; sr = False; sb = True;
 				break;
 			case CursorBottomRight:
 				/* allowed to move vertical and horizontal */
 				n.x = o.x + dx;
 				n.y = o.y + dy;
 				/* snap bottom and right */
-				sl = False;
-				st = False;
-				sr = True;
-				sb = True;
+				sl = False; st = False; sr = True; sb = True;
 				break;
 			case CursorTop:
 				/* only allowed to move vertical */
 				n.x = o.x;
 				n.y = o.y + dy;
 				/* snap top */
-				sl = False;
-				st = True;
-				sr = False;
-				sb = False;
+				sl = False; st = True; sr = False; sb = False;
 				break;
 			case CursorBottom:
 				/* only allowed to move vertical */
 				n.x = o.x;
 				n.y = o.y + dy;
 				/* snap bottom */
-				sl = False;
-				st = False;
-				sr = False;
-				sb = True;
+				sl = False; st = False; sr = False; sb = True;
 				break;
 			case CursorLeft:
 				/* only allowed to move horizontal */
 				n.x = o.x + dx;
 				n.y = o.y;
 				/* snap left */
-				sl = True;
-				st = False;
-				sr = False;
-				sb = False;
+				sl = True; st = False; sr = False; sb = False;
 				break;
 			case CursorRight:
 				/* only allowed to move horizontal */
 				n.x = o.x + dx;
 				n.y = o.y;
 				/* snap right */
-				sl = False;
-				st = False;
-				sr = True;
-				sb = False;
+				sl = False; st = False; sr = True; sb = False;
 				break;
 			}
 			if (nv && isfloater) {
@@ -4253,8 +4227,8 @@ mouseresize_from(Client *c, int from, XEvent *e, Bool toggle)
 			if (event_scr != scr)
 				continue;
 			XSync(dpy, False);
-			dx = (x_root - ev.xmotion.x_root);
-			dy = (y_root - ev.xmotion.y_root);
+			dx = (ev.xmotion.x_root - x_root);
+			dy = (ev.xmotion.y_root - y_root);
 			pushtime(ev.xmotion.time);
 			if (!resized) {
 				if (abs(dx) < scr->options.dragdist
@@ -4262,114 +4236,91 @@ mouseresize_from(Client *c, int from, XEvent *e, Bool toggle)
 					continue;
 				if (!(resized = resize_begin(c, v, toggle, from, &was)))
 					break;
+				o = c->c;
 				n = c->c;
 			}
 			nv = getview(ev.xmotion.x_root, ev.xmotion.y_root);
 			switch (from) {
 			case CursorTopLeft:
 				/* allowed to resize vertical and horizontal */
-				n.w = o.w + dx;
-				n.h = o.h + dy;
+				n.w = o.w - dx; /* left */
+				n.h = o.h - dy; /* top */
 				/* edges that move: left, top */
-				n.x = o.x + o.w - n.w;
-				n.y = o.y + o.h - n.h;
+				n.x = o.x + dx;
+				n.y = o.y + dy;
 				/* snap top and left */
-				sl = True;
-				st = True;
-				sr = False;
-				sb = False;
+				sl = True; st = True; sr = False; sb = False;
+				break;
+			case CursorTopRight:
+				/* allowed to resize vertical and horizontal */
+				n.w = o.w + dx; /* right */
+				n.h = o.h - dy; /* top */
+				/* edges that move: !left, top */
+				n.x = o.x;
+				n.y = o.y + dy;
+				/* snap top and right */
+				sl = False; st = True; sr = True; sb = False;
+				break;
+			case CursorBottomLeft:
+				/* allowed to resize vertical and horizontal */
+				n.w = o.w - dx; /* left */
+				n.h = o.h + dy; /* bottom */
+				/* edges that move: left, !top */
+				n.x = o.x + dx;
+				n.y = o.y;
+				/* snap bottom and left */
+				sl = True; st = False; sr = False; sb = True;
+				break;
+			default:
+			case CursorBottomRight:
+				/* allowed to resize vertical and horizontal */
+				n.w = o.w + dx; /* right */
+				n.h = o.h + dy; /* bottom */
+				/* edges that move: !left, !top */
+				n.x = o.x;
+				n.y = o.y;
+				/* snap bottom and right */
+				sl = False; st = False; sr = True; sb = True;
 				break;
 			case CursorTop:
 				/* only allowed to resize vertical */
 				n.w = o.w;
-				n.h = o.h + dy;
+				n.h = o.h - dy; /* top */
 				/* edges that move: !left, top */
 				n.x = o.x;
-				n.y = o.y + o.h - n.h;
+				n.y = o.y + dy;
 				/* snap top */
-				sl = False;
-				st = True;
-				sr = False;
-				sb = False;
+				sl = False; st = True; sr = False; sb = False;
 				break;
-			case CursorTopRight:
-				/* allowed to resize vertical and horizontal */
-				n.w = o.w - dx;
-				n.h = o.h + dy;
-				/* edges that move: !left, top */
+			case CursorBottom:
+				/* only allowed to resize vertical */
+				n.w = o.w;
+				n.h = o.h + dy; /* bottom */
+				/* edges that move: !left, !top */
 				n.x = o.x;
-				n.y = o.y + o.h - n.h;
-				/* snap top and right */
-				sl = False;
-				st = True;
-				sr = True;
-				sb = False;
+				n.y = o.y;
+				/* snap bottom */
+				sl = False; st = False; sr = False; sb = True;
+				break;
+			case CursorLeft:
+				/* only allowed to resize horizontal */
+				n.w = o.w - dx; /* left */
+				n.h = o.h;
+				/* edges that move: left, !top */
+				n.x = o.x + dx;
+				n.y = o.y;
+				/* snap left */
+				sl = True; st = False; sr = False; sb = False;
 				break;
 			case CursorRight:
 				/* only allowed to resize horizontal */
-				n.w = o.w - dx;
+				n.w = o.w + dx; /* right */
 				n.h = o.h;
 				/* edges that move: !left, !top */
 				n.x = o.x;
 				n.y = o.y;
 				/* snap right */
-				sl = False;
-				st = False;
-				sr = True;
-				sb = False;
-				break;
-			default:
-			case CursorBottomRight:
-				/* allowed to resize vertical and horizontal */
-				n.w = o.w - dx;
-				n.h = o.h - dy;
-				/* edges that move: !left, !top */
-				n.x = o.x;
-				n.y = o.y;
-				/* snap bottom and right */
-				sl = False;
-				st = False;
-				sr = True;
-				sb = True;
-				break;
-			case CursorBottom:
-				/* only allowed to resize vertical */
-				n.w = o.w;
-				n.h = o.h - dy;
-				/* edges that move: !left, !top */
-				n.x = o.x;
-				n.y = o.y;
-				/* snap bottom */
-				sl = False;
-				st = False;
-				sr = False;
-				sb = True;
-				break;
-			case CursorBottomLeft:
-				/* allowed to resize vertical and horizontal */
-				n.w = o.w + dx;
-				n.h = o.h - dy;
-				/* edges that move: left, !top */
-				n.x = o.x + o.w - n.w;
-				n.y = o.y;
-				/* snap bottom and left */
-				sl = True;
-				st = False;
-				sr = False;
-				sb = True;
-				break;
-			case CursorLeft:
-				/* only allowed to resize horizontal */
-				n.w = o.w + dx;
-				n.h = o.h;
-				/* edges that move: left, !top */
-				n.x = o.x + o.w - n.w;
-				n.y = o.y;
-				/* snap left */
-				sl = True;
-				st = False;
-				sr = False;
-				sb = False;
+				sl = False; st = False; sr = True; sb = False;
 				break;
 			}
 			if (nv) {
@@ -4521,22 +4472,17 @@ mouseresize_from(Client *c, int from, XEvent *e, Bool toggle)
 			switch (from) {
 			case CursorTopLeft:
 				/* edges that move: left, top */
-				n.x = o.x + o.w - n.w;
-				n.y = o.y + o.h - n.h;
-				break;
-			case CursorTop:
-				/* edges that move: !left, top */
-				n.x = o.x;
-				n.y = o.y + o.h - n.h;
+				n.x = o.x + (o.w - n.w);
+				n.y = o.y + (o.h - n.h);
 				break;
 			case CursorTopRight:
 				/* edges that move: !left, top */
 				n.x = o.x;
-				n.y = o.y + o.h - n.h;
+				n.y = o.y + (o.h - n.h);
 				break;
-			case CursorRight:
-				/* edges that move: !left, !top */
-				n.x = o.x;
+			case CursorBottomLeft:
+				/* edges that move: left, !top */
+				n.x = o.x + (o.w - n.w);
 				n.y = o.y;
 				break;
 			default:
@@ -4545,19 +4491,24 @@ mouseresize_from(Client *c, int from, XEvent *e, Bool toggle)
 				n.x = o.x;
 				n.y = o.y;
 				break;
+			case CursorTop:
+				/* edges that move: !left, top */
+				n.x = o.x;
+				n.y = o.y + (o.h - n.h);
+				break;
 			case CursorBottom:
 				/* edges that move: !left, !top */
 				n.x = o.x;
 				n.y = o.y;
 				break;
-			case CursorBottomLeft:
-				/* edges that move: left, !top */
-				n.x = o.x + o.w - n.w;
-				n.y = o.y;
-				break;
 			case CursorLeft:
 				/* edges that move: left, !top */
-				n.x = o.x + o.w - n.w;
+				n.x = o.x + (o.w - n.w);
+				n.y = o.y;
+				break;
+			case CursorRight:
+				/* edges that move: !left, !top */
+				n.x = o.x;
 				n.y = o.y;
 				break;
 			}

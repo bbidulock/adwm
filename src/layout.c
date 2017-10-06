@@ -3482,7 +3482,7 @@ ismoveevent(Display *display, XEvent *event, XPointer arg)
 }
 
 static Bool
-move_begin(Client *c, View *v, Bool toggle, int move, IsUnion * was)
+move_begin(Client *c, View *v, Bool toggle, int from, IsUnion * was)
 {
 	Bool isfloater;
 
@@ -3491,7 +3491,7 @@ move_begin(Client *c, View *v, Bool toggle, int move, IsUnion * was)
 
 	/* regrab pointer with move cursor */
 	XGrabPointer(dpy, scr->root, False, MOUSEMASK, GrabModeAsync,
-		     GrabModeAsync, None, cursor[move], user_time);
+		     GrabModeAsync, None, cursor[from], user_time);
 
 	isfloater = isfloating(c, v) ? True : False;
 
@@ -3612,7 +3612,6 @@ mousemove_from(Client *c, int from, XEvent *e, Bool toggle)
 	View *v, *nv;
 	ClientGeometry n = { 0, }, o = { 0, };
 	Bool moved = False, isfloater;
-	int move = CursorEvery;
 	IsUnion was = {.is = 0 };
 
 	x_root = e->xbutton.x_root;
@@ -3637,6 +3636,9 @@ mousemove_from(Client *c, int from, XEvent *e, Bool toggle)
 		toggle = False;
 
 	isfloater = (toggle || isfloating(c, v)) ? True : False;
+
+	if (c->is.dockapp || !isfloater)
+		from = CursorEvery;
 
 	if (XGrabPointer(dpy, scr->root, False, MOUSEMASK, GrabModeAsync,
 			 GrabModeAsync, None, None, e->xbutton.time) != GrabSuccess) {
@@ -3687,7 +3689,7 @@ mousemove_from(Client *c, int from, XEvent *e, Bool toggle)
 				if (abs(dx) < scr->options.dragdist
 				    && abs(dy) < scr->options.dragdist)
 					continue;
-				if (!(moved = move_begin(c, v, toggle, move, &was))) {
+				if (!(moved = move_begin(c, v, toggle, from, &was))) {
 					CPRINTF(c, "Couldn't move client!\n");
 					break;
 				}
@@ -3715,8 +3717,30 @@ mousemove_from(Client *c, int from, XEvent *e, Bool toggle)
 				reconfigure(c, &n, False);
 				continue;
 			}
-			n.x = o.x + dx;
-			n.y = o.y + dy;
+			switch (from) {
+			default:
+			case CursorEvery:
+			case CursorTopLeft:
+			case CursorTopRight:
+			case CursorBottomLeft:
+			case CursorBottomRight:
+				/* allowed to move in all directions */
+				n.x = o.x + dx;
+				n.y = o.y + dy;
+				break;
+			case CursorTop:
+			case CursorBottom:
+				/* only allowed to move vertical */
+				n.x = o.x;
+				n.y = o.y + dy;
+				break;
+			case CursorLeft:
+			case CursorRight:
+				/* only allowed to move horizontal */
+				n.x = o.x + dx;
+				n.y = o.y;
+				break;
+			}
 			if (nv && isfloater) {
 				Workarea wa, sc;
 				
@@ -3759,26 +3783,60 @@ mousemove_from(Client *c, int from, XEvent *e, Bool toggle)
 							updatefloat(c, v);
 						}
 					} else {
+						int snap;
+
 						if (c->is.max || c->is.lhalf || c->is.rhalf) {
 							c->is.max = False;
 							c->is.lhalf = False;
 							c->is.rhalf = False;
 							ewmh_update_net_window_state(c);
 						}
-						if (scr->options.snap) {
+						if ((snap = scr->options.snap)) {
 							int nx2 = n.x + n.w + 2 * n.b;
 							int ny2 = n.y + n.h + 2 * n.b;
+							Bool sl, sr, st, sb; /* snap edges */
 
-							if (abs(n.x - wa.x) < scr->options.snap) {
+							switch (from) {
+							default:
+							case CursorEvery:
+								sl = True; sr = True; st = True; sb = True;
+								break;
+							case CursorTopLeft:
+								sl = True; sr = False; st = True; sb = False;
+								break;
+							case CursorTop:
+								sl = False; sr = False; st = True; sb = False;
+								break;
+							case CursorTopRight:
+								sl = False; sr = True; st = True; sb = False;
+								break;
+							case CursorRight:
+								sl = False; sr = True; st = False; sb = False;
+								break;
+							case CursorBottomRight:
+								sl = False; sr = True; st = False; sb = True;
+								break;
+							case CursorBottom:
+								sl = False; sr = False; st = False; sb = True;
+								break;
+							case CursorBottomLeft:
+								sl = True; sr = False; st = False; sb = True;
+								break;
+							case CursorLeft:
+								sl = True; sr = False; st = False; sb = False;
+								break;
+							}
+
+							if (sl && (abs(n.x - wa.x) < snap)) {
 								DPRINTF("snapping left edge to workspace left edge\n");
 								n.x = wa.x;
-							} else if (abs(nx2 - (wa.x + wa.w)) < scr->options.snap) {
+							} else if (sr && (abs(nx2 - (wa.x + wa.w)) < snap)) {
 								DPRINTF("snapping right edge to workspace right edge\n");
 								n.x = (wa.x + wa.w) - (n.w + 2 * n.b);
-							} else if (abs(n.x - sc.x) < scr->options.snap) {
+							} else if (sl && (abs(n.x - sc.x) < snap)) {
 								DPRINTF("snapping left edge to screen left edge\n");
 								n.x = sc.x;
-							} else if (abs(nx2 - (sc.x + sc.w)) < scr->options.snap) {
+							} else if (sr && (abs(nx2 - (sc.x + sc.w)) < snap)) {
 								DPRINTF("snapping right edge to screen right edge\n");
 								n.x = (sc.x + sc.w) - (n.w + 2 * n.b);
 							} else {
@@ -3791,11 +3849,11 @@ mousemove_from(Client *c, int from, XEvent *e, Bool toggle)
 									if (s == c)
 										continue;
 									if (wind_overlap(n.y, ny2, s->c.y, sy2)) { 
-										if (abs(n.x - sx2) < scr->options.snap) {
+										if (sl && (abs(n.x - sx2) < snap)) {
 											CPRINTF(s, "snapping left edge to other window right edge");
 											n.x = sx2;
 											done = True;
-										} else if (abs(nx2 - s->c.x) < scr->options.snap) {
+										} else if (sr && (abs(nx2 - s->c.x) < snap)) {
 											CPRINTF(s, "snapping right edge to other window left edge");
 											n.x = s->c.x - (n.w + 2 * n.b);
 											done = True;
@@ -3811,11 +3869,11 @@ mousemove_from(Client *c, int from, XEvent *e, Bool toggle)
 									if (s == c)
 										continue;
 									if (wind_overlap(n.y, ny2, s->c.y, sy2)) { 
-										if (abs(n.x - s->c.x) < scr->options.snap) {
+										if (sl && (abs(n.x - s->c.x) < snap)) {
 											CPRINTF(s, "snapping left edge to other window left edge");
 											n.x = s->c.x;
 											done = True;
-										} else if (abs(nx2 - sx2) < scr->options.snap) {
+										} else if (sr && (abs(nx2 - sx2) < snap)) {
 											CPRINTF(s, "snapping right edge to other window right edge");
 											n.x = sx2 - (n.w + 2 * n.b);
 											done = True;
@@ -3825,16 +3883,16 @@ mousemove_from(Client *c, int from, XEvent *e, Bool toggle)
 									}
 								}
 							}
-							if (abs(n.y - wa.y) < scr->options.snap) {
+							if (st && (abs(n.y - wa.y) < snap)) {
 								DPRINTF("snapping top edge to workspace top edge\n");
 								n.y = wa.y;
-							} else if (abs(ny2 - (wa.y + wa.h)) < scr->options.snap) {
+							} else if (sb && (abs(ny2 - (wa.y + wa.h)) < snap)) {
 								DPRINTF("snapping bottom edge to workspace bottom edge\n");
 								n.y = (wa.y + wa.h) - (n.h + 2 * n.b);
-							} else if (abs(n.y - sc.y) < scr->options.snap) {
+							} else if (st && (abs(n.y - sc.y) < snap)) {
 								DPRINTF("snapping top edge to screen top edge\n");
 								n.y = sc.y;
-							} else if (abs(ny2 - (sc.y + sc.h)) < scr->options.snap) {
+							} else if (sb && (abs(ny2 - (sc.y + sc.h)) < snap)) {
 								DPRINTF("snapping bottom edge to screen bottom edge\n");
 								n.y = (sc.y + sc.h) - (n.h + 2 * n.b);
 							} else {
@@ -3847,11 +3905,11 @@ mousemove_from(Client *c, int from, XEvent *e, Bool toggle)
 									if (s == c)
 										continue;
 									if (wind_overlap(n.x, nx2, s->c.x, sx2)) {
-										if (abs(n.y - sy2) < scr->options.snap) {
+										if (st && (abs(n.y - sy2) < snap)) {
 											CPRINTF(s, "snapping top edge to other window bottom edge");
 											n.y = sy2;
 											done = True;
-										} else if (abs(ny2 - s->c.y) < scr->options.snap) {
+										} else if (sb && (abs(ny2 - s->c.y) < snap)) {
 											CPRINTF(s, "snapping bottom edge to other window top edge");
 											n.y = s->c.y - (n.h + 2 * n.b);
 											done = True;
@@ -3867,11 +3925,11 @@ mousemove_from(Client *c, int from, XEvent *e, Bool toggle)
 									if (s == c)
 										continue;
 									if (wind_overlap(n.x, nx2, s->c.x, sx2)) {
-										if (abs(n.y - s->c.y) < scr->options.snap) {
+										if (st && (abs(n.y - s->c.y) < snap)) {
 											CPRINTF(s, "snapping top edge to other window top edge");
 											n.y = s->c.y;
 											done = True;
-										} else if (abs(ny2 - sy2) < scr->options.snap) {
+										} else if (sb && (abs(ny2 - sy2) < snap)) {
 											CPRINTF(s, "snapping bottom edge to other window bottom edge");
 											n.y = sy2 - (n.h + 2 * n.b);
 											done = True;

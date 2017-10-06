@@ -3414,49 +3414,52 @@ findcorner_move(Client *c, int x_root, int y_root)
 
 	from = CursorEvery;
 
-	if (y_root < cy) {
-		/* somewhere toward the top */
-		by = bt + (int) dx;
-		if (x_root < cx) {
-			/* somewhere toward the left */
-			bx = c->c.x + c->c.b + (int) dy;
-			if ((x_root < bx) && (y_root < by && y_root > bt))
-				from = CursorTopLeft;
-			else if (y_root < by && y_root > bt)
-				from = CursorTop;
-			else if (x_root < bx)
-				from = CursorLeft;
+	/* handle really small windows as normal move */
+	if ((abs(y_root - cy) > (int) dy) || (abs(x_root - cx) > (int) dx)) {
+		if (y_root < cy) {
+			/* somewhere toward the top */
+			by = bt + (int) dx;
+			if (x_root < cx) {
+				/* somewhere toward the left */
+				bx = c->c.x + c->c.b + (int) dy;
+				if ((x_root < bx) && (y_root < by && y_root > bt))
+					from = CursorTopLeft;
+				else if (y_root < by && y_root > bt)
+					from = CursorTop;
+				else if (x_root < bx)
+					from = CursorLeft;
+			} else {
+				/* somewhere toward the right */
+				bx = c->c.x + c->c.b + c->c.w - (int) dy;
+				if ((x_root > bx) && (y_root < by && y_root > bt))
+					from = CursorTopRight;
+				else if (y_root < by && y_root > bt)
+					from = CursorTop;
+				else if (x_root > bx)
+					from = CursorRight;
+			}
 		} else {
-			/* somewhere toward the right */
-			bx = c->c.x + c->c.b + c->c.w - (int) dy;
-			if ((x_root > bx) && (y_root < by && y_root > bt))
-				from = CursorTopRight;
-			else if (y_root < by && y_root > bt)
-				from = CursorTop;
-			else if (x_root > bx)
-				from = CursorRight;
-		}
-	} else {
-		/* somewhere toward the bottom */
-		by = bg - (int) dx;
-		if (x_root < cx) {
-			/* somewhere toward the left */
-			bx = c->c.x + c->c.b + (int) dy;
-			if ((x_root < bx) && (y_root > by && y_root < bg))
-				from = CursorBottomLeft;
-			else if (y_root > by && y_root < bg)
-				from = CursorBottom;
-			else if (x_root < bx)
-				from = CursorLeft;
-		} else {
-			/* somewhere toward the right */
-			bx = c->c.x + c->c.b + c->c.w - (int) dy;
-			if ((x_root > bx) && (y_root > by && y_root < bg))
-				from = CursorBottomRight;
-			if (y_root > by && y_root < bg)
-				from = CursorBottom;
-			if (x_root > bx)
-				from = CursorRight;
+			/* somewhere toward the bottom */
+			by = bg - (int) dx;
+			if (x_root < cx) {
+				/* somewhere toward the left */
+				bx = c->c.x + c->c.b + (int) dy;
+				if ((x_root < bx) && (y_root > by && y_root < bg))
+					from = CursorBottomLeft;
+				else if (y_root > by && y_root < bg)
+					from = CursorBottom;
+				else if (x_root < bx)
+					from = CursorLeft;
+			} else {
+				/* somewhere toward the right */
+				bx = c->c.x + c->c.b + c->c.w - (int) dy;
+				if ((x_root > bx) && (y_root > by && y_root < bg))
+					from = CursorBottomRight;
+				if (y_root > by && y_root < bg)
+					from = CursorBottom;
+				if (x_root > bx)
+					from = CursorRight;
+			}
 		}
 	}
 	return (from);

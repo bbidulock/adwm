@@ -4342,20 +4342,20 @@ mouseresize_from(Client *c, int from, XEvent *e, Bool toggle)
 
 						if (sl && (abs(n.x - wa.x) < snap)) {
 							DPRINTF("snapping left edge to workspace left edge\n");
-							n.w += wa.x - n.x;
+							n.w += n.x - wa.x;
 						} else if (sr && (abs(nx2 - wax2) < snap)) {
 							DPRINTF("snapping right edge to workspace right edge\n");
 							n.w += wax2 - nx2;
 						} else if (sl && (abs(n.x - sc.x) < snap)) {
 							DPRINTF("snapping left edge to screen left edge\n");
-							n.w += sc.x - n.x;
+							n.w += n.x - sc.x;
 						} else if (sr && (abs(nx2 - scx2) < snap)) {
 							DPRINTF("snapping right edge to screen right edge\n");
 							n.w += scx2 - nx2;
-						} else if (sl && (abs(n.x - waxc))) {
+						} else if (sl && (abs(n.x - waxc) < snap)) {
 							DPRINTF("snapping left edge to workspace center line\n");
-							n.w += waxc - n.x;
-						} else if (sr && (abs(nx2 - waxc))) {
+							n.w += n.x - waxc;
+						} else if (sr && (abs(nx2 - waxc) < snap)) {
 							DPRINTF("snapping right edge to workspace center line\n");
 							n.w += waxc - nx2;
 						} else {
@@ -4370,7 +4370,7 @@ mouseresize_from(Client *c, int from, XEvent *e, Bool toggle)
 								if (wind_overlap(n.y, ny2, s->c.y, sy2)) {
 									if (sl && (abs(n.x - sx2) < snap)) {
 										CPRINTF(s, "snapping left edge to other window right edge");
-										n.w += sx2 - n.x;
+										n.w += n.x - sx2;
 										done = True;
 									} else if (sr && (abs(nx2 - s->c.x) < snap)) {
 										CPRINTF(s, "snapping right edge to other window left edge");
@@ -4390,7 +4390,7 @@ mouseresize_from(Client *c, int from, XEvent *e, Bool toggle)
 								if (wind_overlap(n.y, ny2, s->c.y, sy2)) {
 									if (sl && (abs(n.x - s->c.x) < snap)) {
 										CPRINTF(s, "snapping left edge to other window left edge");
-										n.w += s->c.x - n.x;
+										n.w += n.x - s->c.x;
 										done = True;
 									} else if (sr && (abs(nx2 - sx2) < snap)) {
 										CPRINTF(s, "snapping right edge to other window right edge");
@@ -4404,20 +4404,20 @@ mouseresize_from(Client *c, int from, XEvent *e, Bool toggle)
 						}
 						if (st && (abs(n.y - wa.y) < snap)) {
 							DPRINTF("snapping top edge to workspace top edge\n");
-							n.h += wa.y - n.y;
+							n.h += n.y - wa.y;
 						} else if (sb && (abs(ny2 - way2) < snap)) {
 							DPRINTF("snapping bottom edge to workspace bottom edge\n");
 							n.h += way2 - ny2;
 						} else if (st && (abs(n.y - sc.y) < snap)) {
 							DPRINTF("snapping top edge to screen top edge\n");
-							n.h += sc.y - n.y;
+							n.h += n.y - sc.y;
 						} else if (sb && (abs(ny2 - scy2) < snap)) {
 							DPRINTF("snapping bottom edge to screen bottom edge\n");
 							n.h += scy2 - ny2;
-						} else if (st && (abs(n.y - wayc))) {
+						} else if (st && (abs(n.y - wayc) < snap)) {
 							DPRINTF("snapping top edge to workspace center line\n");
-							n.h += wayc - n.y;
-						} else if (sb && (abs(ny2 - wayc))) {
+							n.h += n.y - wayc;
+						} else if (sb && (abs(ny2 - wayc) < snap)) {
 							DPRINTF("snapping bottom edge to workspace center line\n");
 							n.h += wayc - ny2;
 						} else {
@@ -4432,7 +4432,7 @@ mouseresize_from(Client *c, int from, XEvent *e, Bool toggle)
 								if (wind_overlap(n.x, nx2, s->c.x, sx2)) {
 									if (st && (abs(n.y - sy2) < snap)) {
 										CPRINTF(s, "snapping top edge to other window bottom edge");
-										n.h += sy2 - n.y;
+										n.h += n.y - sy2;
 										done = True;
 									} else if (sb && (abs(ny2 - s->c.y) < snap)) {
 										CPRINTF(s, "snapping bottom edge to other window top edge");
@@ -4452,7 +4452,7 @@ mouseresize_from(Client *c, int from, XEvent *e, Bool toggle)
 								if (wind_overlap(n.x, nx2, s->c.x, sx2)) {
 									if (st && (abs(n.y - s->c.y) < snap)) {
 										CPRINTF(s, "snapping top edge to other window top edge");
-										n.h += s->c.y - n.y;
+										n.h += n.y - s->c.y;
 										done = True;
 									} else if (sb && (abs(ny2 - sy2) < snap)) {
 										CPRINTF(s, "snapping bottom edge to other window bottom edge");

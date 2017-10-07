@@ -88,6 +88,8 @@ Adwm*incborder:		WA + b
 ! max			- set/unset/toggle maximize both
 ! maxv			- set/unset/toggle maximize vertical
 ! maxh			- set/unset/toggle maximize horizontal
+! lhalf			- set/unset/toggle left-half
+! rhalf			- set/unset/toggle right-half
 ! shade/shaded		- set/unset/toggle shaded
 ! hide/hidden		- set/unset/toggle hidden
 ! iconify/min		- set/unset/toggle minimized
@@ -102,12 +104,14 @@ Adwm*togglefillv:	AC + a : g : v
 Adwm*togglefull:	A + F11, AC + a : f, W + f
 Adwm*togglemaxv:	AC + a : m : v, AS + F10, CS + Up
 Adwm*togglemaxh:	AC + a : m : h, CS + Right
-Adwm*togglemax:		A + F10, AC + a : m : m, CS + Left, W + m
+Adwm*togglemax:		A + F10, AC + a : m : m, CS + Left, W + m, WA + Up
 Adwm*unmax:		A + F5, WC + n
+Adwm*togglelhalf:	WA + Left
+Adwm*togglerhalf:	WA + Right
 Adwm*toggleshade:	A + F12, A + s, AC + a : s
 Adwm*hide:		AS + F12, AS + h
 Adwm*hideall:		AS + F11
-!Adwm*togglehidden:	CS + underscore
+Adwm*togglehidden:	WA + Down
 Adwm*iconify:		A + F9, AS + m, W + i, W + n, W + w
 Adwm*iconifyall:	AS + F9
 Adwm*uniconify:		WS + w
@@ -128,10 +132,10 @@ Adwm*toggledectiled:	A + d
 ! moveby		- move increment in direction
 ! moveto		- move to position in 3x3 grid
 Adwm*movetoSW:		AC + KP_1, AC + c : z
-Adwm*movetoS:		AC + KP_2, AC + c : b, AC + c : x
+Adwm*movetoS:		AC + KP_2, AC + c : x, AC + c : b
 Adwm*movetoSE:		AC + KP_3, AC + c : c, AC + c : m
 Adwm*movetoW:		AC + KP_4, AC + c : a
-Adwm*movetoC:		AC + KP_5, AC + c : h, AC + c : s
+Adwm*movetoC:		AC + KP_5, AC + c : s, AC + c : h
 Adwm*movetoE:		AC + KP_6, AC + c : d, AC + c : l
 Adwm*movetoNW:		AC + KP_7, AC + c : q
 Adwm*movetoN:		AC + KP_8, AC + c : w, AC + c : y
@@ -149,7 +153,7 @@ Adwm*snaptoNE:		ACS + KP_9
 ! edgeto		- move to the corresponding edge
 Adwm*edgetoE:		AC + c : S + d, AC + c : S + l
 Adwm*edgetoN:		AC + c : S + w, AC + c : S + y
-Adwm*edgetoS:		AC + c : S + b, AC + c : S + x
+Adwm*edgetoS:		AC + c : S + x, AC + c : S + b
 Adwm*edgetoW:		AC + c : S + a
 ! fill			- grow in the corresponding direction
 Adwm*fillleft:		W + Left
@@ -361,7 +365,7 @@ Adwm*spawn35:		XF86MonBrightnessDown = xbrightness -4096
 Adwm*spawn36:		C + XF86MonBrightnessUp = xbacklight -inc 5
 Adwm*spawn37:		C + XF86MonBrightnessDown = xbacklight -dec 5
 Adwm*spawn38:		XF86AudioRaiseVolume = amixer sset Master\\,0 5%+
-Adwm*spawn39:		XF86AudioLowerVolume = amixer sset Master\\,0 5%1-
+Adwm*spawn39:		XF86AudioLowerVolume = amixer sset Master\\,0 5%-
 Adwm*spawn40:		XF86AudioMute = amixer sset Master\\,0 toggle
 Adwm*spawn41:		CWA + Left = xrandr -o left
 Adwm*spawn42:		CWA + Right = xrandr -o right

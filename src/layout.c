@@ -1186,8 +1186,9 @@ static void
 getworkarea(Monitor *m, Workarea *w)
 {
 	Workarea *wa;
+	View *v = m->curview;
 
-	switch (m->curview->barpos) {
+	switch (v->barpos) {
 	case StrutsOn:
 	default:
 		if (m->dock.position != DockNone)
@@ -1199,8 +1200,19 @@ getworkarea(Monitor *m, Workarea *w)
 		wa = &m->wa;
 		break;
 	case StrutsOff:
-	case StrutsDown:
 		wa = &m->sc;
+		break;
+	case StrutsDown:
+		if (!VFEATURES(v, OVERLAP)) {
+			if (sel && (sel->with.struts || sel->is.dockapp)) {
+				if (m->dock.position != DockNone)
+					wa = &m->dock.wa;
+				else
+					wa = &m->wa;
+			} else
+				wa = &m->sc;
+		} else
+			wa = &m->sc;
 		break;
 	}
 	w->x = max(wa->x, 1);
@@ -2475,7 +2487,7 @@ restack()
 				stack_clients(&s, c);
 		}
 	}
-	/* 2. Focused windows with state _NET_WM_STATE_FULLSCREEN  (but not type Desk) */
+	/* 2. Focused windows with state _NET_WM_STATE_FULLSCREEN (but not type Desk) */
 	for (s.i = 0; s.i < s.n; s.i++) {
 		if (!(c = s.cl[s.i]))
 			continue;
@@ -2485,21 +2497,12 @@ restack()
 			stack_clients(&s, c);
 	}
 	/* 3. Dockapps when a dockapp is selected and docks when selected. */
-	if (sel && (WTCHECK(sel, WindowTypeDock) || sel->is.dockapp)) {
-		if (sel->is.dockapp) {
-			for (s.i = 0; s.i < s.n; s.i++) {
-				if (!(c = s.cl[s.i]))
-					continue;
-				if (c->is.dockapp)
-					stack_clients(&s, c);
-			}
-		} else {
-			for (s.i = 0; s.i < s.n; s.i++) {
-				if (!(c = s.cl[s.i]))
-					continue;
-				if (sel == c)
-					stack_clients(&s, c);
-			}
+	if (sel && (sel->with.struts || sel->is.dockapp)) {
+		for (s.i = 0; s.i < s.n; s.i++) {
+			if (!(c = s.cl[s.i]))
+				continue;
+			if (c->with.struts || c->is.dockapp)
+				stack_clients(&s, c);
 		}
 	}
 	/* 4. Window with type Dock and not state Below and windows with state Above. */
@@ -2508,7 +2511,10 @@ restack()
 			continue;
 		if (WTCHECK(c, WindowTypeDesk))
 			continue;
-		if ((WTCHECK(c, WindowTypeDock) && !c->is.dockapp && !c->is.below && !c->is.banned) || c->is.above)
+		if (c->is.dockapp || c->with.struts || c->is.below)
+			continue;
+		if (WTCHECK(c, WindowTypeDock) || WTCHECK(c, WindowTypeSplash)
+		    || c->is.above)
 			stack_clients(&s, c);
 	}
 	/* 5. Windows (other than Desk or Dock) without state Below. */
@@ -2544,7 +2550,8 @@ restack()
 			continue;
 		if (WTCHECK(c, WindowTypeDesk))
 			continue;
-		if ((WTCHECK(c, WindowTypeDock) || c->is.dockapp) || c->is.below)
+		if ((WTCHECK(c, WindowTypeDock) || c->is.dockapp || c->with.struts)
+		    || c->is.below)
 			stack_clients(&s, c);
 	}
 	/** 7. Windows with type Desk. **/
@@ -2555,7 +2562,8 @@ restack()
 			stack_clients(&s, c);
 	}
 	assert(s.j == s.n);
-	free(s.cl); s.cl = NULL;
+	free(s.cl);
+	s.cl = NULL;
 
 	if (bcmp(s.ol, s.sl, s.n * sizeof(*s.ol))) {
 		XPRINTF("%s", "Old stacking order:\n");
@@ -2575,8 +2583,10 @@ restack()
 	} else {
 		XPRINTF("%s", "No new stacking order\n");
 	}
-	free(s.ol); s.ol = NULL;
-	free(s.sl); s.sl = NULL;
+	free(s.ol);
+	s.ol = NULL;
+	free(s.sl);
+	s.sl = NULL;
 
 	if (!window_stack.members || (window_stack.count != s.n) ||
 	    bcmp(window_stack.members, s.wl, s.n * sizeof(*s.wl))) {
@@ -2589,7 +2599,8 @@ restack()
 		ewmh_update_net_client_list_stacking();
 	} else {
 		XPRINTF("%s", "No new stacking order\n");
-		free(s.wl); s.wl = NULL;
+		free(s.wl);
+		s.wl = NULL;
 	}
 	discardcrossing();
 }

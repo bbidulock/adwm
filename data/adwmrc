@@ -3,7 +3,8 @@ Adwm*snap: 5
 Adwm*sloppy: 2
 Adwm*opacity: 0.8
 Adwm*decoratetiled: 0
-Adwm*hidebastards: 1
+Adwm*hidebastards: 2
+Adwm*strutsactive: 0
 Adwm*mwfact: 0.6
 Adwm*nmaster: 1
 Adwm*attachaside: 0
@@ -20,5 +21,8 @@ Adwm*tags.name4: scr
 Adwm*tags.name5: gfx
 Adwm*tags.name6: misc
 
+Adwm*tags.layout0: f
 Adwm*tags.layout1: m
-Adwm*tags.layout3: b
+Adwm*tags.layout2: t
+Adwm*tags.layout3: g
+Adwm*tags.layout4: b

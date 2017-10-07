@@ -513,7 +513,7 @@ unban(Client *c, View *v)
 			if (c->is.dockapp) {
 				if (!sel || !sel->is.dockapp)
 					hide = True;
-#if 0
+#if 1
 			} else if (WTCHECK(c, WindowTypeDock)) {
 				if (!sel || sel != c)
 					hide = True;
@@ -5079,7 +5079,7 @@ updategeommon(Monitor *m)
 {
 	int t = 0, l = 0, b = 0, r = 0;
 
-	if (m->curview->barpos != StrutsOff && m->curview->barpos != StrutsDown) {
+	if (m->curview->barpos != StrutsOff) {
 		l = m->struts[LeftStrut];
 		t = m->struts[TopStrut];
 		r = m->struts[RightStrut];

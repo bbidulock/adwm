@@ -194,7 +194,16 @@ initlayouts(void)
 				break;
 			}
 		l = v->layout;
-		v->barpos = scr->options.struts ? StrutsOn : scr->options.hidebastards ? StrutsHide : StrutsOff;
+		if (scr->options.strutsactive)
+			v->barpos = StrutsOn;
+		else {
+			if (scr->options.hidebastards == 2)
+				v->barpos = StrutsDown;
+			else if (scr->options.hidebastards)
+				v->barpos = StrutsHide;
+			else
+				v->barpos = StrutsOff;
+		}
 		v->dectiled = scr->options.dectiled;
 		v->nmaster = scr->options.nmaster;
 		v->ncolumns = scr->options.ncolumns;
@@ -271,11 +280,11 @@ initscreen(void)
 	strncpy(n, "hidebastards", nlen);
 	strncpy(c, "Hidebastards", clen);
 	if ((res = readres(name, clas, NULL)))
-		scr->options.hidebastards = atoi(res) ? True : False;
+		scr->options.hidebastards = atoi(res);
 	strncpy(n, "strutsactive", nlen);
 	strncpy(c, "StrutsActive", clen);
 	if ((res = readres(name, clas, NULL)))
-		scr->options.struts = atoi(res) ? True : False;
+		scr->options.strutsactive = atoi(res) ? True : False;
 	strncpy(n, "autoroll", nlen);
 	strncpy(c, "Autoroll", clen);
 	if ((res = readres(name, clas, NULL)))
@@ -385,10 +394,10 @@ initconfig(void)
 	options.decmax = atoi(readres(name, clas, STR(DECORATEMAX)));
 	strcpy(n, "hidebastards");
 	strcpy(c, "Hidebastards");
-	options.hidebastards = atoi(readres(name, clas, "0")) ? True : False;
+	options.hidebastards = atoi(readres(name, clas, "0"));
 	strcpy(n, "strutsactive");
 	strcpy(c, "StrutsActive");
-	options.struts = atoi(readres(name, clas, "1")) ? True : False;
+	options.strutsactive = atoi(readres(name, clas, "1")) ? True : False;
 	strcpy(n, "autoroll");
 	strcpy(c, "Autoroll");
 	options.autoroll = atoi(readres(name, clas, "0")) ? True : False;

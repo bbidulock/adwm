@@ -1199,6 +1199,7 @@ getworkarea(Monitor *m, Workarea *w)
 		wa = &m->wa;
 		break;
 	case StrutsOff:
+	case StrutsDown:
 		wa = &m->sc;
 		break;
 	}
@@ -2315,15 +2316,13 @@ static void
 arrangeview(View *v)
 {
 	Client *c;
-	int struts;
 
 	if (v->layout && v->layout->arrange && v->layout->arrange->arrange)
 		v->layout->arrange->arrange(v);
-	struts = v->barpos;
 	for (c = scr->stack; c; c = c->snext) {
 		if ((clientview(c) == v) &&
 		    ((!c->is.bastard && !c->is.dockapp && !(c->is.icon || c->is.hidden))
-		     || ((c->is.bastard || c->is.dockapp) && struts != StrutsHide))) {
+		     || ((c->is.bastard || c->is.dockapp) && v->barpos != StrutsHide))) {
 			unban(c, v);
 		}
 	}
@@ -2331,7 +2330,7 @@ arrangeview(View *v)
 	for (c = scr->stack; c; c = c->snext) {
 		if ((clientview(c) == NULL)
 		    || (!c->is.bastard && !c->is.dockapp && (c->is.icon || c->is.hidden))
-		    || ((c->is.bastard || c->is.dockapp) && struts == StrutsHide)) {
+		    || ((c->is.bastard || c->is.dockapp) && v->barpos == StrutsHide)) {
 			ban(c);
 		}
 	}

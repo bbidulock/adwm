@@ -4822,8 +4822,20 @@ spawn(const char *arg)
 void
 togglestruts(View *v)
 {
-	v->barpos = (v->barpos == StrutsOn)
-	    ? (scr->options.hidebastards ? StrutsHide : StrutsOff) : StrutsOn;
+	if (v->barpos != StrutsOn)
+		v->barpos = StrutsOn;
+	else {
+		if (scr->options.hidebastards == 2) {
+			v->barpos = StrutsDown;
+			_DPRINTF("Setting struts to StrutsDown\n");
+		} else if (scr->options.hidebastards) {
+			v->barpos = StrutsHide;
+			_DPRINTF("Setting struts to StrutsHide\n");
+		} else {
+			v->barpos = StrutsOff;
+			_DPRINTF("Setting struts to StrutsOff\n");
+		}
+	}
 	updategeom(v->curmon);
 	arrange(v);
 }
@@ -5067,7 +5079,7 @@ updategeommon(Monitor *m)
 {
 	int t = 0, l = 0, b = 0, r = 0;
 
-	if (m->curview->barpos != StrutsOff) {
+	if (m->curview->barpos != StrutsOff && m->curview->barpos != StrutsDown) {
 		l = m->struts[LeftStrut];
 		t = m->struts[TopStrut];
 		r = m->struts[RightStrut];

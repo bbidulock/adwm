@@ -401,7 +401,8 @@ typedef enum {
 typedef enum {
 	StrutsOn,
 	StrutsOff,
-	StrutsHide
+	StrutsHide,
+	StrutsDown
 } StrutsPosition;
 
 typedef enum {
@@ -1041,7 +1042,7 @@ typedef struct {
 	Bool dectiled;
 	Bool decmax;
 	Bool hidebastards;
-	Bool struts;
+	Bool strutsactive;
 	Bool autoroll;
 	int focus;
 	int snap;

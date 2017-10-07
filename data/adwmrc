@@ -1,4 +1,4 @@
-Adwm*snap: 5
+Adwm*snap: 10
 
 Adwm*sloppy: 2
 Adwm*opacity: 0.8
@@ -9,7 +9,6 @@ Adwm*mwfact: 0.6
 Adwm*nmaster: 1
 Adwm*attachaside: 0
 Adwm*autoroll: 1
-Adwm*useveil: 1
 
 Adwm*deflayout: l
 

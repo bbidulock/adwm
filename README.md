@@ -1,9 +1,9 @@
-[adwm -- read me first file.  2017-09-10]: #
+[adwm -- read me first file.  2017-10-07]: #
 
 adwm
 ===============
 
-Package `adwm-0.6.9` was released under GPLv3 license 2017-09-10.
+Package `adwm-0.7.0` was released under GPLv3 license 2017-10-07.
 
 This was originally a fork of Echinus which in turn was a fork of `dwm(1)`, and
 borrows concepts from `velox(1)`, `awesome(1)`, `spectrwm(1)` and `wmii(1)`.
@@ -14,7 +14,7 @@ WMH (WinWM), MWMH (CDE/Motif), ICCCM 2.0 compliance and support.
 Release
 -------
 
-This is the `adwm-0.6.9` package, released 2017-09-10.  This release, and
+This is the `adwm-0.7.0` package, released 2017-10-07.  This release, and
 the latest version, can be obtained from [GitHub][1], using a command such as:
 
     $> git clone https://github.com/bbidulock/adwm.git
@@ -76,7 +76,7 @@ window managers:
 General:
 
 - full NetWM/EWMH, WinWM/WMH (gnome), OSF/Motif and ICCCM 2.0 compliance;
-- full support for client and global modality;
+- full support for ICCCM 2.0 client and global modality;
 - full RANDR and Xinerama compliance with full support for multi-head setups;
 - full support for Window Maker dock applications in floating and tiling modes;
 - window manager based auto-hide for panels and docks (struts);
@@ -129,12 +129,12 @@ Report issues on GitHub [here][2].
 
 [1]: https://github.com/bbidulock/adwm
 [2]: https://github.com/bbidulock/adwm/issues
-[3]: https://github.com/bbidulock/adwm/blob/0.6.9/NEWS
-[4]: https://github.com/bbidulock/adwm/blob/0.6.9/ChangeLog
-[5]: https://github.com/bbidulock/adwm/blob/0.6.9/TODO
-[6]: https://github.com/bbidulock/adwm/blob/0.6.9/COMPLIANCE
-[7]: https://github.com/bbidulock/adwm/blob/0.6.9/INSTALL
-[8]: https://github.com/bbidulock/adwm/blob/0.6.9/LICENSE
-[9]: https://github.com/bbidulock/adwm/blob/0.6.9/COPYING
+[3]: https://github.com/bbidulock/adwm/blob/0.7.0/NEWS
+[4]: https://github.com/bbidulock/adwm/blob/0.7.0/ChangeLog
+[5]: https://github.com/bbidulock/adwm/blob/0.7.0/TODO
+[6]: https://github.com/bbidulock/adwm/blob/0.7.0/COMPLIANCE
+[7]: https://github.com/bbidulock/adwm/blob/0.7.0/INSTALL
+[8]: https://github.com/bbidulock/adwm/blob/0.7.0/LICENSE
+[9]: https://github.com/bbidulock/adwm/blob/0.7.0/COPYING
 
 [ vim: set ft=markdown sw=4 tw=80 nocin nosi fo+=tcqlorn spell: ]: #

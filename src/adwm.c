@@ -137,8 +137,8 @@ void (*actions[LastOn][Button5-Button1+1][2]) (Client *, XEvent *) = {
 		[Button1-Button1] =	{ m_move,	    NULL	    },
 		[Button2-Button1] =	{ m_zoom,	    NULL	    },
 		[Button3-Button1] =	{ m_resize,	    NULL	    },
-		[Button4-Button1] =	{ NULL,		    m_shade	    },
-		[Button5-Button1] =	{ NULL,		    m_shade	    },
+		[Button4-Button1] =	{ m_shade,	    NULL	    },
+		[Button5-Button1] =	{ m_shade,	    NULL	    },
 	},
 	[OnClientGrips]  = {
 		[Button1-Button1] =	{ m_resize,	    NULL	    },
@@ -151,8 +151,8 @@ void (*actions[LastOn][Button5-Button1+1][2]) (Client *, XEvent *) = {
 		[Button1-Button1] =	{ m_resize,	    NULL	    },
 		[Button2-Button1] =	{ NULL,		    NULL	    },
 		[Button3-Button1] =	{ NULL,		    NULL	    },
-		[Button4-Button1] =	{ NULL,		    m_shade	    },
-		[Button5-Button1] =	{ NULL,		    m_shade	    },
+		[Button4-Button1] =	{ m_shade,	    NULL	    },
+		[Button5-Button1] =	{ m_shade,	    NULL	    },
 	},
 	[OnClientDock]   = {
 		[Button1-Button1] =	{ m_move,	    NULL	    },
@@ -176,11 +176,11 @@ void (*actions[LastOn][Button5-Button1+1][2]) (Client *, XEvent *) = {
 		[Button5-Button1] =	{ NULL,		    NULL	    },
 	},
 	[OnRoot]	 = {
-		[Button1-Button1] =	{ NULL,		    m_spawn3	    },
-		[Button2-Button1] =	{ NULL,		    m_spawn2	    },
-		[Button3-Button1] =	{ NULL,		    m_spawn	    },
-		[Button4-Button1] =	{ NULL,		    m_nexttag	    },
-		[Button5-Button1] =	{ NULL,		    m_prevtag	    },
+		[Button1-Button1] =	{ m_spawn3,	    NULL	    },
+		[Button2-Button1] =	{ m_spawn2,	    NULL	    },
+		[Button3-Button1] =	{ m_spawn,	    NULL	    },
+		[Button4-Button1] =	{ m_nexttag,	    NULL	    },
+		[Button5-Button1] =	{ m_prevtag,	    NULL	    },
 	},
 	/* *INDENT-ON* */
 };

@@ -385,7 +385,7 @@ Adwm*button2:		W + v
 ! command		- command for button press on root window
 Adwm*command:		xde-menu -P -b 3
 Adwm*command2:		xde-wkspmenu -p -b 2
-! Adwm*command3:	xde-winlist -p -b 1 --hidden
+Adwm*command3:		xde-winlist -p -b 1 --hidden
 Adwm*menucommand:	xde-winmenu -p -b 1
 
 

@@ -4594,6 +4594,7 @@ void
 reload(void)
 {
 	char *owd;
+	long data = getpid();
 
 	owd = ecalloc(PATH_MAX, sizeof(*owd));
 	if (!getcwd(owd, PATH_MAX))
@@ -4642,6 +4643,13 @@ reload(void)
 		initstyle();	/* XXX: must redraw clients after style change */
 
 		arrange(NULL);
+
+	}
+
+	for (scr = screens; scr < screens + nscr; scr++) {
+		/* let backgrounder know we have reloaded */
+		XChangeProperty(dpy, scr->selwin, _XA_NET_WM_PID, XA_CARDINAL, 32,
+				PropModeReplace, (unsigned char *) &data, 1);
 	}
 
 	if (owd) {

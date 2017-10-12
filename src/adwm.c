@@ -129,7 +129,7 @@ Group systray = { NULL, 0, 0 };
 
 /* configuration, allows nested code to access above variables */
 
-void (*actions[LastOn][Button5-Button1+1][2]) (Client *, XEvent *) = {
+Bool (*actions[LastOn][Button5-Button1+1][2]) (Client *, XEvent *) = {
 	/* *INDENT-OFF* */
 	/* OnWhere */
 	[OnClientTitle]	 = {
@@ -547,7 +547,7 @@ buttonpress(XEvent *e)
 	int i;
 	XButtonPressedEvent *ev = &e->xbutton;
 	static int button_proxy = 0;
-	void (*action) (Client *, XEvent *);
+	Bool (*action) (Client *, XEvent *);
 	int button, direct, state;
 
 	if (Button1 > ev->button || ev->button > Button5)

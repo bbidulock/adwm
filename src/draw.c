@@ -731,17 +731,18 @@ initpixmap(const char *file, ButtonImage *bi)
 	return 1;
 }
 
-static void
+static Bool
 b_menu(Client *c, XEvent *ev)
 {
 	spawn(scr->options.menucommand);
+	return True;
 }
 
-static void
+static Bool
 b_min(Client *c, XEvent *ev)
 {
 	if (!c->user.min)
-		return;
+		return False;
 	switch (ev->xbutton.button) {
 	case Button1:
 		iconify(c);
@@ -752,10 +753,13 @@ b_min(Client *c, XEvent *ev)
 	case Button3:
 		iconify(c);	/* reserved for withdraw window */
 		break;
+	default:
+		return False;
 	}
+	return True;
 }
 
-static void
+static Bool
 b_max(Client *c, XEvent *ev)
 {
 	switch (ev->xbutton.button) {
@@ -771,14 +775,17 @@ b_max(Client *c, XEvent *ev)
 		if (c->user.maxh || ((c->user.size || c->user.sizeh) && c->user.move))
 			togglemaxh(c);
 		break;
+	default:
+		return False;
 	}
+	return True;
 }
 
-static void
+static Bool
 b_close(Client *c, XEvent *ev)
 {
 	if (!c->user.close)
-		return;
+		return False;
 	switch (ev->xbutton.button) {
 	case Button1:
 		killclient(c);
@@ -789,120 +796,128 @@ b_close(Client *c, XEvent *ev)
 	case Button3:
 		killxclient(c);
 		break;
+	default:
+		return False;
 	}
+	return True;
 }
 
-static void
+static Bool
 b_shade(Client *c, XEvent *ev)
 {
 	if (!c->user.shade)
-		return;
+		return False;
 	switch (ev->xbutton.button) {
 	case Button1:
 		break;
 	case Button2:
 		if (c->is.shaded)
-			return;
+			return False;
 		break;
 	case Button3:
 		if (!c->is.shaded)
-			return;
+			return False;
 		break;
 	default:
-		break;
+		return False;
 	}
 	toggleshade(c);
+	return True;
 }
 
-static void
+static Bool
 b_stick(Client *c, XEvent *ev)
 {
 	if (!c->user.stick)
-		return;
+		return False;
 	switch (ev->xbutton.button) {
 	case Button1:
 		break;
 	case Button2:
 		if (c->is.sticky)
-			return;
+			return False;
 		break;
 	case Button3:
 		if (!c->is.sticky)
-			return;
+			return False;
 		break;
 	default:
-		return;
+		return False;
 	}
 	togglesticky(c);
+	return True;
 }
 
-static void
+static Bool
 b_lhalf(Client *c, XEvent *ev)
 {
 	if (!c->user.move || !c->user.size)
-		return;
+		return False;
 	switch (ev->xbutton.button) {
 	case Button1:
 		break;
 	case Button2:
 		if (c->is.lhalf)
-			return;
+			return False;
 		break;
 	case Button3:
 		if (!c->is.lhalf)
-			return;
+			return False;
 		break;
 	default:
-		return;
+		return False;
 	}
 	togglelhalf(c);
+	return True;
 }
 
-static void
+static Bool
 b_rhalf(Client *c, XEvent *ev)
 {
 	if (!c->user.move || !c->user.size)
-		return;
+		return False;
 	switch (ev->xbutton.button) {
 	case Button1:
 		break;
 	case Button2:
 		if (c->is.rhalf)
-			return;
+			return False;
 		break;
 	case Button3:
 		if (!c->is.rhalf)
-			return;
+			return False;
 		break;
 	default:
-		return;
+		return False;
 	}
 	togglerhalf(c);
+	return True;
 }
 
-static void
+static Bool
 b_fill(Client *c, XEvent *ev)
 {
 	if (!c->user.fill)
-		return;
+		return False;
 	switch (ev->xbutton.button) {
 	case Button1:
 		break;
 	case Button2:
 		if (c->is.fill)
-			return;
+			return False;
 		break;
 	case Button3:
 		if (!c->is.fill)
-			return;
+			return False;
 		break;
 	default:
-		return;
+		return False;
 	}
 	togglefill(c);
+	return True;
 }
 
-static void
+static Bool
 b_float(Client *c, XEvent *ev)
 {
 	switch (ev->xbutton.button) {
@@ -910,23 +925,25 @@ b_float(Client *c, XEvent *ev)
 		break;
 	case Button2:
 		if (c->skip.arrange)
-			return;
+			return False;
 		break;
 	case Button3:
 		if (!c->skip.arrange)
-			return;
+			return False;
 		break;
 	default:
-		return;
+		return False;
 	}
 	togglefloating(c);
+	return True;
 }
 
-static void
+static Bool
 b_resize(Client *c, XEvent *ev)
 {
-	if (c->user.size)
-		m_resize(c, ev);
+	if (!c->user.size)
+		return False;
+	return m_resize(c, ev);
 }
 
 static void
@@ -947,7 +964,7 @@ freeelement(ElementType type)
 
 static void
 initelement(ElementType type, const char *name, const char *def,
-	    void (**action) (Client *, XEvent *))
+	    Bool (**action) (Client *, XEvent *))
 {
 	char res[128];
 
@@ -1013,7 +1030,7 @@ initbuttons()
 	static struct {
 		const char *name;
 		const char *def;
-		void (*action[Button5-Button1+1][2]) (Client *, XEvent *);
+		Bool (*action[Button5-Button1+1][2]) (Client *, XEvent *);
 	} setup[LastElement] = {
 		/* *INDENT-OFF* */
 		[MenuBtn]	= { "button.menu",	MENUPIXMAP,	{

@@ -3,15 +3,15 @@
 #ifndef __LOCAL_ACTIONS_H__
 #define __LOCAL_ACTIONS_H__
 
-void m_move(Client *c, XEvent *ev);
-void m_nexttag(Client *c, XEvent *ev);
-void m_prevtag(Client *c, XEvent *ev);
-void m_resize(Client *c, XEvent *ev);
-void m_shade(Client *c, XEvent *ev);
-void m_spawn(Client *c, XEvent *ev);
-void m_spawn2(Client *c, XEvent *ev);
-void m_spawn3(Client *c, XEvent *ev);
-void m_zoom(Client *c, XEvent *ev);
+Bool m_move(Client *c, XEvent *ev);
+Bool m_nexttag(Client *c, XEvent *ev);
+Bool m_prevtag(Client *c, XEvent *ev);
+Bool m_resize(Client *c, XEvent *ev);
+Bool m_shade(Client *c, XEvent *ev);
+Bool m_spawn(Client *c, XEvent *ev);
+Bool m_spawn2(Client *c, XEvent *ev);
+Bool m_spawn3(Client *c, XEvent *ev);
+Bool m_zoom(Client *c, XEvent *ev);
 
 void k_chain(XEvent *e, Key *k);
 void k_focusmain(XEvent *e, Key *k);

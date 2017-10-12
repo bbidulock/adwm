@@ -15,40 +15,42 @@
 #include "parse.h" /* for showchain */
 #include "actions.h" /* verification */
 
-void
+Bool
 m_move(Client *c, XEvent *e)
 {
 	DPRINT;
 	focus(c);
 	if (!mousemove(c, e, (e->xbutton.state & ControlMask) ? False : True))
 		raiselower(c);
+	return True;
 }
 
-void
+Bool
 m_nexttag(Client *c, XEvent *e)
 {
 	viewrighttag();
+	return True;
 }
 
-void
+Bool
 m_prevtag(Client *c, XEvent *e)
 {
 	viewlefttag();
+	return True;
 }
 
-void
+Bool
 m_resize(Client *c, XEvent *e)
 {
 	focus(c);
 	if (!mouseresize(c, e, (e->xbutton.state & ControlMask) ? False : True))
 		raiselower(c);
+	return True;
 }
 
-void
+Bool
 m_shade(Client *c, XEvent *e)
 {
-	if (!c)
-		return;
 	switch (e->xbutton.button) {
 	case Button4:
 		/* up */
@@ -61,32 +63,37 @@ m_shade(Client *c, XEvent *e)
 			toggleshade(c);
 		break;
 	}
+	return True;
 }
 
-void
+Bool
 m_spawn(Client *c, XEvent *e)
 {
 	spawn(scr->options.command);
+	return True;
 }
 
-void
+Bool
 m_spawn2(Client *c, XEvent *e)
 {
 	spawn(scr->options.command2);
+	return True;
 }
 
-void
+Bool
 m_spawn3(Client *c, XEvent *e)
 {
 	spawn(scr->options.command3);
+	return True;
 }
 
-void
+Bool
 m_zoom(Client *c, XEvent *e)
 {
 	focus(c);
 	if (!mousemove(c, e, (e->xbutton.state & ControlMask) ? True : False))
 		zoomfloat(c);
+	return True;
 }
 
 void

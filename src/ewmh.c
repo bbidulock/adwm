@@ -2704,6 +2704,13 @@ clientmessage(XEvent *e)
 					c->is.killing = 0;
 				}
 			}
+		} else if (message_type == _XA_WM_COLORMAP_NOTIFY) {
+			if (ev->data.l[0])
+				; /* need timestamp, really */
+			if (ev->data.l[1] == 1)
+				scr->colormapnotified = True;
+			if (ev->data.l[1] == 0)
+				scr->colormapnotified = False;
 		}
 	} else {
 		if (0) {

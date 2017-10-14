@@ -1096,6 +1096,7 @@ struct AScreen {
 		int rows, cols;		/* rows and cols in desk/monitor layout */
 	} d, m;
 	int sh, sw;
+	Bool colormapnotified;
 	DC dc;
 	Element element[LastElement];
 	Style style;
@@ -1285,7 +1286,7 @@ do { \
 #define CLIENTNOPROPAGATEMASK 	(BUTTONMASK | ButtonMotionMask)
 #define FRAMEMASK               (MOUSEMASK | WINDOWMASK | SubstructureRedirectMask | SubstructureNotifyMask | FocusChangeMask)
 #define MAPPINGMASK		(StructureNotifyMask | SubstructureRedirectMask | SubstructureNotifyMask | EnterWindowMask)
-#define ROOTMASK		(BUTTONMASK | WINDOWMASK | MAPPINGMASK | FocusChangeMask)
+#define ROOTMASK		(BUTTONMASK | WINDOWMASK | MAPPINGMASK | FocusChangeMask | ColormapChangeMask)
 
 /* globals */
 extern Atom atom[NATOMS];

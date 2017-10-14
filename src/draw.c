@@ -509,6 +509,22 @@ drawdockapp(Client *c, AScreen *ds)
 #endif
 }
 
+Colormap
+installcolormaps(AScreen *s, Window *w)
+{
+	XWindowAttributes wa;
+	Colormap map;
+
+	if (!w || !*w)
+		return None;
+	map = installcolormaps(s, w+1);
+	if (XGetWindowAttributes(dpy, *w, &wa))
+		if (wa.colormap != DefaultColormap(dpy, s->screen))
+			if (XInstallColormap(dpy, wa.colormap) == Success)
+				return (wa.colormap);
+	return (map);
+}
+
 void
 drawclient(Client *c)
 {
@@ -521,6 +537,8 @@ drawclient(Client *c)
 		DPRINTF("What? no screen for window 0x%lx???\n", c->win);
 		return;
 	}
+	if (c == sel && !ds->colormapnotified)
+		installcolormaps(ds, c->cmapwins);
 	setopacity(c, (c == sel) ? OPAQUE : ds->style.opacity);
 	if (!isvisible(c, NULL))
 		return;

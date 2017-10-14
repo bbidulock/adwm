@@ -289,6 +289,7 @@ enum {
 	ClientLeader,
 	ClientSession,
 	ClientAny,
+	ClientColormap,
 	SysTrayWindows,
 	ScreenContext,
 	PartLast
@@ -829,6 +830,7 @@ struct Client {
 	Window leader;
 	Window transfor;
 	Window session;
+	Window *cmapwins;
 	ElementClient *element;
 	Time user_time;
 #ifdef SYNC
@@ -1282,7 +1284,7 @@ do { \
 #define BUTTONMASK		(ButtonPressMask | ButtonReleaseMask)
 #define CLEANMASK(mask)		(mask & ~(numlockmask | LockMask))
 #define MOUSEMASK		(BUTTONMASK | PointerMotionMask)
-#define CLIENTMASK	        (PropertyChangeMask | StructureNotifyMask)
+#define CLIENTMASK	        (PropertyChangeMask | StructureNotifyMask| ColormapChangeMask)
 #define CLIENTNOPROPAGATEMASK 	(BUTTONMASK | ButtonMotionMask)
 #define FRAMEMASK               (MOUSEMASK | WINDOWMASK | SubstructureRedirectMask | SubstructureNotifyMask | FocusChangeMask)
 #define MAPPINGMASK		(StructureNotifyMask | SubstructureRedirectMask | SubstructureNotifyMask | EnterWindowMask)

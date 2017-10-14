@@ -83,6 +83,7 @@ void updategroup(Client *c, Window leader, int group, int *nonmodal);
 Window *getgroup(Window leader, int group, unsigned int *count);
 void removegroup(Client *c, Window leader, int group);
 void updateiconname(Client *c);
+void updatecmapwins(Client *c);
 int xerror(Display *dpy, XErrorEvent *ee);
 int xerrordummy(Display *dsply, XErrorEvent *ee);
 int xerrorstart(Display *dsply, XErrorEvent *ee);
@@ -1760,6 +1761,34 @@ getstate(Window w)
 	return (val);
 }
 
+Window *
+getcmapwins(Window w)
+{
+	Window *result, *cmapwins;
+	unsigned long count, i;
+
+	if ((result = getwind(w, _XA_WM_COLORMAP_WINDOWS, &count))) {
+		for (i = 0; i < count && result[i] != w; i++) ;
+		if (i < count) {
+			if ((cmapwins = calloc(count + 2, sizeof(*cmapwins)))) {
+				cmapwins[0] = w;
+				for (i = 0; i < count; i++)
+					cmapwins[i + 1] = result[i];
+			}
+		} else {
+			if ((cmapwins = calloc(count + 1, sizeof(*cmapwins)))) {
+				for (i = 0; i < count; i++)
+					cmapwins[i] = result[i];
+			}
+		}
+		XFree(result);
+	} else {
+		if ((cmapwins = calloc(2, sizeof(*cmapwins))))
+			cmapwins[0] = w;
+	}
+	return (cmapwins);
+}
+
 const char *
 getresource(const char *resource, const char *defval)
 {
@@ -2381,6 +2410,7 @@ manage(Window w, XWindowAttributes * wa)
 		twa.background_pixmap = None;
 		mask |= CWBackPixmap;
 	}
+	updatecmapwins(c);
 	c->frame =
 	    XCreateWindow(dpy, scr->root, c->c.x, c->c.y, c->c.w,
 			  c->c.h, c->c.b, wa->depth == 32 ? 32 :
@@ -3333,6 +3363,9 @@ updateclientprop(Client *c, Atom prop, int state)
 			/* Should only be set by the window manager after the window is
 			   managed.  We could potentially set it back... */
 			return False;
+		} else if (prop == _XA_WM_COLORMAP_WINDOWS) {
+			updatecmapwins(c);
+			drawclient(c);
 		} else if (prop == _XA_WIN_LAYER) {
 			/* Should only be set by the window manager after the window is
 			   managed.  Clients should use client messages instead. */
@@ -4954,7 +4987,7 @@ unmanage(Client *c, WithdrawCause cause)
 {
 	XWindowChanges wc = { 0, };
 	Bool doarrange, dostruts;
-	Window trans = None;
+	Window *w, trans = None;
 
 	doarrange = !(c->skip.arrange || c->is.floater ||
 		      (cause != CauseDestroyed &&
@@ -4995,6 +5028,12 @@ unmanage(Client *c, WithdrawCause cause)
 		XDeleteContext(dpy, c->grips, context[ClientAny]);
 		XDeleteContext(dpy, c->grips, context[ScreenContext]);
 		c->grips = None;
+	}
+	if ((w = c->cmapwins)) {
+		while (*w)
+			XDeleteContext(dpy, *w++, context[ClientColormap]);
+		free(c->cmapwins);
+		c->cmapwins = NULL;
 	}
 	if (cause != CauseDestroyed) {
 		if (haveext[XfixesBase])
@@ -5462,6 +5501,25 @@ updatesession(Client *c)
 	updategroup(c, c->session, ClientSession, NULL);
 	if (win != c->win) {
 		XSelectInput(dpy, win, PropertyChangeMask);
+	}
+}
+
+void
+updatecmapwins(Client *c)
+{
+	Window *p;
+
+	if (c->cmapwins) {
+		for (p = c->cmapwins; p && *p; p++) {
+			XDeleteContext(dpy, *p, context[ClientColormap]);
+		}
+		free(c->cmapwins);
+		c->cmapwins = NULL;
+	}
+	if ((c->cmapwins = getcmapwins(c->win))) {
+		for (p = c->cmapwins; p && *p; p++) {
+			XSaveContext(dpy, *p, context[ClientColormap], (XPointer) c);
+		}
 	}
 }
 

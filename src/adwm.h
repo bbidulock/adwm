@@ -26,7 +26,9 @@
 /* enums */
 enum {
 	Manager, Utf8String, SMClientId, WMProto, WMDelete, WMSaveYourself, WMState,
-	WMChangeState, WMTakeFocus, WMClientLeader, WMWindowRole, ELayout, ESelTags,
+	WMChangeState, WMTakeFocus, WMClientLeader, WMWindowRole, WMColormapWindows,
+	WMColormapNotify,
+	ELayout, ESelTags,
 	WMReload, WMRestart, WMShutdown, DeskLayout,
 	/* MWM/DTWM properties follow */
 	WMDesktop, MWMBindings, MWMDefaultBindings, MWMMessages, MWMOffset, MWMHints,
@@ -85,6 +87,8 @@ enum {
 #define _XA_WM_TAKE_FOCUS			atom[WMTakeFocus]
 #define _XA_WM_CLIENT_LEADER			atom[WMClientLeader]
 #define _XA_WM_WINDOW_ROLE			atom[WMWindowRole]
+#define _XA_WM_COLORMAP_WINDOWS			atom[WMColormapWindows]
+#define _XA_WM_COLORMAP_NOTIFY			atom[WMColormapNotify]
 #define _XA_ECHINUS_LAYOUT			atom[ELayout]
 #define _XA_ECHINUS_SELTAGS			atom[ESelTags]
 #define _XA_NET_RELOAD				atom[WMReload]

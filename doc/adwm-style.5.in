@@ -705,6 +705,17 @@ Default:
 this style element is not yet implemented.  (See
 .Pa TODO Ns ).
 .El
+.Sh TRANSPARENCY THEME ELEMENTS
+.Nm @PACKAGE_NAME@
+has a number of transparency style elements that can be used to interact
+with a composite manager and sets the transparency (opacity) of other
+style elements.  These are documented above, but are described in more
+detail here.
+.Pp
+.Nm @PACKAGE_NAME@
+will make the frame of the client window compatible with a 32 bit deep
+ARGB visual when the client window provides one.  This ensures that the
+transparent color
 .Sh DEFAULTS
 The default style is provided in the default style file,
 typically,

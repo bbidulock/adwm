@@ -831,6 +831,7 @@ struct Client {
 	Window transfor;
 	Window session;
 	Window *cmapwins;
+	Colormap cmap;
 	ElementClient *element;
 	Time user_time;
 #ifdef SYNC

@@ -209,6 +209,7 @@ static Bool configurenotify(XEvent *e);
 Bool configurerequest(XEvent *e);
 static Bool propertynotify(XEvent *e);
 Bool selectionclear(XEvent *e);
+static Bool colormapnotify(XEvent *e);
 Bool clientmessage(XEvent *e);
 static Bool mappingnotify(XEvent *e);
 static Bool initmonitors(XEvent *e);
@@ -245,7 +246,7 @@ Bool (*handler[LASTEvent + (EXTRANGE * BaseLast)]) (XEvent *) = {
 	    [SelectionClear] = selectionclear,
 	    [SelectionRequest] = IGNOREEVENT,
 	    [SelectionNotify] = IGNOREEVENT,
-	    [ColormapNotify] = IGNOREEVENT,
+	    [ColormapNotify] = colormapnotify,
 	    [ClientMessage] = clientmessage,
 	    [MappingNotify] = mappingnotify,[GenericEvent] = IGNOREEVENT,
 #ifdef XRANDR
@@ -1081,6 +1082,32 @@ enternotify(XEvent *e)
 		DPRINTF("Unknown entered window 0x%08lx\n", ev->window);
 		return False;
 	}
+}
+
+static Bool
+colormapnotify(XEvent *e)
+{
+	XColormapEvent *ev = &e->xcolormap;
+	Client *c;
+
+	if ((c = getclient(ev->window, ClientColormap))) {
+		if (ev->new) {
+			_CPRINTF(c, "colormap for window 0x%lx changed to 0x%lx\n", ev->window, ev->colormap);
+			return True;
+		} else {
+			switch (ev->state) {
+			case ColormapInstalled:
+				_CPRINTF(c, "colormap 0x%lx for window 0x%lx installed\n", ev->colormap, ev->window);
+				return True;
+			case ColormapUninstalled:
+				_CPRINTF(c, "colormap 0x%lx for window 0x%lx uninstalled\n", ev->colormap, ev->window);
+				return True;
+			default:
+				break;
+			}
+		}
+	}
+	return False;
 }
 
 void
@@ -2396,7 +2423,7 @@ manage(Window w, XWindowAttributes * wa)
 		twa.event_mask |= ExposureMask | MOUSEMASK;
 	mask = CWOverrideRedirect | CWEventMask;
 	if (wa->depth == 32) {
-		twa.colormap = XCreateColormap(dpy, scr->root, wa->visual, AllocNone);
+		c->cmap = twa.colormap = XCreateColormap(dpy, scr->root, wa->visual, AllocNone);
 		mask |= CWColormap;
 		twa.background_pixel = BlackPixel(dpy, scr->screen);
 		mask |= CWBackPixel;
@@ -5034,6 +5061,10 @@ unmanage(Client *c, WithdrawCause cause)
 			XDeleteContext(dpy, *w++, context[ClientColormap]);
 		free(c->cmapwins);
 		c->cmapwins = NULL;
+	}
+	if (c->cmap) {
+		XFreeColormap(dpy, c->cmap);
+		c->cmap = None;
 	}
 	if (cause != CauseDestroyed) {
 		if (haveext[XfixesBase])

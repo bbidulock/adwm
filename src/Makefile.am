@@ -1,5 +1,18 @@
 
-AM_CFLAGS = $(X11_CFLAGS) $(XFIXES_CFLAGS) $(XFT_CFLAGS) $(XRANDR_CFLAGS) $(XSYNC_CFLAGS) $(XINERAMA_CFLAGS) $(SN_CFLAGS) $(XPM_CFLAGS) $(IMLIB2_CFLAGS)
+AM_CFLAGS = \
+	$(X11_CFLAGS) \
+	$(XFIXES_CFLAGS) \
+	$(XFT_CFLAGS) \
+	$(XSHAPE_CFLAGS) \
+	$(XSYNC_CFLAGS) \
+	$(XINERAMA_CFLAGS) \
+	$(XRANDR_CFLAGS) \
+	$(XDAMAGE_CFLAGS) \
+	$(XCOMPOSITE_CFLAGS) \
+	$(XRENDER_CFLAGS) \
+	$(SN_CFLAGS) \
+	$(XPM_CFLAGS) \
+	$(IMLIB2_CFLAGS)
 AM_CPPFLAGS = -include autoconf.h
 
 bin_PROGRAMS = adwm
@@ -8,7 +21,21 @@ AM_INSTALLCHECK_STD_OPTIONS_EXEMPT = adwm
 
 adwm_SOURCES = adwm.h actions.h config.h draw.h ewmh.h layout.h parse.h resource.h tags.h texture.h util.h \
 	       adwm.c actions.c config.c draw.c ewmh.c layout.c parse.c resource.c tags.c texture.c
-adwm_LDADD = $(IMLIB2_LIBS) $(XPM_LIBS) $(SN_LIBS) $(XINERAMA_LIBS) $(XSYNC_LIBS) $(XRANDR_LIBS) $(XFT_LIBS) $(XFIXES_LIBS) $(X11_LIBS) -lm
+adwm_LDADD = \
+	$(IMLIB2_LIBS) \
+	$(XPM_LIBS) \
+	$(SN_LIBS) \
+	$(XRENDER_LIBS) \
+	$(XCOMPOSITE_LIBS) \
+	$(XDAMAGE_LIBS) \
+	$(XRANDR_LIBS) \
+	$(XINERAMA_LIBS) \
+	$(XSYNC_LIBS) \
+	$(XSHAPE_LIBS) \
+	$(XFT_LIBS) \
+	$(XFIXES_LIBS) \
+	$(X11_LIBS) \
+	-lm
 adwm_LDFLAGS = -export-dynamic -R $(adwmmoddir) -ldl -dlpreopen adwm-adwm.la
 
 noinst_PROGRAMS = ewmhpanel

@@ -103,6 +103,42 @@ PKG_CHECK_MODULES([X11],[x11])
 PKG_CHECK_MODULES([XFT],[xft])
 PKG_CHECK_MODULES([XFIXES],[xfixes])
 
+AC_ARG_ENABLE([xrender],
+	AC_HELP_STRING([--disable-xrender],
+		[Disable RENDER support @<:@default=auto@:>@]))
+if test "x$enable_xrender" != xno ; then
+	PKG_CHECK_MODULES([XRENDER],[xrender],
+		[AC_DEFINE([RENDER],[1], [Define to 1 to support RENDER extension.])],
+		[enable_xrender=no])
+fi
+AC_MSG_CHECKING([for RENDER support])
+AC_MSG_RESULT([${enable_xrender:-yes}])
+AM_CONDITIONAL([HAVE_RENDER],[test  "x$enable_xrender" != "xno"])
+
+AC_ARG_ENABLE([xdamage],
+	AC_HELP_STRING([--disable-xdamage],
+		[Disable DAMAGE support @<:@default=auto@:>@]))
+if test "x$enable_xdamage" != xno ; then
+	PKG_CHECK_MODULES([XDAMAGE],[xdamage],
+		[AC_DEFINE([DAMAGE],[1], [Define to 1 to support DAMAGE extension.])],
+		[enable_xdamage=no])
+fi
+AC_MSG_CHECKING([for DAMAGE support])
+AC_MSG_RESULT([${enable_xdamage:-yes}])
+AM_CONDITIONAL([HAVE_DAMAGE],[test  "x$enable_xdamage" != "xno"])
+
+AC_ARG_ENABLE([xcomposite],
+	AC_HELP_STRING([--disable-xcomposite],
+		[Disable Composite support @<:@default=auto@:>@]))
+if test "x$enable_xcomposite" != xno ; then
+	PKG_CHECK_MODULES([XCOMPOSITE],[xcomposite],
+		[AC_DEFINE([XCOMPOSITE],[1], [Define to 1 to support Composite extension.])],
+		[enable_xcomposite=no])
+fi
+AC_MSG_CHECKING([for Composite support])
+AC_MSG_RESULT([${enable_xcomposite:-yes}])
+AM_CONDITIONAL([HAVE_XCOMPOSITE],[test  "x$enable_xcomposite" != "xno"])
+
 AC_ARG_ENABLE([xrandr],
 	AC_HELP_STRING([--disable-xrandr],
 		[Disable XRANDR support @<:@default=auto@:>@]))
@@ -137,6 +173,17 @@ if test "x$enable_xsync" != xno ; then
 fi
 AC_MSG_CHECKING([for XSYNC support])
 AC_MSG_RESULT([${enable_xsync:-yes}])
+
+AC_ARG_ENABLE([xshape],
+	AC_HELP_STRING([--disable-xshape],
+		[Disable SHAPE support @<:@default=auto@:>@]))
+if test "x$enable_xshape" != xno ; then
+	PKG_CHECK_MODULES([XSHAPE],[xext],
+		[AC_DEFINE([SHAPE],[1], [Define to 1 to support SHAPE extension.])],
+		[enable_xshape=no])
+fi
+AC_MSG_CHECKING([for SHAPE support])
+AC_MSG_RESULT([${enable_xshape:-yes}])
 
 AC_ARG_ENABLE([startup-notification],
 	AC_HELP_STRING([--disable-startup-notification],

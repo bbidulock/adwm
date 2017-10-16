@@ -31,6 +31,17 @@
 #include <X11/Xutil.h>
 #include <X11/Xresource.h>
 #include <X11/Xft/Xft.h>
+#ifdef RENDER
+#include <X11/extensions/Xrender.h>
+#include <X11/extensions/render.h>
+#endif
+#ifdef XCOMPOSITE
+#include <X11/extensions/Xcomposite.h>
+#include <X11/extensions/composite.h>
+#endif
+#ifdef DAMAGE
+#include <X11/extensions/Xdamage.h>
+#endif
 #ifdef XRANDR
 #include <X11/extensions/Xrandr.h>
 #include <X11/extensions/randr.h>
@@ -40,6 +51,7 @@
 #endif
 #ifdef SYNC
 #include <X11/extensions/sync.h>
+#include <X11/extensions/shape.h>
 #endif
 #ifdef STARTUP_NOTIFICATION
 #define SN_API_NOT_YET_FROZEN
@@ -118,6 +130,7 @@ Group window_stack = { NULL, 0, 0 };
 XContext context[PartLast];
 Cursor cursor[CursorLast];
 int ebase[BaseLast];
+int rbase[BaseLast];
 Bool haveext[BaseLast];
 Rule **rules;
 int nrules;
@@ -5625,7 +5638,7 @@ int
 main(int argc, char *argv[])
 {
 	char conf[256] = "", *p;
-	int i, dummy;
+	int i;
 
 	if (argc == 3 && !strcmp("-f", argv[1]))
 		snprintf(conf, sizeof(conf), "%s", argv[2]);
@@ -5652,14 +5665,14 @@ main(int argc, char *argv[])
 	for (i = 0; i < PartLast; i++)
 		context[i] = XUniqueContext();
 	haveext[XfixesBase]
-	    = XFixesQueryExtension(dpy, &ebase[XfixesBase], &dummy);
+	    = XFixesQueryExtension(dpy, &ebase[XfixesBase], &rbase[XfixesBase]);
 	if (haveext[XfixesBase])
 		DPRINTF("have XFIXES extension with base %d\n", ebase[XfixesBase]);
 	else
 		DPRINTF("%s", "XFIXES extension is not supported\n");
 #ifdef XRANDR
 	haveext[XrandrBase]
-	    = XRRQueryExtension(dpy, &ebase[XrandrBase], &dummy);
+	    = XRRQueryExtension(dpy, &ebase[XrandrBase], &rbase[XrandrBase]);
 	if (haveext[XrandrBase])
 		DPRINTF("have RANDR extension with base %d\n", ebase[XrandrBase]);
 	else
@@ -5667,7 +5680,7 @@ main(int argc, char *argv[])
 #endif
 #ifdef XINERAMA
 	haveext[XineramaBase]
-	    = XineramaQueryExtension(dpy, &ebase[XineramaBase], &dummy);
+	    = XineramaQueryExtension(dpy, &ebase[XineramaBase], &rbase[XineramaBase]);
 	if (haveext[XineramaBase])
 		DPRINTF("have XINERAMA extension with base %d\n", ebase[XineramaBase]);
 	else
@@ -5675,11 +5688,43 @@ main(int argc, char *argv[])
 #endif
 #ifdef SYNC
 	haveext[XsyncBase]
-	    = XSyncQueryExtension(dpy, &ebase[XsyncBase], &dummy);
+	    = XSyncQueryExtension(dpy, &ebase[XsyncBase], &rbase[XsyncBase]);
 	if (haveext[XsyncBase])
 		DPRINTF("have SYNC extension with base %d\n", ebase[XsyncBase]);
 	else
 		DPRINTF("%s", "SYNC extension is not supported\n");
+#endif
+#ifdef RENDER
+	haveext[XrenderBase]
+	    = XRenderQueryExtension(dpy, &ebase[XrenderBase], &rbase[XrenderBase]);
+	if (haveext[XrenderBase])
+		DPRINTF("have RENDER extension with base %d\n", ebase[XrenderBase]);
+	else
+		DPRINTF("%s", "RENDER extension is not supported\n");
+#endif
+#ifdef XCOMPOSITE
+	haveext[XcompositeBase]
+	    = XCompositeQueryExtension(dpy, &ebase[XcompositeBase], &rbase[XcompositeBase]);
+	if (haveext[XcompositeBase])
+		DPRINTF("have Composite extension with base %d\n", ebase[XcompositeBase]);
+	else
+		DPRINTF("%s", "Composite extension is not supported\n");
+#endif
+#ifdef DAMAGE
+	haveext[XdamageBase]
+	    = XDamageQueryExtension(dpy, &ebase[XdamageBase], &rbase[XdamageBase]);
+	if (haveext[XdamageBase])
+		DPRINTF("have DAMAGE extension with base %d\n", ebase[XdamageBase]);
+	else
+		DPRINTF("%s", "DAMAGE extension is not supported\n");
+#endif
+#ifdef SHAPE
+	haveext[XshapeBase]
+	    = XShapeQueryExtension(dpy, &ebase[XshapeBase], &rbase[XshapeBase]);
+	if (haveext[XshapeBase])
+		DPRINTF("have SHAPE extension with base %d\n", ebase[XshapeBase]);
+	else
+		DPRINTF("%s", "SHAPE extension is not supported\n");
 #endif
 	nscr = ScreenCount(dpy);
 	DPRINTF("there are %u screens\n", nscr);

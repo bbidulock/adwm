@@ -257,6 +257,10 @@ enum {
 	XrandrBase,
 	XineramaBase,
 	XsyncBase,
+	XrenderBase,
+	XcompositeBase,
+	XdamageBase,
+	XshapeBase,
 	BaseLast
 };					/* X11 extensions */
 

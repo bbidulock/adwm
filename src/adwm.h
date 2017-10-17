@@ -1236,6 +1236,9 @@ void unban(Client *c, View *v);
 extern Group window_stack;
 void unmanage(Client *c, WithdrawCause cause);
 
+/* needed by draw.c */
+void installcolormaps(AScreen *s, Client *c, Window *w);
+
 void show_client_state(Client *c);
 
 #define LENGTH(x)		(sizeof(x)/sizeof(*x))

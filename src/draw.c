@@ -510,39 +510,6 @@ drawdockapp(Client *c, AScreen *ds)
 }
 
 void
-installcolormaps(AScreen *s, Client *c, Window *w)
-{
-	XWindowAttributes wa;
-
-	if (!w || !*w)
-		return;
-	installcolormaps(s, c, w+1);
-	if (XGetWindowAttributes(dpy, *w, &wa)) {
-		if (wa.colormap != DefaultColormap(dpy, s->screen)) {
-			_DPRINTF("window 0x%lx has colormap 0x%lx, installing\n", *w, wa.colormap);
-			if (XInstallColormap(dpy, wa.colormap) == Success)
-				_DPRINTF("installed colormap 0x%lx for window 0x%lx\n", wa.colormap, *w);
-		}
-	}
-}
-
-void
-listcolormaps(AScreen *s)
-{
-	Colormap *list;
-	int i, num = 0;
-
-	_DPRINTF("installed colormaps:\n");
-	if ((list = XListInstalledColormaps(dpy, s->root, &num))) {
-		for (i = 0; i < num; i++)
-			_DPRINTF("\tcolormap 0x%lx\n", list[i]);
-		XFree(list);
-	} else {
-		_DPRINTF("\tcolormap (none)\n");
-	}
-}
-
-void
 drawclient(Client *c)
 {
 	size_t i;
@@ -554,10 +521,8 @@ drawclient(Client *c)
 		DPRINTF("What? no screen for window 0x%lx???\n", c->win);
 		return;
 	}
-	if (c == sel && !ds->colormapnotified) {
+	if (c == sel && !ds->colormapnotified)
 		installcolormaps(ds, c, c->cmapwins);
-		listcolormaps(ds);
-	}
 	setopacity(c, (c == sel) ? OPAQUE : ds->style.opacity);
 	if (!isvisible(c, NULL))
 		return;

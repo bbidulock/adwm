@@ -43,8 +43,8 @@ Section 5: Session Management
 
 5.1 Client Support:
 	SM_CLIENT_ID			NOT supported
-	WM_CLIENT_LEADER		NOT supported
-	WM_WINDOW_ROLE			NOT supported
+	WM_CLIENT_LEADER		supported
+	WM_WINDOW_ROLE			supported
 
 5.2 Window Manager Support:		NOT supported
 	WM_COMMAND			NOT supported

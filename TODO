@@ -10,8 +10,8 @@ General tasks:
 
 Window resize grips:
 
-* [ ] remove need for title and grips sub-windows and just draw these on
-      the frame window.
+* [x] remove need for title and grips sub-windows and just draw these on
+      the frame window. (Can't do this and support 32 deep visuals.)
 * [ ] add ability to have resize grips all the way around the window in
       DTWM/MWM/TWM/CTWM/VTWM fashion
 
@@ -23,6 +23,9 @@ Decoration styles:
 * [ ] make imlib2 a prerequisite
 * [ ] display icons in title bar
 * [x] provide a different button pressed pixmap for each mouse button.
+* [x] handle colormaps correctly
+* [ ] provide transparency management model for instructing compositors
+* [ ] add full composite manager function to window manager
 
 Internal layout mechanism:
 
@@ -73,7 +76,7 @@ Behaviour:
       button.
 * [ ] fix broken rollup function.
 * [x] fix broken key chains.
-* [ ] fix auto-hide struts behavior
+* [x] fix auto-hide struts behavior
 
 
 // vim: set ft=asciidoc tw=72 nocin nosi fo+=tcqlorn spell:

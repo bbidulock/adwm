@@ -851,6 +851,7 @@ struct Client {
 #ifdef STARTUP_NOTIFICATION
 	SnStartupSequence *seq;
 #endif
+	unsigned int opacity;
 };
 
 struct CycleList {

@@ -2604,6 +2604,7 @@ manage(Window w, XWindowAttributes * wa)
 	ewmh_process_net_window_desktop_mask(c);
 	ewmh_process_net_window_sync_request_counter(c);
 	ewmh_process_net_window_state(c);
+	ewmh_process_net_window_opacity(c);
 	c->is.managed = True;
 	setwmstate(c->win, c->winstate, c->is.dockapp ? (c->icon ? : c->win) : None);
 	ewmh_update_net_window_state(c);
@@ -3588,7 +3589,7 @@ updateclientprop(Client *c, Atom prop, int state)
 			return False;
 #endif
 		} else if (prop == _XA_NET_WM_WINDOW_OPACITY) {
-			return False;
+			ewmh_process_net_window_opacity(c);
 		} else if (prop == _XA_NET_WM_SYNC_REQUEST_COUNTER) {
 			/* Set by client as part of sync request protocol.  We use the
 			   XSync extension to determine when updates have completed, so

@@ -13,13 +13,12 @@
 #include <X11/xpm.h>
 #endif
 #include "adwm.h"
+#include "ewmh.h"
 #include "layout.h"
 #include "tags.h"
 #include "actions.h"
 #include "config.h"
 #include "draw.h" /* verification */
-
-void setopacity(Client *c, unsigned int opacity);
 
 enum { Normal, Selected };
 enum { AlignLeft, AlignCenter, AlignRight };	/* title position */

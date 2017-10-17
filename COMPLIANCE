@@ -181,7 +181,7 @@ _NET_SYSTEM_TRAY_VISUAL:		NOT supported (n/a)
 
 Composite Manager Specification:
 
-_NET_WM_WINDOW_OPACITY:			supported (trivial)
+_NET_WM_WINDOW_OPACITY:			supported
 
 ------------------------------------------------------------------------
 

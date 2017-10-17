@@ -2222,6 +2222,23 @@ ewmh_process_net_window_user_time_window(Client *c)
 	ewmh_process_net_window_user_time(c);
 }
 
+void
+ewmh_process_net_window_opacity(Client *c)
+{
+	long *opacity;
+	unsigned long n = 0;
+
+	if ((opacity = getcard(c->win, _XA_NET_WM_WINDOW_OPACITY, &n))) {
+		c->opacity = opacity[0] & 0xffffffff;
+		XChangeProperty(dpy, c->frame, _XA_NET_WM_WINDOW_OPACITY, XA_CARDINAL, 32, 
+				PropModeReplace, (unsigned char *) opacity, 1);
+		XFree(opacity);
+	} else {
+		c->opacity = OPAQUE;
+		XDeleteProperty(dpy, c->frame, _XA_NET_WM_WINDOW_OPACITY);
+	}
+}
+
 Atom *getatom(Window win, Atom atom, unsigned long *nitems);
 
 #define WIN_HINTS_SKIP_FOCUS      (1<<0)	/* "alt-tab" skips this win */
@@ -2765,24 +2782,17 @@ clientmessage(XEvent *e)
 void
 setopacity(Client *c, unsigned int opacity)
 {
-	long data = opacity;
+	long data = opacity, *card;
+	unsigned long n = 0;
 
-	if (opacity == OPAQUE) {
-		XChangeProperty(dpy, c->frame, _XA_NET_WM_WINDOW_OPACITY, XA_CARDINAL, 32,
-				PropModeReplace, (unsigned char *) &data, 1L);
-	} else {
-		long *card;
-		unsigned long n;
-
-		if ((card = getcard(c->win, _XA_NET_WM_WINDOW_OPACITY, &n))) {
-			data = card[0];
-			XFree(card);
-		}
-		if (!data)
-			return;
-		XChangeProperty(dpy, c->frame, _XA_NET_WM_WINDOW_OPACITY, XA_CARDINAL, 32,
-				PropModeReplace, (unsigned char *) &data, 1L);
-	}
+	/* if the client wants to set opacity, we cannot */
+	if ((card = getcard(c->win, _XA_NET_WM_WINDOW_OPACITY, &n))) {
+		data = card[0];
+		XFree(card);
+	} else if (!data)	/* should not be zero! */
+		return;
+	XChangeProperty(dpy, c->frame, _XA_NET_WM_WINDOW_OPACITY, XA_CARDINAL, 32,
+			PropModeReplace, (unsigned char *) &data, 1L);
 }
 
 Atom *

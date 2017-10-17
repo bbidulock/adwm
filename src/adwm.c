@@ -2979,39 +2979,39 @@ reparentnotify(XEvent *e)
 static Bool
 updatesessionprop(Client *c, Atom prop, int state)
 {
+	char *name;
+
 	if (prop <= XA_LAST_PREDEFINED) {
 		switch (prop) {
 		case XA_WM_NAME:
 			/* Client leaders are never managed and should not have this
 			   property. */
-			return False;
+			goto bad;
 		case XA_WM_ICON_NAME:
 			/* Client leaders are never managed and should not have this
 			   property. */
-			return False;
+			goto bad;
 		case XA_WM_NORMAL_HINTS:
 			/* Client leaders are never managed and should not have this
 			   property. */
-			return False;
+			goto bad;
 		case XA_WM_HINTS:
 			/* Client leaders are never managed and should not have this
 			   property. */
-			return False;
+			goto bad;
 		case XA_WM_CLASS:
 			/* Client leaders are never managed and should not have this
 			   property.  We get this property on demand anyhoo. */
-			_CPRINTF(c, "bad attempt to change WM_CLASS\n");
 			ewmh_process_net_startup_id(c);
-			break;
+			goto bad;
 		case XA_WM_TRANSIENT_FOR:
 			/* Client leaders cannot be transient. */
-			return False;
+			goto bad;
 		case XA_WM_COMMAND:
 			/* TODO: Can be set on a client leader window and changed in
 			   response to a WM_SAVE_YOURSELF client message. */
-			_CPRINTF(c, "bad attempt to change WM_COMMAND\n");
 			ewmh_process_net_startup_id(c);
-			break;
+			goto bad;
 		case XA_WM_CLIENT_MACHINE:
 			/* Typically set on client leader window. We use it in
 			   conjunction with _NET_WM_PID for startup sequence
@@ -3019,15 +3019,17 @@ updatesessionprop(Client *c, Atom prop, int state)
 			   should not be changed while a client is managed; however, some 
 			   clients or launchers might change this too late, so we will
 			   still update what relies on it. */
-			_CPRINTF(c, "bad attempt to change WM_CLIENT_MACHINE\n");
 			ewmh_process_net_startup_id(c);
 			return True;
 		case XA_WM_ICON_SIZE:
 			/* Placed on the root only and by the window manager. */
+			goto bad;
 		case XA_WM_SIZE_HINTS:
 			/* Obsolete property. */
+			goto bad;
 		case XA_WM_ZOOM_HINTS:
 			/* Obsolete property. */
+			goto bad;
 		default:
 			return False;
 		}
@@ -3037,84 +3039,85 @@ updatesessionprop(Client *c, Atom prop, int state)
 			/* Note: the SM_CLIENT_ID property cannot be updated when clients 
 			   in the session are managed: so we do not need to update this.
 			   It should never be updated on a managed client anyhoo. */
-			_CPRINTF(c, "bad attempt to change SM_CLIENT_ID\n");
-			return False;
+			goto bad;
 		} else if (prop == _XA_WM_CLIENT_LEADER) {
 			/* Note: the WM_CLIENT_LEADER property cannot be updated when
 			   clients in the session are managed: so we do not need to
 			   update this.  It should never be updated on a managed client
 			   anyhoo. */
-			_CPRINTF(c, "bad attempt to change WM_CLIENT_LEADER\n");
-			return False;
+			goto bad;
 		} else if (prop == _XA_WM_WINDOW_ROLE) {
 			/* Because client leaders are never managed, they cannot have a
 			   window role property, and the window role property must be
 			   unique per window anyhoo. */
-			return False;
+			goto bad;
 		} else if (prop == _XA_WM_PROTOCOLS) {
 			/* Client leaders are never managed. */
-			return False;
+			goto bad;
 		} else if (prop == _XA_WM_STATE) {
 			/* Client leaders are never managed. */
-			return False;
+			goto bad;
+		} else if (prop == _XA_WM_COLORMAP_WINDOWS) {
+			/* Client leaders are never managed. */
+			goto bad;
 		} else if (prop == _XA_WIN_LAYER) {
 			/* Client leaders are never managed. */
-			return False;
+			goto bad;
 		} else if (prop == _XA_WIN_STATE) {
 			/* Client leaders are never managed. */
-			return False;
+			goto bad;
 		} else if (prop == _XA_WIN_HINTS) {
 			/* Client leaders are never managed. */
-			return False;
+			goto bad;
 		} else if (prop == _XA_WIN_APP_STATE) {
 			/* Client leaders are never managed. */
-			return False;
+			goto bad;
 		} else if (prop == _XA_WIN_EXPANDED_SIZE) {
 			/* Client leaders are never managed. */
-			return False;
+			goto bad;
 		} else if (prop == _XA_WIN_ICONS) {
 			/* Client leaders are never managed. */
-			return False;
+			goto bad;
 		} else if (prop == _XA_WIN_WORKSPACE) {
 			/* Client leaders are never managed. */
-			return False;
+			goto bad;
 		} else if (prop == _XA_NET_WM_NAME) {
 			/* Client leaders are never managed. */
-			return False;
+			goto bad;
 		} else if (prop == _XA_NET_WM_VISIBLE_NAME) {
 			/* Client leaders are never managed. */
-			return False;
+			goto bad;
 		} else if (prop == _XA_NET_WM_ICON_NAME) {
 			/* Client leaders are never managed. */
-			return False;
+			goto bad;
 		} else if (prop == _XA_NET_WM_VISIBLE_ICON_NAME) {
 			/* Client leaders are never managed. */
-			return False;
+			goto bad;
 		} else if (prop == _XA_NET_WM_DESKTOP) {
 			/* Client leaders are never managed. */
-			return False;
+			goto bad;
 		} else if (prop == _XA_NET_WM_WINDOW_TYPE) {
 			/* Client leaders are never managed. */
-			return False;
+			goto bad;
 		} else if (prop == _XA_NET_WM_STATE) {
 			/* Client leaders are never managed. */
-			return False;
+			goto bad;
 		} else if (prop == _XA_NET_WM_ALLOWED_ACTIONS) {
 			/* Client leaders are never managed. */
-			return False;
+			goto bad;
 		} else if (prop == _XA_NET_WM_STRUT) {
 			/* Client leaders are never managed. */
-			return False;
+			goto bad;
 		} else if (prop == _XA_NET_WM_STRUT_PARTIAL) {
 			/* Client leaders are never managed. */
-			return False;
+			goto bad;
 #if 0
 		} else if (prop == _XA_NET_WM_ICON_GEOMETRY) {
 			/* Client leaders are never managed. */
-			return False;
+			goto bad;
 		} else if (prop == _XA_NET_WM_ICON) {
 			/* Client leaders are never managed. */
-			return False;
+			goto bad;
 #endif
 		} else if (prop == _XA_NET_WM_PID) {
 			/* Could be set on a client leader window (so that it will apply
@@ -3123,40 +3126,46 @@ updatesessionprop(Client *c, Atom prop, int state)
 			   launchers might set it too late. We use it with
 			   WM_CLIENT_MACHINE to identify startup notification sequences
 			   and must reinvoke the check here when that happens. */
-			_CPRINTF(c, "bad attempt to change _NET_WM_PID\n");
 			ewmh_process_net_startup_id(c);
 		} else if (prop == _XA_NET_WM_HANDLED_ICONS) {
 			/* Client leaders are never managed. */
-			return False;
+			goto bad;
 		} else if (prop == _XA_NET_WM_USER_TIME) {
 			/* Client leaders are never managed. */
-			return False;
+			goto bad;
 		} else if (prop == _XA_NET_WM_USER_TIME_WINDOW) {
 			/* Client leaders are never managed. */
-			return False;
+			goto bad;
 #if 0
 		} else if (prop == _XA_NET_WM_OPAQUE_REGION) {
 			/* Client leaders are never managed. */
-			return False;
+			goto bad;
 		} else if (prop == _XA_NET_WM_BYPASS_COMPOSITOR) {
 			/* Client leaders are never managed. */
-			return False;
+			goto bad;
 #endif
+		} else if (prop == _XA_NET_WM_WINDOW_OPACITY) {
+			/* Client leaders are never managed. */
+			goto bad;
 		} else if (prop == _XA_NET_WM_SYNC_REQUEST_COUNTER) {
 			/* Client leaders are never managed. */
-			return False;
+			goto bad;
 		} else if (prop == _XA_NET_STARTUP_ID) {
 			/* Typically set on client leader window.  As with all client
-			   leader properties, this hould not be changed while a session
+			   leader properties, this should not be changed while a session
 			   member is managed; however, some clients (e.g. roxterm,
 			   launchers) are setting this property too late, soe we must
 			   recheck startup notification when that happens. */
-			_CPRINTF(c, "bad attempt to change _NET_STARTUP_ID\n");
 			ewmh_process_net_startup_id(c);
 		} else
 			return False;
 	}
 	return True;
+      bad:
+	_CPRINTF(c, "bad attempt to change client leader %s\n", (name = XGetAtomName(dpy, prop)));
+	if (name)
+		XFree(name);
+	return False;
 }
 
 /* 
@@ -3166,6 +3175,8 @@ updatesessionprop(Client *c, Atom prop, int state)
 static Bool
 updateleaderprop(Client *c, Atom prop, int state)
 {
+	char *name;
+
 	if (prop <= XA_LAST_PREDEFINED) {
 		switch (prop) {
 		case XA_WM_NAME:
@@ -3177,11 +3188,11 @@ updateleaderprop(Client *c, Atom prop, int state)
 			break;
 		case XA_WM_NORMAL_HINTS:
 			/* size hints cannot apply to a group */
-			return False;
+			goto bad;
 		case XA_WM_HINTS:
 			/* hints cannot apply to a group (the group itself is in the
 			   hint) */
-			return False;
+			goto bad;
 		case XA_WM_CLASS:
 			/* Class should not be on a group basis (unless WM_WINDOW_ROLE is 
 			   provided). We check this property on demand, so we can ignore
@@ -3192,9 +3203,8 @@ updateleaderprop(Client *c, Atom prop, int state)
 			/* Note that transient windows need not have a WM_CLIENT_LEADER
 			   property when the window they are transient for has one.  This 
 			   property should not be changed after a window is managed.  */
-			_CPRINTF(c, "bad attempt to change WM_TRANSIENT_FOR\n");
 			updatetransientfor(c);
-			return False;
+			goto bad;
 		case XA_WM_COMMAND:
 			/* TODO: Typically not set on group window (but on client leader
 			   window). we don't do anything with it yet. */
@@ -3207,15 +3217,17 @@ updateleaderprop(Client *c, Atom prop, int state)
 			   be updated on a client leader once a window in the session is
 			   managed.  Some clients might change is too late, so we will
 			   still update what relies on it (TODO). */
-			_CPRINTF(c, "bad attempt to change WM_CLIENT_MACHINE\n");
 			ewmh_process_net_startup_id(c);
 			break;
 		case XA_WM_ICON_SIZE:
 			/* Placed on the root only and by the window manager. */
+			goto bad;
 		case XA_WM_SIZE_HINTS:
 			/* Obsolete property. */
+			goto bad;
 		case XA_WM_ZOOM_HINTS:
 			/* Obsolete property. */
+			goto bad;
 		default:
 			return False;
 		}
@@ -3225,104 +3237,106 @@ updateleaderprop(Client *c, Atom prop, int state)
 			/* Note: the SM_CLIENT_ID property cannot be updated when clients 
 			   in the session are managed: so we do not need to update this.
 			   It should never be updated on a managed client anyhoo. */
-			_CPRINTF(c, "bad attempt to change SM_CLIENT_ID\n");
-			return False;
+			goto bad;
 		} else if (prop == _XA_WM_CLIENT_LEADER) {
 			/* Note: the WM_CLIENT_LEADER property cannot be updated when
 			   clients in the session are managed: so we do not need to
 			   update this.  It should never be updated on a managed client
 			   anyhoo. */
-			_CPRINTF(c, "bad attempt to change WM_CLIENT_LEADER\n");
-			return False;
+			goto bad;
 		} else if (prop == _XA_WM_WINDOW_ROLE) {
 			/* Note: if there is no WM_WINDOW_ROLE property, try to use
 			   WM_CLASS and WM_NAME to uniquely identify the window.  This
 			   should only be set on manageable client windows and is meant
 			   for the window manager to identify the window in conjunction
 			   with the SM_CLIENT_ID. */
-			_CPRINTF(c, "bad attempt to change WM_WINDOW_ROLE\n");
-			return False;
+			goto bad;
 		} else if (prop == _XA_WM_PROTOCOLS) {
 			/* We tend to test these on a demand basis. */
 		} else if (prop == _XA_WM_STATE) {
 			/* Should only be set by the window manager after the window is
 			   managed.  We could potentially set it back... */
-			return False;
+			goto bad;
+		} else if (prop == _XA_WM_COLORMAP_WINDOWS) {
+			goto bad;
 		} else if (prop == _XA_WIN_LAYER) {
 			/* Should only be set by the window manager after the window is
 			   managed.  Clients should use client messages instead.  Also,
 			   if we should change it for a group window, we might change it
 			   for the members of the group too (TODO). */
-			return False;
+			goto bad;
 		} else if (prop == _XA_WIN_STATE) {
 			/* Should only be set by the window manager after the window is
 			   managed.  Clients should use client messages instead.  Does
 			   not apply on a group basis. */
-			return False;
+			goto bad;
 		} else if (prop == _XA_WIN_HINTS) {
 			/* Should not be set on a group basis after a window in the group 
 			   is managed. */
-			return False;
+			goto bad;
 		} else if (prop == _XA_WIN_APP_STATE) {
 			/* XXX: unfortunately, wm-comp.txt does not explain this
 			   property. */
-			return False;
+			goto bad;
 		} else if (prop == _XA_WIN_EXPANDED_SIZE) {
 			/* XXX: unfortunately, wm-comp.txt does not explain this
 			   property. */
-			return False;
+			goto bad;
 		} else if (prop == _XA_WIN_ICONS) {
 			/* XXX: unfortunately, wm-comp.txt does not explain this
 			   property. */
-			return False;
+			goto bad;
 		} else if (prop == _XA_WIN_WORKSPACE) {
 			/* Should only be set by the window manager after the windows is
 			   managed.  Clients should use client messages instead.  Also,
 			   if we should change it for a group window, we might change it
 			   for the members of the group too (TODO). */
-			return False;
+			goto bad;
 		} else if (prop == _XA_NET_WM_NAME) {
 			updatetitle(c);
 			drawclient(c);
 		} else if (prop == _XA_NET_WM_VISIBLE_NAME) {
 			/* Should only ever be set by the window manager. */
-			return False;
+			goto bad;
 		} else if (prop == _XA_NET_WM_ICON_NAME) {
 			updateiconname(c);
 		} else if (prop == _XA_NET_WM_VISIBLE_ICON_NAME) {
 			/* Should only ever be set by the window manager. */
-			return False;
+			goto bad;
 		} else if (prop == _XA_NET_WM_DESKTOP) {
 			/* Should only be set by the window manager after the window is
 			   managed.  Clients should use client messages instead. */
+			goto bad;
 		} else if (prop == _XA_NET_WM_WINDOW_TYPE) {
 			/* Should only be set by the window manager (but not necessary)
 			   after the window is managed.  Clients cannot change it. */
-			return False;
+			goto bad;
 		} else if (prop == _XA_NET_WM_STATE) {
 			/* Should only be set by the window manager after the window is
 			   managed.  Clients should use client messages instead.  Does
 			   not apply to groups. */
-			return False;
+			goto bad;
 		} else if (prop == _XA_NET_WM_ALLOWED_ACTIONS) {
 			/* Should only be set by the window manager.  Clients can request 
 			   changes using client messages.  Does not apply to groups. */
-			return False;
+			goto bad;
 		} else if (prop == _XA_NET_WM_STRUT) {
 			/* Can be set by the client, but does not apply to groups. */
-			return False;
+			goto bad;
 		} else if (prop == _XA_NET_WM_STRUT_PARTIAL) {
 			/* Can be set by the client, but does not apply to groups. */
-			return False;
+			goto bad;
 #if 0
 		} else if (prop == _XA_NET_WM_ICON_GEOMETRY) {
 			/* Normally set by pagers at any time.  Used by window managers
 			   to animate window iconification (in this case of a group).  We 
 			   don't do this so we can ignore it. */
+			goto bad;
 		} else if (prop == _XA_NET_WM_ICON) {
 			/* Set of icons to display.  We don't do this so we can ignore
 			   it.  At some point we might display iconified windows in a
 			   windowmaker-style clip. */
+			goto bad;
 #endif
 		} else if (prop == _XA_NET_WM_PID) {
 			/* Normally set on individual (managed) windows.  This property
@@ -3342,24 +3356,27 @@ updateleaderprop(Client *c, Atom prop, int state)
 		} else if (prop == _XA_NET_FRAME_EXTENTS) {
 			/* Only set by the window manager on managed windows.  Does not
 			   apply to groups. */
-			return False;
+			goto bad;
 #if 0
 		} else if (prop == _XA_NET_WM_OPAQUE_REGION) {
 			/* Set by client but only used by compositing manager.  We are
 			   not a compositing manager (yet), so we can ignore it.  Also,
 			   does not apply to groups. */
-			return False;
+			goto bad;
 		} else if (prop == _XA_NET_WM_BYPASS_COMPOSITOR) {
 			/* Set by client but only used by compositing manager.  We are
 			   not a compositing manager (yet), so we can ignore it.  Could
 			   apply to a group, though. */
+			goto bad;
 #endif
+		} else if (prop == _XA_NET_WM_WINDOW_OPACITY) {
+			goto bad;
 		} else if (prop == _XA_NET_WM_SYNC_REQUEST_COUNTER) {
 			/* Set by client as part of sync request protocol.  We use the
 			   XSync extension to determine when updates have completed, so
 			   we can ignore this property change.  Also does not apply to
 			   groups. */
-			return False;
+			goto bad;
 		} else if (prop == _XA_NET_STARTUP_ID) {
 			/* Typically not set on group window (but on client leader
 			   window). As with most client leader properties, this should
@@ -3372,11 +3389,18 @@ updateleaderprop(Client *c, Atom prop, int state)
 			return False;
 	}
 	return True;
+      bad:
+	_CPRINTF(c, "bad attempt to change group leader %s\n", (name = XGetAtomName(dpy, prop)));
+	if (name)
+		XFree(name);
+	return False;
 }
 
 static Bool
 updateclientprop(Client *c, Atom prop, int state)
 {
+	char *name;
+
 	if (prop <= XA_LAST_PREDEFINED) {
 		switch (prop) {
 		case XA_WM_NAME:
@@ -3399,9 +3423,8 @@ updateclientprop(Client *c, Atom prop, int state)
 		case XA_WM_TRANSIENT_FOR:
 			/* This property should not be changed after a window is already
 			   managed. */
-			_CPRINTF(c, "bad attempt to change WM_TRANSIENT_FOR\n");
 			updatetransientfor(c);
-			break;
+			goto bad;
 		case XA_WM_COMMAND:
 			/* TODO: after sending a WM_SAVE_YOURSELF we expect an update to
 			   WM_COMMAND by the client as a part of session management. */
@@ -3413,9 +3436,8 @@ updateclientprop(Client *c, Atom prop, int state)
 			   startup sequence identification.  Nevertheless, it should not
 			   be updated on a window once it is managed.  Some clients might 
 			   change too late, so we will still update what relies on it. */
-			_CPRINTF(c, "bad attempt to change WM_CLIENT_MACHINE\n");
 			ewmh_process_net_startup_id(c);
-			break;
+			goto bad;
 		case XA_WM_ICON_SIZE:
 			/* Placed on the root only and by the window manager. */
 		case XA_WM_SIZE_HINTS:
@@ -3431,85 +3453,83 @@ updateclientprop(Client *c, Atom prop, int state)
 			/* Note: the SM_CLIENT_ID property cannot be updated when clients 
 			   in the session are managed: so we do not need to update this.
 			   It should never be updated on a managed client anyhoo. */
-			_CPRINTF(c, "bad attempt to change WM_CLIENT_ID\n");
-			return False;
+			goto bad;
 		} else if (prop == _XA_WM_CLIENT_LEADER) {
 			/* Note: the WM_CLIENT_LEADER property cannot be updated when
 			   clients in the session are managed: so we do not need to
 			   update this.  It should never be updated on a managed client
 			   anyhoo. */
-			_CPRINTF(c, "bad attempt to change WM_CLIENT_LEADER\n");
-			return False;
+			goto bad;
 		} else if (prop == _XA_WM_WINDOW_ROLE) {
 			/* Note: if there is no WM_WINDOW_ROLE property, try to use
 			   WM_CLASS and WM_NAME to uniquely identify the window.  This
 			   should only be set on manageable client windows and is meant
 			   for the window manager to identify the window in conjunction
 			   with the SM_CLIENT_ID. */
-			_CPRINTF(c, "bad attempt to change WM_WINDOW_ROLE\n");
-			return False;
+			goto bad;
 		} else if (prop == _XA_WM_PROTOCOLS) {
 			/* We tend to test these on a demand basis. */
 		} else if (prop == _XA_WM_STATE) {
 			/* Should only be set by the window manager after the window is
 			   managed.  We could potentially set it back... */
-			return False;
+			goto bad;
 		} else if (prop == _XA_WM_COLORMAP_WINDOWS) {
 			updatecmapwins(c);
 			drawclient(c);
 		} else if (prop == _XA_WIN_LAYER) {
 			/* Should only be set by the window manager after the window is
 			   managed.  Clients should use client messages instead. */
-			return False;
+			goto bad;
 		} else if (prop == _XA_WIN_STATE) {
 			/* Should only be set by the window manager after the window is
 			   managed.  Clients should use client messages instead. */
-			return False;
+			goto bad;
 		} else if (prop == _XA_WIN_HINTS) {
 			/* TODO: when this property is changed by the client, the window
 			   manager must honor its changes. */
 		} else if (prop == _XA_WIN_APP_STATE) {
 			/* XXX: unfortunately, wm-comp.txt does not explain this
 			   property. */
-			return False;
+			goto bad;
 		} else if (prop == _XA_WIN_EXPANDED_SIZE) {
 			/* XXX: unfortunately, wm-comp.txt does not explain this
 			   property. */
-			return False;
+			goto bad;
 		} else if (prop == _XA_WIN_ICONS) {
 			/* XXX: unfortunately, wm-comp.txt does not explain this
 			   property. */
-			return False;
+			goto bad;
 		} else if (prop == _XA_WIN_WORKSPACE) {
 			/* Should only be set by the window manager after the windows is
 			   managed.  Clients should use client messages instead. */
-			return False;
+			goto bad;
 		} else if (prop == _XA_NET_WM_NAME) {
 			updatetitle(c);
 			drawclient(c);
 		} else if (prop == _XA_NET_WM_VISIBLE_NAME) {
 			/* Should only ever be set by the window manager. */
-			return False;
+			goto bad;
 		} else if (prop == _XA_NET_WM_ICON_NAME) {
 			updateiconname(c);
 		} else if (prop == _XA_NET_WM_VISIBLE_ICON_NAME) {
 			/* Should only ever be set by the window manager. */
-			return False;
+			goto bad;
 		} else if (prop == _XA_NET_WM_DESKTOP) {
 			/* Should only be set by the window manager after the window is
 			   managed.  Clients should use client messages instead. */
+			goto bad;
 		} else if (prop == _XA_NET_WM_WINDOW_TYPE) {
 			/* Should only be set by the window manager (but not necessary)
 			   after the window is managed.  Clients cannot change it. */
-			return False;
+			goto bad;
 		} else if (prop == _XA_NET_WM_STATE) {
 			/* Should only be set by the window manager after the window is
 			   managed.  Clients should use client messages instead. */
-			return False;
+			goto bad;
 		} else if (prop == _XA_NET_WM_ALLOWED_ACTIONS) {
 			/* Should only be set by the window manager.  Clients can request 
 			   changes using client messages. */
-			return False;
+			goto bad;
 		} else if (prop == _XA_NET_WM_STRUT) {
 			/* The client MAY change this property at any time, therefore the 
 			   window manager MUST watch for property notify events if the
@@ -3531,10 +3551,12 @@ updateclientprop(Client *c, Atom prop, int state)
 			/* Normally set by pagers at any time.  Used by window managers
 			   to animate window iconification.  We don't do this so we can
 			   ignore it. */
+			return False;
 		} else if (prop == _XA_NET_WM_ICON) {
 			/* Set of icons to display.  We don't do this so we can ignore
 			   it.  At some point we might display iconified windows in a
 			   windowmaker-style clip. */
+			return False;
 #endif
 		} else if (prop == _XA_NET_WM_PID) {
 			/* This property should not change after the window is managed,
@@ -3547,24 +3569,31 @@ updateclientprop(Client *c, Atom prop, int state)
 			/* Indicates that this client handles iconified windows.  We
 			   don't provide icons for iconified windows, so, for now, it can 
 			   be ignored. */
+			return False;
 		} else if (prop == _XA_NET_WM_USER_TIME) {
 			ewmh_process_net_window_user_time(c);
 		} else if (prop == _XA_NET_WM_USER_TIME_WINDOW) {
 			ewmh_process_net_window_user_time_window(c);
 		} else if (prop == _XA_NET_FRAME_EXTENTS) {
 			/* Only set by the window manager on managed windows. */
+			goto bad;
 #if 0
 		} else if (prop == _XA_NET_WM_OPAQUE_REGION) {
 			/* Set by client but only used by compositing manager.  We are
 			   not a compositing manager (yet), so we can ignore it. */
+			return False;
 		} else if (prop == _XA_NET_WM_BYPASS_COMPOSITOR) {
 			/* Set by client but only used by compositing manager.  We are
 			   not a compositing manager (yet), so we can ignore it. */
+			return False;
 #endif
+		} else if (prop == _XA_NET_WM_WINDOW_OPACITY) {
+			return False;
 		} else if (prop == _XA_NET_WM_SYNC_REQUEST_COUNTER) {
 			/* Set by client as part of sync request protocol.  We use the
 			   XSync extension to determine when updates have completed, so
 			   we can ignore this property change. */
+			return False;
 		} else if (prop == _XA_NET_STARTUP_ID) {
 			/* Typcially not set on client window (but on client leader
 			   window).  As with most client leader properties, this should
@@ -3577,6 +3606,11 @@ updateclientprop(Client *c, Atom prop, int state)
 			return False;
 	}
 	return True;
+      bad:
+	_CPRINTF(c, "bad attempt to change client %s\n", (name = XGetAtomName(dpy, prop)));
+	if (name)
+		XFree(name);
+	return False;
 }
 
 static Bool

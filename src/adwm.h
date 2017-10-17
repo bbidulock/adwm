@@ -1242,21 +1242,21 @@ void installcolormaps(AScreen *s, Client *c, Window *w);
 void show_client_state(Client *c);
 
 #define LENGTH(x)		(sizeof(x)/sizeof(*x))
-#define _DPRINT			do { fprintf(stderr, "adwm: %s %s() %d\n",__FILE__,__func__, __LINE__); fflush(stderr); } while(0)
-#define _DPRINTF(args...)	do { fprintf(stderr, "adwm: %s %s():%d ", __FILE__,__func__, __LINE__); \
+#define _DPRINT			do { fprintf(stderr, "adwm: E: %s %s() %d\n",__FILE__,__func__, __LINE__); fflush(stderr); } while(0)
+#define _DPRINTF(args...)	do { fprintf(stderr, "adwm: E: %s %s():%d ", __FILE__,__func__, __LINE__); \
 				     fprintf(stderr, args); fflush(stderr); } while(0)
-#define _CPRINTF(c,args...)	do { fprintf(stderr, "adwm: %s %s():%d [0x%08lx 0x%08lx 0x%08lx %-20s] ", __FILE__,__func__,__LINE__,(c)->frame,(c)->win,(c)->icon,(c)->name); \
+#define _CPRINTF(c,args...)	do { fprintf(stderr, "adwm: E: %s %s():%d [0x%08lx 0x%08lx 0x%08lx %-20s] ", __FILE__,__func__,__LINE__,(c)->frame,(c)->win,(c)->icon,(c)->name); \
 				     fprintf(stderr, args); fflush(stderr); } while(0)
-#define _GPRINTF(_g,args...)	do { fprintf(stderr, "adwm: %s %s():%d %dx%d+%d+%d:%d (%d:%d:%d) ", __FILE__,__func__,__LINE__,(_g)->w,(_g)->h,(_g)->x,(_g)->y,(_g)->b,(_g)->t,(_g)->g,(_g)->v); \
+#define _GPRINTF(_g,args...)	do { fprintf(stderr, "adwm: E: %s %s():%d %dx%d+%d+%d:%d (%d:%d:%d) ", __FILE__,__func__,__LINE__,(_g)->w,(_g)->h,(_g)->x,(_g)->y,(_g)->b,(_g)->t,(_g)->g,(_g)->v); \
 				     fprintf(stderr, args); fflush(stderr); } while(0)
 #define _XPRINTF(args...)	do { } while(0)
 #ifdef DEBUG
-#define DPRINT			do { fprintf(stderr, "adwm: %s %s() %d\n",__FILE__,__func__, __LINE__); fflush(stderr); } while(0)
-#define DPRINTF(args...)	do { fprintf(stderr, "adwm: %s %s():%d ", __FILE__,__func__, __LINE__); \
+#define DPRINT			do { fprintf(stderr, "adwm: D: %s %s() %d\n",__FILE__,__func__, __LINE__); fflush(stderr); } while(0)
+#define DPRINTF(args...)	do { fprintf(stderr, "adwm: D: %s %s():%d ", __FILE__,__func__, __LINE__); \
 				     fprintf(stderr, args); fflush(stderr); } while(0)
-#define CPRINTF(c,args...)	do { fprintf(stderr, "adwm: %s %s():%d [0x%08lx 0x%08lx 0x%08lx %-20s] ", __FILE__,__func__,__LINE__,(c)->frame,(c)->win,(c)->icon,(c)->name); \
+#define CPRINTF(c,args...)	do { fprintf(stderr, "adwm: D: %s %s():%d [0x%08lx 0x%08lx 0x%08lx %-20s] ", __FILE__,__func__,__LINE__,(c)->frame,(c)->win,(c)->icon,(c)->name); \
 				     fprintf(stderr, args); fflush(stderr); } while(0)
-#define GPRINTF(_g,args...)	do { fprintf(stderr, "adwm: %s %s():%d %dx%d+%d+%d:%d (%d:%d:%d) ", __FILE__,__func__,__LINE__,(_g)->w,(_g)->h,(_g)->x,(_g)->y,(_g)->b,(_g)->t,(_g)->g,(_g)->v); \
+#define GPRINTF(_g,args...)	do { fprintf(stderr, "adwm: D: %s %s():%d %dx%d+%d+%d:%d (%d:%d:%d) ", __FILE__,__func__,__LINE__,(_g)->w,(_g)->h,(_g)->x,(_g)->y,(_g)->b,(_g)->t,(_g)->g,(_g)->v); \
 				     fprintf(stderr, args); fflush(stderr); } while(0)
 #define XPRINTF(args...)	do { } while(0)
 #else

@@ -1280,7 +1280,7 @@ initstyle()
 	initfont(getresource("selected.font", getresource("font", FONT)), Selected);
 	scr->style.border = atoi(getresource("border", STR(BORDERPX)));
 	scr->style.margin = atoi(getresource("margin", STR(MARGINPX)));
-	scr->style.opacity = OPAQUE * atof(getresource("opacity", STR(NF_OPACITY)));
+	scr->style.opacity = (int) ((double) OPAQUE * atof(getresource("opacity", STR(NF_OPACITY))));
 	scr->style.outline = atoi(getresource("outline", "0")) ? 1 : 0;
 	scr->style.spacing = atoi(getresource("spacing", "1"));
 	strncpy(scr->style.titlelayout, getresource("titlelayout", "N  IMC"),

@@ -1097,6 +1097,33 @@ enternotify(XEvent *e)
 	}
 }
 
+static Colormap *
+listcolormaps(AScreen *s, int *nump)
+{
+	Colormap *list;
+	int num = 0;
+
+	if ((list = XListInstalledColormaps(dpy, s->root, &num)))
+		if (nump)
+			*nump = num;
+	return (list);
+}
+
+static void
+installcolormap(AScreen *s, Client *c, Window *w)
+{
+	if (c->cmap && c->cmap != DefaultColormap(dpy, s->screen)) {
+		Colormap *list;
+		int i, num = 0;
+
+		if ((list = listcolormaps(s, &num))) {
+			for (i = 0; i < num && list[i] != c->cmap; i++) ;
+			if (i == num)
+				XInstallColormap(dpy, c->cmap);
+		}
+	}
+}
+
 static Bool
 colormapnotify(XEvent *e)
 {
@@ -1106,6 +1133,8 @@ colormapnotify(XEvent *e)
 	if ((c = getclient(ev->window, ClientColormap))) {
 		if (ev->new) {
 			_CPRINTF(c, "colormap for window 0x%lx changed to 0x%lx\n", ev->window, ev->colormap);
+			if (c == sel)
+				installcolormap(event_scr, c, c->cmapwins);
 			return True;
 		} else {
 			switch (ev->state) {

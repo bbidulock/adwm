@@ -366,7 +366,7 @@ sn_handler(SnMonitorEvent * event, void *dummy)
 void
 initewmh(char *name)
 {
-	long data[2];
+	long data[4];
 	static Bool atoms_interned = False;
 	Window win = scr->selwin;
 
@@ -413,6 +413,9 @@ initewmh(char *name)
 			PropModeReplace, (unsigned char *) data, 2);
 	XChangeProperty(dpy, win, _XA_MOTIF_WM_INFO, _XA_MOTIF_WM_INFO, 32,
 			PropModeReplace, (unsigned char *) data, 2);
+	data[0] = data[1] = data[2] = data[3] = 64;
+	XChangeProperty(dpy, scr->root, XA_WM_ICON_SIZE, XA_CARDINAL, 32,
+			PropModeReplace, (unsigned char *) data, 4);
 
 	ewmh_update_net_client_lists();
 }
@@ -426,6 +429,7 @@ exitewmh(WithdrawCause cause)
 
 	XDeleteProperty(dpy, scr->root, _XA_WIN_PROTOCOLS);
 	XDeleteProperty(dpy, scr->root, _XA_NET_SUPPORTED);
+	XDeleteProperty(dpy, scr->root, XA_WM_ICON_SIZE);
 
 	switch (cause) {
 		int i;

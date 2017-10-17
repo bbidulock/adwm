@@ -1069,34 +1069,6 @@ motionnotify(XEvent *e)
 	return False;
 }
 
-static Bool
-enternotify(XEvent *e)
-{
-	XCrossingEvent *ev = &e->xcrossing;
-	Client *c;
-
-	if (e->type != EnterNotify || ev->mode != NotifyNormal)
-		return False;
-
-	if ((c = findclient(ev->window))) {
-		if (ev->detail == NotifyInferior)
-			return False;
-		CPRINTF(c, "EnterNotify received\n");
-		enterclient(e, c);
-		return True;
-	} else if (ev->window == scr->root && ev->detail == NotifyInferior) {
-		DPRINTF("Not focusing root\n");
-		if (sel && (WTCHECK(sel, WindowTypeDock) || sel->is.dockapp || sel->is.bastard)) {
-			focus(NULL);
-			return True;
-		}
-		return False;
-	} else {
-		DPRINTF("Unknown entered window 0x%08lx\n", ev->window);
-		return False;
-	}
-}
-
 Colormap *
 listcolormaps(AScreen *s, int *nump)
 {
@@ -1118,19 +1090,71 @@ installcolormaps(AScreen *s, Client *c, Window *w)
 		return;
 	installcolormaps(s, c, w + 1);
 	if (XGetWindowAttributes(dpy, *w, &wa)) {
-	}
-	if (wa.colormap && wa.colormap != DefaultColormap(dpy, s->screen)) {
-		Colormap *list;
-		int num = 0;
+		if (wa.colormap && wa.colormap != DefaultColormap(dpy, s->screen)) {
+			Colormap *list;
+			int num = 0;
 
-		if ((list = listcolormaps(s, &num))) {
-			int i;
+			if ((list = listcolormaps(s, &num))) {
+				int i;
 
-			for (i = 0; i < num && list[i] != c->cmap; i++) ;
-			if (i == num)
-				XInstallColormap(dpy, c->cmap);
-			XFree(list);
+				for (i = 0; i < num && list[i] != wa.colormap; i++) ;
+				if (i == num)
+					XInstallColormap(dpy, wa.colormap);
+				XFree(list);
+			}
 		}
+	}
+}
+
+static Bool
+enternotify(XEvent *e)
+{
+	XCrossingEvent *ev = &e->xcrossing;
+	Client *c;
+
+	if (e->type != EnterNotify || ev->mode != NotifyNormal)
+		return False;
+
+	if ((c = findclient(ev->window))) {
+		if (ev->detail == NotifyInferior)
+			return False;
+		CPRINTF(c, "EnterNotify received\n");
+		enterclient(e, c);
+		if (c != sel)
+			installcolormaps(event_scr, c, c->cmapwins);
+		return True;
+	} else if ((c = getclient(ev->window, ClientColormap))) {
+		XWindowAttributes wa;
+
+		if (XGetWindowAttributes(dpy, ev->window, &wa)) {
+			if (wa.colormap
+			    && wa.colormap != DefaultColormap(dpy, event_scr->screen)) {
+				Colormap *list;
+				int num = 0;
+
+				if ((list = listcolormaps(event_scr, &num))) {
+					int i;
+
+					for (i = 0; i < num && list[i] != wa.colormap; i++) ;
+					if (i == num)
+						XInstallColormap(dpy, wa.colormap);
+					XFree(list);
+				}
+			}
+		}
+		return True;
+	} else if (ev->window == scr->root && ev->detail == NotifyInferior) {
+		DPRINTF("Not focusing root\n");
+		if (sel
+		    && (WTCHECK(sel, WindowTypeDock) || sel->is.dockapp
+			|| sel->is.bastard)) {
+			focus(NULL);
+			return True;
+		}
+		return False;
+	} else {
+		DPRINTF("Unknown entered window 0x%08lx\n", ev->window);
+		return False;
 	}
 }
 

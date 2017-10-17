@@ -1082,28 +1082,33 @@ listcolormaps(AScreen *s, int *nump)
 }
 
 void
-installcolormaps(AScreen *s, Client *c, Window *w)
+installcolormap(AScreen *s, Window w)
 {
 	XWindowAttributes wa;
+	Colormap *list;
+	int i, num = 0;
 
+	if (s->colormapnotified)
+		return;
+	if (!XGetWindowAttributes(dpy, w, &wa))
+		return;
+	if (!wa.colormap || wa.colormap == DefaultColormap(dpy, s->screen))
+		return;
+	if ((list = listcolormaps(s, &num))) {
+		for (i = 0; i < num && list[i] != wa.colormap; i++) ;
+		if (i == num)
+			XInstallColormap(dpy, wa.colormap);
+		XFree(list);
+	}
+}
+
+void
+installcolormaps(AScreen *s, Client *c, Window *w)
+{
 	if (!w || !*w)
 		return;
 	installcolormaps(s, c, w + 1);
-	if (XGetWindowAttributes(dpy, *w, &wa)) {
-		if (wa.colormap && wa.colormap != DefaultColormap(dpy, s->screen)) {
-			Colormap *list;
-			int num = 0;
-
-			if ((list = listcolormaps(s, &num))) {
-				int i;
-
-				for (i = 0; i < num && list[i] != wa.colormap; i++) ;
-				if (i == num)
-					XInstallColormap(dpy, wa.colormap);
-				XFree(list);
-			}
-		}
-	}
+	installcolormap(s, *w);
 }
 
 static Bool
@@ -1124,24 +1129,7 @@ enternotify(XEvent *e)
 			installcolormaps(event_scr, c, c->cmapwins);
 		return True;
 	} else if ((c = getclient(ev->window, ClientColormap))) {
-		XWindowAttributes wa;
-
-		if (XGetWindowAttributes(dpy, ev->window, &wa)) {
-			if (wa.colormap
-			    && wa.colormap != DefaultColormap(dpy, event_scr->screen)) {
-				Colormap *list;
-				int num = 0;
-
-				if ((list = listcolormaps(event_scr, &num))) {
-					int i;
-
-					for (i = 0; i < num && list[i] != wa.colormap; i++) ;
-					if (i == num)
-						XInstallColormap(dpy, wa.colormap);
-					XFree(list);
-				}
-			}
-		}
+		installcolormap(event_scr, ev->window);
 		return True;
 	} else if (ev->window == scr->root && ev->detail == NotifyInferior) {
 		DPRINTF("Not focusing root\n");

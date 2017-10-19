@@ -129,8 +129,7 @@ Group window_stack = { NULL, 0, 0 };
 
 XContext context[PartLast];
 Cursor cursor[CursorLast];
-int ebase[BaseLast];
-int rbase[BaseLast];
+ExtensionInfo einfo[BaseLast];
 Bool haveext[BaseLast];
 Rule **rules;
 int nrules;
@@ -3807,8 +3806,8 @@ handle_event(XEvent *ev)
 		for (i = BaseLast - 1; i >= 0; i--) {
 			if (!haveext[i])
 				continue;
-			if (ev->type >= ebase[i] && ev->type < ebase[i] + EXTRANGE) {
-				int slot = ev->type - ebase[i] + LASTEvent + EXTRANGE * i;
+			if (ev->type >= einfo[i].event && ev->type < einfo[i].event + EXTRANGE) {
+				int slot = ev->type - einfo[i].event + LASTEvent + EXTRANGE * i;
 
 				if (handler[slot])
 					return (handler[slot]) (ev);
@@ -5763,64 +5762,64 @@ main(int argc, char *argv[])
 	for (i = 0; i < PartLast; i++)
 		context[i] = XUniqueContext();
 	haveext[XfixesBase]
-	    = XFixesQueryExtension(dpy, &ebase[XfixesBase], &rbase[XfixesBase]);
+	    = XFixesQueryExtension(dpy, &einfo[XfixesBase].event, &einfo[XfixesBase].error);
 	if (haveext[XfixesBase])
-		DPRINTF("have XFIXES extension with base %d\n", ebase[XfixesBase]);
+		DPRINTF("have XFIXES extension with base %d\n", einfo[XfixesBase].event);
 	else
 		DPRINTF("%s", "XFIXES extension is not supported\n");
 #ifdef XRANDR
 	haveext[XrandrBase]
-	    = XRRQueryExtension(dpy, &ebase[XrandrBase], &rbase[XrandrBase]);
+	    = XRRQueryExtension(dpy, &einfo[XrandrBase].event, &einfo[XrandrBase].error);
 	if (haveext[XrandrBase])
-		DPRINTF("have RANDR extension with base %d\n", ebase[XrandrBase]);
+		DPRINTF("have RANDR extension with base %d\n", einfo[XrandrBase].event);
 	else
 		DPRINTF("%s", "RANDR extension is not supported\n");
 #endif
 #ifdef XINERAMA
 	haveext[XineramaBase]
-	    = XineramaQueryExtension(dpy, &ebase[XineramaBase], &rbase[XineramaBase]);
+	    = XineramaQueryExtension(dpy, &einfo[XineramaBase].event, &einfo[XineramaBase].error);
 	if (haveext[XineramaBase])
-		DPRINTF("have XINERAMA extension with base %d\n", ebase[XineramaBase]);
+		DPRINTF("have XINERAMA extension with base %d\n", einfo[XineramaBase].event);
 	else
 		DPRINTF("%s", "XINERAMA extension is not supported\n");
 #endif
 #ifdef SYNC
 	haveext[XsyncBase]
-	    = XSyncQueryExtension(dpy, &ebase[XsyncBase], &rbase[XsyncBase]);
+	    = XSyncQueryExtension(dpy, &einfo[XsyncBase].event, &einfo[XsyncBase].error);
 	if (haveext[XsyncBase])
-		DPRINTF("have SYNC extension with base %d\n", ebase[XsyncBase]);
+		DPRINTF("have SYNC extension with base %d\n", einfo[XsyncBase].event);
 	else
 		DPRINTF("%s", "SYNC extension is not supported\n");
 #endif
 #ifdef RENDER
 	haveext[XrenderBase]
-	    = XRenderQueryExtension(dpy, &ebase[XrenderBase], &rbase[XrenderBase]);
+	    = XRenderQueryExtension(dpy, &einfo[XrenderBase].event, &einfo[XrenderBase].error);
 	if (haveext[XrenderBase])
-		DPRINTF("have RENDER extension with base %d\n", ebase[XrenderBase]);
+		DPRINTF("have RENDER extension with base %d\n", einfo[XrenderBase].event);
 	else
 		DPRINTF("%s", "RENDER extension is not supported\n");
 #endif
 #ifdef XCOMPOSITE
 	haveext[XcompositeBase]
-	    = XCompositeQueryExtension(dpy, &ebase[XcompositeBase], &rbase[XcompositeBase]);
+	    = XCompositeQueryExtension(dpy, &einfo[XcompositeBase].event, &einfo[XcompositeBase].error);
 	if (haveext[XcompositeBase])
-		DPRINTF("have Composite extension with base %d\n", ebase[XcompositeBase]);
+		DPRINTF("have Composite extension with base %d\n", einfo[XcompositeBase].event);
 	else
 		DPRINTF("%s", "Composite extension is not supported\n");
 #endif
 #ifdef DAMAGE
 	haveext[XdamageBase]
-	    = XDamageQueryExtension(dpy, &ebase[XdamageBase], &rbase[XdamageBase]);
+	    = XDamageQueryExtension(dpy, &einfo[XdamageBase].event, &einfo[XdamageBase].error);
 	if (haveext[XdamageBase])
-		DPRINTF("have DAMAGE extension with base %d\n", ebase[XdamageBase]);
+		DPRINTF("have DAMAGE extension with base %d\n", einfo[XdamageBase].event);
 	else
 		DPRINTF("%s", "DAMAGE extension is not supported\n");
 #endif
 #ifdef SHAPE
 	haveext[XshapeBase]
-	    = XShapeQueryExtension(dpy, &ebase[XshapeBase], &rbase[XshapeBase]);
+	    = XShapeQueryExtension(dpy, &einfo[XshapeBase].event, &einfo[XshapeBase].error);
 	if (haveext[XshapeBase])
-		DPRINTF("have SHAPE extension with base %d\n", ebase[XshapeBase]);
+		DPRINTF("have SHAPE extension with base %d\n", einfo[XshapeBase].event);
 	else
 		DPRINTF("%s", "SHAPE extension is not supported\n");
 #endif

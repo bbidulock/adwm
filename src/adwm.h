@@ -1166,6 +1166,13 @@ typedef struct {
 	void (*drawclient) (Client *);
 } AdwmOperations;
 
+typedef struct {
+	int major;			/* major version of extension */
+	int minor;			/* minor version of extension */
+	int event;			/* extension base for event ids */
+	int error;			/* extension base for error ids */
+} ExtensionInfo;
+
 /* main */
 View *onview(Client *c);
 View *clientview(Client *c);
@@ -1227,7 +1234,7 @@ Bool canfocus(Client *c);
 Group *getleader(Window leader, int group);
 void updategeom(Monitor *m);
 extern Cursor cursor[CursorLast];
-extern int ebase[BaseLast];
+extern ExtensionInfo einfo[BaseLast];
 Bool handle_event(XEvent *ev);
 View *closestview(int x, int y);
 Bool newsize(Client *c, int w, int h, Time time);

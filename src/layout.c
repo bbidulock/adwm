@@ -3488,7 +3488,7 @@ ismoveevent(Display *display, XEvent *event, XPointer arg)
 	case MotionNotify:
 		return True;
 	default:
-		if (event->type == XSyncAlarmNotify + ebase[XsyncBase])
+		if (event->type == XSyncAlarmNotify + einfo[XsyncBase].event)
 			return True;
 		return False;
 	}
@@ -4037,7 +4037,7 @@ isresizeevent(Display *display, XEvent *event, XPointer arg)
 	case MotionNotify:
 		return True;
 	default:
-		if (event->type == XSyncAlarmNotify + ebase[XsyncBase])
+		if (event->type == XSyncAlarmNotify + einfo[XsyncBase].event)
 			return True;
 		return False;
 	}

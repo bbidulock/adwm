@@ -129,8 +129,6 @@ Group window_stack = { NULL, 0, 0 };
 
 XContext context[PartLast];
 Cursor cursor[CursorLast];
-ExtensionInfo einfo[BaseLast];
-Bool haveext[BaseLast];
 Rule **rules;
 int nrules;
 unsigned int modkey;
@@ -139,6 +137,35 @@ Time user_time;
 Time give_time;
 Time take_time;
 Group systray = { NULL, 0, 0 };
+
+ExtensionInfo einfo[BaseLast] = {
+	/* *INDENT-OFF* */
+#if 1
+	[XfixesBase]	 = { "XFIXES",	  &XFixesQueryVersion,		},
+#endif
+#ifdef XRANDR
+	[XrandrBase]	 = { "RANDR",	  &XRRQueryVersion,		},
+#endif
+#ifdef XINERAMA
+	[XineramaBase]	 = { "XINERAMA",  &XineramaQueryVersion,	},
+#endif
+#ifdef SYNC
+	[XsyncBase]	 = { "SYNC",	  &XSyncInitialize,		},
+#endif
+#ifdef RENDER
+	[XrenderBase]	 = { "RENDER",	  &XRenderQueryVersion,		},
+#endif
+#ifdef XCOMPOSITE
+	[XcompositeBase] = { "Composite", &XCompositeQueryVersion,	},
+#endif
+#ifdef DAMAGE
+	[XdamageBase]	 = { "DAMAGE",	  &XDamageQueryVersion,		},
+#endif
+#ifdef SHAPE
+	[XshapeBase]	 = { "SHAPE",	  &XShapeQueryVersion,		},
+#endif
+	/* *INDENT-ON* */
+};
 
 /* configuration, allows nested code to access above variables */
 
@@ -2566,7 +2593,7 @@ manage(Window w, XWindowAttributes * wa)
 	// mask |= CWSaveUnder;
 
 	if (c->icon) {
-		if (haveext[XfixesBase])
+		if (einfo[XfixesBase].have)
 			XFixesChangeSaveSet(dpy, c->icon, SetModeInsert, SaveSetNearest, SaveSetUnmap);
 		else
 			XChangeSaveSet(dpy, c->icon, SetModeInsert);
@@ -2591,7 +2618,7 @@ manage(Window w, XWindowAttributes * wa)
 		}
 #endif
 	} else {
-		if (haveext[XfixesBase])
+		if (einfo[XfixesBase].have)
 			XFixesChangeSaveSet(dpy, c->win, SetModeInsert, SaveSetNearest, SaveSetMap);
 		else
 			XChangeSaveSet(dpy, c->win, SetModeInsert);
@@ -3804,7 +3831,7 @@ handle_event(XEvent *ev)
 			return (handler[ev->type]) (ev);
 	} else
 		for (i = BaseLast - 1; i >= 0; i--) {
-			if (!haveext[i])
+			if (!einfo[i].have)
 				continue;
 			if (ev->type >= einfo[i].event && ev->type < einfo[i].event + EXTRANGE) {
 				int slot = ev->type - einfo[i].event + LASTEvent + EXTRANGE * i;
@@ -4192,7 +4219,7 @@ updatebarriers(void)
 	Monitor *m;
 	int i;
 
-	if (!haveext[XfixesBase])
+	if (!einfo[XfixesBase].have)
 		return;
 	for (m = scr->monitors; m; m = m->next)
 		for (i = 0; i < 8; i++)
@@ -4378,7 +4405,7 @@ initmonitors(XEvent *e)
 #endif
 
 #ifdef XINERAMA
-	if (haveext[XineramaBase]) {
+	if (einfo[XineramaBase].have) {
 		int i;
 		XineramaScreenInfo *si;
 
@@ -4506,7 +4533,7 @@ initmonitors(XEvent *e)
 	DPRINTF("%s", "compiled without XINERAMA support\n");
 #endif
 #ifdef XRANDR
-	if (haveext[XrandrBase]) {
+	if (einfo[XrandrBase].have) {
 		XRRScreenResources *sr;
 		int i, j;
 
@@ -5177,7 +5204,7 @@ unmanage(Client *c, WithdrawCause cause)
 		c->cmap = None;
 	}
 	if (cause != CauseDestroyed) {
-		if (haveext[XfixesBase])
+		if (einfo[XfixesBase].have)
 			XFixesChangeSaveSet(dpy, c->icon ? c->icon : c->win, SetModeDelete, SaveSetNearest, SaveSetMap);
 		else
 			XChangeSaveSet(dpy, c->icon ? c->icon : c->win, SetModeDelete);
@@ -5759,70 +5786,20 @@ main(int argc, char *argv[])
 	if (!(baseops = get_adwm_ops("adwm")))
 		eprint("%s", "could not load base operations\n");
 
+	/* create contexts */
 	for (i = 0; i < PartLast; i++)
 		context[i] = XUniqueContext();
-	haveext[XfixesBase]
-	    = XFixesQueryExtension(dpy, &einfo[XfixesBase].event, &einfo[XfixesBase].error);
-	if (haveext[XfixesBase])
-		DPRINTF("have XFIXES extension with base %d\n", einfo[XfixesBase].event);
-	else
-		DPRINTF("%s", "XFIXES extension is not supported\n");
-#ifdef XRANDR
-	haveext[XrandrBase]
-	    = XRRQueryExtension(dpy, &einfo[XrandrBase].event, &einfo[XrandrBase].error);
-	if (haveext[XrandrBase])
-		DPRINTF("have RANDR extension with base %d\n", einfo[XrandrBase].event);
-	else
-		DPRINTF("%s", "RANDR extension is not supported\n");
-#endif
-#ifdef XINERAMA
-	haveext[XineramaBase]
-	    = XineramaQueryExtension(dpy, &einfo[XineramaBase].event, &einfo[XineramaBase].error);
-	if (haveext[XineramaBase])
-		DPRINTF("have XINERAMA extension with base %d\n", einfo[XineramaBase].event);
-	else
-		DPRINTF("%s", "XINERAMA extension is not supported\n");
-#endif
-#ifdef SYNC
-	haveext[XsyncBase]
-	    = XSyncQueryExtension(dpy, &einfo[XsyncBase].event, &einfo[XsyncBase].error);
-	if (haveext[XsyncBase])
-		DPRINTF("have SYNC extension with base %d\n", einfo[XsyncBase].event);
-	else
-		DPRINTF("%s", "SYNC extension is not supported\n");
-#endif
-#ifdef RENDER
-	haveext[XrenderBase]
-	    = XRenderQueryExtension(dpy, &einfo[XrenderBase].event, &einfo[XrenderBase].error);
-	if (haveext[XrenderBase])
-		DPRINTF("have RENDER extension with base %d\n", einfo[XrenderBase].event);
-	else
-		DPRINTF("%s", "RENDER extension is not supported\n");
-#endif
-#ifdef XCOMPOSITE
-	haveext[XcompositeBase]
-	    = XCompositeQueryExtension(dpy, &einfo[XcompositeBase].event, &einfo[XcompositeBase].error);
-	if (haveext[XcompositeBase])
-		DPRINTF("have Composite extension with base %d\n", einfo[XcompositeBase].event);
-	else
-		DPRINTF("%s", "Composite extension is not supported\n");
-#endif
-#ifdef DAMAGE
-	haveext[XdamageBase]
-	    = XDamageQueryExtension(dpy, &einfo[XdamageBase].event, &einfo[XdamageBase].error);
-	if (haveext[XdamageBase])
-		DPRINTF("have DAMAGE extension with base %d\n", einfo[XdamageBase].event);
-	else
-		DPRINTF("%s", "DAMAGE extension is not supported\n");
-#endif
-#ifdef SHAPE
-	haveext[XshapeBase]
-	    = XShapeQueryExtension(dpy, &einfo[XshapeBase].event, &einfo[XshapeBase].error);
-	if (haveext[XshapeBase])
-		DPRINTF("have SHAPE extension with base %d\n", einfo[XshapeBase].event);
-	else
-		DPRINTF("%s", "SHAPE extension is not supported\n");
-#endif
+	/* query extensions */
+	for (i = 0; i < BaseLast; i++) {
+		einfo[i].have
+			= XQueryExtension(dpy, einfo[i].name, &einfo[i].opcode, &einfo[i].event, &einfo[i].error);
+		if (einfo[i].have) {
+			DPRINTF("have %s extension (%d,%d,%d)\n", einfo[i].name, einfo[i].opcode, einfo[i].event, einfo[i].error);
+			einfo[i].version(dpy, &einfo[i].major, &einfo[i].minor);
+			_DPRINTF("have %s extension version %d.%d\n", einfo[i].name, einfo[i].major, einfo[i].minor);
+		} else
+			DPRINTF("%s", "%s extension is not supported\n", einfo[i].name);
+	}
 	nscr = ScreenCount(dpy);
 	DPRINTF("there are %u screens\n", nscr);
 	screens = calloc(nscr, sizeof(*screens));

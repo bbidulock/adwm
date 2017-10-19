@@ -252,15 +252,40 @@ enum {
 #define _XA_KDE_SPLASH_PROGRESS			atom[KdeSplashProgress]
 #define _XA_KDE_WM_CHANGE_STATE			atom[WindowChangeState]
 
+typedef struct {
+	const char *name;		/* extension name */
+	Status (*version)(Display *, int *, int *);	/* how to get version */
+	Bool have;			/* whether we have this extension */
+	int major;			/* major version of extension */
+	int minor;			/* minor version of extension */
+	int opcode;			/* extension base for opcodes */
+	int event;			/* extension base for event ids */
+	int error;			/* extension base for error ids */
+} ExtensionInfo;
+
 enum {
 	XfixesBase,
+#ifdef XRANDR
 	XrandrBase,
+#endif
+#ifdef XINERAMA
 	XineramaBase,
+#endif
+#ifdef SYNC
 	XsyncBase,
+#endif
+#ifdef RENDER
 	XrenderBase,
+#endif
+#ifdef XCOMPOSITE
 	XcompositeBase,
+#endif
+#ifdef DAMAGE
 	XdamageBase,
+#endif
+#ifdef SHAPE
 	XshapeBase,
+#endif
 	BaseLast
 };					/* X11 extensions */
 
@@ -1166,13 +1191,6 @@ typedef struct {
 	void (*drawclient) (Client *);
 } AdwmOperations;
 
-typedef struct {
-	int major;			/* major version of extension */
-	int minor;			/* minor version of extension */
-	int event;			/* extension base for event ids */
-	int error;			/* extension base for error ids */
-} ExtensionInfo;
-
 /* main */
 View *onview(Client *c);
 View *clientview(Client *c);
@@ -1323,7 +1341,6 @@ extern unsigned modkey;
 extern unsigned numlockmask;
 extern XContext context[];
 extern Time user_time;
-extern Bool haveext[];
 
 extern XrmDatabase xresdb, xrdb;
 extern int cargc;

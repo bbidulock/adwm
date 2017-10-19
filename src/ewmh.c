@@ -2389,7 +2389,7 @@ ewmh_process_net_window_sync_request_counter(Client *c)
 
 		c->sync.counter = data[0];
 
-		if (haveext[XsyncBase]) {
+		if (einfo[XsyncBase].have) {
 			XSyncIntToValue(&c->sync.val, 0);
 			XSyncSetCounter(dpy, c->sync.counter, c->sync.val);
 

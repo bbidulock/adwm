@@ -594,7 +594,7 @@ freekeys(void)
 }
 
 void
-initkeys()
+initkeys(Bool reload)
 {
 	unsigned int i, j, l;
 	const char *tmp;
@@ -847,7 +847,7 @@ freerules(void)
 }
 
 void
-initrules(void)
+initrules(Bool reload)
 {
 	int i;
 	char t[64];

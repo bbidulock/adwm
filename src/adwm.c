@@ -804,8 +804,10 @@ selectionclear(XEvent *e)
 	return ret;
 }
 
+AdwmOperations *baseops;
+
 static void
-checkotherwm(AdwmOperations *ops)
+checkotherwm(void)
 {
 	Atom wm_sn, wm_protocols, manager;
 	Window wm_sn_owner;
@@ -871,8 +873,8 @@ checkotherwm(AdwmOperations *ops)
 	hname.format = 8;
 	hname.nitems = strnlen(hostname, 64);
 
-	class_hint.res_name = ops->name;
-	class_hint.res_class = ops->clas;
+	class_hint.res_name = baseops->name;
+	class_hint.res_class = baseops->clas;
 
 	Xutf8SetWMProperties(dpy, scr->selwin, "Adwm version: " VERSION,
 			     "adwm " VERSION, cargv, cargc, NULL, NULL, &class_hint);
@@ -4833,66 +4835,144 @@ sighandler(int sig)
 }
 
 void
-reload(void)
+initcursors(Bool reload)
+{
+	/* init cursors */
+	/* *INDENT-OFF* */
+	if (!cursor[CursorTopLeft])	cursor[CursorTopLeft]	  = XCreateFontCursor(dpy, XC_top_left_corner);
+	if (!cursor[CursorTop])		cursor[CursorTop]	  = XCreateFontCursor(dpy, XC_top_side);
+	if (!cursor[CursorTopRight])	cursor[CursorTopRight]	  = XCreateFontCursor(dpy, XC_top_right_corner);
+	if (!cursor[CursorRight])	cursor[CursorRight]	  = XCreateFontCursor(dpy, XC_right_side);
+	if (!cursor[CursorBottomRight])	cursor[CursorBottomRight] = XCreateFontCursor(dpy, XC_bottom_right_corner);
+	if (!cursor[CursorBottom])	cursor[CursorBottom]	  = XCreateFontCursor(dpy, XC_bottom_side);
+	if (!cursor[CursorBottomLeft])	cursor[CursorBottomLeft]  = XCreateFontCursor(dpy, XC_bottom_left_corner);
+	if (!cursor[CursorLeft])	cursor[CursorLeft]	  = XCreateFontCursor(dpy, XC_left_side);
+	if (!cursor[CursorEvery])	cursor[CursorEvery]	  = XCreateFontCursor(dpy, XC_fleur);
+	if (!cursor[CursorNormal])	cursor[CursorNormal]	  = XCreateFontCursor(dpy, XC_left_ptr);
+	/* *INDENT-ON* */
+
+	/* set the normal cursor for the root window of each managed screen */
+	if (cursor[CursorNormal]) {
+		XSetWindowAttributes wa;
+
+		wa.cursor = cursor[CursorNormal];
+		for (scr = screens; scr < screens + nscr; scr++)
+			if (scr->managed)
+				XChangeWindowAttributes(dpy, scr->root, CWCursor, &wa);
+	}
+}
+
+void
+initmodmap(Bool reload)
+{
+	XModifierKeymap *modmap;
+	int i, j;
+
+	/* init modifier map */
+	modmap = XGetModifierMapping(dpy);
+	for (i = 0; i < 8; i++) {
+		for (j = 0; j < modmap->max_keypermod; j++) {
+			if (modmap->modifiermap[i * modmap->max_keypermod + j]
+			    == XKeysymToKeycode(dpy, XK_Num_Lock))
+				numlockmask = (1 << i);
+		}
+	}
+	XFreeModifiermap(modmap);
+}
+
+void
+initselect(Bool reload)
+{
+	unsigned long event_mask;
+
+	/* select for events */
+	event_mask = ROOTMASK;
+	for (scr = screens; scr < screens + nscr; scr++)
+		if (scr->managed)
+			XSelectInput(dpy, scr->root, event_mask);
+}
+
+void
+initstartup(Bool reload)
+{
+#ifdef STARTUP_NOTIFICATION
+	if (!sn_dpy)
+		sn_dpy = sn_display_new(dpy, NULL, NULL);
+#endif
+}
+
+void
+initstruts(Bool reload)
+{
+	Monitor *m;
+
+	for (m = scr->monitors; m; m = m->next) {
+		m->struts[RightStrut] = m->struts[LeftStrut] =
+		    m->struts[TopStrut] = m->struts[BotStrut] = 0;
+		updategeom(m);
+	}
+	ewmh_update_net_work_area();
+	ewmh_process_net_showing_desktop();
+	ewmh_update_net_showing_desktop();
+
+	arrange(NULL);
+}
+
+static void
+findscreen(Bool reload)
+{
+	int d = 0;
+	unsigned int mask = 0;
+	Window w = None, proot = None;
+
+	/* multihead support */
+	XQueryPointer(dpy, screens->root, &proot, &w, &d, &d, &d, &d, &mask);
+	XFindContext(dpy, proot, context[ScreenContext], (XPointer *) &scr);
+}
+
+void
+initialize(const char *conf, AdwmOperations * ops, Bool reload)
 {
 	char *owd;
-	long data = getpid();
 
+	/* save original working directory to restore after processing rc files */
 	owd = ecalloc(PATH_MAX, sizeof(*owd));
 	if (!getcwd(owd, PATH_MAX))
 		strcpy(owd, "/");
 
-	initrcfile();
-	initrules();
-	initconfig();
+	initcursors(reload);	/* init cursors */
+	initmodmap(reload);	/* init modifier map */
+	initselect(reload);	/* select for events */
+	initstartup(reload);	/* init startup notification */
+
+	initrcfile(conf, reload);	/* find the configuration file */
+	initrules(reload);	/* initialize window class.name rules */
+	initconfig(reload);	/* initialize configuration */
 
 	for (scr = screens; scr < screens + nscr; scr++) {
-		int ntags = scr->ntags;
-
 		if (!scr->managed)
 			continue;
 
-		/* init per-screen configuration */
-		initscreen();
+		initscreen(reload);	/* init per-screen configuration */
+		initewmh(ops->name);	/* init EWMH atoms */
+		inittags(reload);	/* init tags */
 
-		/* init tags */
-		inittags();
-		ewmh_process_net_number_of_desktops();
-		ewmh_process_net_desktop_names();
-		for (; ntags > scr->ntags; ntags--)
-			deltag();
-		for (; ntags < scr->ntags; ntags++)
-			addtag();
-		ewmh_process_net_desktop_names();
-		ewmh_update_net_number_of_desktops();
+		if (!reload) {
+			initmonitors(NULL);	/* init geometry */
+			/* I think that we can do this all the time. */
+		}
 
-		/* init key bindings */
-		initkeys();
-
-		/* initialize layouts */
-		initlayouts();
-		ewmh_update_net_desktop_modes();
-
-		ewmh_process_net_desktop_layout();
-		ewmh_update_net_desktop_layout();
-		ewmh_update_net_number_of_desktops();
-		ewmh_update_net_current_desktop();
-		ewmh_update_net_virtual_roots();
+		initkeys(reload);	/* init key bindings */
+		initdock(reload);	/* initialize dock */
+		initlayouts(reload);	/* initialize layouts */
 
 		grabkeys();
 
-		/* init appearance */
-		initstyle();	/* XXX: must redraw clients after style change */
-
-		arrange(NULL);
-
+		initstyle(reload);	/* init appearance */
+		initstruts(reload);	/* initialize struts and workareas */
 	}
 
-	for (scr = screens; scr < screens + nscr; scr++) {
-		/* let backgrounder know we have reloaded */
-		XChangeProperty(dpy, scr->selwin, _XA_NET_WM_PID, XA_CARDINAL, 32,
-				PropModeReplace, (unsigned char *) &data, 1);
-	}
+	findscreen(reload);	/* find current screen (with pointer) */
 
 	if (owd) {
 		if (chdir(owd))
@@ -4903,115 +4983,15 @@ reload(void)
 }
 
 void
+reload(void)
+{
+	return initialize(NULL, baseops, True);
+}
+
+void
 setup(char *conf, AdwmOperations *ops)
 {
-	int d = 0;
-	int i, j;
-	unsigned int mask = 0;
-	Window w = None, proot = None;
-	Monitor *m;
-	XModifierKeymap *modmap;
-	XSetWindowAttributes wa;
-	char *owd;
-
-	/* init cursors */
-	cursor[CursorTopLeft] = XCreateFontCursor(dpy, XC_top_left_corner);
-	cursor[CursorTop] = XCreateFontCursor(dpy, XC_top_side);
-	cursor[CursorTopRight] = XCreateFontCursor(dpy, XC_top_right_corner);
-	cursor[CursorRight] = XCreateFontCursor(dpy, XC_right_side);
-	cursor[CursorBottomRight] = XCreateFontCursor(dpy, XC_bottom_right_corner);
-	cursor[CursorBottom] = XCreateFontCursor(dpy, XC_bottom_side);
-	cursor[CursorBottomLeft] = XCreateFontCursor(dpy, XC_bottom_left_corner);
-	cursor[CursorLeft] = XCreateFontCursor(dpy, XC_left_side);
-	cursor[CursorEvery] = XCreateFontCursor(dpy, XC_fleur);
-	cursor[CursorNormal] = XCreateFontCursor(dpy, XC_left_ptr);
-
-	/* init modifier map */
-	modmap = XGetModifierMapping(dpy);
-	for (i = 0; i < 8; i++)
-		for (j = 0; j < modmap->max_keypermod; j++) {
-			if (modmap->modifiermap[i * modmap->max_keypermod + j]
-			    == XKeysymToKeycode(dpy, XK_Num_Lock))
-				numlockmask = (1 << i);
-		}
-	XFreeModifiermap(modmap);
-
-	/* select for events */
-	wa.event_mask = ROOTMASK;
-	wa.cursor = cursor[CursorNormal];
-	for (scr = screens; scr < screens + nscr; scr++) {
-		XChangeWindowAttributes(dpy, scr->root, CWEventMask | CWCursor, &wa);
-		XSelectInput(dpy, scr->root, wa.event_mask);
-	}
-#ifdef STARTUP_NOTIFICATION
-	sn_dpy = sn_display_new(dpy, NULL, NULL);
-#endif
-
-	owd = ecalloc(PATH_MAX, sizeof(*owd));
-	if (!getcwd(owd, PATH_MAX))
-		strcpy(owd, "/");
-
-	initrcfile();
-
-	initrules();
-
-	initconfig();
-
-	for (scr = screens; scr < screens + nscr; scr++) {
-		if (!scr->managed)
-			continue;
-
-		/* init per-screen configuration */
-		initscreen();
-
-		/* init EWMH atoms */
-		initewmh(ops->name);
-
-		/* init tags before initializing monitors */
-		inittags();
-		ewmh_process_net_number_of_desktops();
-		ewmh_process_net_desktop_names();
-
-		/* init geometry */
-		initmonitors(NULL);
-
-		/* init key bindings */
-		initkeys();
-
-		initdock();
-		initlayouts();
-		ewmh_update_net_desktop_modes();
-
-		ewmh_process_net_desktop_layout();
-		ewmh_update_net_desktop_layout();
-		ewmh_update_net_number_of_desktops();
-		ewmh_update_net_current_desktop();
-		ewmh_update_net_virtual_roots();
-
-		grabkeys();
-
-		/* init appearance */
-		initstyle();
-
-		for (m = scr->monitors; m; m = m->next) {
-			m->struts[RightStrut] = m->struts[LeftStrut] =
-			    m->struts[TopStrut] = m->struts[BotStrut] = 0;
-			updategeom(m);
-		}
-		ewmh_update_net_work_area();
-		ewmh_process_net_showing_desktop();
-		ewmh_update_net_showing_desktop();
-	}
-
-	if (owd) {
-		if (chdir(owd))
-			DPRINTF("Could not change directory to %s: %s\n", owd, strerror(errno));
-		free(owd);
-	}
-
-	/* multihead support */
-	XQueryPointer(dpy, screens->root, &proot, &w, &d, &d, &d, &d, &mask);
-	XFindContext(dpy, proot, context[ScreenContext], (XPointer *) &scr);
+	return initialize(conf, ops, False);
 }
 
 void
@@ -5805,8 +5785,6 @@ get_adwm_ops(const char *name)
 	return ops;
 }
 
-AdwmOperations *baseops;
-
 int
 main(int argc, char *argv[])
 {
@@ -5881,7 +5859,7 @@ main(int argc, char *argv[])
 	for (scr = screens; scr < screens + nscr; scr++)
 		if (scr->managed) {
 			DPRINTF("checking screen %d\n", scr->screen);
-			checkotherwm(baseops);
+			checkotherwm();
 		}
 	for (scr = screens; scr < screens + nscr && !scr->managed; scr++) ;
 	if (scr == screens + nscr)

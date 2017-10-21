@@ -13,6 +13,7 @@
 #include <X11/Xresource.h>
 #include <X11/Xft/Xft.h>
 #include "adwm.h"
+#include "ewmh.h"
 #include "layout.h"
 #include "tags.h"
 #include "resource.h"
@@ -32,7 +33,7 @@ typedef struct {
 AdwmConfig config;
 
 void
-inittags(void)
+inittags(Bool reload)
 {
 	unsigned i, s = scr->screen;
 
@@ -50,6 +51,21 @@ inittags(void)
 		snprintf(t->name, sizeof(t->name), res);
 	}
 	scr->ntags = scr->options.ntags;
+
+	ewmh_process_net_number_of_desktops();
+	ewmh_process_net_desktop_names();
+
+	if (reload) {
+		int ntags = scr->ntags;
+
+		for (; ntags > scr->ntags; ntags--)
+			deltag();
+		for (; ntags < scr->ntags; ntags++)
+			addtag();
+
+		ewmh_process_net_desktop_names();
+		ewmh_update_net_number_of_desktops();
+	}
 }
 
 static Bool
@@ -84,11 +100,17 @@ parsedockapp(const char *res, char **name, char **clas, char **cmd)
 }
 
 void
-initdock(void)
+initdock(Bool reload)
 {
 	Container *t, *n;
-	unsigned i, s = scr->screen;
-	Monitor *m = scr->dock.monitor ? : scr->monitors;
+	unsigned i, s;
+	Monitor *m;
+
+	if (reload)
+		return;
+
+	s = scr->screen;
+	m = scr->dock.monitor ? : scr->monitors;
 
 	t = scr->dock.tree = ecalloc(1, sizeof(*t));
 	t->type = TreeTypeNode;
@@ -166,7 +188,7 @@ initdock(void)
 }
 
 void
-initlayouts(void)
+initlayouts(Bool reload)
 {
 	unsigned i, s = scr->screen;;
 
@@ -220,10 +242,18 @@ initlayouts(void)
 		if (l->arrange && l->arrange->initlayout)
 			l->arrange->initlayout(v);
 	}
+
+	ewmh_update_net_desktop_modes();
+
+	ewmh_process_net_desktop_layout();
+	ewmh_update_net_desktop_layout();
+	ewmh_update_net_number_of_desktops();
+	ewmh_update_net_current_desktop();
+	ewmh_update_net_virtual_roots();
 }
 
 void
-initscreen(void)
+initscreen(Bool reload)
 {
 	const char *res;
 	char name[256], clas[256], *n, *c;
@@ -344,7 +374,7 @@ initscreen(void)
 }
 
 void
-initconfig(void)
+initconfig(Bool reload)
 {
 	const char *res;
 	char name[256], clas[256], *n, *c;
@@ -595,7 +625,7 @@ findrcpath(const char *file)
 }
 
 void
-initrcfile(void)
+initrcfile(const char *conf, Bool reload)
 {
 	const char *home = getenv("HOME") ? : ".";
 	const char *file = NULL;

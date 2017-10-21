@@ -1219,7 +1219,7 @@ freestyle()
 }
 
 void
-initstyle()
+initstyle(Bool reload)
 {
 	Client *c;
 

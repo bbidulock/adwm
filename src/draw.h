@@ -5,6 +5,6 @@
 
 void drawclient(Client *c);
 void freestyle();
-void initstyle();
+void initstyle(Bool reload);
 
 #endif				/* __LOCAL_DRAW_H__ */

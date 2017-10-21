@@ -371,8 +371,10 @@ initewmh(char *name)
 	Window win = scr->selwin;
 
 #ifdef STARTUP_NOTIFICATION
-	scr->ctx = sn_monitor_context_new(sn_dpy, scr->screen, &sn_handler, NULL, NULL);
-	DPRINTF("startup notification on screen %d\n", scr->screen);
+	if (!scr->ctx) {
+		scr->ctx = sn_monitor_context_new(sn_dpy, scr->screen, &sn_handler, NULL, NULL);
+		DPRINTF("startup notification on screen %d\n", scr->screen);
+	}
 #else
 	DPRINTF("startup notification not supported screen %d\n", scr->screen);
 #endif

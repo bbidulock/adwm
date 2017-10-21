@@ -418,7 +418,7 @@ static unsigned char shade_toggled_bits[] = {
 };
 
 static void
-initkeys_OPENBOX(void)
+initkeys_OPENBOX(Bool reload)
 {
 }
 
@@ -438,7 +438,7 @@ static OpenboxConfig config;
   * /usr/share/themes.
   */
 static void
-initrcfile_OPENBOX()
+initrcfile_OPENBOX(const char *conf, Bool reload)
 {
 	const char *home = getenv("HOME") ? : ".";
 	const char *cnfg = getenv("XDG_CONFIG_HOME");
@@ -497,7 +497,7 @@ initrcfile_OPENBOX()
 }
 
 static void
-initconfig_OPENBOX(void)
+initconfig_OPENBOX(Bool reload)
 {
 }
 
@@ -567,7 +567,7 @@ initstyles(const char *stylename)
 }
 
 static void
-initstyle_OPENBOX()
+initstyle_OPENBOX(Bool reload)
 {
 	const char *res;
 	OpenboxStyle *style;

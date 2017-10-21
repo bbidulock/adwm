@@ -1183,13 +1183,14 @@ typedef struct {
 	void *handle;
 	char *name;
 	char *clas;
-	void (*initrcfile) (void);  /* locate and read primary rc databases */
-	void (*initconfig) (void);  /* perform global configuration */
-	void (*initscreen) (void);  /* perform per-screen configuration */
-	void (*inittags) (void);    /* initialize per-screen tags */
-	void (*initkeys) (void);    /* initialize per-screen key bindings */
-	void (*initlayouts) (void); /* initialize views and layouts */
-	void (*initstyle) (void);   /* initialize per-screen style */
+	void (*initrcfile) (const char *, Bool);  /* locate and read primary rc databases */
+	void (*initconfig) (Bool);  /* perform global configuration */
+	void (*initscreen) (Bool);  /* perform per-screen configuration */
+	void (*inittags) (Bool);    /* initialize per-screen tags */
+	void (*initkeys) (Bool);    /* initialize per-screen key bindings */
+	void (*initdock) (Bool);    /* initialize dock layouts */
+	void (*initlayouts) (Bool); /* initialize views and layouts */
+	void (*initstyle) (Bool);   /* initialize per-screen style */
 	void (*deinitstyle) (void);
 	void (*drawclient) (Client *);
 } AdwmOperations;

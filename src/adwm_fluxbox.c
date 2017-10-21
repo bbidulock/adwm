@@ -435,7 +435,7 @@ static FluxboxStyle *styles = NULL;
 static FluxboxConfig config;
 
 static void
-initrcfile_FLUXBOX()
+initrcfile_FLUXBOX(const char *conf, Bool reload)
 {
 	const char *home = getenv("HOME") ? : ".";
 	const char *file = NULL;
@@ -507,7 +507,7 @@ static XrmDatabase xstyledb;
 static FluxboxSession session;
 
 static void
-initconfig_FLUXBOX(void)
+initconfig_FLUXBOX(Bool reload)
 {
 	const char *res;
 	FluxboxScreen *screen;
@@ -2134,7 +2134,7 @@ p_file()
 }
 
 static void
-initkeys_FLUXBOX(void)
+initkeys_FLUXBOX(Bool reload)
 {
 	ParserContext ctx;
 	const char *keyFile, *home = getenv("HOME") ? : "/";
@@ -2223,7 +2223,7 @@ initkeys_FLUXBOX(void)
 }
 
 static void
-initstyle_FLUXBOX(void)
+initstyle_FLUXBOX(Bool reload)
 {
 	const char *res;
 	FluxboxStyle *style;

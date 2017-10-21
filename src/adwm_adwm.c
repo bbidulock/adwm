@@ -79,7 +79,7 @@ static AdwmStyle *styles;
   *
   * @{ */
 static void
-initrcfile_ADWM(void)
+initrcfile_ADWM(const char *conf, Bool reload)
 {
 	const char *home = getenv("HOME") ? : ".";
 	const char *file = NULL;
@@ -188,7 +188,7 @@ initrcfile_ADWM(void)
   *
   * @{ */
 static void
-initconfig_ADWM(void)
+initconfig_ADWM(Bool reload)
 {
 	const char *res;
 	char name[256], clas[256], *n, *c;
@@ -298,7 +298,7 @@ initconfig_ADWM(void)
   *
   * @{ */
 static void
-initscreen_ADWM(void)
+initscreen_ADWM(Bool reload)
 {
 	const char *res;
 	char name[256], clas[256], *n, *c;
@@ -421,7 +421,7 @@ initscreen_ADWM(void)
   *
   * @{ */
 static void
-inittags_ADWM(void)
+inittags_ADWM(Bool reload)
 {
 	unsigned i, s = scr->screen;
 
@@ -719,7 +719,7 @@ capclass(char *clas)
 }
 
 static void
-initkeys_ADWM(void)
+initkeys_ADWM(Bool reload)
 {
 	unsigned int i, j, l;
 	const char *res;
@@ -930,7 +930,7 @@ initkeys_ADWM(void)
   *
   * @{ */
 static void
-initlayouts_ADWM(void)
+initlayouts_ADWM(Bool reload)
 {
 	unsigned i, s = scr->screen;
 
@@ -986,7 +986,7 @@ initlayouts_ADWM(void)
 /** @} */
 
 static void
-initstyle_ADWM(void)
+initstyle_ADWM(Bool reload)
 {
 	const char *res;
 	AdwmStyle *style;

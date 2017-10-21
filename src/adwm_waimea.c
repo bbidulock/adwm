@@ -158,7 +158,7 @@ static WaimeaStyle *styles = NULL;
 static WaimeaConfig config;
 
 static void
-initrcfile_WAIMEA(void)
+initrcfile_WAIMEA(const char *conf, Bool reload)
 {
 }
 
@@ -166,19 +166,19 @@ static XrmDatabase xconfigdb;
 static XrmDatabase xstyledb;
 
 static void
-initconfig_WAIMEA(void)
+initconfig_WAIMEA(Bool reload)
 {
 	(void) config;
 	(void) xconfigdb;
 }
 
 static void
-initkeys_WAIMEA(void)
+initkeys_WAIMEA(Bool reload)
 {
 }
 
 static void
-initstyle_WAIMEA(void)
+initstyle_WAIMEA(Bool reload)
 {
 	const char *res;
 	WaimeaStyle *style;

@@ -1181,7 +1181,7 @@ p_file()
 }
 
 static void
-initkeys_BLACKBOX(void)
+initkeys_BLACKBOX(Bool reload)
 {
 	ParserContext ctx;
 	const char *home = getenv("HOME") ? : ".";
@@ -1221,7 +1221,7 @@ static XrmDatabase xconfigdb;
 static XrmDatabase xstyledb;
 
 static void
-initconfig_BLACKBOX(void)
+initconfig_BLACKBOX(Bool reload)
 {
 	const char *res;
 	BlackboxScreen *screen;
@@ -1444,7 +1444,7 @@ initconfig_BLACKBOX(void)
 }
 
 static void
-initrcfile_BLACKBOX()
+initrcfile_BLACKBOX(const char *conf, Bool reload)
 {
 	const char *home = getenv("HOME") ? : ".";
 	const char *file = NULL;
@@ -1508,7 +1508,7 @@ initrcfile_BLACKBOX()
 }
 
 static void
-initstyle_BLACKBOX(void)
+initstyle_BLACKBOX(Bool reload)
 {
 	const char *res;
 	BlackboxStyle *style;

@@ -207,6 +207,17 @@ fi
 AC_MSG_CHECKING([for imlib2 support])
 AC_MSG_RESULT([${enable_imlib2:-yes}])
 
+AC_ARG_ENABLE([use-imlib2],
+	AC_HELP_STRING([--disable-use-imlib2],
+		[Disable use of imlib2 for drawing textures @<:@default=auto@:>@]))
+if test "x$enable_imlib2" != xno -a "x$enable_use_imlib2" != xno ; then
+	AC_DEFINE([USE_IMLIB2],[1],[Define to 1 to use IMLIB2 for rendering pixmaps and textures.])
+else
+	enable_use_imlib2=no
+fi
+AC_MSG_CHECKING([for imlib2 use])
+AC_MSG_RESULT([${enable_use_imlib2:-yes}])
+
 AC_ARG_ENABLE([xpm],
 	AC_HELP_STRING([--disable-libxpm],
 		[Disable xpm library @<:@default=auto@:>@]))

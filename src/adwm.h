@@ -14,13 +14,15 @@
 #ifdef SYNC
 #include <X11/extensions/sync.h>
 #endif
+#ifdef IMLIB2
+#include <Imlib2.h>
+#endif
+#ifdef XPM
+#include <X11/xpm.h>
+#endif
 #ifdef STARTUP_NOTIFICATION
 #define SN_API_NOT_YET_FROZEN
 #include <libsn/sn.h>
-#endif
-
-#ifdef IMLIB2
-#include <Imlib2.h>
 #endif
 
 /* enums */

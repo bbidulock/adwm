@@ -15,12 +15,6 @@
 #include <X11/Xresource.h>
 #include <X11/Xft/Xft.h>
 #include "adwm.h"
-#ifdef IMLIB2
-#include <Imlib2.h>
-#endif
-#ifdef XPM
-#include <X11/xpm.h>
-#endif
 
 /*
  * This is a binary partioning layout ala bspwm, both in a tiled and floating version.

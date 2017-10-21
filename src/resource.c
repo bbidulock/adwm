@@ -13,12 +13,6 @@
 #include <X11/Xresource.h>
 #include <X11/Xft/Xft.h>
 #include "adwm.h"
-#ifdef IMLIB2
-#include <Imlib2.h>
-#endif
-#ifdef XPM
-#include <X11/xpm.h>
-#endif
 #include "resource.h" /* verification */
 
 XrmDatabase xresdb;
@@ -230,12 +224,7 @@ getpixmap(const char *file, AdwmPixmap *p)
 		imlib_context_push(scr->context);
 		imlib_context_set_mask(None);
 
-		if (!(image = imlib_load_image(file))) {
-			if (file[0] != '/') {
-				/* TODO: look for it else where */
-			}
-		}
-		if (image) {
+		if ((image = imlib_load_image(file))) {
 			imlib_context_set_image(image);
 			imlib_context_set_mask(None);
 			p->file = file;

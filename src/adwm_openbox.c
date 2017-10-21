@@ -16,12 +16,6 @@
 #include <X11/Xutil.h>
 #include <X11/Xresource.h>
 #include <X11/Xft/Xft.h>
-#ifdef IMLIB2
-#include <Imlib2.h>
-#endif
-#ifdef XPM
-#include <X11/xpm.h>
-#endif
 #include "adwm.h"
 #include "resource.h"
 #include "parse.h"

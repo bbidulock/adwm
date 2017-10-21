@@ -44,16 +44,7 @@ ewmhpanel_SOURCES = util.h ewmhpanel.c util.c
 ewmhpanel_LDADD = $(X11_LIBS) $(XFT_LIBS)
 
 adwmmod_LTLIBRARIES = \
-	adwm-adwm.la \
-	adwm-blackbox.la \
-	adwm-fluxbox.la \
-	adwm-icewm.la \
-	adwm-openbox.la \
-	adwm-metacity.la \
-	adwm-mutter.la \
-	adwm-pekwm.la \
-	adwm-waimea.la \
-	adwm-wmaker.la
+	adwm-adwm.la
 
 adwm_adwm_la_SOURCES = adwm_adwm.c
 adwm_adwm_la_LDFLAGS = -module -export-dynamic -shared -rpath $(adwmmoddir) -avoid-version
@@ -63,35 +54,71 @@ adwm_blackbox_la_SOURCES = adwm_blackbox.c
 adwm_blackbox_la_LDFLAGS = -module -export-dynamic -shared -rpath $(adwmmoddir) -avoid-version
 adwm_blackbox_la_LIBADD = $(X11_LIBS)
 
+if WITH_BLACKBOX
+adwmmod_LTLIBRARIES += adwm-blackbox.la
+endif
+
 adwm_fluxbox_la_SOURCES = adwm_fluxbox.c
 adwm_fluxbox_la_LDFLAGS =  -module -export-dynamic -shared -rpath $(adwmmoddir) -avoid-version
 adwm_fluxbox_la_LIBADD = 
+
+if WITH_FLUXBOX
+adwmmod_LTLIBRARIES += adwm-fluxbox.la
+endif
 
 adwm_icewm_la_SOURCES = adwm_icewm.c
 adwm_icewm_la_LDFLAGS = -module -export-dynamic -shared -rpath $(adwmmoddir) -avoid-version
 adwm_icewm_la_LIBADD = 
 
+if WITH_ICEWM
+adwmmod_LTLIBRARIES += adwm-icewm.la
+endif
+
 adwm_metacity_la_SOURCES = adwm_metacity.c
 adwm_metacity_la_LDFLAGS = -module -export-dynamic -shared -rpath $(adwmmoddir) -avoid-version
 adwm_metacity_la_LIBADD = 
+
+if WITH_OPENBOX
+adwmmod_LTLIBRARIES += adwm-openbox.la
+endif
 
 adwm_mutter_la_SOURCES = adwm_mutter.c
 adwm_mutter_la_LDFLAGS = -module -export-dynamic -shared -rpath $(adwmmoddir) -avoid-version
 adwm_mutter_la_LIBADD = 
 
+if WITH_METACITY
+adwmmod_LTLIBRARIES += adwm-metacity.la
+endif
+
 adwm_openbox_la_SOURCES = adwm_openbox.c
 adwm_openbox_la_LDFLAGS = -module -export-dynamic -shared -rpath $(adwmmoddir) -avoid-version
 adwm_openbox_la_LIBADD = $(X11_LIBS)
+
+if WITH_MUTTER
+adwmmod_LTLIBRARIES += adwm-mutter.la
+endif
 
 adwm_pekwm_la_SOURCES = adwm_pekwm.c
 adwm_pekwm_la_LDFLAGS = -module -export-dynamic -shared -rpath $(adwmmoddir) -avoid-version
 adwm_pekwm_la_LIBADD = 
 
+if WITH_PEKWM
+adwmmod_LTLIBRARIES += adwm-pekwm.la
+endif
+
 adwm_waimea_la_SOURCES = adwm_waimea.c
 adwm_waimea_la_LDFLAGS = -module -export-dynamic -shared -rpath $(adwmmoddir) -avoid-version
 adwm_waimea_la_LIBADD = 
 
+if WITH_WAIMEA
+adwmmod_LTLIBRARIES += adwm-waimea.la
+endif
+
 adwm_wmaker_la_SOURCES = adwm_wmaker.c
 adwm_wmaker_la_LDFLAGS = -module -export-dynamic -shared -rpath $(adwmmoddir) -avoid-version
 adwm_wmaker_la_LIBADD = 
+
+if WITH_WMAKER
+adwmmod_LTLIBRARIES += adwm-wmaker.la
+endif
 

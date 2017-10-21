@@ -238,6 +238,61 @@ fi
 AC_MSG_CHECKING([for debug support])
 AC_MSG_RESULT([${enable_debug:-no}])
 
+AC_ARG_WITH([blackbox],
+	AC_HELP_STRING([--with-blackbox],
+		[Enable blackbox support @<:@default=disabled@:>@]))
+AM_CONDITIONAL([WITH_BLACKBOX],[test  "x$with_blackbox" = "xyes"])
+AC_MSG_CHECKING([for blackbox support])
+AC_MSG_RESULT([${with_blackbox:-no}])
+AC_ARG_WITH([fluxbox],
+	AC_HELP_STRING([--with-fluxbox],
+		[Enable fluxbox support @<:@default=disabled@:>@]))
+AM_CONDITIONAL([WITH_FLUXBOX], [test  "x$with_fluxbox"  = "xyes"])
+AC_MSG_CHECKING([for fluxbox support])
+AC_MSG_RESULT([${with_fluxbox:-no}])
+AC_ARG_WITH([icewm],
+	AC_HELP_STRING([--with-icewm],
+		[Enable icewm support @<:@default=disabled@:>@]))
+AM_CONDITIONAL([WITH_ICEWM],   [test  "x$with_icewm"    = "xyes"])
+AC_MSG_CHECKING([for icewm support])
+AC_MSG_RESULT([${with_icewm:-no}])
+AC_ARG_WITH([openbox],
+	AC_HELP_STRING([--with-openbox],
+		[Enable openbox support @<:@default=disabled@:>@]))
+AM_CONDITIONAL([WITH_OPENBOX], [test  "x$with_openbox"  = "xyes"])
+AC_MSG_CHECKING([for openbox support])
+AC_MSG_RESULT([${with_openbox:-no}])
+AC_ARG_WITH([metacity],
+	AC_HELP_STRING([--with-metacity],
+		[Enable metacity support @<:@default=disabled@:>@]))
+AM_CONDITIONAL([WITH_METACITY],[test  "x$with_metacity" = "xyes"])
+AC_MSG_CHECKING([for metacity support])
+AC_MSG_RESULT([${with_metacity:-no}])
+AC_ARG_WITH([mutter],
+	AC_HELP_STRING([--with-mutter],
+		[Enable mutter support @<:@default=disabled@:>@]))
+AM_CONDITIONAL([WITH_MUTTER],  [test  "x$with_mutter"   = "xyes"])
+AC_MSG_CHECKING([for mutter support])
+AC_MSG_RESULT([${with_mutter:-no}])
+AC_ARG_WITH([pekwm],
+	AC_HELP_STRING([--with-pekwm],
+		[Enable pekwm support @<:@default=disabled@:>@]))
+AM_CONDITIONAL([WITH_PEKWM],   [test  "x$with_pekwm"    = "xyes"])
+AC_MSG_CHECKING([for pekwm support])
+AC_MSG_RESULT([${with_pekwm:-no}])
+AC_ARG_WITH([waimea],
+	AC_HELP_STRING([--with-waimea],
+		[Enable waimea support @<:@default=disabled@:>@]))
+AM_CONDITIONAL([WITH_WAIMEA],  [test  "x$with_waimea"   = "xyes"])
+AC_MSG_CHECKING([for waimea support])
+AC_MSG_RESULT([${with_waimea:-no}])
+AC_ARG_WITH([wmaker],
+	AC_HELP_STRING([--with-wmaker],
+		[Enable wmaker support @<:@default=disabled@:>@]))
+AM_CONDITIONAL([WITH_WMAKER],  [test  "x$with_wmaker"   = "xyes"])
+AC_MSG_CHECKING([for wmaker support])
+AC_MSG_RESULT([${with_wmaker:-no}])
+
 test "x$prefix" = xNONE && prefix="$ac_default_prefix"
 sharedir="$datadir"
 eval "sharedir=\"$sharedir\""

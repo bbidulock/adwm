@@ -4084,8 +4084,8 @@ resize_begin(Client *c, View *v, Bool toggle, int from, IsUnion * was)
 			c->is.rhalf = False;
 		if ((was->shaded = c->is.shaded))
 			c->is.shaded = False;
+		save(c);	/* resize from current geometry */
 		if (!isfloater) {
-			save(c);	/* tear out at current geometry */
 			/* XXX: could this not just be raiseclient(c) ??? */
 			detachstack(c);
 			attachstack(c, True);

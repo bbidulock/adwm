@@ -172,6 +172,7 @@ toggletag(Client *c, int index)
 Client *
 lastselected(View *v)
 {
+#if 0
 	Container *cc, *cn;
 
 	for (cn = (Container *)v->tree;
@@ -180,6 +181,9 @@ lastselected(View *v)
 	if (cc)
 		return (((Leaf *) cc)->client.client);
 	return NULL;
+#else
+	return (v ? v->lastsel : NULL);
+#endif
 }
 
 void

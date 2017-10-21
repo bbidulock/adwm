@@ -910,6 +910,7 @@ struct View {
 	unsigned long long seltags;	/* tags selected for this view */
 	int row, col;			/* row and column in desktop layout */
 	Bool needarrange;		/* need to be rearranged */
+	Client *lastsel;		/* last selected client for view */
 };					/* per-tag settings */
 
 struct Tag {

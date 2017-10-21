@@ -93,9 +93,12 @@ setselected(Client *c)
 
 	if (c) {
 		CPRINTF(c, "setting as selected\n");
+		if (c->cview)
+			c->cview->lastsel = c;
 		for (l = c->leaves; l; l = l->client.next)
 			for (cc = (Container *)l; (cp = cc->parent); cc = cp)
 				cp->node.children.selected = cc;
+		discardcrossing(c);
 	}
 }
 

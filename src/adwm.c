@@ -122,6 +122,8 @@ SnDisplay *sn_dpy;
 XrmDatabase xrdb;
 Bool otherwm;
 Bool running = True;
+Bool lockfocus = False;
+Client *focuslock = NULL;
 Client *sel;
 Client *gave;				/* gave focus last */
 Client *took;				/* took focus last */
@@ -1152,26 +1154,41 @@ installcolormaps(AScreen *s, Client *c, Window *w)
 static Bool
 need_discard(Display *dpy, XEvent *ev, XPointer arg)
 {
-	Client *c, *s = (Client *) arg;
+	Client *s = (Client *) arg;
+	Client *c;
 
-	if (ev->type != EnterNotify)
+	geteventscr(ev);
+	if (ev->type != EnterNotify || ev->xcrossing.mode != NotifyNormal)
 		return False;
-	if (!(c = findclient(ev->xcrossing.window)))
-		return False;
-	if (s && c != s)
-		return False;
-	if (ev->xcrossing.detail == NotifyInferior)
-		return False;
-	return True;
+	if ((c = findclient(ev->xcrossing.window))) {
+		if (ev->xcrossing.detail == NotifyInferior)
+			return False;
+		if (c == s)
+			return False;
+		return True;
+	}
+	if (ev->xcrossing.window == event_scr->root
+	    && ev->xcrossing.detail == NotifyInferior)
+		if (sel && (WTCHECK(sel, WindowTypeDock) || sel->is.dockapp
+			    || sel->is.bastard))
+			return True;
+	return False;
 }
 
-void
-discardcrossing(Client *c)
+static void
+discarding(Client *c)
 {
 	XEvent ev;
 
 	XSync(dpy, False);
 	while (XCheckIfEvent(dpy, &ev, &need_discard, (XPointer) c)) ;
+}
+
+void
+discardcrossing(Client *c)
+{
+	lockfocus = True;
+	focuslock = c ? : sel;
 }
 
 static Bool
@@ -1194,7 +1211,7 @@ enternotify(XEvent *e)
 	} else if ((c = getclient(ev->window, ClientColormap))) {
 		installcolormap(event_scr, ev->window);
 		return True;
-	} else if (ev->window == scr->root && ev->detail == NotifyInferior) {
+	} else if (ev->window == event_scr->root && ev->detail == NotifyInferior) {
 		DPRINTF("Not focusing root\n");
 		if (sel && (WTCHECK(sel, WindowTypeDock) || sel->is.dockapp || sel->is.bastard)) {
 			focus(NULL);
@@ -3951,6 +3968,11 @@ run(void)
 					else
 						XPRINTF("WARNING: Event %d not handled\n",
 							ev.type);
+					if (lockfocus) {
+						discarding(focuslock);
+						lockfocus = False;
+						focuslock = NULL;
+					}
 				}
 			}
 		}
@@ -5228,6 +5250,8 @@ unmanage(Client *c, WithdrawCause cause)
 		XFreeColormap(dpy, c->cmap);
 		c->cmap = None;
 	}
+	if (c->cview && c->cview->lastsel == c)
+		c->cview->lastsel = NULL;
 	if (cause != CauseDestroyed) {
 		if (einfo[XfixesBase].have)
 			XFixesChangeSaveSet(dpy, c->icon ? c->icon : c->win, SetModeDelete, SaveSetNearest, SaveSetMap);

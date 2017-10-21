@@ -1150,6 +1150,31 @@ installcolormaps(AScreen *s, Client *c, Window *w)
 }
 
 static Bool
+need_discard(Display *dpy, XEvent *ev, XPointer arg)
+{
+	Client *c, *s = (Client *) arg;
+
+	if (ev->type != EnterNotify)
+		return False;
+	if (!(c = findclient(ev->xcrossing.window)))
+		return False;
+	if (s && c != s)
+		return False;
+	if (ev->xcrossing.detail == NotifyInferior)
+		return False;
+	return True;
+}
+
+void
+discardcrossing(Client *c)
+{
+	XEvent ev;
+
+	XSync(dpy, False);
+	while (XCheckIfEvent(dpy, &ev, &need_discard, (XPointer) c)) ;
+}
+
+static Bool
 enternotify(XEvent *e)
 {
 	XCrossingEvent *ev = &e->xcrossing;
@@ -1171,9 +1196,7 @@ enternotify(XEvent *e)
 		return True;
 	} else if (ev->window == scr->root && ev->detail == NotifyInferior) {
 		DPRINTF("Not focusing root\n");
-		if (sel
-		    && (WTCHECK(sel, WindowTypeDock) || sel->is.dockapp
-			|| sel->is.bastard)) {
+		if (sel && (WTCHECK(sel, WindowTypeDock) || sel->is.dockapp || sel->is.bastard)) {
 			focus(NULL);
 			return True;
 		}
@@ -2171,7 +2194,7 @@ leavenotify(XEvent *e)
 	if (!ev->same_screen) {
 		XFindContext(dpy, ev->window, context[ScreenContext], (XPointer *) &scr);
 		if (!scr->managed)
-			focus(NULL);
+			focus(NULL); /* XXX */
 	}
 	if ((c = getclient(ev->window, ClientTitle)) && ev->window == c->title) {
 		Bool needdraw = False;
@@ -3438,7 +3461,7 @@ updateleaderprop(Client *c, Atom prop, int state)
 static Bool
 updateclientprop(Client *c, Atom prop, int state)
 {
-	char *name;
+	char *name = NULL;
 
 	if (prop <= XA_LAST_PREDEFINED) {
 		switch (prop) {
@@ -3646,7 +3669,7 @@ updateclientprop(Client *c, Atom prop, int state)
 	}
 	return True;
       bad:
-	_CPRINTF(c, "bad attempt to change client %s\n", (name = XGetAtomName(dpy, prop)));
+	CPRINTF(c, "bad attempt to change client %s\n", (name = XGetAtomName(dpy, prop)));
 	if (name)
 		XFree(name);
 	return False;
@@ -5143,6 +5166,8 @@ togglemonitor()
 	if (!m)
 		return;
 	XWarpPointer(dpy, None, scr->root, 0, 0, 0, 0, m->mx, m->my);
+	/* FIXME: this should actually be the last selected client in the view on the monitor to which
+	 * we are switching. */
 	focus(NULL);
 }
 

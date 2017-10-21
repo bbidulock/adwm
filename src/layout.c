@@ -1174,15 +1174,6 @@ get_decor(Client *c, View *v, ClientGeometry *g)
 }
 
 static void
-discardcrossing()
-{
-	XEvent ev;
-
-	XSync(dpy, False);
-	while (XCheckMaskEvent(dpy, EnterWindowMask|LeaveWindowMask, &ev)) ;
-}
-
-static void
 getworkarea(Monitor *m, Workarea *w)
 {
 	Workarea *wa;
@@ -1280,7 +1271,7 @@ updatefloat(Client *c, View *v)
 	reconfigure(c, &g, False);
 	if (c->is.max)
 		ewmh_update_net_window_fs_monitors(c);
-	discardcrossing();
+	discardcrossing(NULL);
 }
 
 static void
@@ -2602,7 +2593,7 @@ restack()
 		free(s.wl);
 		s.wl = NULL;
 	}
-	discardcrossing();
+	discardcrossing(NULL);
 }
 
 static int
@@ -2892,7 +2883,7 @@ arrange(View *ov)
 		if (scr->options.useveil) {
 			XUnmapWindow(dpy, m->veil);
 		}
-		discardcrossing();
+		discardcrossing(NULL);
 	}
 }
 
@@ -3670,8 +3661,10 @@ mousemove_from(Client *c, int from, XEvent *e, Bool toggle)
 		XEvent ev;
 
 		XIfEvent(dpy, &ev, &ismoveevent, (XPointer) c);
-		if (ev.type == MotionNotify)
+		if (ev.type == MotionNotify) {
+			XSync(dpy, False);
 			while (XCheckMaskEvent(dpy, PointerMotionMask, &ev)) ;
+		}
 		geteventscr(&ev);
 
 		switch (ev.type) {
@@ -4006,7 +3999,7 @@ mousemove_from(Client *c, int from, XEvent *e, Bool toggle)
 	}
 	if (move_finish(c, v, &was))
 		moved = True;
-	discardcrossing();
+	discardcrossing(c);
 	ewmh_update_net_window_state(c);
 	return moved;
 }
@@ -4209,8 +4202,10 @@ mouseresize_from(Client *c, int from, XEvent *e, Bool toggle)
 		XEvent ev;
 
 		XIfEvent(dpy, &ev, &isresizeevent, (XPointer) c);
-		if (ev.type == MotionNotify)
+		if (ev.type == MotionNotify) {
+			XSync(dpy, False);
 			while (XCheckMaskEvent(dpy, PointerMotionMask, &ev)) ;
+		}
 		geteventscr(&ev);
 
 		switch (ev.type) {
@@ -4537,7 +4532,7 @@ mouseresize_from(Client *c, int from, XEvent *e, Bool toggle)
 	}
 	if (resize_finish(c, v, &was))
 		resized = True;
-	discardcrossing();
+	discardcrossing(c);
 	ewmh_update_net_window_state(c);
 	return resized;
 }
@@ -5503,7 +5498,7 @@ moveto(Client *c, RelativeDirection position)
 	}
 	reconfigure(c, &g, False);
 	save(c);
-	discardcrossing();
+	discardcrossing(c);
 }
 
 void
@@ -5602,7 +5597,7 @@ moveby(Client *c, RelativeDirection direction, int amount)
 		g.y = m->sc.y - (g.h + g.b);
 	reconfigure(c, &g, False);
 	save(c);
-	discardcrossing();
+	discardcrossing(c);
 }
 
 void
@@ -5829,7 +5824,7 @@ snapto(Client *c, RelativeDirection direction)
 	}
 	reconfigure(c, &g, False);
 	save(c);
-	discardcrossing();
+	discardcrossing(c);
 }
 
 void
@@ -5896,7 +5891,7 @@ edgeto(Client *c, int direction)
 	}
 	reconfigure(c, &g, False);
 	save(c);
-	discardcrossing();
+	discardcrossing(c);
 }
 
 void
@@ -5998,8 +5993,8 @@ rotatewins(Client *c)
 		return;
 	if ((s = nexttiled(scr->clients, v))) {
 		reattach(s, True);
+		focus(s); /* XXX: focus before arrange */
 		arrange(v);
-		focus(s);
 	}
 }
 
@@ -6016,8 +6011,8 @@ unrotatewins(Client *c)
 	for (last = scr->clients; last && last->next; last = last->next) ;
 	if ((s = prevtiled(last, v))) {
 		reattach(s, False);
+		focus(s); /* XXX: focus before arrange */
 		arrange(v);
-		focus(s);
 	}
 }
 
@@ -6183,8 +6178,8 @@ zoom(Client *c)
 		if (!(c = nexttiled(c->next, v)))
 			return;
 	reattach(c, False);
+	focus(c); /* XXX: focus before arrange */
 	arrange(v);
-	focus(c);
 }
 
 void

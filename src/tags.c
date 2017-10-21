@@ -169,9 +169,23 @@ toggletag(Client *c, int index)
 	arrange(NULL);
 }
 
+Client *
+lastselected(View *v)
+{
+	Container *cc, *cn;
+
+	for (cn = (Container *)v->tree;
+			(cc = cn) && cc->type != TreeTypeLeaf;
+			cn = cc->node.children.selected) ;
+	if (cc)
+		return (((Leaf *) cc)->client.client);
+	return NULL;
+}
+
 void
 toggleview(View *cv, int index)
 {
+	Client *c;
 	View *v;
 	unsigned long long tags;
 	unsigned i;
@@ -191,7 +205,9 @@ toggleview(View *cv, int index)
 		if ((v->seltags & tags) && v != cv)
 			arrange(v);
 	arrange(cv);
-	focus(NULL);
+	c = lastselected(cv);
+	focus(c);
+	discardcrossing(c);
 	ewmh_update_net_current_desktop();
 }
 
@@ -217,6 +233,7 @@ void
 view(View *ov, int index)
 {
 	Monitor *cm, *om;
+	Client *c;
 	View *cv;
 
 	if (0 > index || index >= scr->ntags) {
@@ -259,7 +276,9 @@ view(View *ov, int index)
 	updategeom(cm);
 	XPRINTF("VIEW: arranging view %d\n", cv->index);
 	arrange(cv);
-	focus(NULL);
+	c = lastselected(cv);
+	focus(c);
+	discardcrossing(c);
 	ewmh_update_net_current_desktop();
 }
 

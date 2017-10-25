@@ -135,6 +135,7 @@ Rule **rules;
 int nrules;
 unsigned int modkey;
 unsigned int numlockmask;
+unsigned int scrlockmask;
 Time user_time;
 Time give_time;
 Time take_time;
@@ -142,6 +143,9 @@ Group systray = { NULL, 0, 0 };
 
 ExtensionInfo einfo[BaseLast] = {
 	/* *INDENT-OFF* */
+#if 1
+	[XkbBase]	 = { "XKEYBOARD", &XkbUseExtension,		},
+#endif
 #if 1
 	[XfixesBase]	 = { "XFIXES",	  &XFixesQueryVersion,		},
 #endif
@@ -2378,7 +2382,7 @@ Bool latertime(Time time);
  */
 
 void
-manage(Window w, XWindowAttributes * wa)
+manage(Window w, XWindowAttributes *wa)
 {
 	Client *c, *t = NULL;
 	Window trans = None;
@@ -2422,6 +2426,12 @@ manage(Window w, XWindowAttributes * wa)
 	// c->tags = 0;
 	c->r.b = c->c.b = c->is.bastard ? 0 : scr->style.border;
 	/* XXX: had.border? */
+
+	c->u.x = wa->x;
+	c->u.y = wa->y;
+	c->u.w = wa->width;
+	c->u.h = wa->height;
+	c->u.b = wa->border_width;
 
 	updatesizehints(c);
 	updatetitle(c);
@@ -2521,10 +2531,10 @@ manage(Window w, XWindowAttributes * wa)
 		else if (scr->style.fullgrips)
 			c->c.v = c->r.v = c->c.g;
 	}
-	c->c.x = c->r.x = wa->x;
-	c->c.y = c->r.y = wa->y;
-	c->c.w = c->r.w = wa->width + 2 * c->c.v;;
-	c->c.h = c->r.h = wa->height + c->c.t + c->c.g + c->c.v;
+	c->c.x = c->r.x = c->u.x;
+	c->c.y = c->r.y = c->u.y;
+	c->c.w = c->r.w = c->u.w + 2 * c->c.v;;
+	c->c.h = c->r.h = c->u.h + c->c.t + c->c.g + c->c.v;
 
 	c->s.x = wa->x;
 	c->s.y = wa->y;
@@ -4865,6 +4875,8 @@ initcursors(Bool reload)
 void
 initmodmap(Bool reload)
 {
+	const KeyCode numcode = XKeysymToKeycode(dpy, XK_Num_Lock);
+	const KeyCode scrcode = XKeysymToKeycode(dpy, XK_Scroll_Lock);
 	XModifierKeymap *modmap;
 	int i, j;
 
@@ -4872,9 +4884,14 @@ initmodmap(Bool reload)
 	modmap = XGetModifierMapping(dpy);
 	for (i = 0; i < 8; i++) {
 		for (j = 0; j < modmap->max_keypermod; j++) {
-			if (modmap->modifiermap[i * modmap->max_keypermod + j]
-			    == XKeysymToKeycode(dpy, XK_Num_Lock))
-				numlockmask = (1 << i);
+			KeyCode code;
+
+			if ((code = modmap->modifiermap[i * modmap->max_keypermod + j])) {
+				if (code == numcode)
+					numlockmask = (1 << i);
+				if (code == scrcode)
+					scrlockmask = (1 << i);
+			}
 		}
 	}
 	XFreeModifiermap(modmap);
@@ -5481,12 +5498,109 @@ updatehints(Client *c)
 void
 updatesizehints(Client *c)
 {
-	long msize = 0;
+	long *sh, msize = 0;
 	XSizeHints size = { 0, };
+	unsigned long n = 0;
 
+#if 0
 	if (!XGetWMNormalHints(dpy, c->win, &size, &msize) || !size.flags)
 		size.flags = PSize;
+#else
+	if ((sh = gethints(c->win, XA_WM_NORMAL_HINTS, &n))) {
+		//  1 flags
+		size.flags = sh[0];
+		_CPRINTF(c, "got %lu words of size hints 0x%lx\n", n, size.flags);
+		//  2 x
+		//  3 y
+		if (n >= 3) {
+			msize |= (USPosition|PPosition);
+			if (size.flags & (USPosition|PPosition)) {
+				size.x = sh[1];
+				size.y = sh[2];
+			}
+		}
+		//  4 width
+		//  5 height
+		if (n >= 5) {
+			msize |= (USSize|PSize);
+			if (size.flags & (USSize|PSize)) {
+				size.width = sh[3];
+				size.height = sh[4];
+			}
+		}
+		//  6 min_width
+		//  7 min_height
+		if (n >= 7) {
+			msize |= (PMinSize);
+			if (size.flags & (PMinSize)) {
+				size.min_width = sh[5];
+				size.min_height = sh[6];
+			}
+		}
+		//  8 max_width
+		//  9 max_height
+		if (n >= 9) {
+			msize |= (PMaxSize);
+			if (size.flags & (PMaxSize)) {
+				size.max_width = sh[7];
+				size.max_height = sh[8];
+			}
+		}
+		//  10 width_inc
+		//  11 height_inc
+		if (n >= 11) {
+			msize |= (PResizeInc);
+			if (size.flags & (PResizeInc)) {
+				size.width_inc = sh[9];
+				size.height_inc = sh[10];
+			}
+		}
+		// 12 min_aspect.x
+		// 13 min_aspect.y
+		// 14 max_aspect.x
+		// 15 max_aspect.y
+		if (n >= 15) {
+			msize |= (PAspect);
+			if (size.flags & (PAspect)) {
+				size.min_aspect.x = sh[11];
+				size.min_aspect.y = sh[12];
+				size.max_aspect.x = sh[13];
+				size.max_aspect.y = sh[14];
+			}
+		}
+		// 16 base_width
+		// 17 base_height
+		if (n >= 17) {
+			msize |= (PBaseSize);
+			if (size.flags & (PBaseSize)) {
+				size.base_width = sh[15];
+				size.base_height = sh[16];
+			}
+		}
+		// 18 win_gravity
+		if (n >= 18) {
+			msize |= (PWinGravity);
+			if (size.flags & (PWinGravity)) {
+				size.win_gravity = sh[17];
+			}
+		}
+		size.flags &= msize;
+	}
+#endif
 	c->flags = size.flags;
+
+	if (c->flags & (USPosition|PPosition)) {
+		if (size.x || size.y) {
+			c->u.x = size.x;
+			c->u.y = size.y;
+		}
+	}
+	if (c->flags & (USSize|PSize)) {
+		if (size.width && size.height) {
+			c->u.w = size.width;
+			c->u.h = size.height;
+		}
+	}
 	if (c->flags & PBaseSize) {
 		c->basew = size.base_width;
 		c->baseh = size.base_height;
@@ -5818,12 +5932,13 @@ main(int argc, char *argv[])
 		context[i] = XUniqueContext();
 	/* query extensions */
 	for (i = 0; i < BaseLast; i++) {
-		einfo[i].have
-			= XQueryExtension(dpy, einfo[i].name, &einfo[i].opcode, &einfo[i].event, &einfo[i].error);
+		einfo[i].have = XQueryExtension(dpy, einfo[i].name, &einfo[i].opcode, &einfo[i].event, &einfo[i].error);
 		if (einfo[i].have) {
 			DPRINTF("have %s extension (%d,%d,%d)\n", einfo[i].name, einfo[i].opcode, einfo[i].event, einfo[i].error);
-			einfo[i].version(dpy, &einfo[i].major, &einfo[i].minor);
-			_DPRINTF("have %s extension version %d.%d\n", einfo[i].name, einfo[i].major, einfo[i].minor);
+			if (einfo[i].version) {
+				einfo[i].version(dpy, &einfo[i].major, &einfo[i].minor);
+				_DPRINTF("have %-10s extension version %d.%d\n", einfo[i].name, einfo[i].major, einfo[i].minor);
+			}
 		} else
 			DPRINTF("%s", "%s extension is not supported\n", einfo[i].name);
 	}

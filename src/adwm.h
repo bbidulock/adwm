@@ -62,12 +62,12 @@ enum {
 	WindowStateMaxH, WindowStateShaded, WindowStateNoTaskbar, WindowStateNoPager,
 	WindowStateHidden, WindowStateFs, WindowStateAbove, WindowStateBelow,
 	WindowStateAttn, WindowStateFocused, WindowStateFixed, WindowStateFloating,
-	WindowStateFilled, WindowStateMaxL, WindowStateMaxR,
+	WindowStateFilled, WindowStateMaxL, WindowStateMaxR, WindowStateUndec,
 	WindowActions, WindowActionAbove, WindowActionBelow, WindowActionChangeDesk,
 	WindowActionClose, WindowActionFs, WindowActionMaxH, WindowActionMaxV,
 	WindowActionMin, WindowActionMove, WindowActionResize, WindowActionShade,
 	WindowActionStick, WindowActionFloat, WindowActionFill, WindowActionMaxL,
-	WindowActionMaxR,
+	WindowActionMaxR, WindowActionUndec,
 	WMCheck, CloseWindow, WindowPing, Supported,
 	SystemTrayWindows, WindowFrameStrut, WindowForSysTray, WindowTypeOverride,
 	KdeSplashProgress, WindowChangeState,
@@ -223,6 +223,7 @@ enum {
 #define _XA_NET_WM_STATE_FILLED			atom[WindowStateFilled]
 #define _XA_NET_WM_STATE_MAXIMUS_LEFT		atom[WindowStateMaxL]
 #define _XA_NET_WM_STATE_MAXIMUS_RIGHT		atom[WindowStateMaxR]
+#define _XA_OB_WM_STATE_UNDECORATED		atom[WindowStateUndec]
 
 #define _XA_NET_WM_ALLOWED_ACTIONS		atom[WindowActions]
 #define _XA_NET_WM_ACTION_ABOVE			atom[WindowActionAbove]
@@ -241,6 +242,7 @@ enum {
 #define _XA_NET_WM_ACTION_FILL			atom[WindowActionFill]
 #define _XA_NET_WM_ACTION_MAXIMUS_LEFT		atom[WindowActionMaxL]
 #define _XA_NET_WM_ACTION_MAXIMUS_RIGHT		atom[WindowActionMaxR]
+#define _XA_OB_WM_ACTION_UNDECORATE		atom[WindowActionUndec]
 
 #define _XA_NET_SUPPORTING_WM_CHECK		atom[WMCheck]
 #define _XA_NET_CLOSE_WINDOW			atom[CloseWindow]
@@ -266,6 +268,7 @@ typedef struct {
 } ExtensionInfo;
 
 enum {
+	XkbBase,
 	XfixesBase,
 #ifdef XRANDR
 	XrandrBase,
@@ -775,6 +778,7 @@ typedef union {
 		unsigned below:1;
 		unsigned attn:1;
 		unsigned sticky:1;
+		unsigned undec:1;
 		unsigned closing:1;
 		unsigned killing:1;
 		unsigned pinging:1;
@@ -812,6 +816,7 @@ typedef union {
 		unsigned hide:1;
 		unsigned tag:1;
 		unsigned arrange:1;
+		unsigned undec:1;
 		unsigned focus:2;
 	};
 	unsigned can;
@@ -829,7 +834,7 @@ struct Client {
 	char *name;
 	char *icon_name;
 	int monitor;			/* initial monitor */
-	ClientGeometry c, r, s;		/* current, restore, static */
+	ClientGeometry c, r, s, u;	/* current, restore, static, supplied */
 	int basew, baseh, incw, inch, maxw, maxh, minw, minh;
 	int minax, maxax, minay, maxay, gravity;
 	int ignoreunmap;
@@ -1191,6 +1196,7 @@ typedef struct {
 	void (*initdock) (Bool);    /* initialize dock layouts */
 	void (*initlayouts) (Bool); /* initialize views and layouts */
 	void (*initstyle) (Bool);   /* initialize per-screen style */
+	void (*inittheme) (Bool);   /* initialize per-screen theme */
 	void (*deinitstyle) (void);
 	void (*drawclient) (Client *);
 } AdwmOperations;
@@ -1344,6 +1350,7 @@ extern int nrules;
 extern Rule **rules;
 extern unsigned modkey;
 extern unsigned numlockmask;
+extern unsigned scrlockmask;
 extern XContext context[];
 extern Time user_time;
 

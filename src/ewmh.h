@@ -10,6 +10,7 @@ void ewmh_release_user_time_window(Client *c);
 Atom *getatom(Window win, Atom atom, unsigned long *nitems);
 long *getcard(Window win, Atom atom, unsigned long *nitems);
 Window *getwind(Window win, Atom atom, unsigned long *nitems);
+long *gethints(Window win, Atom atom, unsigned long *nitems);
 void initewmh(char *name);
 void exitewmh(WithdrawCause cause);
 void ewmh_add_client(Client *c);

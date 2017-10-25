@@ -171,6 +171,7 @@ char *atomnames[NATOMS] = {
 	"_NET_WM_STATE_FILLED",
 	"_NET_WM_STATE_MAXIMUS_LEFT",
 	"_NET_WM_STATE_MAXIMUS_RIGHT",
+	"_OB_WM_STATE_UNDECORATED",
 
 	"_NET_WM_ALLOWED_ACTIONS",
 	"_NET_WM_ACTION_ABOVE",
@@ -189,6 +190,7 @@ char *atomnames[NATOMS] = {
 	"_NET_WM_ACTION_FILL",
 	"_NET_WM_ACTION_MAXIMUS_LEFT",
 	"_NET_WM_ACTION_MAXIMUS_RIGHT",
+	"_OB_WM_ACTION_UNDECORATE",
 
 	"_NET_SUPPORTING_WM_CHECK",
 	"_NET_CLOSE_WINDOW",
@@ -1579,6 +1581,9 @@ ewmh_update_net_window_actions(Client *c)
 		action[actions++] = _XA_NET_WM_ACTION_MAXIMUS_LEFT;
 	if (c->user.size)
 		action[actions++] = _XA_NET_WM_ACTION_MAXIMUS_RIGHT;
+	/* following is openbox specific (but a good idea) libwnck++ observes */
+	if (c->user.undec)
+		action[actions++] = _XA_OB_WM_ACTION_UNDECORATE;
 
 	XChangeProperty(dpy, c->win, _XA_NET_WM_ALLOWED_ACTIONS, XA_ATOM, 32,
 			PropModeReplace, (unsigned char *) action, actions);
@@ -1596,6 +1601,7 @@ ewmh_update_net_window_actions(Client *c)
 #define WIN_STATE_ARRANGE_IGNORE  (1<< 9)	/* ignore for auto arranging */
 #define WIN_STATE_MAXIMUS_LEFT    (1<<10)	/* window is maximus L state */
 #define WIN_STATE_MAXIMUS_RIGHT   (1<<11)	/* window is maximus R state */
+#define WIN_STATE_UNDECORATED	  (1<<12)	/* window is undecorated */
 
 void
 ewmh_update_net_window_state(Client *c)
@@ -1647,6 +1653,10 @@ ewmh_update_net_window_state(Client *c)
 		winstate[states++] = _XA_NET_WM_STATE_MAXIMUS_LEFT;
 	if (c->is.rhalf)
 		winstate[states++] = _XA_NET_WM_STATE_MAXIMUS_RIGHT;
+
+	/* following is openbox specific */
+	if (c->is.undec)
+		winstate[states++] = _XA_OB_WM_STATE_UNDECORATED;
 
 	XChangeProperty(dpy, c->win, _XA_NET_WM_STATE, XA_ATOM, 32,
 			PropModeReplace, (unsigned char *) winstate, states);
@@ -1867,6 +1877,13 @@ ewmh_process_state_atom(Client *c, Atom state, int set)
 		    (set == _NET_WM_STATE_TOGGLE)) {
 			if (c->user.size)
 				togglerhalf(c);
+		}
+	} else if (state == _XA_OB_WM_STATE_UNDECORATED) {
+		if ((set == _NET_WM_STATE_ADD && !c->is.undec) ||
+		    (set == _NET_WM_STATE_REMOVE && c->is.undec) ||
+		    (set == _NET_WM_STATE_TOGGLE)) {
+			if (c->user.undec)
+				toggleundec(c);
 		}
 	}
 }
@@ -2858,6 +2875,32 @@ getwind(Window win, Atom atom, unsigned long *nitems)
 	if (status != Success) {
 		*nitems = 0;
 		return NULL;
+	}
+	return ret;
+}
+
+long *
+gethints(Window win, Atom atom, unsigned long *nitems)
+{
+	int format, status;
+	long *ret = NULL;
+	unsigned long extra;
+	Atom real;
+
+	status = XGetWindowProperty(dpy, win, atom, 0L, 64L, False, XA_WM_SIZE_HINTS,
+				    &real, &format, nitems, &extra,
+				    (unsigned char **) &ret);
+	if (status != Success) {
+		*nitems = 0;
+		return NULL;
+	}
+	_DPRINTF("Format of WM_SIZE_HINTS is %d\n", format);
+	/* don't return empty properties */
+	if (*nitems == 0) {
+		if (ret) {
+			XFree(ret);
+			ret = NULL;
+		}
 	}
 	return ret;
 }

@@ -4733,11 +4733,11 @@ getplace(Client *c, ClientGeometry *g)
 		g->w = s[2];
 		g->h = s[3];
 	} else {
-		/* original static geometry */
-		g->x = c->s.x;
-		g->y = c->s.y;
-		g->w = c->s.w;
-		g->h = c->s.h;
+		/* original supplied or static geometry */
+		g->x = c->u.x;
+		g->y = c->u.y;
+		g->w = c->u.w;
+		g->h = c->u.h;
 	}
 	g->b = c->c.b;
 	g->t = c->c.t;
@@ -5347,8 +5347,10 @@ addclient(Client *c, Bool focusme, Bool raiseme)
 		c->r.w, c->r.h, c->r.x, c->r.y, c->r.b, c->c.t, c->c.g, c->c.v);
 	CPRINTF(c, "initial geometry s: %dx%d+%d+%d:%d t %d g %d v %d\n",
 		c->s.w, c->s.h, c->s.x, c->s.y, c->s.b, c->c.t, c->c.g, c->c.v);
+	CPRINTF(c, "initial geometry u: %dx%d+%d+%d:%d t %d g %d v %d\n",
+		c->u.w, c->u.h, c->u.x, c->u.y, c->u.b, c->c.t, c->c.g, c->c.v);
 
-	if (!c->s.x && !c->s.y && c->prog.move && !c->is.dockapp) {
+	if (!c->u.x && !c->u.y && c->prog.move && !c->is.dockapp) {
 		/* put it on the monitor startup notification requested if not already
 		   placed with its group */
 		if (c->monitor && !clientview(c))
@@ -5362,6 +5364,8 @@ addclient(Client *c, Bool focusme, Bool raiseme)
 		c->r.w, c->r.h, c->r.x, c->r.y, c->r.b, c->c.t, c->c.g, c->c.h);
 	CPRINTF(c, "placed geometry s: %dx%d+%d+%d:%d t %d g %d v %d\n",
 		c->s.w, c->s.h, c->s.x, c->s.y, c->s.b, c->c.t, c->c.g, c->c.h);
+	CPRINTF(c, "initial geometry u: %dx%d+%d+%d:%d t %d g %d v %d\n",
+		c->u.w, c->u.h, c->u.x, c->u.y, c->u.b, c->c.t, c->c.g, c->c.v);
 
 	if (!c->prog.move) {
 		int mx, my;
@@ -6153,6 +6157,28 @@ toggleshade(Client *c)
 	if (!c || (!c->prog.shade && c->is.managed) || !(v = c->cview))
 		return;
 	c->is.shaded = !c->is.shaded;
+	if (c->is.managed) {
+		ewmh_update_net_window_state(c);
+		updatefloat(c, v);
+	}
+}
+
+void
+toggleundec(Client *c)
+{
+	View *v;
+
+	if (!c || (!c->prog.undec && c->is.managed) || !(v = c->cview))
+		return;
+	if ((c->is.undec = !c->is.undec)) {
+		c->has.grips = False;
+		c->has.title = False;
+	} else {
+		if (c->title)
+			c->has.title = True;
+		if (c->grips)
+			c->has.grips = True;
+	}
 	if (c->is.managed) {
 		ewmh_update_net_window_state(c);
 		updatefloat(c, v);

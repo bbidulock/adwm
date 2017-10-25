@@ -13,6 +13,12 @@
 #include <X11/Xresource.h>
 #include <X11/Xft/Xft.h>
 #include "adwm.h"
+#include "ewmh.h"
+#include "layout.h"
+#include "tags.h"
+#include "actions.h"
+#include "config.h"
+#include "image.h" /* verification */
 
 #if defined IMLIB2
 
@@ -44,9 +50,7 @@ renderimage(AScreen *ds, const ARGB *argb, const unsigned width, const unsigned 
 	unsigned x, y;
 	ARGB *c;
 
-	image =
-	    XCreateImage(dpy, ds->visual, ds->bpp, ZPixmap, 0, NULL, width, height, 32,
-			 0);
+	image = XCreateImage(dpy, ds->visual, ds->bpp, ZPixmap, 0, NULL, width, height, 32, 0);
 	if (!image) {
 		DPRINTF("Could not create image\n");
 		return;
@@ -77,8 +81,7 @@ renderimage(AScreen *ds, const ARGB *argb, const unsigned width, const unsigned 
 				b = ds->bctab[c->blue];
 
 				pixel = (r << roff) | (g << goff) | (b << boff);
-				switch (ds->bpp +
-					((image->byte_order == MSBFirst) ? 1 : 0)) {
+				switch (ds->bpp + ((image->byte_order == MSBFirst) ? 1 : 0)) {
 				case 8:	/* 8bpp */
 					*p++ = pixel;
 					break;
@@ -235,12 +238,9 @@ initimage()
 		for (r = 0, i = 0; r < scr->cpc; r++) {
 			for (g = 0; g < scr->cpc; g++) {
 				for (b = 0; b < scr->cpc; b++) {
-					scr->colors[i].red =
-					    (r * 0xffff) / (scr->cpc - 1);
-					scr->colors[i].green =
-					    (g * 0xffff) / (scr->cpc - 1);
-					scr->colors[i].blue =
-					    (b * 0xffff) / (scr->cpc - 1);
+					scr->colors[i].red = (r * 0xffff) / (scr->cpc - 1);
+					scr->colors[i].green = (g * 0xffff) / (scr->cpc - 1);
+					scr->colors[i].blue = (b * 0xffff) / (scr->cpc - 1);
 					scr->colors[i].flags = DoRed | DoGreen | DoBlue;
 				}
 			}
@@ -270,12 +270,9 @@ initimage()
 				p = 2;
 				while (p--) {
 					for (ii = 0; ii < incolors; i++) {
-						r = (scr->colors[i].red -
-						     icolors[i].red) >> 8;
-						g = (scr->colors[i].green -
-						     icolors[i].green) >> 8;
-						b = (scr->colors[i].blue -
-						     icolors[i].blue) >> 8;
+						r = (scr->colors[i].red - icolors[i].red) >> 8;
+						g = (scr->colors[i].green - icolors[i].green) >> 8;
+						b = (scr->colors[i].blue - icolors[i].blue) >> 8;
 						pixel = (r * r) + (g * g) + (b * b);
 
 						if (pixel < chk) {
@@ -284,15 +281,11 @@ initimage()
 						}
 
 						scr->colors[i].red = icolors[close].red;
-						scr->colors[i].green =
-						    icolors[close].green;
+						scr->colors[i].green = icolors[close].green;
 						scr->colors[i].blue = icolors[close].blue;
 
-						if (XAllocColor
-						    (dpy, scr->colormap,
-						     &scr->colors[i])) {
-							scr->colors[i].flags =
-							    DoRed | DoGreen | DoBlue;
+						if (XAllocColor(dpy, scr->colormap, &scr->colors[i])) {
+							scr->colors[i].flags = DoRed | DoGreen | DoBlue;
 							break;
 						}
 					}
@@ -364,30 +357,21 @@ initimage()
 				p = 2;
 				while (p--) {
 					for (ii = 0; ii < incolors; ii++) {
-						int r =
-						    (scr->colors[i].red -
-						     icolors[i].red) >> 8;
-						int g =
-						    (scr->colors[i].green -
-						     icolors[i].green) >> 8;
-						int b =
-						    (scr->colors[i].blue -
-						     icolors[i].blue) >> 8;
+						int r = (scr->colors[i].red - icolors[i].red) >> 8;
+						int g = (scr->colors[i].green - icolors[i].green) >> 8;
+						int b = (scr->colors[i].blue - icolors[i].blue) >> 8;
+
 						pixel = (r * r) + (g * g) + (b * b);
 						if (pixel < chk) {
 							chk = pixel;
 							close = ii;
 						}
 						scr->colors[i].red = icolors[close].red;
-						scr->colors[i].green =
-						    icolors[close].green;
+						scr->colors[i].green = icolors[close].green;
 						scr->colors[i].blue = icolors[close].blue;
 
-						if (XAllocColor
-						    (dpy, scr->colormap,
-						     &scr->colors[i])) {
-							scr->colors[i].flags =
-							    DoRed | DoGreen | DoBlue;
+						if (XAllocColor(dpy, scr->colormap, &scr->colors[i])) {
+							scr->colors[i].flags = DoRed | DoGreen | DoBlue;
 							break;
 						}
 					}

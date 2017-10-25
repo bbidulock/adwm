@@ -6,6 +6,9 @@
 #include <X11/Xproto.h>
 #include <X11/Xutil.h>
 #include <X11/Xft/Xft.h>
+#ifdef SHAPE
+#include <X11/extensions/shape.h>
+#endif
 #include "adwm.h"
 #include "ewmh.h"
 #include "layout.h"

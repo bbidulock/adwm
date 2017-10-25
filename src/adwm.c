@@ -258,7 +258,12 @@ static Bool colormapnotify(XEvent *e);
 Bool clientmessage(XEvent *e);
 static Bool mappingnotify(XEvent *e);
 static Bool initmonitors(XEvent *e);
+#ifdef SYNC
 static Bool alarmnotify(XEvent *e);
+#endif
+#ifdef SHAPE
+static Bool shapenotify(XEvent *e);
+#endif
 
 Bool (*handler[LASTEvent + (EXTRANGE * BaseLast)]) (XEvent *) = {
 	[KeyPress] = keypress,
@@ -310,7 +315,7 @@ Bool (*handler[LASTEvent + (EXTRANGE * BaseLast)]) (XEvent *) = {
 	[XDamageNotify + LASTEvent + EXTRANGE * XdamageBase] = IGNOREEVENT,
 #endif
 #ifdef SHAPE
-	[ShapeNotify + LASTEvent + EXTRANGE * XshapeBase] = IGNOREEVENT,
+	[ShapeNotify + LASTEvent + EXTRANGE * XshapeBase] = shapenotify,
 #endif
 };
 
@@ -1302,6 +1307,22 @@ expose(XEvent *e)
 	}
 	return False;
 }
+
+#ifdef SHAPE
+static Bool
+shapenotify(XEvent *e)
+{
+	XShapeEvent *ev = (typeof(ev)) e;
+	Client *c;
+
+	if ((c = getclient(ev->window, ClientAny))) {
+		c->with.shape = True;
+		reconfigure(c, &c->c, False);
+		return True;
+	}
+	return False;
+}
+#endif
 
 Bool
 canfocus(Client *c)
@@ -2653,10 +2674,28 @@ manage(Window w, XWindowAttributes *wa)
 		mask |= CWBackingStore;
 		XChangeWindowAttributes(dpy, c->icon, mask, &twa);
 		XSelectInput(dpy, c->icon, CLIENTMASK);
+#ifdef SHAPE
+		XShapeSelectInput(dpy, c->icon, ShapeNotifyMask);
+		{
+			Bool shaped = False;
+			int dummy;
+			unsigned int udummy;
+
+			XShapeQueryExtents(dpy, c->icon, &shaped,
+					&dummy, &dummy, &udummy, &udummy,
+					&dummy, &dummy, &dummy, &udummy,
+					&udummy);
+			c->with.shape = shaped;
+		}
+#endif
 
 		XReparentWindow(dpy, c->icon, c->frame, c->r.x, c->r.y);
 		XConfigureWindow(dpy, c->icon, CWBorderWidth, &wc);
 		XMapWindow(dpy, c->icon);
+		if (c->with.shape) {
+			XShapeCombineShape(dpy, c->frame, ShapeBounding, c->r.x, c->r.y,
+					   c->icon, ShapeBounding, ShapeSet);
+		}
 #if 0
 		/* not necessary and doesn't help */
 		if (c->win && c->win != c->icon) {
@@ -2678,6 +2717,20 @@ manage(Window w, XWindowAttributes *wa)
 		// mask |= CWBackingStore;
 		XChangeWindowAttributes(dpy, c->win, mask, &twa);
 		XSelectInput(dpy, c->win, CLIENTMASK);
+#ifdef SHAPE
+		XShapeSelectInput(dpy, c->win, ShapeNotifyMask);
+		{
+			Bool shaped = False;
+			int dummy;
+			unsigned int udummy;
+
+			XShapeQueryExtents(dpy, c->win, &shaped,
+					&dummy, &dummy, &udummy, &udummy,
+					&dummy, &dummy, &dummy, &udummy,
+					&udummy);
+			c->with.shape = shaped;
+		}
+#endif
 
 		XReparentWindow(dpy, c->win, c->frame, 0, c->c.t);
 		if (c->grips)
@@ -2686,6 +2739,10 @@ manage(Window w, XWindowAttributes *wa)
 			XReparentWindow(dpy, c->title, c->frame, 0, 0);
 		XConfigureWindow(dpy, c->win, CWBorderWidth, &wc);
 		XMapWindow(dpy, c->win);
+		if (c->with.shape) {
+			XShapeCombineShape(dpy, c->frame, ShapeBounding, 0, c->c.t,
+					   c->win, ShapeBounding, ShapeSet);
+		}
 	}
 
 	ban(c);
@@ -2701,12 +2758,22 @@ manage(Window w, XWindowAttributes *wa)
 	ewmh_update_net_window_desktop(c);
 
 	if (c->grips && c->c.g) {
-		XMoveResizeWindow(dpy, c->grips, 0, c->c.h - c->c.g, c->c.w, c->c.g);
+		XRectangle r = { 0, c->c.h - c->c.g, c->c.w, c->c.g };
+
+		XMoveResizeWindow(dpy, c->grips, r.x, r.y, r.width, r.height);
 		XMapWindow(dpy, c->grips);
+		if (c->with.shape)
+			XShapeCombineRectangles(dpy, c->frame, ShapeBounding,
+					0, 0, &r, 1, ShapeUnion, Unsorted);
 	}
 	if (c->title && c->c.t) {
-		XMoveResizeWindow(dpy, c->title, 0, 0, c->c.w, c->c.t);
+		XRectangle r = { 0, 0, c->c.w, c->c.t };
+
+		XMoveResizeWindow(dpy, c->title, r.x, r.y, r.width, r.height);
 		XMapWindow(dpy, c->title);
+		if (c->with.shape)
+			XShapeCombineRectangles(dpy, c->frame, ShapeBounding,
+					0, 0, &r, 1, ShapeUnion, Unsorted);
 	}
 	if ((c->grips && c->c.g) || (c->title && c->c.t))
 		drawclient(c);

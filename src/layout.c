@@ -30,6 +30,9 @@
 #include <X11/Xutil.h>
 #include <X11/Xresource.h>
 #include <X11/Xft/Xft.h>
+#ifdef SHAPE
+#include <X11/extensions/shape.h>
+#endif
 #ifdef XRANDR
 #include <X11/extensions/Xrandr.h>
 #include <X11/extensions/randr.h>
@@ -628,6 +631,18 @@ reconfigure_dockapp(Client *c, ClientGeometry *n, Bool force)
 			wwc.y, wwc.border_width);
 		XConfigureWindow(dpy, c->icon, wmask, &wwc);
 	}
+#ifdef SHAPE
+	if (c->with.shape) {
+		XRectangle r = { 0, 0, fwc.width, fwc.height };
+
+		/* set client shape within frame parent */
+		XShapeCombineShape(dpy, c->frame, ShapeBounding,
+				wwc.x, wwc.y, c->icon, ShapeBounding, ShapeSet);
+		/* merge entire dockapp tile */
+		XShapeCombineRectangles(dpy, c->frame, ShapeBounding, 0, 0, &r,
+				1, ShapeUnion, Unsorted);
+	}
+#endif
 	if (force || ((fmask | wmask) && !(wmask & (CWWidth | CWHeight)))) {
 		XConfigureEvent ce;
 
@@ -663,7 +678,7 @@ check_unmapnotify(Display *dpy, XEvent *ev, XPointer arg)
 		&& ev->xunmap.window == c->win && ev->xunmap.event == c->frame);
 }
 
-static void
+void
 reconfigure(Client *c, ClientGeometry *n, Bool force)
 {
 	XWindowChanges wwc, fwc;
@@ -769,6 +784,13 @@ reconfigure(Client *c, ClientGeometry *n, Bool force)
 		XCheckIfEvent(dpy, &ev, &check_unmapnotify, (XPointer) c);
 	} else
 		XMapWindow(dpy, c->win);
+#ifdef SHAPE
+	if (c->with.shape) {
+		/* set client shape within frame parent */
+		XShapeCombineShape(dpy, c->frame, ShapeBounding,
+				wwc.x, wwc.y, c->win, ShapeBounding, ShapeSet);
+	}
+#endif
 	if (wmask) {
 		DPRINTF("wind  wc = %ux%u+%d+%d:%d\n", wwc.width, wwc.height, wwc.x,
 			wwc.y, wwc.border_width);
@@ -785,16 +807,36 @@ reconfigure(Client *c, ClientGeometry *n, Bool force)
 			else
 				XUnmapWindow(dpy, c->title);
 		}
-		if (n->t && (tchange || ((wmask | fmask) & (CWWidth))))
-			XMoveResizeWindow(dpy, c->title, 0, 0, wwc.width, n->t);
+		if (n->t && (tchange || ((wmask | fmask) & (CWWidth)))) {
+			XRectangle r = { 0, 0, wwc.width, n->t };
+
+			XMoveResizeWindow(dpy, c->title, r.x, r.y, r.width, r.height);
+#ifdef SHAPE
+			/* include the titlebar on shaped windows */
+			if (c->with.shape)
+				XShapeCombineRectangles(dpy, c->frame,
+						ShapeBounding, 0, 0, &r, 1,
+						ShapeUnion, Unsorted);
+#endif
+		}
 	}
 	if (c->grips) {
 		if (shaded || !n->g)
 			XUnmapWindow(dpy, c->grips);
 		else
 			XMapWindow(dpy, c->grips);
-		if (n->g && (gchange || ((wmask | fmask) & (CWWidth | CWHeight | CWY))))
-			XMoveResizeWindow(dpy, c->grips, 0, n->h - n->g, wwc.width, n->g);
+		if (n->g && (gchange || ((wmask | fmask) & (CWWidth | CWHeight | CWY)))) {
+			XRectangle r = { 0, n->h - n->g, wwc.width, n->g };
+
+			XMoveResizeWindow(dpy, c->grips, r.x, r.y, r.width, r.height);
+#ifdef SHAPE
+			/* include the grips on shaped windows */
+			if (c->with.shape)
+				XShapeCombineRectangles(dpy, c->frame,
+						ShapeBounding, 0, 0, &r, 1,
+						ShapeUnion, Unsorted);
+#endif
+		}
 	}
 	if (((c->title && n->t) || (c->grips && n->g)) &&
 	    ((tchange && n->t) || (gchange && n->g) || (hchange && n->v)

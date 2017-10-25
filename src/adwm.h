@@ -826,6 +826,7 @@ typedef union {
 	struct {
 		unsigned struts:1;
 		unsigned time:1;
+		unsigned shape:1;
 	};
 	unsigned with;
 } WithUnion;

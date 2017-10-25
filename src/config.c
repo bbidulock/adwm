@@ -28,6 +28,7 @@ typedef struct {
 	char *rcfile;			/* rcfile */
 	char *keysfile;			/* kerysrc file */
 	char *stylefile;		/* stylerc file */
+	char *themefile;		/* themerc file */
 } AdwmConfig;
 
 AdwmConfig config;
@@ -392,92 +393,92 @@ initconfig(Bool reload)
 	clen = sizeof(clas) - clen;
 
 	/* init appearance */
-	strcpy(n, "useveil");
-	strcpy(c, "Useveil");
+	strncpy(n, "useveil", nlen);
+	strncpy(c, "Useveil", clen);
 	options.useveil = atoi(readres(name, clas, "0")) ? True : False;
-	strcpy(n, "attachaside");
-	strcpy(c, "Attachaside");
+	strncpy(n, "attachaside", nlen);
+	strncpy(c, "Attachaside", clen);
 	options.attachaside = atoi(readres(name, clas, "1")) ? True : False;
-	strcpy(n, "command");
-	strcpy(c, "Command");
+	strncpy(n, "command", nlen);
+	strncpy(c, "Command", clen);
 	options.command = readres(name, clas, COMMAND);
-	strcpy(n, "command2");
-	strcpy(c, "Command2");
+	strncpy(n, "command2", nlen);
+	strncpy(c, "Command2", clen);
 	options.command2 = readres(name, clas, COMMAND2);
-	strcpy(n, "command3");
-	strcpy(c, "Command3");
+	strncpy(n, "command3", nlen);
+	strncpy(c, "Command3", clen);
 	options.command3 = readres(name, clas, COMMAND3);
-	strcpy(n, "menucommand");
-	strcpy(c, "Menucommand");
+	strncpy(n, "menucommand", nlen);
+	strncpy(c, "Menucommand", clen);
 	options.menucommand = readres(name, clas, MENUCOMMAND);
-	strcpy(n, "decoratetiled");
-	strcpy(c, "Decoratetiled");
+	strncpy(n, "decoratetiled", nlen);
+	strncpy(c, "Decoratetiled", clen);
 	options.dectiled = atoi(readres(name, clas, STR(DECORATETILED)));
-	strcpy(n, "decoratemax");
-	strcpy(c, "Decoratemax");
+	strncpy(n, "decoratemax", nlen);
+	strncpy(c, "Decoratemax", clen);
 	options.decmax = atoi(readres(name, clas, STR(DECORATEMAX)));
-	strcpy(n, "hidebastards");
-	strcpy(c, "Hidebastards");
+	strncpy(n, "hidebastards", nlen);
+	strncpy(c, "Hidebastards", clen);
 	options.hidebastards = atoi(readres(name, clas, "0"));
-	strcpy(n, "strutsactive");
-	strcpy(c, "StrutsActive");
+	strncpy(n, "strutsactive", nlen);
+	strncpy(c, "StrutsActive", clen);
 	options.strutsactive = atoi(readres(name, clas, "1")) ? True : False;
-	strcpy(n, "autoroll");
-	strcpy(c, "Autoroll");
+	strncpy(n, "autoroll", nlen);
+	strncpy(c, "Autoroll", clen);
 	options.autoroll = atoi(readres(name, clas, "0")) ? True : False;
-	strcpy(n, "sloppy");
-	strcpy(c, "Sloppy");
+	strncpy(n, "sloppy", nlen);
+	strncpy(c, "Sloppy", clen);
 	options.focus = atoi(readres(name, clas, "0"));
-	strcpy(n, "snap");
-	strcpy(c, "Snap");
+	strncpy(n, "snap", nlen);
+	strncpy(c, "Snap", clen);
 	options.snap = atoi(readres(name, clas, STR(SNAP)));
-	strcpy(n, "dock.position");
-	strcpy(c, "Dock.Position");
+	strncpy(n, "dock.position", nlen);
+	strncpy(c, "Dock.Position", clen);
 	options.dockpos = atoi(readres(name, clas, "1"));
-	strcpy(n, "dock.orient");
-	strcpy(c, "Dock.Orient");
+	strncpy(n, "dock.orient", nlen);
+	strncpy(c, "Dock.Orient", clen);
 	options.dockori = atoi(readres(name, clas, "1"));
-	strcpy(n, "dock.monitor");
-	strcpy(c, "Dock.Monitor");
+	strncpy(n, "dock.monitor", nlen);
+	strncpy(c, "Dock.Monitor", clen);
 	options.dockmon = atoi(readres(name, clas, "0"));
-	strcpy(n, "dragdistance");
-	strcpy(c, "Dragdistance");
+	strncpy(n, "dragdistance", nlen);
+	strncpy(c, "Dragdistance", clen);
 	options.dragdist = atoi(readres(name, clas, "5"));
 
-	strcpy(n, "mwfact");
-	strcpy(c, "Mwfact");
+	strncpy(n, "mwfact", nlen);
+	strncpy(c, "Mwfact", clen);
 	options.mwfact = atof(readres(name, clas, STR(DEFMWFACT)));
 	if (options.mwfact < 0.10 || options.mwfact > 0.90)
 		options.mwfact = DEFMWFACT;
 
-	strcpy(n, "mhfact");
-	strcpy(c, "Mhfact");
+	strncpy(n, "mhfact", nlen);
+	strncpy(c, "Mhfact", clen);
 	options.mhfact = atof(readres(name, clas, STR(DEFMHFACT)));
 	if (options.mhfact < 0.10 || options.mwfact > 0.90)
 		options.mhfact = DEFMHFACT;
 
-	strcpy(n, "nmaster");
-	strcpy(c, "Nmaster");
+	strncpy(n, "nmaster", nlen);
+	strncpy(c, "Nmaster", clen);
 	options.nmaster = atoi(readres(name, clas, STR(DEFNMASTER)));
 	if (options.nmaster < 1 || options.nmaster > 10)
 		options.nmaster = DEFNMASTER;
 
-	strcpy(n, "ncolumns");
-	strcpy(c, "Ncolumns");
+	strncpy(n, "ncolumns", nlen);
+	strncpy(c, "Ncolumns", clen);
 	options.ncolumns = atoi(readres(name, clas, STR(DEFNCOLUMNS)));
 	if (options.ncolumns < 1 || options.ncolumns > 10)
 		options.ncolumns = DEFNCOLUMNS;
 
-	strcpy(n, "deflayout");
-	strcpy(c, "Deflayout");
+	strncpy(n, "deflayout", nlen);
+	strncpy(c, "Deflayout", clen);
 	res = readres(name, clas, "i");
 	if (strlen(res) == 1)
 		options.deflayout = res;
 	else
 		options.deflayout = "i";
 
-	strcpy(n, "tags.number");
-	strcpy(c, "Tags.number");
+	strncpy(n, "tags.number", nlen);
+	strncpy(c, "Tags.number", clen);
 	options.ntags = strtoul(readres(name, clas, "5"), NULL, 0);
 	if (options.ntags < 1 || options.ntags > MAXTAGS)
 		options.ntags = 5;
@@ -550,6 +551,40 @@ initstylefile(void)
 		return;
 	}
 	XrmMergeDatabases(srdb, &xrdb);
+}
+
+static void
+initthemefile(void)
+{
+	XrmDatabase trdb;
+	const char *file;
+	struct stat st;
+	char *path;
+
+	file = getresource("themeFile", "themerc");
+	path = ecalloc(PATH_MAX + 1, sizeof(*path));
+	strncpy(path, file, PATH_MAX);
+	if (!lstat(file, &st) && S_ISLNK(st.st_mode))
+		if (readlink(file, path, PATH_MAX) == -1)
+			eprint("%s: %s\n", file, strerror(errno));
+	free(config.themefile);
+	config.themefile = strdup(path);
+	if (*config.themefile != '/') {
+		strncpy(path, config.rcfile, PATH_MAX);
+		if (strrchr(path, '/'))
+			*strrchr(path, '/') = '\0';
+		strncat(path, "/", PATH_MAX);
+		strncat(path, config.themefile, PATH_MAX);
+		free(config.themefile);
+		config.themefile = strdup(path);
+	}
+	free(path);
+	trdb = XrmGetFileDatabase(config.themefile);
+	if (!trdb) {
+		DPRINTF("Could not find database file '%s'\n", config.themefile);
+		return;
+	}
+	XrmMergeDatabases(trdb, &xrdb);
 }
 
 char *
@@ -629,7 +664,7 @@ initrcfile(const char *conf, Bool reload)
 {
 	const char *home = getenv("HOME") ? : ".";
 	const char *file = NULL;
-	char *pos, *dir;
+	char *pos;
 	int i, len;
 	struct stat st;
 	static int initialized = 0;
@@ -698,14 +733,7 @@ initrcfile(const char *conf, Bool reload)
 		config.pdir = strdup(config.udir);
 	}
 
-	if ((xrdb = XrmGetFileDatabase(config.rcfile))) {
-		dir = strdup(config.rcfile);
-		if (strrchr(dir, '/'))
-			*strrchr(dir, '/') = '\0';
-		if (chdir(dir))
-			DPRINTF("Could not change directory to %s: %s\n", dir, strerror(errno));
-		free(dir);
-	}
+	xrdb = XrmGetFileDatabase(config.rcfile);
 	if (!xrdb) {
 		DPRINTF("Couldn't find database file '%s'\n", config.rcfile);
 		free(config.rcfile);
@@ -713,14 +741,7 @@ initrcfile(const char *conf, Bool reload)
 		config.rcfile = ecalloc(len + 1, sizeof(*config.rcfile));
 		strncpy(config.rcfile, config.pdir, len);
 		strncat(config.rcfile, "/adwmrc", len);
-		if ((xrdb = XrmGetFileDatabase(config.rcfile))) {
-			dir = strdup(config.rcfile);
-			if (strrchr(dir, '/'))
-				*strrchr(dir, '/') = '\0';
-			if (chdir(dir))
-				DPRINTF("Could not change directory to %s: %s\n", dir, strerror(errno));
-			free(dir);
-		}
+		xrdb = XrmGetFileDatabase(config.rcfile);
 	}
 	if (!xrdb) {
 		DPRINTF("Couldn't find database file '%s'\n", config.rcfile);
@@ -729,14 +750,7 @@ initrcfile(const char *conf, Bool reload)
 		config.rcfile = ecalloc(len + 1, sizeof(*config.rcfile));
 		strncpy(config.rcfile, config.udir, len);
 		strncat(config.rcfile, "/adwmrc", len);
-		if ((xrdb = XrmGetFileDatabase(config.rcfile))) {
-			dir = strdup(config.rcfile);
-			if (strrchr(dir, '/'))
-				*strrchr(dir, '/') = '\0';
-			if (chdir(dir))
-				DPRINTF("Could not change directory to %s: %s\n", dir, strerror(errno));
-			free(dir);
-		}
+		xrdb = XrmGetFileDatabase(config.rcfile);
 	}
 	if (!xrdb) {
 		DPRINTF("Couldn't find database file '%s'\n", config.rcfile);
@@ -745,21 +759,26 @@ initrcfile(const char *conf, Bool reload)
 		config.rcfile = ecalloc(len + 1, sizeof(*config.rcfile));
 		strncpy(config.rcfile, config.sdir, len);
 		strncat(config.rcfile, "/adwmrc", len);
-		if ((xrdb = XrmGetFileDatabase(config.rcfile))) {
-			dir = strdup(config.rcfile);
-			if (strrchr(dir, '/'))
-				*strrchr(dir, '/') = '\0';
-			if (chdir(dir))
-				DPRINTF("Could not change directory to %s: %s\n", dir, strerror(errno));
-			free(dir);
-		}
+		xrdb = XrmGetFileDatabase(config.rcfile);
 	}
-	if (!xrdb) {
+	if (xrdb) {
+		char *dir;
+
+		dir = strdup(config.rcfile);
+		if (strrchr(dir, '/'))
+			*strrchr(dir, '/') = '\0';
+		if (chdir(dir))
+			DPRINTF("Could not change directory to %s: %s\n", dir,
+				strerror(errno));
+		free(dir);
+	} else {
 		DPRINTF("Couldn't find database file '%s'\n", config.rcfile);
 		_DPRINTF("Could not find usable database, using defaults\n");
 		if (chdir(config.udir))
-			DPRINTF("Could not change directory to %s: %s\n", config.udir, strerror(errno));
+			DPRINTF("Could not change directory to %s: %s\n", config.udir,
+				strerror(errno));
 	}
-	initkeysfile();
-	initstylefile();
+	initkeysfile();		/* read key bindings into the database */
+	initstylefile();	/* read style elements into the database */
+	initthemefile();	/* read theme elements into the database */
 }

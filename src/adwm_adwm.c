@@ -15,11 +15,13 @@
 #include <X11/Xresource.h>
 #include <X11/Xft/Xft.h>
 #include "adwm.h"
-#include "config.h"
+#include "ewmh.h"
+#include "layout.h"
+#include "tags.h"
 #include "resource.h"
 #include "actions.h"
 #include "parse.h"
-#include "layout.h"
+#include "config.h"
 
 /*
  * The purpose of this file is to provide a loadable module that provides
@@ -34,19 +36,23 @@
  */
 
 typedef struct {
-	char *rcfile;			/* rcfile */
 	char *udir;			/* user directory */
 	char *pdir;			/* private directory */
 	char *sdir;			/* system directory */
+	char *rcfile;			/* rcfile */
+	char *keysfile;			/* kerysrc file */
+	char *stylefile;		/* stylerc file */
+	char *themefile;		/* themerc file */
 } AdwmConfig;
 
 Options options;
 
 static AdwmConfig config;
 
-static XrmDatabase xconfigdb;
-static XrmDatabase xstyledb;
-static XrmDatabase xkeysdb;
+static XrmDatabase xconfigdb;		/* general configuration */
+static XrmDatabase xkeysdb;		/* key binding configuration */
+static XrmDatabase xstyledb;		/* current style configuration */
+static XrmDatabase xthemedb;		/* current theme configuration */
 
 typedef struct {
 	struct {
@@ -75,6 +81,135 @@ typedef struct {
 
 static AdwmStyle *styles;
 
+typedef struct {
+} AdwmTheme;
+
+static AdwmTheme *themes;
+
+/** @brief initkeysfile_ADWM: locate and load runtime keys file
+  *
+  * @{ */
+static void
+initkeysfile_ADWM(void)
+{
+	const char *file;
+	struct stat st;
+	char *path;
+
+	file = getresource("keysFile", "keysrc");
+	path = ecalloc(PATH_MAX + 1, sizeof(*path));
+	strncpy(path, file, PATH_MAX);
+	if (!lstat(file, &st) && S_ISLNK(st.st_mode)) {
+		if (readlink(file, path, PATH_MAX) == -1)
+			eprint("%s: %s\n", file, strerror(errno));
+	}
+	free(config.keysfile);
+	config.keysfile = strdup(path);
+	if (*config.keysfile != '/') {
+		strncpy(path, config.rcfile, PATH_MAX);
+		if (strrchr(path, '/'))
+			*strrchr(path, '/') = '\0';
+		strncat(path, "/", PATH_MAX);
+		strncat(path, config.keysfile, PATH_MAX);
+		free(config.keysfile);
+		config.keysfile = strdup(path);
+	}
+	free(path);
+	if (xkeysdb) {
+		XrmDestroyDatabase(xkeysdb);
+		xkeysdb = NULL;
+	}
+	xkeysdb = XrmGetFileDatabase(config.keysfile);
+	if (!xkeysdb) {
+		DPRINTF("Could not find database file '%s'\n", config.keysfile);
+		return;
+	}
+	XrmMergeDatabases(xkeysdb, &xconfigdb);
+}
+/** @} */
+
+/** @brief initstylefile_ADWM: locate and load runtime style file
+  *
+  * @{ */
+static void
+initstylefile_ADWM(void)
+{
+	const char *file;
+	struct stat st;
+	char *path;
+
+	file = getresource("styleFile", "stylerc");
+	path = ecalloc(PATH_MAX + 1, sizeof(*path));
+	strncpy(path, file, PATH_MAX);
+	if (!lstat(file, &st) && S_ISLNK(st.st_mode))
+		if (readlink(file, path, PATH_MAX) == -1)
+			eprint("%s: %s\n", file, strerror(errno));
+	free(config.stylefile);
+	config.stylefile = strdup(path);
+	if (*config.stylefile != '/') {
+		strncpy(path, config.rcfile, PATH_MAX);
+		if (strrchr(path, '/'))
+			*strrchr(path, '/') = '\0';
+		strncat(path, "/", PATH_MAX);
+		strncat(path, config.stylefile, PATH_MAX);
+		free(config.stylefile);
+		config.stylefile = strdup(path);
+	}
+	free(path);
+	if (xstyledb) {
+		XrmDestroyDatabase(xstyledb);
+		xstyledb = NULL;
+	}
+	xstyledb = XrmGetFileDatabase(config.stylefile);
+	if (!xstyledb) {
+		DPRINTF("Could not find database file '%s'\n", config.stylefile);
+		return;
+	}
+	XrmMergeDatabases(xstyledb, &xconfigdb);
+}
+/** @} */
+
+/** @brief initthemefile_ADWM: locate and load runtime theme file
+  *
+  * @{ */
+static void
+initthemefile_ADWM(void)
+{
+	const char *file;
+	struct stat st;
+	char *path;
+
+	file = getresource("styleFile", "stylerc");
+	path = ecalloc(PATH_MAX + 1, sizeof(*path));
+	strncpy(path, file, PATH_MAX);
+	if (!lstat(file, &st) && S_ISLNK(st.st_mode))
+		if (readlink(file, path, PATH_MAX) == -1)
+			eprint("%s: %s\n", file, strerror(errno));
+	free(config.themefile);
+	config.themefile = strdup(path);
+	if (*config.themefile != '/') {
+		strncpy(path, config.rcfile, PATH_MAX);
+		if (strrchr(path, '/'))
+			*strrchr(path, '/') = '\0';
+		strncat(path, "/", PATH_MAX);
+		strncat(path, config.themefile, PATH_MAX);
+		free(config.themefile);
+		config.themefile = strdup(path);
+	}
+	free(path);
+	if (xthemedb) {
+		XrmDestroyDatabase(xthemedb);
+		xthemedb = NULL;
+	}
+	xthemedb = XrmGetFileDatabase(config.themefile);
+	if (!xthemedb) {
+		DPRINTF("Could not find database file '%s'\n", config.themefile);
+		return;
+	}
+	XrmMergeDatabases(xthemedb, &xconfigdb);
+}
+/** @} */
+
 /** @brief initrcfile_ADWM: locate and load runtime configuration file
   *
   * @{ */
@@ -85,16 +220,18 @@ initrcfile_ADWM(const char *conf, Bool reload)
 	const char *file = NULL;
 	char *pos;
 	int i, len;
-	char *owd;
 	struct stat st;
+	static int initialized = 0;
 
 	/* init resource database */
-	XrmInitialize();
-
-	owd = calloc(PATH_MAX, sizeof(*owd));
-	if (!getcwd(owd, PATH_MAX))
-		strcpy(owd, "/");
-
+	if (!initialized) {
+		XrmInitialize();
+		initialized = 1;
+	}
+	if (xconfigdb) {
+		XrmDestroyDatabase(xconfigdb);
+		xconfigdb = NULL;
+	}
 	for (i = 0; i < cargc - 1; i++)
 		if (!strcmp(cargv[i], "-f"))
 			file = cargv[i + 1];
@@ -104,16 +241,16 @@ initrcfile_ADWM(const char *conf, Bool reload)
 			config.rcfile = strdup(file);
 		else {
 			len = strlen(home) + strlen(file) + 2;
-			config.rcfile = ecalloc(len, sizeof(*config.rcfile));
-			strcpy(config.rcfile, home);
-			strcat(config.rcfile, "/");
-			strcat(config.rcfile, file);
+			config.rcfile = ecalloc(len + 1, sizeof(*config.rcfile));
+			strncpy(config.rcfile, home, len);
+			strncat(config.rcfile, "/", len);
+			strncat(config.rcfile, file, len);
 		}
 	} else {
 		len = strlen(home) + strlen("/.adwm/adwmrc") + 1;
-		config.rcfile = ecalloc(len, sizeof(*config.rcfile));
-		strcpy(config.rcfile, home);
-		strcat(config.rcfile, "/.adwm/adwmrc");
+		config.rcfile = ecalloc(len + 1, sizeof(*config.rcfile));
+		strncpy(config.rcfile, home, len);
+		strncat(config.rcfile, "/.adwm/adwmrc", len);
 		if (!lstat(config.rcfile, &st) && S_ISLNK(st.st_mode)) {
 			char *buf = ecalloc(PATH_MAX + 1, sizeof(*buf));
 
@@ -125,10 +262,10 @@ initrcfile_ADWM(const char *conf, Bool reload)
 			} else if (*buf) {
 				free(config.rcfile);
 				len = strlen(home) + strlen(buf) + 2;
-				config.rcfile = ecalloc(len, sizeof(*config.rcfile));
-				strcpy(config.rcfile, home);
-				strcat(config.rcfile, "/");
-				strcat(config.rcfile, buf);
+				config.rcfile = ecalloc(len + 1, sizeof(*config.rcfile));
+				strncpy(config.rcfile, home, len);
+				strncat(config.rcfile, "/", len);
+				strncat(config.rcfile, buf, len);
 			}
 			free(buf);
 		}
@@ -139,9 +276,10 @@ initrcfile_ADWM(const char *conf, Bool reload)
 	if ((pos = strrchr(config.pdir, '/')))
 		*pos = '\0';
 	free(config.udir);
-	config.udir = ecalloc(strlen(home) + strlen("/.adwm") + 1, sizeof(*config.udir));
-	strcpy(config.udir, home);
-	strcat(config.udir, "/.adwm");
+	len = strlen(home) + strlen("/.adwm") + 1;
+	config.udir = ecalloc(len + 1, sizeof(*config.udir));
+	strncpy(config.udir, home, len);
+	strncat(config.udir, "/.adwm", len);
 	free(config.sdir);
 	config.sdir = strdup(SYSCONFPATH);
 	if (!strncmp(home, config.pdir, strlen(home))) {
@@ -153,33 +291,45 @@ initrcfile_ADWM(const char *conf, Bool reload)
 	if (!xconfigdb) {
 		free(config.rcfile);
 		len = strlen(config.pdir) + strlen("/adwmrc") + 2;
-		config.rcfile = ecalloc(len, sizeof(*config.rcfile));
-		strcpy(config.rcfile, config.pdir);
-		strcat(config.rcfile, "/adwmrc");
+		config.rcfile = ecalloc(len + 1, sizeof(*config.rcfile));
+		strncpy(config.rcfile, config.pdir, len);
+		strncat(config.rcfile, "/adwmrc", len);
 		xconfigdb = XrmGetFileDatabase(config.rcfile);
 	}
 	if (!xconfigdb) {
 		free(config.rcfile);
 		len = strlen(config.udir) + strlen("/adwmrc") + 2;
-		config.rcfile = ecalloc(len, sizeof(*config.rcfile));
-		strcpy(config.rcfile, config.udir);
-		strcat(config.rcfile, "/adwmrc");
+		config.rcfile = ecalloc(len + 1, sizeof(*config.rcfile));
+		strncpy(config.rcfile, config.udir, len);
+		strncat(config.rcfile, "/adwmrc", len);
 		xconfigdb = XrmGetFileDatabase(config.rcfile);
 	}
 	if (!xconfigdb) {
 		free(config.rcfile);
 		len = strlen(config.sdir) + strlen("/adwmrc") + 2;
-		config.rcfile = ecalloc(len, sizeof(*config.rcfile));
-		strcpy(config.rcfile, config.sdir);
-		strcat(config.rcfile, "/adwmrc");
+		config.rcfile = ecalloc(len + 1, sizeof(*config.rcfile));
+		strncpy(config.rcfile, config.sdir, len);
+		strncat(config.rcfile, "/adwmrc", len);
 		xconfigdb = XrmGetFileDatabase(config.rcfile);
 	}
-	if (!xconfigdb) {
-		eprint("Could not find usable database\n");
-		exit(EXIT_FAILURE);
-	}
+	if (xconfigdb) {
+		char *dir;
 
-	styles = calloc(nscr, sizeof(*styles));
+		dir = strdup(config.rcfile);
+		if (strrchr(dir, '/'))
+			*strrchr(dir, '/') = '\0';
+		if (chdir(dir))
+			DPRINTF("Could not change directory to %s: %s\n", dir, strerror(errno));
+		free(dir);
+	} else {
+		DPRINTF("Couldn't find database file '%s'\n", config.rcfile);
+		_DPRINTF("Could not find usable database, using defaults\n");
+		if (chdir(config.udir))
+			DPRINTF("Could not change directory to %s: %s\n", config.udir, strerror(errno));
+	}
+	initkeysfile_ADWM();
+	initstylefile_ADWM();
+	initthemefile_ADWM();
 }
 /** @} */
 
@@ -205,6 +355,7 @@ initconfig_ADWM(Bool reload)
 	nlen = sizeof(name) - nlen;
 	clen = sizeof(clas) - clen;
 
+	/* init appearance */
 	strncpy(n, "useveil", nlen);
 	strncpy(n, "Useveil", clen);
 	options.useveil  = atoi(readres(name, clas, "0")) ? True : False;
@@ -232,6 +383,9 @@ initconfig_ADWM(Bool reload)
 	strncpy(n, "hidebastards", nlen);
 	strncpy(c, "Hidebastards", clen);
 	options.hidebastards = atoi(readres(name, clas, "0"));
+	strcpy(n, "strutsactive");
+	strcpy(c, "StrutsActive");
+	options.strutsactive = atoi(readres(name, clas, "1")) ? True : False;
 	strncpy(n, "autoroll", nlen);
 	strncpy(c, "Autoroll", clen);
 	options.autoroll = atoi(readres(name, clas, "0")) ? True : False;
@@ -350,6 +504,10 @@ initscreen_ADWM(Bool reload)
 	strncpy(c, "Hidebastards", clen);
 	if ((res = readres(name, clas, NULL)))
 		scr->options.hidebastards = atoi(res);
+	strncpy(n, "strutsactive", nlen);
+	strncpy(c, "StrutsActive", clen);
+	if ((res = readres(name, clas, NULL)))
+		scr->options.strutsactive = atoi(res) ? True : False;
 	strncpy(n, "autoroll", nlen);
 	strncpy(c, "Autoroll", clen);
 	if ((res = readres(name, clas, NULL)))
@@ -439,6 +597,21 @@ inittags_ADWM(Bool reload)
 		snprintf(t->name, sizeof(t->name), res);
 	}
 	scr->ntags = scr->options.ntags;
+
+	ewmh_process_net_number_of_desktops();
+	ewmh_process_net_desktop_names();
+
+	if (reload) {
+		int ntags = scr->ntags;
+
+		for (; ntags > scr->ntags; ntags--)
+			deltag();
+		for (; ntags < scr->ntags; ntags++)
+			addtag();
+
+		ewmh_process_net_desktop_names();
+		ewmh_update_net_number_of_desktops();
+	}
 }
 /** @} */
 
@@ -981,9 +1154,94 @@ initlayouts_ADWM(Bool reload)
 			v->row = -1;
 			v->col = -1;
 		}
+		if (l->arrange && l->arrange->initlayout)
+			l->arrange->initlayout(v);
 	}
+
+	ewmh_update_net_desktop_modes();
+
+	ewmh_process_net_desktop_layout();
+	ewmh_update_net_desktop_layout();
+	ewmh_update_net_number_of_desktops();
+	ewmh_update_net_current_desktop();
+	ewmh_update_net_virtual_roots();
 }
 /** @} */
+
+static void
+initbuttons_ADWM(AdwmStyle *style, Bool reload)
+{
+	static const struct {
+		const char *name;
+		const char *clas;
+		const char *def;
+	} elements[LastElement] = {
+		/* *INDENT-OFF* */
+		[MenuBtn]	= { "button.menu",	MENUPIXMAP  },
+		[IconifyBtn]	= { "button.iconify",	ICONPIXMAP  },
+		[MaximizeBtn]	= { "button.maximize",	MAXPIXMAP   },
+		[CloseBtn]	= { "button.close",	CLOSEPIXMAP },
+		[ShadeBtn]	= { "button.shade",	SHADEPIXMAP },
+		[StickBtn]	= { "button.stick",	STICKPIXMAP },
+		[LHalfBtn]	= { "button.lhalf",	LHALFPIXMAP },
+		[RHalfBtn]	= { "button.rhalf",	RHALFPIXMAP },
+		[FillBtn]	= { "button.fill",	FILLPIXMAP  },
+		[FloatBtn]	= { "button.float",	FLOATPIXMAP },
+		[SizeBtn]	= { "button.resize",	SIZEPIXMAP  },
+		[TitleTags]	= { "title.tags",	NULL	    },
+		[TitleName]	= { "title.name",	NULL	    },
+		[TitleSep]	= { "title.sep",	NULL	    },
+		/* *INDENT-ON* */
+	};
+	static const struct {
+		const char *name;
+		const char *clas;
+	} kind[LastButtonImageType] = {
+		/* *INDENT-OFF* */
+		[ButtonImageDefault]		    = { "",				""			    },
+		[ButtonImagePressed]		    = { ".pressed",			".Pressed"		    },
+		[ButtonImagePressedB1]		    = { ".pressed.b1",			".Pressed.B1"		    },
+		[ButtonImagePressedB2]		    = { ".pressed.b2",			".Pressed.B2"		    },
+		[ButtonImagePressedB3]		    = { ".pressed.b3",			".Pressed.B3"		    },
+		[ButtonImageToggledPressed]	    = { ".toggled.pressed",		".Toggled.Pressed"	    },
+		[ButtonImageToggledPressedB1]	    = { ".toggled.pressed.b1",		".Toggled.Pressed.B1"	    },
+		[ButtonImageToggledPressedB2]	    = { ".toggled.pressed.b2",		".Toggled.Pressed.B2"	    },
+		[ButtonImageToggledPressedB3]	    = { ".toggled.pressed.b3",		".Toggled.Pressed.B3"	    },
+		[ButtonImageHover]		    = { ".hovered",			".Hovered"		    },
+		[ButtonImageFocus]		    = { ".focused",			".Focused"		    },
+		[ButtonImageUnfocus]		    = { ".unfocus",			".Unfocus"		    },
+		[ButtonImageToggledHover]	    = { ".toggled.hovered",		".Toggled.Hovered"	    },
+		[ButtonImageToggledFocus]	    = { ".toggled.focused",		".Toggled.Focused"	    },
+		[ButtonImageToggledUnfocus]	    = { ".toggled.unfocus",		".Toggled.Unfocus"	    },
+		[ButtonImageDisabledHover]	    = { ".disabled.hovered",		".Disabled.Hovered"	    },
+		[ButtonImageDisabledFocus]	    = { ".disabled.focused",		".Disabled.Focused"	    },
+		[ButtonImageDisabledUnfocus]	    = { ".disabled.unfocus",		".Disabled.Unfocus"	    },
+		[ButtonImageToggledDisabledHover]   = { ".toggled.disabled.hovered",	".Toggled.Disabled.Hovered" },
+		[ButtonImageToggledDisabledFocus]   = { ".toggled.disabled.focused",	".Toggled.Disabled.Focused" },
+		[ButtonImageToggledDisabledUnfocus] = { ".toggled.disabled.unfocus",	".Toggled.Disabled.Unfocus" },
+		/* *INDENT-ON* */
+	};
+	int i, j, n;
+	char name[256], clas[256];
+
+	n = LastElement * LastButtonImageType;
+	free(style->elements);
+	style->elements = calloc(n, sizeof(*style->elements));
+
+	for (n = 0, i = 0; i < LastElement; i++) {
+		for (j = 0; j < LastButtonImageType; j++, n++) {
+			snprintf(name, sizeof(name), "adwm.style.%s%s",
+				 elements[i].name, kind[j].name);
+			snprintf(clas, sizeof(clas), "Adwm.Style.%s%s",
+				 elements[i].clas, kind[j].clas);
+			readtexture(name, clas, &style->elements[n], "black",
+				    "white");
+			if (!style->elements[n].pixmap.file && elements[i].def)
+				getpixmap(elements[i].def,
+					  &style->elements[i].pixmap);
+		}
+	}
+}
 
 static void
 initstyle_ADWM(Bool reload)
@@ -1055,78 +1313,25 @@ initstyle_ADWM(Bool reload)
 	res = readres("adwm.style.title", "Adwm.Style.Title", STR(TITLEHEIGHT));
 	style->title = strtoul(res, NULL, 0);
 
-	{
-		static const struct {
-			const char *name;
-			const char *clas;
-			const char *def;
-		} elements[LastElement] = {
-			/* *INDENT-OFF* */
-			[MenuBtn]	= { "button.menu",	MENUPIXMAP  },
-			[IconifyBtn]	= { "button.iconify",	ICONPIXMAP  },
-			[MaximizeBtn]	= { "button.maximize",	MAXPIXMAP   },
-			[CloseBtn]	= { "button.close",	CLOSEPIXMAP },
-			[ShadeBtn]	= { "button.shade",	SHADEPIXMAP },
-			[StickBtn]	= { "button.stick",	STICKPIXMAP },
-			[LHalfBtn]	= { "button.lhalf",	LHALFPIXMAP },
-			[RHalfBtn]	= { "button.rhalf",	RHALFPIXMAP },
-			[FillBtn]	= { "button.fill",	FILLPIXMAP  },
-			[FloatBtn]	= { "button.float",	FLOATPIXMAP },
-			[SizeBtn]	= { "button.resize",	SIZEPIXMAP  },
-			[TitleTags]	= { "title.tags",	NULL	    },
-			[TitleName]	= { "title.name",	NULL	    },
-			[TitleSep]	= { "title.sep",	NULL	    },
-			/* *INDENT-ON* */
-		};
-		static const struct {
-			const char *name;
-			const char *clas;
-		} kind[LastButtonImageType] = {
-			/* *INDENT-OFF* */
-			[ButtonImageDefault]		    = { "",				""			    },
-			[ButtonImagePressed]		    = { ".pressed",			".Pressed"		    },
-			[ButtonImagePressedB1]		    = { ".pressed.b1",			".Pressed.B1"		    },
-			[ButtonImagePressedB2]		    = { ".pressed.b2",			".Pressed.B2"		    },
-			[ButtonImagePressedB3]		    = { ".pressed.b3",			".Pressed.B3"		    },
-			[ButtonImageToggledPressed]	    = { ".toggled.pressed",		".Toggled.Pressed"	    },
-			[ButtonImageToggledPressedB1]	    = { ".toggled.pressed.b1",		".Toggled.Pressed.B1"	    },
-			[ButtonImageToggledPressedB2]	    = { ".toggled.pressed.b2",		".Toggled.Pressed.B2"	    },
-			[ButtonImageToggledPressedB3]	    = { ".toggled.pressed.b3",		".Toggled.Pressed.B3"	    },
-			[ButtonImageHover]		    = { ".hovered",			".Hovered"		    },
-			[ButtonImageFocus]		    = { ".focused",			".Focused"		    },
-			[ButtonImageUnfocus]		    = { ".unfocus",			".Unfocus"		    },
-			[ButtonImageToggledHover]	    = { ".toggled.hovered",		".Toggled.Hovered"	    },
-			[ButtonImageToggledFocus]	    = { ".toggled.focused",		".Toggled.Focused"	    },
-			[ButtonImageToggledUnfocus]	    = { ".toggled.unfocus",		".Toggled.Unfocus"	    },
-			[ButtonImageDisabledHover]	    = { ".disabled.hovered",		".Disabled.Hovered"	    },
-			[ButtonImageDisabledFocus]	    = { ".disabled.focused",		".Disabled.Focused"	    },
-			[ButtonImageDisabledUnfocus]	    = { ".disabled.unfocus",		".Disabled.Unfocus"	    },
-			[ButtonImageToggledDisabledHover]   = { ".toggled.disabled.hovered",	".Toggled.Disabled.Hovered" },
-			[ButtonImageToggledDisabledFocus]   = { ".toggled.disabled.focused",	".Toggled.Disabled.Focused" },
-			[ButtonImageToggledDisabledUnfocus] = { ".toggled.disabled.unfocus",	".Toggled.Disabled.Unfocus" },
-			/* *INDENT-ON* */
-		};
-		int i, j, n;
-		char name[256], clas[256];
+	initbuttons_ADWM(style, reload);
+}
 
-		n = LastElement * LastButtonImageType;
-		free(style->elements);
-		style->elements = calloc(n, sizeof(*style->elements));
+static void
+inittheme_ADWM(Bool reload)
+{
+	const char *res;
+	AdwmTheme *theme;
 
-		for (n = 0, i = 0; i < LastElement; i++) {
-			for (j = 0; j < LastButtonImageType; j++, n++) {
-				snprintf(name, sizeof(name), "adwm.style.%s%s",
-					 elements[i].name, kind[j].name);
-				snprintf(clas, sizeof(clas), "Adwm.Style.%s%s",
-					 elements[i].clas, kind[j].clas);
-				readtexture(name, clas, &style->elements[n], "black",
-					    "white");
-				if (!style->elements[n].pixmap.file && elements[i].def)
-					getpixmap(elements[i].def,
-						  &style->elements[i].pixmap);
-			}
-		}
-	}
+	xresdb = xthemedb;
+
+	if (!themes)
+		themes = ecalloc(nscr, sizeof(*themes));
+	theme = themes + scr->screen;
+	(void) theme;
+	(void) res;
+
+	/* FIXME: read theme elements */
+
 }
 
 static void
@@ -1149,6 +1354,7 @@ AdwmOperations adwm_ops = {
 	.initkeys = &initkeys_ADWM,
 	.initlayouts = &initlayouts_ADWM,
 	.initstyle = &initstyle_ADWM,
+	.inittheme = &inittheme_ADWM,
 	.deinitstyle = &deinitstyle_ADWM,
 	.drawclient = &drawclient_ADWM,
 };

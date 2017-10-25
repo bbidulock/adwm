@@ -597,7 +597,7 @@ void
 initkeys(Bool reload)
 {
 	unsigned int i, j, l;
-	const char *tmp;
+	const char *res;
 	char t[64];
 
 	freekeys();
@@ -608,12 +608,11 @@ initkeys(Bool reload)
 
 		snprintf(t, sizeof(t), "%s", KeyItems[i].name);
 		DPRINTF("Check for key item '%s'\n", t);
-		tmp = getresource(t, NULL);
-		if (!tmp)
+		if (!(res = getresource(t, NULL)))
 			continue;
 		key.func = KeyItems[i].action;
 		key.arg = KeyItems[i].arg;
-		parsekeys(tmp, &key);
+		parsekeys(res, &key);
 	}
 	/* increment, decrement and set functions */
 	for (j = 0; j < LENGTH(KeyItemsByAmt); j++) {
@@ -623,13 +622,12 @@ initkeys(Bool reload)
 			snprintf(t, sizeof(t), "%s%s", inc_prefix[i].prefix,
 				 KeyItemsByAmt[j].name);
 			DPRINTF("Check for key item '%s'\n", t);
-			tmp = getresource(t, NULL);
-			if (!tmp)
+			if (!(res = getresource(t, NULL)))
 				continue;
 			key.func = KeyItemsByAmt[j].action;
 			key.arg = NULL;
 			key.act = inc_prefix[i].act;
-			parsekeys(tmp, &key);
+			parsekeys(res, &key);
 		}
 	}
 	/* client or screen state set, unset and toggle functions */
@@ -638,17 +636,17 @@ initkeys(Bool reload)
 			for (l = 0; l < LENGTH(set_suffix); l++) {
 				Key key = { 0, };
 
-				snprintf(t, sizeof(t), "%s%s%s", set_prefix[i].prefix,
-					 KeyItemsByState[j].name, set_suffix[l].suffix);
+				snprintf(t, sizeof(t), "%s%s%s",
+					 set_prefix[i].prefix, KeyItemsByState[j].name,
+					 set_suffix[l].suffix);
 				DPRINTF("Check for key item '%s'\n", t);
-				tmp = getresource(t, NULL);
-				if (!tmp)
+				if (!(res = getresource(t, NULL)))
 					continue;
 				key.func = KeyItemsByState[j].action;
 				key.arg = NULL;
 				key.set = set_prefix[i].set;
 				key.any = set_suffix[l].any;
-				parsekeys(tmp, &key);
+				parsekeys(res, &key);
 			}
 		}
 	}
@@ -660,13 +658,12 @@ initkeys(Bool reload)
 			snprintf(t, sizeof(t), "%s%s", KeyItemsByDir[j].name,
 				 rel_suffix[i].suffix);
 			DPRINTF("Check for key item '%s'\n", t);
-			tmp = getresource(t, NULL);
-			if (!tmp)
+			if (!(res = getresource(t, NULL)))
 				continue;
 			key.func = KeyItemsByDir[j].action;
 			key.arg = NULL;
 			key.dir = rel_suffix[i].dir;
-			parsekeys(tmp, &key);
+			parsekeys(res, &key);
 		}
 	}
 	/* per tag functions */
@@ -676,14 +673,13 @@ initkeys(Bool reload)
 
 			snprintf(t, sizeof(t), "%s%d", KeyItemsByTag[j].name, i);
 			DPRINTF("Check for key item '%s'\n", t);
-			tmp = getresource(t, NULL);
-			if (!tmp)
+			if (!(res = getresource(t, NULL)))
 				continue;
 			key.func = KeyItemsByTag[j].action;
 			key.arg = NULL;
 			key.tag = i;
 			key.dir = RelativeNone;
-			parsekeys(tmp, &key);
+			parsekeys(res, &key);
 		}
 		for (i = 0; i < LENGTH(tag_suffix); i++) {
 			Key key = { 0, };
@@ -691,15 +687,14 @@ initkeys(Bool reload)
 			snprintf(t, sizeof(t), "%s%s", KeyItemsByTag[j].name,
 				 tag_suffix[i].suffix);
 			DPRINTF("Check for key item '%s'\n", t);
-			tmp = getresource(t, NULL);
-			if (!tmp)
+			if (!(res = getresource(t, NULL)))
 				continue;
 			key.func = KeyItemsByTag[j].action;
 			key.arg = NULL;
 			key.tag = 0;
 			key.dir = tag_suffix[i].dir;
 			key.wrap = tag_suffix[i].wrap;
-			parsekeys(tmp, &key);
+			parsekeys(res, &key);
 		}
 	}
 	/* list settings */
@@ -709,8 +704,7 @@ initkeys(Bool reload)
 
 			snprintf(t, sizeof(t), "%s%d", KeyItemsByList[j].name, i);
 			DPRINTF("Check for key item '%s'\n", t);
-			tmp = getresource(t, NULL);
-			if (!tmp)
+			if (!(res = getresource(t, NULL)))
 				continue;
 			key.func = KeyItemsByList[j].action;
 			key.arg = NULL;
@@ -718,18 +712,17 @@ initkeys(Bool reload)
 			key.any = AllClients;
 			key.dir = RelativeNone;
 			key.cyc = False;
-			parsekeys(tmp, &key);
+			parsekeys(res, &key);
 		}
 		for (i = 0; i < LENGTH(lst_suffix); i++) {
 			for (l = 0; l < LENGTH(list_which); l++) {
 				Key key = { 0, };
 
 				snprintf(t, sizeof(t), "%s%s%s",
-					 KeyItemsByList[j].name,
-					 lst_suffix[i].suffix, list_which[l].which);
+					 KeyItemsByList[j].name, lst_suffix[i].suffix,
+					 list_which[l].which);
 				DPRINTF("Check for key item '%s'\n", t);
-				tmp = getresource(t, NULL);
-				if (!tmp)
+				if (!(res = getresource(t, NULL)))
 					continue;
 				key.func = KeyItemsByList[j].action;
 				key.arg = NULL;
@@ -737,7 +730,7 @@ initkeys(Bool reload)
 				key.any = list_which[l].any;
 				key.dir = lst_suffix[i].dir;
 				key.cyc = False;
-				parsekeys(tmp, &key);
+				parsekeys(res, &key);
 			}
 		}
 		for (i = 0; i < LENGTH(cyc_suffix); i++) {
@@ -745,11 +738,10 @@ initkeys(Bool reload)
 				Key key = { 0, };
 
 				snprintf(t, sizeof(t), "cycle%s%s%s",
-					 KeyItemsByList[j].name,
-					 cyc_suffix[i].suffix, list_which[l].which);
+					 KeyItemsByList[j].name, cyc_suffix[i].suffix,
+					 list_which[l].which);
 				DPRINTF("Check for key item '%s'\n", t);
-				tmp = getresource(t, NULL);
-				if (!tmp)
+				if (!(res = getresource(t, NULL)))
 					continue;
 				key.func = KeyItemsByList[j].action;
 				key.arg = NULL;
@@ -757,7 +749,7 @@ initkeys(Bool reload)
 				key.any = list_which[l].any;
 				key.dir = cyc_suffix[i].dir;
 				key.cyc = True;
-				parsekeys(tmp, &key);
+				parsekeys(res, &key);
 			}
 		}
 	}
@@ -767,12 +759,11 @@ initkeys(Bool reload)
 
 		snprintf(t, sizeof(t), "setlayout%c", layouts[i].symbol);
 		DPRINTF("Check for key item '%s'\n", t);
-		tmp = getresource(t, NULL);
-		if (!tmp)
+		if (!(res = getresource(t, NULL)))
 			continue;
 		key.func = k_setlayout;
 		key.arg = t + 9;
-		parsekeys(tmp, &key);
+		parsekeys(res, &key);
 	}
 	/* spawn */
 	for (i = 0; i < 64; i++) {
@@ -780,12 +771,11 @@ initkeys(Bool reload)
 
 		snprintf(t, sizeof(t), "spawn%d", i);
 		DPRINTF("Check for key item '%s'\n", t);
-		tmp = getresource(t, NULL);
-		if (!tmp)
+		if (!(res = getresource(t, NULL)))
 			continue;
 		key.func = k_spawn;
 		key.arg = NULL;
-		parsekeys(tmp, &key);
+		parsekeys(res, &key);
 	}
 }
 

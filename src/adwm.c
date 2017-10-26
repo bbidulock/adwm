@@ -1320,8 +1320,7 @@ shapenotify(XEvent *e)
 	if ((c = getclient(ev->window, ClientAny))) {
 		if (c->with.shape) {
 			_CPRINTF(c, "Got shape notify, redrawing shapes \n");
-			drawshapes(c);
-			return True;
+			return configureshapes(c);
 		}
 	}
 	return False;
@@ -2767,7 +2766,7 @@ manage(Window w, XWindowAttributes *wa)
 		XMoveResizeWindow(dpy, c->title, r.x, r.y, r.width, r.height);
 		XMapWindow(dpy, c->title);
 	}
-	drawshapes(c);
+	configureshapes(c);
 	if ((c->grips && c->c.g) || (c->title && c->c.t))
 		drawclient(c);
 

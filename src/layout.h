@@ -60,6 +60,7 @@ void setselected(Client *c);
 void tookfocus(Client *c);
 Bool enterclient(XEvent *e, Client *c);
 Bool configureclient(XEvent *e, Client *c, int gravity);
+Bool configureshapes(Client *c);
 Bool configuremonitors(XEvent *e, Client *c);
 Client *nextdockapp(Client *c, View *v);
 Client *prevdockapp(Client *c, View *v);

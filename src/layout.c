@@ -588,6 +588,92 @@ enterclient(XEvent *e, Client *c)
 	return True;
 }
 
+Bool
+configureshapes(Client *c)
+{
+	if (!c->with.shape)
+		return False;
+#if SHAPE
+	// XClearWindow(dpy, c->frame);
+	if (c->is.dockapp) {
+		/* no need to shape a client frame for a dock app */
+#if 0
+		XRectangle r = { -c->c.b, -c->cb, c->c.w + 2 * c->c.b, c->c.h + 2 * c->c.b };
+
+		/* set client shape within frame parent */
+		XShapeCombineShape(dpy, c->frame, ShapeBounding,
+				   c->r.x, c->r.y, c->icon, ShapeBounding, ShapeSet);
+		/* merge entire dockapp tile */
+		XShapeCombineRectangles(dpy, c->frame, ShapeBounding, 0, 0, &r,
+					1, ShapeUnion, Unsorted);
+#endif
+		return False;
+	} else if (c->is.shaded) {
+		XRectangle r = { -c->c.b, -c->c.b, c->c.w + 2 * c->c.b, c->c.t + c->c.b };
+
+		/* set just the titlebar within the frame including frame border */
+		XShapeCombineRectangles(dpy, c->frame, ShapeBounding, 0, 0,
+					&r, 1, ShapeSet, Unsorted);
+	} else {
+		XRectangle r[4];
+		int num = 0;
+
+		/* set client shape within frame parent */
+		XShapeCombineShape(dpy, c->frame, ShapeBounding,
+				   0, c->c.t, c->win, ShapeBounding, ShapeSet);
+		if (c->title && c->c.t) {
+			/* title bar if it exists */
+			r[num].x = -c->c.b;
+			r[num].y = -c->c.b;
+			r[num].width = c->c.w + 2 * c->c.b;
+			r[num].height = c->c.t + c->c.b;
+			num++;
+		} else if (c->c.b) {
+			/* otherwise top border */
+			r[num].x = -c->c.b;
+			r[num].y = -c->c.b;
+			r[num].width = c->c.w + 2 * c->c.b;
+			r[num].height = c->c.b;
+			num++;
+		}
+		if (c->grips && c->c.g) {
+			/* grips if it exists */
+			r[num].x = -c->c.b;
+			r[num].y = c->c.h - c->c.g;
+			r[num].width = c->c.w + 2 * c->c.b;
+			r[num].height = c->c.g + c->c.b;
+			num++;
+		} else if (c->c.b) {
+			/* otherwise bottom border */
+			r[num].x = -c->c.b;
+			r[num].y = c->c.h;
+			r[num].width = c->c.w + 2 * c->c.b;
+			r[num].height = c->c.b;
+			num++;
+		}
+		if (c->c.b) {
+			/* left border */
+			r[num].x = -c->c.b;
+			r[num].y = -c->c.b;
+			r[num].width = c->c.b;
+			r[num].height = c->c.h + 2 * c->c.b;
+			num++;
+			/* right border */
+			r[num].x = c->c.w;
+			r[num].y = -c->c.b;
+			r[num].width = c->c.b;
+			r[num].height = c->c.h + 2 * c->c.b;
+			num++;
+		}
+		if (num) {
+			XShapeCombineRectangles(dpy, c->frame, ShapeBounding, 0, 0,
+						&r[0], num, ShapeUnion, Unsorted);
+		}
+	}
+	return True;
+#endif
+}
+
 static void
 reconfigure_dockapp(Client *c, ClientGeometry *n, Bool force)
 {
@@ -768,7 +854,7 @@ reconfigure(Client *c, ClientGeometry *n, Bool force)
 	if (fmask) {
 		DPRINTF("frame wc = %ux%u+%d+%d:%d\n", fwc.width, fwc.height, fwc.x,
 			fwc.y, fwc.border_width);
-		drawshapes(c);
+		configureshapes(c);
 		XConfigureWindow(dpy, c->frame,
 				 CWX | CWY | CWWidth | CWHeight | CWBorderWidth, &fwc);
 	}

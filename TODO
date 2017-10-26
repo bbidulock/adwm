@@ -7,6 +7,7 @@ General tasks:
 * [x] fix issues with tagging on multihead (anything left?)
 * [x] fix focus problems
 * [x] do code cleanup
+* [x] better X11 extension handling
 
 Window resize grips:
 
@@ -26,6 +27,12 @@ Decoration styles:
 * [x] handle colormaps correctly
 * [ ] provide transparency management model for instructing compositors
 * [ ] add full composite manager function to window manager
+* [x] support shaped windows
+* [ ] add shaped borders to shaped windows
+* [ ] undecorate shaped windows with reduced extents by default
+* [ ] used 32-deep ARGB visuals for all frame components when available
+* [ ] render client and frame elements on frame
+* [ ] load themerc file in addition to stylerc file
 
 Internal layout mechanism:
 
@@ -54,6 +61,8 @@ Session control:
 * [ ] add session management
 * [ ] implement separate file for dock app list.
 * [ ] implement function to save dock app list.
+* [ ] do not load all resources on reload (only those that are cannot
+      be changed by the user after startup.
 
 Behaviour:
 
@@ -74,9 +83,17 @@ Behaviour:
       key depressed.
 * [x] implement kill behavior with _Button2_ and _Button3_ on close
       button.
-* [ ] fix broken rollup function.
+* [ ] fix broken rollup function (maybe using XShape).
 * [x] fix broken key chains.
 * [x] fix auto-hide struts behavior
+* [x] add support for _OB_WM_{ACTION,STATE}_UNDECORATE
+* [x] always focus last selected window per view when possible
+* [x] fix resizing from maximized
+* [x] support WM_ICON_SIZE
+* [x] handle _NET_WM_WINDOW_OPACITY
+* [x] support WM_COLORMAP_{WINDOWS,NOTIFY}
+* [ ] get keyboard-based move working
+* [ ] get keyboard-based resize working
 
 
 // vim: set ft=asciidoc tw=72 nocin nosi fo+=tcqlorn spell:

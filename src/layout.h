@@ -59,7 +59,6 @@ void setfocused(Client *c);
 void setselected(Client *c);
 void tookfocus(Client *c);
 Bool enterclient(XEvent *e, Client *c);
-void reconfigure(Client *c, ClientGeometry *n, Bool force);
 Bool configureclient(XEvent *e, Client *c, int gravity);
 Bool configuremonitors(XEvent *e, Client *c);
 Client *nextdockapp(Client *c, View *v);

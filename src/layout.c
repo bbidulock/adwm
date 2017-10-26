@@ -30,8 +30,17 @@
 #include <X11/Xutil.h>
 #include <X11/Xresource.h>
 #include <X11/Xft/Xft.h>
-#ifdef SHAPE
-#include <X11/extensions/shape.h>
+#include <X11/extensions/Xfixes.h>
+#ifdef RENDER
+#include <X11/extensions/Xrender.h>
+#include <X11/extensions/render.h>
+#endif
+#ifdef XCOMPOSITE
+#include <X11/extensions/Xcomposite.h>
+#include <X11/extensions/composite.h>
+#endif
+#ifdef DAMAGE
+#include <X11/extensions/Xdamage.h>
 #endif
 #ifdef XRANDR
 #include <X11/extensions/Xrandr.h>
@@ -42,6 +51,9 @@
 #endif
 #ifdef SYNC
 #include <X11/extensions/sync.h>
+#endif
+#ifdef SHAPE
+#include <X11/extensions/shape.h>
 #endif
 #ifdef STARTUP_NOTIFICATION
 #define SN_API_NOT_YET_FROZEN
@@ -631,18 +643,6 @@ reconfigure_dockapp(Client *c, ClientGeometry *n, Bool force)
 			wwc.y, wwc.border_width);
 		XConfigureWindow(dpy, c->icon, wmask, &wwc);
 	}
-#ifdef SHAPE
-	if (c->with.shape) {
-		XRectangle r = { 0, 0, fwc.width, fwc.height };
-
-		/* set client shape within frame parent */
-		XShapeCombineShape(dpy, c->frame, ShapeBounding,
-				wwc.x, wwc.y, c->icon, ShapeBounding, ShapeSet);
-		/* merge entire dockapp tile */
-		XShapeCombineRectangles(dpy, c->frame, ShapeBounding, 0, 0, &r,
-				1, ShapeUnion, Unsorted);
-	}
-#endif
 	if (force || ((fmask | wmask) && !(wmask & (CWWidth | CWHeight)))) {
 		XConfigureEvent ce;
 
@@ -678,7 +678,7 @@ check_unmapnotify(Display *dpy, XEvent *ev, XPointer arg)
 		&& ev->xunmap.window == c->win && ev->xunmap.event == c->frame);
 }
 
-void
+static void
 reconfigure(Client *c, ClientGeometry *n, Bool force)
 {
 	XWindowChanges wwc, fwc;
@@ -768,6 +768,7 @@ reconfigure(Client *c, ClientGeometry *n, Bool force)
 	if (fmask) {
 		DPRINTF("frame wc = %ux%u+%d+%d:%d\n", fwc.width, fwc.height, fwc.x,
 			fwc.y, fwc.border_width);
+		drawshapes(c);
 		XConfigureWindow(dpy, c->frame,
 				 CWX | CWY | CWWidth | CWHeight | CWBorderWidth, &fwc);
 	}
@@ -784,13 +785,6 @@ reconfigure(Client *c, ClientGeometry *n, Bool force)
 		XCheckIfEvent(dpy, &ev, &check_unmapnotify, (XPointer) c);
 	} else
 		XMapWindow(dpy, c->win);
-#ifdef SHAPE
-	if (c->with.shape) {
-		/* set client shape within frame parent */
-		XShapeCombineShape(dpy, c->frame, ShapeBounding,
-				wwc.x, wwc.y, c->win, ShapeBounding, ShapeSet);
-	}
-#endif
 	if (wmask) {
 		DPRINTF("wind  wc = %ux%u+%d+%d:%d\n", wwc.width, wwc.height, wwc.x,
 			wwc.y, wwc.border_width);
@@ -811,13 +805,6 @@ reconfigure(Client *c, ClientGeometry *n, Bool force)
 			XRectangle r = { 0, 0, wwc.width, n->t };
 
 			XMoveResizeWindow(dpy, c->title, r.x, r.y, r.width, r.height);
-#ifdef SHAPE
-			/* include the titlebar on shaped windows */
-			if (c->with.shape)
-				XShapeCombineRectangles(dpy, c->frame,
-						ShapeBounding, 0, 0, &r, 1,
-						ShapeUnion, Unsorted);
-#endif
 		}
 	}
 	if (c->grips) {
@@ -829,13 +816,6 @@ reconfigure(Client *c, ClientGeometry *n, Bool force)
 			XRectangle r = { 0, n->h - n->g, wwc.width, n->g };
 
 			XMoveResizeWindow(dpy, c->grips, r.x, r.y, r.width, r.height);
-#ifdef SHAPE
-			/* include the grips on shaped windows */
-			if (c->with.shape)
-				XShapeCombineRectangles(dpy, c->frame,
-						ShapeBounding, 0, 0, &r, 1,
-						ShapeUnion, Unsorted);
-#endif
 		}
 	}
 	if (((c->title && n->t) || (c->grips && n->g)) &&
@@ -3517,15 +3497,32 @@ ismoveevent(Display *display, XEvent *event, XPointer arg)
 	switch (event->type) {
 	case ButtonPress:
 	case ButtonRelease:
+	case MotionNotify:
+	case KeymapNotify:
+	case Expose:
+	case GraphicsExpose:
+	case NoExpose:
 	case ClientMessage:
 	case ConfigureRequest:
-	case Expose:
 	case MapRequest:
-	case MotionNotify:
 		return True;
 	default:
-		if (event->type == XSyncAlarmNotify + einfo[XsyncBase].event)
+#if 1
+		if (einfo[XfixesBase].have && event->type == XFixesDisplayCursorNotify + einfo[XfixesBase].event)
 			return True;
+#endif
+#ifdef SYNC
+		if (einfo[XsyncBase].have && event->type == XSyncAlarmNotify + einfo[XsyncBase].event)
+			return True;
+#endif
+#ifdef DAMAGE
+		if (einfo[XdamageBase].have && event->type == XDamageNotify + einfo[XdamageBase].event)
+			return True;
+#endif
+#ifdef SHAPE
+		if (einfo[XshapeBase].have && event->type == ShapeNotify + einfo[XshapeBase].event)
+			return True;
+#endif
 		return False;
 	}
 }
@@ -3539,8 +3536,7 @@ move_begin(Client *c, View *v, Bool toggle, int from, IsUnion * was)
 		return False;
 
 	/* regrab pointer with move cursor */
-	XGrabPointer(dpy, scr->root, False, MOUSEMASK, GrabModeAsync,
-		     GrabModeAsync, None, cursor[from], user_time);
+	XChangeActivePointerGrab(dpy, MOUSEMASK, cursor[from], user_time);
 
 	isfloater = isfloating(c, v) ? True : False;
 
@@ -3689,7 +3685,7 @@ mousemove_from(Client *c, int from, XEvent *e, Bool toggle)
 	if (c->is.dockapp || !isfloater)
 		from = CursorEvery;
 
-	if (XGrabPointer(dpy, scr->root, False, MOUSEMASK, GrabModeAsync,
+	if (XGrabPointer(dpy, c->frame, False, MOUSEMASK, GrabModeAsync,
 			 GrabModeAsync, None, None, e->xbutton.time) != GrabSuccess) {
 		CPRINTF(c, "Couldn't grab pointer!\n");
 		XUngrabPointer(dpy, e->xbutton.time);
@@ -4068,15 +4064,32 @@ isresizeevent(Display *display, XEvent *event, XPointer arg)
 	switch (event->type) {
 	case ButtonPress:
 	case ButtonRelease:
+	case MotionNotify:
+	case KeymapNotify:
+	case Expose:
+	case GraphicsExpose:
+	case NoExpose:
 	case ClientMessage:
 	case ConfigureRequest:
-	case Expose:
 	case MapRequest:
-	case MotionNotify:
 		return True;
 	default:
-		if (event->type == XSyncAlarmNotify + einfo[XsyncBase].event)
+#if 1
+		if (einfo[XfixesBase].have && event->type == XFixesDisplayCursorNotify + einfo[XfixesBase].event)
 			return True;
+#endif
+#ifdef SYNC
+		if (einfo[XsyncBase].have && event->type == XSyncAlarmNotify + einfo[XsyncBase].event)
+			return True;
+#endif
+#ifdef DAMAGE
+		if (einfo[XdamageBase].have && event->type == XDamageNotify + einfo[XdamageBase].event)
+			return True;
+#endif
+#ifdef SHAPE
+		if (einfo[XshapeBase].have && event->type == ShapeNotify + einfo[XshapeBase].event)
+			return True;
+#endif
 		return False;
 	}
 }
@@ -4105,8 +4118,7 @@ resize_begin(Client *c, View *v, Bool toggle, int from, IsUnion * was)
 	}
 
 	/* regrab pointer with resize cursor */
-	XGrabPointer(dpy, scr->root, False, MOUSEMASK, GrabModeAsync,
-		     GrabModeAsync, None, cursor[from], user_time);
+	XChangeActivePointerGrab(dpy, MOUSEMASK, cursor[from], user_time);
 
 	isfloater = isfloating(c, v) ? True : False;
 
@@ -4231,7 +4243,7 @@ mouseresize_from(Client *c, int from, XEvent *e, Bool toggle)
 	if (!c->user.floats || c->is.dockapp)
 		toggle = False;
 
-	if (XGrabPointer(dpy, scr->root, False, MOUSEMASK, GrabModeAsync,
+	if (XGrabPointer(dpy, c->frame, False, MOUSEMASK, GrabModeAsync,
 			 GrabModeAsync, None, None, e->xbutton.time) != GrabSuccess) {
 		XUngrabPointer(dpy, e->xbutton.time);
 		return resized;

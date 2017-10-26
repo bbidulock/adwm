@@ -591,7 +591,7 @@ enterclient(XEvent *e, Client *c)
 Bool
 configureshapes(Client *c)
 {
-	if (!c->with.shape)
+	if (!c->with.shapes)
 		return False;
 #if SHAPE
 	// XClearWindow(dpy, c->frame);

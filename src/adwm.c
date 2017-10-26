@@ -1318,7 +1318,7 @@ shapenotify(XEvent *e)
 	Client *c;
 
 	if ((c = getclient(ev->window, ClientAny))) {
-		if (c->with.shape) {
+		if (c->with.shapes) {
 			_CPRINTF(c, "Got shape notify, redrawing shapes \n");
 			return configureshapes(c);
 		}
@@ -2383,6 +2383,21 @@ show_client_state(Client *c)
 #endif
 }
 
+#ifdef SHAPE
+static Bool
+check_shape(Client *c, Window win)
+{
+	struct { int shaped; int x, y; unsigned int width, height; } extents[2] = { { 0, }, };
+
+	XShapeQueryExtents(dpy, win,
+			&extents[0].shaped, &extents[0].x, &extents[0].y,
+			&extents[0].width, &extents[0].height,
+			&extents[1].shaped, &extents[1].x, &extents[1].y,
+			&extents[1].width, &extents[1].height);
+	return (extents[0].shaped ? True : False);
+}
+#endif
+
 Bool latertime(Time time);
 
 /*
@@ -2681,19 +2696,8 @@ manage(Window w, XWindowAttributes *wa)
 		XSelectInput(dpy, c->icon, CLIENTMASK);
 #ifdef SHAPE
 		XShapeSelectInput(dpy, c->icon, ShapeNotifyMask);
-		{
-			Bool shaped = False;
-			int dummy;
-			unsigned int udummy;
-
-			XShapeQueryExtents(dpy, c->icon, &shaped,
-					&dummy, &dummy, &udummy, &udummy,
-					&dummy, &dummy, &dummy, &udummy,
-					&udummy);
-			c->with.shape = shaped;
-		}
+		c->with.shapes = check_shape(c, c->icon);
 #endif
-
 		XReparentWindow(dpy, c->icon, c->frame, c->r.x, c->r.y);
 		XConfigureWindow(dpy, c->icon, CWBorderWidth, &wc);
 		XMapWindow(dpy, c->icon);
@@ -2720,19 +2724,8 @@ manage(Window w, XWindowAttributes *wa)
 		XSelectInput(dpy, c->win, CLIENTMASK);
 #ifdef SHAPE
 		XShapeSelectInput(dpy, c->win, ShapeNotifyMask);
-		{
-			Bool shaped = False;
-			int dummy;
-			unsigned int udummy;
-
-			XShapeQueryExtents(dpy, c->win, &shaped,
-					&dummy, &dummy, &udummy, &udummy,
-					&dummy, &dummy, &dummy, &udummy,
-					&udummy);
-			c->with.shape = shaped;
-		}
+		c->with.shapes = check_shape(c, c->win);
 #endif
-
 		XReparentWindow(dpy, c->win, c->frame, 0, c->c.t);
 		if (c->grips)
 			XReparentWindow(dpy, c->grips, c->frame, 0, c->c.h - c->c.g);

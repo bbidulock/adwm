@@ -513,7 +513,7 @@ drawclient(Client *c)
 	int status;
 
 	/* might be drawing a client that is not on the current screen */
-	if (!(ds = getscreen(c->win))) {
+	if (!(ds = getscreen(c->win, True))) {
 		DPRINTF("What? no screen for window 0x%lx???\n", c->win);
 		return;
 	}

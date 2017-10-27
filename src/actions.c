@@ -955,12 +955,12 @@ k_setscrgeneric(XEvent *e, Key *k, void (*func) (XEvent *, Key *, AScreen *))
 		int d;
 
 	case FocusClient:
-		if (sel && (s = getscreen(sel->win)))
+		if (sel && (s = getscreen(sel->win, True)))
 			func(e, k, s);
 		break;
 	case PointerClient:
 		XQueryPointer(dpy, scr->root, &proot, &w, &d, &d, &d, &d, &mask);
-		if ((s = getscreen(proot)))
+		if ((s = getscreen(proot, True)))
 			func(e, k, s);
 		break;
 	case AllClients:

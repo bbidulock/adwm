@@ -678,6 +678,11 @@ typedef struct {
 } LayoutArgs;
 
 typedef struct {
+	int x, y;
+	unsigned int w, h;
+} Extent;
+
+typedef struct {
 	int x, y, w, h, b;
 } Geometry;
 
@@ -826,7 +831,10 @@ typedef union {
 	struct {
 		unsigned struts:1;
 		unsigned time:1;
-		unsigned shapes:1;
+		unsigned boundary:1;
+		unsigned clipping:1;
+		unsigned wshape:1;
+		unsigned bshape:1;
 	};
 	unsigned with;
 } WithUnion;
@@ -849,6 +857,7 @@ struct Client {
 	SkipUnion skip;
 	IsUnion is;
 	HasUnion has;
+	HasUnion needs;
 	WithUnion with;
 	CanUnion prog, user;
 	View *cview;
@@ -1234,7 +1243,7 @@ void focusnext(Client *c);
 void focusprev(Client *c);
 void focusmain(Client *c);
 void focusurgent(Client *c);
-AScreen *getscreen(Window win);
+AScreen *getscreen(Window win, Bool query);
 AScreen *geteventscr(XEvent *ev);
 void killclient(Client *c);
 void killproc(Client *c);
@@ -1354,6 +1363,8 @@ extern unsigned numlockmask;
 extern unsigned scrlockmask;
 extern XContext context[];
 extern Time user_time;
+extern unsigned long ignore_request;
+void ignorenext(void);
 
 extern XrmDatabase xresdb, xrdb;
 extern int cargc;

@@ -591,87 +591,85 @@ enterclient(XEvent *e, Client *c)
 Bool
 configureshapes(Client *c)
 {
-	if (!c->with.shapes)
+	XRectangle wind = { -c->c.b, -c->c.b, c->c.w + 2 * c->c.b, c->c.h + 2 * c->c.b };
+	XRectangle clip = { 0, 0, c->c.w, c->c.h };
+	XRectangle clnt = { 0, c->c.t, c->c.w, c->c.h - (c->c.t + c->c.g) };
+	XRectangle titl = { 0, 0, c->c.w, c->c.t };
+	XRectangle grip = { 0, c->c.h - c->c.g, c->c.w, c->c.g };
+	XRectangle btit = { -c->c.b, -c->c.b, c->c.w + 2 * c->c.b, c->c.t + 2 * c->c.b };
+	XRectangle brip = { -c->c.b, c->c.h - c->c.g - c->c.b, c->c.w + 2 * c->c.b, c->c.g + 2 * c->c.b };
+	XRectangle deco[2] = { {0,}, };
+	unsigned dec = 0;
+
+	if (!einfo[XshapeBase].have)
 		return False;
-#if SHAPE
-	// XClearWindow(dpy, c->frame);
-	if (c->is.dockapp) {
-		/* no need to shape a client frame for a dock app */
-#if 0
-		XRectangle r = { -c->c.b, -c->cb, c->c.w + 2 * c->c.b, c->c.h + 2 * c->c.b };
 
-		/* set client shape within frame parent */
-		XShapeCombineShape(dpy, c->frame, ShapeBounding,
-				   c->r.x, c->r.y, c->icon, ShapeBounding, ShapeSet);
-		/* merge entire dockapp tile */
-		XShapeCombineRectangles(dpy, c->frame, ShapeBounding, 0, 0, &r,
-					1, ShapeUnion, Unsorted);
-#endif
-		return False;
-	} else if (c->is.shaded) {
-		XRectangle r = { -c->c.b, -c->c.b, c->c.w + 2 * c->c.b, c->c.t + c->c.b };
-
-		/* set just the titlebar within the frame including frame border */
-		XShapeCombineRectangles(dpy, c->frame, ShapeBounding, 0, 0,
-					&r, 1, ShapeSet, Unsorted);
-	} else {
-		XRectangle r[4];
-		int num = 0;
-
-		/* set client shape within frame parent */
-		XShapeCombineShape(dpy, c->frame, ShapeBounding,
+	if (c->with.wshape || c->with.bshape) {
+		/* draw titlebar and grips separate */
+		XShapeCombineShape(dpy, c->frame, ShapeClip,
 				   0, c->c.t, c->win, ShapeBounding, ShapeSet);
-		if (c->title && c->c.t) {
-			/* title bar if it exists */
-			r[num].x = -c->c.b;
-			r[num].y = -c->c.b;
-			r[num].width = c->c.w + 2 * c->c.b;
-			r[num].height = c->c.t + c->c.b;
-			num++;
-		} else if (c->c.b) {
-			/* otherwise top border */
-			r[num].x = -c->c.b;
-			r[num].y = -c->c.b;
-			r[num].width = c->c.w + 2 * c->c.b;
-			r[num].height = c->c.b;
-			num++;
+		if (c->with.clipping)
+			XShapeCombineShape(dpy, c->frame, ShapeClip,
+					   0, c->c.t, c->win, ShapeClip, ShapeIntersect);
+		deco[0] = titl;
+		deco[1] = grip;
+		XShapeCombineRectangles(dpy, c->frame, ShapeClip,
+					0, 0, deco, 2, ShapeUnion, Unsorted);
+
+		XRectangle *rect;
+		int i, count = 0, ordering = Unsorted;
+
+		if ((rect = XShapeGetRectangles(dpy, c->frame, ShapeClip,
+						&count, &ordering))) {
+			for (i = 0; i < count; i++) {
+				rect[i].x -= c->c.b;
+				rect[i].y -= c->c.b;
+				rect[i].width += 2 * c->c.b;
+				rect[i].height += 2 * c->c.b;
+			}
+			XShapeCombineRectangles(dpy, c->frame, ShapeBounding,
+						0, 0, rect, count, ShapeSet, Unsorted);
+		} else {
+			deco[0] = btit;
+			deco[1] = brip;
+			XShapeCombineRectangles(dpy, c->frame, ShapeBounding,
+						0, 0, deco, 2, ShapeSet, Unsorted);
 		}
-		if (c->grips && c->c.g) {
-			/* grips if it exists */
-			r[num].x = -c->c.b;
-			r[num].y = c->c.h - c->c.g;
-			r[num].width = c->c.w + 2 * c->c.b;
-			r[num].height = c->c.g + c->c.b;
-			num++;
-		} else if (c->c.b) {
-			/* otherwise bottom border */
-			r[num].x = -c->c.b;
-			r[num].y = c->c.h;
-			r[num].width = c->c.w + 2 * c->c.b;
-			r[num].height = c->c.b;
-			num++;
+	} else
+	if (c->with.boundary || c->with.clipping) {
+		XShapeCombineRectangles(dpy, c->frame, ShapeBounding,
+					0, 0, &wind, 1, ShapeSet, Unsorted);
+		XShapeCombineRectangles(dpy, c->frame, ShapeBounding,
+					0, 0, &clnt, 1, ShapeSubtract, Unsorted);
+		XShapeCombineRectangles(dpy, c->frame, ShapeClip,
+					0, 0, &clip, 1, ShapeSet, Unsorted);
+		if (c->c.t)
+			deco[dec++] = titl;
+		if (c->c.g)
+			deco[dec++] = grip;
+
+		if (dec)
+			XShapeCombineRectangles(dpy, c->frame, ShapeClip,
+						0, 0, deco, dec, ShapeIntersect,
+						Unsorted);
+		if (c->with.clipping) {
+			XShapeCombineShape(dpy, c->frame, ShapeBounding,
+					   0, c->c.t, c->win, ShapeClip, ShapeUnion);
+			XShapeCombineShape(dpy, c->frame, ShapeClip,
+					   0, c->c.t, c->win, ShapeClip, ShapeUnion);
+		} else if (c->with.boundary) {
+			XShapeCombineShape(dpy, c->frame, ShapeBounding,
+					   0, c->c.t, c->win, ShapeBounding, ShapeUnion);
+			XShapeCombineShape(dpy, c->frame, ShapeClip,
+					   0, c->c.t, c->win, ShapeBounding, ShapeUnion);
 		}
-		if (c->c.b) {
-			/* left border */
-			r[num].x = -c->c.b;
-			r[num].y = -c->c.b;
-			r[num].width = c->c.b;
-			r[num].height = c->c.h + 2 * c->c.b;
-			num++;
-			/* right border */
-			r[num].x = c->c.w;
-			r[num].y = -c->c.b;
-			r[num].width = c->c.b;
-			r[num].height = c->c.h + 2 * c->c.b;
-			num++;
-		}
-		if (num) {
-			XShapeCombineRectangles(dpy, c->frame, ShapeBounding, 0, 0,
-						&r[0], num, ShapeUnion, Unsorted);
-		}
+	} else {
+		XShapeCombineRectangles(dpy, c->frame, ShapeBounding,
+					0, 0, &wind, 1, ShapeSet, Unsorted);
+		XShapeCombineRectangles(dpy, c->frame, ShapeClip,
+					0, 0, &clip, 1, ShapeSet, Unsorted);
 	}
 	return True;
-#endif
 }
 
 static void
@@ -1280,8 +1278,7 @@ get_decor(Client *c, View *v, ClientGeometry *g)
 	}
 	g->t = decorate ? ((c->title && c->has.title) ? scr->style.titleheight : 0) : 0;
 	g->g = decorate ? ((c->grips && c->has.grips) ? scr->style.gripsheight : 0) : 0;
-	g->v = decorate ? ((c->grips && c->has.grips && scr->style.fullgrips) ?
-			   g->g : 0) : 0;
+	g->v = decorate ? ((c->grips && c->has.grips && scr->style.fullgrips) ?  g->g : 0) : 0;
 }
 
 static void
@@ -6313,13 +6310,14 @@ toggleundec(Client *c)
 	if ((c->is.undec = !c->is.undec)) {
 		c->has.grips = False;
 		c->has.title = False;
+		c->has.border = False;
 	} else {
-		if (c->title)
-			c->has.title = True;
-		if (c->grips)
-			c->has.grips = True;
+		c->has.title = c->needs.title;
+		c->has.grips = c->needs.grips;
+		c->has.border = c->needs.border;
 	}
 	if (c->is.managed) {
+		reconfigure(c, &c->c, False);
 		ewmh_update_net_window_state(c);
 		updatefloat(c, v);
 	}

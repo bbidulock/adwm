@@ -104,6 +104,7 @@ int xerrorstart(Display *dsply, XErrorEvent *ee);
 int (*xerrorxlib) (Display *, XErrorEvent *);
 int xioerror(Display *dpy);
 int (*xioerrorxlib) (Display *);
+unsigned long ignore_request = 0;
 
 Bool issystray(Window win);
 void delsystray(Window win);
@@ -455,6 +456,7 @@ applystate(Client *c, XWMHints *wmh)
 		c->user.can = 0;
 		c->user.move = True;
 		c->has.has = 0;
+		c->needs.has = 0;
 		c->is.floater = True;
 		c->is.sticky = True;
 		c->tags = ((1ULL << scr->ntags) - 1);
@@ -1317,11 +1319,9 @@ shapenotify(XEvent *e)
 	XShapeEvent *ev = (typeof(ev)) e;
 	Client *c;
 
-	if ((c = getclient(ev->window, ClientAny))) {
-		if (c->with.shapes) {
-			_CPRINTF(c, "Got shape notify, redrawing shapes \n");
-			return configureshapes(c);
-		}
+	if ((c = getclient(ev->window, ClientAny)) && ev->window == c->win) {
+		CPRINTF(c, "Got shape notify, redrawing shapes \n");
+		return configureshapes(c);
 	}
 	return False;
 }
@@ -2321,6 +2321,22 @@ show_client_state(Client *c)
 	CPRINTF(c, "%-20s: %s\n", "has.but.floats", c->has.but.floats ? "true" : "false");
 	CPRINTF(c, "%-20s: %s\n", "has.but.half", c->has.but.half ? "true" : "false");
 #endif
+#if 1
+	CPRINTF(c, "%-20s: 0x%08x\n", "needs.has", c->needs.has);
+#else
+	CPRINTF(c, "%-20s: %s\n", "needs.border", c->needs.border ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "needs.grips", c->needs.grips ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "needs.title", c->needs.title ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "needs.but.menu", c->needs.but.menu ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "needs.but.min", c->needs.but.min ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "needs.but.max", c->needs.but.max ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "needs.but.close", c->needs.but.close ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "needs.but.size", c->needs.but.size ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "needs.but.shade", c->needs.but.shade ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "needs.but.fill", c->needs.but.fill ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "needs.but.floats", c->needs.but.floats ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "needs.but.half", c->needs.but.half ? "true" : "false");
+#endif
 #if 0
 	CPRINTF(c, "%-20s: %s\n", "with.struts", c->with.struts ? "true" : "false");
 	CPRINTF(c, "%-20s: %s\n", "with.time", c->with.time ? "true" : "false");
@@ -2383,20 +2399,59 @@ show_client_state(Client *c)
 #endif
 }
 
-#ifdef SHAPE
-static Bool
-check_shape(Client *c, Window win)
+static void
+checkshaped(Client *c)
 {
-	struct { int shaped; int x, y; unsigned int width, height; } extents[2] = { { 0, }, };
+#if SHAPE
+	XWindowAttributes wa = { 0, };
+	Bool boundary = False;
+	Bool clipping = False;
+	Extent be = { 0, };
+	Extent ce = { 0, };
 
-	XShapeQueryExtents(dpy, win,
-			&extents[0].shaped, &extents[0].x, &extents[0].y,
-			&extents[0].width, &extents[0].height,
-			&extents[1].shaped, &extents[1].x, &extents[1].y,
-			&extents[1].width, &extents[1].height);
-	return (extents[0].shaped ? True : False);
-}
+	if (einfo[XshapeBase].have) {
+		XShapeSelectInput(dpy, c->win, ShapeNotifyMask);
+		XGetWindowAttributes(dpy, c->win, &wa);
+		XShapeQueryExtents(dpy, c->win,
+				   &boundary, &be.x, &be.y, &be.w, &be.h,
+				   &clipping, &ce.x, &ce.y, &ce.w, &ce.h);
+
+		c->with.boundary = boundary;
+		c->with.clipping = clipping;
+
+		if ((boundary) &&
+		    ((be.x > -wa.border_width) || (be.y > -wa.border_width) ||
+		     (be.x + be.w < wa.width + wa.border_width) ||
+		     (be.y + be.h < wa.height + wa.border_width))) {
+			/* boundary extents are partially or fully contained within
+			   window */
+			c->with.wshape = True;
+		}
+		if ((clipping) &&
+		    ((ce.x > be.x) && (ce.y > be.y) &&
+		     (ce.x + ce.w < be.x + be.w) && (ce.y + ce.h < be.y + be.h))) {
+			/* clipping extents are fully contained within boundary */
+			c->with.bshape = True;
+		}
+	}
 #endif
+}
+
+static void
+updateshape(Client *c)
+{
+	checkshaped(c);
+	if (c->with.wshape || c->with.bshape) {
+		/* When we have a fully shaped window or fully shaped border, it is
+		 * counterproductive to have a frame.  But rather than not adding decorations, just
+		 * set the default of the window to be undecorated by default. */
+		c->has.title = False;
+		c->has.grips = False;
+		c->has.border = False;
+		c->is.undec = True;
+		c->skip.skip = -1U;
+	}
+}
 
 Bool latertime(Time time);
 
@@ -2445,6 +2500,7 @@ manage(Window w, XWindowAttributes *wa)
 	XSaveContext(dpy, c->win, context[ClientAny], (XPointer) c);
 	XSaveContext(dpy, c->win, context[ScreenContext], (XPointer) scr);
 	c->has.has = -1U;
+	c->needs.has = -1U;
 	c->prog.can = -1U;
 	c->user.can = -1U;
 	wmh = XGetWMHints(dpy, c->win);
@@ -2650,9 +2706,9 @@ manage(Window w, XWindowAttributes *wa)
 
 	twa.event_mask = ExposureMask | MOUSEMASK | WINDOWMASK;
 	/* we create title as root's child as a workaround for 32bit visuals */
-	if (c->has.title) {
+	if (c->needs.title) {
 		c->element = ecalloc(LastElement, sizeof(*c->element));
-		c->title = XCreateWindow(dpy, scr->root, 0, 0, c->c.w, c->c.t,
+		c->title = XCreateWindow(dpy, scr->root, 0, 0, c->c.w, scr->style.titleheight,
 					 0, DefaultDepth(dpy, scr->screen),
 					 CopyFromParent, DefaultVisual(dpy, scr->screen),
 					 CWEventMask, &twa);
@@ -2660,8 +2716,8 @@ manage(Window w, XWindowAttributes *wa)
 		XSaveContext(dpy, c->title, context[ClientAny], (XPointer) c);
 		XSaveContext(dpy, c->title, context[ScreenContext], (XPointer) scr);
 	}
-	if (c->has.grips) {
-		c->grips = XCreateWindow(dpy, scr->root, 0, 0, c->c.w, c->c.g,
+	if (c->needs.grips) {
+		c->grips = XCreateWindow(dpy, scr->root, 0, 0, c->c.w, scr->style.gripsheight,
 					 0, DefaultDepth(dpy, scr->screen),
 					 CopyFromParent, DefaultVisual(dpy, scr->screen),
 					 CWEventMask, &twa);
@@ -2694,10 +2750,7 @@ manage(Window w, XWindowAttributes *wa)
 		mask |= CWBackingStore;
 		XChangeWindowAttributes(dpy, c->icon, mask, &twa);
 		XSelectInput(dpy, c->icon, CLIENTMASK);
-#ifdef SHAPE
-		XShapeSelectInput(dpy, c->icon, ShapeNotifyMask);
-		c->with.shapes = check_shape(c, c->icon);
-#endif
+//		updateshape(c); /* do not shape frames for dock apps */
 		XReparentWindow(dpy, c->icon, c->frame, c->r.x, c->r.y);
 		XConfigureWindow(dpy, c->icon, CWBorderWidth, &wc);
 		XMapWindow(dpy, c->icon);
@@ -2722,10 +2775,7 @@ manage(Window w, XWindowAttributes *wa)
 		// mask |= CWBackingStore;
 		XChangeWindowAttributes(dpy, c->win, mask, &twa);
 		XSelectInput(dpy, c->win, CLIENTMASK);
-#ifdef SHAPE
-		XShapeSelectInput(dpy, c->win, ShapeNotifyMask);
-		c->with.shapes = check_shape(c, c->win);
-#endif
+		updateshape(c);
 		XReparentWindow(dpy, c->win, c->frame, 0, c->c.t);
 		if (c->grips)
 			XReparentWindow(dpy, c->grips, c->frame, 0, c->c.h - c->c.g);
@@ -3949,7 +3999,7 @@ handle_event(XEvent *ev)
 }
 
 AScreen *
-getscreen(Window win)
+getscreen(Window win, Bool query)
 {
 	Window *wins = NULL, wroot, parent;
 	unsigned int num;
@@ -3959,8 +4009,13 @@ getscreen(Window win)
 		return (s);
 	if (!XFindContext(dpy, win, context[ScreenContext], (XPointer *) &s))
 		return (s);
+	if (!query)
+		return (s);
+	ignorenext();
 	if (XQueryTree(dpy, win, &wroot, &parent, &wins, &num))
 		XFindContext(dpy, wroot, context[ScreenContext], (XPointer *) &s);
+	else
+		_DPRINTF("XQueryTree(0x%lx) failed!\n", win);
 	if (wins)
 		XFree(wins);
 	return (s);
@@ -3969,7 +4024,22 @@ getscreen(Window win)
 AScreen *
 geteventscr(XEvent *ev)
 {
-	return (event_scr = getscreen(ev->xany.window) ? : scr);
+	Window win = ev->xany.window;
+	Bool query = False;
+
+	if (ev->type == DestroyNotify) {
+		if (ev->xdestroywindow.event == ev->xdestroywindow.window)
+			query = False;
+		else
+			win = ev->xdestroywindow.event;
+	} else if (ev->type > PropertyNotify || ev->type == NoExpose || ev->type == GraphicsExpose)
+		query = False;
+	if (!(event_scr = getscreen(win, query))) {
+		if (query)
+			_DPRINTF("Could not find event screen for event %d with window 0x%lx\n", ev->type, win);
+		event_scr = scr;
+	}
+	return (event_scr);
 }
 
 void
@@ -4171,7 +4241,8 @@ scan(void)
 			manage(wins[i], &wa);
 			wins[i] = None;
 		}
-	}
+	} else
+		_DPRINTF("XQueryTree(0x%lx) failed\n", scr->root);
 	if (wins)
 		XFree(wins);
 	DPRINTF("done scanning screen %d\n", scr->screen);
@@ -5561,7 +5632,7 @@ updatesizehints(Client *c)
 	if ((sh = gethints(c->win, XA_WM_NORMAL_HINTS, &n))) {
 		//  1 flags
 		size.flags = sh[0];
-		_CPRINTF(c, "got %lu words of size hints 0x%lx\n", n, size.flags);
+		CPRINTF(c, "got %lu words of size hints 0x%lx\n", n, size.flags);
 		//  2 x
 		//  3 y
 		if (n >= 3) {
@@ -5886,12 +5957,25 @@ updatecmapwins(Client *c)
 	}
 }
 
+void
+ignorenext(void)
+{
+	ignore_request = NextRequest(dpy);
+}
+
 /* There's no way to check accesses to destroyed windows, thus those cases are
  * ignored (ebastardly on UnmapNotify's).  Other types of errors call Xlibs
  * default error handler, which may call exit.	*/
 int
 xerror(Display *dsply, XErrorEvent *ee)
 {
+	Bool dead = True;
+	char msg[81] = { 0, }, req[81] = { 0, }, num[81] = { 0, };
+
+	if (ignore_request && ee->serial == ignore_request) {
+		ignore_request = 0;
+		return (0);
+	}
 	if (ee->error_code == BadWindow
 	    || (ee->request_code == X_SetInputFocus && ee->error_code == BadMatch)
 	    || (ee->request_code == X_PolyText8 && ee->error_code == BadDrawable)
@@ -5902,9 +5986,18 @@ xerror(Display *dsply, XErrorEvent *ee)
 	    || (ee->request_code == X_CopyArea && ee->error_code == BadDrawable)
 	    || (ee->request_code == 134 && ee->error_code == 134)
 	    )
+		dead = False;
+	snprintf(num, 80, "%d", ee->request_code);
+	XGetErrorDatabaseText(dsply, "XRequest", num, "", req, 80);
+	if (!req[0])
+		snprintf(req, 80, "[request_code=%d]", ee->request_code);
+	if (XGetErrorText(dsply, ee->error_code, msg, 80) != Success)
+		msg[0] = '\0';
+	if (!dead) {
+		_DPRINTF("X error %s(0x%lx): %s\n", req, ee->resourceid, msg);
 		return 0;
-	_DPRINTF("fatal error: request code=%d, error code=%d\n",
-		 ee->request_code, ee->error_code);
+	}
+	_DPRINTF("Fatal X error %s(0x%lx): %s\n", req, ee->resourceid, msg);
 	return xerrorxlib(dsply, ee);	/* may call exit */
 }
 

@@ -2492,6 +2492,7 @@ ewmh_process_kde_net_window_type_override(Client *c)
 		c->skip.sloppy = False;
 		c->user.can = 0;	/* no functionality */
 		c->has.has = 0;	/* no decorations */
+		c->needs.has = 0;	/* no decorations */
 	}
 	if (data)
 		XFree(data);
@@ -2894,7 +2895,7 @@ gethints(Window win, Atom atom, unsigned long *nitems)
 		*nitems = 0;
 		return NULL;
 	}
-	_DPRINTF("Format of WM_SIZE_HINTS is %d\n", format);
+	DPRINTF("Format of WM_SIZE_HINTS is %d\n", format);
 	/* don't return empty properties */
 	if (*nitems == 0) {
 		if (ret) {
@@ -3131,6 +3132,7 @@ ewmh_process_net_window_type(Client *c)
 		c->skip.skip = -1U;	/* skip everything */
 		c->user.can = 0;	/* no user functionality */
 		c->has.has = 0;	/* no decorations */
+		c->needs.has = 0;	/* no decorations */
 		c->is.floater = True;
 	} else if (WTCHECK(c, WindowTypeDialog) || WTCHECK(c, WindowTypeMenu)) {
 		c->skip.arrange = True;
@@ -3147,6 +3149,7 @@ ewmh_process_net_window_type(Client *c)
 		c->skip.sloppy = False;
 		c->user.can = 0;	/* no user functionality */
 		c->has.has = 0;	/* no decorations */
+		c->needs.has = 0;	/* no decorations */
 		c->is.floater = True;
 	}
 }

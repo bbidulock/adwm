@@ -1153,7 +1153,7 @@ struct AScreen {
 	Style style;
 #ifdef IMLIB2
 	Imlib_Context context;
-#else
+#endif
 	Visual *visual;
 	Colormap colormap;
 	unsigned int depth;
@@ -1165,7 +1165,6 @@ struct AScreen {
 	XColor *colors;			/* colormap */
 	int ncolors;			/* number of colors in colormap */
 	int cpc;
-#endif
 #ifdef STARTUP_NOTIFICATION
 	SnMonitorContext *ctx;
 #endif

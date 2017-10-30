@@ -1,18 +1,67 @@
 /* See COPYING file for copyright and license details. */
-#include <regex.h>
-#include <ctype.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <sys/select.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <sys/poll.h>
 #include <assert.h>
+#include <ctype.h>
+#include <stdlib.h>
+#include <fcntl.h>
+#include <errno.h>
+#include <locale.h>
+#include <stdarg.h>
+#include <stdio.h>
+#include <strings.h>
+#include <unistd.h>
+#include <regex.h>
+#include <wordexp.h>
+#include <signal.h>
 #include <math.h>
+#include <execinfo.h>
+#include <dlfcn.h>
 #include <X11/cursorfont.h>
 #include <X11/keysym.h>
 #include <X11/XKBlib.h>
+#include <X11/XF86keysym.h>
 #include <X11/Xatom.h>
 #include <X11/Xlib.h>
 #include <X11/Xproto.h>
 #include <X11/Xutil.h>
 #include <X11/Xresource.h>
 #include <X11/Xft/Xft.h>
+#include <X11/extensions/Xfixes.h>
+#ifdef RENDER
+#include <X11/extensions/Xrender.h>
+#include <X11/extensions/render.h>
+#endif
+#ifdef XCOMPOSITE
+#include <X11/extensions/Xcomposite.h>
+#include <X11/extensions/composite.h>
+#endif
+#ifdef DAMAGE
+#include <X11/extensions/Xdamage.h>
+#endif
+#ifdef XRANDR
+#include <X11/extensions/Xrandr.h>
+#include <X11/extensions/randr.h>
+#endif
+#ifdef XINERAMA
+#include <X11/extensions/Xinerama.h>
+#endif
+#ifdef SYNC
+#include <X11/extensions/sync.h>
+#endif
+#ifdef SHAPE
+#include <X11/extensions/shape.h>
+#endif
+#ifdef STARTUP_NOTIFICATION
+#define SN_API_NOT_YET_FROZEN
+#include <libsn/sn.h>
+#endif
 #include "adwm.h"
+#include "draw.h"
 #include "ewmh.h"
 #include "layout.h"
 #include "tags.h"
@@ -20,10 +69,7 @@
 #include "config.h"
 #include "image.h" /* verification */
 
-#if defined IMLIB2
-
-#else				/* defined IMLIB2 */
-
+#if 0
 static const unsigned char dither4[4][4] = {
 	{0, 4, 1, 5},
 	{6, 2, 7, 3},
@@ -41,14 +87,16 @@ static const unsigned char dither8[8][8] = {
 	{15, 47, 7, 39, 13, 45, 5, 37},
 	{63, 31, 55, 23, 61, 29, 53, 21}
 };
+#endif
 
 void
 renderimage(AScreen *ds, const ARGB *argb, const unsigned width, const unsigned height)
 {
 	XImage *image;
+	unsigned long r, g, b, pixel;
 	unsigned char *p, *pp, *data;
 	unsigned x, y;
-	ARGB *c;
+	const ARGB *c;
 
 	image = XCreateImage(dpy, ds->visual, ds->bpp, ZPixmap, 0, NULL, width, height, 32, 0);
 	if (!image) {
@@ -58,7 +106,7 @@ renderimage(AScreen *ds, const ARGB *argb, const unsigned width, const unsigned 
 	image->data = NULL;
 	p = pp = data = calloc(image->bytes_per_line * (height + 1), sizeof(*data));
 
-	switch (ds->visual->c_class) {
+	switch (ds->visual->class) {
 	case StaticColor:
 	case PseudoColor:
 		for (c = argb, y = 0; y < height; y++) {
@@ -74,13 +122,13 @@ renderimage(AScreen *ds, const ARGB *argb, const unsigned width, const unsigned 
 		}
 		break;
 	case TrueColor:
-		for (c = arbg, y = 0; y < height; y++) {
+		for (c = argb, y = 0; y < height; y++) {
 			for (x = 0; x < width; x++, c++) {
 				r = ds->rctab[c->red];
 				g = ds->gctab[c->green];
 				b = ds->bctab[c->blue];
 
-				pixel = (r << roff) | (g << goff) | (b << boff);
+				pixel = (((r << ds->visual->bits_per_rgb) | g) << ds->visual->bits_per_rgb) | b;
 				switch (ds->bpp + ((image->byte_order == MSBFirst) ? 1 : 0)) {
 				case 8:	/* 8bpp */
 					*p++ = pixel;
@@ -129,7 +177,7 @@ renderimage(AScreen *ds, const ARGB *argb, const unsigned width, const unsigned 
 				b = ds->bctab[c->blue];
 
 				g = ((r * 30) + (g * 59) + (b * 11)) / 100;
-				*p++ = colors[g].pixel;
+				*p++ = ds->colors[g].pixel;
 			}
 			p = (pp += image->bytes_per_line);
 		}
@@ -140,21 +188,28 @@ renderimage(AScreen *ds, const ARGB *argb, const unsigned width, const unsigned 
 		XDestroyImage(image);
 		return;
 	}
-	image->data = data;
+	image->data = (char *) data;
 }
 
 void
-initimage()
+initimage(Bool reload)
 {
-	int i, count, bpp;
+	int i, count;
 	XPixmapFormatValues *pmv;
 
-	scr->depth = DefaultDepth(dpy, scr->screen);
-	scr->visual = DefaultVisual(dpy, scr->screen);
-	scr->colormap = DefaultColormap(dpy, scr->screen);
+	if (!scr->depth)
+		scr->depth = DefaultDepth(dpy, scr->screen);
+	if (!scr->visual)
+		scr->visual = DefaultVisual(dpy, scr->screen);
+	if (!scr->colormap)
+		scr->colormap = DefaultColormap(dpy, scr->screen);
 	scr->dither = True;
 	scr->bpp = 0;
+#if 0
 	scr->cpc = options.colorsPerChannel;
+#else
+	scr->cpc = (1<<16);
+#endif
 
 	free(scr->rctab);
 	free(scr->gctab);
@@ -178,7 +233,7 @@ initimage()
 	if (scr->bpp >= 24)
 		scr->dither = False;
 
-	switch (scr->visual->c_class) {
+	switch (scr->visual->class) {
 	case TrueColor:{
 		unsigned long rmask = scr->visual->red_mask;
 		unsigned long gmask = scr->visual->green_mask;
@@ -208,9 +263,9 @@ initimage()
 	case StaticColor:{
 		XColor icolors[256];
 		int incolors;
-		int roff = 0, rbits;
-		int goff = 0, gbits;
-		int boff = 0, bbits;
+		int rbits;
+		int gbits;
+		int bbits;
 		int i, ii, p, r, g, b, bits;
 
 		scr->ncolors = scr->cpc * scr->cpc * scr->cpc;
@@ -262,7 +317,7 @@ initimage()
 		for (i = 0; i < incolors; i++)
 			icolors[i].pixel = i;
 
-		XQueryColors(dpy, colormap, icolors, incolors);
+		XQueryColors(dpy, scr->colormap, icolors, incolors);
 		for (i = 0; i < scr->ncolors; i++) {
 			if (!scr->colors[i].flags) {
 				unsigned long chk = 0xffffffff, pixel, close = 0;
@@ -304,7 +359,7 @@ initimage()
 		int gbits;
 		int bbits;
 
-		if (scr->visual->c_class == StaticGray) {
+		if (scr->visual->class == StaticGray) {
 			scr->ncolors = 1 << scr->depth;
 		} else {
 			scr->ncolors = scr->cpc * scr->cpc * scr->cpc;
@@ -324,9 +379,9 @@ initimage()
 		rbits = gbits = bbits = bits;
 
 		for (i = 0; i < 256; i++) {
-			rctab[i] = i / rbits;
-			gctab[i] = i / gbits;
-			bctab[i] = i / bbits;
+			scr->rctab[i] = i / rbits;
+			scr->gctab[i] = i / gbits;
+			scr->bctab[i] = i / bbits;
 		}
 
 		XGrabServer(dpy);
@@ -337,7 +392,7 @@ initimage()
 				scr->colors[i].blue = (i * 0xffff) / (scr->cpc - 1);
 				scr->colors[i].flags = DoRed | DoGreen | DoBlue;
 			}
-			if (!XAllocColor(dpy, colormap, &scr->colors[i])) {
+			if (!XAllocColor(dpy, scr->colormap, &scr->colors[i])) {
 				DPRINTF("could not allocate color\n");
 				scr->colors[i].flags = 0;
 			} else
@@ -387,4 +442,3 @@ initimage()
 	}
 }
 
-#endif				/* defined IMLIB2 */

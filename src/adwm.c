@@ -68,6 +68,7 @@
 #include "tags.h"
 #include "actions.h"
 #include "config.h"
+#include "image.h"
 
 #define EXTRANGE    16		/* all X11 extension event must fit in this range */
 
@@ -1147,7 +1148,7 @@ installcolormap(AScreen *s, Window w)
 		return;
 	if (!XGetWindowAttributes(dpy, w, &wa))
 		return;
-	if (!wa.colormap || wa.colormap == DefaultColormap(dpy, s->screen))
+	if (!wa.colormap || wa.colormap == DefaultColormap(dpy, s->screen) || wa.colormap == s->colormap)
 		return;
 	if ((list = listcolormaps(s, &num))) {
 		for (i = 0; i < num && list[i] != wa.colormap; i++) ;
@@ -2681,7 +2682,7 @@ manage(Window w, XWindowAttributes *wa)
 		twa.border_pixel = BlackPixel(dpy, scr->screen);
 		mask |= CWBorderPixel;
 	}
-	if (c->is.dockapp || (wa->depth == 32 && DefaultDepth(dpy, scr->screen) != 32)) {
+	if (c->is.dockapp || (wa->depth == 32 && scr->depth != 32)) {
 		twa.background_pixel = scr->style.color.norm[ColBG];
 		mask |= CWBackPixel;
 	} else {
@@ -2692,9 +2693,9 @@ manage(Window w, XWindowAttributes *wa)
 	c->frame =
 	    XCreateWindow(dpy, scr->root, c->c.x, c->c.y, c->c.w,
 			  c->c.h, c->c.b, wa->depth == 32 ? 32 :
-			  DefaultDepth(dpy, scr->screen),
+			  scr->depth,
 			  InputOutput, wa->depth == 32 ? wa->visual :
-			  DefaultVisual(dpy, scr->screen), mask, &twa);
+			  scr->visual, mask, &twa);
 	XSaveContext(dpy, c->frame, context[ClientFrame], (XPointer) c);
 	XSaveContext(dpy, c->frame, context[ClientAny], (XPointer) c);
 	XSaveContext(dpy, c->frame, context[ScreenContext], (XPointer) scr);
@@ -2709,8 +2710,8 @@ manage(Window w, XWindowAttributes *wa)
 	if (c->needs.title) {
 		c->element = ecalloc(LastElement, sizeof(*c->element));
 		c->title = XCreateWindow(dpy, scr->root, 0, 0, c->c.w, scr->style.titleheight,
-					 0, DefaultDepth(dpy, scr->screen),
-					 CopyFromParent, DefaultVisual(dpy, scr->screen),
+					 0, scr->depth,
+					 CopyFromParent, scr->visual,
 					 CWEventMask, &twa);
 		XSaveContext(dpy, c->title, context[ClientTitle], (XPointer) c);
 		XSaveContext(dpy, c->title, context[ClientAny], (XPointer) c);
@@ -2718,8 +2719,8 @@ manage(Window w, XWindowAttributes *wa)
 	}
 	if (c->needs.grips) {
 		c->grips = XCreateWindow(dpy, scr->root, 0, 0, c->c.w, scr->style.gripsheight,
-					 0, DefaultDepth(dpy, scr->screen),
-					 CopyFromParent, DefaultVisual(dpy, scr->screen),
+					 0, scr->depth,
+					 CopyFromParent, scr->visual,
 					 CWEventMask, &twa);
 		XSaveContext(dpy, c->grips, context[ClientGrips], (XPointer) c);
 		XSaveContext(dpy, c->grips, context[ClientAny], (XPointer) c);
@@ -5093,6 +5094,7 @@ initialize(const char *conf, AdwmOperations * ops, Bool reload)
 		if (!scr->managed)
 			continue;
 
+		initimage(reload);	/* initialize image handling for screen */
 		initscreen(reload);	/* init per-screen configuration */
 		initewmh(ops->name);	/* init EWMH atoms */
 		inittags(reload);	/* init tags */
@@ -6100,8 +6102,8 @@ main(int argc, char *argv[])
 		imlib_context_push(scr->context);
 		imlib_context_set_display(dpy);
 		imlib_context_set_drawable(RootWindow(dpy, scr->screen));
-		imlib_context_set_colormap(DefaultColormap(dpy, scr->screen));
-		imlib_context_set_visual(DefaultVisual(dpy, scr->screen));
+		imlib_context_set_colormap(scr->colormap);
+		imlib_context_set_visual(scr->visual);
 		imlib_context_set_anti_alias(1);
 		imlib_context_set_dither(1);
 		imlib_context_set_blend(1);

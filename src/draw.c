@@ -533,9 +533,7 @@ drawclient(Client *c)
 		XFreePixmap(dpy, ds->dc.draw.pixmap);
 		ds->dc.draw.w = ds->dc.w;
 		ds->dc.draw.pixmap = XCreatePixmap(dpy, ds->root, ds->dc.w,
-						   ds->dc.draw.h, DefaultDepth(dpy,
-									       ds->
-									       screen));
+						   ds->dc.draw.h, ds->depth);
 		XftDrawChange(ds->dc.draw.xft, ds->dc.draw.pixmap);
 	}
 	XSetForeground(dpy, ds->dc.gc,
@@ -645,7 +643,7 @@ getcolor(const char *colstr)
 {
 	XColor color, exact;
 
-	if (!XAllocNamedColor(dpy, DefaultColormap(dpy, scr->screen), colstr,
+	if (!XAllocNamedColor(dpy, scr->colormap, colstr,
 			      &color, &exact))
 		eprint("error, cannot allocate color '%s'\n", colstr);
 	return color.pixel;
@@ -1178,29 +1176,29 @@ freestyle()
 {
 	freebuttons();
 	if (scr->style.color.font[Normal]) {
-		XftColorFree(dpy, DefaultVisual(dpy, scr->screen),
-			     DefaultColormap(dpy, scr->screen),
+		XftColorFree(dpy, scr->visual,
+			     scr->colormap,
 			     scr->style.color.font[Normal]);
 		free(scr->style.color.font[Normal]);
 		scr->style.color.font[Normal] = NULL;
 	}
 	if (scr->style.color.font[Selected]) {
-		XftColorFree(dpy, DefaultVisual(dpy, scr->screen),
-			     DefaultColormap(dpy, scr->screen),
+		XftColorFree(dpy, scr->visual,
+			     scr->colormap,
 			     scr->style.color.font[Selected]);
 		free(scr->style.color.font[Selected]);
 		scr->style.color.font[Selected] = NULL;
 	}
 	if (scr->style.color.shadow[Normal]) {
-		XftColorFree(dpy, DefaultVisual(dpy, scr->screen),
-			     DefaultColormap(dpy, scr->screen),
+		XftColorFree(dpy, scr->visual,
+			     scr->colormap,
 			     scr->style.color.shadow[Normal]);
 		free(scr->style.color.shadow[Normal]);
 		scr->style.color.shadow[Normal] = NULL;
 	}
 	if (scr->style.color.shadow[Selected]) {
-		XftColorFree(dpy, DefaultVisual(dpy, scr->screen),
-			     DefaultColormap(dpy, scr->screen),
+		XftColorFree(dpy, scr->visual,
+			     scr->colormap,
 			     scr->style.color.shadow[Selected]);
 		free(scr->style.color.shadow[Selected]);
 		scr->style.color.shadow[Selected] = NULL;
@@ -1243,12 +1241,12 @@ initstyle(Bool reload)
 
 	scr->style.color.font[Selected] = emallocz(sizeof(XftColor));
 	scr->style.color.font[Normal] = emallocz(sizeof(XftColor));
-	XftColorAllocName(dpy, DefaultVisual(dpy, scr->screen),
-			  DefaultColormap(dpy, scr->screen),
+	XftColorAllocName(dpy, scr->visual,
+			  scr->colormap,
 			  getresource("selected.fg", SELFGCOLOR),
 			  scr->style.color.font[Selected]);
-	XftColorAllocName(dpy, DefaultVisual(dpy, scr->screen),
-			  DefaultColormap(dpy, scr->screen),
+	XftColorAllocName(dpy, scr->visual,
+			  scr->colormap,
 			  getresource("normal.fg", NORMFGCOLOR),
 			  scr->style.color.font[Normal]);
 	if (!scr->style.color.font[Selected] || !scr->style.color.font[Normal])
@@ -1256,8 +1254,8 @@ initstyle(Bool reload)
 
 	if ((scr->style.drop[Selected] = atoi(getresource("selected.drop", "0")))) {
 		scr->style.color.shadow[Selected] = emallocz(sizeof(XftColor));
-		XftColorAllocName(dpy, DefaultVisual(dpy, scr->screen),
-				  DefaultColormap(dpy, scr->screen),
+		XftColorAllocName(dpy, scr->visual,
+				  scr->colormap,
 				  getresource("selected.shadow", SELBORDERCOLOR),
 				  scr->style.color.shadow[Selected]);
 		if (!scr->style.color.shadow[Selected])
@@ -1265,8 +1263,8 @@ initstyle(Bool reload)
 	}
 	if ((scr->style.drop[Normal] = atoi(getresource("normal.drop", "0")))) {
 		scr->style.color.shadow[Normal] = emallocz(sizeof(XftColor));
-		XftColorAllocName(dpy, DefaultVisual(dpy, scr->screen),
-				  DefaultColormap(dpy, scr->screen),
+		XftColorAllocName(dpy, scr->visual,
+				  scr->colormap,
 				  getresource("normal.shadow", NORMBORDERCOLOR),
 				  scr->style.color.shadow[Normal]);
 		if (!scr->style.color.shadow[Normal])
@@ -1294,11 +1292,11 @@ initstyle(Bool reload)
 	if (scr->dc.draw.h) {
 		scr->dc.draw.pixmap =
 		    XCreatePixmap(dpy, scr->root, scr->dc.draw.w, scr->dc.draw.h,
-				  DefaultDepth(dpy, scr->screen));
+				  scr->depth);
 		scr->dc.draw.xft =
 		    XftDrawCreate(dpy, scr->dc.draw.pixmap,
-				  DefaultVisual(dpy, scr->screen),
-				  DefaultColormap(dpy, scr->screen));
+				  scr->visual,
+				  scr->colormap);
 	}
 	initbuttons();
 	/* redraw all existing clients */

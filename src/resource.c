@@ -119,9 +119,9 @@ getxcolor(const char *color, const char *defcol, XColor *xcol)
 {
 	XColor exact;
 
-	if (XAllocNamedColor(dpy, DefaultColormap(dpy, scr->screen), color, xcol, &exact))
+	if (XAllocNamedColor(dpy, scr->colormap, color, xcol, &exact))
 		return;
-	if (XAllocNamedColor(dpy, DefaultColormap(dpy, scr->screen), color, xcol, &exact))
+	if (XAllocNamedColor(dpy, scr->colormap, color, xcol, &exact))
 		return;
 	eprint("ERROR: cannot allocate color '%s' or '%s'\n", color, defcol);
 }
@@ -129,11 +129,11 @@ getxcolor(const char *color, const char *defcol, XColor *xcol)
 void
 getxftcolor(const char *color, const char *defcol, XftColor *xftcol)
 {
-	if (XftColorAllocName(dpy, DefaultVisual(dpy, scr->screen),
-			      DefaultColormap(dpy, scr->screen), color, xftcol))
+	if (XftColorAllocName(dpy, scr->visual,
+			      scr->colormap, color, xftcol))
 		return;
-	if (XftColorAllocName(dpy, DefaultVisual(dpy, scr->screen),
-			      DefaultColormap(dpy, scr->screen), defcol, xftcol))
+	if (XftColorAllocName(dpy, scr->visual,
+			      scr->colormap, defcol, xftcol))
 		return;
 	eprint("ERROR: cannot allocate color '%s' or '%s'\n", color, defcol);
 }
@@ -141,8 +141,8 @@ getxftcolor(const char *color, const char *defcol, XftColor *xftcol)
 void
 freexftcolor(XftColor *xftcol)
 {
-	XftColorFree(dpy, DefaultVisual(dpy, scr->screen),
-		     DefaultColormap(dpy, scr->screen), xftcol);
+	XftColorFree(dpy, scr->visual,
+		     scr->colormap, xftcol);
 }
 
 void

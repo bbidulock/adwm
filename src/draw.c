@@ -669,7 +669,14 @@ initpixmap(const char *file, ButtonImage *bi)
 	if (strstr(path, ".xpm") && strlen(strstr(path, ".xpm")) == 4) {
 		XpmAttributes xa = { 0, };
 
-		if (XpmReadFileToPixmap(dpy, scr->root, path, &bi->pixmap, &bi->mask, &xa)
+		xa.visual = scr->visual;
+		xa.valuemask |= XpmVisual;
+		xa.colormap = scr->colormap;
+		xa.valuemask |= XpmColormap;
+		xa.depth = scr->depth;
+		xa.valuemask |= XpmDepth;
+
+		if (XpmReadFileToPixmap(dpy, scr->drawable, path, &bi->pixmap, &bi->mask, &xa)
 		    == Success) {
 			if ((bi->w = xa.width) && (bi->h = xa.height)) {
 				if (bi->h > scr->style.titleheight) {
@@ -1286,7 +1293,7 @@ initstyle(Bool reload)
 		scr->style.titleheight =
 		    max(scr->dc.font[Selected].height + scr->style.drop[Selected],
 			scr->dc.font[Normal].height + scr->style.drop[Normal]) + 2;
-	scr->dc.gc = XCreateGC(dpy, scr->root, 0, 0);
+	scr->dc.gc = XCreateGC(dpy, scr->drawable, 0, 0);
 	scr->dc.draw.w = DisplayWidth(dpy, scr->screen);
 	scr->dc.draw.h = max(scr->style.titleheight, scr->style.gripsheight);
 	if (scr->dc.draw.h) {

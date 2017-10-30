@@ -192,17 +192,68 @@ renderimage(AScreen *ds, const ARGB *argb, const unsigned width, const unsigned 
 }
 
 void
-initimage(Bool reload)
+initimage(void)
 {
-	int i, count;
+	int i, count, nvi;
 	XPixmapFormatValues *pmv;
+	XVisualInfo *xvi, templ = { .screen = scr->screen, .depth = 32, .class = TrueColor, };
+	Visual *visual = NULL;
 
-	if (!scr->depth)
+	if ((xvi = XGetVisualInfo(dpy, VisualScreenMask|VisualDepthMask|VisualClassMask, &templ, &nvi))) {
+		XRenderPictFormat *format;
+
+		for (i = 0; i < nvi; i++) {
+			format = XRenderFindVisualFormat(dpy, xvi[i].visual);
+			if (format->type == PictTypeDirect && format->direct.alphaMask) {
+				visual = xvi[i].visual;
+				break;
+			}
+		}
+	}
+	XFree(xvi);
+
+	if (visual) {
+		XSetWindowAttributes wa = { 0, };
+		unsigned long mask = 0;
+
+		scr->depth = 32;
+		scr->visual = visual;
+		scr->colormap = XCreateColormap(dpy, scr->root, visual, AllocNone);
+
+		/* make a window with proper depth for creating GCs */
+		wa.override_redirect = True;
+		mask |= CWOverrideRedirect;
+		wa.colormap = scr->colormap;
+		mask |= CWColormap;
+		/* cannot inherit pixels but can set them to anything */
+		wa.background_pixel = BlackPixel(dpy, scr->screen);
+		mask |= CWBackPixel;
+		wa.border_pixel = BlackPixel(dpy, scr->screen);
+		mask |= CWBorderPixel;
+		wa.background_pixmap = None;
+		mask |= CWBackPixmap;
+		scr->drawable = XCreateWindow(dpy, scr->root, 0, 0, 1, 1, 0,
+				scr->depth, InputOutput, scr->visual,
+				mask, &wa);
+	} else {
 		scr->depth = DefaultDepth(dpy, scr->screen);
-	if (!scr->visual)
 		scr->visual = DefaultVisual(dpy, scr->screen);
-	if (!scr->colormap)
 		scr->colormap = DefaultColormap(dpy, scr->screen);
+		scr->drawable = scr->root;
+	}
+#ifdef IMLIB2
+	scr->context = imlib_context_new();
+	imlib_context_push(scr->context);
+	imlib_context_set_display(dpy);
+	imlib_context_set_drawable(scr->drawable);
+	imlib_context_set_colormap(scr->colormap);
+	imlib_context_set_visual(scr->visual);
+	imlib_context_set_anti_alias(1);
+	imlib_context_set_dither(1);
+	imlib_context_set_blend(1);
+	imlib_context_set_mask(None);
+	imlib_context_pop();
+#endif
 	scr->dither = True;
 	scr->bpp = 0;
 #if 0

@@ -203,7 +203,14 @@ getpixmap(const char *file, AdwmPixmap *p)
 	else if (strstr(file, ".xpm") && strlen(strstr(file, ".xpm")) == 4) {
 		XpmAttributes xa = { 0, };
 
-		if (XpmReadFileToPixmap(dpy, scr->root, file, &p->pixmap, &p->mask, &xa)
+		xa.visual = scr->visual;
+		xa.valuemask |= XpmVisual;
+		xa.colormap = scr->colormap;
+		xa.valuemask |= XpmColormap;
+		xa.depth = scr->depth;
+		xa.valuemask |= XpmDepth;
+
+		if (XpmReadFileToPixmap(dpy, scr->drawable, file, &p->pixmap, &p->mask, &xa)
 		    == Success) {
 			p->file = file;
 			p->depth = (xa.valuemask & XpmDepth) ? xa.depth : 0;

@@ -1154,6 +1154,7 @@ struct AScreen {
 #ifdef IMLIB2
 	Imlib_Context context;
 #endif
+	Window drawable;		/* proper drawable for GC creation */
 	Visual *visual;
 	Colormap colormap;
 	unsigned int depth;

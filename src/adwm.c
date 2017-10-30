@@ -2668,21 +2668,17 @@ manage(Window w, XWindowAttributes *wa)
 			    ButtonPressMask, GrabModeSync, GrabModeAsync, None, None);
 	}
 	twa.override_redirect = True;
+	mask |= CWOverrideRedirect;
 	twa.event_mask = FRAMEMASK;
+	mask |= CWEventMask;
 	if (c->is.dockapp)
 		twa.event_mask |= ExposureMask | MOUSEMASK;
 	mask = CWOverrideRedirect | CWEventMask;
-	if (wa->depth == 32) {
-		c->cmap = twa.colormap = XCreateColormap(dpy, scr->root, wa->visual, AllocNone);
-		mask |= CWColormap;
-#if 0
-		twa.background_pixel = BlackPixel(dpy, scr->screen);
-		mask |= CWBackPixel;
-#endif
-		twa.border_pixel = BlackPixel(dpy, scr->screen);
-		mask |= CWBorderPixel;
-	}
-	if (c->is.dockapp || (wa->depth == 32 && scr->depth != 32)) {
+	twa.colormap = scr->colormap;
+	mask |= CWColormap;
+	twa.border_pixel = BlackPixel(dpy, scr->screen);
+	mask |= CWBorderPixel;
+	if (c->is.dockapp) {
 		twa.background_pixel = scr->style.color.norm[ColBG];
 		mask |= CWBackPixel;
 	} else {
@@ -2692,9 +2688,7 @@ manage(Window w, XWindowAttributes *wa)
 	updatecmapwins(c);
 	c->frame =
 	    XCreateWindow(dpy, scr->root, c->c.x, c->c.y, c->c.w,
-			  c->c.h, c->c.b, wa->depth == 32 ? 32 :
-			  scr->depth,
-			  InputOutput, wa->depth == 32 ? wa->visual :
+			  c->c.h, c->c.b, scr->depth, InputOutput,
 			  scr->visual, mask, &twa);
 	XSaveContext(dpy, c->frame, context[ClientFrame], (XPointer) c);
 	XSaveContext(dpy, c->frame, context[ClientAny], (XPointer) c);
@@ -2712,7 +2706,7 @@ manage(Window w, XWindowAttributes *wa)
 		c->title = XCreateWindow(dpy, scr->root, 0, 0, c->c.w, scr->style.titleheight,
 					 0, scr->depth,
 					 CopyFromParent, scr->visual,
-					 CWEventMask, &twa);
+					 mask, &twa);
 		XSaveContext(dpy, c->title, context[ClientTitle], (XPointer) c);
 		XSaveContext(dpy, c->title, context[ClientAny], (XPointer) c);
 		XSaveContext(dpy, c->title, context[ScreenContext], (XPointer) scr);
@@ -2721,7 +2715,7 @@ manage(Window w, XWindowAttributes *wa)
 		c->grips = XCreateWindow(dpy, scr->root, 0, 0, c->c.w, scr->style.gripsheight,
 					 0, scr->depth,
 					 CopyFromParent, scr->visual,
-					 CWEventMask, &twa);
+					 mask, &twa);
 		XSaveContext(dpy, c->grips, context[ClientGrips], (XPointer) c);
 		XSaveContext(dpy, c->grips, context[ClientAny], (XPointer) c);
 		XSaveContext(dpy, c->grips, context[ScreenContext], (XPointer) scr);
@@ -5094,7 +5088,6 @@ initialize(const char *conf, AdwmOperations * ops, Bool reload)
 		if (!scr->managed)
 			continue;
 
-		initimage(reload);	/* initialize image handling for screen */
 		initscreen(reload);	/* init per-screen configuration */
 		initewmh(ops->name);	/* init EWMH atoms */
 		inittags(reload);	/* init tags */
@@ -6097,19 +6090,7 @@ main(int argc, char *argv[])
 		scr->root = RootWindow(dpy, i);
 		XSaveContext(dpy, scr->root, context[ScreenContext], (XPointer) scr);
 		DPRINTF("screen %d has root 0x%lx\n", scr->screen, scr->root);
-#ifdef IMLIB2
-		scr->context = imlib_context_new();
-		imlib_context_push(scr->context);
-		imlib_context_set_display(dpy);
-		imlib_context_set_drawable(RootWindow(dpy, scr->screen));
-		imlib_context_set_colormap(scr->colormap);
-		imlib_context_set_visual(scr->visual);
-		imlib_context_set_anti_alias(1);
-		imlib_context_set_dither(1);
-		imlib_context_set_blend(1);
-		imlib_context_set_mask(None);
-		imlib_context_pop();
-#endif
+		initimage();
 	}
 	if ((p = getenv("DISPLAY")) && (p = strrchr(p, '.')) && strlen(p + 1)
 	    && strspn(p + 1, "0123456789") == strlen(p + 1) && (i = atoi(p + 1)) < nscr) {

@@ -266,7 +266,23 @@ OSF/Motif CDE MWM/DTWM Compliance
 WM_DESKTOP				supported
 _MOTIF_WM_INFO				supported
 
-2. MWM client properties:
+2. MWM client messages:
+
+WM_STATE				supported
+WM_PROTOCOLS				supported
+WM_CHANGE_STATE				supported
+WM_SAVE_YOURSELF			supported
+WM_DELETE_WINDOW			supported
+WM_TAKE_FOCUS				supported
+WM_COLORMAP_WINDOWS			supported
+
+_MWM_HINTS				NOT supported
+_MWM_MESSAGES				NOT supported
+_MWM_MENU				NOT supported
+_MWM_INFO				NOT supported
+_MWM_OFFSET				NOT supported
+
+3. MOTIF client properties:
 
 WM_DESKTOP				supported
 _MOTIF_WM_HINTS				supported
@@ -276,14 +292,50 @@ _MOTIF_WM_MESSAGES			NOT supported
 _MOTIF_BINDINGS				NOT supported (n/a)
 _MOTIF_DEFAULT_BINDINGS			NOT supported (n/a)
 
-3. DTWM window manager properties:
+4. MOTIF query targets:
+
+_MOTIF_WM_CLIENT_WINDOW			NOT supported
+_MOTIF_WM_POINTER_WINDOW		NOT supported
+_MOTIF_WM_ALL_CLIENTS			NOT supported
+
+5. MOTIF menu command interface support:
+
+_MOTIF_WM_DEFINE_COMMAND		NOT supported
+_MOTIF_WM_INCLUDE_COMMAND		NOT supported
+_MOTIF_WM_REMOVE_COMMAND		NOT supported
+_MOTIF_WM_ENABLE_COMMAND		NOT supported
+_MOTIF_WM_DISABLE_COMMAND		NOT supported
+_MOTIF_WM_RENAME_COMMAND		NOT supported
+_MOTIF_WM_INVOKE_COMMAND		NOT supported
+_MOTIF_WM_REQUEST_COMMAND		NOT supported
+_MOTIF_WM_WINDOW_FLAGS			NOT supported
+
+_MOTIF_WM_AUTOMATION			NOT supported
+
+6. MOTIF WSM properties:
+
+_MOTIF_WSM_CONNECT			NOT supported
+_MOTIF_WM_EXTENSIONS			NOT supported
+_MOTIF_WM_CONFIG_FORMAT			NOT supported
+_MOTIF_WSM_GET_STATE			NOT supported
+_MOTIF_WSM_SET_STATE			NOT supported
+_MOTIF_WSM_REGISTER_WINDOW		NOT supported
+_MOTIF_WSM_GET_BACKGROUND_WINDOW	NOT supported
+_MOTIF_WSM_SET_BACKGROUND_WINDOW	NOT supported
+_MOTIF_WSM_WM_WINDOWS			NOT supported
+_MOTIF_WSM_WM_FOCUS			NOT supported
+_MOTIF_WSM_WM_POINTER			NOT supported
+
+7. DTWM window manager properties:
+
+_DT_SESSION_HINTS			NOT supported
 
 _DT_WORKSPACE_LIST			supported
 _DT_WORKSPACE_CURRENT			supported
 _DT_WORKSPACE_INFO			NOT supported
 _DT_WORKSPACE_INFO_<name>		NOT supported
 
-4. DTWM client properties:
+8. DTWM client properties:
 
 _DT_WORKSPACE_HINTS			supported
 _DT_WORKSPACE_PRESENCE			supported
@@ -292,5 +344,41 @@ _DT_WM_HINTS				supported
 _DT_WM_REQUEST				NOT supported
 _DT_WORKSPACE_EMBEDDED_CLIENTS		NOT supported
 _DT_WMSAVE_HINT				NOT supported
+
+9. DTWM session management properties:
+
+_DT_WMSAVE_HINT				NOT supported
+_DT_EMBEDDED_CLIENTS			NOT supported
+_DT_SESSION_HINTS			NOT supported
+_DT_SM_START_ACK_WINDOWS		NOT supported
+_DT_SM_STOP_ACK_WINDOS			NOT supported
+_DT_SM_WM_PROTOCOL			NOT supported
+_DT_WM_EXIT_SESSION			NOT supported
+_DT_WM_LOCK_DISPLAY			NOT supported
+_DT_WM_READY				NOT supported
+_DT_WM_REQUEST				NOT supported
+_DT_WM_WINDOW_ACK			NOT supported
+
+------------------------------------------------------------------------
+
+OpenLook Compliance
+
+_OL_WIN_ATTR				NOT supported
+_OL_DECOR_RESIZE			NOT supported
+_OL_DECOR_HEADER			NOT supported
+_OL_DECOR_CLOSE				NOT supported
+_OL_DECOR_PIN				NOT supported
+_OL_DECOR_ADD				NOT supported
+_OL_DECOR_DEL				NOT supported
+
+_OL_WT_BASE				NOT supported
+_OL_WT_COMMAND				NOT supported
+_OL_WT_HELP				NOT supported
+_OL_WT_NOTICE				NOT supported
+_OL_WT_OTHER				NOT supported
+_OL_PIN_IN				NOT supported
+_OL_PIN_OUT				NOT supported
+_OL_MENU_LIMITED			NOT supported
+_OL_MENU_FULL				NOT supported
 
 ------------------------------------------------------------------------

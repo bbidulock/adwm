@@ -187,7 +187,7 @@ toggleview(View *cv, int index)
 	   keyboard focus before the monitor with the pointer in it. */
 
 	/* This function used to worry about having a selected tag for each monitor, but
-	   this has now been moved to the view.  We don't care if there exists views that 
+	   this has now been moved to the view.  We don't care if there exists views that
 	   have no selected tag because they can still be assigned to a monitor and tags
 	   toggled from there. */
 	if (-1 > index || index >= scr->ntags)

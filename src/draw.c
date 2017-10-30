@@ -464,7 +464,7 @@ drawdockapp(Client *c, AScreen *ds)
 		DPRINTF("Could not fill rectangle, error %d\n", status);
 	CPRINTF(c, "Filled dockapp frame %dx%d+%d+%d\n", ds->dc.w, ds->dc.h, ds->dc.x,
 		ds->dc.y);
-	/* following are quite disruptive - many dockapps ignore expose events and simply 
+	/* following are quite disruptive - many dockapps ignore expose events and simply
 	   update on timer */
 	// XClearWindow(dpy, c->icon ? : c->win);
 	// XClearArea(dpy, c->icon ? : c->win, 0, 0, 0, 0, True);

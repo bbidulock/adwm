@@ -1007,16 +1007,16 @@ configureclient(XEvent *e, Client *c, int gravity)
 	View *v;
 
 	/* XXX: if c->cmon is set, we are displayed on a monitor, but c->curview should
-	   also be set.  We only need the monitor for the layout.  When there is no cmon, 
+	   also be set.  We only need the monitor for the layout.  When there is no cmon,
 	   use one of the views to which the client is tagged? How meaningful is it
 	   moving a window not in the current view? Perhaps we should treat it a just
 	   moving the saved floating state.  This is the only function that calls
 	   findcurmonitor(). */
 
-	/* This is not quite correct anymore.  The client requests reconfiguration of its 
+	/* This is not quite correct anymore.  The client requests reconfiguration of its
 	   interior window and uses the border width specified or last specified and the
 	   specified gravity as though it was never reparented and has no decorative
-	   border.  We need to move and resize the frame so that the reference points are 
+	   border.  We need to move and resize the frame so that the reference points are
 	   intact. */
 
 	if (!(v = c->cview ? : selview()))
@@ -3480,7 +3480,7 @@ findcorner_size(Client *c, int x_root, int y_root)
   *
   * There are virtual grips over the window along the edges of the window that
   * change the behaviour of moving:
-  * 
+  *
   * 1. Left edge grabbed will move horizontally only and only snap to the left
   *    edge of the window.  The left edge includes the left window border and
   *    extends 10% of the width of the window to a maximum of 40 pixels and a
@@ -3749,7 +3749,7 @@ mousemove_from(Client *c, int from, XEvent *e, Bool toggle)
 	   window was last laid out can be two different places for floating windows
 	   (i.e. a window that overlaps the boundary between two monitors.  Because we
 	   handle changing monitors and even changing screens here, we should use the
-	   monitor to which it was last associated instead of where it was clicked.  This 
+	   monitor to which it was last associated instead of where it was clicked.  This
 	   is actually important because the monitor it is on might be floating and the
 	   monitor the edge was clicked on might be tiled. */
 
@@ -3918,7 +3918,7 @@ mousemove_from(Client *c, int from, XEvent *e, Bool toggle)
 			}
 			if (nv && isfloater) {
 				Workarea wa, sc;
-				
+
 				getworkarea(nv->curmon, &wa);
 				sc = nv->curmon->sc;
 
@@ -4001,7 +4001,7 @@ mousemove_from(Client *c, int from, XEvent *e, Bool toggle)
 
 									if (s == c)
 										continue;
-									if (wind_overlap(n.y, ny2, s->c.y, sy2)) { 
+									if (wind_overlap(n.y, ny2, s->c.y, sy2)) {
 										if (sl && (abs(n.x - sx2) < snap)) {
 											CPRINTF(s, "snapping left edge to other window right edge");
 											n.x = sx2;
@@ -4021,7 +4021,7 @@ mousemove_from(Client *c, int from, XEvent *e, Bool toggle)
 
 									if (s == c)
 										continue;
-									if (wind_overlap(n.y, ny2, s->c.y, sy2)) { 
+									if (wind_overlap(n.y, ny2, s->c.y, sy2)) {
 										if (sl && (abs(n.x - s->c.x) < snap)) {
 											CPRINTF(s, "snapping left edge to other window left edge");
 											n.x = s->c.x;
@@ -4948,8 +4948,8 @@ place_smart(Client *c, WindowPlacement p, ClientGeometry *g, View *v, Workarea *
 	   the top layer of windows by determining which windows are not obscured by any
 	   other.  Then, for cascade placement it simply cascades over the northwest
 	   unobscured window (if possible) and starts a new cascade in the northwest
-	   otherwise.  For column placement, it attempts to place the window to the right 
-	   of unobscured windows (if possible) and then works its way right and then down 
+	   otherwise.  For column placement, it attempts to place the window to the right
+	   of unobscured windows (if possible) and then works its way right and then down
 	   and right again.  For row placement, it attempts to place windows below
 	   unobscured windows (if possible) and then works its way right and then down
 	   again.  If either row or column fail it reverts to cascade. */
@@ -5161,7 +5161,7 @@ place_undermouse(Client *c, WindowPlacement p, ClientGeometry *g, View *v, Worka
 
 	putreference(g->x, g->y, (Geometry *) g, c->gravity);
 
-	/* keep center of window inside work area, otherwise wnck task bars figure its on 
+	/* keep center of window inside work area, otherwise wnck task bars figure its on
 	   a different monitor */
 
 	mx = g->x + g->w / 2 + g->b;
@@ -5508,7 +5508,7 @@ addclient(Client *c, Bool focusme, Bool raiseme)
 		int mx, my;
 		View *cv;
 
-		/* wnck task bars figure window is on monitor containing center of window 
+		/* wnck task bars figure window is on monitor containing center of window
 		 */
 		mx = c->s.x + c->s.w / 2 + c->s.b;
 		my = c->s.y + c->s.h / 2 + c->s.b;

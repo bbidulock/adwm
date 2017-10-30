@@ -268,7 +268,7 @@ showkey(Key *k)
 	static char buf[256] = { 0, };
 	unsigned long mod = k->mod;
 	char *sym;
-	
+
 	buf[0] = '\0';
 	if (mod & Mod1Mask)
 		strcat(buf, "A");

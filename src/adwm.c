@@ -2122,7 +2122,7 @@ keypress(XEvent *e)
 			break;
 		case KeyPress:
 			DPRINTF("KeyPress: 0x%02lx %s\n", mod, XKeysymToString(keysym));
-			/* a press of a different key, even a modifier, or a press of the 
+			/* a press of a different key, even a modifier, or a press of the
 			   same key with a different modifier mask indicates a stop of
 			   the current sequence and the potential start of a new one */
 			if (k && (k->keysym != keysym || k->mod != mod)) {
@@ -2542,7 +2542,7 @@ manage(Window w, XWindowAttributes *wa)
 	   NormalState here, and we should.  It appears that previous code base was simply mapping
 	   all windows in the NormalState.  This explains some ugliness.  We already filtered out
 	   WithdrawnState (the very old DontCareState) during the scan.  We should check StateHint
-	   flag and set is.icon and setwmstate() at the end of this sequence (clients use appearance 
+	   flag and set is.icon and setwmstate() at the end of this sequence (clients use appearance
 	   of WM_STATE to indicate mapping). */
 
 	if (wmh) {
@@ -2583,7 +2583,7 @@ manage(Window w, XWindowAttributes *wa)
 				}
 			} else if (t) {
 				/* Transients are not allowed to perform some actions when window
-				   for which they are are transient for is also managed.  ICCCM 2.0 
+				   for which they are are transient for is also managed.  ICCCM 2.0
 				   says such applications should act on the non-transient managed
 				   client and let the window manager decide what to do about the
 				   transients. */
@@ -3204,7 +3204,7 @@ updatesessionprop(Client *c, Atom prop, int state)
 			/* Typically set on client leader window. We use it in
 			   conjunction with _NET_WM_PID for startup sequence
 			   identification. As with all client leader properties, it
-			   should not be changed while a client is managed; however, some 
+			   should not be changed while a client is managed; however, some
 			   clients or launchers might change this too late, so we will
 			   still update what relies on it. */
 			ewmh_process_net_startup_id(c);
@@ -3224,7 +3224,7 @@ updatesessionprop(Client *c, Atom prop, int state)
 	} else {
 		if (0) {
 		} else if (prop == _XA_SM_CLIENT_ID) {
-			/* Note: the SM_CLIENT_ID property cannot be updated when clients 
+			/* Note: the SM_CLIENT_ID property cannot be updated when clients
 			   in the session are managed: so we do not need to update this.
 			   It should never be updated on a managed client anyhoo. */
 			goto bad;
@@ -3310,7 +3310,7 @@ updatesessionprop(Client *c, Atom prop, int state)
 		} else if (prop == _XA_NET_WM_PID) {
 			/* Could be set on a client leader window (so that it will apply
 			   to all members of the session).  This property should not
-			   change after a client in the session is managed; however, some 
+			   change after a client in the session is managed; however, some
 			   launchers might set it too late. We use it with
 			   WM_CLIENT_MACHINE to identify startup notification sequences
 			   and must reinvoke the check here when that happens. */
@@ -3356,7 +3356,7 @@ updatesessionprop(Client *c, Atom prop, int state)
 	return False;
 }
 
-/* 
+/*
  * Group leader properties are properties that apply to the group as a whole.
  * This includes just about every property that can be set on a specific client.
  */
@@ -3382,14 +3382,14 @@ updateleaderprop(Client *c, Atom prop, int state)
 			   hint) */
 			goto bad;
 		case XA_WM_CLASS:
-			/* Class should not be on a group basis (unless WM_WINDOW_ROLE is 
+			/* Class should not be on a group basis (unless WM_WINDOW_ROLE is
 			   provided). We check this property on demand, so we can ignore
 			   updates. */
 			ewmh_process_net_startup_id(c);
 			break;
 		case XA_WM_TRANSIENT_FOR:
 			/* Note that transient windows need not have a WM_CLIENT_LEADER
-			   property when the window they are transient for has one.  This 
+			   property when the window they are transient for has one.  This
 			   property should not be changed after a window is managed.  */
 			updatetransientfor(c);
 			goto bad;
@@ -3422,7 +3422,7 @@ updateleaderprop(Client *c, Atom prop, int state)
 	} else {
 		if (0) {
 		} else if (prop == _XA_SM_CLIENT_ID) {
-			/* Note: the SM_CLIENT_ID property cannot be updated when clients 
+			/* Note: the SM_CLIENT_ID property cannot be updated when clients
 			   in the session are managed: so we do not need to update this.
 			   It should never be updated on a managed client anyhoo. */
 			goto bad;
@@ -3459,7 +3459,7 @@ updateleaderprop(Client *c, Atom prop, int state)
 			   not apply on a group basis. */
 			goto bad;
 		} else if (prop == _XA_WIN_HINTS) {
-			/* Should not be set on a group basis after a window in the group 
+			/* Should not be set on a group basis after a window in the group
 			   is managed. */
 			goto bad;
 		} else if (prop == _XA_WIN_APP_STATE) {
@@ -3505,7 +3505,7 @@ updateleaderprop(Client *c, Atom prop, int state)
 			   not apply to groups. */
 			goto bad;
 		} else if (prop == _XA_NET_WM_ALLOWED_ACTIONS) {
-			/* Should only be set by the window manager.  Clients can request 
+			/* Should only be set by the window manager.  Clients can request
 			   changes using client messages.  Does not apply to groups. */
 			goto bad;
 		} else if (prop == _XA_NET_WM_STRUT) {
@@ -3517,7 +3517,7 @@ updateleaderprop(Client *c, Atom prop, int state)
 #if 0
 		} else if (prop == _XA_NET_WM_ICON_GEOMETRY) {
 			/* Normally set by pagers at any time.  Used by window managers
-			   to animate window iconification (in this case of a group).  We 
+			   to animate window iconification (in this case of a group).  We
 			   don't do this so we can ignore it. */
 			goto bad;
 		} else if (prop == _XA_NET_WM_ICON) {
@@ -3535,7 +3535,7 @@ updateleaderprop(Client *c, Atom prop, int state)
 			ewmh_process_net_startup_id(c);
 		} else if (prop == _XA_NET_WM_HANDLED_ICONS) {
 			/* Indicates that this client handles iconified windows.  We
-			   don't provide icons for iconified windows, so, for now, it can 
+			   don't provide icons for iconified windows, so, for now, it can
 			   be ignored. */
 		} else if (prop == _XA_NET_WM_USER_TIME) {
 			ewmh_process_net_window_user_time(c);
@@ -3620,9 +3620,9 @@ updateclientprop(Client *c, Atom prop, int state)
 			break;
 		case XA_WM_CLIENT_MACHINE:
 			/* Typically not set on an individual window (but on client
-			   leader window).  We use it in conjunction with _NET_WM_PID for 
+			   leader window).  We use it in conjunction with _NET_WM_PID for
 			   startup sequence identification.  Nevertheless, it should not
-			   be updated on a window once it is managed.  Some clients might 
+			   be updated on a window once it is managed.  Some clients might
 			   change too late, so we will still update what relies on it. */
 			ewmh_process_net_startup_id(c);
 			goto bad;
@@ -3638,7 +3638,7 @@ updateclientprop(Client *c, Atom prop, int state)
 	} else {
 		if (0) {
 		} else if (prop == _XA_SM_CLIENT_ID) {
-			/* Note: the SM_CLIENT_ID property cannot be updated when clients 
+			/* Note: the SM_CLIENT_ID property cannot be updated when clients
 			   in the session are managed: so we do not need to update this.
 			   It should never be updated on a managed client anyhoo. */
 			goto bad;
@@ -3715,18 +3715,18 @@ updateclientprop(Client *c, Atom prop, int state)
 			   managed.  Clients should use client messages instead. */
 			goto bad;
 		} else if (prop == _XA_NET_WM_ALLOWED_ACTIONS) {
-			/* Should only be set by the window manager.  Clients can request 
+			/* Should only be set by the window manager.  Clients can request
 			   changes using client messages. */
 			goto bad;
 		} else if (prop == _XA_NET_WM_STRUT) {
-			/* The client MAY change this property at any time, therefore the 
+			/* The client MAY change this property at any time, therefore the
 			   window manager MUST watch for property notify events if the
 			   window manager uses this property to assign special semantics
 			   to the window. */
 			c->with.struts = getstruts(c);
 			updatestruts();
 		} else if (prop == _XA_NET_WM_STRUT_PARTIAL) {
-			/* The client MAY change this property at any time, therefore the 
+			/* The client MAY change this property at any time, therefore the
 			   window manager MUST watch for property notify events if the
 			   window manager uses this property to assign special semantics
 			   to the window.  If both this property and the _NET_WM_STRUT
@@ -3749,13 +3749,13 @@ updateclientprop(Client *c, Atom prop, int state)
 		} else if (prop == _XA_NET_WM_PID) {
 			/* This property should not change after the window is managed,
 			   however, some startup notification assistance programs might
-			   set it too late.  We use it with WM_CLIENT_MACHINE to identify 
+			   set it too late.  We use it with WM_CLIENT_MACHINE to identify
 			   startup notification sequences and must reinvoke the check
 			   here when that happens. */
 			ewmh_process_net_startup_id(c);
 		} else if (prop == _XA_NET_WM_HANDLED_ICONS) {
 			/* Indicates that this client handles iconified windows.  We
-			   don't provide icons for iconified windows, so, for now, it can 
+			   don't provide icons for iconified windows, so, for now, it can
 			   be ignored. */
 			return False;
 		} else if (prop == _XA_NET_WM_USER_TIME) {
@@ -3833,8 +3833,8 @@ updaterootprop(Window root, Atom prop, int state)
 			return False;
 		case XA_WM_ICON_SIZE:
 			/* Only set on the root window by the window manager, and then
-			   only if it wishes to constrain the icon pixmap or icon window. 
-			   Note that this applies to dock apps too, but few (if any) dock 
+			   only if it wishes to constrain the icon pixmap or icon window.
+			   Note that this applies to dock apps too, but few (if any) dock
 			   apps observe it. */
 			return True;
 		default:
@@ -5291,8 +5291,8 @@ togglemonitor()
 	int x, y;
 
 	/* Should we use the pointer first? Perhaps we should use the monitor with the
-	   keyboard focus first instead and only then use the monitor with the pointer in 
-	   it or nearest it.  We are going to do a focus(NULL) on the new monitor anyway. 
+	   keyboard focus first instead and only then use the monitor with the pointer in
+	   it or nearest it.  We are going to do a focus(NULL) on the new monitor anyway.
 	 */
 	getpointer(&x, &y);
 	if (!(cm = getmonitor(x, y)))

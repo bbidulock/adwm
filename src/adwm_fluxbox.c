@@ -288,7 +288,7 @@ typedef struct {
 } FluxboxScreen;
 
 /*
- 
+
 session.screen0.allowRemoteActions:	true
 session.screen0.autoRaise:	false
 session.screen0.clickRaises:	true
@@ -347,8 +347,8 @@ session.screen0.tabs.intitlebar:	true
 session.screen0.tabs.maxOver:	true
 session.screen0.tabs.usePixmap:	true
 session.screen0.tab.width:	120
-session.screen0.titlebar.left:	MenuIcon Stick Shade LHalf 
-session.screen0.titlebar.right:	RHalf Minimize Maximize Close 
+session.screen0.titlebar.left:	MenuIcon Stick Shade LHalf
+session.screen0.titlebar.right:	RHalf Minimize Maximize Close
 session.screen0.toolbar.alpha:	255
 session.screen0.toolbar.autoHide:	false
 session.screen0.toolbar.height:	0
@@ -363,9 +363,9 @@ session.screen0.toolbar.widthPercent:	100
 session.screen0.tooltipDelay:	500
 session.screen0.userFollowModel:	Follow
 session.screen0.window.focus.alpha:	255
-session.screen0.windowMenu:	
+session.screen0.windowMenu:
 session.screen0.windowPlacement:	RowSmartPlacement
-session.screen0.windowScrollAction:	
+session.screen0.windowScrollAction:
 session.screen0.windowScrollReverse:	false
 session.screen0.window.unfocus.alpha:	237
 session.screen0.workspaceNames:	1,2,3,4,5,6,7,8,

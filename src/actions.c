@@ -133,7 +133,7 @@ k_chain(XEvent *e, Key *key)
 			break;
 		case KeyPress:
 			DPRINTF("KeyPress: 0x%02lx %s\n", mod, XKeysymToString(keysym));
-			/* a press of a different key, even a modifier, or a press of the 
+			/* a press of a different key, even a modifier, or a press of the
 			   same key with a different modifier mask indicates a stop of
 			   the current sequence and the potential start of a new one */
 			if (k && (k->keysym != keysym || k->mod != mod)) {
@@ -163,7 +163,7 @@ k_chain(XEvent *e, Key *key)
 				DPRINTF("Escape KeyPress: stopping sequence\n");
 				return;
 			}
-			/* unrecognized key presses must be ignored because they may just 
+			/* unrecognized key presses must be ignored because they may just
 			   be a modifier being pressed */
 			break;
 		}

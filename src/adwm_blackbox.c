@@ -422,7 +422,7 @@ static void
 o_honormods()
 {
 	/* Whether or not to break if NumLock or ScrollLock is pressed.  For bbkeys to
-	   ignore your keybindings if NumLock or ScrollLock is pressed, set this to true. 
+	   ignore your keybindings if NumLock or ScrollLock is pressed, set this to true.
 	   (true or false) */
 	keyoptions.honorModifiers = False;
 	if (!strcasecmp(pctx->args, "true"))
@@ -446,7 +446,7 @@ o_cycleraise()
 static void
 o_followsend()
 {
-	/* Should bbkeys follows the window that you send to another workspace? This will 
+	/* Should bbkeys follows the window that you send to another workspace? This will
 	   apply to all sendto operations such that if this is set to true, bbkeys will
 	   change workspaces to the workspace that you send the window to. (true or
 	   false) */
@@ -549,7 +549,7 @@ o_desktopcols()
 static void
 o_desktoprows()
 {
-	/* Number of rows that you have you workspace/desktops laid out in (numeric).  As 
+	/* Number of rows that you have you workspace/desktops laid out in (numeric).  As
 	   a way of an example, if you have your pager laid out in a 4x2 grid (4 wide, 2
 	   high), then you would set workspaceColumns to 4 and workspaceRows to 2. */
 	keyoptions.workspaceRows = strtoul(pctx->args, NULL, 0);
@@ -1613,7 +1613,7 @@ initstyle_BLACKBOX(Bool reload)
 	    (max(style->window.handle.focus.borderWidth,
 		 style->window.handle.unfocus.borderWidth) * 2);
 
-	/* 
+	/*
 	 * ADWM style options that must be set:
 	 * scr->style.border
 	 * scr->style.titleheight

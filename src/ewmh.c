@@ -1845,7 +1845,7 @@ ewmh_process_state_atom(Client *c, Atom state, int set)
 		}
 	} else if (state == _XA_NET_WM_STATE_FOCUSED) {
 		/* _NET_WM_STATE_FOCUSED indicates whether the window's decorations are
-		   drawn in an active state.  Clients MUST regard it as a read-only hint. 
+		   drawn in an active state.  Clients MUST regard it as a read-only hint.
 		   It cannot be set at map time or changed via a _NET_WM_STATE client
 		   message. */
 	} else if (state == _XA_NET_WM_STATE_FIXED) {
@@ -2253,7 +2253,7 @@ ewmh_process_net_window_opacity(Client *c)
 
 	if ((opacity = getcard(c->win, _XA_NET_WM_WINDOW_OPACITY, &n))) {
 		c->opacity = opacity[0] & 0xffffffff;
-		XChangeProperty(dpy, c->frame, _XA_NET_WM_WINDOW_OPACITY, XA_CARDINAL, 32, 
+		XChangeProperty(dpy, c->frame, _XA_NET_WM_WINDOW_OPACITY, XA_CARDINAL, 32,
 				PropModeReplace, (unsigned char *) opacity, 1);
 		XFree(opacity);
 	} else {

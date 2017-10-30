@@ -852,7 +852,8 @@ reconfigure(Client *c, ClientGeometry *n, Bool force)
 	if (fmask) {
 		DPRINTF("frame wc = %ux%u+%d+%d:%d\n", fwc.width, fwc.height, fwc.x,
 			fwc.y, fwc.border_width);
-		configureshapes(c);
+		if (!c->is.dockapp)
+			configureshapes(c);
 		XConfigureWindow(dpy, c->frame,
 				 CWX | CWY | CWWidth | CWHeight | CWBorderWidth, &fwc);
 	}

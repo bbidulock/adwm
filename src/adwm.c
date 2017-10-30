@@ -1322,7 +1322,8 @@ shapenotify(XEvent *e)
 
 	if ((c = getclient(ev->window, ClientAny)) && ev->window == c->win) {
 		CPRINTF(c, "Got shape notify, redrawing shapes \n");
-		return configureshapes(c);
+		if (!c->is.dockapp)
+			return configureshapes(c);
 	}
 	return False;
 }
@@ -2410,6 +2411,8 @@ checkshaped(Client *c)
 	Extent be = { 0, };
 	Extent ce = { 0, };
 
+	if (c->is.dockapp)
+		return;
 	if (einfo[XshapeBase].have) {
 		XShapeSelectInput(dpy, c->win, ShapeNotifyMask);
 		XGetWindowAttributes(dpy, c->win, &wa);
@@ -2441,6 +2444,8 @@ checkshaped(Client *c)
 static void
 updateshape(Client *c)
 {
+	if (c->is.dockapp)
+		return;
 	checkshaped(c);
 	if (c->with.wshape || c->with.bshape) {
 		/* When we have a fully shaped window or fully shaped border, it is
@@ -2745,7 +2750,7 @@ manage(Window w, XWindowAttributes *wa)
 		mask |= CWBackingStore;
 		XChangeWindowAttributes(dpy, c->icon, mask, &twa);
 		XSelectInput(dpy, c->icon, CLIENTMASK);
-//		updateshape(c); /* do not shape frames for dock apps */
+		updateshape(c); /* do not shape frames for dock apps */
 		XReparentWindow(dpy, c->icon, c->frame, c->r.x, c->r.y);
 		XConfigureWindow(dpy, c->icon, CWBorderWidth, &wc);
 		XMapWindow(dpy, c->icon);
@@ -2804,7 +2809,8 @@ manage(Window w, XWindowAttributes *wa)
 		XMoveResizeWindow(dpy, c->title, r.x, r.y, r.width, r.height);
 		XMapWindow(dpy, c->title);
 	}
-	configureshapes(c);
+	if (!c->is.dockapp)
+		configureshapes(c);
 	if ((c->grips && c->c.g) || (c->title && c->c.t))
 		drawclient(c);
 

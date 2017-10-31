@@ -552,15 +552,27 @@ isfloating(Client *c, View *v)
 Bool
 enterclient(XEvent *e, Client *c)
 {
-	if (!c || !canfocus(c)) {
-		CPRINTF(c, "FOCUS: cannot focus client.\n");
+	if (!c || !canselect(c)) {
+		CPRINTF(c, "FOCUS: cannot select client.\n");
 		return True;
 	}
+	if (c->skip.focus) {
+		CPRINTF(c, "FOCUS: should not focus (nor casually select) client.\n");
+		return True;
+	}
+	/* don't think this helps really */
+#if 0
 	/* focus when switching monitors */
 	if (!isvisible(sel, c->cview)) {
 		CPRINTF(c, "FOCUS: monitor switching focus\n");
 		focus(c);
 	}
+#endif
+	/* NOTE: this is where we can delay entering docks when theay are autoraised.  We 
+	   can use motion later to set the focus Need the timestamp from the Event,
+	   however.  Or we can select them here, but let the autoraise function delay
+	   until some time after the selected/focus time.  */
+
 	switch (scr->options.focus) {
 	case Clk2Focus:
 		break;
@@ -2593,7 +2605,7 @@ restack()
 			continue;
 		if (WTCHECK(c, WindowTypeDesk))
 			continue;
-		if (sel == c && c->is.full)
+		if (took == c && c->is.full)
 			stack_clients(&s, c);
 	}
 	/* 3. Dockapps when a dockapp is selected and docks when selected. */

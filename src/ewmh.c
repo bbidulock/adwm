@@ -1256,6 +1256,7 @@ ewmh_update_net_active_window()
 {
 	Window win;
 
+	/* little bit of a question whether we set on the dockapp icon or win */
 	XPRINTF("%s\n", "Updating _NET_ACTIVE_WINDOW");
 	win = sel ? sel->win : None;
 	XChangeProperty(dpy, scr->root, _XA_NET_ACTIVE_WINDOW, XA_WINDOW, 32,
@@ -2526,11 +2527,13 @@ clientmessage(XEvent *e)
 				killclient(c);
 		} else if (message_type == _XA_NET_ACTIVE_WINDOW ||
 			   message_type == _XA_WIN_FOCUS) {
-			c->is.icon = False;
-			c->is.hidden = False;
-			if (c->user.focus)
-				focus(c);
-			arrange(clientview(c));
+			if (c->prog.select) {
+				c->is.icon = False;
+				c->is.hidden = False;
+				if (c->user.focus)
+					focus(c);
+				arrange(clientview(c));
+			}
 		} else if (message_type == _XA_NET_WM_STATE) {
 			ewmh_process_state_atom(c, (Atom) ev->data.l[1], ev->data.l[0]);
 			if (ev->data.l[2])
@@ -3131,7 +3134,7 @@ ewmh_process_net_window_type(Client *c)
 		c->is.bastard = True;
 		c->skip.skip = -1U;	/* skip everything */
 		c->user.can = 0;	/* no user functionality */
-		c->has.has = 0;	/* no decorations */
+		c->has.has = 0;		/* no decorations */
 		c->needs.has = 0;	/* no decorations */
 		c->is.floater = True;
 	} else if (WTCHECK(c, WindowTypeDialog) || WTCHECK(c, WindowTypeMenu)) {
@@ -3146,9 +3149,11 @@ ewmh_process_net_window_type(Client *c)
 	} else if (WTCHECK(c, WindowTypeDock)) {
 		c->is.bastard = True;
 		c->skip.skip = -1U;	/* skip everything */
-		c->skip.sloppy = False;
+		c->skip.focus = False;	/* except focus */
+		c->skip.sloppy = False; /* and sloppy focus */
 		c->user.can = 0;	/* no user functionality */
-		c->has.has = 0;	/* no decorations */
+		c->user.select = True;	/* except maybe selecting it */
+		c->has.has = 0;		/* no decorations */
 		c->needs.has = 0;	/* no decorations */
 		c->is.floater = True;
 	}

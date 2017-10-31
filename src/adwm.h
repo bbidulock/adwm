@@ -822,6 +822,7 @@ typedef union {
 		unsigned tag:1;
 		unsigned arrange:1;
 		unsigned undec:1;
+		unsigned select:1;
 		unsigned focus:2;
 	};
 	unsigned can;
@@ -1065,7 +1066,7 @@ typedef struct {
 	int drop[2];
 	struct {
 		unsigned long norm[ColLast];
-		unsigned long sel[ColLast];
+		unsigned long sele[ColLast];
 		XftColor *font[2];
 		XftColor *shadow[2];
 	} color;
@@ -1270,7 +1271,8 @@ Bool with_transients(Client *c, Bool (*each) (Client *, int), int data);
 
 /* needed by layout.c */
 void discardcrossing(Client *c);
-Bool canfocus(Client *c);
+Bool canselect(Client *c);
+Bool selectok(Client *c);
 Group *getleader(Window leader, int group);
 void updategeom(Monitor *m);
 extern Cursor cursor[CursorLast];

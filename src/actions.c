@@ -1158,8 +1158,6 @@ k_moveby(XEvent *e, Key *k)
 	}
 }
 
-Bool canfocus(Client *c);
-
 static Bool
 k_focusable(Client *c, View *v, WhichClient any, RelativeDirection dir,
 	    IconsIncluded ico)
@@ -1172,9 +1170,9 @@ k_focusable(Client *c, View *v, WhichClient any, RelativeDirection dir,
 	case PointerClient:
 		return False;
 	case FocusClient:
-		if (!canfocus(c))
+		if (!selectok(c))
 			return False;
-		if (c->skip.focus)
+		if (c->skip.focus || c->skip.winlist  || c->skip.cycle || !c->user.select)
 			return False;
 		if (dir != RelativeCenter)
 			if (c->is.icon || c->is.hidden)
@@ -1211,7 +1209,9 @@ k_focusable(Client *c, View *v, WhichClient any, RelativeDirection dir,
 		}
 		break;
 	case AllClients:
-		if (c->skip.focus)
+		if (!canselect(c))
+			return False;
+		if (c->skip.focus || c->skip.winlist  || c->skip.cycle || !c->user.select)
 			return False;
 		if (!isvisible(c, v))
 			return False;
@@ -1229,7 +1229,9 @@ k_focusable(Client *c, View *v, WhichClient any, RelativeDirection dir,
 		}
 		break;
 	case AnyClient:
-		if (c->skip.focus)
+		if (!canselect(c))
+			return False;
+		if (c->skip.focus || c->skip.winlist  || c->skip.cycle || !c->user.select)
 			return False;
 		if (!isvisible(c, NULL))
 			return False;

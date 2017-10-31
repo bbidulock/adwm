@@ -2593,7 +2593,7 @@ restack()
 			continue;
 		if (WTCHECK(c, WindowTypeDesk))
 			continue;
-		if (sel == c && c->is.full)
+		if (took == c && c->is.full)
 			stack_clients(&s, c);
 	}
 	/* 3. Dockapps when a dockapp is selected and docks when selected. */

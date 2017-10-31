@@ -1337,6 +1337,14 @@ canfocus(Client *c)
 	return False;
 }
 
+Bool
+canselect(Client *c)
+{
+	if (c && c->user.select && !c->is.banned)
+		return True;
+	return False;
+}
+
 static Bool
 isviewable(Client *c)
 {
@@ -1346,12 +1354,32 @@ isviewable(Client *c)
 	if (!c)
 		return False;
 
-	win = (c->icon && c->icon != c->win) ? c->icon : c->win;
+	win = c->icon ? : c->win;
 
 	if (!XGetWindowAttributes(dpy, win, &wa))
 		return False;
 	if (wa.map_state != IsViewable)
 		return False;
+	return True;
+}
+
+static Bool
+selectok(Client *c)
+{
+	if (!c)
+		return False;
+	if (!canselect(c))
+		return False;
+	if ((!c->is.dockapp && c->is.icon) || c->is.hidden)
+		return False;
+	if (!clientview(c) && !c->prog.select) {
+		_CPRINTF(c, "attempt to select an unselectable client\n");
+		return False;
+	}
+	if (!isvisible(c, NULL)) {
+		_CPRINTF(c, "attempt to select an invisible client\n");
+		return False;
+	}
 	return True;
 }
 
@@ -1372,7 +1400,6 @@ focusok(Client *c)
 static void
 setfocus(Client *c)
 {
-	/* more simple */
 	if (focusok(c)) {
 		CPRINTF(c, "setting focus\n");
 		if (c->prog.focus & GIVE_FOCUS)
@@ -1405,23 +1432,21 @@ setfocus(Client *c)
 }
 
 static Bool
-canselect(Client *c)
+shouldsel(Client *c)
 {
-	if (!c)
+	if (!selectok(c))
 		return False;
-	if (!canfocus(c))
+	if (c->is.bastard)
 		return False;
-	if ((!c->is.dockapp && c->is.icon) || c->is.hidden)
-		return False;
-	if (!isvisible(c, NULL))
+	if (c->is.dockapp)
 		return False;
 	return True;
 }
 
 static Bool
-shouldsel(Client *c)
+shouldfocus(Client *c)
 {
-	if (!canselect(c))
+	if (!focusok(c))
 		return False;
 	if (c->is.bastard)
 		return False;
@@ -1431,11 +1456,20 @@ shouldsel(Client *c)
 }
 
 static Client *
-findfocus(Client *not)
+findselect(Client *not)
 {
 	Client *c;
 
 	for (c = scr->flist; c && (c == not || !shouldsel(c)); c = c->fnext) ;
+	return (c);
+}
+
+static Client *
+findfocus(Client *not)
+{
+	Client *c;
+
+	for (c = scr->flist; c && (c == not || !shouldfocus(c)); c = c->fnext) ;
 	return (c);
 }
 
@@ -1488,8 +1522,9 @@ focus(Client *c)
 	Client *o;
 
 	o = sel;
-	if ((!c && scr->managed) || (c && !canselect(c)))
-		c = findfocus(NULL);
+	/* note that the client does not necessarily have to be focusable to be selected. */
+	if ((!c && scr->managed) || (c && !selectok(c)))
+		c = findselect(NULL);
 	if (sel && sel != c) {
 		XSetWindowBorder(dpy, sel->frame, scr->style.color.norm[ColBorder]);
 	}
@@ -1517,7 +1552,7 @@ focus(Client *c)
 		   dockapp). */
 		setclientstate(c, NormalState);
 		/* drawclient does this does it not? */
-		XSetWindowBorder(dpy, sel->frame, scr->style.color.sel[ColBorder]);
+		XSetWindowBorder(dpy, sel->frame, scr->style.color.sele[ColBorder]);
 		drawclient(c);
 		if ((c->is.shaded && scr->options.autoroll) || WTCHECK(c, WindowTypeDock) || c->is.dockapp)
 			arrange(c->cview);
@@ -1531,6 +1566,7 @@ focus(Client *c)
 		lowertiled(o);
 		ewmh_update_net_window_state(o);
 	}
+	/* note that this does not necessarily change the focus */
 	setfocus(sel);
 	XSync(dpy, False);
 }

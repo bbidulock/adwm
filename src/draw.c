@@ -383,7 +383,7 @@ static int
 drawelement(AScreen *ds, char which, int x, int position, Client *c)
 {
 	int w = 0;
-	unsigned long *color = c == sel ? ds->style.color.sel : ds->style.color.norm;
+	unsigned long *color = c == sel ? ds->style.color.sele : ds->style.color.norm;
 	int hilite = (c == sel) ? Selected : Normal;
 	ElementType type = elementtype(which);
 	ElementClient *ec = &c->element[type];
@@ -443,7 +443,7 @@ drawdockapp(Client *c, AScreen *ds)
 	int status;
 	unsigned long pixel;
 
-	pixel = (c == sel) ? ds->style.color.sel[ColBG] : ds->style.color.norm[ColBG];
+	pixel = (c == sel) ? ds->style.color.sele[ColBG] : ds->style.color.norm[ColBG];
 	/* to avoid clearing window, initiallly set to norm[ColBG] */
 	// XSetWindowBackground(dpy, c->frame, pixel);
 	// XClearArea(dpy, c->frame, 0, 0, 0, 0, True);
@@ -539,8 +539,7 @@ drawclient(Client *c)
 		XftDrawChange(ds->dc.draw.xft, ds->dc.draw.pixmap);
 	}
 	XSetForeground(dpy, ds->dc.gc,
-		       c ==
-		       sel ? ds->style.color.sel[ColBG] : ds->style.color.norm[ColBG]);
+		       c == sel ? ds->style.color.sele[ColBG] : ds->style.color.norm[ColBG]);
 	XSetLineAttributes(dpy, ds->dc.gc, ds->style.border, LineSolid, CapNotLast,
 			   JoinMiter);
 	XSetFillStyle(dpy, ds->dc.gc, FillSolid);
@@ -553,10 +552,10 @@ drawclient(Client *c)
 	if (ds->dc.w < textw(ds, c->name, (c == sel) ? Selected : Normal)) {
 		ds->dc.w -= elementw(ds, c, CloseBtn);
 		drawtext(ds, c->name, ds->dc.draw.pixmap, ds->dc.draw.xft,
-			 c == sel ? ds->style.color.sel : ds->style.color.norm,
+			 c == sel ? ds->style.color.sele : ds->style.color.norm,
 			 c == sel ? 1 : 0, ds->dc.x, ds->dc.y, ds->dc.w);
 		drawbutton(ds, c, CloseBtn,
-			   c == sel ? ds->style.color.sel : ds->style.color.norm,
+			   c == sel ? ds->style.color.sele : ds->style.color.norm,
 			   ds->dc.w);
 		goto end;
 	}
@@ -598,8 +597,7 @@ drawclient(Client *c)
       end:
 	if (ds->style.outline) {
 		XSetForeground(dpy, ds->dc.gc,
-			       c ==
-			       sel ? ds->style.color.sel[ColBorder] : ds->style.color.
+			       c == sel ? ds->style.color.sele[ColBorder] : ds->style.color.
 			       norm[ColBorder]);
 		XDrawLine(dpy, ds->dc.draw.pixmap, ds->dc.gc, 0, ds->dc.h - 1, ds->dc.w,
 			  ds->dc.h - 1);
@@ -611,8 +609,7 @@ drawclient(Client *c)
 	ds->dc.w = c->c.w;
 	ds->dc.h = ds->style.gripsheight;
 	XSetForeground(dpy, ds->dc.gc,
-		       c ==
-		       sel ? ds->style.color.sel[ColBG] : ds->style.color.norm[ColBG]);
+		       c == sel ? ds->style.color.sele[ColBG] : ds->style.color.norm[ColBG]);
 	XSetLineAttributes(dpy, ds->dc.gc, ds->style.border, LineSolid, CapNotLast,
 			   JoinMiter);
 	XSetFillStyle(dpy, ds->dc.gc, FillSolid);
@@ -623,8 +620,7 @@ drawclient(Client *c)
 		DPRINTF("Could not fill rectangle, error %d\n", status);
 	if (ds->style.outline) {
 		XSetForeground(dpy, ds->dc.gc,
-			       c ==
-			       sel ? ds->style.color.sel[ColBorder] : ds->style.color.
+			       c == sel ? ds->style.color.sele[ColBorder] : ds->style.color.
 			       norm[ColBorder]);
 		XDrawLine(dpy, ds->dc.draw.pixmap, ds->dc.gc, 0, 0, ds->dc.w, 0);
 		/* needs to be adjusted to do ds->style.gripswidth instead */
@@ -1241,11 +1237,11 @@ initstyle(Bool reload)
 	scr->style.color.norm[ColButton] =
 	    getcolor(getresource("normal.button", NORMBUTTONCOLOR));
 
-	scr->style.color.sel[ColBorder] =
+	scr->style.color.sele[ColBorder] =
 	    getcolor(getresource("selected.border", SELBORDERCOLOR));
-	scr->style.color.sel[ColBG] = getcolor(getresource("selected.bg", SELBGCOLOR));
-	scr->style.color.sel[ColFG] = getcolor(getresource("selected.fg", SELFGCOLOR));
-	scr->style.color.sel[ColButton] =
+	scr->style.color.sele[ColBG] = getcolor(getresource("selected.bg", SELBGCOLOR));
+	scr->style.color.sele[ColFG] = getcolor(getresource("selected.fg", SELFGCOLOR));
+	scr->style.color.sele[ColButton] =
 	    getcolor(getresource("selected.button", SELBUTTONCOLOR));
 
 	scr->style.color.font[Selected] = emallocz(sizeof(XftColor));

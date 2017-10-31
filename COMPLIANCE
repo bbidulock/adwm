@@ -132,7 +132,6 @@ _NET_WM_STATE:				supported
 	_NET_WM_STATE_BELOW:		    supported
 	_NET_WM_STATE_DEMANDS_ATTENTION:    supported
 	_NET_WM_STATE_FOCUSED:		    supported
-	_OB_WM_STATE_UNDECORATED:	    supported
 _NET_WM_ALLOWED_ACTIONS:		supported
 	_NET_WM_ACTION_MOVE:		    supported
 	_NET_WM_ACTION_RESIZE:		    supported
@@ -146,7 +145,6 @@ _NET_WM_ALLOWED_ACTIONS:		supported
 	_NET_WM_ACTION_CLOSE:		    supported
 	_NET_WM_ACTION_ABOVE:		    supported
 	_NET_WM_ACTION_BELOW:		    supported
-	_OB_WM_ACTION_UNDECORATE:	    supported
 _NET_WM_STRUT:				supported
 _NET_WM_STRUT_PARTIAL:			supported
 _NET_WM_ICON_GEOMETRY:			NOT supported (n/a)
@@ -188,7 +186,50 @@ _NET_WM_WINDOW_OPACITY:			supported
 
 ------------------------------------------------------------------------
 
+I3 Specific:
+
+I3_CONFIG_PATH:				NOT supported
+I3_PID:					NOT supported
+I3_SHMLOG_PATH:				NOT supported
+I3_SOCKET_PATH:				NOT supported
+
+------------------------------------------------------------------------
+
+Blackbox Specific:
+
+_BLACKBOX_PID:				supported
+_BB_THEME:				supported
+
+------------------------------------------------------------------------
+
+OpenBox Specific:
+
+_OPENBOX_PID:				supported
+_OB_THEME				supported
+_OB_CONFIG_FILE				supported
+_OB_WM_ACTION_UNDECORATE:		supported
+_OB_WM_STATE_UNDECORATED:		supported
+_OB_CONTROL:				supported
+_OB_VERSION:				supported
+_OB_APP_ROLE:				NOT supported
+_OB_APP_TITLE:				NOT supported
+_OB_APP_NAME:				NOT supported
+_OB_APP_CLASS:				NOT supported
+_OB_APP_GROUP_NAME:			NOT supported
+_OB_APP_GROUP_CLASS:			NOT supported
+_OB_APP_TYPE:				NOT supported
+
+------------------------------------------------------------------------
+
+IceWM Specific:
+
+_ICEWMBG_QUIT:				supported
+
+------------------------------------------------------------------------
+
 KDE Specific:
+
+KWM_WIN_ICON:				NOT supported
 
 _KDE_NET_SYSTEM_TRAY_WINDOWS:		supported
 _KDE_NET_WM_FRAME_STRUT:		supported
@@ -283,6 +324,10 @@ _MWM_MESSAGES				NOT supported
 _MWM_MENU				NOT supported
 _MWM_INFO				NOT supported
 _MWM_OFFSET				NOT supported
+
+_MOTIF_DRAG_RECEIVER_INFO		NOT supported (n/a)
+_MOTIF_WM_HINTS				supported
+_MOTIF_WM_INFO				supported
 
 3. MOTIF client properties:
 

@@ -1148,7 +1148,8 @@ struct AScreen {
 	} d, m;
 	int sh, sw;
 	Bool colormapnotified;
-	DC dc;
+	DC dc;				/* draw context for frames, titles, grips */
+	GC gc;				/* graphics context for dock apps */
 	Element element[LastElement];
 	Style style;
 #ifdef IMLIB2

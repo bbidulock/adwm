@@ -2491,7 +2491,8 @@ manage(Window w, XWindowAttributes *wa)
 	XWMHints *wmh;
 	unsigned long mask = 0;
 	Bool focusnew = True;
-	int take_focus;
+	int take_focus, depth;
+	Visual *visual;
 
 	if ((c = getclient(w, ClientAny))) {
 		_CPRINTF(c, "client already managed!\n");
@@ -2676,25 +2677,30 @@ manage(Window w, XWindowAttributes *wa)
 	mask |= CWOverrideRedirect;
 	twa.event_mask = FRAMEMASK;
 	mask |= CWEventMask;
-	if (c->is.dockapp)
-		twa.event_mask |= ExposureMask | MOUSEMASK;
-	mask = CWOverrideRedirect | CWEventMask;
-	twa.colormap = scr->colormap;
-	mask |= CWColormap;
-	twa.border_pixel = BlackPixel(dpy, scr->screen);
-	mask |= CWBorderPixel;
 	if (c->is.dockapp) {
+		/* dockapp frames (tiles) must be created with default visual */
+		/* some set ParentRelative and icon windows must be default visual */
+		twa.event_mask |= ExposureMask | MOUSEMASK;
+		depth = DefaultDepth(dpy, scr->screen);
+		visual = DefaultVisual(dpy, scr->screen);
+		twa.colormap = DefaultColormap(dpy, scr->screen);
+		mask |= CWColormap;
 		twa.background_pixel = scr->style.color.norm[ColBG];
 		mask |= CWBackPixel;
 	} else {
+		/* all other frames, titles, grips can be created with 32 ARGB visual */
+		depth = scr->depth;
+		visual = scr->visual;
+		twa.colormap = scr->colormap;
+		mask |= CWColormap;
+		twa.border_pixel = BlackPixel(dpy, scr->screen);
+		mask |= CWBorderPixel;
 		twa.background_pixmap = None;
 		mask |= CWBackPixmap;
 	}
 	updatecmapwins(c);
-	c->frame =
-	    XCreateWindow(dpy, scr->root, c->c.x, c->c.y, c->c.w,
-			  c->c.h, c->c.b, scr->depth, InputOutput,
-			  scr->visual, mask, &twa);
+	c->frame = XCreateWindow(dpy, scr->root, c->c.x, c->c.y, c->c.w, c->c.h,
+				 c->c.b, depth, InputOutput, visual, mask, &twa);
 	XSaveContext(dpy, c->frame, context[ClientFrame], (XPointer) c);
 	XSaveContext(dpy, c->frame, context[ClientAny], (XPointer) c);
 	XSaveContext(dpy, c->frame, context[ScreenContext], (XPointer) scr);
@@ -2709,18 +2715,14 @@ manage(Window w, XWindowAttributes *wa)
 	if (c->needs.title) {
 		c->element = ecalloc(LastElement, sizeof(*c->element));
 		c->title = XCreateWindow(dpy, scr->root, 0, 0, c->c.w, scr->style.titleheight,
-					 0, scr->depth,
-					 CopyFromParent, scr->visual,
-					 mask, &twa);
+					 0, depth, CopyFromParent, visual, mask, &twa);
 		XSaveContext(dpy, c->title, context[ClientTitle], (XPointer) c);
 		XSaveContext(dpy, c->title, context[ClientAny], (XPointer) c);
 		XSaveContext(dpy, c->title, context[ScreenContext], (XPointer) scr);
 	}
 	if (c->needs.grips) {
 		c->grips = XCreateWindow(dpy, scr->root, 0, 0, c->c.w, scr->style.gripsheight,
-					 0, scr->depth,
-					 CopyFromParent, scr->visual,
-					 mask, &twa);
+					 0, depth, CopyFromParent, visual, mask, &twa);
 		XSaveContext(dpy, c->grips, context[ClientGrips], (XPointer) c);
 		XSaveContext(dpy, c->grips, context[ClientAny], (XPointer) c);
 		XSaveContext(dpy, c->grips, context[ScreenContext], (XPointer) scr);

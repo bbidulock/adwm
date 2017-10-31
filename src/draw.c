@@ -453,12 +453,12 @@ drawdockapp(Client *c, AScreen *ds)
 		return;
 	if (!(ds->dc.h = c->c.h))
 		return;
-	XSetForeground(dpy, ds->dc.gc, pixel);
-	XSetLineAttributes(dpy, ds->dc.gc, ds->style.border, LineSolid, CapNotLast,
+	XSetForeground(dpy, ds->gc, pixel);
+	XSetLineAttributes(dpy, ds->gc, ds->style.border, LineSolid, CapNotLast,
 			   JoinMiter);
-	XSetFillStyle(dpy, ds->dc.gc, FillSolid);
+	XSetFillStyle(dpy, ds->gc, FillSolid);
 	status =
-	    XFillRectangle(dpy, c->frame, ds->dc.gc, ds->dc.x, ds->dc.y, ds->dc.w,
+	    XFillRectangle(dpy, c->frame, ds->gc, ds->dc.x, ds->dc.y, ds->dc.w,
 			   ds->dc.h);
 	if (!status)
 		DPRINTF("Could not fill rectangle, error %d\n", status);
@@ -1298,13 +1298,15 @@ initstyle(Bool reload)
 	scr->dc.draw.h = max(scr->style.titleheight, scr->style.gripsheight);
 	if (scr->dc.draw.h) {
 		scr->dc.draw.pixmap =
-		    XCreatePixmap(dpy, scr->root, scr->dc.draw.w, scr->dc.draw.h,
+		    XCreatePixmap(dpy, scr->drawable, scr->dc.draw.w, scr->dc.draw.h,
 				  scr->depth);
 		scr->dc.draw.xft =
 		    XftDrawCreate(dpy, scr->dc.draw.pixmap,
 				  scr->visual,
 				  scr->colormap);
 	}
+	/* GC for dock apps */
+	scr->gc = XCreateGC(dpy, scr->root, 0, 0);
 	initbuttons();
 	/* redraw all existing clients */
 	for (c = scr->clients; c ; c = c->next)

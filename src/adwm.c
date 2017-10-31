@@ -1376,7 +1376,7 @@ setfocus(Client *c)
 	if (focusok(c)) {
 		CPRINTF(c, "setting focus\n");
 		if (c->prog.focus & GIVE_FOCUS)
-			XSetInputFocus(dpy, c->win, RevertToPointerRoot, user_time);
+			XSetInputFocus(dpy, c->icon ? : c->win, RevertToPointerRoot, user_time);
 		if (c->prog.focus & TAKE_FOCUS) {
 			XEvent ce;
 

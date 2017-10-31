@@ -3149,7 +3149,8 @@ ewmh_process_net_window_type(Client *c)
 	} else if (WTCHECK(c, WindowTypeDock)) {
 		c->is.bastard = True;
 		c->skip.skip = -1U;	/* skip everything */
-		c->skip.sloppy = False;
+		c->skip.focus = False;	/* except focus */
+		c->skip.sloppy = False; /* and sloppy focus */
 		c->user.can = 0;	/* no user functionality */
 		c->user.select = True;	/* except maybe selecting it */
 		c->has.has = 0;		/* no decorations */

@@ -1271,7 +1271,8 @@ Bool with_transients(Client *c, Bool (*each) (Client *, int), int data);
 
 /* needed by layout.c */
 void discardcrossing(Client *c);
-Bool canfocus(Client *c);
+Bool canselect(Client *c);
+Bool selectok(Client *c);
 Group *getleader(Window leader, int group);
 void updategeom(Monitor *m);
 extern Cursor cursor[CursorLast];

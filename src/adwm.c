@@ -73,7 +73,6 @@
 #define EXTRANGE    16		/* all X11 extension event must fit in this range */
 
 /* function declarations */
-Bool canfocus(Client *c);
 void compileregs(void);
 Group *getleader(Window leader, int group);
 Client *focusforw(Client *c);
@@ -1227,7 +1226,7 @@ enternotify(XEvent *e)
 	} else if ((c = getclient(ev->window, ClientColormap))) {
 		installcolormap(event_scr, ev->window);
 		return True;
-	} else if (ev->window == event_scr->root && ev->detail == NotifyInferior) {
+	} else if (ev->window == event_scr->root && ev->detail != NotifyInferior) {
 		DPRINTF("Not focusing root\n");
 		if (sel && (WTCHECK(sel, WindowTypeDock) || sel->is.dockapp || sel->is.bastard)) {
 			focus(NULL);
@@ -1329,7 +1328,7 @@ shapenotify(XEvent *e)
 }
 #endif
 
-Bool
+static Bool
 canfocus(Client *c)
 {
 	if (c && c->prog.focus && !c->nonmodal && !c->is.banned)
@@ -1363,7 +1362,7 @@ isviewable(Client *c)
 	return True;
 }
 
-static Bool
+Bool
 selectok(Client *c)
 {
 	if (!c)
@@ -1383,7 +1382,7 @@ selectok(Client *c)
 	return True;
 }
 
-static Bool
+Bool
 focusok(Client *c)
 {
 	if (!c)
@@ -1427,8 +1426,10 @@ setfocus(Client *c)
 		XGetInputFocus(dpy, &win, &revert);
 		if (!win)
 			XSetInputFocus(dpy, PointerRoot, revert, user_time);
-	} else
-		_CPRINTF(c, "cannot set focus\n");
+	} else {
+		/* this happens often now */
+		CPRINTF(c, "cannot set focus\n");
+	}
 }
 
 static Bool
@@ -1499,6 +1500,8 @@ focuschange(XEvent *e)
 		break;
 	default:
 		if ((c = findclient(ev->window))) {
+#if 0
+			/* don't worry about giving back focus, just live with it */
 			if (gave && c != gave && canfocus(gave)) {
 				if (took != gave && !(gave->prog.focus & TAKE_FOCUS)) {
 					if (!c->leader || c->leader != gave->leader) {
@@ -1509,6 +1512,7 @@ focuschange(XEvent *e)
 					}
 				}
 			}
+#endif
 		}
 		tookfocus(c);
 		break;

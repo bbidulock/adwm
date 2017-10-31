@@ -464,6 +464,8 @@ drawdockapp(Client *c, AScreen *ds)
 		DPRINTF("Could not fill rectangle, error %d\n", status);
 	CPRINTF(c, "Filled dockapp frame %dx%d+%d+%d\n", ds->dc.w, ds->dc.h, ds->dc.x,
 		ds->dc.y);
+	/* note that ParentRelative dockapps need the background set to the foregroudn */
+	XSetWindowBackground(dpy, c->frame, pixel);
 	/* following are quite disruptive - many dockapps ignore expose events and simply
 	   update on timer */
 	// XClearWindow(dpy, c->icon ? : c->win);

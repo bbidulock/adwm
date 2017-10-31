@@ -108,6 +108,7 @@ int (*xioerrorxlib) (Display *);
 unsigned long ignore_request = 0;
 
 Bool issystray(Window win);
+void manageoverride(Window win, XWindowAttributes *wa);
 void delsystray(Window win);
 
 /* variables */
@@ -2858,8 +2859,10 @@ maprequest(XEvent *e)
 
 	if (!XGetWindowAttributes(dpy, ev->window, &wa))
 		return True;
-	if (wa.override_redirect)
+	if (wa.override_redirect) {
+		manageoverride(ev->window, &wa);
 		return True;
+	}
 	if (issystray(ev->window))
 		return True;
 	if (!(c = getclient(ev->window, ClientWindow))) {
@@ -4169,6 +4172,12 @@ issystray(Window win)
 	if (data)
 		XFree(data);
 	return ret;
+}
+
+void
+manageoverride(Window win, XWindowAttributes *wa)
+{
+	/* for when we want to manage opacity on override windows */
 }
 
 void

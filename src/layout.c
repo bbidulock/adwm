@@ -113,7 +113,6 @@ setselected(Client *c)
 		for (l = c->leaves; l; l = l->client.next)
 			for (cc = (Container *)l; (cp = cc->parent); cc = cp)
 				cp->node.children.selected = cc;
-		discardcrossing(c);
 	}
 }
 
@@ -533,7 +532,6 @@ tookfocus(Client *next)
 		}
 		reattachflist(next, True);
 	}
-	gave = next;
 	setfocused(took);
 }
 
@@ -593,7 +591,7 @@ enterclient(XEvent *e, Client *c)
 		if (!c->skip.sloppy) {
 			CPRINTF(c, "FOCUS: sloppy focus\n");
 			focus(c);
-			raiseclient(c);
+			raiseclient(c); /* probably should not do this here */
 		}
 		break;
 	}
@@ -2569,7 +2567,7 @@ stack_clients(StackContext * s, Client *c)
   * 5. Unfocused windows with both state Above and Below are treated as though
   *    Above was not set.
   */
-static void
+static Bool
 restack()
 {
 	StackContext s = { 0, };
@@ -2580,7 +2578,7 @@ restack()
 		c->breadcrumb = 0;
 	if (!s.n) {
 		ewmh_update_net_client_list_stacking();
-		return;
+		return False;
 	}
 	s.ol = ecalloc(s.n, sizeof(*s.ol));
 	s.cl = ecalloc(s.n, sizeof(*s.cl));
@@ -2709,12 +2707,13 @@ restack()
 		XRestackWindows(dpy, s.wl, s.n);
 
 		ewmh_update_net_client_list_stacking();
+		return True;
 	} else {
 		XPRINTF("%s", "No new stacking order\n");
 		free(s.wl);
 		s.wl = NULL;
+		return False;
 	}
-	discardcrossing(NULL);
 }
 
 static int
@@ -2947,7 +2946,8 @@ restack_client(Client *c, int stack_mode, Client *o)
 	default:
 		return;
 	}
-	restack();
+	if (restack())
+		discardcrossing(NULL);
 }
 
 void
@@ -2964,7 +2964,8 @@ toggleabove(Client *c)
 		return;
 	c->is.above = !c->is.above;
 	if (c->is.managed) {
-		restack();
+		if (restack())
+			discardcrossing(NULL);
 		ewmh_update_net_window_state(c);
 	}
 }
@@ -2976,7 +2977,8 @@ togglebelow(Client *c)
 		return;
 	c->is.below = !c->is.below;
 	if (c->is.managed) {
-		restack();
+		if (restack())
+			discardcrossing(NULL);
 		ewmh_update_net_window_state(c);
 	}
 }
@@ -3101,7 +3103,8 @@ raiseclient(Client *c)
 {
 	detachstack(c);
 	attachstack(c, True);
-	restack();
+	if (restack())
+		discardcrossing(NULL);
 }
 
 void
@@ -3109,7 +3112,8 @@ lowerclient(Client *c)
 {
 	detachstack(c);
 	attachstack(c, False);
-	restack();
+	if (restack())
+		discardcrossing(NULL);
 }
 
 void
@@ -3140,7 +3144,7 @@ raisefloater(Client *c)
 void
 raisetiled(Client *c)
 {
-	if (c->is.bastard || c->is.dockapp || !isfloating(c, c->cview)) {
+	if (!c->is.dockapp && (c->is.bastard || !isfloating(c, c->cview))) {
 		CPRINTF(c, "raising non-floating client on focus\n");
 		raiseclient(c);
 	}
@@ -3151,7 +3155,7 @@ lowertiled(Client *c)
 {
 #if 0
 	/* NEVER do this! */
-	if (c->is.bastard || c->is.dockapp || !isfloating(c, c->cview)) {
+	if (!c->is.dockapp && (c->is.bastard || !isfloating(c, c->cview))) {
 		CPRINTF(c, "lowering non-floating client on loss of focus\n");
 		lowerclient(c);
 	}
@@ -6222,7 +6226,8 @@ togglefull(Client *c)
 	if (c->is.managed) {
 		ewmh_update_net_window_state(c);
 		updatefloat(c, v);
-		restack();
+		if (restack())
+			discardcrossing(NULL);
 	}
 }
 
@@ -6237,7 +6242,8 @@ togglemax(Client *c)
 	if (c->is.managed) {
 		ewmh_update_net_window_state(c);
 		updatefloat(c, v);
-		restack();
+		if (restack())
+			discardcrossing(NULL);
 	}
 }
 

@@ -129,7 +129,6 @@ Bool running = True;
 Bool lockfocus = False;
 Client *focuslock = NULL;
 Client *sel;
-Client *gave;				/* gave focus last */
 Client *took;				/* took focus last */
 Group window_stack = { NULL, 0, 0 };
 
@@ -520,10 +519,6 @@ relfocus(Client *c)
 
 	if (took == c) {
 		took = NULL;
-		refocus = True;
-	}
-	if (gave == c) {
-		gave = NULL;
 		refocus = True;
 	}
 	if (sel == c) {
@@ -1403,7 +1398,9 @@ focusok(Client *c)
 static void
 setfocus(Client *c)
 {
-	if (focusok(c)) {
+	if (c == took)
+		return;
+	else if (focusok(c)) {
 		CPRINTF(c, "setting focus\n");
 		if (c->can.focus & GIVE_FOCUS)
 			XSetInputFocus(dpy, c->icon ? : c->win, RevertToPointerRoot, user_time);
@@ -1422,7 +1419,6 @@ setfocus(Client *c)
 			ce.xclient.data.l[4] = 0l;
 			XSendEvent(dpy, c->win, False, NoEventMask, &ce);
 		}
-		gave = c;
 	} else if (!c) {
 		Window win = None;
 		int revert = RevertToPointerRoot;
@@ -1484,21 +1480,33 @@ focuschange(XEvent *e)
 	XFocusChangeEvent *ev = &e->xfocus;
 	Window win = ev->window;
 	int revert = None;
-	Client *c, *n = NULL;
+	Client *c = NULL;
 
 	/* Different approach: don't force focus, just track it.  When it goes to
 	   PointerRoot or None, set it to something reasonable. */
 
+	if (ev->mode != NotifyNormal) {
+		DPRINTF("FOCUS: mode = %d != %d\n", e->xfocus.mode, NotifyNormal);
+		return True;
+	}
+	if ((c = findclient(ev->window))) {
+		if (ev->detail != NotifyInferior) {
+			DPRINTF("FOCUS: detail = %d != %d\n", e->xfocus.detail, NotifyInferior);
+			return True;
+		}
+		if (c == took && e->type == FocusOut) {
+			tookfocus(NULL);
+			return True;
+		}
+		if (c != took && e->type == FocusIn) {
+			tookfocus(c);
+			return True;
+		}
+		return True;
+	}
 	if (e->type != FocusIn)
 		return True;
-	if (e->xfocus.mode != NotifyNormal) {
-		_DPRINTF("FOCUS: mode = %d != %d\n", e->xfocus.mode, NotifyNormal);
-		return True;
-	}
-	if (e->xfocus.detail != NotifyInferior) {
-		_DPRINTF("FOCUS: detail = %d != %d\n", e->xfocus.detail, NotifyInferior);
-		return True;
-	}
+
 	XGetInputFocus(dpy, &win, &revert);
 
 	switch (win) {
@@ -1512,16 +1520,8 @@ focuschange(XEvent *e)
 		}
 		break;
 	default:
-		if ((c = findclient(ev->window)) && !focusok(c) &&
-		    (((n = took) && shouldfocus(n)) || (n = findfocus(c)))) {
-			_CPRINTF(c, "stole focus\n");
-			_CPRINTF(n, "giving back\n");
-			focus(n);
-			return True;
-		}
 		break;
 	}
-	tookfocus(c);
 	return True;
 }
 
@@ -1534,46 +1534,43 @@ focus(Client *c)
 	/* note that the client does not necessarily have to be focusable to be selected. */
 	if ((!c && scr->managed) || (c && !selectok(c)))
 		c = findselect(NULL);
-	if (sel && sel != c) {
-		XSetWindowBorder(dpy, sel->frame, scr->style.color.norm[ColBorder]);
-	}
-	if (sel) {
-		XPRINTF("Deselecting %sclient frame 0x%08lx win 0x%08lx named %s\n",
-			sel->is.bastard ? "bastard " : "",
-			sel->frame, sel->win, sel->name);
-		CPRINTF(sel, "deselecting\n");
-	}
+
+
 	sel = c;
-	if (c) {
-		XPRINTF("Selecting   %sclient frame 0x%08lx win 0x%08lx named %s\n",
-			c->is.bastard ? "bastard " : "", c->frame, c->win, c->name);
-		CPRINTF(c, "selecting\n");
-	}
+
+
 	if (!scr->managed)
 		return;
 	ewmh_update_net_active_window();
 	if (c && c != o) {
+		CPRINTF(c, "selecting\n");
 		setselected(c);
-		if (c->is.attn)
+		/* clear urgent */
+		if (c->is.attn) {
 			c->is.attn = False;
+			ewmh_update_net_window_state(c);
+		}
 		/* FIXME: why would it be otherwise if it is focusable? Also, a client
 		   could take the focus because its child window is an icon (e.g.
 		   dockapp). */
-		setclientstate(c, NormalState);
-		/* drawclient does this does it not? */
-		XSetWindowBorder(dpy, sel->frame, scr->style.color.sele[ColBorder]);
+		setclientstate(c, NormalState); /* probably does nothing */
 		drawclient(c);
-		if ((c->is.shaded && scr->options.autoroll) || WTCHECK(c, WindowTypeDock) || c->is.dockapp)
+		raisetiled(c); /* this will restack, probably when not necessary */
+		XSetWindowBorder(dpy, c->frame, scr->style.color.sele[ColBorder]);
+		if ((c->is.shaded && scr->options.autoroll))
 			arrange(c->cview);
-		raisetiled(c);
-		ewmh_update_net_window_state(c);
+		else if (o && ((WTCHECK(c, WindowTypeDock)||c->is.dockapp) != (WTCHECK(o, WindowTypeDock)||o->is.dockapp)))
+			arrange(c->cview);
 	}
-	if (o && o != sel) {
+	if (o && o != c) {
+		CPRINTF(o, "deselecting\n");
 		drawclient(o);
-		if (((o->is.shaded && scr->options.autoroll) || WTCHECK(o, WindowTypeDock) || o->is.dockapp) && isvisible(o, o->cview))
+		lowertiled(o); /* does nothing at the moment */
+		XSetWindowBorder(dpy, o->frame, scr->style.color.norm[ColBorder]);
+		if ((o->is.shaded && scr->options.autoroll))
 			arrange(o->cview);
-		lowertiled(o);
-		ewmh_update_net_window_state(o);
+		else if (c && ((WTCHECK(o, WindowTypeDock)||o->is.dockapp) != (WTCHECK(c, WindowTypeDock)||c->is.dockapp)) && o->cview != c->cview)
+			arrange(o->cview);
 	}
 	/* note that this does not necessarily change the focus */
 	setfocus(sel);
@@ -4108,6 +4105,7 @@ run(void)
 						XPRINTF("WARNING: Event %d not handled\n",
 							ev.type);
 					if (lockfocus) {
+						XSync(dpy, False);
 						discarding(focuslock);
 						lockfocus = False;
 						focuslock = NULL;

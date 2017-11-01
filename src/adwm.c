@@ -1491,6 +1491,14 @@ focuschange(XEvent *e)
 
 	if (e->type != FocusIn)
 		return True;
+	if (e->xfocus.mode != NotifyNormal) {
+		_DPRINTF("FOCUS: mode = %d != %d\n", e->xfocus.mode, NotifyNormal);
+		return True;
+	}
+	if (e->xfocus.detail != NotifyInferior) {
+		_DPRINTF("FOCUS: detail = %d != %d\n", e->xfocus.detail, NotifyInferior);
+		return True;
+	}
 	XGetInputFocus(dpy, &win, &revert);
 
 	switch (win) {
@@ -1505,7 +1513,7 @@ focuschange(XEvent *e)
 		break;
 	default:
 		if ((c = findclient(ev->window)) && !focusok(c) &&
-		    (((n = gave) && shouldfocus(n)) || (n = findfocus(c)))) {
+		    (((n = took) && shouldfocus(n)) || (n = findfocus(c)))) {
 			_CPRINTF(c, "stole focus\n");
 			_CPRINTF(n, "giving back\n");
 			focus(n);

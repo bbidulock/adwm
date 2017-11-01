@@ -420,11 +420,12 @@ setwmstate(Window win, long state, Window icon)
 }
 
 static void
-applystate(Client *c, XWMHints *wmh)
+applystate(Client *c)
 {
+	XWMHints *wmh;
 	int state = NormalState;
 
-	if (wmh && (wmh->flags & StateHint))
+	if ((wmh = XGetWMHints(dpy, c->win)) && (wmh->flags & StateHint))
 		state = wmh->initial_state;
 
 	switch (state) {
@@ -479,6 +480,8 @@ applystate(Client *c, XWMHints *wmh)
 		break;
 	}
 	c->winstate = state;
+	if (wmh)
+		XFree(wmh);
 }
 
 static void
@@ -2231,7 +2234,8 @@ killclient(Client *c)
 	if (!c)
 		return;
 	if (!c->is.killing) {
-		if (checkatom(c->win, _XA_WM_PROTOCOLS, _XA_NET_WM_PING)) {
+		if ((c->icon && checkatom(c->icon, _XA_WM_PROTOCOLS, _XA_NET_WM_PING)) ||
+				checkatom(c->win, _XA_WM_PROTOCOLS, _XA_NET_WM_PING)) {
 			if (!c->is.pinging) {
 				XEvent ev;
 
@@ -2250,7 +2254,8 @@ killclient(Client *c)
 				c->is.pinging = 1;
 			}
 		}
-		if (checkatom(c->win, _XA_WM_PROTOCOLS, _XA_WM_DELETE_WINDOW)) {
+		if ((c->icon && checkatom(c->icon, _XA_WM_PROTOCOLS, _XA_WM_DELETE_WINDOW)) ||
+				checkatom(c->win, _XA_WM_PROTOCOLS, _XA_WM_DELETE_WINDOW)) {
 			if (!c->is.closing) {
 				XEvent ev;
 
@@ -2501,10 +2506,9 @@ manage(Window w, XWindowAttributes *wa)
 	Window trans = None;
 	XWindowChanges wc = { 0, };
 	XSetWindowAttributes twa = { 0, };
-	XWMHints *wmh;
 	unsigned long mask = 0;
 	Bool focusnew = True;
-	int take_focus, depth;
+	int depth;
 	Visual *visual;
 
 	if ((c = getclient(w, ClientAny))) {
@@ -2522,8 +2526,7 @@ manage(Window w, XWindowAttributes *wa)
 	c->has.has = -1U;
 	c->needs.has = -1U;
 	c->can.can = -1U;
-	wmh = XGetWMHints(dpy, c->win);
-	applystate(c, wmh);
+	applystate(c);
 	if (c->is.dockapp)
 		c->wintype = WTFLAG(WindowTypeDock);
 	else {
@@ -2547,31 +2550,12 @@ manage(Window w, XWindowAttributes *wa)
 	c->u.h = wa->height;
 	c->u.b = wa->border_width;
 
+	updatehints(c);
 	updatesizehints(c);
 	updatetitle(c);
 	updateiconname(c);
 	applyrules(c);
 	applyatoms(c);
-
-	take_focus = checkatom(c->win, _XA_WM_PROTOCOLS, _XA_WM_TAKE_FOCUS) ? TAKE_FOCUS : 0;
-	c->can.focus = take_focus | GIVE_FOCUS;
-
-	/* FIXME: we aren't check whether the client requests to be mapped in the IconicState or
-	   NormalState here, and we should.  It appears that previous code base was simply mapping
-	   all windows in the NormalState.  This explains some ugliness.  We already filtered out
-	   WithdrawnState (the very old DontCareState) during the scan.  We should check StateHint
-	   flag and set is.icon and setwmstate() at the end of this sequence (clients use appearance
-	   of WM_STATE to indicate mapping). */
-
-	if (wmh) {
-		if (wmh->flags & InputHint)
-			c->can.focus = take_focus | (wmh->input ? GIVE_FOCUS : 0);
-		c->is.attn = (wmh->flags & XUrgencyHint) ? True : False;
-		if ((wmh->flags & WindowGroupHint) && (c->leader = wmh->window_group) != None) {
-			updategroup(c, c->leader, ClientGroup, &c->nonmodal);
-		}
-		XFree(wmh);
-	}
 
 	/* do this before transients */
 	wmh_process_win_window_hints(c);
@@ -5618,7 +5602,9 @@ updatehints(Client *c)
 	int take_focus;
 
 	take_focus =
-	    checkatom(c->win, _XA_WM_PROTOCOLS, _XA_WM_TAKE_FOCUS) ? TAKE_FOCUS : 0;
+	    ((c->icon && checkatom(c->icon, _XA_WM_PROTOCOLS, _XA_WM_TAKE_FOCUS)) ||
+	                 checkatom(c->win, _XA_WM_PROTOCOLS, _XA_WM_TAKE_FOCUS))
+	    ?  TAKE_FOCUS : 0;
 	c->can.focus = take_focus | GIVE_FOCUS;
 
 	if ((wmh = XGetWMHints(dpy, c->win))) {
@@ -5652,7 +5638,9 @@ updatesizehints(Client *c)
 	if (!XGetWMNormalHints(dpy, c->win, &size, &msize) || !size.flags)
 		size.flags = PSize;
 #else
-	if ((sh = gethints(c->win, XA_WM_NORMAL_HINTS, &n))) {
+	if (!c->icon || !(sh = gethints(c->icon, XA_WM_NORMAL_HINTS, &n)))
+		sh = gethints(c->win, XA_WM_NORMAL_HINTS, &n);
+	if (sh) {
 		//  1 flags
 		size.flags = sh[0];
 		CPRINTF(c, "got %lu words of size hints 0x%lx\n", n, size.flags);
@@ -5807,16 +5795,22 @@ updatesizehints(Client *c)
 void
 updatetitle(Client *c)
 {
-	if (!gettextprop(c->win, _XA_NET_WM_NAME, &c->name) || !c->name)
-		gettextprop(c->win, XA_WM_NAME, &c->name);
+	if ((!c->icon || !gettextprop(c->icon, _XA_NET_WM_NAME, &c->name) || !c->name) &&
+	    (!c->icon || !gettextprop(c->icon, XA_WM_NAME, &c->name) || !c->name) &&
+	    (!gettextprop(c->win, _XA_NET_WM_NAME, &c->name) || !c->name) &&
+	    (!gettextprop(c->win, XA_WM_NAME, &c->name)))
+		return;
 	ewmh_update_net_window_visible_name(c);
 }
 
 void
 updateiconname(Client *c)
 {
-	if (!gettextprop(c->win, _XA_NET_WM_ICON_NAME, &c->icon_name) || !c->name)
-		gettextprop(c->win, XA_WM_ICON_NAME, &c->icon_name);
+	if ((!c->icon || !gettextprop(c->icon, _XA_NET_WM_ICON_NAME, &c->icon_name) || !c->icon_name) &&
+	    (!c->icon || !gettextprop(c->icon, XA_WM_ICON_NAME, &c->icon_name) || !c->icon_name) &&
+	    (!gettextprop(c->win, _XA_NET_WM_ICON_NAME, &c->icon_name) || !c->icon_name) &&
+	    (!gettextprop(c->win, XA_WM_ICON_NAME, &c->icon_name)))
+		return;
 	ewmh_update_net_window_visible_icon_name(c);
 }
 

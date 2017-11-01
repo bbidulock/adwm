@@ -2531,7 +2531,8 @@ ewmh_process_net_window_sync_request_counter(Client *c)
 	unsigned long extra, nitems = 0;
 	Atom real;
 
-	if (!checkatom(c->win, _XA_WM_PROTOCOLS, _XA_NET_WM_SYNC_REQUEST))
+	if (!((c->icon && checkatom(c->icon, _XA_WM_PROTOCOLS, _XA_NET_WM_SYNC_REQUEST)) ||
+			  checkatom(c->win, _XA_WM_PROTOCOLS, _XA_NET_WM_SYNC_REQUEST)))
 		return;
 	status = XGetWindowProperty(dpy, c->win, _XA_NET_WM_SYNC_REQUEST_COUNTER, 0L, 1L,
 				    False, AnyPropertyType, &real, &format, &nitems,

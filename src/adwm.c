@@ -1484,7 +1484,7 @@ focuschange(XEvent *e)
 	XFocusChangeEvent *ev = &e->xfocus;
 	Window win = ev->window;
 	int revert = None;
-	Client *c = NULL;
+	Client *c, *n = NULL;
 
 	/* Different approach: don't force focus, just track it.  When it goes to
 	   PointerRoot or None, set it to something reasonable. */
@@ -1504,10 +1504,11 @@ focuschange(XEvent *e)
 		}
 		break;
 	default:
-		if ((c = findclient(ev->window)) && !focusok(c) && shouldfocus(gave)) {
+		if ((c = findclient(ev->window)) && !focusok(c) &&
+		    (((n = gave) && shouldfocus(n)) || (n = findfocus(c)))) {
 			_CPRINTF(c, "stole focus\n");
-			_CPRINTF(gave, "giving back\n");
-			focus(gave);
+			_CPRINTF(n, "giving back\n");
+			focus(n);
 			return True;
 		}
 		break;

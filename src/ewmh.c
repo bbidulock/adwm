@@ -174,18 +174,18 @@ char *atomnames[NATOMS] = {
 	"_OB_WM_STATE_UNDECORATED",
 
 	"_NET_WM_ALLOWED_ACTIONS",
-	"_NET_WM_ACTION_ABOVE",
-	"_NET_WM_ACTION_BELOW",
-	"_NET_WM_ACTION_CHANGE_DESKTOP",
-	"_NET_WM_ACTION_CLOSE",
-	"_NET_WM_ACTION_FULLSCREEN",
-	"_NET_WM_ACTION_MAXIMIZE_HORZ",
-	"_NET_WM_ACTION_MAXIMIZE_VERT",
-	"_NET_WM_ACTION_MINIMIZE",
 	"_NET_WM_ACTION_MOVE",
 	"_NET_WM_ACTION_RESIZE",
+	"_NET_WM_ACTION_MINIMIZE",
 	"_NET_WM_ACTION_SHADE",
 	"_NET_WM_ACTION_STICK",
+	"_NET_WM_ACTION_MAXIMIZE_HORZ",
+	"_NET_WM_ACTION_MAXIMIZE_VERT",
+	"_NET_WM_ACTION_FULLSCREEN",
+	"_NET_WM_ACTION_CHANGE_DESKTOP",
+	"_NET_WM_ACTION_CLOSE",
+	"_NET_WM_ACTION_ABOVE",
+	"_NET_WM_ACTION_BELOW",
 	"_NET_WM_ACTION_FLOAT",
 	"_NET_WM_ACTION_FILL",
 	"_NET_WM_ACTION_MAXIMUS_LEFT",
@@ -1495,6 +1495,9 @@ getmwmhints(Window win, Bool *title, Bool *grips, int *border)
 #define WIN_LAYER_ABOVE_DOCK  10 /* window with _NET_WM_STATE_ABOVE */
 #define WIN_LAYER_MENU        12 /* focused windows with _NET_WM_STATE_FULLSCREEN */
 
+#define WIN_LAYER_FULLSCREEN  14 /* hack */
+#define WIN_LAYER_ABOVE_ALL   15 /* for taskbar autohide */
+
 unsigned long
 get_layer(Client *c)
 {
@@ -1505,12 +1508,14 @@ get_layer(Client *c)
 	else if (WTCHECK(c, WindowTypeDesk))
 		layer = WIN_LAYER_DESKTOP;
 	else if (sel == c && c->is.full)
-		layer = WIN_LAYER_ABOVE_DOCK;
+		layer = WIN_LAYER_FULLSCREEN;
 	else if (sel && ((sel->is.dockapp && c->is.dockapp)
 			 || (WTCHECK(sel, WindowTypeDock) && sel == c)))
+		layer = WIN_LAYER_ABOVE_ALL;
+	else if (WTCHECK(c, WindowTypeDock) && !c->is.below)
 		layer = WIN_LAYER_DOCK;
-	else if ((WTCHECK(c, WindowTypeDock) && !c->is.below) || c->is.above)
-		layer = WIN_LAYER_ONTOP;
+	else if (c->is.above)
+		layer = WIN_LAYER_ABOVE_DOCK;
 	else if (!WTCHECK(c, WindowTypeDock) && !c->is.below)
 		layer = WIN_LAYER_NORMAL;
 	else
@@ -1600,9 +1605,26 @@ ewmh_update_net_window_actions(Client *c)
 #define WIN_STATE_HID_TRANSIENT   (1<< 7)	/* owner of transient is hidden */
 #define WIN_STATE_FIXED_POSITION  (1<< 8)	/* window is fixed in position even */
 #define WIN_STATE_ARRANGE_IGNORE  (1<< 9)	/* ignore for auto arranging */
-#define WIN_STATE_MAXIMUS_LEFT    (1<<10)	/* window is maximus L state */
-#define WIN_STATE_MAXIMUS_RIGHT   (1<<11)	/* window is maximus R state */
-#define WIN_STATE_UNDECORATED	  (1<<12)	/* window is undecorated */
+
+#define WIN_STATE_FILLED	  (1<<13)	/* window fills available space */
+#define WIN_STATE_MAXIMUS_LEFT    (1<<14)	/* window is maximus L state */
+#define WIN_STATE_MAXIMUS_RIGHT   (1<<15)	/* window is maximus R state */
+#define WIN_STATE_UNDECORATED	  (1<<16)	/* window is undecorated */
+
+/* additionals from IceWM */
+
+#define WIN_STATE_FOCUSED	  (1<<21)	/* has the focus */
+#define WIN_STATE_URGENT	  (1<<22)	/* demands attention */
+#define WIN_STATE_SKIP_PAGER	  (1<<23)	/* skip pager */
+#define WIN_STATE_SKIP_TASKBAR	  (1<<24)	/* skip taskbar */
+#define WIN_STATE_MODAL		  (1<<25)	/* modal */
+#define WIN_STATE_BELOW		  (1<<26)	/* below layer */
+#define WIN_STATE_ABOVE		  (1<<27)	/* above layer */
+#define WIN_STATE_FULLSCREEN	  (1<<28)	/* fullscreen (no layout limits) */
+#define WIN_STATE_WAS_HIDDEN	  (1<<29)	/* was hidden when parent minimized/hidden */
+#define WIN_STATE_WAS_MINIMIZED	  (1<<30)	/* was minimized when parent minimized/hidden */
+#define WIN_STATE_WITHDRAWN	  (1<<31)	/* managed, but not available to user */
+
 
 void
 ewmh_update_net_window_state(Client *c)
@@ -1683,10 +1705,40 @@ ewmh_update_net_window_state(Client *c)
 		state |= WIN_STATE_FIXED_POSITION;
 	if (c->skip.arrange || c->is.floater)
 		state |= WIN_STATE_ARRANGE_IGNORE;
+	/* the following are ADWM specific extensions */
+	if (c->is.fill)
+		state |= WIN_STATE_FILLED;
 	if (c->is.lhalf)
 		state |= WIN_STATE_MAXIMUS_LEFT;
 	if (c->is.rhalf)
 		state |= WIN_STATE_MAXIMUS_RIGHT;
+	if (c->is.undec)
+		state |= WIN_STATE_UNDECORATED;
+	/* the following are IceWM specific extensions */
+	if (c->is.focused)
+		state |= WIN_STATE_FOCUSED;
+	if (c->is.attn)
+		state |= WIN_STATE_URGENT;
+	if (c->skip.pager)
+		state |= WIN_STATE_SKIP_PAGER;
+	if (c->skip.taskbar)
+		state |= WIN_STATE_SKIP_TASKBAR;
+	if (c->is.modal)
+		state |= WIN_STATE_MODAL;
+	if (c->is.below)
+		state |= WIN_STATE_BELOW;
+	if (c->is.above)
+		state |= WIN_STATE_ABOVE;
+	if (c->is.full)
+		state |= WIN_STATE_FULLSCREEN;
+#if 0
+	if (c->was.hidden)
+		state |= WIN_STATE_WAS_HIDDEN;
+	if (c->was.icon)
+		state |= WIN_STATE_WAS_MINIMIZED;
+#endif
+	if (c->is.dockapp)
+		state |= WIN_STATE_WITHDRAWN;
 
 	XChangeProperty(dpy, c->win, _XA_WIN_STATE, XA_CARDINAL, 32,
 			PropModeReplace, (unsigned char *) &state, 1);
@@ -1744,6 +1796,14 @@ wmh_process_state_mask(Client *c, unsigned int mask, unsigned int change)
 		    (!(change & WIN_STATE_ARRANGE_IGNORE) && c->skip.arrange))
 			if (c->user.arrange)
 				togglefloating(c);
+	/* the following are ADWM specific extensions */
+	if (mask & WIN_STATE_FILLED)
+		if (((change & WIN_STATE_FILLED) && !c->is.fill) ||
+		    (!(change & WIN_STATE_FILLED) && c->is.fill)) {
+			if (c->user.fill)
+				togglefill(c);
+			arrange(NULL);
+		}
 	if (mask & WIN_STATE_MAXIMUS_LEFT)
 		if (((change & WIN_STATE_MAXIMUS_LEFT) && !c->is.lhalf) ||
 		    (!(change & WIN_STATE_MAXIMUS_LEFT) && c->is.lhalf)) {
@@ -1758,6 +1818,67 @@ wmh_process_state_mask(Client *c, unsigned int mask, unsigned int change)
 				togglerhalf(c);
 			arrange(NULL);
 		}
+	if (mask & WIN_STATE_UNDECORATED)
+		if (((change & WIN_STATE_UNDECORATED) && !c->is.undec) ||
+		    (!(change & WIN_STATE_UNDECORATED) && c->is.undec)) {
+			if (c->user.undec)
+				toggleundec(c);
+			arrange(NULL);
+		}
+	/* the following are IceWM specific extensions */
+	if (mask & WIN_STATE_FOCUSED) {
+		/* read-only */
+	}
+	if (mask & WIN_STATE_URGENT) {
+		/* read-only */
+	}
+	if (mask & WIN_STATE_SKIP_PAGER)
+		if (((change & WIN_STATE_SKIP_PAGER) && !c->skip.pager) ||
+		    (!(change & WIN_STATE_SKIP_PAGER) && c->skip.pager)) {
+			togglepager(c);
+			arrange(NULL);
+		}
+	if (mask & WIN_STATE_SKIP_TASKBAR)
+		if (((change & WIN_STATE_SKIP_TASKBAR) && !c->skip.taskbar) ||
+		    (!(change & WIN_STATE_SKIP_TASKBAR) && c->skip.taskbar)) {
+			toggletaskbar(c);
+			arrange(NULL);
+		}
+	if (mask & WIN_STATE_MODAL) {
+		/* read-only */
+	}
+	if (mask & WIN_STATE_BELOW)
+		if (((change & WIN_STATE_BELOW) && !c->is.below) ||
+		    (!(change & WIN_STATE_BELOW) && c->is.below)) {
+			if (c->user.below)
+				togglebelow(c);
+			arrange(NULL);
+		}
+	if (mask & WIN_STATE_ABOVE)
+		if (((change & WIN_STATE_ABOVE) && !c->is.above) ||
+		    (!(change & WIN_STATE_ABOVE) && c->is.above)) {
+			if (c->user.above)
+				toggleabove(c);
+			arrange(NULL);
+		}
+	if (mask & WIN_STATE_FULLSCREEN)
+		if (((change & WIN_STATE_FULLSCREEN) && !c->is.full) ||
+		    (!(change & WIN_STATE_FULLSCREEN) && c->is.full)) {
+			if (c->user.full)
+				togglefull(c);
+			arrange(NULL);
+		}
+#if 0
+	if (mask & WIN_STATE_WAS_HIDDEN) {
+		/* read-only */
+	}
+	if (mask & WIN_STATE_WAS_MINIMIZED) {
+		/* read-only */
+	}
+#endif
+	if (mask & WIN_STATE_WITHDRAWN) {
+		/* read-only */
+	}
 }
 
 void
@@ -2271,6 +2392,11 @@ Atom *getatom(Window win, Atom atom, unsigned long *nitems);
 #define WIN_HINTS_GROUP_TRANSIENT (1<<3)	/* Reserved - definition is unclear */
 #define WIN_HINTS_FOCUS_ON_CLICK  (1<<4)	/* app only accepts focus if clicked */
 
+/* additional from IceWM */
+
+#define WIN_HINTS_DO_NOT_COVER	  (1<<5)	/* attempt not to cover this window */
+#define WIN_HINTS_DOCK_HORIZONTAL (1<<6)	/* docked horizontally */
+
 void
 wmh_process_win_window_hints(Client *c)
 {
@@ -2288,6 +2414,8 @@ wmh_process_win_window_hints(Client *c)
 		    (state[0] & WIN_HINTS_FOCUS_ON_CLICK) ? True : c->skip.sloppy;
 		c->is.grptrans =
 		    (state[0] & WIN_HINTS_GROUP_TRANSIENT) ? True : c->is.grptrans;
+		c->is.above =
+		    (state[0] & WIN_HINTS_DO_NOT_COVER) ? True : c->is.above;
 		XFree(state);
 	}
 }
@@ -2324,8 +2452,8 @@ wmh_process_layer(Client *c, unsigned int layer)
 		break;
 	case 9:
 	case WIN_LAYER_ABOVE_DOCK:
-		if (!c->is.full)
-			togglefull(c);
+		if (!c->is.above)
+			toggleabove(c);
 		break;
 	case 11:
 	case WIN_LAYER_MENU:
@@ -2335,6 +2463,11 @@ wmh_process_layer(Client *c, unsigned int layer)
 			c->wintype |= WTFLAG(WindowTypeToolbar);
 		break;
 	case 13:
+	case WIN_LAYER_FULLSCREEN:
+		if (!c->is.full)
+			togglefull(c);
+		break;
+	case WIN_LAYER_ABOVE_ALL:
 	default:
 		c->wintype |= WTFLAG(WindowTypePopup);
 		break;
@@ -3075,6 +3208,8 @@ getwintype(Window win)
 			ret |= WTFLAG(WindowTypeMenu);
 			break;
 		case 13:
+		case WIN_LAYER_FULLSCREEN:
+		case WIN_LAYER_ABOVE_ALL:
 		default:
 			ret |= WTFLAG(WindowTypePopup);
 			break;

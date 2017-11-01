@@ -63,11 +63,11 @@ enum {
 	WindowStateHidden, WindowStateFs, WindowStateAbove, WindowStateBelow,
 	WindowStateAttn, WindowStateFocused, WindowStateFixed, WindowStateFloating,
 	WindowStateFilled, WindowStateMaxL, WindowStateMaxR, WindowStateUndec,
-	WindowActions, WindowActionAbove, WindowActionBelow, WindowActionChangeDesk,
-	WindowActionClose, WindowActionFs, WindowActionMaxH, WindowActionMaxV,
-	WindowActionMin, WindowActionMove, WindowActionResize, WindowActionShade,
-	WindowActionStick, WindowActionFloat, WindowActionFill, WindowActionMaxL,
-	WindowActionMaxR, WindowActionUndec,
+	WindowActions, WindowActionMove, WindowActionResize, WindowActionMin,
+	WindowActionShade, WindowActionStick, WindowActionMaxH, WindowActionMaxV,
+	WindowActionFs, WindowActionChangeDesk, WindowActionClose,
+	WindowActionAbove, WindowActionBelow, WindowActionFloat, WindowActionFill,
+	WindowActionMaxL, WindowActionMaxR, WindowActionUndec,
 	WMCheck, CloseWindow, WindowPing, Supported,
 	SystemTrayWindows, WindowFrameStrut, WindowForSysTray, WindowTypeOverride,
 	KdeSplashProgress, WindowChangeState,
@@ -226,18 +226,18 @@ enum {
 #define _XA_OB_WM_STATE_UNDECORATED		atom[WindowStateUndec]
 
 #define _XA_NET_WM_ALLOWED_ACTIONS		atom[WindowActions]
-#define _XA_NET_WM_ACTION_ABOVE			atom[WindowActionAbove]
-#define _XA_NET_WM_ACTION_BELOW			atom[WindowActionBelow]
-#define _XA_NET_WM_ACTION_CHANGE_DESKTOP	atom[WindowActionChangeDesk]
-#define _XA_NET_WM_ACTION_CLOSE			atom[WindowActionClose]
-#define _XA_NET_WM_ACTION_FULLSCREEN		atom[WindowActionFs]
-#define _XA_NET_WM_ACTION_MAXIMIZE_HORZ		atom[WindowActionMaxH]
-#define _XA_NET_WM_ACTION_MAXIMIZE_VERT		atom[WindowActionMaxV]
-#define _XA_NET_WM_ACTION_MINIMIZE		atom[WindowActionMin]
 #define _XA_NET_WM_ACTION_MOVE			atom[WindowActionMove]
 #define _XA_NET_WM_ACTION_RESIZE		atom[WindowActionResize]
+#define _XA_NET_WM_ACTION_MINIMIZE		atom[WindowActionMin]
 #define _XA_NET_WM_ACTION_SHADE			atom[WindowActionShade]
 #define _XA_NET_WM_ACTION_STICK			atom[WindowActionStick]
+#define _XA_NET_WM_ACTION_MAXIMIZE_HORZ		atom[WindowActionMaxH]
+#define _XA_NET_WM_ACTION_MAXIMIZE_VERT		atom[WindowActionMaxV]
+#define _XA_NET_WM_ACTION_FULLSCREEN		atom[WindowActionFs]
+#define _XA_NET_WM_ACTION_CHANGE_DESKTOP	atom[WindowActionChangeDesk]
+#define _XA_NET_WM_ACTION_CLOSE			atom[WindowActionClose]
+#define _XA_NET_WM_ACTION_ABOVE			atom[WindowActionAbove]
+#define _XA_NET_WM_ACTION_BELOW			atom[WindowActionBelow]
 #define _XA_NET_WM_ACTION_FLOAT			atom[WindowActionFloat]
 #define _XA_NET_WM_ACTION_FILL			atom[WindowActionFill]
 #define _XA_NET_WM_ACTION_MAXIMUS_LEFT		atom[WindowActionMaxL]

@@ -58,6 +58,8 @@ Section 5: Session Management
 EWMH Compliance: Version 1.5 Draft 1
 See http://www.freedesktop.org/Standards/wm-spec
 
+ *   ADWM  specific extension
+
 Section 3: Root Window Properties (and Related Messages)
 
 _NET_SUPPORTED:				supported
@@ -77,14 +79,14 @@ _NET_SHOWING_DESKTOP:			supported
 
  Extensions:
 
-_NET_DESKTOP_MODES			supported
-	_NET_DESKTOP_MODE_FLOATING	supported
-	_NET_DESKTOP_MODE_TILED		supported
-	_NET_DESKTOP_MODE_BOTTOM_TILE	supported
-	_NET_DESKTOP_MODE_MONOCLE	supported
-	_NET_DESKTOP_MODE_TOP_TILED	supported
-	_NET_DESKTOP_MODE_LEFT_TILED	supported
-	_NET_DESKTOP_MODE_GRID		supported
+_NET_DESKTOP_MODES:*			supported
+	_NET_DESKTOP_MODE_FLOATING:*	    supported
+	_NET_DESKTOP_MODE_TILED:*	    supported
+	_NET_DESKTOP_MODE_BOTTOM_TILE:*	    supported
+	_NET_DESKTOP_MODE_MONOCLE:*	    supported
+	_NET_DESKTOP_MODE_TOP_TILED:*	    supported
+	_NET_DESKTOP_MODE_LEFT_TILED:*	    supported
+	_NET_DESKTOP_MODE_GRID:*	    supported
 
 
 Section 4: Other Root Window Messages
@@ -124,14 +126,20 @@ _NET_WM_STATE:				supported
 	_NET_WM_STATE_MAXIMIZED_VERT:	    supported
 	_NET_WM_STATE_MAXIMIZED_HORZ:	    supported
 	_NET_WM_STATE_SHADED:		    supported
-	_NET_WM_STATE_SKIP_TASKBAR:	    supported (trivial)
-	_NET_WM_STATE_SKIP_PAGER:	    supported (trivial)
+	_NET_WM_STATE_SKIP_TASKBAR:	    supported
+	_NET_WM_STATE_SKIP_PAGER:	    supported
 	_NET_WM_STATE_HIDDEN:		    supported
 	_NET_WM_STATE_FULLSCREEN:	    supported
 	_NET_WM_STATE_ABOVE:		    supported
 	_NET_WM_STATE_BELOW:		    supported
 	_NET_WM_STATE_DEMANDS_ATTENTION:    supported
 	_NET_WM_STATE_FOCUSED:		    supported
+	*_NET_WM_STATE_FIXED:		    supported
+	*_NET_WM_STATE_FLOATING:	    supported
+	*_NET_WM_STATE_FILLED:		    supported
+	*_NET_WM_STATE_MAXIMUS_LEFT:	    supported
+	*_NET_WM_STATE_MAXIMUS_RIGHT:	    supported
+	**_OB_WM_STATE_UNDECORATED:	    supported
 _NET_WM_ALLOWED_ACTIONS:		supported
 	_NET_WM_ACTION_MOVE:		    supported
 	_NET_WM_ACTION_RESIZE:		    supported
@@ -145,6 +153,11 @@ _NET_WM_ALLOWED_ACTIONS:		supported
 	_NET_WM_ACTION_CLOSE:		    supported
 	_NET_WM_ACTION_ABOVE:		    supported
 	_NET_WM_ACTION_BELOW:		    supported
+	*_NET_WM_ACTION_FLOAT:		    supported
+	*_NET_WM_ACTION_FILL:		    supported
+	*_NET_WM_ACTION_MAXIMUS_LEFT:	    supported
+	*_NET_WM_ACTION_MAXIMUS_RIGHT:	    supported
+	**_OB_WM_ACTION_UNDECORATE:	    supported
 _NET_WM_STRUT:				supported
 _NET_WM_STRUT_PARTIAL:			supported
 _NET_WM_ICON_GEOMETRY:			NOT supported (n/a)
@@ -154,8 +167,8 @@ _NET_WM_HANDLED_ICONS:			supported (trivial)
 _NET_WM_USER_TIME:			supported
 _NET_WM_USER_TIME_WINDOW:		supported
 _NET_FRAME_EXTENTS:			supported
-_NET_WM_OPAQUE_REGION:			NOT supported (n/a)
-_NET_WM_BYPASS_COMPOSITOR:		NOT supported (n/a)
+_NET_WM_OPAQUE_REGION:			NOT supported
+_NET_WM_BYPASS_COMPOSITOR:		NOT supported
 
 Section 6: Window Manager Protocols
 
@@ -163,7 +176,7 @@ _NET_WM_PING:				supported
 _NET_WM_SYNC_REQUEST:			supported
 _NET_WM_SYNC_REQUEST_COUNTER:		supported
 _NET_WM_FULLSCREEN_MONITORS:		supported
-_NET_WM_FULL_PLACEMENT:			NOT supported (n/a)
+_NET_WM_FULL_PLACEMENT:			NOT supported
 
 Other specifications:
 
@@ -242,6 +255,10 @@ _KDE_WM_CHANGE_STATE:			supported
 
 GNOME/WMH WinWM:
 
+Notes:
+ *   ADWM  specific extension
+ **  IceWM specific extension
+
 1.1 Detection of GNOME compliant window manager
 
 _WIN_SUPPORTING_WM_CHECK		supported
@@ -263,15 +280,90 @@ _WIN_WORKSPACE_NAMES			supported
 2.1 Initial properties set on client window
 
 _WIN_LAYER				supported
+	WIN_LAYER_DESKTOP(0):		    supported
+	WIN_LAYER_BELOW(2):		    supported
+	WIN_LAYER_NORMAL(4):		    supported
+	WIN_LAYER_ONTOP(6):		    supported
+	WIN_LAYER_DOCK(8):		    supported
+	WIN_LAYER_ABOVE_DOCK(10):	    supported
+	WIN_LAYER_MENU(12):		    supported
+	WIN_LAYER_FULLSCREEN(14):	**  NOT supported (indirectly)
+	WIN_LAYER_ABOVE_ALL(15):	**  NOT supported (indirectly)
 _WIN_STATE				supported
+	WIN_STATE_STICKY:		    supported
+	WIN_STATE_MINIMIZED:		    supported
+	WIN_STATE_MAXIMIZED_VERT:	    supported
+	WIN_STATE_MAXIMIZED_HORIZ:	    supported
+	WIN_STATE_HIDDEN:		    supported
+	WIN_STATE_SHADED:		    supported
+	WIN_STATE_HID_WORKSPACE:	    supported
+	WIN_STATE_HID_TRANSIENT:	    supported
+	WIN_STATE_FIXED_POSITION:	    supported
+	WIN_STATE_ARRANGE_IGNORE:	    supported
+	WIN_STATE_FILLED:		*   supported
+	WIN_STATE_MAXIMUS_LEFT:		*   supported
+	WIN_STATE_MAXIMUS_RIGHT:	*   supported
+	WIN_STATE_UNDECORATED:		*   supported
+	WIN_STATE_FOCUSED:		**  supported
+	WIN_STATE_URGENT:		**  supported
+	WIN_STATE_SKIP_PAGER:		**  supported
+	WIN_STATE_SKIP_TASKBAR:		**  supported
+	WIN_STATE_MODAL:		**  supported
+	WIN_STATE_BELOW:		**  supported
+	WIN_STATE_ABOVE:		**  supported
+	WIN_STATE_FULLSCREEN:		**  supported
+	WIN_STATE_WAS_HIDDEN:		**  NOT supported
+	WIN_STATE_WAS_MINIMIZED:	**  NOT supported
+	WIN_STATE_WITHDRAWN:		**  supported
 _WIN_WORKSPACE				supported
 _WIN_EXPANDED_SIZE			supported
 _WIN_HINTS				supported
+	WIN_HINTS_SKIP_FOCUS		    supported
+	WIN_HINTS_SKIP_WINLIST		    supported
+	WIN_HINTS_SKIP_TASKBAR		    supported
+	WIN_HINTS_GROUP_TRANSIENT	    supported (trivial)
+	WIN_HINTS_FOCUS_ON_CLICK	    supported
+	WIN_HINTS_DO_NOT_COVER		**  supported
+	WIN_HINTS_DOCK_HORIZONTAL	**  NOT supported
 
 2.2 State change requests
 
 _WIN_LAYER				supported
+	WIN_LAYER_DESKTOP(0):		    supported
+	WIN_LAYER_BELOW(2):		    supported
+	WIN_LAYER_NORMAL(4):		    supported
+	WIN_LAYER_ONTOP(6):		    supported
+	WIN_LAYER_DOCK(8):		    supported
+	WIN_LAYER_ABOVE_DOCK(10):	    supported
+	WIN_LAYER_MENU(12):		    supported
+	WIN_LAYER_FULLSCREEN(14):	**  NOT supported (indirectly)
+	WIN_LAYER_ABOVE_ALL(15):	**  NOT supported (indirectly)
 _WIN_STATE				supported
+	WIN_STATE_STICKY:		    supported
+	WIN_STATE_MINIMIZED:		    supported
+	WIN_STATE_MAXIMIZED_VERT:	    supported
+	WIN_STATE_MAXIMIZED_HORIZ:	    supported
+	WIN_STATE_HIDDEN:		    supported
+	WIN_STATE_SHADED:		    supported
+	WIN_STATE_HID_WORKSPACE:	    supported
+	WIN_STATE_HID_TRANSIENT:	    supported
+	WIN_STATE_FIXED_POSITION:	    supported
+	WIN_STATE_ARRANGE_IGNORE:	    supported
+	WIN_STATE_FILLED:		*   supported
+	WIN_STATE_MAXIMUS_LEFT:		*   supported
+	WIN_STATE_MAXIMUS_RIGHT:	*   supported
+	WIN_STATE_UNDECORATED:		*   supported
+	WIN_STATE_FOCUSED:		**  supported
+	WIN_STATE_URGENT:		**  supported
+	WIN_STATE_SKIP_PAGER:		**  supported
+	WIN_STATE_SKIP_TASKBAR:		**  supported
+	WIN_STATE_MODAL:		**  supported
+	WIN_STATE_BELOW:		**  supported
+	WIN_STATE_ABOVE:		**  supported
+	WIN_STATE_FULLSCREEN:		**  supported
+	WIN_STATE_WAS_HIDDEN:		**  NOT supported
+	WIN_STATE_WAS_MINIMIZED:	**  NOT supported
+	WIN_STATE_WITHDRAWN:		**  supported
 _WIN_WORKSPACE				supported
 
 3.1 Button press and release forwarding for the desktop window.

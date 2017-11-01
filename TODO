@@ -94,6 +94,8 @@ Behaviour:
 * [x] support WM_COLORMAP_{WINDOWS,NOTIFY}
 * [ ] get keyboard-based move working
 * [ ] get keyboard-based resize working
-
+* [ ] support _NET_WM_FULL_PLACEMENT
+* [ ] support _NET_WM_OPAQUE_REGION
+* [ ] support _NET_WM_BYPASS_COMPOSITOR
 
 // vim: set ft=asciidoc tw=72 nocin nosi fo+=tcqlorn spell:

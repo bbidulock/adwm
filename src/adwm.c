@@ -1484,7 +1484,7 @@ focuschange(XEvent *e)
 	XFocusChangeEvent *ev = &e->xfocus;
 	Window win = ev->window;
 	int revert = None;
-	Client *c;
+	Client *c = NULL;
 
 	/* Different approach: don't force focus, just track it.  When it goes to
 	   PointerRoot or None, set it to something reasonable. */
@@ -1495,32 +1495,24 @@ focuschange(XEvent *e)
 
 	switch (win) {
 	case None:
+		setfocus(NULL);
+		/* fall through */
 	case PointerRoot:
-		DPRINTF("trying to focus something else\n");
-		if ((c = findfocus(took)))
+		if ((c = findfocus(took))) {
 			focus(c);
-		else if (!win)
-			setfocus(NULL);
+			return True;
+		}
 		break;
 	default:
-		if ((c = findclient(ev->window))) {
-#if 0
-			/* don't worry about giving back focus, just live with it */
-			if (gave && c != gave && canfocus(gave)) {
-				if (took != gave && !(gave->prog.focus & TAKE_FOCUS)) {
-					if (!c->leader || c->leader != gave->leader) {
-						_CPRINTF(c, "stole focus\n");
-						_CPRINTF(gave, "giving back focus\n");
-						focus(gave);
-						return True;
-					}
-				}
-			}
-#endif
+		if ((c = findclient(ev->window)) && !focusok(c) && shouldfocus(gave)) {
+			_CPRINTF(c, "stole focus\n");
+			_CPRINTF(gave, "giving back\n");
+			focus(gave);
+			return True;
 		}
-		tookfocus(c);
 		break;
 	}
+	tookfocus(c);
 	return True;
 }
 

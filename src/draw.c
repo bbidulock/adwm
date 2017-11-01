@@ -55,61 +55,61 @@ buttonimage(AScreen *ds, Client *c, ElementType type)
 		name = "iconify";
 		present = c->has.but.min;
 		toggled = False;
-		enabled = c->user.min;
+		enabled = c->can.min;
 		break;
 	case MaximizeBtn:
 		name = "maximize";
 		present = c->has.but.max;
 		toggled = c->is.max || c->is.maxv || c->is.maxh || c->is.full;
-		enabled = c->user.max || c->user.maxv || c->user.maxh || c->user.full;
+		enabled = c->can.max || c->can.maxv || c->can.maxh || c->can.full;
 		break;
 	case CloseBtn:
 		name = "close";
 		present = c->has.but.close;
 		toggled = c->is.closing || c->is.killing;
-		enabled = c->user.close;
+		enabled = c->can.close;
 		break;
 	case ShadeBtn:
 		name = "shade";
 		present = c->has.but.shade;
 		toggled = c->is.shaded;
-		enabled = c->user.shade;
+		enabled = c->can.shade;
 		break;
 	case StickBtn:
 		name = "stick";
 		present = c->has.but.stick;
 		toggled = c->is.sticky;
-		enabled = c->user.stick;
+		enabled = c->can.stick;
 		break;
 	case LHalfBtn:
 		name = "lhalf";
 		present = c->has.but.half;
 		toggled = c->is.lhalf;
-		enabled = c->user.size && c->user.move;
+		enabled = c->can.size && c->can.move;
 		break;
 	case RHalfBtn:
 		name = "rhalf";
 		present = c->has.but.half;
 		toggled = c->is.rhalf;
-		enabled = c->user.size && c->user.move;
+		enabled = c->can.size && c->can.move;
 		break;
 	case FillBtn:
 		name = "fill";
 		present = c->has.but.fill;
 		toggled = c->is.fill;
-		enabled = c->user.fill || c->user.fillh || c->user.fillv;
+		enabled = c->can.fill || c->can.fillh || c->can.fillv;
 		break;
 	case FloatBtn:
 		name = "float";
 		present = c->has.but.floats;
 		toggled = c->is.floater || c->skip.arrange;
-		enabled = c->user.floats || c->user.arrange;
+		enabled = c->can.floats || c->can.arrange;
 		break;
 	case SizeBtn:
 		name = "resize";
 		present = c->has.but.size;
 		toggled = c->is.moveresize;
-		enabled = c->user.size || c->user.sizev || c->user.sizeh;
+		enabled = c->can.size || c->can.sizev || c->can.sizeh;
 		break;
 	default:
 		name = "unknown";
@@ -742,7 +742,7 @@ b_menu(Client *c, XEvent *ev)
 static Bool
 b_min(Client *c, XEvent *ev)
 {
-	if (!c->user.min)
+	if (!c->can.min)
 		return False;
 	switch (ev->xbutton.button) {
 	case Button1:
@@ -765,15 +765,15 @@ b_max(Client *c, XEvent *ev)
 {
 	switch (ev->xbutton.button) {
 	case Button1:
-		if (c->user.max || (c->user.size && c->user.move))
+		if (c->can.max || (c->can.size && c->can.move))
 			togglemax(c);
 		break;
 	case Button2:
-		if (c->user.maxv || ((c->user.size || c->user.sizev) && c->user.move))
+		if (c->can.maxv || ((c->can.size || c->can.sizev) && c->can.move))
 			togglemaxv(c);
 		break;
 	case Button3:
-		if (c->user.maxh || ((c->user.size || c->user.sizeh) && c->user.move))
+		if (c->can.maxh || ((c->can.size || c->can.sizeh) && c->can.move))
 			togglemaxh(c);
 		break;
 	default:
@@ -785,7 +785,7 @@ b_max(Client *c, XEvent *ev)
 static Bool
 b_close(Client *c, XEvent *ev)
 {
-	if (!c->user.close)
+	if (!c->can.close)
 		return False;
 	switch (ev->xbutton.button) {
 	case Button1:
@@ -806,7 +806,7 @@ b_close(Client *c, XEvent *ev)
 static Bool
 b_shade(Client *c, XEvent *ev)
 {
-	if (!c->user.shade)
+	if (!c->can.shade)
 		return False;
 	switch (ev->xbutton.button) {
 	case Button1:
@@ -829,7 +829,7 @@ b_shade(Client *c, XEvent *ev)
 static Bool
 b_stick(Client *c, XEvent *ev)
 {
-	if (!c->user.stick)
+	if (!c->can.stick)
 		return False;
 	switch (ev->xbutton.button) {
 	case Button1:
@@ -852,7 +852,7 @@ b_stick(Client *c, XEvent *ev)
 static Bool
 b_lhalf(Client *c, XEvent *ev)
 {
-	if (!c->user.move || !c->user.size)
+	if (!c->can.move || !c->can.size)
 		return False;
 	switch (ev->xbutton.button) {
 	case Button1:
@@ -875,7 +875,7 @@ b_lhalf(Client *c, XEvent *ev)
 static Bool
 b_rhalf(Client *c, XEvent *ev)
 {
-	if (!c->user.move || !c->user.size)
+	if (!c->can.move || !c->can.size)
 		return False;
 	switch (ev->xbutton.button) {
 	case Button1:
@@ -898,7 +898,7 @@ b_rhalf(Client *c, XEvent *ev)
 static Bool
 b_fill(Client *c, XEvent *ev)
 {
-	if (!c->user.fill)
+	if (!c->can.fill)
 		return False;
 	switch (ev->xbutton.button) {
 	case Button1:
@@ -942,7 +942,7 @@ b_float(Client *c, XEvent *ev)
 static Bool
 b_resize(Client *c, XEvent *ev)
 {
-	if (!c->user.size)
+	if (!c->can.size)
 		return False;
 	return m_resize(c, ev);
 }

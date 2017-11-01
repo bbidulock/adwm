@@ -860,7 +860,7 @@ struct Client {
 	HasUnion has;
 	HasUnion needs;
 	WithUnion with;
-	CanUnion prog, user;
+	CanUnion can;
 	View *cview;
 	Leaf *leaves;
 	Client *next;

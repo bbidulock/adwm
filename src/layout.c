@@ -2960,7 +2960,7 @@ restack_belowif(Client *c, Client *o)
 void
 toggleabove(Client *c)
 {
-	if (!c || (!c->prog.above && c->is.managed))
+	if (!c || (!c->can.above && c->is.managed))
 		return;
 	c->is.above = !c->is.above;
 	if (c->is.managed) {
@@ -2972,7 +2972,7 @@ toggleabove(Client *c)
 void
 togglebelow(Client *c)
 {
-	if (!c || (!c->prog.below && c->is.managed))
+	if (!c || (!c->can.below && c->is.managed))
 		return;
 	c->is.below = !c->is.below;
 	if (c->is.managed) {
@@ -3423,9 +3423,9 @@ findcorner_size(Client *c, int x_root, int y_root)
 		/* top */
 		if (x_root < cx) {
 			/* top-left */
-			if (!c->user.sizev)
+			if (!c->can.sizev)
 				from = CursorLeft;
-			else if (!c->user.sizeh)
+			else if (!c->can.sizeh)
 				from = CursorTop;
 			else {
 				if (dx < dy * 0.4) {
@@ -3438,9 +3438,9 @@ findcorner_size(Client *c, int x_root, int y_root)
 			}
 		} else {
 			/* top-right */
-			if (!c->user.sizev)
+			if (!c->can.sizev)
 				from = CursorRight;
-			else if (!c->user.sizeh)
+			else if (!c->can.sizeh)
 				from = CursorTop;
 			else {
 				if (dx < dy * 0.4) {
@@ -3456,9 +3456,9 @@ findcorner_size(Client *c, int x_root, int y_root)
 		/* bottom */
 		if (x_root < cx) {
 			/* bottom-left */
-			if (!c->user.sizev)
+			if (!c->can.sizev)
 				from = CursorLeft;
-			else if (!c->user.sizeh)
+			else if (!c->can.sizeh)
 				from = CursorBottom;
 			else {
 				if (dx < dy * 0.4) {
@@ -3471,9 +3471,9 @@ findcorner_size(Client *c, int x_root, int y_root)
 			}
 		} else {
 			/* bottom-right */
-			if (!c->user.sizev)
+			if (!c->can.sizev)
 				from = CursorRight;
-			else if (!c->user.sizeh)
+			else if (!c->can.sizeh)
 				from = CursorBottom;
 			else {
 				if (dx < dy * 0.4) {
@@ -3628,7 +3628,7 @@ move_begin(Client *c, View *v, Bool toggle, int from, IsUnion * was)
 {
 	Bool isfloater;
 
-	if (!c->user.move)
+	if (!c->can.move)
 		return False;
 
 	/* regrab pointer with move cursor */
@@ -3773,7 +3773,7 @@ mousemove_from(Client *c, int from, XEvent *e, Bool toggle)
 			return moved;
 		}
 
-	if (!c->user.floats || c->is.dockapp)
+	if (!c->can.floats || c->is.dockapp)
 		toggle = False;
 
 	isfloater = (toggle || isfloating(c, v)) ? True : False;
@@ -3936,7 +3936,7 @@ mousemove_from(Client *c, int from, XEvent *e, Bool toggle)
 				sc = nv->curmon->sc;
 
 				if (!(ev.xmotion.state & ControlMask)) {
-					if (ev.xmotion.y_root == sc.y && c->user.max) {
+					if (ev.xmotion.y_root == sc.y && c->can.max) {
 						if (!c->is.max || c->is.lhalf || c->is.rhalf) {
 							c->is.max = True;
 							c->is.lhalf = False;
@@ -3948,7 +3948,7 @@ mousemove_from(Client *c, int from, XEvent *e, Bool toggle)
 							updatefloat(c, v);
 							restack();
 						}
-					} else if (ev.xmotion.x_root == sc.x && c->user.move && c->user.size) {
+					} else if (ev.xmotion.x_root == sc.x && c->can.move && c->can.size) {
 						if (c->is.max || !c->is.lhalf || c->is.rhalf) {
 							c->is.max = False;
 							c->is.lhalf = True;
@@ -3959,7 +3959,7 @@ mousemove_from(Client *c, int from, XEvent *e, Bool toggle)
 							save(c);
 							updatefloat(c, v);
 						}
-					} else if (ev.xmotion.x_root == sc.x + sc.w - 1 && c->user.move && c->user.size) {
+					} else if (ev.xmotion.x_root == sc.x + sc.w - 1 && c->can.move && c->can.size) {
 						if (c->is.max || c->is.lhalf || !c->is.rhalf) {
 							c->is.max = False;
 							c->is.lhalf = False;
@@ -4146,7 +4146,7 @@ mousemove(Client *c, XEvent *e, Bool toggle)
 {
 	int from;
 
-	if (!c->user.move) {
+	if (!c->can.move) {
 		XUngrabPointer(dpy, user_time);
 		return False;
 	}
@@ -4195,18 +4195,18 @@ resize_begin(Client *c, View *v, Bool toggle, int from, IsUnion * was)
 {
 	Bool isfloater;
 
-	if (!c->user.size)
+	if (!c->can.size)
 		return False;
 
 	switch (from) {
 	case CursorTop:
 	case CursorBottom:
-		if (!c->user.sizev)
+		if (!c->can.sizev)
 			return False;
 		break;
 	case CursorLeft:
 	case CursorRight:
-		if (!c->user.sizeh)
+		if (!c->can.sizeh)
 			return False;
 		break;
 	default:
@@ -4336,7 +4336,7 @@ mouseresize_from(Client *c, int from, XEvent *e, Bool toggle)
 			return resized;
 		}
 
-	if (!c->user.floats || c->is.dockapp)
+	if (!c->can.floats || c->is.dockapp)
 		toggle = False;
 
 	if (XGrabPointer(dpy, c->frame, False, MOUSEMASK, GrabModeAsync,
@@ -4695,7 +4695,7 @@ mouseresize(Client *c, XEvent *e, Bool toggle)
 {
 	int from;
 
-	if (!c->user.size || (!c->user.sizeh && !c->user.sizev)) {
+	if (!c->can.size || (!c->can.sizeh && !c->can.sizev)) {
 		XUngrabPointer(dpy, user_time);
 		return False;
 	}
@@ -4859,14 +4859,14 @@ moveresizekb(Client *c, int dx, int dy, int dw, int dh, int gravity)
 {
 	if (!c)
 		return;
-	if (!c->user.move) {
+	if (!c->can.move) {
 		dx = 0;
 		dy = 0;
 	}
 	/* constraints should handle this */
-	if (!c->user.sizeh)
+	if (!c->can.sizeh)
 		dw = 0;
-	if (!c->user.sizev)
+	if (!c->can.sizev)
 		dh = 0;
 	moveresizeclient(c, dx, dy, dw, dh, gravity);
 }
@@ -4900,7 +4900,7 @@ getplace(Client *c, ClientGeometry *g)
 static Client *
 nextplaced(Client *x, Client *c, View *v)
 {
-	for (; c && (c == x || c->is.bastard || c->is.dockapp || !c->prog.floats
+	for (; c && (c == x || c->is.bastard || c->is.dockapp || !c->can.floats
 		     || !isvisible(c, v)); c = c->snext) ;
 	return c;
 }
@@ -5500,7 +5500,7 @@ addclient(Client *c, Bool focusme, Bool raiseme)
 	CPRINTF(c, "initial geometry u: %dx%d+%d+%d:%d t %d g %d v %d\n",
 		c->u.w, c->u.h, c->u.x, c->u.y, c->u.b, c->c.t, c->c.g, c->c.v);
 
-	if (!c->u.x && !c->u.y && c->prog.move && !c->is.dockapp) {
+	if (!c->u.x && !c->u.y && c->can.move && !c->is.dockapp) {
 		/* put it on the monitor startup notification requested if not already
 		   placed with its group */
 		if (c->monitor && !clientview(c))
@@ -5517,7 +5517,7 @@ addclient(Client *c, Bool focusme, Bool raiseme)
 	CPRINTF(c, "initial geometry u: %dx%d+%d+%d:%d t %d g %d v %d\n",
 		c->u.w, c->u.h, c->u.x, c->u.y, c->u.b, c->c.t, c->c.g, c->c.v);
 
-	if (!c->prog.move) {
+	if (!c->can.move) {
 		int mx, my;
 		View *cv;
 
@@ -5595,7 +5595,7 @@ moveto(Client *c, RelativeDirection position)
 	Workarea w;
 	ClientGeometry g = { 0, };
 
-	if (!c || !c->prog.move || !(v = c->cview))
+	if (!c || !c->can.move || !(v = c->cview))
 		return;
 	if (!(m = v->curmon))
 		return;
@@ -5666,7 +5666,7 @@ moveby(Client *c, RelativeDirection direction, int amount)
 	Workarea w;
 	ClientGeometry g = { 0, };
 
-	if (!c || !c->prog.move || !(v = c->cview))
+	if (!c || !c->can.move || !(v = c->cview))
 		return;
 	if (!(m = v->curmon))
 		return;
@@ -5767,7 +5767,7 @@ snapto(Client *c, RelativeDirection direction)
 	Client *s, *ox, *oy;
 	int min1, max1, edge;
 
-	if (!c || !c->prog.move || !(v = c->cview))
+	if (!c || !c->can.move || !(v = c->cview))
 		return;
 	if (!(m = v->curmon))
 		return;
@@ -5992,7 +5992,7 @@ edgeto(Client *c, int direction)
 	Workarea w;
 	ClientGeometry g = { 0, };
 
-	if (!c || !c->prog.move || !(v = c->cview))
+	if (!c || !c->can.move || !(v = c->cview))
 		return;
 	if (!(m = v->curmon))
 		return;
@@ -6178,7 +6178,7 @@ togglefloating(Client *c)
 {
 	View *v;
 
-	if (!c || c->is.floater || !c->prog.floats || !(v = c->cview))
+	if (!c || c->is.floater || !c->can.floats || !(v = c->cview))
 		return;
 	c->skip.arrange = !c->skip.arrange;
 	if (c->is.managed) {
@@ -6193,7 +6193,7 @@ togglefill(Client *c)
 {
 	View *v;
 
-	if (!c || (!c->prog.fill && c->is.managed) || !(v = c->cview))
+	if (!c || (!c->can.fill && c->is.managed) || !(v = c->cview))
 		return;
 	c->is.fill = !c->is.fill;
 	if (c->is.managed) {
@@ -6208,7 +6208,7 @@ togglefull(Client *c)
 {
 	View *v;
 
-	if (!c || (!c->prog.full && c->is.managed) || !(v = c->cview))
+	if (!c || (!c->can.full && c->is.managed) || !(v = c->cview))
 		return;
 	if (!c->is.full) {
 		c->wasfloating = c->skip.arrange;
@@ -6231,7 +6231,7 @@ togglemax(Client *c)
 {
 	View *v;
 
-	if (!c || (!c->prog.max && c->is.managed) || !(v = c->cview))
+	if (!c || (!c->can.max && c->is.managed) || !(v = c->cview))
 		return;
 	c->is.max = !c->is.max;
 	if (c->is.managed) {
@@ -6246,7 +6246,7 @@ togglemaxv(Client *c)
 {
 	View *v;
 
-	if (!c || (!c->prog.maxv && c->is.managed) || !(v = c->cview))
+	if (!c || (!c->can.maxv && c->is.managed) || !(v = c->cview))
 		return;
 	c->is.maxv = !c->is.maxv;
 	if (c->is.managed) {
@@ -6260,7 +6260,7 @@ togglemaxh(Client *c)
 {
 	View *v;
 
-	if (!c || (!c->prog.maxh && c->is.managed) || !(v = c->cview))
+	if (!c || (!c->can.maxh && c->is.managed) || !(v = c->cview))
 		return;
 	c->is.maxh = !c->is.maxh;
 	if (c->is.managed) {
@@ -6274,7 +6274,7 @@ togglelhalf(Client *c)
 {
 	View *v;
 
-	if (!c || ((!c->prog.size || !c->prog.move) && c->is.managed) || !(v = c->cview))
+	if (!c || ((!c->can.size || !c->can.move) && c->is.managed) || !(v = c->cview))
 		return;
 	if ((c->is.lhalf = !c->is.lhalf))
 		c->is.rhalf = 0;
@@ -6289,7 +6289,7 @@ togglerhalf(Client *c)
 {
 	View *v;
 
-	if (!c || ((!c->prog.size || !c->prog.move) && c->is.managed) || !(v = c->cview))
+	if (!c || ((!c->can.size || !c->can.move) && c->is.managed) || !(v = c->cview))
 		return;
 	if ((c->is.rhalf = !c->is.rhalf))
 		c->is.lhalf = 0;
@@ -6304,7 +6304,7 @@ toggleshade(Client *c)
 {
 	View *v;
 
-	if (!c || (!c->prog.shade && c->is.managed) || !(v = c->cview))
+	if (!c || (!c->can.shade && c->is.managed) || !(v = c->cview))
 		return;
 	c->is.shaded = !c->is.shaded;
 	if (c->is.managed) {
@@ -6318,7 +6318,7 @@ toggleundec(Client *c)
 {
 	View *v;
 
-	if (!c || (!c->prog.undec && c->is.managed) || !(v = c->cview))
+	if (!c || (!c->can.undec && c->is.managed) || !(v = c->cview))
 		return;
 	if ((c->is.undec = !c->is.undec)) {
 		c->has.grips = False;

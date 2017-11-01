@@ -452,10 +452,8 @@ applystate(Client *c, XWMHints *wmh)
 		c->skip.skip = -1U;
 		c->skip.arrange = False;
 		c->skip.sloppy = False;
-		c->prog.can = 0;
-		c->prog.move = True;
-		c->user.can = 0;
-		c->user.move = True;
+		c->can.can = 0;
+		c->can.move = True;
 		c->has.has = 0;
 		c->needs.has = 0;
 		c->is.floater = True;
@@ -1332,7 +1330,7 @@ shapenotify(XEvent *e)
 static Bool
 canfocus(Client *c)
 {
-	if (c && c->prog.focus && !c->nonmodal && !c->is.banned)
+	if (c && c->can.focus && !c->nonmodal && !c->is.banned)
 		return True;
 	return False;
 }
@@ -1340,7 +1338,7 @@ canfocus(Client *c)
 Bool
 canselect(Client *c)
 {
-	if (c && c->user.select && !c->is.banned)
+	if (c && c->can.select && !c->is.banned)
 		return True;
 	return False;
 }
@@ -1372,7 +1370,7 @@ selectok(Client *c)
 		return False;
 	if ((!c->is.dockapp && c->is.icon) || c->is.hidden)
 		return False;
-	if (!clientview(c) && !c->prog.select) {
+	if (!clientview(c) && !c->can.select) {
 		_CPRINTF(c, "attempt to select an unselectable client\n");
 		return False;
 	}
@@ -1402,9 +1400,9 @@ setfocus(Client *c)
 {
 	if (focusok(c)) {
 		CPRINTF(c, "setting focus\n");
-		if (c->prog.focus & GIVE_FOCUS)
+		if (c->can.focus & GIVE_FOCUS)
 			XSetInputFocus(dpy, c->icon ? : c->win, RevertToPointerRoot, user_time);
-		if (c->prog.focus & TAKE_FOCUS) {
+		if (c->can.focus & TAKE_FOCUS) {
 			XEvent ce;
 
 			ce.xclient.type = ClientMessage;
@@ -1586,7 +1584,7 @@ focusicon()
 		return;
 	for (c = scr->clients;
 	     c && (!canfocus(c) || c->skip.focus || c->is.dockapp || !c->is.icon
-		   || !c->prog.min || !isvisible(c, v)); c = c->next) ;
+		   || !c->can.min || !isvisible(c, v)); c = c->next) ;
 	if (!c)
 		return;
 	if (!c->is.dockapp && c->is.icon) {
@@ -1719,7 +1717,7 @@ _iconify(Client *c, int dummy)
 void
 iconify(Client *c)
 {
-	if (!c || (!c->prog.min && c->is.managed))
+	if (!c || (!c->can.min && c->is.managed))
 		return;
 	if (with_transients(c, &_iconify, 0)) {
 		arrangeneeded();
@@ -1738,7 +1736,7 @@ iconifyall(View *v)
 			continue;
 		if (c->is.bastard || c->is.dockapp)
 			continue;
-		if (!c->prog.min && c->is.managed)
+		if (!c->can.min && c->is.managed)
 			continue;
 		any |= with_transients(c, &_iconify, 0);
 	}
@@ -1762,7 +1760,7 @@ _deiconify(Client *c, int dummy)
 void
 deiconify(Client *c)
 {
-	if (!c || (!c->prog.min && c->is.managed))
+	if (!c || (!c->can.min && c->is.managed))
 		return;
 	if (with_transients(c, &_deiconify, 0)) {
 		arrangeneeded();
@@ -1781,7 +1779,7 @@ deiconifyall(View *v)
 			continue;
 		if (c->is.bastard || c->is.dockapp)
 			continue;
-		if (!c->prog.min && c->is.managed)
+		if (!c->can.min && c->is.managed)
 			continue;
 		any |= with_transients(c, &_deiconify, 0);
 	}
@@ -1805,7 +1803,7 @@ _hide(Client *c, int dummy)
 void
 hide(Client *c)
 {
-	if (!c || (!c->prog.hide && c->is.managed))
+	if (!c || (!c->can.hide && c->is.managed))
 		return;
 	if (with_transients(c, &_hide, 0)) {
 		arrangeneeded();
@@ -1824,7 +1822,7 @@ hideall(View *v)
 			continue;
 		if (c->is.bastard || c->is.dockapp)
 			continue;
-		if (!c->prog.hide && c->is.managed)
+		if (!c->can.hide && c->is.managed)
 			continue;
 		any |= with_transients(c, &_hide, 0);
 	}
@@ -1848,7 +1846,7 @@ _show(Client *c, int dummy)
 void
 show(Client *c)
 {
-	if (!c || (!c->prog.hide && c->is.managed))
+	if (!c || (!c->can.hide && c->is.managed))
 		return;
 	if (with_transients(c, &_show, 0)) {
 		arrangeneeded();
@@ -1867,7 +1865,7 @@ showall(View *v)
 			continue;
 		if (c->is.bastard || c->is.dockapp)
 			continue;
-		if (!c->prog.hide && c->is.managed)
+		if (!c->can.hide && c->is.managed)
 			continue;
 		any |= with_transients(c, &_show, 0);
 	}
@@ -2385,60 +2383,32 @@ show_client_state(Client *c)
 	CPRINTF(c, "%-20s: %s\n", "with.time", c->with.time ? "true" : "false");
 #endif
 #if 1
-	CPRINTF(c, "%-20s: 0x%08x\n", "prog.can", c->prog.can);
+	CPRINTF(c, "%-20s: 0x%08x\n", "can.can", c->can.can);
 #else
-	CPRINTF(c, "%-20s: %s\n", "prog.move", c->prog.move ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "prog.size", c->prog.size ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "prog.sizev", c->prog.sizev ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "prog.sizeh", c->prog.sizeh ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "prog.min", c->prog.min ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "prog.max", c->prog.max ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "prog.maxv", c->prog.maxv ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "prog.maxh", c->prog.maxh ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "prog.lhalf", c->prog.lhalf ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "prog.rhalf", c->prog.rhalf ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "prog.close", c->prog.close ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "prog.shade", c->prog.shade ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "prog.stick", c->prog.stick ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "prog.full", c->prog.full ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "prog.above", c->prog.above ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "prog.below", c->prog.below ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "prog.fill", c->prog.fill ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "prog.fillh", c->prog.fillh ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "prog.fillv", c->prog.fillv ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "prog.floats", c->prog.floats ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "prog.hide", c->prog.hide ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "prog.tag", c->prog.tag ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "prog.arrange", c->prog.arrange ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "prog.focus", c->prog.focus ? "true" : "false");
-#endif
-#if 1
-	CPRINTF(c, "%-20s: 0x%08x\n", "user.can", c->user.can);
-#else
-	CPRINTF(c, "%-20s: %s\n", "user.move", c->user.move ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "user.size", c->user.size ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "user.sizev", c->user.sizev ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "user.sizeh", c->user.sizeh ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "user.min", c->user.min ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "user.max", c->user.max ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "user.maxv", c->user.maxv ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "user.maxh", c->user.maxh ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "user.lhalf", c->user.lhalf ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "user.rhalf", c->user.rhalf ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "user.close", c->user.close ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "user.shade", c->user.shade ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "user.stick", c->user.stick ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "user.full", c->user.full ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "user.above", c->user.above ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "user.below", c->user.below ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "user.fill", c->user.fill ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "user.fillh", c->user.fillh ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "user.fillv", c->user.fillv ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "user.floats", c->user.floats ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "user.hide", c->user.hide ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "user.tag", c->user.tag ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "user.arrange", c->user.arrange ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "user.focus", c->user.focus ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "can.move", c->can.move ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "can.size", c->can.size ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "can.sizev", c->can.sizev ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "can.sizeh", c->can.sizeh ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "can.min", c->can.min ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "can.max", c->can.max ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "can.maxv", c->can.maxv ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "can.maxh", c->can.maxh ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "can.lhalf", c->can.lhalf ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "can.rhalf", c->can.rhalf ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "can.close", c->can.close ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "can.shade", c->can.shade ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "can.stick", c->can.stick ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "can.full", c->can.full ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "can.above", c->can.above ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "can.below", c->can.below ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "can.fill", c->can.fill ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "can.fillh", c->can.fillh ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "can.fillv", c->can.fillv ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "can.floats", c->can.floats ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "can.hide", c->can.hide ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "can.tag", c->can.tag ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "can.arrange", c->can.arrange ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "can.focus", c->can.focus ? "true" : "false");
 #endif
 }
 
@@ -2549,8 +2519,7 @@ manage(Window w, XWindowAttributes *wa)
 	XSaveContext(dpy, c->win, context[ScreenContext], (XPointer) scr);
 	c->has.has = -1U;
 	c->needs.has = -1U;
-	c->prog.can = -1U;
-	c->user.can = -1U;
+	c->can.can = -1U;
 	wmh = XGetWMHints(dpy, c->win);
 	applystate(c, wmh);
 	if (c->is.dockapp)
@@ -2583,7 +2552,7 @@ manage(Window w, XWindowAttributes *wa)
 	applyatoms(c);
 
 	take_focus = checkatom(c->win, _XA_WM_PROTOCOLS, _XA_WM_TAKE_FOCUS) ? TAKE_FOCUS : 0;
-	c->prog.focus = take_focus | GIVE_FOCUS;
+	c->can.focus = take_focus | GIVE_FOCUS;
 
 	/* FIXME: we aren't check whether the client requests to be mapped in the IconicState or
 	   NormalState here, and we should.  It appears that previous code base was simply mapping
@@ -2594,7 +2563,7 @@ manage(Window w, XWindowAttributes *wa)
 
 	if (wmh) {
 		if (wmh->flags & InputHint)
-			c->prog.focus = take_focus | (wmh->input ? GIVE_FOCUS : 0);
+			c->can.focus = take_focus | (wmh->input ? GIVE_FOCUS : 0);
 		c->is.attn = (wmh->flags & XUrgencyHint) ? True : False;
 		if ((wmh->flags & WindowGroupHint) && (c->leader = wmh->window_group) != None) {
 			updategroup(c, c->leader, ClientGroup, &c->nonmodal);
@@ -2634,9 +2603,9 @@ manage(Window w, XWindowAttributes *wa)
 				   says such applications should act on the non-transient managed
 				   client and let the window manager decide what to do about the
 				   transients. */
-				c->prog.min = c->user.min = False;	/* can't (de)iconify */
-				c->prog.hide = c->user.hide = False;	/* can't hide or show */
-				c->prog.tag = c->user.tag = False;	/* can't change desktops */
+				c->can.min  = False;	/* can't (de)iconify */
+				c->can.hide = False;	/* can't hide or show */
+				c->can.tag  = False;	/* can't change desktops */
 			}
 			if (t)
 				c->tags = t->tags;
@@ -2660,12 +2629,12 @@ manage(Window w, XWindowAttributes *wa)
 		focusnew = False;
 
 	if (!c->is.floater)
-		c->is.floater = (!c->prog.sizeh || !c->prog.sizev);
+		c->is.floater = (!c->can.sizeh || !c->can.sizev);
 
 	if (c->has.title)
 		c->c.t = c->r.t = scr->style.titleheight;
 	else {
-		c->prog.shade = c->user.shade = False;
+		c->can.shade = False;
 		c->has.grips = False;
 	}
 	if (c->has.grips) {
@@ -5265,7 +5234,7 @@ togglestruts(View *v)
 void
 togglemin(Client *c)
 {
-	if (!c || (!c->prog.min && c->is.managed))
+	if (!c || (!c->can.min && c->is.managed))
 		return;
 	if (c->is.icon) {
 		deiconify(c);
@@ -5382,7 +5351,7 @@ unmanage(Client *c, WithdrawCause cause)
 	XSelectInput(dpy, c->frame, NoEventMask);
 	XUnmapWindow(dpy, c->frame);
 	XSetErrorHandler(xerrordummy);
-	c->prog.focus = 0;
+	c->can.focus = 0;
 	if (relfocus(c))
 		focus(sel);
 	c->is.managed = False;
@@ -5648,7 +5617,7 @@ updatehints(Client *c)
 
 	take_focus =
 	    checkatom(c->win, _XA_WM_PROTOCOLS, _XA_WM_TAKE_FOCUS) ? TAKE_FOCUS : 0;
-	c->prog.focus = take_focus | GIVE_FOCUS;
+	c->can.focus = take_focus | GIVE_FOCUS;
 
 	if ((wmh = XGetWMHints(dpy, c->win))) {
 
@@ -5657,7 +5626,7 @@ updatehints(Client *c)
 			ewmh_update_net_window_state(c);
 		}
 		if (wmh->flags & InputHint)
-			c->prog.focus = take_focus | (wmh->input ? GIVE_FOCUS : 0);
+			c->can.focus = take_focus | (wmh->input ? GIVE_FOCUS : 0);
 		if (wmh->flags & WindowGroupHint) {
 			leader = wmh->window_group;
 			if (c->leader != leader) {
@@ -5814,30 +5783,23 @@ updatesizehints(Client *c)
 	else
 		c->gravity = NorthWestGravity;
 	if (c->maxw && c->minw && c->maxw == c->minw) {
-		c->prog.sizeh = c->user.sizeh = False;
-		c->prog.maxh = c->user.maxh = False;
-		c->prog.fillh = c->user.fillh = False;
+		c->can.sizeh = False;
+		c->can.maxh = False;
+		c->can.fillh = False;
 	}
 	if (c->maxh && c->minh && c->maxh == c->minh) {
-		c->prog.sizev = c->user.sizev = False;
-		c->prog.maxv = c->user.maxv = False;
-		c->prog.fillv = c->user.fillv = False;
+		c->can.sizev = False;
+		c->can.maxv = False;
+		c->can.fillv = False;
 	}
-	if (!c->prog.sizeh && !c->prog.sizev) {
-		c->prog.size = False;
-	}
-	if (!c->user.sizeh && !c->user.sizev) {
-		c->user.size = False;
+	if (!c->can.sizeh && !c->can.sizev) {
+		c->can.size = False;
 		c->has.grips = False;
 	}
-	if (!c->prog.maxh && !c->prog.maxv)
-		c->prog.max = False;
-	if (!c->user.maxh && !c->user.maxv)
-		c->user.max = False;
-	if (!c->prog.fillh && !c->prog.fillv)
-		c->prog.fill = False;
-	if (!c->user.fillh && !c->user.fillv)
-		c->user.fill = False;
+	if (!c->can.maxh && !c->can.maxv)
+		c->can.max = False;
+	if (!c->can.fillh && !c->can.fillv)
+		c->can.fill = False;
 }
 
 void

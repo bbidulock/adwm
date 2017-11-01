@@ -1172,7 +1172,7 @@ k_focusable(Client *c, View *v, WhichClient any, RelativeDirection dir,
 	case FocusClient:
 		if (!selectok(c))
 			return False;
-		if (c->skip.focus || c->skip.winlist  || c->skip.cycle || !c->user.select)
+		if (c->skip.focus || c->skip.winlist  || c->skip.cycle || !c->can.select)
 			return False;
 		if (dir != RelativeCenter)
 			if (c->is.icon || c->is.hidden)
@@ -1211,7 +1211,7 @@ k_focusable(Client *c, View *v, WhichClient any, RelativeDirection dir,
 	case AllClients:
 		if (!canselect(c))
 			return False;
-		if (c->skip.focus || c->skip.winlist  || c->skip.cycle || !c->user.select)
+		if (c->skip.focus || c->skip.winlist  || c->skip.cycle || !c->can.select)
 			return False;
 		if (!isvisible(c, v))
 			return False;
@@ -1231,7 +1231,7 @@ k_focusable(Client *c, View *v, WhichClient any, RelativeDirection dir,
 	case AnyClient:
 		if (!canselect(c))
 			return False;
-		if (c->skip.focus || c->skip.winlist  || c->skip.cycle || !c->user.select)
+		if (c->skip.focus || c->skip.winlist  || c->skip.cycle || !c->can.select)
 			return False;
 		if (!isvisible(c, NULL))
 			return False;

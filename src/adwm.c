@@ -451,9 +451,11 @@ applystate(Client *c, XWMHints *wmh)
 		c->is.below = True;
 		c->skip.skip = -1U;
 		c->skip.arrange = False;
+		c->skip.focus = False;
 		c->skip.sloppy = False;
 		c->can.can = 0;
 		c->can.move = True;
+		c->can.select = True;
 		c->has.has = 0;
 		c->needs.has = 0;
 		c->is.floater = True;

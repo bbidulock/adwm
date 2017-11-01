@@ -3268,7 +3268,7 @@ ewmh_process_net_window_type(Client *c)
 	    WTCHECK(c, WindowTypeCombo) || WTCHECK(c, WindowTypeDnd)) {
 		c->is.bastard = True;
 		c->skip.skip = -1U;	/* skip everything */
-		c->can.can = 0;	/* no user functionality */
+		c->can.can = 0;		/* no user functionality */
 		c->has.has = 0;		/* no decorations */
 		c->needs.has = 0;	/* no decorations */
 		c->is.floater = True;
@@ -3286,11 +3286,12 @@ ewmh_process_net_window_type(Client *c)
 		c->skip.skip = -1U;	/* skip everything */
 		c->skip.focus = False;	/* except focus */
 		c->skip.sloppy = False; /* and sloppy focus */
-		c->can.can = 0;	/* no user functionality */
+		c->can.can = 0;		/* no user functionality */
 		c->can.select = True;	/* except maybe selecting it */
 		c->has.has = 0;		/* no decorations */
 		c->needs.has = 0;	/* no decorations */
 		c->is.floater = True;
+		c->tags = ((1ULL << scr->ntags) - 1);
 	}
 }
 

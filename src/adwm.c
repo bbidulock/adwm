@@ -5602,19 +5602,21 @@ updatehints(Client *c)
 {
 	XWMHints *wmh;
 	Window leader;
-	int take_focus;
+	int take_focus, give_focus;
 
 	take_focus =
 	    ((c->icon && checkatom(c->icon, _XA_WM_PROTOCOLS, _XA_WM_TAKE_FOCUS)) ||
 	                 checkatom(c->win, _XA_WM_PROTOCOLS, _XA_WM_TAKE_FOCUS))
 	    ?  TAKE_FOCUS : 0;
-	c->can.focus = take_focus | GIVE_FOCUS;
+	give_focus = c->is.dockapp ? 0 : GIVE_FOCUS;
+	c->can.focus = take_focus | give_focus;
 
 	if ((wmh = XGetWMHints(dpy, c->win))) {
 
 		if (wmh->flags & XUrgencyHint && !c->is.attn) {
 			c->is.attn = True;
-			ewmh_update_net_window_state(c);
+			if (c->is.managed)
+				ewmh_update_net_window_state(c);
 		}
 		if (wmh->flags & InputHint)
 			c->can.focus = take_focus | (wmh->input ? GIVE_FOCUS : 0);

@@ -19,6 +19,7 @@ void setopacity(Client *c, unsigned opacity);
 int getstruts(Client *c);
 pid_t getnetpid(Client *c);
 Bool getclasshint(Client *c, XClassHint *ch);
+Bool getgrpclasshint(Client *c, XClassHint * ch);
 Bool getcommand(Client *c, char ***argvp, int *argcp);
 char *getstartupid(Client *c);
 char *getclientmachine(Client *c);
@@ -63,5 +64,6 @@ void ewmh_update_net_window_visible_icon_name(Client *);
 void ewmh_update_net_window_visible_name(Client *);
 void wmh_process_win_window_hints(Client *);
 void wmh_process_win_layer(Client *);
+void ewmh_update_ob_app_props(Client *c);
 
 #endif				/* __LOCAL_EWMH_H__ */

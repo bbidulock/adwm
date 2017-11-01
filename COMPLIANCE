@@ -217,20 +217,34 @@ _BB_THEME:				supported
 
 OpenBox Specific:
 
-_OPENBOX_PID:				supported
-_OB_THEME				supported
-_OB_CONFIG_FILE				supported
+1. Client Messages
+
+_OPENBOX_PID:				supported (but not set)
+
+_OB_CONTROL:				NOT supported
+	OB_CONTROL_RECONFIG(1)		    NOT supported
+	OB_CONTROL_RESTART(2)		    NOT supported
+	OB_CONTROL_QUIT(3)		    NOT supported
+
+2. Root Window Properties
+
+_OB_CONFIG_FILE				supported (but not set)
+_OB_THEME				supported (but not set)
+_OB_VERSION:				supported (but not set)
+
+3. Client Properties
+
+_OB_APP_GROUP_CLASS:			supported
+_OB_APP_GROUP_NAME:			supported
+_OB_APP_CLASS:				supported
+_OB_APP_NAME:				supported
+_OB_APP_ROLE:				supported
+_OB_APP_TITLE:				supported
+_OB_APP_TYPE:				supported
+
 _OB_WM_ACTION_UNDECORATE:		supported
+
 _OB_WM_STATE_UNDECORATED:		supported
-_OB_CONTROL:				supported
-_OB_VERSION:				supported
-_OB_APP_ROLE:				NOT supported
-_OB_APP_TITLE:				NOT supported
-_OB_APP_NAME:				NOT supported
-_OB_APP_CLASS:				NOT supported
-_OB_APP_GROUP_NAME:			NOT supported
-_OB_APP_GROUP_CLASS:			NOT supported
-_OB_APP_TYPE:				NOT supported
 
 ------------------------------------------------------------------------
 

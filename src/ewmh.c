@@ -171,7 +171,6 @@ char *atomnames[NATOMS] = {
 	"_NET_WM_STATE_FILLED",
 	"_NET_WM_STATE_MAXIMUS_LEFT",
 	"_NET_WM_STATE_MAXIMUS_RIGHT",
-	"_OB_WM_STATE_UNDECORATED",
 
 	"_NET_WM_ALLOWED_ACTIONS",
 	"_NET_WM_ACTION_MOVE",
@@ -190,7 +189,6 @@ char *atomnames[NATOMS] = {
 	"_NET_WM_ACTION_FILL",
 	"_NET_WM_ACTION_MAXIMUS_LEFT",
 	"_NET_WM_ACTION_MAXIMUS_RIGHT",
-	"_OB_WM_ACTION_UNDECORATE",
 
 	"_NET_SUPPORTING_WM_CHECK",
 	"_NET_CLOSE_WINDOW",
@@ -202,7 +200,25 @@ char *atomnames[NATOMS] = {
 	"_KDE_NET_WM_SYSTEM_TRAY_WINDOW_FOR",
 	"_KDE_NET_WM_WINDOW_TYPE_OVERRIDE",
 	"_KDE_SPLASH_PROGRESS",
-	"_KDE_WM_CHANGE_STATE"
+	"_KDE_WM_CHANGE_STATE",
+
+	"_OPENBOX_PID",
+	"_OB_CONTROL",
+
+	"_OB_CONFIG_FILE",
+	"_OB_THEME",
+	"_OB_VERSION",
+
+	"_OB_APP_GROUP_CLASS",
+	"_OB_APP_GROUP_NAME",
+	"_OB_APP_CLASS",
+	"_OB_APP_NAME",
+	"_OB_APP_ROLE",
+	"_OB_APP_TITLE",
+	"_OB_APP_TYPE",
+
+	"_OB_WM_STATE_UNDECORATED",
+	"_OB_WM_ACTION_UNDECORATE"
 };
 
 #define _NET_WM_STATE_REMOVE	0
@@ -370,7 +386,8 @@ initewmh(char *name)
 {
 	long data[4];
 	static Bool atoms_interned = False;
-	Window win = scr->selwin;
+	Window swin = scr->selwin;
+	Window root = scr->root;
 
 #ifdef STARTUP_NOTIFICATION
 	if (!scr->ctx) {
@@ -385,40 +402,50 @@ initewmh(char *name)
 		XInternAtoms(dpy, atomnames, NATOMS, False, atom);
 		atoms_interned = True;
 	}
-	XChangeProperty(dpy, scr->root, _XA_NET_SUPPORTED, XA_ATOM, 32,
+	XChangeProperty(dpy, root, _XA_NET_SUPPORTED, XA_ATOM, 32,
 			PropModeReplace, (unsigned char *) &_XA_NET_CLIENT_LIST,
 			NATOMS - ClientList);
 
-	XChangeProperty(dpy, win, _XA_NET_WM_NAME, _XA_UTF8_STRING, 8,
+	XChangeProperty(dpy, swin, _XA_NET_WM_NAME, _XA_UTF8_STRING, 8,
 			PropModeReplace, (unsigned char *) name, strlen(name));
 	data[0] = getpid();
-	XChangeProperty(dpy, win, _XA_NET_WM_PID, XA_CARDINAL, 32,
+	XChangeProperty(dpy, swin, _XA_NET_WM_PID, XA_CARDINAL, 32,
 			PropModeReplace, (unsigned char *) data, 1);
-	XChangeProperty(dpy, scr->root, _XA_NET_SUPPORTING_WM_CHECK, XA_WINDOW, 32,
-			PropModeReplace, (unsigned char *) &win, 1);
-	XChangeProperty(dpy, win, _XA_NET_SUPPORTING_WM_CHECK, XA_WINDOW, 32,
-			PropModeReplace, (unsigned char *) &win, 1);
+#if 0
+	/* Problem with doing this is that we might fool others into thinking that
+	   we really are openbox. */
+	const char *version = VERSION;
 
-	XChangeProperty(dpy, scr->root, _XA_WIN_PROTOCOLS, XA_ATOM, 32,
+	XChangeProperty(dpy, root, _XA_OPENBOX_PID, XA_CARDINAL, 32,
+			PropModeReplace, (unsigned char *) data, 1);
+	XChangePropertY(dpy, root, _XA_OB_VERSION, _XA_UTF8_STRING, 8,
+			PropModeReplace, (unsigned char *) version, strlen(version));
+#endif
+	XChangeProperty(dpy, root, _XA_NET_SUPPORTING_WM_CHECK, XA_WINDOW, 32,
+			PropModeReplace, (unsigned char *) &swin, 1);
+	XChangeProperty(dpy, swin, _XA_NET_SUPPORTING_WM_CHECK, XA_WINDOW, 32,
+			PropModeReplace, (unsigned char *) &swin, 1);
+
+	XChangeProperty(dpy, root, _XA_WIN_PROTOCOLS, XA_ATOM, 32,
 			PropModeReplace, (unsigned char *) &_XA_WIN_APP_STATE,
 			ClientList - WinAppState);
-	XChangeProperty(dpy, win, _XA_WIN_SUPPORTING_WM_CHECK, XA_CARDINAL, 32,
-			PropModeReplace, (unsigned char *) &win, 1);
-	XChangeProperty(dpy, scr->root, _XA_WIN_SUPPORTING_WM_CHECK, XA_CARDINAL, 32,
-			PropModeReplace, (unsigned char *) &win, 1);
-	XChangeProperty(dpy, win, _XA_WIN_DESKTOP_BUTTON_PROXY, XA_CARDINAL, 32,
-			PropModeReplace, (unsigned char *) &win, 1);
-	XChangeProperty(dpy, scr->root, _XA_WIN_DESKTOP_BUTTON_PROXY, XA_CARDINAL, 32,
-			PropModeReplace, (unsigned char *) &win, 1);
+	XChangeProperty(dpy, swin, _XA_WIN_SUPPORTING_WM_CHECK, XA_CARDINAL, 32,
+			PropModeReplace, (unsigned char *) &swin, 1);
+	XChangeProperty(dpy, root, _XA_WIN_SUPPORTING_WM_CHECK, XA_CARDINAL, 32,
+			PropModeReplace, (unsigned char *) &swin, 1);
+	XChangeProperty(dpy, swin, _XA_WIN_DESKTOP_BUTTON_PROXY, XA_CARDINAL, 32,
+			PropModeReplace, (unsigned char *) &swin, 1);
+	XChangeProperty(dpy, root, _XA_WIN_DESKTOP_BUTTON_PROXY, XA_CARDINAL, 32,
+			PropModeReplace, (unsigned char *) &swin, 1);
 
 	data[0] = MWM_STARTUP_CUSTOM;
-	data[1] = win;
-	XChangeProperty(dpy, scr->root, _XA_MOTIF_WM_INFO, _XA_MOTIF_WM_INFO, 32,
+	data[1] = swin;
+	XChangeProperty(dpy, root, _XA_MOTIF_WM_INFO, _XA_MOTIF_WM_INFO, 32,
 			PropModeReplace, (unsigned char *) data, 2);
-	XChangeProperty(dpy, win, _XA_MOTIF_WM_INFO, _XA_MOTIF_WM_INFO, 32,
+	XChangeProperty(dpy, swin, _XA_MOTIF_WM_INFO, _XA_MOTIF_WM_INFO, 32,
 			PropModeReplace, (unsigned char *) data, 2);
 	data[0] = data[1] = data[2] = data[3] = 64;
-	XChangeProperty(dpy, scr->root, XA_WM_ICON_SIZE, XA_CARDINAL, 32,
+	XChangeProperty(dpy, root, XA_WM_ICON_SIZE, XA_CARDINAL, 32,
 			PropModeReplace, (unsigned char *) data, 4);
 
 	ewmh_update_net_client_lists();
@@ -540,6 +567,14 @@ ewmh_del_client(Client *c, WithdrawCause cause)
 			_XA_NET_WM_STATE,
 			_XA_NET_WM_ALLOWED_ACTIONS,
 
+			_XA_OB_APP_GROUP_CLASS,
+			_XA_OB_APP_GROUP_NAME,
+			_XA_OB_APP_CLASS,
+			_XA_OB_APP_NAME,
+			_XA_OB_APP_ROLE,
+			_XA_OB_APP_TITLE,
+			_XA_OB_APP_TYPE,
+
 			None
 		};
 		for (i = 0; props[i]; i++)
@@ -554,6 +589,14 @@ ewmh_del_client(Client *c, WithdrawCause cause)
 			_XA_NET_WM_VISIBLE_NAME,
 			_XA_NET_WM_VISIBLE_ICON_NAME,
 			_XA_NET_WM_FULLSCREEN_MONITORS,
+
+			_XA_OB_APP_GROUP_CLASS,
+			_XA_OB_APP_GROUP_NAME,
+			_XA_OB_APP_CLASS,
+			_XA_OB_APP_NAME,
+			_XA_OB_APP_ROLE,
+			_XA_OB_APP_TITLE,
+			_XA_OB_APP_TYPE,
 
 			None
 		};
@@ -573,6 +616,100 @@ ewmh_del_client(Client *c, WithdrawCause cause)
 		/* fall through */
 		break;
 	}
+	}
+}
+
+void
+ewmh_update_ob_app_props(Client *c)
+{
+	XClassHint ch = { 0, };
+
+	if (getgrpclasshint(c, &ch)) {
+		if (ch.res_class) {
+			XChangeProperty(dpy, c->win, _XA_OB_APP_GROUP_CLASS,
+					_XA_UTF8_STRING, 8, PropModeReplace,
+					(unsigned char *) ch.res_class,
+					strlen(ch.res_class));
+			XFree(ch.res_class);
+			ch.res_class = NULL;
+		}
+		if (ch.res_name) {
+			XChangeProperty(dpy, c->win, _XA_OB_APP_GROUP_NAME,
+					_XA_UTF8_STRING, 8, PropModeReplace,
+					(unsigned char *) ch.res_name,
+					strlen(ch.res_name));
+			XFree(ch.res_name);
+			ch.res_name = NULL;
+		}
+	}
+	if (getclasshint(c, &ch)) {
+		if (ch.res_class) {
+			XChangeProperty(dpy, c->win, _XA_OB_APP_CLASS,
+					_XA_UTF8_STRING, 8, PropModeReplace,
+					(unsigned char *) ch.res_class,
+					strlen(ch.res_class));
+			XFree(ch.res_class);
+			ch.res_class = NULL;
+		}
+		if (ch.res_name) {
+			XChangeProperty(dpy, c->win, _XA_OB_APP_NAME,
+					_XA_UTF8_STRING, 8, PropModeReplace,
+					(unsigned char *) ch.res_name,
+					strlen(ch.res_name));
+			XFree(ch.res_name);
+			ch.res_name = NULL;
+		}
+	}
+	{
+		const char *title = c->name ? : "Untitled Window";
+
+		XChangeProperty(dpy, c->win, _XA_OB_APP_TITLE,
+				_XA_UTF8_STRING, 8, PropModeReplace,
+				(unsigned char *) title,
+				strlen(title));
+	}
+	{
+		char *role = NULL;
+
+		if (gettextprop(c->win, _XA_WM_WINDOW_ROLE, &role) && role) {
+			XChangeProperty(dpy, c->win, _XA_OB_APP_ROLE,
+					_XA_UTF8_STRING, 8, PropModeReplace,
+					(unsigned char *) role,
+					strlen(role));
+			free(role);
+		}
+	}
+	{
+		const char *typename[] = {
+			[WTINDEX(WindowTypeDesk)]	= "desktop",
+			[WTINDEX(WindowTypeDock)]	= "dock",
+			[WTINDEX(WindowTypeToolbar)]	= "toolbar",
+			[WTINDEX(WindowTypeMenu)]	= "menu",
+			[WTINDEX(WindowTypeUtil)]	= "utility",
+			[WTINDEX(WindowTypeSplash)]	= "splash",
+			[WTINDEX(WindowTypeDialog)]	= "dialog",
+			[WTINDEX(WindowTypeDrop)]	= "dropdown menu",
+			[WTINDEX(WindowTypePopup)]	= "popup menu",
+			[WTINDEX(WindowTypeTooltip)]	= "tooltip",
+			[WTINDEX(WindowTypeNotify)]	= "notification",
+			[WTINDEX(WindowTypeCombo)]	= "combo",
+			[WTINDEX(WindowTypeDnd)]	= "dnd",
+			[WTINDEX(WindowTypeNormal)]	= "normal",
+		};
+		const char *type = "unknown";
+		int i;
+
+		for (i = WindowTypeDesk; i <= WindowTypeNormal; i++) {
+			if (WTCHECK(c, i)) {
+				type = typename[WTINDEX(i)];
+				break;
+			}
+		}
+		XChangeProperty(dpy, c->win, _XA_OB_APP_TYPE,
+				_XA_UTF8_STRING, 8, PropModeReplace,
+				(unsigned char *) type,
+				strlen(type));
+
 	}
 }
 
@@ -3051,13 +3188,14 @@ getnetpid(Client *c)
 	Window win;
 	pid_t pid = 0;
 
-	if (((win = c->win) && (card = getcard(win, _XA_NET_WM_PID, &n))) ||
-	    ((win = c->leader) && win != c->win
-	     && (card = getcard(win, _XA_NET_WM_PID, &n))) ||
-	    ((win = c->session) && win != c->win
-	     && (card = getcard(win, _XA_NET_WM_PID, &n))) ||
-	    ((win = c->transfor) && win != c->win && win != scr->root
-	     && (card = getcard(win, _XA_NET_WM_PID, &n)))
+	if (((win = c->win)      &&
+	     (card = getcard(win, _XA_NET_WM_PID, &n))) ||
+	    ((win = c->leader)   && (win != c->win) &&
+	     (card = getcard(win, _XA_NET_WM_PID, &n))) ||
+	    ((win = c->session)  && (win != c->win) &&
+	     (card = getcard(win, _XA_NET_WM_PID, &n))) ||
+	    ((win = c->transfor) && (win != c->win) && (win != scr->root) &&
+	     (card = getcard(win, _XA_NET_WM_PID, &n)))
 	    ) {
 		pid = *card;
 		XFree(card);
@@ -3066,19 +3204,37 @@ getnetpid(Client *c)
 }
 
 Bool
-getclasshint(Client *c, XClassHint *ch)
+getgrpclasshint(Client *c, XClassHint * ch)
 {
 	Window win;
 
-	if (((win = c->win)
-	     && XGetClassHint(dpy, c->win, ch)) ||
-	    ((win = c->leader) && win != c->win
-	     && XGetClassHint(dpy, win, ch)) ||
-	    ((win = c->transfor) && win != c->win && win != scr->root
-	     && XGetClassHint(dpy, win, ch))
-	    ) {
+	if (((win = c->session)  && (win != c->win) &&
+	     XGetClassHint(dpy, win, ch)) ||
+	    ((win = c->leader)   && (win != c->win) &&
+	     XGetClassHint(dpy, win, ch)) ||
+	    ((win = c->transfor) && (win != c->win) && (win != scr->root) &&
+	     XGetClassHint(dpy, win, ch)) ||
+	    ((win = c->win)      &&
+	     XGetClassHint(dpy, win, ch)) ||
+	    ((win = c->icon)     && (win != c->win) &&
+	     XGetClassHint(dpy, win, ch)))
 		return True;
-	}
+	return False;
+}
+
+Bool
+getclasshint(Client *c, XClassHint *ch)
+{
+	Window win;
+	if (((win = c->icon)     && (win != c->win) &&
+	     XGetClassHint(dpy, win, ch)) ||
+	    ((win = c->win)      &&
+	     XGetClassHint(dpy, win, ch)) ||
+	    ((win = c->leader)   && (win != c->win) &&
+	     XGetClassHint(dpy, win, ch)) ||
+	    ((win = c->transfor) && (win != c->win) && (win != scr->root) &&
+	     XGetClassHint(dpy, win, ch)))
+		return True;
 	return False;
 }
 
@@ -3087,9 +3243,12 @@ getcommand(Client *c, char ***v, int *n)
 {
 	Window win;
 
-	if (((win = c->win) && XGetCommand(dpy, win, v, n)) ||
-	    ((win = c->session) && win != c->win && XGetCommand(dpy, win, v, n)) ||
-	    ((win = c->leader) && win != c->win && XGetCommand(dpy, win, v, n))
+	if (((win = c->win)     &&
+	     XGetCommand(dpy, win, v, n)) ||
+	    ((win = c->session) && (win != c->win) &&
+	     XGetCommand(dpy, win, v, n)) ||
+	    ((win = c->leader)  && (win != c->win) &&
+	     XGetCommand(dpy, win, v, n))
 	    ) {
 		return True;
 	}

@@ -2796,6 +2796,7 @@ manage(Window w, XWindowAttributes *wa)
 	setwmstate(c->win, c->winstate, c->is.dockapp ? (c->icon ? : c->win) : None);
 	ewmh_update_net_window_state(c);
 	ewmh_update_net_window_desktop(c);
+	ewmh_update_ob_app_props(c);
 
 	if (c->grips && c->c.g) {
 		XRectangle r = { 0, c->c.h - c->c.g, c->c.w, c->c.g };

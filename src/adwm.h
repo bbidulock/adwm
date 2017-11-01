@@ -62,19 +62,23 @@ enum {
 	WindowStateMaxH, WindowStateShaded, WindowStateNoTaskbar, WindowStateNoPager,
 	WindowStateHidden, WindowStateFs, WindowStateAbove, WindowStateBelow,
 	WindowStateAttn, WindowStateFocused, WindowStateFixed, WindowStateFloating,
-	WindowStateFilled, WindowStateMaxL, WindowStateMaxR, WindowStateUndec,
+	WindowStateFilled, WindowStateMaxL, WindowStateMaxR,
 	WindowActions, WindowActionMove, WindowActionResize, WindowActionMin,
 	WindowActionShade, WindowActionStick, WindowActionMaxH, WindowActionMaxV,
 	WindowActionFs, WindowActionChangeDesk, WindowActionClose,
 	WindowActionAbove, WindowActionBelow, WindowActionFloat, WindowActionFill,
-	WindowActionMaxL, WindowActionMaxR, WindowActionUndec,
+	WindowActionMaxL, WindowActionMaxR,
 	WMCheck, CloseWindow, WindowPing, Supported,
 	SystemTrayWindows, WindowFrameStrut, WindowForSysTray, WindowTypeOverride,
 	KdeSplashProgress, WindowChangeState,
+	ObPid, ObControl, ObConfigFile, ObTheme, ObVersion,
+	ObAppGrpClass, ObAppGrpName, ObAppClass, ObAppName, ObAppRole, ObAppTitle, ObAppType,
+	WindowStateUndec, WindowActionUndec,
 	NATOMS
 };					/* keep in sync with atomnames[] in ewmh.c */
 
-#define WTFLAG(_type) (1<<((_type)-WindowTypeDesk))
+#define WTINDEX(_type) ((_type)-WindowTypeDesk)
+#define WTFLAG(_type) (1<<WTINDEX(_type))
 #define WTTEST(_wintype, _type) (((_wintype) & WTFLAG(_type)) ? True : False)
 #define WTCHECK(_client, _type) WTTEST((_client)->wintype, (_type))
 
@@ -223,7 +227,6 @@ enum {
 #define _XA_NET_WM_STATE_FILLED			atom[WindowStateFilled]
 #define _XA_NET_WM_STATE_MAXIMUS_LEFT		atom[WindowStateMaxL]
 #define _XA_NET_WM_STATE_MAXIMUS_RIGHT		atom[WindowStateMaxR]
-#define _XA_OB_WM_STATE_UNDECORATED		atom[WindowStateUndec]
 
 #define _XA_NET_WM_ALLOWED_ACTIONS		atom[WindowActions]
 #define _XA_NET_WM_ACTION_MOVE			atom[WindowActionMove]
@@ -242,7 +245,6 @@ enum {
 #define _XA_NET_WM_ACTION_FILL			atom[WindowActionFill]
 #define _XA_NET_WM_ACTION_MAXIMUS_LEFT		atom[WindowActionMaxL]
 #define _XA_NET_WM_ACTION_MAXIMUS_RIGHT		atom[WindowActionMaxR]
-#define _XA_OB_WM_ACTION_UNDECORATE		atom[WindowActionUndec]
 
 #define _XA_NET_SUPPORTING_WM_CHECK		atom[WMCheck]
 #define _XA_NET_CLOSE_WINDOW			atom[CloseWindow]
@@ -255,6 +257,24 @@ enum {
 #define _XA_KDE_NET_WM_WINDOW_TYPE_OVERRIDE	atom[WindowTypeOverride]
 #define _XA_KDE_SPLASH_PROGRESS			atom[KdeSplashProgress]
 #define _XA_KDE_WM_CHANGE_STATE			atom[WindowChangeState]
+
+#define _XA_OPENBOX_PID				atom[ObPid]
+#define _XA_OB_CONTROL				atom[ObControl]
+
+#define _XA_OB_CONFIG_FILE			atom[ObConfigFile]
+#define _XA_OB_THEME				atom[ObTheme]
+#define _XA_OB_VERSION				atom[ObVersion]
+
+#define _XA_OB_APP_GROUP_CLASS			atom[ObAppGrpClass]
+#define _XA_OB_APP_GROUP_NAME			atom[ObAppGrpName]
+#define _XA_OB_APP_CLASS			atom[ObAppClass]
+#define _XA_OB_APP_NAME				atom[ObAppName]
+#define _XA_OB_APP_ROLE				atom[ObAppRole]
+#define _XA_OB_APP_TITLE			atom[ObAppTitle]
+#define _XA_OB_APP_TYPE				atom[ObAppType]
+
+#define _XA_OB_WM_STATE_UNDECORATED		atom[WindowStateUndec]
+#define _XA_OB_WM_ACTION_UNDECORATE		atom[WindowActionUndec]
 
 typedef struct {
 	const char *name;		/* extension name */

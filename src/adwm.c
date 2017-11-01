@@ -2234,15 +2234,17 @@ killclient(Client *c)
 	if (!c)
 		return;
 	if (!c->is.killing) {
-		if ((c->icon && checkatom(c->icon, _XA_WM_PROTOCOLS, _XA_NET_WM_PING)) ||
-				checkatom(c->win, _XA_WM_PROTOCOLS, _XA_NET_WM_PING)) {
+		Window win;
+
+		if (((win = c->icon) && checkatom(win, _XA_WM_PROTOCOLS, _XA_NET_WM_PING)) ||
+	            ((win = c->win)  && checkatom(win, _XA_WM_PROTOCOLS, _XA_NET_WM_PING))) {
 			if (!c->is.pinging) {
 				XEvent ev;
 
 				/* Give me a ping: one ping only.... Red October */
 				ev.type = ClientMessage;
 				ev.xclient.display = dpy;
-				ev.xclient.window = c->win;
+				ev.xclient.window = win;
 				ev.xclient.message_type = _XA_WM_PROTOCOLS;
 				ev.xclient.format = 32;
 				ev.xclient.data.l[0] = _XA_NET_WM_PING;
@@ -2254,13 +2256,13 @@ killclient(Client *c)
 				c->is.pinging = 1;
 			}
 		}
-		if ((c->icon && checkatom(c->icon, _XA_WM_PROTOCOLS, _XA_WM_DELETE_WINDOW)) ||
-				checkatom(c->win, _XA_WM_PROTOCOLS, _XA_WM_DELETE_WINDOW)) {
+		if (((win = c->icon) && checkatom(win, _XA_WM_PROTOCOLS, _XA_WM_DELETE_WINDOW)) ||
+		    ((win = c->win)  && checkatom(win, _XA_WM_PROTOCOLS, _XA_WM_DELETE_WINDOW))) {
 			if (!c->is.closing) {
 				XEvent ev;
 
 				ev.type = ClientMessage;
-				ev.xclient.window = c->win;
+				ev.xclient.window = win;
 				ev.xclient.message_type = _XA_WM_PROTOCOLS;
 				ev.xclient.format = 32;
 				ev.xclient.data.l[0] = _XA_WM_DELETE_WINDOW;

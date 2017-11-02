@@ -74,6 +74,9 @@ enum {
 	ObPid, ObControl, ObConfigFile, ObTheme, ObVersion,
 	ObAppGrpClass, ObAppGrpName, ObAppClass, ObAppName, ObAppRole, ObAppTitle, ObAppType,
 	WindowStateUndec, WindowActionUndec,
+	NetSnApplicationId, NetSnLauncher, NetSnLaunchee, NetSnHostname, NetSnPid,
+	NetSnSequence, NetSnTimestamp, NetSnName, NetSnDescription, NetSnIconName,
+	NetSnBinaryName, NetSnWmClass, NetSnScreen, NetSnWorkspace,
 	NATOMS
 };					/* keep in sync with atomnames[] in ewmh.c */
 
@@ -275,6 +278,21 @@ enum {
 
 #define _XA_OB_WM_STATE_UNDECORATED		atom[WindowStateUndec]
 #define _XA_OB_WM_ACTION_UNDECORATE		atom[WindowActionUndec]
+
+#define _XA_NET_SN_APPLICATION_ID		atom[NetSnApplicationId]
+#define _XA_NET_SN_LAUNCHER			atom[NetSnLauncher]
+#define _XA_NET_SN_LAUNCHEE			atom[NetSnLaunchee]
+#define _XA_NET_SN_HOSTNAME			atom[NetSnHostname]
+#define _XA_NET_SN_PID				atom[NetSnPid]
+#define _XA_NET_SN_SEQUENCE			atom[NetSnSequence]
+#define _XA_NET_SN_TIMESTAMP			atom[NetSnTimestamp]
+#define _XA_NET_SN_NAME				atom[NetSnName]
+#define _XA_NET_SN_DESCRIPTION			atom[NetSnDescription]
+#define _XA_NET_SN_ICON_NAME			atom[NetSnIconName]
+#define _XA_NET_SN_BINARY_NAME			atom[NetSnBinaryName]
+#define _XA_NET_SN_WMCLASS			atom[NetSnWmClass]
+#define _XA_NET_SN_SCREEN			atom[NetSnScreen]
+#define _XA_NET_SN_WORKSPACE			atom[NetSnWorkspace]
 
 typedef struct {
 	const char *name;		/* extension name */
@@ -1113,6 +1131,7 @@ struct Key {
 };					/* keyboard shortcuts */
 
 typedef struct {
+	int debug;
 	Bool useveil;
 	Bool attachaside;
 	Bool dectiled;
@@ -1312,30 +1331,60 @@ void installcolormaps(AScreen *s, Client *c, Window *w);
 void show_client_state(Client *c);
 
 #define LENGTH(x)		(sizeof(x)/sizeof(*x))
-#define _DPRINT			do { fprintf(stderr, "adwm: E: %s %s() %d\n",__FILE__,__func__, __LINE__); fflush(stderr); } while(0)
-#define _DPRINTF(args...)	do { fprintf(stderr, "adwm: E: %s %s():%d ", __FILE__,__func__, __LINE__); \
-				     fprintf(stderr, args); fflush(stderr); } while(0)
-#define _CPRINTF(c,args...)	do { fprintf(stderr, "adwm: E: %s %s():%d [0x%08lx 0x%08lx 0x%08lx %-20s] ", __FILE__,__func__,__LINE__,(c)->frame,(c)->win,(c)->icon,(c)->name); \
-				     fprintf(stderr, args); fflush(stderr); } while(0)
-#define _GPRINTF(_g,args...)	do { fprintf(stderr, "adwm: E: %s %s():%d %dx%d+%d+%d:%d (%d:%d:%d) ", __FILE__,__func__,__LINE__,(_g)->w,(_g)->h,(_g)->x,(_g)->y,(_g)->b,(_g)->t,(_g)->g,(_g)->v); \
-				     fprintf(stderr, args); fflush(stderr); } while(0)
-#define _XPRINTF(args...)	do { } while(0)
+
+#ifndef NAME
+#define NAME "adwm"
+#endif
+
+#define __PTRACE(_num)		  do { if (options.debug >= _num) { \
+		fprintf(stderr, NAME ": T: [%s] %12s: +%4d : %s()\n", _timestamp(), __FILE__, __LINE__, __func__); \
+		fflush(stderr); } } while (0)
+
+#define __DPRINTF(_num, _args...)  do { if (options.debug >= _num) { \
+		fprintf(stderr, NAME ": D: [%s] %12s: +%4d : %s() : ", _timestamp(), __FILE__, __LINE__, __func__); \
+		fprintf(stderr, _args); fflush(stderr); } } while (0)
+
+#define __CPRINTF(_num,c,_args...) do { if (options.debug >= _num) { \
+		fprintf(stderr, NAME ": D: [%s] %12s: +%4d : %s() : [0x%08lx 0x%08lx 0x%08lx %-20s] ", _timestamp(), __FILE__, __LINE__, __func__,(c)->frame,(c)->win,(c)->icon,(c)->name); \
+		fprintf(stderr, _args); fflush(stderr); } } while (0)
+
+#define __GPRINTF(_num,c,_args...) do { if (options.debug >= _num) { \
+		fprintf(stderr, NAME ": D: [%s] %12s: +%4d : %s() : %dx%d+%d+%d:%d (%d:%d:%d) ", _timestamp(), __FILE__, __LINE__, __func__,(_g)->w,(_g)->h,(_g)->x,(_g)->y,(_g)->b,(_g)->t,(_g)->g,(_g)->v); \
+		fprintf(stderr, _args); fflush(stderr); } } while (0)
+
+#define __EPRINTF(_args...)	  do { \
+		fprintf(stderr, NAME ": E: [%s] %12s: +%4d : %s() : ", _timestamp(), __FILE__, __LINE__, __func__); \
+		fprintf(stderr, _args); fflush(stderr); } while (0)
+
+#define __OPRINTF(_num, _args...)  do { if (options.debug >= _num) { \
+		fprintf(stdout, NAME ": I: "); \
+		fprintf(stdout, _args); fflush(stdout); } } while (0)
+
+#define __XPRINTF(_num, _args...)  do { } while(0)
+
+#define _DPRINT			__PTRACE(0)
+#define _DPRINTF(args...)	__DPRINTF(0,args)
+#define _CPRINTF(c,args...)	__CPRINTF(0,c,args)
+#define _GPRINTF(g,args...)	__GPRINTF(0,g,args)
+#define _EPRINTF(args...)	__EPRINTF(args)
+#define _OPRINTF(args...)	__OPRINTF(0,args)
+#define _XPRINTF(args...)	__XPRINTF(0,args)
+
 #ifdef DEBUG
-#define DPRINT			do { fprintf(stderr, "adwm: D: %s %s() %d\n",__FILE__,__func__, __LINE__); fflush(stderr); } while(0)
-#define DPRINTF(args...)	do { fprintf(stderr, "adwm: D: %s %s():%d ", __FILE__,__func__, __LINE__); \
-				     fprintf(stderr, args); fflush(stderr); } while(0)
-#define CPRINTF(c,args...)	do { fprintf(stderr, "adwm: D: %s %s():%d [0x%08lx 0x%08lx 0x%08lx %-20s] ", __FILE__,__func__,__LINE__,(c)->frame,(c)->win,(c)->icon,(c)->name); \
-				     fprintf(stderr, args); fflush(stderr); } while(0)
-#define GPRINTF(_g,args...)	do { fprintf(stderr, "adwm: D: %s %s():%d %dx%d+%d+%d:%d (%d:%d:%d) ", __FILE__,__func__,__LINE__,(_g)->w,(_g)->h,(_g)->x,(_g)->y,(_g)->b,(_g)->t,(_g)->g,(_g)->v); \
-				     fprintf(stderr, args); fflush(stderr); } while(0)
-#define XPRINTF(args...)	do { } while(0)
+#define DPRINT			_DPRINT
+#define DPRINTF(args...)	_DPRINTF(args)
+#define CPRINTF(c,args...)	_CPRINTF(c,args)
+#define GPRINTF(g,args...)	_GPRINTF(g,args)
 #else
 #define DPRINT			do { } while(0)
 #define DPRINTF(args...)	do { } while(0)
 #define CPRINTF(c,args...)	do { } while(0)
 #define GPRINTF(g,args...)	do { } while(0)
-#define XPRINTF(args...)	do { } while(0)
 #endif
+
+#define EPRINTF(args...)	_EPRINTF(args)
+#define OPRINTF(args...)	_OPRINTF(args)
+#define XPRINTF(args...)	_XPRINTF(args)
 
 #define NONREENTRANT_ENTER \
 static int _was_here = 0; \
@@ -1369,6 +1418,7 @@ do { \
 #define ROOTMASK		(BUTTONMASK | WINDOWMASK | MAPPINGMASK | FocusChangeMask | ColormapChangeMask)
 
 /* globals */
+extern Options options;
 extern Atom atom[NATOMS];
 extern Display *dpy;
 extern AScreen *scr;
@@ -1386,6 +1436,10 @@ extern unsigned scrlockmask;
 extern XContext context[];
 extern Time user_time;
 extern unsigned long ignore_request;
+
+/* for debugging and error handling */
+const char *_timestamp(void);
+void dumpstack(const char *file, const int line, const char *func);
 void ignorenext(void);
 
 extern XrmDatabase xresdb, xrdb;

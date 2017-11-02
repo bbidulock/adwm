@@ -392,6 +392,10 @@ initconfig(Bool reload)
 	nlen = sizeof(name) - nlen;
 	clen = sizeof(clas) - clen;
 
+	/* init debug first */
+	strncpy(n, "debug", nlen);
+	strncpy(c, "Debug", clen);
+	options.debug = atoi(readres(name, clas, "0"));
 	/* init appearance */
 	strncpy(n, "useveil", nlen);
 	strncpy(c, "Useveil", clen);

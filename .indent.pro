@@ -24,6 +24,9 @@
 -ss
 -hnl
 -nbc
+-TXClientMessageEvent
+-TSequence
+-TMessage
 -TXWMHints
 -TTree
 -TNode

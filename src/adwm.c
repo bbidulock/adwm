@@ -5,6 +5,7 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <sys/poll.h>
+#include <sys/time.h>
 #include <assert.h>
 #include <ctype.h>
 #include <stdlib.h>
@@ -1266,18 +1267,30 @@ colormapnotify(XEvent *e)
 	return False;
 }
 
+const char *
+_timestamp(void)
+{
+	static struct timeval tv = { 0, 0 };
+	static char buf[BUFSIZ];
+	double stamp;
+
+	gettimeofday(&tv, NULL);
+	stamp = (double)tv.tv_sec + (double)((double)tv.tv_usec/1000000.0);
+	snprintf(buf, BUFSIZ-1, "%f", stamp);
+	return buf;
+}
+
 void
-dumpstack()
+dumpstack(const char *file, const int line, const char *func)
 {
 	void *buffer[32];
 	int nptr;
-	char **strings = NULL;
+	char **strings;
 	int i;
 
 	if ((nptr = backtrace(buffer, 32)) && (strings = backtrace_symbols(buffer, nptr)))
 		for (i = 0; i < nptr; i++)
-			fprintf(stderr, "%s\n", strings[i]);
-	free(strings);
+			fprintf(stderr, NAME ": E: %12s +%4d : %s() : \t%s\n", file, line, func, strings[i]);
 }
 
 void
@@ -1289,7 +1302,7 @@ eprint(const char *errstr, ...)
 	vfprintf(stderr, errstr, ap);
 	va_end(ap);
 
-	dumpstack();
+	dumpstack(__FILE__, __LINE__, __func__);
 	exit(EXIT_FAILURE);
 }
 
@@ -3174,7 +3187,7 @@ reparentnotify(XEvent *e)
 static Bool
 updatesessionprop(Client *c, Atom prop, int state)
 {
-	char *name;
+	char *name = NULL;
 
 	if (prop <= XA_LAST_PREDEFINED) {
 		switch (prop) {
@@ -3370,7 +3383,7 @@ updatesessionprop(Client *c, Atom prop, int state)
 static Bool
 updateleaderprop(Client *c, Atom prop, int state)
 {
-	char *name;
+	char *name = NULL;
 
 	if (prop <= XA_LAST_PREDEFINED) {
 		switch (prop) {
@@ -6012,6 +6025,7 @@ xerror(Display *dsply, XErrorEvent *ee)
 		return 0;
 	}
 	_DPRINTF("Fatal X error %s(0x%lx): %s\n", req, ee->resourceid, msg);
+	dumpstack(__FILE__, __LINE__, __func__);
 	return xerrorxlib(dsply, ee);	/* may call exit */
 }
 
@@ -6033,7 +6047,7 @@ xerrorstart(Display *dsply, XErrorEvent *ee)
 int
 xioerror(Display *dsply)
 {
-	dumpstack();
+	dumpstack(__FILE__, __LINE__, __func__);
 	_DPRINTF("error is %s\n", strerror(errno));
 	return xioerrorxlib(dsply);
 }

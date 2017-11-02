@@ -1411,9 +1411,15 @@ focusok(Client *c)
 static void
 setfocus(Client *c)
 {
+#if 0
+	/* yes we should refocus the same window in case we
+	   lost it and got out of sync on took */
+
 	if (c == took)
 		return;
-	else if (focusok(c)) {
+	else
+#endif
+	if (focusok(c)) {
 		CPRINTF(c, "setting focus\n");
 		if (c->can.focus & GIVE_FOCUS)
 			XSetInputFocus(dpy, c->icon ? : c->win, RevertToPointerRoot, user_time);
@@ -1457,6 +1463,7 @@ shouldsel(Client *c)
 	return True;
 }
 
+#if 0
 static Bool
 shouldfocus(Client *c)
 {
@@ -1468,6 +1475,7 @@ shouldfocus(Client *c)
 		return False;
 	return True;
 }
+#endif
 
 static Client *
 findselect(Client *not)
@@ -1478,6 +1486,7 @@ findselect(Client *not)
 	return (c);
 }
 
+#if 0
 static Client *
 findfocus(Client *not)
 {
@@ -1486,6 +1495,7 @@ findfocus(Client *not)
 	for (c = scr->flist; c && (c == not || !shouldfocus(c)); c = c->fnext) ;
 	return (c);
 }
+#endif
 
 static Bool
 focuschange(XEvent *e)
@@ -1527,10 +1537,10 @@ focuschange(XEvent *e)
 		setfocus(NULL);
 		/* fall through */
 	case PointerRoot:
-		if ((c = findfocus(took))) {
-			focus(c);
-			return True;
-		}
+		/* if nothing else particular is focussed, focus back
+		   on the client that last took focus, or focus on
+		   something, if possible (when took == NULL). */
+		focus(took);
 		break;
 	default:
 		break;
@@ -4118,7 +4128,6 @@ run(void)
 						XPRINTF("WARNING: Event %d not handled\n",
 							ev.type);
 					if (lockfocus) {
-						XSync(dpy, False);
 						discarding(focuslock);
 						lockfocus = False;
 						focuslock = NULL;

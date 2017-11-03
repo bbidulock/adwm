@@ -1234,7 +1234,7 @@ struct Notify {
 	char *hostname;
 	pid_t pid;
 	long sequence;
-	long timestamp;
+	Time timestamp;
 	Bool complete;
 	Bool assigned;
 };

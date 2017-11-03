@@ -245,7 +245,7 @@ char *atomnames[NATOMS] = {
 
 static Bool
 parse_startup_id(const char *id, char **launcher_p, char **launchee_p, char **hostname_p,
-		 pid_t *pid_p, long *sequence_p, long *timestamp_p)
+		 pid_t *pid_p, long *sequence_p, Time *timestamp_p)
 {
 	long sequence = 0, timestamp = 0;
 	pid_t pid = 0;
@@ -367,6 +367,7 @@ n_new_notify(SnStartupSequence *seq)
 	if (!n->timestamp)
 		if ((timestamp = sn_startup_sequence_get_timestamp(seq)) != -1)
 			n->timestamp = timestamp;
+	DPRINTF("NOTIFY: NEW: %s\n", n->id);
 #ifdef sn_startup_sequence_get_names_and_values
 	sn_startup_sequence_get_names_and_values(seq, &names, &values);
 	for (i = 0, k = names; (*k); k++, i++) ;
@@ -375,6 +376,7 @@ n_new_notify(SnStartupSequence *seq)
 	for (i = 0, k = names, v = values; (*k); k++, v++, i++) {
 		n->names[i] = strdup(*k);
 		n->values[i] = strdup(*v);
+		DPRINTF("NOTIFY: NEW: %s: %s = %s\n", n->id, n->names[i], n->values[i]);
 	}
 #endif
 	n->next = notifies;
@@ -393,34 +395,39 @@ n_chg_notify(SnStartupSequence *seq)
 #endif
 
 	for (n = notifies; n && n->seq != seq; n = n->next) ;
+	if (n) {
+		DPRINTF("NOTIFY: CHANGE: %s\n", n->id);
 #ifdef sn_startup_sequence_get_names_and_values
-	sn_startup_sequence_get_names_and_values(seq, &names, &values);
-	for (i = 0, nk = names; (*nk); nk++, i++) ;
-	for (j = 0, ok = n->names; (*ok); ok++, j++) ;
-	n->names = reallocarray(n->names, i + j + 1, sizeof(*names));
-	n->values = reallocarray(n->values, i + j + 1, sizeof(*values));
-	for (nk = names, nv = values; (*nk); nk++, nv++) {
-		for (ok = n->names, ov = n->values; (*ok); ok++, ov++) {
-			if (!strcmp(*ok, *nk)) {
-				free(*ov);
-				*ov = strdup(*nv);
-				break;
+		sn_startup_sequence_get_names_and_values(seq, &names, &values);
+		for (i = 0, nk = names; (*nk); nk++, i++) ;
+		for (j = 0, ok = n->names; (*ok); ok++, j++) ;
+		n->names = reallocarray(n->names, i + j + 1, sizeof(*names));
+		n->values = reallocarray(n->values, i + j + 1, sizeof(*values));
+		for (nk = names, nv = values; (*nk); nk++, nv++) {
+			for (ok = n->names, ov = n->values; (*ok); ok++, ov++) {
+				if (!strcmp(*ok, *nk)) {
+					free(*ov);
+					*ov = strdup(*nv);
+					DPRINTF("NOTIFY: CHANGE: %s: %s = %s\n", n->id, *ok, *ov);
+					break;
+				}
+			}
+			if (!(*ok)) {
+				DPRINTF("NOTIFY: CHANGE: %s: %s = %s\n", n->id, *nk, *nv);
+				*ok++ = strdup(*nk);
+				*ov++ = strdup(*nv);
+				*ok = NULL;
+				*ov = NULL;
 			}
 		}
-		if (!(*ok)) {
-			*ok++ = strdup(*nk);
-			*ov++ = strdup(*nv);
-			*ok = NULL;
-			*ov = NULL;
-		}
-	}
 #endif
-	if (n && n->assigned) {
-		Client *c;
+		if (n->assigned) {
+			Client *c;
 
-		for (c = scr->clients; c && c->seq != seq; c = c->next) ;
-		if (c)
-			ewmh_update_sn_app_props(c, n);
+			for (c = scr->clients; c && c->seq != seq; c = c->next) ;
+			if (c)
+				ewmh_update_sn_app_props(c, n);
+		}
 	}
 }
 
@@ -452,6 +459,7 @@ n_end_notify(SnStartupSequence *seq)
 
 	for (n = notifies; n && n->seq != seq; n = n->next) ;
 	if (n) {
+		DPRINTF("NOTIFY: END: %s\n", n->id);
 		n->complete = True;
 		/* Cannot delete a notification that has completed before it is assigned
 		   to a client.  This is because the first thing that most toolkits (such 
@@ -2363,6 +2371,7 @@ ewmh_update_sn_app_props(Client *c, Notify *n)
 	if (!win)
 		win = c->win;
 
+	CPRINTF(c, "%s updating startup properties on window 0x%lx\n", n->id, win);
 	if ((text = sn_startup_sequence_get_id(seq))) {
 		XChangeProperty(dpy, win, _XA_NET_STARTUP_ID,
 				_XA_UTF8_STRING, 8, PropModeReplace,
@@ -2471,10 +2480,11 @@ find_startup_seq(Client *c)
 	pid_t pid = 0;
 
 	for (np = &notifies; (n = *np); ) {
-		/* 15 seconds old is just plain too old */
-		if (user_time - n->timestamp > 15000)
+		/* 1500 seconds old is just plain too old */
+		if ((user_time > n->timestamp) && user_time - n->timestamp > 1500000) {
+			_DPRINTF("%s %lu - %lu > 15000: deleting as too old\n", n->id, user_time, n->timestamp);
 			n_del_notify(n);
-		else
+		} else
 			/* yes, this works while deleting */
 			np = &n->next;
 	}

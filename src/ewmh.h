@@ -22,6 +22,7 @@ Bool getclasshint(Client *c, XClassHint *ch);
 Bool getgrpclasshint(Client *c, XClassHint * ch);
 Bool getcommand(Client *c, char ***argvp, int *argcp);
 char *getstartupid(Client *c);
+void setstartupid(Client *c, const char *id);
 char *getclientmachine(Client *c);
 Window getrecwin(Client *c, Atom atom);
 

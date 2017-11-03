@@ -459,7 +459,7 @@ parsesym(const char *s, const char *e)
 	DPRINTF("Parsing keysym from '%s'\n", s);
 	if (s < e && (t = strndup(s, e - s))) {
 		if ((sym = XStringToKeysym(t)) == NoSymbol)
-			_DPRINTF("Failed to parse symbol '%s'\n", t);
+			EPRINTF("Failed to parse symbol '%s'\n", t);
 		free(t);
 	}
 	return sym;
@@ -494,7 +494,7 @@ parsekey(const char *s, const char *e, Key *k)
 	if (q < e && *q != '=')
 		q = e;
 	if ((k->keysym = parsesym(p, q)) == NoSymbol) {
-		_DPRINTF("Failed to parse symbol from '%s' to '%s'\n", p, q);
+		EPRINTF("Failed to parse symbol from '%s' to '%s'\n", p, q);
 		return False;
 	}
 	if (q < e)

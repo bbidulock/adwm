@@ -340,6 +340,10 @@ struct SnStartupSequence
 	unsigned int timestamp_set : 1;
 	int creation_serial;
 	struct timeval initiation_time;
+#ifdef sn_startup_sequence_get_names_and_values
+	char **names;
+	char **values;
+#endif
 };
 
 static void
@@ -348,18 +352,31 @@ n_new_notify(SnStartupSequence *seq)
 	const char *text;
 	Notify *n;
 	Time timestamp;
+#ifdef sn_startup_sequence_get_names_and_values
+	char **names, **values, **k, **v;
+	int i;
+#endif
 
 	text = sn_startup_sequence_get_id(seq);
 	n = emallocz(sizeof(*n));
 	n->seq = seq;
 	n->id = strdup(text);
 	sn_startup_sequence_ref(seq);
-	_DPRINTF("%s seq ref count = %d\n", n->id, seq->refcount);
 	parse_startup_id(n->id, &n->launcher, &n->launchee, &n->hostname,
 			 &n->pid, &n->sequence, &n->timestamp);
 	if (!n->timestamp)
 		if ((timestamp = sn_startup_sequence_get_timestamp(seq)) != -1)
 			n->timestamp = timestamp;
+#ifdef sn_startup_sequence_get_names_and_values
+	sn_startup_sequence_get_names_and_values(seq, &names, &values);
+	for (i = 0, k = names; (*k); k++, i++) ;
+	n->names = calloc(i + 1, sizeof(*names));
+	n->values = calloc(i + 1, sizeof(*values));
+	for (i = 0, k = names, v = values; (*k); k++, v++, i++) {
+		n->names[i] = strdup(*k);
+		n->values[i] = strdup(*v);
+	}
+#endif
 	n->next = notifies;
 	notifies = n;
 }
@@ -370,8 +387,34 @@ static void
 n_chg_notify(SnStartupSequence *seq)
 {
 	Notify *n;
+#ifdef sn_startup_sequence_get_names_and_values
+	char **names, **values, **nk, **nv, **ok, **ov;
+	int i, j;
+#endif
 
 	for (n = notifies; n && n->seq != seq; n = n->next) ;
+#ifdef sn_startup_sequence_get_names_and_values
+	sn_startup_sequence_get_names_and_values(seq, &names, &values);
+	for (i = 0, nk = names; (*nk); nk++, i++) ;
+	for (j = 0, ok = n->names; (*ok); ok++, j++) ;
+	n->names = reallocarray(n->names, i + j + 1, sizeof(*names));
+	n->values = reallocarray(n->values, i + j + 1, sizeof(*values));
+	for (nk = names, nv = values; (*nk); nk++, nv++) {
+		for (ok = n->names, ov = n->values; (*ok); ok++, ov++) {
+			if (!strcmp(*ok, *nk)) {
+				free(*ov);
+				*ov = strdup(*nv);
+				break;
+			}
+		}
+		if (!(*ok)) {
+			*ok++ = strdup(*nk);
+			*ov++ = strdup(*nv);
+			*ok = NULL;
+			*ov = NULL;
+		}
+	}
+#endif
 	if (n && n->assigned) {
 		Client *c;
 
@@ -385,8 +428,8 @@ static void
 n_del_notify(Notify *n)
 {
 	Notify *np, **npp;
+	char **p;
 
-	_DPRINTF("%s seq ref count = %d\n", n->id, n->seq->refcount);
 	for (npp = &notifies;(np = *npp) != n;) npp = &np->next;
 	if (np == n)
 		*npp = n->next;
@@ -395,6 +438,10 @@ n_del_notify(Notify *n)
 	free(n->launcher);
 	free(n->launchee);
 	free(n->hostname);
+	for (p = n->names; p && (*p); p++) free(*p);
+	for (p = n->values; p && (*p); p++) free(*p);
+	free(n->names);
+	free(n->values);
 	free(n);
 }
 
@@ -446,7 +493,6 @@ sn_handler(SnMonitorEvent * event, void *dummy)
 	SnStartupSequence *seq = NULL;
 
 	seq = sn_monitor_event_get_startup_sequence(event);
-	_DPRINTF("seq ref count = %d\n", seq->refcount);
 
 	switch (sn_monitor_event_get_type(event)) {
 	case SN_MONITOR_EVENT_INITIATED:
@@ -2416,7 +2462,7 @@ push_client_time(Client *c, Time time)
 SnStartupSequence *
 find_startup_seq(Client *c)
 {
-	Notify *n = NULL;
+	Notify *n = NULL, **np;
 	SnStartupSequence *seq = NULL;
 	XClassHint ch = { NULL, };
 	char **argv = NULL, *machine = NULL, *startup_id = NULL;
@@ -2424,25 +2470,34 @@ find_startup_seq(Client *c)
 	const char *binary, *wmclass;
 	pid_t pid = 0;
 
+	for (np = &notifies; (n = *np); ) {
+		/* 15 seconds old is just plain too old */
+		if (user_time - n->timestamp > 15000)
+			n_del_notify(n);
+		else
+			/* yes, this works while deleting */
+			np = &n->next;
+	}
+
 	if ((seq = c->seq))
 		return seq;
 	do {
 		if ((startup_id = getstartupid(c))) {
 			for (n = notifies; n; n = n->next) {
-				_DPRINTF("comparing '%s' with '%s'\n",
+				DPRINTF("comparing '%s' with '%s'\n",
 					startup_id, sn_startup_sequence_get_id(n->seq));
 				if (!strcmp(startup_id, sn_startup_sequence_get_id(n->seq)))
 					break;
 			}
 			if (n)
 				break;
-			_DPRINTF("cannot find startup id '%s'!\n",
+			DPRINTF("cannot find startup id '%s'!\n",
 				startup_id);
 		}
 		if ((pid = getnetpid(c)) && (machine = getclientmachine(c))) {
 			for (n = notifies; n; n = n->next) {
 
-				_DPRINTF("checking _NET_WM_PID and WM_CLIENT_MACHINE for '%s'\n",
+				DPRINTF("checking _NET_WM_PID and WM_CLIENT_MACHINE for '%s'\n",
 					sn_startup_sequence_get_id(n->seq));
 				if (n->hostname && strcasecmp(machine, n->hostname))
 					continue;	/* wrong host */
@@ -2454,7 +2509,7 @@ find_startup_seq(Client *c)
 		}
 		if (getclasshint(c, &ch)) {
 			for (n = notifies; n; n = n->next) {
-				_DPRINTF("checking WM_CLASS for '%s'\n",
+				DPRINTF("checking WM_CLASS for '%s'\n",
 					sn_startup_sequence_get_id(n->seq));
 				if (machine && n->hostname && strcasecmp(machine, n->hostname))
 					continue;	/* wrong host */
@@ -2467,12 +2522,12 @@ find_startup_seq(Client *c)
 			}
 			if (n)
 				break;
-			_DPRINTF("cannot find startup for (%s,%s)\n",
+			DPRINTF("cannot find startup for (%s,%s)\n",
 				ch.res_name, ch.res_class);
 		}
 		if (getcommand(c, &argv, &argc)) {
 			for (n = notifies; n; n = n->next) {
-				_DPRINTF("checking WM_COMMAND for '%s'\n",
+				DPRINTF("checking WM_COMMAND for '%s'\n",
 					sn_startup_sequence_get_id(n->seq));
 				if (machine && n->hostname && strcasecmp(machine, n->hostname))
 					continue;	/* wrong host */
@@ -2483,12 +2538,12 @@ find_startup_seq(Client *c)
 			}
 			if (n)
 				break;
-			_DPRINTF("cannot find startup for !%s\n", argv[0]);
+			DPRINTF("cannot find startup for !%s\n", argv[0]);
 		}
 		if (ch.res_name || ch.res_class) {
 			/* try again, case insensitive */
 			for (n = notifies; n; n = n->next) {
-				_DPRINTF("checking WM_CLASS for '%s'\n",
+				DPRINTF("checking WM_CLASS for '%s'\n",
 					sn_startup_sequence_get_id(n->seq));
 				if (machine && n->hostname && strcasecmp(machine, n->hostname))
 					continue;	/* wrong host */
@@ -2501,7 +2556,7 @@ find_startup_seq(Client *c)
 			}
 			if (n)
 				break;
-			_DPRINTF("cannot find startup for (%s,%s) (no case)\n",
+			DPRINTF("cannot find startup for (%s,%s) (no case)\n",
 				ch.res_name, ch.res_class);
 		}
 	}
@@ -2510,22 +2565,17 @@ find_startup_seq(Client *c)
 		long workspace;
 
 		_DPRINTF("FOUND STARTUP ID '%s'!\n", n->id);
-		if (!startup_id) {
-			XChangeProperty(dpy, c->win, _XA_NET_STARTUP_ID,
-					_XA_UTF8_STRING, 8, PropModeReplace,
-					(unsigned char *) n->id, strlen(n->id) + 1);
-		}
+		if (!startup_id)
+			setstartupid(c, n->id);
 		/* Note that if the window has mapped itself on the wrong workspace, we
 		   should move it there. */
 		if ((workspace = sn_startup_sequence_get_workspace(n->seq)) != -1) {
 			if (0 <= workspace && workspace < scr->ntags) {
 				if (c->is.managed) {
-					_CPRINTF(c, "moving to workspace %ld for sequence '%s'\n",
-						 workspace, n->id);
+					CPRINTF(c, "moving to workspace %ld for sequence '%s'\n", workspace, n->id);
 					tagonly(c, workspace);
 				} else {
-					_CPRINTF(c, "marking for workspace %ld for sequence '%s'\n",
-						 workspace, n->id);
+					CPRINTF(c, "marking for workspace %ld for sequence '%s'\n", workspace, n->id);
 					c->tags = (1ULL << workspace);
 					/* likely have not been read yet */
 					XChangeProperty(dpy, c->win, _XA_NET_WM_DESKTOP,
@@ -2537,7 +2587,7 @@ find_startup_seq(Client *c)
 				}
 			}
 		} else
-			_CPRINTF(c, "workspace not defined in sequence '%s'\n", n->id);
+			CPRINTF(c, "workspace not defined in sequence '%s'\n", n->id);
 		if (strstr(n->id, "xdg-launch") == n->id)
 			if (0 <= n->sequence && n->sequence < scr->nmons)
 				c->monitor = n->sequence + 1;
@@ -3428,6 +3478,21 @@ getstartupid(Client *c)
 		return (id);
 	}
 	return (id);
+}
+
+void
+setstartupid(Client *c, const char *id)
+{
+	Window win = None;
+
+	if (!win && c->session && c->win != c->session)
+		win = c->session;
+	if (!win && c->leader && c->win != c->leader)
+		win = c->leader;
+	if (!win)
+		win = c->win;
+	XChangeProperty(dpy, win, _XA_NET_STARTUP_ID, _XA_UTF8_STRING, 8, PropModeReplace,
+			(unsigned char *) id, strlen(id) + 1);
 }
 
 char *

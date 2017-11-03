@@ -323,7 +323,7 @@ initrcfile_ADWM(const char *conf, Bool reload)
 		free(dir);
 	} else {
 		DPRINTF("Couldn't find database file '%s'\n", config.rcfile);
-		_DPRINTF("Could not find usable database, using defaults\n");
+		EPRINTF("Could not find usable database, using defaults\n");
 		if (chdir(config.udir))
 			DPRINTF("Could not change directory to %s: %s\n", config.udir, strerror(errno));
 	}

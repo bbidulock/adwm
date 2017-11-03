@@ -1226,6 +1226,8 @@ typedef struct {
 struct Notify {
 	Notify *next;
 	SnStartupSequence *seq;
+	char **names;
+	char **values;
 	char *id;
 	char *launcher;
 	char *launchee;

@@ -103,7 +103,7 @@ k_chain(XEvent *e, Key *key)
 
 	DPRINTF("Grabbing keyboard\n");
 	if (XGrabKeyboard(dpy, scr->root, GrabModeSync, False, GrabModeAsync, e->xkey.time)) {
-		_DPRINTF("Could not grab keyboard\n");
+		EPRINTF("Could not grab keyboard\n");
 		return;
 	}
 

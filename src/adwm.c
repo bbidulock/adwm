@@ -3903,7 +3903,7 @@ updaterootprop(Window root, Atom prop, int state)
 			return False;
 
 		name = XGetAtomName(dpy, prop);
-		_DPRINTF("%s WM property %s\n",
+		EPRINTF("%s WM property %s\n",
 			 state == PropertyDelete ? "deletion of" : "change to",
 			 (name = XGetAtomName(dpy, prop)));
 		if (name)
@@ -4040,7 +4040,7 @@ getscreen(Window win, Bool query)
 	if (XQueryTree(dpy, win, &wroot, &parent, &wins, &num))
 		XFindContext(dpy, wroot, context[ScreenContext], (XPointer *) &s);
 	else
-		_DPRINTF("XQueryTree(0x%lx) failed!\n", win);
+		EPRINTF("XQueryTree(0x%lx) failed!\n", win);
 	if (wins)
 		XFree(wins);
 	return (s);
@@ -4061,7 +4061,7 @@ geteventscr(XEvent *ev)
 		query = False;
 	if (!(event_scr = getscreen(win, query))) {
 		if (query)
-			_DPRINTF("Could not find event screen for event %d with window 0x%lx\n", ev->type, win);
+			EPRINTF("Could not find event screen for event %d with window 0x%lx\n", ev->type, win);
 		event_scr = scr;
 	}
 	return (event_scr);
@@ -4110,11 +4110,11 @@ run(void)
 		} else {
 			if (pfd.revents & (POLLNVAL | POLLHUP | POLLERR)) {
 				if (pfd.revents & POLLNVAL)
-					_DPRINTF("POLLNVAL bit set!\n");
+					EPRINTF("POLLNVAL bit set!\n");
 				if (pfd.revents & POLLHUP)
-					_DPRINTF("POLLHUP bit set!\n");
+					EPRINTF("POLLHUP bit set!\n");
 				if (pfd.revents & POLLERR)
-					_DPRINTF("POLLERR bit set!\n");
+					EPRINTF("POLLERR bit set!\n");
 				eprint("%s", "poll error\n");
 				exit(EXIT_FAILURE);
 			}
@@ -4273,7 +4273,7 @@ scan(void)
 			wins[i] = None;
 		}
 	} else
-		_DPRINTF("XQueryTree(0x%lx) failed\n", scr->root);
+		EPRINTF("XQueryTree(0x%lx) failed\n", scr->root);
 	if (wins)
 		XFree(wins);
 	DPRINTF("done scanning screen %d\n", scr->screen);
@@ -5176,22 +5176,22 @@ spawn(const char *arg)
 	if ((status = wordexp(arg, &we, 0)) != 0 || we.we_wordc < 1) {
 		switch(status) {
 		case WRDE_BADCHAR:
-			_DPRINTF("bad character in command string: %s\n", arg);
+			EPRINTF("bad character in command string: %s\n", arg);
 			break;
 		case WRDE_BADVAL:
-			_DPRINTF("undefined variable substitution in command string: %s\n", arg);
+			EPRINTF("undefined variable substitution in command string: %s\n", arg);
 			break;
 		case WRDE_CMDSUB:
-			_DPRINTF("command substitution in command string: %s\n", arg);
+			EPRINTF("command substitution in command string: %s\n", arg);
 			break;
 		case WRDE_NOSPACE:
-			_DPRINTF("out of memory processing command string: %s\n", arg);
+			EPRINTF("out of memory processing command string: %s\n", arg);
 			break;
 		case WRDE_SYNTAX:
-			_DPRINTF("syntax error in command string: %s\n", arg);
+			EPRINTF("syntax error in command string: %s\n", arg);
 			break;
 		default:
-			_DPRINTF("unknown error processing command string: %s\n", arg);
+			EPRINTF("unknown error processing command string: %s\n", arg);
 			break;
 		}
 		wordfree(&we); /* necessary ??? */
@@ -5213,7 +5213,7 @@ spawn(const char *arg)
 			setenv("DISPLAY", s, 1);
 		}
 		execvp(we.we_wordv[0], we.we_wordv);
-		_DPRINTF("execvp %s (%s) failed: %s\n", we.we_wordv[0], arg, strerror(errno));
+		EPRINTF("execvp %s (%s) failed: %s\n", we.we_wordv[0], arg, strerror(errno));
 		exit(EXIT_FAILURE);
 	} else {
 		wordfree(&we);
@@ -5228,13 +5228,13 @@ togglestruts(View *v)
 	else {
 		if (scr->options.hidebastards == 2) {
 			v->barpos = StrutsDown;
-			_DPRINTF("Setting struts to StrutsDown\n");
+			DPRINTF("Setting struts to StrutsDown\n");
 		} else if (scr->options.hidebastards) {
 			v->barpos = StrutsHide;
-			_DPRINTF("Setting struts to StrutsHide\n");
+			DPRINTF("Setting struts to StrutsHide\n");
 		} else {
 			v->barpos = StrutsOff;
-			_DPRINTF("Setting struts to StrutsOff\n");
+			DPRINTF("Setting struts to StrutsOff\n");
 		}
 	}
 	updategeom(v->curmon);
@@ -6032,10 +6032,10 @@ xerror(Display *dsply, XErrorEvent *ee)
 	if (XGetErrorText(dsply, ee->error_code, msg, 80) != Success)
 		msg[0] = '\0';
 	if (!dead) {
-		_DPRINTF("X error %s(0x%lx): %s\n", req, ee->resourceid, msg);
+		EPRINTF("X error %s(0x%lx): %s\n", req, ee->resourceid, msg);
 		return 0;
 	}
-	_DPRINTF("Fatal X error %s(0x%lx): %s\n", req, ee->resourceid, msg);
+	EPRINTF("Fatal X error %s(0x%lx): %s\n", req, ee->resourceid, msg);
 	dumpstack(__FILE__, __LINE__, __func__);
 	return xerrorxlib(dsply, ee);	/* may call exit */
 }
@@ -6059,7 +6059,7 @@ int
 xioerror(Display *dsply)
 {
 	dumpstack(__FILE__, __LINE__, __func__);
-	_DPRINTF("error is %s\n", strerror(errno));
+	EPRINTF("error is %s\n", strerror(errno));
 	return xioerrorxlib(dsply);
 }
 
@@ -6121,7 +6121,7 @@ main(int argc, char *argv[])
 			DPRINTF("have %s extension (%d,%d,%d)\n", einfo[i].name, einfo[i].opcode, einfo[i].event, einfo[i].error);
 			if (einfo[i].version) {
 				einfo[i].version(dpy, &einfo[i].major, &einfo[i].minor);
-				_DPRINTF("have %-10s extension version %d.%d\n", einfo[i].name, einfo[i].major, einfo[i].minor);
+				EPRINTF("have %-10s extension version %d.%d\n", einfo[i].name, einfo[i].major, einfo[i].minor);
 			}
 		} else
 			DPRINTF("%s", "%s extension is not supported\n", einfo[i].name);

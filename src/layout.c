@@ -532,6 +532,8 @@ tookfocus(Client *next)
 		}
 		reattachflist(next, True);
 	}
+	if (gave == took)
+		gave = NULL;
 	setfocused(took);
 }
 

@@ -1431,6 +1431,7 @@ extern AScreen *screens;
 extern AScreen *event_scr;
 extern Bool (*actions[LastOn][Button5-Button1+1][2]) (Client *, XEvent *);
 extern Client *sel;
+extern Client *gave;			/* gave focus last */
 extern Client *took;			/* took focus last */
 extern int nscr;
 extern int nrules;

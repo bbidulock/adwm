@@ -130,6 +130,7 @@ Bool running = True;
 Bool lockfocus = False;
 Client *focuslock = NULL;
 Client *sel;
+Client *gave;				/* gave focus last */
 Client *took;				/* took focus last */
 Group window_stack = { NULL, 0, 0 };
 
@@ -520,6 +521,10 @@ relfocus(Client *c)
 
 	if (took == c) {
 		took = NULL;
+		refocus = True;
+	}
+	if (gave == c) {
+		gave = NULL;
 		refocus = True;
 	}
 	if (sel == c) {
@@ -1411,14 +1416,6 @@ focusok(Client *c)
 static void
 setfocus(Client *c)
 {
-#if 0
-	/* yes we should refocus the same window in case we
-	   lost it and got out of sync on took */
-
-	if (c == took)
-		return;
-	else
-#endif
 	if (focusok(c)) {
 		CPRINTF(c, "setting focus\n");
 		if (c->can.focus & GIVE_FOCUS)
@@ -1438,6 +1435,7 @@ setfocus(Client *c)
 			ce.xclient.data.l[4] = 0l;
 			XSendEvent(dpy, c->win, False, NoEventMask, &ce);
 		}
+		gave = c;
 	} else if (!c) {
 		Window win = None;
 		int revert = RevertToPointerRoot;
@@ -1540,7 +1538,10 @@ focuschange(XEvent *e)
 		/* if nothing else particular is focussed, focus back
 		   on the client that last took focus, or focus on
 		   something, if possible (when took == NULL). */
-		focus(took);
+		if (gave)
+			focus(gave);
+		else
+			focus(took);
 		break;
 	default:
 		break;

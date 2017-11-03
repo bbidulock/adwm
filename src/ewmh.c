@@ -254,18 +254,22 @@ parse_startup_id(const char *id, char **launcher_p, char **launchee_p, char **ho
 
 	do {
 		const char *q;
-		char *tmp;
+		char *tmp, *b;
 
 		p = q = id;
 		if (!(p = strchr(q, '/')))
 			break;
-		if (launcher_p)
+		if (launcher_p) {
 			*launcher_p = strndup(q, p - q);
+			while ((b = strchr(*launcher_p, '|'))) *b = '/';
+		}
 		q = p + 1;
 		if (!(p = strchr(q, '/')))
 			break;
-		if (launchee_p)
+		if (launchee_p) {
 			*launchee_p = strndup(q, p - q);
+			while ((b = strchr(*launchee_p, '|'))) *b = '/';
+		}
 		q = p + 1;
 		if (!(p = strchr(q, '-')))
 			break;
@@ -317,80 +321,149 @@ parse_startup_id(const char *id, char **launcher_p, char **launchee_p, char **ho
 #ifdef STARTUP_NOTIFICATION
 static Notify *notifies;
 
-static Notify *
+struct SnStartupSequence
+{
+	int refcount;
+	SnDisplay *display;
+	int screen;
+	char *id;
+	char *name;
+	char *description;
+	char *wmclass;
+	int workspace;
+	Time timestamp;
+	char *binary_name;
+	char *icon_name;
+	char *application_id;
+	unsigned int completed : 1;
+	unsigned int canceled : 1;
+	unsigned int timestamp_set : 1;
+	int creation_serial;
+	struct timeval initiation_time;
+};
+
+static void
 n_new_notify(SnStartupSequence *seq)
 {
+	const char *text;
 	Notify *n;
 	Time timestamp;
 
+	text = sn_startup_sequence_get_id(seq);
 	n = emallocz(sizeof(*n));
 	n->seq = seq;
+	n->id = strdup(text);
 	sn_startup_sequence_ref(seq);
-	parse_startup_id(sn_startup_sequence_get_id(seq),
-			 &n->launcher, &n->launchee, &n->hostname,
+	_DPRINTF("%s seq ref count = %d\n", n->id, seq->refcount);
+	parse_startup_id(n->id, &n->launcher, &n->launchee, &n->hostname,
 			 &n->pid, &n->sequence, &n->timestamp);
 	if (!n->timestamp)
 		if ((timestamp = sn_startup_sequence_get_timestamp(seq)) != -1)
 			n->timestamp = timestamp;
-	return (n);
+	n->next = notifies;
+	notifies = n;
+}
+
+static void ewmh_update_sn_app_props(Client *c, Notify *n);
+
+static void
+n_chg_notify(SnStartupSequence *seq)
+{
+	Notify *n;
+
+	for (n = notifies; n && n->seq != seq; n = n->next) ;
+	if (n && n->assigned) {
+		Client *c;
+
+		for (c = scr->clients; c && c->seq != seq; c = c->next) ;
+		if (c)
+			ewmh_update_sn_app_props(c, n);
+	}
 }
 
 static void
 n_del_notify(Notify *n)
 {
-	if (n->launcher) {
-		free(n->launcher);
-		n->launcher = NULL;
-	}
-	if (n->launchee) {
-		free(n->launchee);
-		n->launchee = NULL;
-	}
-	if (n->hostname) {
-		free(n->hostname);
-		n->hostname = NULL;
-	}
-	if (n->seq) {
-		sn_startup_sequence_unref(n->seq);
-		n->seq = NULL;
-	}
-	n->next = NULL;
+	Notify *np, **npp;
+
+	_DPRINTF("%s seq ref count = %d\n", n->id, n->seq->refcount);
+	for (npp = &notifies;(np = *npp) != n;) npp = &np->next;
+	if (np == n)
+		*npp = n->next;
+	sn_startup_sequence_unref(n->seq);
+	free(n->id);
+	free(n->launcher);
+	free(n->launchee);
+	free(n->hostname);
 	free(n);
+}
+
+static void
+n_end_notify(SnStartupSequence *seq)
+{
+	Notify *n;
+
+	for (n = notifies; n && n->seq != seq; n = n->next) ;
+	if (n) {
+		n->complete = True;
+		/* Cannot delete a notification that has completed before it is assigned
+		   to a client.  This is because the first thing that most toolkits (such 
+		   as GTK) do is completed the sequence even before creating any window.
+		   */
+		if (n->assigned)
+			n_del_notify(n);
+	}
+}
+
+static SnStartupSequence *
+n_set_notify(Notify *n, Client *c)
+{
+	SnStartupSequence *seq;
+
+	if ((seq = c->seq)) {
+		EPRINTF("sequence already assigned to client\n");
+		return (seq);
+	}
+	seq = c->seq = n->seq;
+	sn_startup_sequence_ref(seq);
+	if (n->assigned)
+		EPRINTF("notify already assigned\n");
+	n->assigned = True;
+	if (!n->complete) {
+		sn_startup_sequence_complete(seq);
+		n->complete = True;
+	}
+	if (n->complete)
+		n_del_notify(n);
+	else
+		EPRINTF("could not find sequence\n");
+	return (seq);
 }
 
 static void
 sn_handler(SnMonitorEvent * event, void *dummy)
 {
-	Notify *n, **np;
 	SnStartupSequence *seq = NULL;
 
 	seq = sn_monitor_event_get_startup_sequence(event);
+	_DPRINTF("seq ref count = %d\n", seq->refcount);
 
 	switch (sn_monitor_event_get_type(event)) {
 	case SN_MONITOR_EVENT_INITIATED:
-		n = n_new_notify(seq);
-		n->next = notifies;
-		notifies = n;
 		DPRINTF("sn initiated id '%s'\n",
 			sn_startup_sequence_get_id(seq));
+		n_new_notify(seq);
 		break;
 	case SN_MONITOR_EVENT_CHANGED:
 		DPRINTF("sn changed id '%s'\n",
 			sn_startup_sequence_get_id(seq));
+		n_chg_notify(seq);
 		break;
 	case SN_MONITOR_EVENT_COMPLETED:
 	case SN_MONITOR_EVENT_CANCELED:
 		DPRINTF("sn completed/canceled id '%s'\n",
 			sn_startup_sequence_get_id(seq));
-		np = &notifies;
-		while ((n = *np)) {
-			if (n->seq == seq) {
-				*np = n->next;
-				n_del_notify(n);
-			} else {
-				np = &n->next;
-			}
-		}
+		n_end_notify(seq);
 		break;
 	}
 }
@@ -2435,31 +2508,24 @@ find_startup_seq(Client *c)
 	while (0);
 	if (n) {
 		long workspace;
-		char *id;
-		Notify *np, **npp;
 
-		_DPRINTF("FOUND STARTUP ID '%s'!\n",
-			sn_startup_sequence_get_id(n->seq));
-		seq = n->seq;
-		sn_startup_sequence_ref(seq);
-		c->seq = seq;
-		id = strdup(sn_startup_sequence_get_id(seq));
+		_DPRINTF("FOUND STARTUP ID '%s'!\n", n->id);
 		if (!startup_id) {
 			XChangeProperty(dpy, c->win, _XA_NET_STARTUP_ID,
 					_XA_UTF8_STRING, 8, PropModeReplace,
-					(unsigned char *) id, strlen(id) + 1);
+					(unsigned char *) n->id, strlen(n->id) + 1);
 		}
 		/* Note that if the window has mapped itself on the wrong workspace, we
 		   should move it there. */
-		if ((workspace = sn_startup_sequence_get_workspace(seq)) != -1) {
+		if ((workspace = sn_startup_sequence_get_workspace(n->seq)) != -1) {
 			if (0 <= workspace && workspace < scr->ntags) {
 				if (c->is.managed) {
 					_CPRINTF(c, "moving to workspace %ld for sequence '%s'\n",
-						 workspace, id);
+						 workspace, n->id);
 					tagonly(c, workspace);
 				} else {
 					_CPRINTF(c, "marking for workspace %ld for sequence '%s'\n",
-						 workspace, id);
+						 workspace, n->id);
 					c->tags = (1ULL << workspace);
 					/* likely have not been read yet */
 					XChangeProperty(dpy, c->win, _XA_NET_WM_DESKTOP,
@@ -2471,25 +2537,14 @@ find_startup_seq(Client *c)
 				}
 			}
 		} else
-			_CPRINTF(c, "workspace not defined in sequence '%s'\n", id);
-		if (strstr(id, "xdg-launch") == id)
+			_CPRINTF(c, "workspace not defined in sequence '%s'\n", n->id);
+		if (strstr(n->id, "xdg-launch") == n->id)
 			if (0 <= n->sequence && n->sequence < scr->nmons)
 				c->monitor = n->sequence + 1;
 		if (n->timestamp && n->timestamp != -1)
 			push_client_time(c, n->timestamp);
 		ewmh_update_sn_app_props(c, n);
-		/* XXX: don't know if we should complete the sequence here when the
-		   client is able to complete the sequence itself. */
-		sn_startup_sequence_complete(seq);
-		/* sn-monitor will not see it's own message nor complete the sequence */
-		npp = &notifies;
-		/* delete predecessor's next pointer */
-		while ((np = *npp) != n)
-			npp = &np->next;
-		if (np == n)
-			*npp = n->next;
-		n_del_notify(n);
-		free(id);
+		seq = n_set_notify(n, c);
 	}
 	if (startup_id)
 		free(startup_id);

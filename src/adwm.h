@@ -1226,12 +1226,15 @@ typedef struct {
 struct Notify {
 	Notify *next;
 	SnStartupSequence *seq;
+	char *id;
 	char *launcher;
 	char *launchee;
 	char *hostname;
 	pid_t pid;
 	long sequence;
 	long timestamp;
+	Bool complete;
+	Bool assigned;
 };
 #endif
 

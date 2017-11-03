@@ -5474,8 +5474,10 @@ unmanage(Client *c, WithdrawCause cause)
 	else if (c->is.transient)
 		removegroup(c, c->transfor, ClientTransFor);
 #ifdef STARTUP_NOTIFICATION
-	if (c->seq)
+	if (c->seq) {
 		sn_startup_sequence_unref(c->seq);
+		c->seq = NULL;
+	}
 #endif
 	free(c->name);
 	free(c->icon_name);

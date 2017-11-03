@@ -24,6 +24,7 @@
 -ss
 -hnl
 -nbc
+-TSnStartupSequence
 -TXClientMessageEvent
 -TSequence
 -TMessage

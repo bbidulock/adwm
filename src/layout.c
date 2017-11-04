@@ -416,14 +416,31 @@ attachflist(Client *c, Bool front)
 	Client *s;
 
 	assert(c->fnext == NULL);
-	if (front || !sel || sel == c) {
+	if (front || !took || took == c) {
 		c->fnext = scr->flist;
 		scr->flist = c;
 	} else {
-		for (s = scr->flist; s && s != sel; s = s->fnext) ;
-		assert(s == sel);
+		for (s = scr->flist; s && s != took; s = s->fnext) ;
+		assert(s == took);
 		c->fnext = s->fnext;
 		s->fnext = c;
+	}
+}
+
+static void
+attachalist(Client *c, Bool front)
+{
+	Client *s;
+
+	assert(c->anext == NULL);
+	if (front || !sel || sel == c) {
+		c->anext = scr->alist;
+		scr->alist = c;
+	} else {
+		for (s = scr->alist; s && s != sel; s = s->anext) ;
+		assert(s == sel);
+		c->anext = s->fnext;
+		s->anext = c;
 	}
 }
 
@@ -482,6 +499,17 @@ detachflist(Client *c)
 }
 
 static void
+detachalist(Client *c)
+{
+	Client **cp;
+
+	for (cp = &scr->alist; *cp && *cp != c; cp = &(*cp)->anext) ;
+	assert(*cp == c);
+	*cp = c->anext;
+	c->anext = NULL;
+}
+
+static void
 detachstack(Client *c)
 {
 	Client **cp;
@@ -514,6 +542,13 @@ reattachflist(Client *c, Bool front)
 }
 
 void
+reattachalist(Client *c, Bool front)
+{
+	detachalist(c);
+	attachalist(c, front);
+}
+
+void
 tookfocus(Client *next)
 {
 	Client *last = took;
@@ -535,6 +570,28 @@ tookfocus(Client *next)
 	if (gave == took)
 		gave = NULL;
 	setfocused(took);
+}
+
+void
+tookselect(Client *next)
+{
+	Client *last = sel;
+
+	sel = next;
+	if (last && last != next) {
+		if (last->is.selected) {
+			last->is.selected = False;
+			ewmh_update_net_window_state(last);
+		}
+	}
+	if (next && next != last) {
+		if (!next->is.selected) {
+			next->is.selected = True;
+			ewmh_update_net_window_state(next);
+		}
+		reattachalist(next, True);
+	}
+	setselected(sel);
 }
 
 static Bool
@@ -3363,7 +3420,7 @@ reparentclient(Client *c, AScreen *new_scr, int x, int y)
 		if (!(v = getview(x, y)))
 			v = nearview();
 		c->tags = v->seltags;
-		addclient(c, True, True);
+		addclient(c, True, True, True);
 		XReparentWindow(dpy, c->frame, scr->root, x, y);
 		XMoveWindow(dpy, c->frame, x, y);
 		XMapWindow(dpy, c->frame);
@@ -5445,7 +5502,7 @@ adddocknode(Container *t)
 }
 
 static void
-adddockapp(Client *c, Bool focusme, Bool raiseme)
+adddockapp(Client *c, Bool choseme, Bool focusme, Bool raiseme)
 {
 	Container *t, *n;
 	Leaf *l = NULL;
@@ -5493,7 +5550,7 @@ adddockapp(Client *c, Bool focusme, Bool raiseme)
 }
 
 void
-addclient(Client *c, Bool focusme, Bool raiseme)
+addclient(Client *c, Bool choseme, Bool focusme, Bool raiseme)
 {
 	View *v;
 
@@ -5539,6 +5596,7 @@ addclient(Client *c, Bool focusme, Bool raiseme)
 
 	attach(c, scr->options.attachaside);
 	attachclist(c);
+	attachalist(c, choseme);
 	attachflist(c, focusme);
 	attachstack(c, raiseme);
 	ewmh_update_net_client_lists();
@@ -5547,13 +5605,13 @@ addclient(Client *c, Bool focusme, Bool raiseme)
 	if (c->is.bastard)
 		return;
 	if (c->is.dockapp) {
-		adddockapp(c, focusme, raiseme);
+		adddockapp(c, choseme, focusme, raiseme);
 		return;
 	}
 	if (!(v = c->cview) && !(v = clientview(c)) && !(v = onview(c)))
 		return;
 	if (v->layout && v->layout->arrange && v->layout->arrange->addclient)
-		v->layout->arrange->addclient(c, focusme, raiseme);
+		v->layout->arrange->addclient(c, choseme, focusme, raiseme);
 }
 
 void

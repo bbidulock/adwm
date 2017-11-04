@@ -1461,7 +1461,6 @@ shouldsel(Client *c)
 	return True;
 }
 
-#if 0
 static Bool
 shouldfocus(Client *c)
 {
@@ -1473,19 +1472,17 @@ shouldfocus(Client *c)
 		return False;
 	return True;
 }
-#endif
 
-static Client *
+Client *
 findselect(Client *not)
 {
 	Client *c;
 
-	for (c = scr->flist; c && (c == not || !shouldsel(c)); c = c->fnext) ;
+	for (c = scr->alist; c && (c == not || !shouldsel(c)); c = c->anext) ;
 	return (c);
 }
 
-#if 0
-static Client *
+Client *
 findfocus(Client *not)
 {
 	Client *c;
@@ -1493,14 +1490,11 @@ findfocus(Client *not)
 	for (c = scr->flist; c && (c == not || !shouldfocus(c)); c = c->fnext) ;
 	return (c);
 }
-#endif
 
 static Bool
 focuschange(XEvent *e)
 {
 	XFocusChangeEvent *ev = &e->xfocus;
-	Window win = ev->window;
-	int revert = None;
 	Client *c = NULL;
 
 	/* Different approach: don't force focus, just track it.  When it goes to
@@ -1510,9 +1504,23 @@ focuschange(XEvent *e)
 		DPRINTF("FOCUS: mode = %d != %d\n", e->xfocus.mode, NotifyNormal);
 		return True;
 	}
+	switch (ev->window) {
+	case None:
+		setfocus(NULL);
+		return True;
+	case PointerRoot:
+		/* if nothing else particular is focussed, focus back on the client that
+		   last took focus, or focus on something, if possible (when took ==
+		   NULL). */
+		focus(NULL);
+		return True;
+	default:
+		break;
+	}
 	if ((c = findclient(ev->window))) {
 		if (ev->detail != NotifyInferior) {
-			DPRINTF("FOCUS: detail = %d != %d\n", e->xfocus.detail, NotifyInferior);
+			DPRINTF("FOCUS: detail = %d != %d\n", e->xfocus.detail,
+				NotifyInferior);
 			return True;
 		}
 		if (c == took && e->type == FocusOut) {
@@ -1527,25 +1535,7 @@ focuschange(XEvent *e)
 	}
 	if (e->type != FocusIn)
 		return True;
-
-	XGetInputFocus(dpy, &win, &revert);
-
-	switch (win) {
-	case None:
-		setfocus(NULL);
-		/* fall through */
-	case PointerRoot:
-		/* if nothing else particular is focussed, focus back
-		   on the client that last took focus, or focus on
-		   something, if possible (when took == NULL). */
-		if (gave)
-			focus(gave);
-		else
-			focus(took);
-		break;
-	default:
-		break;
-	}
+	tookfocus(NULL);
 	return True;
 }
 
@@ -1557,8 +1547,7 @@ focus(Client *c)
 	o = sel;
 	/* note that the client does not necessarily have to be focusable to be selected. */
 	if ((!c && scr->managed) || (c && !selectok(c)))
-		c = findselect(NULL);
-
+		c = findfocus(NULL);
 
 	sel = c;
 
@@ -2374,6 +2363,7 @@ show_client_state(Client *c)
 	CPRINTF(c, "%-20s: %s\n", "is.bastard", c->is.bastard ? "true" : "false");
 	CPRINTF(c, "%-20s: %s\n", "is.full", c->is.full ? "true" : "false");
 	CPRINTF(c, "%-20s: %s\n", "is.focused", c->is.focused ? "true" : "false");
+	CPRINTF(c, "%-20s: %s\n", "is.selected", c->is.selected ? "true" : "false");
 	CPRINTF(c, "%-20s: %s\n", "is.dockapp", c->is.dockapp ? "true" : "false");
 	CPRINTF(c, "%-20s: %s\n", "is.managed", c->is.managed ? "true" : "false");
 #endif
@@ -2749,7 +2739,7 @@ manage(Window w, XWindowAttributes *wa)
 
 	}
 
-	addclient(c, False, True);
+	addclient(c, False, False, True);
 
 	wc.border_width = 0;
 	mask = 0;

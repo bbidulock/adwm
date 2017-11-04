@@ -692,8 +692,11 @@ ewmh_del_client(Client *c, WithdrawCause cause)
 	case CauseUnmapped:
 	{
 		ewmh_update_net_client_lists();
-		if (sel == c) {
-			focus(NULL);
+		if (took == c) {
+			focus(findfocus(c));
+			ewmh_update_net_active_window();
+		} else if (sel == c) {
+			focus(findselect(c));
 			ewmh_update_net_active_window();
 		}
 		/* fall through */

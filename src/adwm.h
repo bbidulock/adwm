@@ -829,6 +829,7 @@ typedef union {
 		unsigned bastard:1;
 		unsigned full:1;
 		unsigned focused:1;
+		unsigned selected:1;
 		unsigned dockapp:1;
 		unsigned moveresize:1;
 		unsigned managed:1;
@@ -906,6 +907,7 @@ struct Client {
 	Client *snext;
 	Client *cnext;
 	Client *fnext;
+	Client *anext;
 	Window win;
 	Window icon;
 	Window title;
@@ -1166,8 +1168,9 @@ struct AScreen {
 	int last;
 	int nmons;
 	Client *stack;
-	Client *clist;
-	Client *flist;
+	Client *clist;			/* client list in creation order */
+	Client *flist;			/* client list in last focus order */
+	Client *alist;			/* client list in last active order */
 	Bool showing_desktop;
 	int screen;
 	int ntags;
@@ -1283,6 +1286,8 @@ void decborder(int px);
 void setmargin(int px);
 void incmargin(int px);
 void decmargin(int px);
+Client *findfocus(Client *not);
+Client *findselect(Client *not);
 void focus(Client *c);
 void focusicon(void);
 void focusnext(Client *c);

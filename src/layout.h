@@ -25,7 +25,7 @@ struct Arrangement {
 	void *handle;
 	const char *name;
 	void (*initlayout) (View *v);
-	void (*addclient) (Client *c, Bool focusme, Bool raisme);
+	void (*addclient) (Client *c, Bool choseme, Bool focusme, Bool raisme);
 	void (*delclient) (Client *c);
 	void (*raise) (Client *c);
 	void (*lower) (Client *c);
@@ -53,11 +53,12 @@ struct Arrangement {
 };
 
 Bool isvisible(Client *c, View *v);
-void addclient(Client *c, Bool focusme, Bool raiseme);
+void addclient(Client *c, Bool choseme, Bool focusme, Bool raiseme);
 void delclient(Client *c);
 void setfocused(Client *c);
 void setselected(Client *c);
 void tookfocus(Client *c);
+void tookselect(Client *c);
 Bool enterclient(XEvent *e, Client *c);
 Bool configureclient(XEvent *e, Client *c, int gravity);
 Bool configureshapes(Client *c);

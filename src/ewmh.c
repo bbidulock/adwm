@@ -361,6 +361,9 @@ n_new_notify(SnStartupSequence *seq)
 	n = emallocz(sizeof(*n));
 	n->seq = seq;
 	n->id = strdup(text);
+	n->pid = -1;
+	n->sequence = -1;
+	n->timestamp = -1;
 	sn_startup_sequence_ref(seq);
 	parse_startup_id(n->id, &n->launcher, &n->launchee, &n->hostname,
 			 &n->pid, &n->sequence, &n->timestamp);
@@ -2379,77 +2382,97 @@ ewmh_update_sn_app_props(Client *c, Notify *n)
 		XChangeProperty(dpy, win, _XA_NET_STARTUP_ID,
 				_XA_UTF8_STRING, 8, PropModeReplace,
 				(unsigned char *) text, strlen(text) + 1);
-	}
+	} else
+		_CPRINTF(c, "%s sequence has no id!\n", n->id);
 	if ((text = n->launcher)) {
 		XChangeProperty(dpy, win, _XA_NET_SN_LAUNCHER,
 				_XA_UTF8_STRING, 8, PropModeReplace,
 				(unsigned char *) text, strlen(text) + 1);
-	}
+	} else
+		CPRINTF(c, "%s sequence has no launcher!\n", n->id);
 	if ((text = n->launchee)) {
 		XChangeProperty(dpy, win, _XA_NET_SN_LAUNCHEE,
 				_XA_UTF8_STRING, 8, PropModeReplace,
 				(unsigned char *) text, strlen(text) + 1);
-	}
+	} else
+		CPRINTF(c, "%s sequence has no launchee!\n", n->id);
 	if ((text = n->hostname)) {
 		XChangeProperty(dpy, win, _XA_NET_SN_HOSTNAME,
 				_XA_UTF8_STRING, 8, PropModeReplace,
 				(unsigned char *) text, strlen(text) + 1);
-	}
-	if ((data = n->pid)) {
+	} else
+		CPRINTF(c, "%s sequence has no hostname!\n", n->id);
+	if (n->pid != -1) {
+		data = n->pid;
 		XChangeProperty(dpy, win, _XA_NET_SN_PID,
 				XA_CARDINAL, 32, PropModeReplace,
 				(unsigned char *) &data, 1);
-	}
-	if ((data = n->sequence)) {
+	} else
+		CPRINTF(c, "%s sequence has no pid!\n", n->id);
+	if (n->sequence != -1) {
+		data = n->sequence;
 		XChangeProperty(dpy, win, _XA_NET_SN_SEQUENCE,
 				XA_CARDINAL, 32, PropModeReplace,
 				(unsigned char *) &data, 1);
-	}
-	if ((data = n->timestamp)) {
+	} else
+		CPRINTF(c, "%s sequence has no sequence!\n", n->id);
+	if (n->timestamp != -1) {
+		data = n->timestamp;
 		XChangeProperty(dpy, win, _XA_NET_SN_TIMESTAMP,
 				XA_CARDINAL, 32, PropModeReplace,
 				(unsigned char *) &data, 1);
-	}
+	} else
+		CPRINTF(c, "%s sequence has no timestamp!\n", n->id);
 	if ((text = sn_startup_sequence_get_application_id(seq))) {
 		XChangeProperty(dpy, win, _XA_NET_SN_APPLICATION_ID,
 				_XA_UTF8_STRING, 8, PropModeReplace,
 				(unsigned char *) text, strlen(text) + 1);
-	}
+	} else
+		_CPRINTF(c, "%s sequence has no application id!\n", n->id);
 	if ((text = sn_startup_sequence_get_name(seq))) {
 		XChangeProperty(dpy, win, _XA_NET_SN_NAME,
 				_XA_UTF8_STRING, 8, PropModeReplace,
 				(unsigned char *) text, strlen(text) + 1);
-	}
+	} else
+		CPRINTF(c, "%s sequence has no name!\n", n->id);
 	if ((text = sn_startup_sequence_get_description(seq))) {
 		XChangeProperty(dpy, win, _XA_NET_SN_DESCRIPTION,
 				_XA_UTF8_STRING, 8, PropModeReplace,
 				(unsigned char *) text, strlen(text) + 1);
-	}
+	} else
+		CPRINTF(c, "%s sequence has no description!\n", n->id);
 	if ((text = sn_startup_sequence_get_icon_name(seq))) {
 		XChangeProperty(dpy, win, _XA_NET_SN_ICON_NAME,
 				_XA_UTF8_STRING, 8, PropModeReplace,
 				(unsigned char *) text, strlen(text) + 1);
-	}
+	} else
+		CPRINTF(c, "%s sequence has no icon name!\n", n->id);
 	if ((text = sn_startup_sequence_get_binary_name(seq))) {
 		XChangeProperty(dpy, win, _XA_NET_SN_BINARY_NAME,
 				_XA_UTF8_STRING, 8, PropModeReplace,
 				(unsigned char *) text, strlen(text) + 1);
-	}
+	} else
+		CPRINTF(c, "%s sequence has no binary name!\n", n->id);
 	if ((text = sn_startup_sequence_get_wmclass(seq))) {
 		XChangeProperty(dpy, win, _XA_NET_SN_WMCLASS,
 				_XA_UTF8_STRING, 8, PropModeReplace,
 				(unsigned char *) text, strlen(text) + 1);
-	}
-	if ((data = sn_startup_sequence_get_screen(seq))) {
+	} else
+		CPRINTF(c, "%s sequence has no wmclass!\n", n->id);
+	if (sn_startup_sequence_get_screen(seq) != -1) {
+		data = sn_startup_sequence_get_screen(seq);
 		XChangeProperty(dpy, win, _XA_NET_SN_SCREEN,
 				XA_CARDINAL, 32, PropModeReplace,
 				(unsigned char *) &data, 1);
-	}
-	if ((data = sn_startup_sequence_get_workspace(seq))) {
+	} else
+		_CPRINTF(c, "%s sequence has no screen!\n", n->id);
+	if (sn_startup_sequence_get_workspace(seq) != -1) {
+		data = sn_startup_sequence_get_workspace(seq);
 		XChangeProperty(dpy, win, _XA_NET_SN_WORKSPACE,
 				XA_CARDINAL, 32, PropModeReplace,
 				(unsigned char *) &data, 1);
-	}
+	} else
+		CPRINTF(c, "%s sequence has no workspace!\n", n->id);
 }
 #endif
 
@@ -2577,12 +2600,13 @@ find_startup_seq(Client *c)
 	if (n) {
 		long workspace;
 
-		_DPRINTF("FOUND STARTUP ID '%s'!\n", n->id);
+		_CPRINTF(c, "FOUND STARTUP ID '%s'!\n", n->id);
 		if (!startup_id)
 			setstartupid(c, n->id);
 		/* Note that if the window has mapped itself on the wrong workspace, we
 		   should move it there. */
-		if ((workspace = sn_startup_sequence_get_workspace(n->seq)) != -1) {
+		if (sn_startup_sequence_get_workspace(n->seq) != -1) {
+			workspace = sn_startup_sequence_get_workspace(n->seq);
 			if (0 <= workspace && workspace < scr->ntags) {
 				if (c->is.managed) {
 					CPRINTF(c, "moving to workspace %ld for sequence '%s'\n", workspace, n->id);
@@ -2600,7 +2624,7 @@ find_startup_seq(Client *c)
 				}
 			}
 		} else
-			CPRINTF(c, "workspace not defined in sequence '%s'\n", n->id);
+			_CPRINTF(c, "workspace not defined in sequence '%s'\n", n->id);
 		if (strstr(n->id, "xdg-launch") == n->id)
 			if (0 <= n->sequence && n->sequence < scr->nmons)
 				c->monitor = n->sequence + 1;

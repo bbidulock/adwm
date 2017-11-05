@@ -1500,29 +1500,37 @@ focuschange(XEvent *e)
 	/* Different approach: don't force focus, just track it.  When it goes to
 	   PointerRoot or None, set it to something reasonable. */
 
+	DPRINTF("FOCUS: XFocusChangeEvent type %s window 0x%lx mode %d detail %d\n",
+		 e->type == FocusIn ? "FocusIn" : "FocusOut", ev->window,
+		 ev->mode, ev->detail);
+
 	if (ev->mode != NotifyNormal) {
 		DPRINTF("FOCUS: mode = %d != %d\n", e->xfocus.mode, NotifyNormal);
 		return True;
 	}
 	switch (ev->window) {
 	case None:
+	      none:
 		setfocus(NULL);
 		return True;
 	case PointerRoot:
+	      pointerroot:
 		/* if nothing else particular is focussed, focus back on the client that
 		   last took focus, or focus on something, if possible (when took ==
 		   NULL). */
 		focus(NULL);
 		return True;
 	default:
+		if (ev->window == event_scr->root) {
+			if (ev->detail == NotifyDetailNone)
+				goto none;
+			if (ev->detail == NotifyPointerRoot)
+				goto pointerroot;
+			return True;
+		}
 		break;
 	}
 	if ((c = findclient(ev->window))) {
-		if (ev->detail != NotifyInferior) {
-			DPRINTF("FOCUS: detail = %d != %d\n", e->xfocus.detail,
-				NotifyInferior);
-			return True;
-		}
 		if (c == took && e->type == FocusOut) {
 			tookfocus(NULL);
 			return True;

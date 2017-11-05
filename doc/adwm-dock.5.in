@@ -1,0 +1,481 @@
+.Dd @MDOCDATE@
+.Dt @PACKAGE_NAME@-THEME \&5 "File Formats"
+.Os @PACKAGE_STRING@
+.Sh NAME
+.Nm @PACKAGE@-dock
+.Nd advanced dynamic window manager for X: dock
+.Sh SYNOPSIS
+.Bl -item -compact
+.It
+.Pa ~/.@PACKAGE@/themes/ Ns Cm <theme.name> Ns Pa /dockrc
+.It
+.Pa @pkgconfdir@/themes/ Ns Cm <theme.name> Ns Pa /dockrc
+.It
+.Pa ~/.@PACKAGE@/dockrc
+.It
+.Pa @pkgconfdir@/dockrc
+.El
+.Sh DESCRIPTION
+.Nm @PACKAGE_NAME@
+is a light-weight, re-parenting, dynamic tiling/stacking window manager,
+intended on being fully controllable using only the keyboard: the
+objective of all dynamic tiling window managers.  However,
+.Nm @PACKAGE_NAME@
+also supports multiple views, different layout formats per view, and
+Window Maker dock application dock.
+.Pp
+Many light-weight window managers support a dock:
+.Xr blackbox 1 ,
+.Xr fluxbox 1 ,
+.Xr openbox 1 ,
+.Xr pekwm 1 ,
+.Xr wmaker 1 ;
+.Nm @PACKAGE_NAME@
+is no exception.
+The application dock can be customized using dock theme elements.
+.Pp
+Dock elements differ from other style and theme elements (see
+.Xr adwm-style 5
+and
+.Xr adwm-theme 5 Ns ).
+Although dock elements are theme elements, they also contain state
+information about the state of the dock and the ordering of dock
+applications within the dock.  Therefore, it is maintained as a separate
+file that can be separately written to the user directory to save state.
+.Pp
+To control the theme of the dock,
+.Nm @PACKAGE_NAME@
+supports customizable dock theme elements.  Customizable dock theme elements are
+defined in an X Resource formatted configuration file.  Dock theme elements
+can either be part of the main configuration file, or they can be
+included or referenced from the main configuration file.  It is typical
+to place the dock theme elements in a file named
+.Pa dockrc
+in the same directory as the
+.Pa themerc
+configuration file that references or includes it.
+See
+.Sx FILES ,
+below.
+.Sh SYNTAX
+The general syntax of style and theme elements, as specified directly in
+the
+.Nm @PACKAGE_NAME@
+resource file, is as follows:
+.Pp
+.Dl Adwm* Ns Cm element Ns Li : Ar <value>
+.Pp
+Where the fields are defined as follows:
+.Pp
+.Bl -tag -width "XX"
+.It Cm element
+One of the elements described under
+.Sx ELEMENTS .
+.It Ar <value> Li = Li { Ns Ar <pixmap> Ns Li | Ns Ar <font> Ns Li | Ns Ar <color> Ns Li | Ns Ar <number> Ns Li | Ns Ar <string> Ns Li | Ns Ar <bool> Ns Li }
+The value depends on the element that is specified.  Typically the
+value is a path and name of a pixmap file, an X11 true-type or
+bitmapped font specification, an X11 color specification, a number, a
+string, a boolean, or a specially formatted value as follows:
+.Pp
+.Bl -tag -width "XXXXXXXX"
+.It Ar <pixmap>
+Pixmaps are specified with a full or relative path and file name.  When
+the path is relative, it is relative to the directory in which the
+dock file resides.
+Pixmaps can be formatted as
+.Pa .xbm
+or
+.Pa .xpm
+files.
+.Pp
+Example:
+.Li Adwm* Ns Cm button.iconify.pixmap Ns Li : Pa pixmaps/min_focused.xpm
+.It Ar <font>
+Fonts are specified with an Fontconfig pattern string or an X Logical
+Font Description (XFLD) formatted font specification string.  See
+.Xr FcParseName 3
+and
+.Xr xft 3 .
+.Pp
+Example:
+.Li Adwm* Ns Cm normal.font Ns Li : Ar "Liberation Sans:size=9:medium"
+.It Ar <color>
+Colors are specified as X resource colors.  This can be a color name or
+color specification.  For the possible format of colors, see
+.Xr XParseColor 3 .
+.Pp
+Example:
+.Li Adwm* Ns Cm selected.shadow Ns Li : Ar #394870
+.It Ar <number>
+A decimal number.
+.Pp
+Example:
+.Li Adwm* Ns Cm title Ns Li : Ar 15
+.It Ar <string>
+A specially formatted string as specified by the element definition.
+.Pp
+Example:
+.Li Adwm* Ns Cm titlelayout Ns Li : Ar "EFASLN  RIMC"
+.It Ar <bool>
+A boolean value taking either zero (0) or one (1) as an argument.
+.Pp
+Example:
+.Li Adwm* Ns Cm dectiled Ns Li : Ar 0
+.El
+.El
+.Sh ELEMENTS
+.Pp
+The theme elements are defined below.  Each heading provides the
+format of the command resource (without the
+.Li \(lqAdwm*\(rq
+portion) and the possible arguments for each element, in accordance
+with the element syntax described above under
+.Sx SYNTAX .
+.Ss STRUT THEME ELEMENTS
+Struts are fixed size and position,
+.Dq sticky
+windows that occupy the edge of the monitor.  They typically contain
+panels, docks, clips, system trays or other persistent desktop features.
+To customize the behaviour of these specialized windows,
+.Nm @PACKAGE_NAME@
+provides several strut theme elements that customize their behaviour.
+.Pp
+These directives can be contained in the main configuration file (see
+.Xr @PACKAGE@-config 5 Ns ),
+the theme configuration file (see
+.Xr @PACKAGE@-theme 5 Ns ),
+or the dock configuration file.  Historically, they were contained in
+the main configuration file,
+.Pa adwmrc ;
+however, currently they are typically contained in the dock
+configuration file,
+.Pa dockrc .
+.Pp
+The defined strut theme elements are as follows:
+.Bl -tag -width "XX"
+.It Li [ Ns Cm screen<s>. Ns Li ] Ns Cm hidebastards Ar <number>
+Specifies whether to lower bastards, hide bastards (remove struts) or
+turn struts off when struts are toggled.  This is only in effect when
+struts are disabled.
+The
+.Ar <number>
+value can be one of the following:
+.Pp
+.Bl -tag -width ".Ar 2 Li - Ic StrutsDown" -compact -offset indent
+.It Ar 0 Li - Ic StrutsOff
+Turn struts and dock off: marginalize unless selected.
+.It Ar 1 Li - Ic StrutsHide
+Hide struts and dock (remove from display).
+.It Ar 2 Li - Ic StrutsDown
+Struts and dock off: lower to bottom unless selected.
+.El
+.Pp
+The default value is zero (0): that is, turn struts off rather
+than hiding them.
+.Pp
+Applications with struts are dock and panel applications that
+occupy the edge of the screen.  When struts are on, these
+applications occupy their reserved area and the work area on
+the screen is reduced.  When struts are off, these
+applications occupy the edge of the screen; but, the work area
+is not reduced.  When struts are hidden, the work area of the
+screen is not reduced; however, the applications owning the
+struts are not displayed.
+.Pp
+This directive affects primarily the response to the
+.Cm struts
+key binding as described in
+.Xr @PACKAGE@-keys 5 .
+Setting this value to true has the effect of applying or
+removing struts; whereas, the value of false, provides for
+exposing and hiding struts.
+.Pp
+Default:
+.Li Adwm* Ns Cm hidebastards Ns Li : Ar 2
+.It Li [ Ns Cm screen<s>. Ns Li ] Ns Cm strutsactive Ar <bool>
+Specifies whether struts (panels and dock) should default to
+shown or hidden.
+The
+.Ar <bool>
+value can be zero (0), indicating false, or non-zero (1),
+indicating true.
+When true, struts default to shown; false, hidden.
+The default value is one (1): that is, struts are shown by default.
+.Pp
+Default:
+.Li Adwm* Ns Cm strutsactive Ns Li : Ar 0
+.Pp
+.Sy Note:
+this setting only affects the default for views.  The actual
+setting for a particular view can be altered using the
+.Cm struts
+key binding as described in
+.Xr @PACKAGE@-keys 5 .
+.El
+.Ss DOCK THEME ELEMENTS
+The dock is an area that contains Window Maker dock
+applications.
+The following directives specify the position and orientation
+of the dock.
+.Bl -tag -width "XX"
+.It Li [ Ns Cm screen<s>. Ns Li ] Ns Cm dock.position Ar <position>
+Specifies the position of the dock on the screen.
+The argument,
+.Ar <position> ,
+is an integer value that can be one of the following:
+.Pp
+.Bl -tag -width ".Ar DockSouthWest(0)" -compact -offset indent
+.It Ar "DockNone(0)"
+default (same as
+.Ar "DockEast(1)" Ns );
+.It Ar "DockEast(1)"
+centered right on the screen;
+.It Ar "DockNorthEast(2)"
+top right on the screen;
+.It Ar "DockNorth(3)"
+centered top on the screen;
+.It Ar "DockNorthWest(4)"
+top left on the screen;
+.It Ar "DockWest(5)"
+centered left on the screen;
+.It Ar "DockSouthWest(6)"
+bottom left on the screen;
+.It Ar "DockSouth(7)"
+centered bottom on the screen;
+.It Ar "DockSouthEast(9)"
+bottom right on the screen.
+.El
+.Pp
+The default value is
+.Ar "DockNone(0)" :
+that is, the dock is centered on the right of the screen.
+.Pp
+Default:
+.Li Adwm* Ns Cm dock.position Ns Li : Ar 0
+.It Li [ Ns Cm screen<s>. Ns Li ] Ns Cm dock.orient Ar <orientation>
+Specifies the orientation of the dock on the screen.
+The argument,
+.Ar "<orientation>" ,
+is an integer value that can be one of the following:
+.Pp
+.Bl -tag -width ".Ar DockVert(1)" -compact -offset indent
+.It Ar DockHorz(0)
+the dock is filled horizontally;
+.It Ar DockVert(1)
+the dock is filled vertically.
+.El
+.Pp
+The default value is chosen based on
+.Cm "dock.position" ,
+and is chosen so that the dock extends along the edge of the
+screen.
+.Pp
+Default:
+.Li Adwm* Ns Cm dock.orient Ns Li : Ar 1
+.It Li [ Ns Cm screen<s>. Ns Li ] Ns Cm dock.monitor Ar <monitor>
+Specifies the monitor (in a multi-head setup) that will be
+used to contain the dock.  The argument,
+.Ar <monitor> ,
+is a value between zero (0) and the number of monitors
+(inclusive).
+.Pp
+The special value zero (0) indicates that the
+monitor for the dock should be automatically chosen based on
+.Cm "dock.position" .
+When chosen automatically, the monitor selected for the dock
+will be the monitor closest to the dock position on the
+screen.
+The other values indicate the monitor number of the monitor
+that should contain the dock.
+.Pp
+The default value is zero (0): that is, the dock monitor is
+chosen automatically.
+.Pp
+Default:
+.Li Adwm* Ns Cm dock.monitor Ns Li : Ar 0
+.It Li [ Ns Cm screen<s>. Ns Li ] Ns Cm dock.app<n> Ar "<res_name> <res_class> <wm_command>"
+Specifies the relative position of dock applications in the
+dock.
+Dock applications with a value of
+.Cm <n>
+that is lower are placed earlier in the dock; higher, placed
+later.
+The arguments (separated by a single space) are interpreted as
+follows:
+.Pp
+.Bl -tag -width ".Ar <wm_command>" -compact -offset indent
+.It Ar "<res_name>"
+resource name in
+.Cm "WM_CLASS"
+property;
+.It Ar "<res_class>"
+resource class in
+.Cm "WM_CLASS"
+property;
+.It Ar "<wm_command>"
+command in
+.Cm "WM_COMMAND"
+property.
+.El
+.Pp
+Example:
+.Dl Adwm* Ns Cm dock.app0 Ns Li : Ar " wmclockmon DockApp wmclockmon"
+.Dl Adwm* Ns Cm dock.app1 Ns Li : Ar " wmblob DockApp wmblob"
+.Dl Adwm* Ns Cm dock.app2 Ns Li : Ar " wmnd wmnd wmnd"
+.Dl Adwm* Ns Cm dock.app3 Ns Li : Ar " wmcore wmcore wmcore"
+.Dl Adwm* Ns Cm dock.app4 Ns Li : Ar " wmcpuload DockApp wmcpuload"
+.Dl Adwm* Ns Cm dock.app5 Ns Li : Ar " wmtimer wmtimer wmtimer"
+.Dl Adwm* Ns Cm dock.app6 Ns Li : Ar " wmsysmon wmsysmon wmsysmon"
+.Dl Adwm* Ns Cm dock.app7 Ns Li : Ar " wmtimer wmtimer wmtimer"
+.Dl Adwm* Ns Cm dock.app8 Ns Li : Ar " wmbubble wmbubble wmbubble"
+.Dl Adwm* Ns Cm dock.app9 Ns Li : Ar " wmmixer WMMixer wmmixer"
+.Dl Adwm* Ns Cm dock.app10 Ns Li : Ar "wmnet WMNET wmnet"
+.Dl Adwm* Ns Cm dock.app11 Ns Li : Ar "wmCalClock wmCalClock wmCalClock"
+.Pp
+.Sy Note:
+No defaults are provided in the default
+.Pa @PACKAGE@rc
+file.  These resources, if defined at all, should likely be defined in the
+.Pa styleFile
+associated with the current style, as it is a themeable item.
+.El
+.Ss DOCK STYLE ELEMENTS
+The dock also uses several style elements from the
+.Pa styleFile
+for providing the decorative tile for the dock applications.  These
+styles are normally specified in the
+.Pa styleFile
+rather than in the
+.Pa dockFile
+because they are colors and textures that are normally part of the
+style, regardless of how the dock is themed (see
+.Xr @PACKAGE@-style 5 Ns ).
+.Sh FILES
+.Pp
+.Bl -tag -width "XX"
+.It Pa ~/.@PACKAGE@/themes/ Ns Cm <theme.name> Ns Pa /dockrc
+The location of the default user themed dock file.
+.It Pa @pkgconfdir@/themes/ Ns Cm <theme.name> Ns Pa /dockrc
+The location of the system default themed dock file.
+.It Pa @sharedir@/themes/ Ns Cm <theme.name> Ns Pa /@PACKAGE@/dockrc
+The location of the system XDG default themed dock file.
+.It Pa ~/.@PACKAGE@/dockrc
+The location of the default user dock file.
+.It Pa @pkgconfdir@/dockrc
+The location of the default system dock file.
+.El
+.Pp
+Because dock style elements are more thematic, they are usually
+contained in a separate
+.Pa dockrc
+file that is included from the
+.Pa themerc
+file for a given theme.
+.Bl -tag -width "XX"
+.It Cm dockFile Pa <path>
+Specifies the path and filename,
+.Pa <path> ,
+of a file from which to read dock application style elements and dock
+application ordering.
+The path may be absolute or relative: when relative, the path
+is considered relative to the directory which contains the
+configuration file in which the declaration resides.
+The default is
+.Pa dockrc ,
+that is, the file named
+.Pa dockrc
+in the same directory as the main configuration file.
+.Pp
+The
+.Pa dockrc
+file is normally placed in the same directory as the
+.Pa themerc
+file to which it corresponds, or included by that file.  When a
+.Pa themerc
+file is specified, the file will normally specify or include the
+.Pa dockFile
+file.
+.Pp
+When the specified or default
+.Pa dockFile
+does not exist, directories are searched for one in the following order:
+.Pp
+.Bl -item -compact
+.It
+.Pa ~/.@PACKAGE@/themes/ Ns Cm <theme.name> Ns Pa /dockrc
+.It
+.Pa @pkgconfdir@/themes/ Ns Cm <theme.name> Ns Pa /dockrc
+.It
+.Pa @sharedir@/themes/ Ns Cm <theme.name> Ns Pa /@PACKAGE@/dockrc
+.It
+.Pa ~/.@PACKAGE@/dockrc
+.It
+.Pa @pkgconfdir@/dockrc
+.El
+.Pp
+Where
+.Cm <theme.name>
+is the name of the current theme resource.  When the theme name resource
+is not defined, paths including
+.Cm <theme.name>
+are skipped.
+When no file can be found, compiled-in defaults are used.
+.Pp
+See
+.Xr @PACKAGE@-theme 5
+for more information on how this file is included in a theme.
+.Pp
+Default:
+.Li Adwm* Ns Cm dockFile Ns Li : Pa dockrc
+.El
+.Sh COMPLIANCE
+.Pp
+In general the strut behavior features described above will fight with
+external panels, docks, system trays and other elements that are set for
+.Dq auto-hide
+or
+.Dq variable width
+behaviour.  It is best to turn these features off when using external
+panels with
+.Nm @PACKAGE_NAME@ .
+.Sh SEE ALSO
+.Rs
+.Xr adwm 1 ,
+.Xr adwm-config 5 ,
+.Xr adwm-theme 5 ,
+.Xr adwm-style 5 ,
+.Xr echinus 1 ,
+.Xr blackbox 1 ,
+.Xr fluxbox 1 ,
+.Xr pekwm 1 ,
+.Xr openbox 1 ,
+.Xr wmaker 1 .
+.Re
+.Sh BUGS
+No outstanding bugs.
+.Sh HISTORY
+.Cm @PACKAGE@
+configuration began with the simple X Resource scheme
+provided by
+.Xr echinus 1
+and quickly grew from there to support the advanced features
+of
+.Nm @PACKAGE_NAME@ .
+The same basic X Resource scheme is supported and an
+.Xr echinus 1
+resource file will work with
+.Nm @PACKAGE_NAME@
+(substituting
+.Ic Adwm*
+for
+.Ic Echinus* Ns ).
+.Sh AUTHORS
+.An Brian Bidulock Aq bidulock@openss7.org
+.Sh LICENSE
+.Nm @PACKAGE_NAME@
+is licensed under the GNU General Public License Version 3 or later.
+.sp
+See the
+.Pa COPYING
+file in the distribution.
+.\" vim: set ft=nroff sw=4 et nocin tw=72 spell:

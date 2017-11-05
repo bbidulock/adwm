@@ -1,6 +1,7 @@
 nodist_man_MANS = \
 	adwm.1 \
 	adwm-config.5 \
+	adwm-dock.5 \
 	adwm-keys.5 \
 	adwm-style.5 \
 	adwm-theme.5

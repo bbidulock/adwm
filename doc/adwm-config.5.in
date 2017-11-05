@@ -7,13 +7,17 @@
 .Sh SYNOPSIS
 .Bl -item -compact
 .It
-.Pa ~/.@PACKAGE@/@PACKAGE@rc
+.Cm @PACKAGE@ -f Pa <path>
 .It
-.Pa ~/.@PACKAGE@/styles/Default/@PACKAGE@rc
+.Cm ${XDG_RUNTIME_DIR} Ns Pa /@PACKAGE@/@PACKAGE@rc
+.It
+.Cm ${XDG_CONFIG_HOME} Ns Pa /@PACKAGE@/@PACKAGE@rc
+.It
+.Cm ${HOME} Ns Pa /.@PACKAGE@/@PACKAGE@rc
+.It
+.Cm ${XDG_CONFIG_DIRS} Ns Pa /@PACKAGE@/@PACKAGE@rc
 .It
 .Pa @pkgconfdir@/@PACKAGE@rc
-.It
-.Pa @pkgconfdir@/styles/Default/@PACKAGE@rc
 .El
 .Sh DESCRIPTION
 .Nm @PACKAGE_NAME@
@@ -124,6 +128,78 @@ then the key bindings file, and lastly the style elements
 file.  The file directives specifying the location of the last
 two files are as follows:
 .Bl -tag -width "XX"
+.It Cm themeName Pa <string>
+Specifies the name of a theme directory under which
+to look for the
+.Cm themeFile
+file.  Defaults to the value,
+.Dq Default .
+When specified, any default or specified relative
+path in the
+.Cm themeFile
+resource is considered relative to this directory.
+.Pp
+The directory can simply be an absolute path to a
+directory, or a theme name that is interpreted as
+the name of a subdirectory relative to the following
+directories:
+.Pp
+.Bl -item -compact
+.It
+.Cm ${XDG_DATA_HOME} Ns Pa /themes/ Ns Cm <themeName> Ns Pa /@PACKAGE@/
+.It
+.Cm ${HOME} Ns Pa /.@PACKAGE@/themes/ Ns Cm <themeName> Ns Pa /
+.It
+.Cm ${XDG_DATA_DIRS} Ns Pa /themes/ Ns Cm <themeName> Ns Pa /@PACKAGE@/
+.It
+.Pa @pkgconfdir@/themes/ Ns Cm <themeName> Ns Pa /
+.El
+.Pp
+See
+.Xr @PACKAGE@-theme 5
+for more information on the format and contents of this file.
+.Pp
+Default:
+.Li Adwm* Ns Cm themeName Ns Li : Pa Default
+.It Cm themeFile Pa <path>
+Specifies the path and filename,
+.Pa <path> ,
+of a file from which to read theme elements.  The path may be absoluite
+or relative: when relative, the path is considered relative to the
+directory which contains the configuration file in which the declaration
+resides.  The default is
+.Pa themerc ,
+that is,
+the file named
+.Pa themerc
+in the same directory as the main configuration file.
+If the
+.Pa themerc
+file does not exist,
+.Nm @PACKAGE_NAME@
+goes looking for it in the following places:
+.Pp
+.Bl -item -compact
+.It
+.Cm ${XDG_DATA_HOME} Ns Pa /themes/ Ns Cm <themeName> Ns Pa /@PACKAGE@/themerc
+.It
+.Cm ${HOME} Ns Pa /.@PACKAGE@/themes/ Ns Cm <themeName> Ns Pa /themerc
+.It
+.Cm ${XDG_DATA_DIRS} Ns Pa /themes/ Ns Cm <themeName> Ns Pa /@PACKAGE@/themerc
+.It
+.Pa @pkgconfdir@/themes/ Ns Cm <themeName> Ns Pa /themerc
+.\".It
+.\".Cm ${HOME} Ns Pa /.@PACKAGE@/themerc
+.\".It
+.\".Pa @pkgconfdir@/themerc
+.El
+.Pp
+See
+.Xr @PACKAGE@-theme 5
+for more information on the format and contents of this file.
+.Pp
+Default:
+.Li Adwm* Ns Cm themeFile Ns Li : Pa themerc
 .It Cm keysFile Pa <path>
 Specifies the path and filename,
 .Pa <path> ,
@@ -137,8 +213,59 @@ that is, the file named
 .Pa keysrc
 in the same directory as the main configuration file.
 .Pp
+The
+.Pa keysrc
+file is normally placed in the same directory as a
+.Pa themerc
+or
+.Pa stylerc
+file to which it is associated, or included by one of those files.  When
+a
+.Pa themerc
+file is specified, the file will normally specify or include the
+.Pa keysFile .
+.Pp
+See
+.Xr @PACKAGE@-keys 5
+for more information on the format and contents of this file.
+.Pp
 Default:
 .Li Adwm* Ns Cm keysFile Ns Li : Pa keysrc
+.It Cm styleName Pa <directory>
+Specifies the name of a style directory under which
+to look for the
+.Pa stylerc
+file.  Defaults to the value of the
+.Cm theme.name
+resources, or when that resource does not exist,
+.Dq Default .
+When specified, any default or specified relative
+path in the
+.Cm styleFile
+resource is considered relative to this directory.
+.Pp
+The directory can simply be and absolute path to a
+directory, or a style name which is interpreted as
+the name of a subdirectory relative to the following
+directories:
+.Pp
+.Bl -item -compact
+.It
+.Cm ${XDG_DATA_HOME} Ns Pa /themes/ Ns Cm <styleName> Ns Pa /@PACKAGE@/
+.It
+.Cm ${HOME} Ns Pa /.@PACKAGE@/styles/ Ns Cm <styleName> Ns Pa /
+.It
+.Cm ${XDG_DATA_DIRS} Ns Pa /themes/ Ns Cm <styleName> Ns Pa /@PACKAGE@/
+.It
+.Pa @pkgconfdir@/styles/ Ns Cm <styleName> Ns Pa /
+.El
+.Pp
+See
+.Xr @PACKAGE@-style 5
+for more information on the format and contents of this file.
+.Pp
+Default:
+.Li Adwm* Ns Cm styleName Ns Li : Pa Default
 .It Cm styleFile Pa <path>
 Specifies the path and filename,
 .Pa <path> ,
@@ -152,8 +279,84 @@ that is, the file named
 .Pa stylerc
 in the same directory as the main configuration file.
 .Pp
+The
+.Pa stylerc
+file is normally placed in the same directory as the
+.Pa themerc
+file to which it corresponds, or included by that file.  When a
+.Pa themerc
+file is specified, the file will normally specify or include the
+.Pa styleFile
+file.
+If the
+.Pa stylerc
+file does not exist,
+.Nm @PACKAGE_NAME@
+goes looking for it in the following places:
+.Pp
+.Bl -item -compact
+.It
+.Cm ${XDG_DATA_HOME} Ns Pa /themes/ Ns Cm <styleName> Ns Pa /@PACKAGE@/stylerc
+.It
+.Cm ${HOME} Ns Pa /.@PACKAGE@/styles/ Ns Cm <styleName> Ns Pa /stylerc
+.It
+.Cm ${XDG_DATA_DIRS} Ns Pa /themes/ Ns Cm <styleName> Ns Pa /@PACKAGE@/stylerc
+.It
+.Pa @pkgconfdir@/styles/ Ns Cm <styleName> Ns Pa /stylerc
+.El
+.Pp
+See
+.Xr @PACKAGE@-style 5
+for more information on the format and contents of this file.
+.Pp
 Default:
 .Li Adwm* Ns Cm styleFile Ns Li : Pa stylerc
+.It Cm dockFile Pa <path>
+Specifies the path and filename,
+.Pa <path> ,
+of a file from which to read dock application style elements and dock
+application ordering.
+The path may be absolute or relative: when relative, the path
+is considered relative to the directory which contains the
+configuration file in which the declaration resides.
+The default is
+.Pa dockrc ,
+that is, the file named
+.Pa dockrc
+in the same directory as the main configuration file.
+.Pp
+The
+.Pa dockrc
+file is normally placed in the same directory as the
+.Pa themerc
+file to which it corresponds, or included by that file.  When a
+.Pa themerc
+file is specified, the file will normally specify or include the
+.Pa dockFile
+file.
+If the
+.Pa dockrc
+file does not exist,
+.Nm @PACKAGE_NAME@
+goes looking for it in the following places:
+.Pp
+.Bl -item -compact
+.It
+.Cm ${XDG_DATA_HOME} Ns Pa /themes/ Ns Cm <themeName> Ns Pa /@PACKAGE@/dockrc
+.It
+.Cm ${HOME} Ns Pa /.@PACKAGE@/themes/ Ns Cm <themeName> Ns Pa /dockrc
+.It
+.Cm ${XDG_DATA_DIRS} Ns Pa /themes/ Ns Cm <themeName> Ns Pa /@PACKAGE@/dockrc
+.It
+.Pa @pkgconfdir@/themes/ Ns Cm <themeName> Ns Pa /dockrc
+.El
+.Pp
+See
+.Xr @PACKAGE@-dock 5
+for more information on the format and contents of this file.
+.Pp
+Default:
+.Li Adwm* Ns Cm dockFile Ns Li : Pa dockrc
 .El
 .Ss GENERAL DIRECTIVES
 General directives affect primarily the general look and feel of the
@@ -787,22 +990,24 @@ The location of the default user's configuration file.
 The location of the default user's key bindings file.
 .It Pa ~/.@PACKAGE@/stylerc
 The location of the default user's style file.
-.It Pa ~/.@PACKAGE@/styles/Default/stylerc
+.It Pa ~/.@PACKAGE@/styles/ Ns Cm <theme.name> Ns Pa /stylerc
 The location of the default user's themed style file.
 .It Pa @pkgconfdir@/@PACKAGE@rc
 The location of the system default configuration file.
 .It Pa @pkgconfdir@/keysrc
 The location of the system default key bindings file.
-.It Pa @pkgconfdir@/styles/Default/keysrc
+.It Pa @pkgconfdir@/styles/ Ns Cm <theme.name> Ns Pa /keysrc
 The location of the system default themed key bindings file.
-.It Pa @pkgconfdir@/styles/Default/stylerc
+.It Pa @pkgconfdir@/styles/ Ns Cm <theme.name> Ns Pa /stylerc
 The location of the system default themed style file.
 .El
 .Sh SEE ALSO
 .Rs
 .Xr echinus 1 ,
+.Xr @PACKAGE@-theme 5 ,
 .Xr @PACKAGE@-keys 5 ,
 .Xr @PACKAGE@-style 5 ,
+.Xr @PACKAGE@-dock 5 ,
 .Xr FcParseName 3 ,
 .Xr xft 3 ,
 .Xr XParseColor 3 ,
@@ -822,12 +1027,15 @@ The location of the system default themed style file.
 No outstanding bugs.
 .Sh HISTORY
 .Cm @PACKAGE@
-configuration began with the simple X Resource scheme provided by
-`echinus(1)` and quickly grew from there to support the advanced
-features of
+configuration began with the simple X Resource scheme
+provided by
+.Xr echinus 1
+and quickly grew from there to support the advanced features
+of
 .Nm @PACKAGE_NAME@ .
 The same basic X Resource scheme is supported and an
-`echinus(1)` resource file will work with
+.Xr echinus 1
+resource file will work with
 .Nm @PACKAGE_NAME@
 (substituting
 .Ic Adwm*

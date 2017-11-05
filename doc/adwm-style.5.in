@@ -145,9 +145,9 @@ with the element syntax described above under
 .Nm @PACKAGE_NAME@
 has a number of title-bar style elements that can be used to theme the
 decorative border that may be placed around client windows.  Some
-settings (such as backgrounds) are also applicable to the dock.
-Title bar style elements cannot be specified  on a per-screen basis:
-the settings always apply to all screens.
+settings (such as background colors, textures and pixmaps) are also
+applicable to the dock.  Title bar style elements cannot be specified
+on a per-screen basis: the settings always apply to all screens.
 .Bl -tag -width "XX"
 .It Cm font Ar <font>
 Specifies the font to be used for title bar text.
@@ -157,8 +157,9 @@ Example:
 .It Cm border Ar <pixels>
 Specifies the number of pixels,
 .Ar <pixels> ,
-of border that surrounds the title bar,
-resize grips and dock application tiles.
+of border that surrounds the title bar and
+resize grips.  (Note that dock applications and windows with struts (such
+as panels) always have the border set to zero (0)).
 Typically set to one (1).
 .Pp
 Example:
@@ -229,7 +230,7 @@ color of the border;
 .It Cm button Ar <color>
 background color of buttons;
 .It Cm bg Ar <color>
-background color of title bar and grips;
+background color of title bar, grips and dock application tiles;
 .It Cm fg Ar <color>
 foreground color of the title.
 .El

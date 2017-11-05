@@ -17,7 +17,7 @@
 #include "config.h"
 #include "draw.h" /* verification */
 
-enum { Normal, Selected };
+enum { Normal, Focused, Selected };
 enum { AlignLeft, AlignCenter, AlignRight };	/* title position */
 
 static unsigned int
@@ -255,7 +255,7 @@ elementw(AScreen *ds, Client *c, char which)
 {
 	int w = 0;
 	ElementType type = elementtype(which);
-	int hilite = (c == sel) ? Selected : Normal;
+	int hilite = (c == sel) ? Selected : (c->is.focused ? Focused : Normal);
 
 	if (0 > type || type >= LastElement)
 		return 0;
@@ -384,7 +384,7 @@ drawelement(AScreen *ds, char which, int x, int position, Client *c)
 {
 	int w = 0;
 	unsigned long *color = c == sel ? ds->style.color.sele : ds->style.color.norm;
-	int hilite = (c == sel) ? Selected : Normal;
+	int hilite = (c == sel) ? Selected : (c->is.focused ? Focused : Normal);
 	ElementType type = elementtype(which);
 	ElementClient *ec = &c->element[type];
 
@@ -549,7 +549,7 @@ drawclient(Client *c)
 	if (!status)
 		DPRINTF("Could not fill rectangle, error %d\n", status);
 	/* Don't know about this... */
-	if (ds->dc.w < textw(ds, c->name, (c == sel) ? Selected : Normal)) {
+	if (ds->dc.w < textw(ds, c->name, (c == sel) ? Selected : (c->is.focused ? Focused : Normal))) {
 		ds->dc.w -= elementw(ds, c, CloseBtn);
 		drawtext(ds, c->name, ds->dc.draw.pixmap, ds->dc.draw.xft,
 			 c == sel ? ds->style.color.sele : ds->style.color.norm,
@@ -1187,6 +1187,13 @@ freestyle()
 		free(scr->style.color.font[Normal]);
 		scr->style.color.font[Normal] = NULL;
 	}
+	if (scr->style.color.font[Focused]) {
+		XftColorFree(dpy, scr->visual,
+			     scr->colormap,
+			     scr->style.color.font[Focused]);
+		free(scr->style.color.font[Focused]);
+		scr->style.color.font[Focused] = NULL;
+	}
 	if (scr->style.color.font[Selected]) {
 		XftColorFree(dpy, scr->visual,
 			     scr->colormap,
@@ -1201,6 +1208,13 @@ freestyle()
 		free(scr->style.color.shadow[Normal]);
 		scr->style.color.shadow[Normal] = NULL;
 	}
+	if (scr->style.color.shadow[Focused]) {
+		XftColorFree(dpy, scr->visual,
+			     scr->colormap,
+			     scr->style.color.shadow[Focused]);
+		free(scr->style.color.shadow[Focused]);
+		scr->style.color.shadow[Focused] = NULL;
+	}
 	if (scr->style.color.shadow[Selected]) {
 		XftColorFree(dpy, scr->visual,
 			     scr->colormap,
@@ -1209,6 +1223,7 @@ freestyle()
 		scr->style.color.shadow[Selected] = NULL;
 	}
 	freefont(Normal);
+	freefont(Focused);
 	freefont(Selected);
 	if (scr->dc.gc) {
 		XFreeGC(dpy, scr->dc.gc);
@@ -1230,13 +1245,6 @@ initstyle(Bool reload)
 	Client *c;
 
 	freestyle();
-	scr->style.color.norm[ColBorder] =
-	    getcolor(getresource("normal.border", NORMBORDERCOLOR));
-	scr->style.color.norm[ColBG] = getcolor(getresource("normal.bg", NORMBGCOLOR));
-	scr->style.color.norm[ColFG] = getcolor(getresource("normal.fg", NORMFGCOLOR));
-	scr->style.color.norm[ColButton] =
-	    getcolor(getresource("normal.button", NORMBUTTONCOLOR));
-
 	scr->style.color.sele[ColBorder] =
 	    getcolor(getresource("selected.border", SELBORDERCOLOR));
 	scr->style.color.sele[ColBG] = getcolor(getresource("selected.bg", SELBGCOLOR));
@@ -1244,7 +1252,22 @@ initstyle(Bool reload)
 	scr->style.color.sele[ColButton] =
 	    getcolor(getresource("selected.button", SELBUTTONCOLOR));
 
+	scr->style.color.focu[ColBorder] =
+	    getcolor(getresource("focused.border", FOCBORDERCOLOR));
+	scr->style.color.focu[ColBG] = getcolor(getresource("focused.bg", FOCBGCOLOR));
+	scr->style.color.focu[ColFG] = getcolor(getresource("focused.fg", FOCFGCOLOR));
+	scr->style.color.focu[ColButton] =
+	    getcolor(getresource("focused.button", FOCBUTTONCOLOR));
+
+	scr->style.color.norm[ColBorder] =
+	    getcolor(getresource("normal.border", NORMBORDERCOLOR));
+	scr->style.color.norm[ColBG] = getcolor(getresource("normal.bg", NORMBGCOLOR));
+	scr->style.color.norm[ColFG] = getcolor(getresource("normal.fg", NORMFGCOLOR));
+	scr->style.color.norm[ColButton] =
+	    getcolor(getresource("normal.button", NORMBUTTONCOLOR));
+
 	scr->style.color.font[Selected] = emallocz(sizeof(XftColor));
+	scr->style.color.font[Focused] = emallocz(sizeof(XftColor));
 	scr->style.color.font[Normal] = emallocz(sizeof(XftColor));
 	XftColorAllocName(dpy, scr->visual,
 			  scr->colormap,
@@ -1252,9 +1275,13 @@ initstyle(Bool reload)
 			  scr->style.color.font[Selected]);
 	XftColorAllocName(dpy, scr->visual,
 			  scr->colormap,
+			  getresource("focused.fg", FOCFGCOLOR),
+			  scr->style.color.font[Focused]);
+	XftColorAllocName(dpy, scr->visual,
+			  scr->colormap,
 			  getresource("normal.fg", NORMFGCOLOR),
 			  scr->style.color.font[Normal]);
-	if (!scr->style.color.font[Selected] || !scr->style.color.font[Normal])
+	if (!scr->style.color.font[Selected] || !scr->style.color.font[Focused] || !scr->style.color.font[Normal])
 		eprint("error, cannot allocate colors\n");
 
 	if ((scr->style.drop[Selected] = atoi(getresource("selected.drop", "0")))) {
@@ -1266,6 +1293,15 @@ initstyle(Bool reload)
 		if (!scr->style.color.shadow[Selected])
 			eprint("error, cannot allocate colors\n");
 	}
+	if ((scr->style.drop[Focused] = atoi(getresource("focused.drop", "0")))) {
+		scr->style.color.shadow[Focused] = emallocz(sizeof(XftColor));
+		XftColorAllocName(dpy, scr->visual,
+				  scr->colormap,
+				  getresource("focused.shadow", SELBORDERCOLOR),
+				  scr->style.color.shadow[Focused]);
+		if (!scr->style.color.shadow[Focused])
+			eprint("error, cannot allocate colors\n");
+	}
 	if ((scr->style.drop[Normal] = atoi(getresource("normal.drop", "0")))) {
 		scr->style.color.shadow[Normal] = emallocz(sizeof(XftColor));
 		XftColorAllocName(dpy, scr->visual,
@@ -1275,8 +1311,9 @@ initstyle(Bool reload)
 		if (!scr->style.color.shadow[Normal])
 			eprint("error, cannot allocate colors\n");
 	}
-	initfont(getresource("normal.font", getresource("font", FONT)), Normal);
 	initfont(getresource("selected.font", getresource("font", FONT)), Selected);
+	initfont(getresource("focused.font", getresource("font", FONT)), Focused);
+	initfont(getresource("normal.font", getresource("font", FONT)), Normal);
 	scr->style.border = atoi(getresource("border", STR(BORDERPX)));
 	scr->style.margin = atoi(getresource("margin", STR(MARGINPX)));
 	scr->style.opacity = (int) ((double) OPAQUE * atof(getresource("opacity", STR(NF_OPACITY))));
@@ -1290,7 +1327,8 @@ initstyle(Bool reload)
 	if (!scr->style.titleheight)
 		scr->style.titleheight =
 		    max(scr->dc.font[Selected].height + scr->style.drop[Selected],
-			scr->dc.font[Normal].height + scr->style.drop[Normal]) + 2;
+		    max(scr->dc.font[Focused].height + scr->style.drop[Focused],
+			scr->dc.font[Normal].height + scr->style.drop[Normal])) + 2;
 	scr->dc.gc = XCreateGC(dpy, scr->drawable, 0, 0);
 	scr->dc.draw.w = DisplayWidth(dpy, scr->screen);
 	scr->dc.draw.h = max(scr->style.titleheight, scr->style.gripsheight);

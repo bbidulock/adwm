@@ -1065,7 +1065,7 @@ typedef struct {
 		int descent;
 		int height;
 		int width;
-	} font[2];
+	} font[3];
 	GC gc;
 	struct {
 		Pixmap pixmap;
@@ -1102,13 +1102,14 @@ typedef struct {
 	Bool fullgrips;
 	int opacity;
 	char titlelayout[32];
-	XftFont *font[2];
-	int drop[2];
+	XftFont *font[3];
+	int drop[3];
 	struct {
 		unsigned long norm[ColLast];
+		unsigned long focu[ColLast];
 		unsigned long sele[ColLast];
-		XftColor *font[2];
-		XftColor *shadow[2];
+		XftColor *font[3];
+		XftColor *shadow[3];
 	} color;
 } Style;
 

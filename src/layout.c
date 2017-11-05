@@ -558,12 +558,18 @@ tookfocus(Client *next)
 		if (last->is.focused) {
 			last->is.focused = False;
 			ewmh_update_net_window_state(last);
+			drawclient(last);
+			if (last != sel)
+				XSetWindowBorder(dpy, last->frame, scr->style.color.norm[ColBorder]);
 		}
 	}
 	if (next && next != last) {
 		if (!next->is.focused) {
 			next->is.focused = True;
 			ewmh_update_net_window_state(next);
+			drawclient(next);
+			if (next != sel)
+				XSetWindowBorder(dpy, next->frame, scr->style.color.focu[ColBorder]);
 		}
 		reattachflist(next, True);
 	}

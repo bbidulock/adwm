@@ -104,7 +104,7 @@ windows can snap to other windows and workspace/monitor boundaries.;
 .It
 key bindings for moving and resizing windows without using the mouse.
 .It
-drop shadowed XFT text in title bars, with separate color selection for active and inactive windows;
+drop shadowed XFT text in title bars, with separate color selection for active, focused, inactive and unfocused windows;
 .It
 dragging of windows between monitor;
 .It
@@ -1153,6 +1153,7 @@ so you can use your favourite panel or pager.
 .Xr @PACKAGE@-config 5 ,
 .Xr @PACKAGE@-keys 5 ,
 .Xr @PACKAGE@-style 5 ,
+.Xr @PACKAGE@-theme 5 ,
 .Xr awesome 1 ,
 .Xr dwm 1 ,
 .Xr echinus 1 ,
@@ -1172,8 +1173,34 @@ so you can use your favourite panel or pager.
 .Sh BUGS
 parsekey() doesn't handle non-alphanumeric keysyms.
 .Pp
-Please resport bugs to <https://github.com/bbidulock/@PACKAGE@/issues>.
+Please report bugs to <https://github.com/bbidulock/@PACKAGE@/issues>.
 .Sh HISTORY
+.Nm @PACKAGE_NAME@
+began from adding EWMH/NetWM support to
+.Xr echinus 1 ,
+which was itself derived from
+.Xr dwm 1 .
+It soon became clear that to support some of the advanced features that
+we intended would require a significant rewrite and
+.Nm @PACKAGE_NAME@
+was born out of that rewrite.
+.Pp
+I had been adding EWMH/NetWM 1.5 support to
+.Xr blackbox 1 ,
+.Xr icewm 1 ,
+.Xr etwm 1 ,
+and others such as
+.Xr 2bwm 1 ,
+and
+.Xr echinus 1 .
+What I was looking for was a nice light-weight window manager with
+stacking and tiling support and advanced theme support and customization
+that could be used as a primary and fallback window manager for the X
+Desktop Environment and the unexicon Linux distribution.
+Rather than rewrite an old one (like
+.Xr blackbox 1 Ns ),
+I started implementing all of the EWMH/NetWM support from scratch under
+.Nm @PACKAGE_NAME@ .
 .Sh AUTHORS
 .An Brian Bidulock Aq bidulock@openss7.org
 .Sh LICENSE

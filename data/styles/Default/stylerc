@@ -1,3 +1,9 @@
+Adwm*style.name:					Default
+Adwm*style.author:					Brian Bidulock
+Adwm*style.date:					Wed Feb 5 2014
+Adwm*style.credits:					
+Adwm*style.comments:					For ADWM.
+
 Adwm*selected.font:					Liberation Sans:size=9:medium
 Adwm*selected.drop:					1
 Adwm*selected.shadow:					#394870
@@ -5,6 +11,14 @@ Adwm*selected.border:					#5369a3
 Adwm*selected.button:					#f0f0f0
 Adwm*selected.bg:					#161616
 Adwm*selected.fg:					#c0e0ff
+
+Adwm*focused.font:					Liberation Sans:size=9:medium
+Adwm*focused.drop:					1
+Adwm*focused.shadow:					#394870
+Adwm*focused.border:					#5369a3
+Adwm*focused.button:					#f0f0f0
+Adwm*focused.bg:					#161616
+Adwm*focused.fg:					#c0e0ff
 
 Adwm*normal.font:					Liberation Sans:size=9:medium
 Adwm*normal.drop:					1

@@ -317,6 +317,10 @@ AC_DEFINE([NORMBORDERCOLOR],["#cccccc"],[Normal border color.])
 AC_DEFINE([NORMBUTTONCOLOR],["#cccccc"],[Normal button color.])
 AC_DEFINE([NORMBGCOLOR],["#cccccc"],[Normal background color.])
 AC_DEFINE([NORMFGCOLOR],["#000000"],[Normal forefoungd color.])
+AC_DEFINE([FOCBORDERCOLOR],["#ff9900"],[Focused border color.])
+AC_DEFINE([FOCBUTTONCOLOR],["#ff9900"],[Focused button color.])
+AC_DEFINE([FOCBGCOLOR],["#ff9900"],[Focused background color.])
+AC_DEFINE([FOCFGCOLOR],["#ffffff"],[Focused forefoungd color.])
 AC_DEFINE([SELBORDERCOLOR],["#ff9900"],[Selected border color.])
 AC_DEFINE([SELBUTTONCOLOR],["#ff9900"],[Selected button color.])
 AC_DEFINE([SELBGCOLOR],["#ff9900"],[Selected background color.])
@@ -361,6 +365,7 @@ AC_OUTPUT([Makefile
 	   doc/adwm-config.5
 	   doc/adwm-keys.5
 	   doc/adwm-style.5
+	   doc/adwm-theme.5
 	   data/Makefile])
 
 # vim: set ft=config:

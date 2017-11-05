@@ -1066,34 +1066,22 @@ taketoup
 .Sh FILES
 .Bl -tag -width "XX"
 .It Pa ~/.@PACKAGE@/@PACKAGE@rc
-The location of the default user's configuration file.
+The location of the user's default configuration file.
 .sp 0
 See
 .Xr @PACKAGE@-config 5
-for a description of this file.
-.It Pa ~/.@PACKAGE@/keysrc
-The location of the default user's key bindings file.
-.sp 0
-See
-.Xr @PACKAGE@-keys 5
-for a description of this file.
-.It Pa ~/.@PACKAGE@/stylerc
-The location of the default user's style file.
-.sp 0
-See
-.Xr @PACKAGE@-style 5
-for a description of this file.
-.It Pa ~/.@PACKAGE@/styles/Default/stylerc
-The location of the default user's themed style file.
-.sp 0
-See
-.Xr @PACKAGE@-style 5
 for a description of this file.
 .It Pa @pkgconfdir@/@PACKAGE@rc
 The location of the system default configuration file.
 .sp 0
 See
 .Xr @PACKAGE@-config 5
+for a description of this file.
+.It Pa ~/.@PACKAGE@/keysrc
+The location of the user's default key bindings file.
+.sp 0
+See
+.Xr @PACKAGE@-keys 5
 for a description of this file.
 .It Pa @pkgconfdir@/keysrc
 The location of the system default key bindings file.
@@ -1107,11 +1095,53 @@ The location of the system default themed key bindings file.
 See
 .Xr @PACKAGE@-keys 5
 for a description of this file.
+.It Pa ~/.@PACKAGE@/stylerc
+The location of the user's default style file.
+.sp 0
+See
+.Xr @PACKAGE@-style 5
+for a description of this file.
+.It Pa ~/.@PACKAGE@/styles/Default/stylerc
+The location of the default user's themed style file.
+.sp 0
+See
+.Xr @PACKAGE@-style 5
+for a description of this file.
 .It Pa @pkgconfdir@/styles/Default/stylerc
 The location of the system default themed style file.
 .sp 0
 See
 .Xr @PACKAGE@-style 5
+for a description of this file.
+.It Pa @sharedir@/themes/Default/@PACKAGE@/stylerc
+The location of the XDG system default themed style file.
+.sp 0
+See
+.Xr @PACKAGE@-style 5
+for a description of this file.
+.It Pa ~/.@PACKAGE@/themerc
+The location of the user's default theme file.
+.sp 0
+See
+.Xr @PACKAGE@-theme 5
+for a description of this file.
+.It Pa ~/.@PACKAGE@/themes/Default/themerc
+The location of the default user's theme file.
+.sp 0
+See
+.Xr @PACKAGE@-theme 5
+for a description of this file.
+.It Pa @pkgconfdir@/themes/Default/themerc
+The location of the system default theme file.
+.sp 0
+See
+.Xr @PACKAGE@-theme 5
+for a description of this file.
+.It Pa @sharedir@/themes/Default/@PACKAGE@/themerc
+The location of the XDG system default theme file.
+.sp 0
+See
+.Xr @PACKAGE@-theme 5
 for a description of this file.
 .El
 .Sh STANDARDS

@@ -2,13 +2,15 @@ nodist_man_MANS = \
 	adwm.1 \
 	adwm-config.5 \
 	adwm-keys.5 \
-	adwm-style.5
+	adwm-style.5 \
+	adwm-theme.5
 
 adwm_pod_files = \
 	adwm.pod \
 	adwm-config.pod \
 	adwm-keys.pod \
-	adwm-style.pod
+	adwm-style.pod \
+	adwm-theme.pod
 
 adwm_man1_files = \
 	adwm.man
@@ -16,6 +18,7 @@ adwm_man1_files = \
 adwm_man5_files = \
 	adwm-keys.man \
 	adwm-style.man \
+	adwm-theme.man \
 	adwm-config.man
 
 # dist_man1_MANS = $(adwm_man1_files)
@@ -38,6 +41,10 @@ adwm-keys.man: adwm-keys.pod
 adwm-style.man: TITLE = File Formats
 adwm-style.man: SECTION = 5
 adwm-style.man: adwm-style.pod
+
+adwm-theme.man: TITLE = File Formats
+adwm-theme.man: SECTION = 5
+adwm-theme.man: adwm-theme.pod
 
 
 .pod.man:

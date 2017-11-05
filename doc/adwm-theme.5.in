@@ -1,0 +1,120 @@
+.Dd @MDOCDATE@
+.Dt @PACKAGE_NAME@-THEME \&5 "File Formats"
+.Os @PACKAGE_STRING@
+.Sh NAME
+.Nm @PACKAGE@-theme
+.Nd advanced dynamic window manager for X: themes
+.Sh SYNOPSIS
+.Bl -item -compact
+.It
+.Pa ~/.@PACKAGE@/themerc
+.It
+.Pa ~/.@PACKAGE@/themes/Default/themerc
+.It
+.Pa @pkgconfdir@/themerc
+.It
+.Pa @pkgconfdir@/themes/Default/themerc
+.El
+.Sh DESCRIPTION
+.Nm @PACKAGE_NAME@
+is a light-weight, re-parenting, dynamic tiling/stacking window manager,
+intended on being fully controllable using only the keyboard: the
+objective of all dynamic tiling window managers.  However,
+.Nm @PACKAGE_NAME@
+also supports multiple views, different layout formats per view, and
+Window Maker dock application dock.
+These aspects of the window manager can be managed using theme elements.
+.Pp
+Theme elements differ from style style elements (see
+.Xr adwm-style 1 Ns ).
+Style elements apply to the windows on the desktop, whereas theme
+elements apply to the desktop itself and the struts around it.
+To control theme elements,
+.Nm @PACKAGE_NAME@
+supports customizable theme elements.  Customizable theme elements are
+defined in an X Resource formatted configuration file.  Themes can
+either be part of the main configuration file, or they can be included
+or referenced from the main configuration file.  It is typical to palce
+the theme elements in a file named
+.Pa themerc
+in the same directory as the main configuration file (e.g. in the
+.Pa ~/.@PACKAGE@/themerc
+file).  See
+.Sx FILES ,
+below.
+.Sh SYNTAX
+The general syntax of style elements, as specified directly in
+the
+.Nm @PACKAGE_NAME@
+resource file, is as follows:
+.Pp
+.Dl Adwm* Ns Cm element Ns Li : Ar <value>
+.Pp
+Where the fields are defined as follows:
+.Pp
+.Bl -tag -width "XX"
+.It Cm element
+One of the elements described under
+.Sx ELEMENTS .
+.It Ar <value> Li = Li { Ns Ar <pixmap> Ns Li | Ns Ar <font> Ns Li | Ns Ar <color> Ns Li | Ns Ar <number> Ns Li | Ns Ar <string> Ns Li | Ns Ar <bool> Ns Li }
+The value depends on the element that is specified.  Typically the
+value is a path and name of a pixmap file, an X11 true-type or
+bitmapped font specification, an X11 color specification, a number, a
+string, a boolean, or a specially formatted value as follows:
+.Pp
+.Bl -tag -width "XXXXXXXX"
+.It Ar <pixmap>
+Pixmaps are specified with a full or relative path and file name.  When
+the path is relative, it is relative to the directory in which the
+style file resides.
+Pixmaps can be formatted as
+.Pa .xbm
+or
+.Pa .xpm
+files.
+.Pp
+Example:
+.Li Adwm* Ns Cm button.iconify.pixmap Ns Li : Pa pixmaps/min_focused.xpm
+.It Ar <font>
+Fonts are specified with an Fontconfig pattern string or an X Logical
+Font Description (XFLD) formatted font specification string.  See
+.Xr FcParseName 3
+and
+.Xr xft 3 .
+.Pp
+Example:
+.Li Adwm* Ns Cm normal.font Ns Li : Ar "Liberation Sans:size=9:medium"
+.It Ar <color>
+Colors are specified as X resource colors.  This can be a color name or
+color specification.  For the possible format of colors, see
+.Xr XParseColor 3 .
+.Pp
+Example:
+.Li Adwm* Ns Cm selected.shadow Ns Li : Ar #394870
+.It Ar <number>
+A decimal number.
+.Pp
+Example:
+.Li Adwm* Ns Cm title Ns Li : Ar 15
+.It Ar <string>
+A specially formatted string as specified by the element definition.
+.Pp
+Example:
+.Li Adwm* Ns Cm titlelayout Ns Li : Ar "EFASLN  RIMC"
+.It Ar <bool>
+A boolean value taking either zero (0) or one (1) as an argument.
+.Pp
+Example:
+.Li Adwm* Ns Cm dectiled Ns Li : Ar 0
+.El
+.El
+.Sh ELEMENTS
+.Pp
+The theme elements are defined below.  Each heading provides the
+format of the command resource (without the
+.Li \(lqAdwm*\(rq
+portion) and the possible arguments for each element, in accordance
+with the element syntax described above under
+.Sx SYNTAX .
+
+.\" vim: set ft=nroff sw=4 et nocin tw=72 spell:

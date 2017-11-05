@@ -14,6 +14,8 @@
 .Pa @pkgconfdir@/stylerc
 .It
 .Pa @pkgconfdir@/styles/Default/stylerc
+.It
+.Pa @sharedir@/themes/Default/@PACKAGE@/stylerc
 .El
 .Sh DESCRIPTION
 .Nm @PACKAGE_NAME@
@@ -206,9 +208,11 @@ resize grips in one of two possible states (normal and selected).
 can be one of:
 .Bl -tag -width ".Cm selected" -compact -offset indent
 .It Cm normal
-the window is in the normal state; or,
+the window is in the normal state;
+.It Cm focused
+the window is in the focused state (but not selected); or,
 .It Cm selected
-the window is in the selected state.
+the window is in the selected state (but not necessarily focused).
 .El
 .Pp
 .Cm <element>
@@ -246,6 +250,13 @@ Example:
 .Dl Adwm* Ns Cm selected.button Ns Li : Ar "#f0f0f0"
 .Dl Adwm* Ns Cm selected.bg Ns Li : Ar "    #161616"
 .Dl Adwm* Ns Cm selected.fg Ns Li : Ar "    #c0e0ff"
+.Dl Adwm* Ns Cm focused.font Ns Li : Ar "   Liberation Sans:size=9:medium"
+.Dl Adwm* Ns Cm focused.drop Ns Li : Ar "   1"
+.Dl Adwm* Ns Cm focused.shadow Ns Li : Ar " #394870"
+.Dl Adwm* Ns Cm focused.border Ns Li : Ar " #5369a3"
+.Dl Adwm* Ns Cm focused.button Ns Li : Ar " #f0f0f0"
+.Dl Adwm* Ns Cm focused.bg Ns Li : Ar "     #161616"
+.Dl Adwm* Ns Cm focused.fg Ns Li : Ar "     #c0e0ff"
 .Dl Adwm* Ns Cm normal.font Ns Li : Ar "    Liberation Sans:size=9:medium"
 .Dl Adwm* Ns Cm normal.drop Ns Li : Ar "    1"
 .Dl Adwm* Ns Cm normal.shadow Ns Li : Ar "  #373737"
@@ -313,17 +324,22 @@ while a mouse button is held down on the button;
 .It Cm hovered
 while the pointer is hovering over the button;
 .It Cm focused
-when the window is focused;
+when the window is active (selected);
 .It Cm unfocus
-when the is not focused.
+when the is not active (not selected).
 .El
+.Pp
+These state names are a little bit funny now that windows can be
+selected without being focused.  The settings apply to selection only
+and not to focus, because they have to do with pointer buttons and not
+keyboard focus.
 .It Li [ Ns Cm .b<n> Ns Li ]
 When
 .Cm <state> is Cm pressed ,
 an optional button number,
 .Cm <n> ,
 can be provided to specify a pressed pixmap that is different for each
-button.  (But, this functionality has not yet been implemented.)
+button.
 .El
 .Pp
 Example:

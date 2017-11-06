@@ -7,11 +7,17 @@
 .Sh SYNOPSIS
 .Bl -item -compact
 .It
-.Pa ~/.@PACKAGE@/themes/ Ns Cm <theme.name> Ns Pa /dockrc
+.Cm $(dirname <themeFile>) Ns Pa /dockrc
 .It
-.Pa @pkgconfdir@/themes/ Ns Cm <theme.name> Ns Pa /dockrc
+.Cm $(dirname <styleFile>) Ns Pa /dockrc
 .It
-.Pa ~/.@PACKAGE@/dockrc
+.Cm ${ADWMPRIVDIR} Ns Pa /dockrc
+.It
+.Cm ${XDG_RUNTIME_DIR} Ns Pa /@PACKAGE@/dockrc
+.It
+.Cm ${XDG_CONFIG_HOME} Ns Pa /@PACKAGE@/dockrc
+.It
+.Cm ${HOME} Ns Pa /.@PACKAGE@/dockrc
 .It
 .Pa @pkgconfdir@/dockrc
 .El
@@ -392,11 +398,20 @@ style, regardless of how the dock is themed (see
 .Sh FILES
 .Pp
 .Bl -tag -width "XX"
-.It Cm ${XDG_RUNTIME_DIR} Ns Pa /@PACKAGE@/dockrc
-.It Cm ${XDG_CONFIG_HOME} Ns Pa /@PACKAGE@/dockrc
-.It Cm ${HOME} Ns Pa /.@PACKAGE@/dockrc
-.It Cm ${XDG_CONFIG_DIRS} Ns Pa /@PACKAGE@/dockrc
-.It Cm ${XDG_DATA_DIRS} Ns Pa /themes/ Ns Cm <theme.name> Ns Pa /@PACKAGE@/dockrc
+.It Cm $(dirname <themeFile>) Ns Ar /dockrc
+Default location of the dock file when a theme is defined.
+.It Cm $(dirname <styleFile>) Ns Ar /dockrc
+Default location of the dock file when a style is defined.
+.It Cm ${ADWMPRIVDIR} Ns Ar /dockrc
+Location of the user private dock file.
+.It Cm ${XDG_RUNTIME_DIR} Ns Ar /@PACKAGE@/dockrc
+Location of the user runtime dock file.
+.It Cm ${XDG_CONFIG_HOME} Ns Ar /@PACKAGE@/dockrc
+Location of the user XDG dock file.
+.It Cm ${HOME} Ns Ar /.@PACKAGE@/dockrc
+Location of the user dock file.
+.It Ar @pkgconfdir@/dockrc
+Location of the system dock file.
 .El
 .Pp
 Because dock style elements are more thematic, they are usually

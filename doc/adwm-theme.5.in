@@ -7,13 +7,15 @@
 .Sh SYNOPSIS
 .Bl -item -compact
 .It
-.Pa ~/.@PACKAGE@/themerc
+.Cm ${ADWMPRIVDIR} Ns Pa / Ns Li {, Ns Pa themes/ Ns Cm <themeName> Ns Pa / Ns Li } Ns Cm <themeFile>
 .It
-.Pa ~/.@PACKAGE@/themes/Default/themerc
+.Cm ${XDG_RUNTIME_DIR} Ns Pa /@PACKAGE@/ Ns Li {, Ns Pa themes/ Ns Cm <themeName> Ns Pa / Ns Li } Ns Pa themerc
 .It
-.Pa @pkgconfdir@/themerc
+.Cm ${XDG_CONFIG_HOME} Ns Pa /@PACKAGE@/ Ns Li {, Ns Pa themes/ Ns Cm <themeName> Ns Pa / Ns Li } Ns Pa themerc
 .It
-.Pa @pkgconfdir@/themes/Default/themerc
+.Cm ${HOME} Ns Pa /.@PACKAGE@/ Ns Li {, Ns Pa themes/ Ns Cm <themeName> Ns Pa / Ns Li } Ns Pa themerc
+.It
+.Pa @pkgconfdir@/ Ns Li {, Ns Pa themes/ Ns Cm <themeName> Ns Pa / Ns Li } Ns Pa themerc
 .El
 .Sh DESCRIPTION
 .Nm @PACKAGE_NAME@
@@ -203,175 +205,48 @@ file can contain the theme-specific resources.
 The tag theme elements are as follows:
 .Pp
 .Bl -tag -width "XX"
-.It Cm tags.number Ar <number>
+.It Li [ Ns Cm screen<s>. Ns Li ] Ns Cm tags.number Ar <number>
 Specifies the number of tags (i.e. desktops) available.
 The default number is five (5).
 .Pp
 Default:
 .Li Adwm* Ns Cm tags.number Ns Li : Ar 7
-.It Li [ Ns Cm screen<s>. Ns Li ] Ns Cm tags.name<n> Ar <string>
-Specifies the name associated with each tag (i.e. desktop),
-for a specific screen,
-.Cm <s> ,
-or for all screens.
-Tags are indexed from zero (0) to the total number of tags
-minus one.
-.Pp
-Default:
-.Dl Adwm* Ns Cm tags.name0 Ns Li : Ar main
-.Dl Adwm* Ns Cm tags.name1 Ns Li : Ar web
-.Dl Adwm* Ns Cm tags.name2 Ns Li : Ar doc
-.Dl Adwm* Ns Cm tags.name3 Ns Li : Ar dev
-.Dl Adwm* Ns Cm tags.name4 Ns Li : Ar scr
-.Dl Adwm* Ns Cm tags.name5 Ns Li : Ar gfx
-.Dl Adwm* Ns Cm tags.name6 Ns Li : Ar misc
-.It Li [ Ns Cm screen<s>. Ns Li ] Ns Cm deflayout Ar <layout>
-Specifies the default layout for views that have no layout defined for
-them.
-The argument,
-.Ar <layout> ,
-is a single lowercase ascii character that designates the layout, that
-can be one of the following:
-.Pp
-.Bl -tag -width ".Cm 'm'" -compact -offset indent
-.It Cm 'i'
-stacking window arrangement;
-.It Cm 't'
-tile arrangment with master on left;
-.It Cm 'b'
-tiled arrangement with mast on bottom;
-.It Cm 'u'
-tiled arrangement with mast on top;
-.It Cm 'l'
-tiled arrangement with master on right;
-.It Cm 'm'
-monacle mode tiled arrangement;
-.It Cm 'f'
-stacking window arrangement;
-.It Cm 'g'
-grid tiled arrangement with columns.
-.El
-.Pp
-The default value is
-.Cm 'i' :
-that is, stacking window arrangement.
-.Pp
-Default:
-.Li Adwm* Ns Cm deflayout Ns Li : Ar l
-.It Li [ Ns Cm screen<s>. Ns Li ] Ns Cm tags.layout<n> Ar <layout>
-Specifies the layout for a single view (optionally on a given screen).
-When unspecified for a view, defaults to the setting of the
-.Cm deflayout
-directive (usually floating/stacking).
-This is only the default setting for the view at startup: it is
-possible to use the key bindings to change the layout for a view.
-The argument,
-.Ar <layout> ,
-is a single lowercase ascii character that designates the layout, that
-can be one of the following:
-.Pp
-.Bl -tag -width ".Cm 'm'" -compact -offset indent
-.It Cm 'i'
-stacking window arrangement;
-.It Cm 't'
-tile arrangment with master on left;
-.It Cm 'b'
-tiled arrangement with mast on bottom;
-.It Cm 'u'
-tiled arrangement with mast on top;
-.It Cm 'l'
-tiled arrangement with master on right;
-.It Cm 'm'
-monacle mode tiled arrangement;
-.It Cm 'f'
-stacking window arrangement;
-.It Cm 'g'
-grid tiled arrangement with columns.
-.El
-.Pp
-Default:
-.Dl Adwm* Ns Cm tags.layout1 Ns Li : Ar m
-.Dl Adwm* Ns Cm tags.layout3 Ns Li : Ar b
-.It Li [ Ns Cm screen<s>. Ns Li ] Ns Cm tags.color Ns Li [ Ns Cm <n> Ns Li ] Ar <color>
-Specifies the color that should be used for the background on the screen
-for the given workspaces. When
-.Cm <n>
-is not specified, applies to a all desktops for the given screen.  When
-.Cm screen<s>
-is not specified, applies to all screens.
-.Pp
-Default:
-.Li Adwm* Cm tags.color Ns Li : Ar "black"
-.Pp
-.Sy Note:
-this style element is not yet implemented.  (See
-.Pa TODO Ns ).
-.It Li [ Ns Cm screen<s>. Ns Li ] Ns Cm tags.image Ns Li [ Ns Cm <n> Ns Li ] Ar <path>
-Specifies the image that should be placed on the screen for the given
-workspaces.  When
-.Cm <n>
-is not specified, applies to a all desktops for the given screen.  When
-.Cm screen<s>
-is not specified, applies to all screens.
-.Ar <path>
-is the path and file name of the image file to use.  When the path is
-relative, it is relative to the directory in which the style file
-appears.
-.Pp
-Examples:
-.Dl Adwm* Cm tags.image Ns Li : Ar "penguins/penguins_jumping.jpg"
-.Dl Adwm* Cm tags.image0 Ns Li : Ar "penguins/antartica.jpg"
-.Dl Adwm* Cm tags.image1 Ns Li : Ar "penguins/penguin_inflight.jpg"
-.Dl Adwm* Cm tags.image2 Ns Li : Ar "penguins/penguins_busy.jpg"
-.Dl Adwm* Cm tags.image3 Ns Li : Ar "penguins/penguins_inarow2.jpg"
-.Dl Adwm* Cm tags.image4 Ns Li : Ar "penguins/penguins_jumping.jpg"
-.Dl Adwm* Cm tags.image5 Ns Li : Ar "penguins/penguins_drifts.jpg"
-.Dl Adwm* Cm tags.image6 Ns Li : Ar "penguins/penguins_pair.jpg"
-.Pp
-.Sy Note:
-this style element is not yet implemented.  (See
-.Pa TODO Ns ).
-.It Li [ Ns Cm screen<s>. Ns Li ] Ns Cm tags.image Ns Li [ Ns Cm <n> Ns Li ] Ns Cm .how Ar <value>
-Specifies how the corresponding image should be placed on the screen.
-When
-.Cm <n>
-is not specified, applies to all desktops for the given screen.  When
-.Cm screen<s>
-is not specified, applies to all screens.
+.It Li [ Ns Cm screen<s>. Ns Li ] Ns Cm tags.orient Ar <value>
+Specifies the orientation of the layout of pagers.
 .Ar <value>
 is an integer number that may be one of:
 .Pp
-.Bl -tag -width ".Ar 0 Li - Cm scaled" -compact -offset indent
-.Pp
-.Sy Note:
-this style element is not yet implemented.  (See
-.Pa TODO Ns ).
-.It Ar 0 Li - Cm center
-The image is centered on the screen at its original size.
-.It Ar 1 Li - Cm scaled
-The image is scaled to fill the width or height of the screen at the
-original aspect ratio.
-.It Ar 2 Li - Cm tiled
-The image is tiled over the screen.
-.It Ar 3 Li - Cm full
-The image is scaled with the aspect ratio adjusted to match that of the
-screen.
+.Bl -tag -width ".Ar 0 Li - Cm horizontal" -compact -offset indent
+.It Ar 0 Li - Cm horizontal
+The pager is oriented horizontally.  This is the default.
+.It Ar 1 Li - Cm vertical
+The pager is oriented vertically.
 .El
 .Pp
 Example:
-.Li Adwm* Ns Cm tags.image.how Ns Li : Ar 3
+.Li Adwm* Ns Cm tags.orient Ns Li : Ar 0
 .Pp
 .Sy Note:
 this style element is not yet implemented.  (See
 .Pa TODO Ns ).
-.It Li [ Ns Cm screen<s>. Ns Li ] Ns Cm tags.image.repeat Ar <bool>
-Specifies whether or not to repeat the pattern of images specified for
-a screen over any additional workspaces that may be added after
-.Nm @PACKAGE_NAME@
-has started.
+.It Li [ Ns Cm screen<s>. Ns Li ] Ns Cm tags.start Ar <value>
+Specifies the starting corner for the pager layout.
+.Ar <value>
+is an integer number that may be one of:
+.Pp
+.Bl -tag -width ".Ar 0 Li - Cm SouthWest" -compact -offset indent
+.It Ar 0 Li - Cm NorthWest
+The starting point is the top left corner.
+.It Ar 1 Li - Cm NorthEast
+The starting point is the top right corner.
+.It Ar 2 Li - Cm SouthEast
+The starting point is the bottom right corner.
+.It Ar 3 Li - Cm SouthWest
+The starting point is the bottom left corner.
+.El
 .Pp
 Example:
-.Li Adwm* Cm tags.image.repeat Ns Li : Ar 1
+.Li Adwm* Ns Cm tags.start Ns Li : Ar 0
 .Pp
 .Sy Note:
 this style element is not yet implemented.  (See
@@ -406,6 +281,191 @@ number of workspaces, or they will be reduced to match.
 .Pp
 Default:
 .Li Adwm* Ns Cm tags.rows Ns Li : Ar 2
+.Pp
+.Sy Note:
+this style element is not yet implemented.  (See
+.Pa TODO Ns ).
+.It Li [ Ns Cm screen<s>. Ns Li ] Ns Cm deflayout Ar <layout>
+Specifies the default layout for views that have no layout defined for
+them.
+The argument,
+.Ar <layout> ,
+is a single lowercase ascii character that designates the layout, that
+can be one of the following:
+.Pp
+.Bl -tag -width ".Cm 'm'" -compact -offset indent
+.It Cm 'i'
+stacking window arrangement;
+.It Cm 't'
+tile arrangment with master on left;
+.It Cm 'b'
+tiled arrangement with mast on bottom;
+.It Cm 'u'
+tiled arrangement with mast on top;
+.It Cm 'l'
+tiled arrangement with master on right;
+.It Cm 'm'
+monacle mode tiled arrangement;
+.It Cm 'f'
+stacking window arrangement;
+.It Cm 'g'
+grid tiled arrangement with columns.
+.El
+.Pp
+The default value is
+.Cm 'i' :
+that is, stacking window arrangement.
+.Pp
+Default:
+.Li Adwm* Ns Cm deflayout Ns Li : Ar l
+.It Li [ Ns Cm screen<s>. Ns Li ] Ns Cm tags.image.repeat Ar <bool>
+Specifies whether or not to repeat the pattern of images specified for
+a screen over any additional workspaces that may be added after
+.Nm @PACKAGE_NAME@
+has started.
+.Pp
+Example:
+.Li Adwm* Ns Cm tags.image.repeat Ns Li : Ar 1
+.Pp
+.Sy Note:
+this style element is not yet implemented.  (See
+.Pa TODO Ns ).
+.It Li [ Ns Cm screen<s>. Ns Li ] Ns Cm tags.layout Ns Li [ Ns Cm <n> Ns Li ] Ar <layout>
+Specifies the layout for a single view (optionally on a given screen).
+When unspecified for a view, defaults to the setting of the
+.Cm deflayout
+directive (usually floating/stacking).
+This is only the default setting for the view at startup: it is
+possible to use the key bindings to change the layout for a view.
+When
+.Cm <n>
+is not specified, has the same effect as the
+.Cm deflayout
+directive.
+.Pp
+The argument,
+.Ar <layout> ,
+is a single lowercase ascii character that designates the layout, that
+can be one of the following:
+.Pp
+.Bl -tag -width ".Cm 'm'" -compact -offset indent
+.It Cm 'i'
+stacking window arrangement;
+.It Cm 't'
+tile arrangment with master on left;
+.It Cm 'b'
+tiled arrangement with mast on bottom;
+.It Cm 'u'
+tiled arrangement with mast on top;
+.It Cm 'l'
+tiled arrangement with master on right;
+.It Cm 'm'
+monacle mode tiled arrangement;
+.It Cm 'f'
+stacking window arrangement;
+.It Cm 'g'
+grid tiled arrangement with columns.
+.El
+.Pp
+Default:
+.Dl Adwm* Ns Cm tags.layout Ns Li : Ar l
+.Dl Adwm* Ns Cm tags.layout1 Ns Li : Ar m
+.Dl Adwm* Ns Cm tags.layout3 Ns Li : Ar b
+.It Li [ Ns Cm screen<s>. Ns Li ] Ns Cm tags.name Ns Li [ Ns Cm <n> Ns Li ] Ar <string>
+Specifies the name associated with each tag (i.e. desktop),
+for a specific screen,
+.Cm <s> ,
+or for all screens.
+Tags are indexed from zero (0) to the total number of tags
+minus one.
+When
+.Cm <n>
+is not specified,
+.Ar <string>
+specifies the format of the tag name, where
+.Cm %d
+is replaced by the index of the tag plus one.  This way it is possible
+to specify a name for tags that do not yet exist (such as when the user
+appends a workspace).
+.Pp
+Default:
+.Dl Adwm* Ns Cm tags.name Ns Li : Ar wksp %d
+.Dl Adwm* Ns Cm tags.name0 Ns Li : Ar main
+.Dl Adwm* Ns Cm tags.name1 Ns Li : Ar web
+.Dl Adwm* Ns Cm tags.name2 Ns Li : Ar doc
+.Dl Adwm* Ns Cm tags.name3 Ns Li : Ar dev
+.Dl Adwm* Ns Cm tags.name4 Ns Li : Ar scr
+.Dl Adwm* Ns Cm tags.name5 Ns Li : Ar gfx
+.Dl Adwm* Ns Cm tags.name6 Ns Li : Ar misc
+.It Li [ Ns Cm screen<s>. Ns Li ] Ns Cm tags.color Ns Li [ Ns Cm <n> Ns Li ] Ar <color>
+Specifies the color that should be used for the background on the screen
+for the given workspaces. When
+.Cm <n>
+is not specified, applies to a all desktops for the given screen.  When
+.Cm screen<s>
+is not specified, applies to all screens.
+.Pp
+Default:
+.Li Adwm* Ns Cm tags.color Ns Li : Ar "black"
+.Pp
+.Sy Note:
+this style element is not yet implemented.  (See
+.Pa TODO Ns ).
+.It Li [ Ns Cm screen<s>. Ns Li ] Ns Cm tags.image Ns Li [ Ns Cm <n> Ns Li ] Ar <path>
+Specifies the image that should be placed on the screen for the given
+workspaces.  When
+.Cm <n>
+is not specified, applies to a all desktops for the given screen.  When
+.Cm screen<s>
+is not specified, applies to all screens.
+.Ar <path>
+is the path and file name of the image file to use.  When the path is
+relative, it is relative to the directory in which the style file
+appears.
+.Pp
+Examples:
+.Dl Adwm* Ns Cm tags.image Ns Li : Ar "penguins/penguins_jumping.jpg"
+.Dl Adwm* Ns Cm tags.image0 Ns Li : Ar "penguins/antartica.jpg"
+.Dl Adwm* Ns Cm tags.image1 Ns Li : Ar "penguins/penguin_inflight.jpg"
+.Dl Adwm* Ns Cm tags.image2 Ns Li : Ar "penguins/penguins_busy.jpg"
+.Dl Adwm* Ns Cm tags.image3 Ns Li : Ar "penguins/penguins_inarow2.jpg"
+.Dl Adwm* Ns Cm tags.image4 Ns Li : Ar "penguins/penguins_jumping.jpg"
+.Dl Adwm* Ns Cm tags.image5 Ns Li : Ar "penguins/penguins_drifts.jpg"
+.Dl Adwm* Ns Cm tags.image6 Ns Li : Ar "penguins/penguins_pair.jpg"
+.Pp
+.Sy Note:
+this style element is not yet implemented.  (See
+.Pa TODO Ns ).
+.It Li [ Ns Cm screen<s>. Ns Li ] Ns Cm tags Ns Cm .how Ns Li [ Ns Cm <n> Ns Li ] Ar <value>
+Specifies how the corresponding image should be placed on the screen.
+When
+.Cm <n>
+is not specified, applies to all desktops for the given screen.  When
+.Cm screen<s>
+is not specified, applies to all screens.
+.Ar <value>
+is an integer number that may be one of:
+.Pp
+.Bl -tag -width ".Ar 0 Li - Cm clipped" -compact -offset indent
+.It Ar 0 Li - Cm center
+The image is centered on the screen at its original size, any remaining
+portion of the screen will be filled with the background color.
+.It Ar 1 Li - Cm scaled
+The image is scaled to fill the width or height of the screen at the
+original aspect ratio.
+.It Ar 2 Li - Cm tiled
+The image is tiled over the screen.
+.It Ar 3 Li - Cm full
+The image is scaled with the aspect ratio adjusted to match that of the
+screen.
+.It Ar 4 Li - Cm clipped
+The image is scaled with the aspect ratio adjusted to match that of the
+screen; however, the image is clipped so that the aspect ratio is not
+off of the original by more than 10% in either dimension.
+.El
+.Pp
+Example:
+.Li Adwm* Ns Cm tags.how Ns Li : Ar 3
 .Pp
 .Sy Note:
 this style element is not yet implemented.  (See
@@ -642,27 +702,65 @@ file.  These resources, if defined at all, should likely be defined in the
 .Cm dockFile
 associated with the current style, as it is a themeable item.
 .El
+.Sh DEFAULTS
+The default theme is provided in the default theme file,
+typically,
+.Pa @pkgconfdir@/themes/Default/themerc .
 .Sh FILES
 .Pp
 .Bl -tag -width "XX"
-.It Pa ~/.@PACKAGE@/themes/ Ns Cm <theme.name> Ns Pa /themerc
-The location of the default user themed theme file.
-.It Pa @pkgconfdir@/themes/ Ns Cm <theme.name> Ns Pa /themerc
-The location of the system default themed theme file.
-.It Pa @sharedir@/themes/ Ns Cm <theme.name> Ns Pa /@PACKAGE@/themerc
-The location of the system XDG default themed theme file.
-.It Pa ~/.@PACKAGE@/themerc
-The location of the default user theme file.
-.It Pa @pkgconfdir@/themerc
-The location of the default system theme file.
+.It Cm ${ADWMPRIVDIR} Ns Ar / Ns Li {, Ns Ar themes/ Ns Cm <themeName> Ns Ar / Ns Li } Ns Cm <themeFile>
+The location of the private user {,named} theme file
+(where
+.Cm ${ADWMPRIVDIR}
+is the directory containing the
+.Pa adwmrc
+file specified on the command line using the
+.Cm -f
+option).
+.It Cm ${XDG_RUNTIME_DIR} Ns Ar /@PACKAGE@/ Ns Li {, Ns Ar themes/ Ns Cm <themeName> Ns Ar / Ns Li } Ns Ar themerc
+The location of the user runtime {,named} theme file.
+.It Cm ${XDG_CONFIG_HOME} Ns Ar /@PACKAGE@/ Ns Li {, Ns Ar themes/ Ns Cm <themeName> Ns Ar / Ns Li } Ns Ar themerc
+The location of the user XDG {,named} theme file.
+.It Cm ${HOME} Ns Ar /.@PACKAGE@/ Ns Li {, Ns Ar themes/ Ns Cm <themeName> Ns Ar / Ns Li } Ns Ar themerc
+The location of the user {,named} theme file.
+.It Ar @pkgconfdir@/ Ns Li {, Ns Ar themes/ Ns Cm <themeName> Ns Ar / Ns Li } Ns Ar themerc
+The location of the system {,named} theme file.
 .El
+.Sh COMPLIANCE
+.Pp
+Tag elements are compliant to the EWMH/NetWM specification version 1.5
+with regard to pager layout and desktop count, names and layouts.
+.Nm @PACKAGE_NAME@
+will take ownership of the 
+.Cm _NET_DESKTOP_LAYOUT_S Ns Ar %d
+manager selection to indicate that it is controlling the
+.Cm _NET_NUMBER_OF_DESKTOPS ,
+.Cm _NET_DESKTOP_GEOMETRY ,
+.Cm _NET_DESKTOP_VIEWPORT ,
+.Cm _NET_DESKTOP_NAMES ,
+.Cm _NET_DESKTOP_LAYOUT ,
+and
+.Cm _NET_DESKTOP_MODES
+properties on the root window.
+.Nm @PACKAGE_NAME@
+also controls the
+.Cm _XROOTPMAP_ID ,
+.Cm ESETROOT_PMAP_ID ,
+and
+.Cm _XSETROOT_ID
+properties on the root window as desktops and corresponding backgrounds
+change.
+It also allocates pixmaps for backgrounds as temporary resources using a
+separate X connection to permit other background setters to free the
+resource when setting its own background pixmap.
 .Sh SEE ALSO
 .Rs
-.Xr adwm 1 ,
-.Xr adwm-config 5 ,
-.Xr adwm-style 5 ,
-.Xr adwm-keys 5 ,
-.Xr adwm-dock 5 ,
+.Xr @PACKAGE@ 1 ,
+.Xr @PACKAGE@-config 5 ,
+.Xr @PACKAGE@-style 5 ,
+.Xr @PACKAGE@-keys 5 ,
+.Xr @PACKAGE@-dock 5 ,
 .Xr echinus 1 ,
 .Xr blackbox 1 ,
 .Xr fluxbox 1 ,

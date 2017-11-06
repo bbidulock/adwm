@@ -7,13 +7,19 @@
 .Sh SYNOPSIS
 .Bl -item -compact
 .It
-.Pa ~/.@PACKAGE@/keysrc
+.Cm $(dirname <themeFile>) Ns Pa /keysrc
 .It
-.Pa ~/.@PACKAGE@/styles/Default/keysrc
+.Cm $(dirname <styleFile>) Ns Pa /keysrc
+.It
+.Cm ${ADWMPRIVDIR} Ns Pa /keysrc
+.It
+.Cm ${XDG_RUNTIME_DIR} Ns Pa /@PACKAGE@/keysrc
+.It
+.Cm ${XDG_CONFIG_HOME} Ns Pa /@PACKAGE@/keysrc
+.It
+.Cm ${HOME} Ns Pa /.@PACKAGE@/keysrc
 .It
 .Pa @pkgconfdir@/keysrc
-.It
-.Pa @pkgconfdir@/styles/Default/keysrc
 .El
 .Sh DESCRIPTION
 .Nm @PACKAGE_NAME@
@@ -29,7 +35,7 @@ response to a single key press.  Key chaining is when an Emacs-like sequence of 
 need to be pressed for the action to be performed.
 .Pp
 Key bindings are defined in an X Resource formatted configuration file.
-Key bindings can either being part of the main confguration file, or
+Key bindings can either being part of the main configuration file, or
 they can be included or referenced from the main configuration file: see the
 .Cm keysFile
 directive in
@@ -1236,6 +1242,24 @@ for advanced features provided by some window managers (such as
 are also provided to smooth transition, or to make
 .Xr @PACKAGE@ 1
 immediately usable to these users as well.
+.Sh FILES
+.Pp
+.Bl -tag -width "XX"
+.It Cm $(dirname <themeFile>) Ns Ar /keysrc
+Default location of the keys file when a theme is defined.
+.It Cm $(dirname <styleFile>) Ns Ar /keysrc
+Default location of the keys file when a style is defined.
+.It Cm ${ADWMPRIVDIR} Ns Ar /keysrc
+Location of the user private keys file.
+.It Cm ${XDG_RUNTIME_DIR} Ns Ar /@PACKAGE@/keysrc
+Location of the user runtime keys file.
+.It Cm ${XDG_CONFIG_HOME} Ns Ar /@PACKAGE@/keysrc
+Location of the user XDG keys file.
+.It Cm ${HOME} Ns Ar /.@PACKAGE@/keysrc
+Location of the user keys file.
+.It Ar @pkgconfdir@/keysrc
+Location of the system keys file.
+.El
 .Sh SEE ALSO
 .Rs
 .Xr @PACKAGE@ 1 ,

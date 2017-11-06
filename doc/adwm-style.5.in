@@ -7,15 +7,15 @@
 .Sh SYNOPSIS
 .Bl -item -compact
 .It
-.Pa ~/.@PACKAGE@/stylerc
+.Cm ${ADWMPRIVDIR} Ns Pa / Ns Li {, Ns Pa styles/ Ns Cm <styleName> Ns Pa / Ns Li } Ns Cm <styleFile>
 .It
-.Pa ~/.@PACKAGE@/styles/Default/stylerc
+.Cm ${XDG_RUNTIME_DIR} Ns Pa /@PACKAGE@/ Ns Li {, Ns Pa styles/ Ns Cm <styleName> Ns Pa / Ns Li } Ns Pa stylerc
 .It
-.Pa @pkgconfdir@/stylerc
+.Cm ${XDG_CONFIG_HOME} Ns Pa /@PACKAGE@/ Ns Li {, Ns Pa styles/ Ns Cm <styleName> Ns Pa / Ns Li } Ns Pa stylerc
 .It
-.Pa @pkgconfdir@/styles/Default/stylerc
+.Cm ${HOME} Ns Pa /.@PACKAGE@/ Ns Li {, Ns Pa styles/ Ns Cm <styleName> Ns Pa / Ns Li } Ns Pa stylerc
 .It
-.Pa @sharedir@/themes/Default/@PACKAGE@/stylerc
+.Pa @pkgconfdir@/ Ns Li {, Ns Pa styles/ Ns Cm <styleName> Ns Pa / Ns Li } Ns Pa stylerc
 .El
 .Sh DESCRIPTION
 .Nm @PACKAGE_NAME@
@@ -612,7 +612,7 @@ is not specified, applies to a all desktops for the given screen.  When
 is not specified, applies to all screens.
 .Pp
 Default:
-.Li Adwm* Cm tags.color Ns Li : Ar "black"
+.Li Adwm* Ns Cm tags.color Ns Li : Ar "black"
 .Pp
 .Sy Note:
 this style element is not yet implemented.  (See
@@ -630,14 +630,14 @@ relative, it is relative to the directory in which the style file
 appears.
 .Pp
 Examples:
-.Dl Adwm* Cm tags.image Ns Li : Ar "penguins/penguins_jumping.jpg"
-.Dl Adwm* Cm tags.image0 Ns Li : Ar "penguins/antartica.jpg"
-.Dl Adwm* Cm tags.image1 Ns Li : Ar "penguins/penguin_inflight.jpg"
-.Dl Adwm* Cm tags.image2 Ns Li : Ar "penguins/penguins_busy.jpg"
-.Dl Adwm* Cm tags.image3 Ns Li : Ar "penguins/penguins_inarow2.jpg"
-.Dl Adwm* Cm tags.image4 Ns Li : Ar "penguins/penguins_jumping.jpg"
-.Dl Adwm* Cm tags.image5 Ns Li : Ar "penguins/penguins_drifts.jpg"
-.Dl Adwm* Cm tags.image6 Ns Li : Ar "penguins/penguins_pair.jpg"
+.Dl Adwm* Ns Cm tags.image Ns Li : Ar "penguins/penguins_jumping.jpg"
+.Dl Adwm* Ns Cm tags.image0 Ns Li : Ar "penguins/antartica.jpg"
+.Dl Adwm* Ns Cm tags.image1 Ns Li : Ar "penguins/penguin_inflight.jpg"
+.Dl Adwm* Ns Cm tags.image2 Ns Li : Ar "penguins/penguins_busy.jpg"
+.Dl Adwm* Ns Cm tags.image3 Ns Li : Ar "penguins/penguins_inarow2.jpg"
+.Dl Adwm* Ns Cm tags.image4 Ns Li : Ar "penguins/penguins_jumping.jpg"
+.Dl Adwm* Ns Cm tags.image5 Ns Li : Ar "penguins/penguins_drifts.jpg"
+.Dl Adwm* Ns Cm tags.image6 Ns Li : Ar "penguins/penguins_pair.jpg"
 .Pp
 .Sy Note:
 this style element is not yet implemented.  (See
@@ -682,7 +682,7 @@ a screen over any additional workspaces that may be added after
 has started.
 .Pp
 Example:
-.Li Adwm* Cm tags.image.repeat Ns Li : Ar 1
+.Li Adwm* Ns Cm tags.image.repeat Ns Li : Ar 1
 .Pp
 .Sy Note:
 this style element is not yet implemented.  (See
@@ -736,13 +736,41 @@ transparent color
 .Sh DEFAULTS
 The default style is provided in the default style file,
 typically,
-.Pa "~/.@PACKAGE@/stylerc" .
+.Pa @pkgconfdir@/styles/Default/stylerc .
+.Sh FILES
+.Pp
+.Bl -tag -width "XX"
+.It Cm ${ADWMPRIVDIR} Ns Ar / Ns Li {, Ns Ar styles/ Ns Cm <styleName> Ns Ar / Ns Li } Ns Cm <styleFile>
+The location of the private user {,named} style file
+(where
+.Cm ${ADWMPRIVDIR}
+is the directory containing the
+.Pa adwmrc
+file specified on the command line using the
+.Cm -f
+option).
+.It Cm ${XDG_RUNTIME_DIR} Ns Ar /@PACKAGE@/ Ns Li {, Ns Ar styles/ Ns Cm <styleName> Ns Ar / Ns Li } Ns Ar stylerc
+The location of the user runtime {,named} style file.
+.It Cm ${XDG_CONFIG_HOME} Ns Ar /@PACKAGE@/ Ns Li {, Ns Ar styles/ Ns Cm <styleName> Ns Ar / Ns Li } Ns Ar stylerc
+The location of the user XDG {,named} style file.
+.It Cm ${HOME} Ns Ar /.@PACKAGE@/ Ns Li {, Ns Ar styles/ Ns Cm <styleName> Ns Ar / Ns Li } Ns Ar stylerc
+The location of the user {,named} style file.
+.It Ar @pkgconfdir@/ Ns Li {, Ns Ar styles/ Ns Cm <styleName> Ns Ar / Ns Li } Ns Ar stylerc
+The location of the system {,named} style file.
+.El
 .Sh SEE ALSO
 .Rs
 .Xr @PACKAGE@ 1 ,
 .Xr @PACKAGE@-config 5 ,
+.Xr @PACKAGE@-theme 5 ,
 .Xr @PACKAGE@-keys 5 ,
-.Xr @PACKAGE@-style 5 .
+.Xr @PACKAGE@-dock 5 ,
+.Xr echinus 1 ,
+.Xr blackbox 1 ,
+.Xr fluxbox 1 ,
+.Xr pekwm 1 ,
+.Xr openbox 1 ,
+.Xr wmaker 1 .
 .Re
 .Sh BUGS
 No outstanding bugs.

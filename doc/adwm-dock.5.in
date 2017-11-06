@@ -147,9 +147,15 @@ the theme configuration file (see
 or the dock configuration file.  Historically, they were contained in
 the main configuration file,
 .Pa adwmrc ;
-however, currently they are typically contained in the dock
+however, currently they are typically contained in the theme
 configuration file,
-.Pa dockrc .
+.Pa themerc .
+See
+.Xr @PACKAGE@-theme 5 .
+The reason for this is that the strut theme elements do not contain
+dynamic state information, whereas the
+.Pa dockrc
+file does.
 .Pp
 The defined strut theme elements are as follows:
 .Bl -tag -width "XX"
@@ -217,6 +223,25 @@ The dock is an area that contains Window Maker dock
 applications.
 The following directives specify the position and orientation
 of the dock.
+.Pp
+These directives can be contained in the main configuration file (see
+.Xr @PACKAGE@-config 5 Ns ),
+the theme configuration file (see
+.Xr @PACKAGE@-theme 5 Ns ),
+or the dock configuration file.  Historically, they were contained in
+the main configuration file,
+.Pa adwmrc ;
+however, currently they are typically contained in the theme
+configuration file,
+.Pa themerc .
+See
+.Xr @PACKAGE@-theme 5 .
+The reason for this is that the dock theme elements for position and
+orientation do not contain dynamic state information, whereas the
+.Pa dockrc
+file does.
+.Pp
+The dock theme elements for orientation and position are as follows:
 .Bl -tag -width "XX"
 .It Li [ Ns Cm screen<s>. Ns Li ] Ns Cm dock.position Ar <position>
 Specifies the position of the dock on the screen.
@@ -333,6 +358,20 @@ Example:
 .Dl Adwm* Ns Cm dock.app11 Ns Li : Ar "wmCalClock wmCalClock wmCalClock"
 .Pp
 .Sy Note:
+Although initial positions can be specified in a configuration file, the
+user is able to move dock applications around after they have been
+mapped using the mouse.  The user is also able to save the modified
+configuration to the
+.Cm dockFile .
+This means that the
+.Cm dockFile
+must be writable by the user and must, therefore, be located in a user
+configuration directory.  The modified configuration can be applied
+either to all themes, or just to the active theme.  This is determined
+by the location to which the file is written (either to an un-themed
+directory or a themed directory).
+.Pp
+.Sy Note:
 No defaults are provided in the default
 .Pa @PACKAGE@rc
 file.  These resources, if defined at all, should likely be defined in the
@@ -353,16 +392,11 @@ style, regardless of how the dock is themed (see
 .Sh FILES
 .Pp
 .Bl -tag -width "XX"
-.It Pa ~/.@PACKAGE@/themes/ Ns Cm <theme.name> Ns Pa /dockrc
-The location of the default user themed dock file.
-.It Pa @pkgconfdir@/themes/ Ns Cm <theme.name> Ns Pa /dockrc
-The location of the system default themed dock file.
-.It Pa @sharedir@/themes/ Ns Cm <theme.name> Ns Pa /@PACKAGE@/dockrc
-The location of the system XDG default themed dock file.
-.It Pa ~/.@PACKAGE@/dockrc
-The location of the default user dock file.
-.It Pa @pkgconfdir@/dockrc
-The location of the default system dock file.
+.It Cm ${XDG_RUNTIME_DIR} Ns Pa /@PACKAGE@/dockrc
+.It Cm ${XDG_CONFIG_HOME} Ns Pa /@PACKAGE@/dockrc
+.It Cm ${HOME} Ns Pa /.@PACKAGE@/dockrc
+.It Cm ${XDG_CONFIG_DIRS} Ns Pa /@PACKAGE@/dockrc
+.It Cm ${XDG_DATA_DIRS} Ns Pa /themes/ Ns Cm <theme.name> Ns Pa /@PACKAGE@/dockrc
 .El
 .Pp
 Because dock style elements are more thematic, they are usually
@@ -402,15 +436,17 @@ does not exist, directories are searched for one in the following order:
 .Pp
 .Bl -item -compact
 .It
-.Pa ~/.@PACKAGE@/themes/ Ns Cm <theme.name> Ns Pa /dockrc
+.Cm ${XDG_RUNTIME_DIR} Ns Pa /@PACKAGE@/dockrc
 .It
-.Pa @pkgconfdir@/themes/ Ns Cm <theme.name> Ns Pa /dockrc
+.Cm ${XDG_CONFIG_HOME} Ns Pa /@PACKAGE@/dockrc
 .It
-.Pa @sharedir@/themes/ Ns Cm <theme.name> Ns Pa /@PACKAGE@/dockrc
+.Cm ${HOME} Ns Pa /.@PACKAGE@/dockrc
 .It
-.Pa ~/.@PACKAGE@/dockrc
+.Cm ${XDG_CONFIG_DIRS} Ns Pa /@PACKAGE@/dockrc
 .It
-.Pa @pkgconfdir@/dockrc
+.Cm ${XDG_DATA_DIRS} Ns Pa /themes/ Ns Cm <theme.name> Ns Pa /@PACKAGE@/dockrc
+.It
+.Cm ${XDG_DATA_DIRS} Ns Pa /@PACKAGE@/dockrc
 .El
 .Pp
 Where

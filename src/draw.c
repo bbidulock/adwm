@@ -1004,7 +1004,7 @@ initelement(ElementType type, const char *name, const char *def,
 		for (i = 0; i < LastButtonImageType; i++) {
 			snprintf(res, sizeof(res), "%s%s.pixmap", name, kind[i]);
 			if ((e->image[i].present =
-			     !initpixmap(getresource(res, def), &e->image[i])))
+			     !initpixmap(getscreenres(res, def), &e->image[i])))
 				e->action = action;
 			else
 				DPRINTF("could not load pixmap for %s\n", res);
@@ -1246,84 +1246,84 @@ initstyle(Bool reload)
 
 	freestyle();
 	scr->style.color.sele[ColBorder] =
-	    getcolor(getresource("selected.border", SELBORDERCOLOR));
-	scr->style.color.sele[ColBG] = getcolor(getresource("selected.bg", SELBGCOLOR));
-	scr->style.color.sele[ColFG] = getcolor(getresource("selected.fg", SELFGCOLOR));
+	    getcolor(getscreenres("selected.border", SELBORDERCOLOR));
+	scr->style.color.sele[ColBG] = getcolor(getscreenres("selected.bg", SELBGCOLOR));
+	scr->style.color.sele[ColFG] = getcolor(getscreenres("selected.fg", SELFGCOLOR));
 	scr->style.color.sele[ColButton] =
-	    getcolor(getresource("selected.button", SELBUTTONCOLOR));
+	    getcolor(getscreenres("selected.button", SELBUTTONCOLOR));
 
 	scr->style.color.focu[ColBorder] =
-	    getcolor(getresource("focused.border", FOCBORDERCOLOR));
-	scr->style.color.focu[ColBG] = getcolor(getresource("focused.bg", FOCBGCOLOR));
-	scr->style.color.focu[ColFG] = getcolor(getresource("focused.fg", FOCFGCOLOR));
+	    getcolor(getscreenres("focused.border", FOCBORDERCOLOR));
+	scr->style.color.focu[ColBG] = getcolor(getscreenres("focused.bg", FOCBGCOLOR));
+	scr->style.color.focu[ColFG] = getcolor(getscreenres("focused.fg", FOCFGCOLOR));
 	scr->style.color.focu[ColButton] =
-	    getcolor(getresource("focused.button", FOCBUTTONCOLOR));
+	    getcolor(getscreenres("focused.button", FOCBUTTONCOLOR));
 
 	scr->style.color.norm[ColBorder] =
-	    getcolor(getresource("normal.border", NORMBORDERCOLOR));
-	scr->style.color.norm[ColBG] = getcolor(getresource("normal.bg", NORMBGCOLOR));
-	scr->style.color.norm[ColFG] = getcolor(getresource("normal.fg", NORMFGCOLOR));
+	    getcolor(getscreenres("normal.border", NORMBORDERCOLOR));
+	scr->style.color.norm[ColBG] = getcolor(getscreenres("normal.bg", NORMBGCOLOR));
+	scr->style.color.norm[ColFG] = getcolor(getscreenres("normal.fg", NORMFGCOLOR));
 	scr->style.color.norm[ColButton] =
-	    getcolor(getresource("normal.button", NORMBUTTONCOLOR));
+	    getcolor(getscreenres("normal.button", NORMBUTTONCOLOR));
 
 	scr->style.color.font[Selected] = emallocz(sizeof(XftColor));
 	scr->style.color.font[Focused] = emallocz(sizeof(XftColor));
 	scr->style.color.font[Normal] = emallocz(sizeof(XftColor));
 	XftColorAllocName(dpy, scr->visual,
 			  scr->colormap,
-			  getresource("selected.fg", SELFGCOLOR),
+			  getscreenres("selected.fg", SELFGCOLOR),
 			  scr->style.color.font[Selected]);
 	XftColorAllocName(dpy, scr->visual,
 			  scr->colormap,
-			  getresource("focused.fg", FOCFGCOLOR),
+			  getscreenres("focused.fg", FOCFGCOLOR),
 			  scr->style.color.font[Focused]);
 	XftColorAllocName(dpy, scr->visual,
 			  scr->colormap,
-			  getresource("normal.fg", NORMFGCOLOR),
+			  getscreenres("normal.fg", NORMFGCOLOR),
 			  scr->style.color.font[Normal]);
 	if (!scr->style.color.font[Selected] || !scr->style.color.font[Focused] || !scr->style.color.font[Normal])
 		eprint("error, cannot allocate colors\n");
 
-	if ((scr->style.drop[Selected] = atoi(getresource("selected.drop", "0")))) {
+	if ((scr->style.drop[Selected] = atoi(getscreenres("selected.drop", "0")))) {
 		scr->style.color.shadow[Selected] = emallocz(sizeof(XftColor));
 		XftColorAllocName(dpy, scr->visual,
 				  scr->colormap,
-				  getresource("selected.shadow", SELBORDERCOLOR),
+				  getscreenres("selected.shadow", SELBORDERCOLOR),
 				  scr->style.color.shadow[Selected]);
 		if (!scr->style.color.shadow[Selected])
 			eprint("error, cannot allocate colors\n");
 	}
-	if ((scr->style.drop[Focused] = atoi(getresource("focused.drop", "0")))) {
+	if ((scr->style.drop[Focused] = atoi(getscreenres("focused.drop", "0")))) {
 		scr->style.color.shadow[Focused] = emallocz(sizeof(XftColor));
 		XftColorAllocName(dpy, scr->visual,
 				  scr->colormap,
-				  getresource("focused.shadow", SELBORDERCOLOR),
+				  getscreenres("focused.shadow", SELBORDERCOLOR),
 				  scr->style.color.shadow[Focused]);
 		if (!scr->style.color.shadow[Focused])
 			eprint("error, cannot allocate colors\n");
 	}
-	if ((scr->style.drop[Normal] = atoi(getresource("normal.drop", "0")))) {
+	if ((scr->style.drop[Normal] = atoi(getscreenres("normal.drop", "0")))) {
 		scr->style.color.shadow[Normal] = emallocz(sizeof(XftColor));
 		XftColorAllocName(dpy, scr->visual,
 				  scr->colormap,
-				  getresource("normal.shadow", NORMBORDERCOLOR),
+				  getscreenres("normal.shadow", NORMBORDERCOLOR),
 				  scr->style.color.shadow[Normal]);
 		if (!scr->style.color.shadow[Normal])
 			eprint("error, cannot allocate colors\n");
 	}
-	initfont(getresource("selected.font", getresource("font", FONT)), Selected);
-	initfont(getresource("focused.font", getresource("font", FONT)), Focused);
-	initfont(getresource("normal.font", getresource("font", FONT)), Normal);
-	scr->style.border = atoi(getresource("border", STR(BORDERPX)));
-	scr->style.margin = atoi(getresource("margin", STR(MARGINPX)));
-	scr->style.opacity = (int) ((double) OPAQUE * atof(getresource("opacity", STR(NF_OPACITY))));
-	scr->style.outline = atoi(getresource("outline", "0")) ? 1 : 0;
-	scr->style.spacing = atoi(getresource("spacing", "1"));
-	strncpy(scr->style.titlelayout, getresource("titlelayout", "N  IMC"),
+	initfont(getscreenres("selected.font", getscreenres("font", FONT)), Selected);
+	initfont(getscreenres("focused.font", getscreenres("font", FONT)), Focused);
+	initfont(getscreenres("normal.font", getscreenres("font", FONT)), Normal);
+	scr->style.border = atoi(getscreenres("border", STR(BORDERPX)));
+	scr->style.margin = atoi(getscreenres("margin", STR(MARGINPX)));
+	scr->style.opacity = (int) ((double) OPAQUE * atof(getscreenres("opacity", STR(NF_OPACITY))));
+	scr->style.outline = atoi(getscreenres("outline", "0")) ? 1 : 0;
+	scr->style.spacing = atoi(getscreenres("spacing", "1"));
+	strncpy(scr->style.titlelayout, getscreenres("titlelayout", "N  IMC"),
 		LENGTH(scr->style.titlelayout));
-	scr->style.gripsheight = atoi(getresource("grips", STR(GRIPHEIGHT)));
+	scr->style.gripsheight = atoi(getscreenres("grips", STR(GRIPHEIGHT)));
 	scr->style.titlelayout[LENGTH(scr->style.titlelayout) - 1] = '\0';
-	scr->style.titleheight = atoi(getresource("title", STR(TITLEHEIGHT)));
+	scr->style.titleheight = atoi(getscreenres("title", STR(TITLEHEIGHT)));
 	if (!scr->style.titleheight)
 		scr->style.titleheight =
 		    max(scr->dc.font[Selected].height + scr->style.drop[Selected],

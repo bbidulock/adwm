@@ -5118,10 +5118,13 @@ initdirs(Bool reload)
 		xdgdirs.runt = strdup(env);
 	} else {
 		uid_t uid = getuid();
+		static char buf[12] = { 0, };
 
-		len = strlen("/run/user/") + 12;
+		snprintf(buf, sizeof(buf), "%d", (int)uid);
+		len = strlen("/run/user/") + strlen(buf);
 		xdgdirs.runt = calloc(len + 1, sizeof(*xdgdirs.runt));
-		snprintf(xdgdirs.runt, len, "/run/user/%d", (int)uid);
+		strncpy(xdgdirs.runt, "/run/user/", len);
+		strncat(xdgdirs.runt, buf, len);
 	}
 	free(xdgdirs.cach);
 	if ((env = getenv("XDG_CACHE_HOME"))) {
@@ -5129,7 +5132,8 @@ initdirs(Bool reload)
 	} else {
 		len = strlen(xdgdirs.home) + strlen("/.cache");
 		xdgdirs.cach = calloc(len + 1, sizeof(*xdgdirs.cach));
-		snprintf(xdgdirs.cach, len, "%s/.cache", xdgdirs.home);
+		strncpy(xdgdirs.cach, xdgdirs.home, len);
+		strncat(xdgdirs.cach, "/.cache", len);
 	}
 	free(xdgdirs.conf.home);
 	if ((env = getenv("XDG_CONFIG_HOME"))) {
@@ -5137,7 +5141,8 @@ initdirs(Bool reload)
 	} else {
 		len = strlen(xdgdirs.home) + strlen("/.config");
 		xdgdirs.conf.home = calloc(len + 1, sizeof(*xdgdirs.conf.home));
-		snprintf(xdgdirs.conf.home, len, "%s/.config", xdgdirs.home);
+		strncpy(xdgdirs.conf.home, xdgdirs.home, len);
+		strncat(xdgdirs.conf.home, "/.config", len);
 	}
 	free(xdgdirs.conf.dirs);
 	if ((env = getenv("XDG_CONFIG_DIRS"))) {
@@ -5151,8 +5156,8 @@ initdirs(Bool reload)
 	} else {
 		len = strlen(xdgdirs.home) + strlen("/.local/share");
 		xdgdirs.data.home = calloc(len + 1, sizeof(*xdgdirs.data.home));
-		snprintf(xdgdirs.data.home, len, "%s/.local/share", xdgdirs.home);
-
+		strncpy(xdgdirs.data.home, xdgdirs.home, len);
+		strncat(xdgdirs.data.home, "/.local/share", len);
 	}
 	free(xdgdirs.data.dirs);
 	if ((env = getenv("XDG_DATA_DIRS"))) {
@@ -6183,7 +6188,7 @@ main(int argc, char *argv[])
 			DPRINTF("have %s extension (%d,%d,%d)\n", einfo[i].name, einfo[i].opcode, einfo[i].event, einfo[i].error);
 			if (einfo[i].version) {
 				einfo[i].version(dpy, &einfo[i].major, &einfo[i].minor);
-				EPRINTF("have %-10s extension version %d.%d\n", einfo[i].name, einfo[i].major, einfo[i].minor);
+				OPRINTF("have %-10s extension version %d.%d\n", einfo[i].name, einfo[i].major, einfo[i].minor);
 			}
 		} else
 			DPRINTF("%s", "%s extension is not supported\n", einfo[i].name);

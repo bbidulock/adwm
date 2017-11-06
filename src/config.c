@@ -22,16 +22,29 @@
 Options options;
 
 typedef struct {
-	char *udir;			/* user directory */
-	char *pdir;			/* private directory */
-	char *sdir;			/* system directory */
-	char *rcfile;			/* rcfile */
-	char *keysfile;			/* kerysrc file */
-	char *stylefile;		/* stylerc file */
-	char *themefile;		/* themerc file */
+	union {
+		struct {
+			char *pdir;	/* private directory */
+			char *rdir;	/* runtime directory ${XDG_RUNTIME_DIR}/adwm */
+			char *xdir;	/* XDG directory ${XDG_CONFIG_DIR}/adwm */
+			char *udir;	/* user directory ${HOME}/.adwm */
+			char *sdir;	/* system directory /usr/share/adwm */
+		};
+		char *dirs[5];
+	};
+	union {
+		struct {
+			char *dockfile;	/* dockrc file */
+			char *keysfile;	/* kerysrc file */
+			char *themefile;	/* themerc file */
+			char *stylefile;	/* stylerc file */
+			char *rcfile;	/* rcfile */
+		};
+		char *files[5];
+	};
 } AdwmConfig;
 
-AdwmConfig config;
+AdwmConfig config = { NULL, };
 
 void
 inittags(Bool reload)
@@ -488,36 +501,245 @@ initconfig(Bool reload)
 		options.ntags = 5;
 }
 
+char *
+findrcfile(const char *file)
+{
+	char *path, *buf, *result = NULL;
+	struct stat st;
+	int i;
+
+	if (*file == '/') {
+		result = strdup(file);
+		return (result);
+	}
+	path = ecalloc(PATH_MAX + 1, sizeof(*path));
+	for (i = 0; i < 5; i++) {
+		strncpy(path, config.dirs[i], PATH_MAX);
+		strncat(path, file, PATH_MAX);
+		if (!access(path, R_OK)) {
+			if (!lstat(path, &st)) {
+				if (S_ISLNK(st.st_mode)) {
+					buf = ecalloc(PATH_MAX + 1, sizeof(*buf));
+					if (readlink(path, buf, PATH_MAX) != -1) {
+						if (*buf == '/')
+							strncpy(path, buf, PATH_MAX);
+						else {
+							if (strrchr(path, '/'))
+								*(strrchr(path, '/') + 1) = '\0';
+							strncat(path, buf, PATH_MAX);
+						}
+					} else {
+						free(buf);
+						DPRINTF("Cannot readlink %s: %s\n", path, strerror(errno));
+						continue;
+					}
+					free(buf);
+				}
+				break;
+			} else {
+				DPRINTF("Cannot stat %s: %s\n", path, strerror(errno));
+				continue;
+			}
+		} else {
+			DPRINTF("Cannot access %s: %s\n", path, strerror(errno));
+			continue;
+		}
+	}
+	if (i < 5)
+		result = strdup(path);
+	free(path);
+	return (result);
+}
+
+char *
+finddirpath(const char *rc, const char *file)
+{
+	char *path = NULL;
+	int len;
+
+	if (!file)
+		return (path);
+	if (*file == '/') {
+		path = strdup(file);
+		return (path);
+	}
+	if (!rc)
+		return (path);
+	len = strlen(rc) + strlen(file);
+	path = ecalloc(len + 1, sizeof(*path));
+	strncpy(path, rc, len);
+	if (strrchr(path, '/'))
+		*(strrchr(path, '/') + 1) = '\0';
+	strncat(path, file, len);
+	return (path);
+}
+
+char *
+findthemepath(const char *file)
+{
+	return finddirpath(config.themefile, file);
+}
+
+char *
+findstylepath(const char *file)
+{
+	return finddirpath(config.stylefile, file);
+}
+
+char *
+findconfigpath(const char *file)
+{
+	return finddirpath(config.rcfile, file);
+}
+
+char *
+findrcpath(const char *file)
+{
+	char *path = NULL;
+	int i;
+
+	if (!file)
+		return (path);
+	if (*file == '/') {
+		path = strdup(file);
+		return (path);
+	}
+	/* check relative to themefile, stylefile, rcfile directory */
+	for (i = 2; i < 5; i++) {
+		if (!config.files[i])
+			continue;
+		if ((path = finddirpath(config.files[i], file))) {
+			if (!access(path, R_OK))
+				return (path);
+			free(path);
+			path = NULL;
+		}
+	}
+	/* check relative to pdir, rdir, xdir, udir, sdir */
+	for (i = 0; i < 5; i++) {
+		if (!config.dirs[i])
+			continue;
+		if ((path = finddirpath(config.dirs[i], file))) {
+			if (!access(path, R_OK))
+				return (path);
+			free(path);
+			path = NULL;
+		}
+	}
+	return (path);
+}
+
+static void
+initdockfile(void)
+{
+	XrmDatabase drdb;
+	const char *file;
+
+	free(config.dockfile);
+	config.dockfile = NULL;
+
+	if (!config.dockfile && (file = getresource("dockFile", "dockrc"))) {
+		if (!(config.dockfile = findrcfile(file)))
+			DPRINTF("Could not find dock file for %s\n", file);
+		if (config.dockfile && access(config.dockfile, R_OK)) {
+			DPRINTF("Could not access %s: %s\n", config.dockfile, strerror(errno));
+			free(config.dockfile);
+			config.dockfile = NULL;
+		}
+		if (!config.dockfile && strcmp(file, "dockrc")) {
+			if (!(config.dockfile = findrcfile("dockrc")))
+			DPRINTF("Could not find dock file for %s\n", "dockrc");
+		}
+		if (config.dockfile && access(config.dockfile, R_OK)) {
+			DPRINTF("Could not access %s: %s\n", config.dockfile, strerror(errno));
+			free(config.dockfile);
+			config.dockfile = NULL;
+		}
+	}
+	if (!config.dockfile) {
+		if (!(config.dockfile = findthemepath("dockrc")))
+			DPRINTF("Could not find dock file for %s\n", file);
+		if (config.dockfile && access(config.dockfile, R_OK)) {
+			DPRINTF("Could not access %s: %s\n", config.dockfile, strerror(errno));
+			free(config.dockfile);
+			config.dockfile = NULL;
+		}
+	}
+	if (!config.dockfile) {
+		if (!(config.dockfile = findstylepath("dockrc")))
+			DPRINTF("Could not find dock file for %s\n", "dockrc");
+		if (config.dockfile && access(config.dockfile, R_OK)) {
+			DPRINTF("Could not access %s: %s\n", config.dockfile, strerror(errno));
+			free(config.dockfile);
+			config.dockfile = NULL;
+		}
+	}
+	if (!config.dockfile) {
+		DPRINTF("Could not find readable dock file.\n");
+		return;
+	}
+	DPRINTF("Reading databse file %s\n", config.dockfile);
+	drdb = XrmGetFileDatabase(config.dockfile);
+	if (!drdb) {
+		DPRINTF("Could not read database file '%s'\n", config.dockfile);
+		return;
+	}
+	XrmMergeDatabases(drdb, &xrdb);
+}
+
 static void
 initkeysfile(void)
 {
 	XrmDatabase krdb;
 	const char *file;
-	struct stat st;
-	char *path;
 
-	file = getresource("keysFile", "keysrc");
-	path = ecalloc(PATH_MAX + 1, sizeof(*path));
-	strncpy(path, file, PATH_MAX);
-	if (!lstat(file, &st) && S_ISLNK(st.st_mode)) {
-		if (readlink(file, path, PATH_MAX) == -1)
-			eprint("%s: %s\n", file, strerror(errno));
-	}
 	free(config.keysfile);
-	config.keysfile = strdup(path);
-	if (*config.keysfile != '/') {
-		strncpy(path, config.rcfile, PATH_MAX);
-		if (strrchr(path, '/'))
-			*strrchr(path, '/') = '\0';
-		strncat(path, "/", PATH_MAX);
-		strncat(path, config.keysfile, PATH_MAX);
-		free(config.keysfile);
-		config.keysfile = strdup(path);
+	config.keysfile = NULL;
+
+	if (!config.keysfile && (file = getresource("keysFile", "keysrc"))) {
+		if (!(config.keysfile = findrcfile(file)))
+			DPRINTF("Could not find keys file for %s\n", file);
+		if (config.keysfile && access(config.keysfile, R_OK)) {
+			DPRINTF("Could not access %s: %s\n", config.keysfile, strerror(errno));
+			free(config.keysfile);
+			config.keysfile = NULL;
+		}
+		if (!config.keysfile && strcmp(file, "keysrc")) {
+			if (!(config.keysfile = findrcfile("keysrc")))
+				DPRINTF("Could not find keys file for %s\n", "keysrc");
+		}
+		if (config.keysfile && access(config.keysfile, R_OK)) {
+			DPRINTF("Could not access %s: %s\n", config.keysfile, strerror(errno));
+			free(config.keysfile);
+			config.keysfile = NULL;
+		}
 	}
-	free(path);
+	if (!config.keysfile) {
+		if (!(config.keysfile = findthemepath("keysrc")))
+			DPRINTF("Could not find keys file for %s\n", "keysrc");
+		if (config.keysfile && access(config.keysfile, R_OK)) {
+			DPRINTF("Could not access %s: %s\n", config.keysfile, strerror(errno));
+			free(config.keysfile);
+			config.keysfile = NULL;
+		}
+	}
+	if (!config.keysfile) {
+		if (!(config.keysfile = findstylepath("keysrc")))
+			DPRINTF("Could not find keys file for %s\n", "keysrc");
+		if (config.keysfile && access(config.keysfile, R_OK)) {
+			DPRINTF("Could not access %s: %s\n", config.keysfile, strerror(errno));
+			free(config.keysfile);
+			config.keysfile = NULL;
+		}
+	}
+	if (!config.keysfile) {
+		DPRINTF("Could not find readable keys file.\n");
+		return;
+	}
+	DPRINTF("Reading databse file %s\n", config.keysfile);
 	krdb = XrmGetFileDatabase(config.keysfile);
 	if (!krdb) {
-		DPRINTF("Could not find database file '%s'\n", config.keysfile);
+		DPRINTF("Could not read database file '%s'\n", config.keysfile);
 		return;
 	}
 	XrmMergeDatabases(krdb, &xrdb);
@@ -527,31 +749,72 @@ static void
 initstylefile(void)
 {
 	XrmDatabase srdb;
-	const char *file;
-	struct stat st;
+	const char *file, *name;
 	char *path;
+	int len;
 
-	file = getresource("styleFile", "stylerc");
-	path = ecalloc(PATH_MAX + 1, sizeof(*path));
-	strncpy(path, file, PATH_MAX);
-	if (!lstat(file, &st) && S_ISLNK(st.st_mode))
-		if (readlink(file, path, PATH_MAX) == -1)
-			eprint("%s: %s\n", file, strerror(errno));
 	free(config.stylefile);
-	config.stylefile = strdup(path);
-	if (*config.stylefile != '/') {
-		strncpy(path, config.rcfile, PATH_MAX);
-		if (strrchr(path, '/'))
-			*strrchr(path, '/') = '\0';
-		strncat(path, "/", PATH_MAX);
-		strncat(path, config.stylefile, PATH_MAX);
-		free(config.stylefile);
-		config.stylefile = strdup(path);
+	config.stylefile = NULL;
+
+	if ((name = getresource("style.name", NULL))) {
+		/* already loaded a style, must be included in themerc */
+		if (config.themefile)
+			config.stylefile = strdup(config.themefile);
+		else if (config.rcfile)
+			config.stylefile = strdup(config.rcfile);
+		return;
 	}
-	free(path);
+	/* haven't loaded a style file yet */
+	if (!config.stylefile && (file = getresource("styleFile", "stylerc"))) {
+		if (!(config.stylefile = findrcfile(file)))
+			DPRINTF("Could not find style file for %s\n", file);
+		if (config.stylefile && access(config.stylefile, R_OK)) {
+			DPRINTF("Could not access %s: %s\n", config.stylefile, strerror(errno));
+			free(config.stylefile);
+			config.stylefile = NULL;
+		}
+		if (!config.stylefile && strcmp(file, "stylerc")) {
+			if (!(config.stylefile = findrcfile("stylerc")))
+				DPRINTF("Could not find style file for %s\n", "stylerc");
+		}
+		if (config.stylefile && access(config.stylefile, R_OK)) {
+			DPRINTF("Could not access %s: %s\n", config.stylefile, strerror(errno));
+			free(config.stylefile);
+			config.stylefile = NULL;
+		}
+	}
+	if (!config.stylefile && (name = getresource("styleName", "Default"))) {
+		len = strlen("styles/") + strlen(name) + strlen("/stylerc");
+		path = ecalloc(len + 1, sizeof(*path));
+		strncpy(path, "styles/", len);
+		strncat(path, name, len);
+		strncat(path, "/stylerc", len);
+		if (!(config.stylefile = findrcfile(path)))
+			DPRINTF("Could not find style file for %s\n", path);
+		free(path);
+		if (config.stylefile && access(config.stylefile, R_OK)) {
+			DPRINTF("Could not access %s: %s\n", config.stylefile, strerror(errno));
+			free(config.stylefile);
+			config.stylefile = NULL;
+		}
+		if (!config.stylefile && strcmp(name, "Default")) {
+			if (!(config.stylefile = findrcfile("styles/Default/stylerc")))
+				DPRINTF("Could not find style file for %s\n", "styles/Default/stylerc");
+		}
+		if (config.stylefile && access(config.stylefile, R_OK)) {
+			DPRINTF("Could not access %s: %s\n", config.stylefile, strerror(errno));
+			free(config.stylefile);
+			config.stylefile = NULL;
+		}
+	}
+	if (!config.stylefile) {
+		DPRINTF("Could not find readable style file.\n");
+		return;
+	}
+	DPRINTF("Reading databse file %s\n", config.stylefile);
 	srdb = XrmGetFileDatabase(config.stylefile);
 	if (!srdb) {
-		DPRINTF("Could not find database file '%s'\n", config.stylefile);
+		DPRINTF("Could not read database file '%s'\n", config.stylefile);
 		return;
 	}
 	XrmMergeDatabases(srdb, &xrdb);
@@ -561,116 +824,151 @@ static void
 initthemefile(void)
 {
 	XrmDatabase trdb;
-	const char *file;
-	struct stat st;
+	const char *file, *name;
 	char *path;
+	int len;
 
-	file = getresource("themeFile", "themerc");
-	path = ecalloc(PATH_MAX + 1, sizeof(*path));
-	strncpy(path, file, PATH_MAX);
-	if (!lstat(file, &st) && S_ISLNK(st.st_mode))
-		if (readlink(file, path, PATH_MAX) == -1)
-			eprint("%s: %s\n", file, strerror(errno));
 	free(config.themefile);
-	config.themefile = strdup(path);
-	if (*config.themefile != '/') {
-		strncpy(path, config.rcfile, PATH_MAX);
-		if (strrchr(path, '/'))
-			*strrchr(path, '/') = '\0';
-		strncat(path, "/", PATH_MAX);
-		strncat(path, config.themefile, PATH_MAX);
-		free(config.themefile);
-		config.themefile = strdup(path);
+	config.themefile = NULL;
+
+	if ((name = getresource("theme.name", NULL))) {
+		/* already loaded a theme, must be included in adwmrc */
+		if (config.rcfile)
+			config.themefile = strdup(config.rcfile);
+		return;
 	}
-	free(path);
+	/* haven't loaded a theme file yet */
+	if (!config.themefile && (file = getresource("themeFile", "themerc"))) {
+		if (!(config.themefile = findrcfile(file)))
+			DPRINTF("Could not find theme file for %s\n", file);
+		if (config.themefile && access(config.themefile, R_OK)) {
+			DPRINTF("Could not access %s: %s\n", config.themefile, strerror(errno));
+			free(config.themefile);
+			config.themefile = NULL;
+		}
+		if (!config.themefile && strcmp(file, "themerc")) {
+			if (!(config.themefile = findrcfile("themerc")))
+				DPRINTF("Could not find theme file for %s\n", "themerc");
+		}
+		if (config.themefile && access(config.themefile, R_OK)) {
+			DPRINTF("Could not access %s: %s\n", config.themefile, strerror(errno));
+			free(config.themefile);
+			config.themefile = NULL;
+		}
+	}
+	if (!config.themefile && (name = getresource("themeName", "Default"))) {
+		len = strlen("themes/") + strlen(name) + strlen("/themerc");
+		path = ecalloc(len + 1, sizeof(*path));
+		strncpy(path, "themes/", len);
+		strncat(path, name, len);
+		strncat(path, "/themerc", len);
+		if (!(config.themefile = findrcfile(path)))
+			DPRINTF("Could not find theme file for %s\n", path);
+		free(path);
+		if (config.themefile && access(config.themefile, R_OK)) {
+			DPRINTF("Could not access %s: %s\n", config.themefile, strerror(errno));
+			free(config.themefile);
+			config.themefile = NULL;
+		}
+		if (!config.themefile && strcmp(name, "Default")) {
+			if (!(config.themefile = findrcfile("themes/Default/themerc")))
+				DPRINTF("Could not find theme file for %s\n", "themes/Default/themerc");
+		}
+		if (config.themefile && access(config.themefile, R_OK)) {
+			DPRINTF("Could not access %s: %s\n", config.themefile, strerror(errno));
+			free(config.themefile);
+			config.themefile = NULL;
+		}
+	}
+	if (!config.themefile) {
+		DPRINTF("Could not find readable theme file.\n");
+		return;
+	}
+	DPRINTF("Reading databse file %s\n", config.themefile);
 	trdb = XrmGetFileDatabase(config.themefile);
 	if (!trdb) {
-		DPRINTF("Could not find database file '%s'\n", config.themefile);
+		DPRINTF("Could not read database file '%s'\n", config.themefile);
 		return;
 	}
 	XrmMergeDatabases(trdb, &xrdb);
 }
 
-char *
-findrcpath(const char *file)
+static void
+initrcdirs(const char *conf, Bool reload)
 {
-	char *path, *result;
+	int i, len;
 
-	path = ecalloc(PATH_MAX + 1, sizeof(*path));
-	strncpy(path, file, PATH_MAX);
-	if (*path != '/') {
-		if (config.stylefile) {
-			strncpy(path, config.stylefile, PATH_MAX);
-			if (strrchr(path, '/'))
-				*strrchr(path, '/') = '\0';
-			strncat(path, "/", PATH_MAX);
-			strncat(path, file, PATH_MAX);
-			if (!access(path, R_OK)) {
-				result = strdup(path);
-				free(path);
-				return (result);
-			}
+	free(config.rdir);
+	len = strlen(xdgdirs.runt) + strlen("/adwm/");
+	config.rdir = ecalloc(len + 1, sizeof(*config.rdir));
+	strncpy(config.rdir, xdgdirs.runt, len);
+	strncat(config.rdir, "/adwm/", len);
+	DPRINTF("config.rdir = %s\n", config.rdir);
+
+	free(config.xdir);
+	len = strlen(xdgdirs.conf.home) + strlen("/adwm/");
+	config.xdir = ecalloc(len + 1, sizeof(*config.xdir));
+	strncpy(config.xdir, xdgdirs.conf.home, len);
+	strncat(config.xdir, "/adwm/", len);
+	DPRINTF("config.xdir = %s\n", config.xdir);
+
+	free(config.udir);
+	len = strlen(xdgdirs.home) + strlen("/.adwm/");
+	config.udir = ecalloc(len + 1, sizeof(*config.udir));
+	strncpy(config.udir, xdgdirs.home, len);
+	strncat(config.udir, "/.adwm/", len);
+	DPRINTF("config.udir = %s\n", config.udir);
+
+	free(config.sdir);
+	len = strlen(SYSCONFPATH) + 1;
+	config.sdir = ecalloc(len + 1, sizeof(*config.sdir));
+	strncpy(config.sdir, SYSCONFPATH, len);
+	strncat(config.sdir, "/", len);
+	DPRINTF("config.sdir = %s\n", config.sdir);
+
+	free(config.pdir);
+	config.pdir = NULL;
+
+	free(config.rcfile);
+	config.rcfile = NULL;
+	if (conf) {
+		if (*conf == '/')
+			config.rcfile = strdup(conf);
+		else {
+			len = strlen(xdgdirs.home) + strlen(conf) + 1;
+			config.rcfile = ecalloc(len + 1, sizeof(*config.rcfile));
+			strncpy(config.rcfile, xdgdirs.home, len);
+			strncat(config.rcfile, "/", len);
+			strncat(config.rcfile, conf, len);
 		}
-		if (config.rcfile) {
-			strncpy(path, config.rcfile, PATH_MAX);
-			if (strrchr(path, '/'))
-				*strrchr(path, '/') = '\0';
-			strncat(path, "/", PATH_MAX);
-			strncat(path, file, PATH_MAX);
-			if (!access(path, R_OK)) {
-				result = strdup(path);
-				free(path);
-				return (result);
-			}
-		}
-		if (config.pdir) {
-			strncpy(path, config.pdir, PATH_MAX);
-			strncat(path, "/", PATH_MAX);
-			strncat(path, file, PATH_MAX);
-			if (!access(path, R_OK)) {
-				result = strdup(path);
-				free(path);
-				return (result);
-			}
-		}
-		if (config.udir) {
-			strncpy(path, config.udir, PATH_MAX);
-			strncat(path, "/", PATH_MAX);
-			strncat(path, file, PATH_MAX);
-			if (!access(path, R_OK)) {
-				result = strdup(path);
-				free(path);
-				return (result);
-			}
-		}
-		if (config.sdir) {
-			strncpy(path, config.sdir, PATH_MAX);
-			strncat(path, "/", PATH_MAX);
-			strncat(path, file, PATH_MAX);
-			if (!access(path, R_OK)) {
-				result = strdup(path);
-				free(path);
-				return (result);
-			}
+		config.pdir = strdup(config.rcfile);
+		if (strrchr(config.pdir, '/'))
+			*(strrchr(config.pdir, '/') + 1) = '\0';
+	} else {
+		for (i = 1; i < 4; i++) {
+			free(config.pdir);
+			config.pdir = strdup(config.dirs[i]);
+			len = strlen(config.pdir) + strlen("adwmrc") + 1;
+			free(config.rcfile);
+			config.rcfile = ecalloc(len + 1, sizeof(*config.rcfile));
+			strncpy(config.rcfile, config.pdir, len);
+			strncat(config.rcfile, "adwmrc", len);
+			if (!access(config.rcfile, F_OK))
+				break;
 		}
 	}
-	if (!access(path, R_OK)) {
-		result = strdup(path);
-		free(path);
-		return (result);
-	}
-	free(path);
-	return (NULL);
+	DPRINTF("config.pdir = %s\n", config.pdir);
+	/* XXX: if config.rcfile or its directory, config.pdir, doesn't exist, we will
+	   read config.sdir/adwmrc when it comes to reading, and will create config.pdir
+	   and write config.rcfile when it comes to it. */
 }
 
 void
 initrcfile(const char *conf, Bool reload)
 {
-	const char *home = getenv("HOME") ? : ".";
 	const char *file = NULL;
-	char *pos;
+	char *rcfile, *dir;
 	int i, len;
-	struct stat st;
 	static int initialized = 0;
 
 	/* init resource database */
@@ -685,104 +983,38 @@ initrcfile(const char *conf, Bool reload)
 	for (i = 0; i < cargc - 1; i++)
 		if (!strcmp(cargv[i], "-f"))
 			file = cargv[i + 1];
-	free(config.rcfile);
-	if (file) {
-		if (*file == '/')
-			config.rcfile = strdup(file);
-		else {
-			len = strlen(home) + strlen(file) + 2;
-			config.rcfile = ecalloc(len + 1, sizeof(*config.rcfile));
-			strncpy(config.rcfile, home, len);
-			strncat(config.rcfile, "/", len);
-			strncat(config.rcfile, file, len);
-		}
-	} else {
-		len = strlen(home) + strlen("/.adwm/adwmrc") + 1;
-		config.rcfile = ecalloc(len + 1, sizeof(*config.rcfile));
-		strncpy(config.rcfile, home, len);
-		strncat(config.rcfile, "/.adwm/adwmrc", len);
-		if (!lstat(config.rcfile, &st) && S_ISLNK(st.st_mode)) {
-			char *buf = ecalloc(PATH_MAX + 1, sizeof(*buf));
-
-			if (readlink(config.rcfile, buf, PATH_MAX) == -1)
-				eprint("%s: %s\n", config.rcfile, strerror(errno));
-			if (*buf == '/') {
-				free(config.rcfile);
-				config.rcfile = strdup(buf);
-			} else if (*buf) {
-				free(config.rcfile);
-				len = strlen(home) + strlen(buf) + 2;
-				config.rcfile = ecalloc(len + 1, sizeof(*config.rcfile));
-				strncpy(config.rcfile, home, len);
-				strncat(config.rcfile, "/", len);
-				strncat(config.rcfile, buf, len);
-			}
-			free(buf);
-		}
-
-	}
-	free(config.pdir);
-	config.pdir = strdup(config.rcfile);
-	if ((pos = strrchr(config.pdir, '/')))
-		*pos = '\0';
-	free(config.udir);
-	len = strlen(home) + strlen("/.adwm") + 1;
-	config.udir = ecalloc(len + 1, sizeof(*config.udir));
-	strncpy(config.udir, home, len);
-	strncat(config.udir, "/.adwm", len);
-	free(config.sdir);
-	config.sdir = strdup(SYSCONFPATH);
-	if (!strncmp(home, config.pdir, strlen(home))) {
-		free(config.pdir);
-		config.pdir = strdup(config.udir);
-	}
-
-	xrdb = XrmGetFileDatabase(config.rcfile);
+	initrcdirs(file, reload);
+	dir = strdup(config.pdir);
+	rcfile = strdup(config.rcfile);
+	if (chdir(dir))
+		DPRINTF("Could not change directory to %s: %s\n", dir, strerror(errno));
+	DPRINTF("Reading databse file %s\n", rcfile);
+	xrdb = XrmGetFileDatabase(rcfile);
 	if (!xrdb) {
-		DPRINTF("Couldn't find database file '%s'\n", config.rcfile);
-		free(config.rcfile);
-		len = strlen(config.pdir) + strlen("/adwmrc") + 2;
-		config.rcfile = ecalloc(len + 1, sizeof(*config.rcfile));
-		strncpy(config.rcfile, config.pdir, len);
-		strncat(config.rcfile, "/adwmrc", len);
-		xrdb = XrmGetFileDatabase(config.rcfile);
-	}
-	if (!xrdb) {
-		DPRINTF("Couldn't find database file '%s'\n", config.rcfile);
-		free(config.rcfile);
-		len = strlen(config.udir) + strlen("/adwmrc") + 2;
-		config.rcfile = ecalloc(len + 1, sizeof(*config.rcfile));
-		strncpy(config.rcfile, config.udir, len);
-		strncat(config.rcfile, "/adwmrc", len);
-		xrdb = XrmGetFileDatabase(config.rcfile);
-	}
-	if (!xrdb) {
-		DPRINTF("Couldn't find database file '%s'\n", config.rcfile);
-		free(config.rcfile);
-		len = strlen(config.sdir) + strlen("/adwmrc") + 2;
-		config.rcfile = ecalloc(len + 1, sizeof(*config.rcfile));
-		strncpy(config.rcfile, config.sdir, len);
-		strncat(config.rcfile, "/adwmrc", len);
-		xrdb = XrmGetFileDatabase(config.rcfile);
-	}
-	if (xrdb) {
-		char *dir;
-
-		dir = strdup(config.rcfile);
-		if (strrchr(dir, '/'))
-			*strrchr(dir, '/') = '\0';
-		if (chdir(dir))
-			DPRINTF("Could not change directory to %s: %s\n", dir,
-				strerror(errno));
+		DPRINTF("Couldn't find database file '%s', using defaults\n", rcfile);
 		free(dir);
-	} else {
-		DPRINTF("Couldn't find database file '%s'\n", config.rcfile);
-		EPRINTF("Could not find usable database, using defaults\n");
-		if (chdir(config.udir))
-			DPRINTF("Could not change directory to %s: %s\n", config.udir,
-				strerror(errno));
+		dir = strdup(config.sdir);
+		free(rcfile);
+		len = strlen(dir) + strlen("adwmrc");
+		rcfile = ecalloc(len + 1, sizeof(*rcfile));
+		strncpy(rcfile, dir, len);
+		strncat(rcfile, "adwmrc", len);
+		if (chdir(dir))
+			DPRINTF("Could not change directory to %s: %s\n", dir, strerror(errno));
+		DPRINTF("Reading databse file %s\n", rcfile);
+		xrdb = XrmGetFileDatabase(rcfile);
+		if (!xrdb)
+			DPRINTF("Couldn't find database file '%s', using defaults\n", rcfile);
 	}
-	initkeysfile();		/* read key bindings into the database */
-	initstylefile();	/* read style elements into the database */
+
 	initthemefile();	/* read theme elements into the database */
+	initstylefile();	/* read style elements into the database */
+	initkeysfile();		/* read key bindings into the database */
+	initdockfile();		/* read dock elements into the database */
+
+	/* might want to pass these to above, instead of changing directories */
+	/* except we should probably search pdir, rdir, xdir, udir, sdir for
+	 * everything. */
+	free(dir);
+	free(rcfile);
 }

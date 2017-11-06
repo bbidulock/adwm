@@ -1134,6 +1134,16 @@ struct Key {
 };					/* keyboard shortcuts */
 
 typedef struct {
+	char *home;
+	char *runt;
+	char *cach;
+	struct {
+		char *home;
+		char *dirs;
+	} conf, data;
+} XdgDirs;
+
+typedef struct {
 	int debug;
 	Bool useveil;
 	Bool attachaside;
@@ -1429,6 +1439,7 @@ do { \
 #define ROOTMASK		(BUTTONMASK | WINDOWMASK | MAPPINGMASK | FocusChangeMask | ColormapChangeMask)
 
 /* globals */
+extern XdgDirs xdgdirs;
 extern Options options;
 extern Atom atom[NATOMS];
 extern Display *dpy;

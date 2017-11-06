@@ -120,6 +120,7 @@ AScreen *scr;
 AScreen *event_scr;
 AScreen *screens;
 int nscr;
+XdgDirs xdgdirs = { NULL, };
 
 #ifdef STARTUP_NOTIFICATION
 SnDisplay *sn_dpy;
@@ -5100,6 +5101,67 @@ findscreen(Bool reload)
 	XFindContext(dpy, proot, context[ScreenContext], (XPointer *) &scr);
 }
 
+static void
+initdirs(Bool reload)
+{
+	const char *env;
+	int len;
+
+	free(xdgdirs.home);
+	if ((env = getenv("HOME"))) {
+		xdgdirs.home = strdup(env);
+	} else {
+		xdgdirs.home = strdup(".");
+	}
+	free(xdgdirs.runt);
+	if ((env = getenv("XDG_RUNTIME_DIR"))) {
+		xdgdirs.runt = strdup(env);
+	} else {
+		uid_t uid = getuid();
+
+		len = strlen("/run/user/") + 12;
+		xdgdirs.runt = calloc(len + 1, sizeof(*xdgdirs.runt));
+		snprintf(xdgdirs.runt, len, "/run/user/%d", (int)uid);
+	}
+	free(xdgdirs.cach);
+	if ((env = getenv("XDG_CACHE_HOME"))) {
+		xdgdirs.cach = strdup(env);
+	} else {
+		len = strlen(xdgdirs.home) + strlen("/.cache");
+		xdgdirs.cach = calloc(len + 1, sizeof(*xdgdirs.cach));
+		snprintf(xdgdirs.cach, len, "%s/.cache", xdgdirs.home);
+	}
+	free(xdgdirs.conf.home);
+	if ((env = getenv("XDG_CONFIG_HOME"))) {
+		xdgdirs.conf.home = strdup(env);
+	} else {
+		len = strlen(xdgdirs.home) + strlen("/.config");
+		xdgdirs.conf.home = calloc(len + 1, sizeof(*xdgdirs.conf.home));
+		snprintf(xdgdirs.conf.home, len, "%s/.config", xdgdirs.home);
+	}
+	free(xdgdirs.conf.dirs);
+	if ((env = getenv("XDG_CONFIG_DIRS"))) {
+		xdgdirs.conf.dirs = strdup(env);
+	} else {
+		xdgdirs.conf.dirs = strdup("/etc/xdg");
+	}
+	free(xdgdirs.data.home);
+	if ((env = getenv("XDG_DATA_HOME"))) {
+		xdgdirs.data.home = strdup(env);
+	} else {
+		len = strlen(xdgdirs.home) + strlen("/.local/share");
+		xdgdirs.data.home = calloc(len + 1, sizeof(*xdgdirs.data.home));
+		snprintf(xdgdirs.data.home, len, "%s/.local/share", xdgdirs.home);
+
+	}
+	free(xdgdirs.data.dirs);
+	if ((env = getenv("XDG_DATA_DIRS"))) {
+		xdgdirs.data.dirs = strdup(env);
+	} else {
+		xdgdirs.data.dirs = strdup("/usr/local/share:/usr/share");
+	}
+}
+
 void
 initialize(const char *conf, AdwmOperations * ops, Bool reload)
 {
@@ -5115,6 +5177,7 @@ initialize(const char *conf, AdwmOperations * ops, Bool reload)
 	initselect(reload);	/* select for events */
 	initstartup(reload);	/* init startup notification */
 
+	initdirs(reload);	/* init HOME and XDG directories */
 	initrcfile(conf, reload);	/* find the configuration file */
 	initrules(reload);	/* initialize window class.name rules */
 	initconfig(reload);	/* initialize configuration */

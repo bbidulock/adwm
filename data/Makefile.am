@@ -16,6 +16,11 @@ dist_pkgdata_DATA = \
 	stick.xbm
 
 nobase_dist_pkgdata_DATA = \
+	themes/Default/themerc \
+	themes/Default/images/penguin_inflight.jpg \
+	themes/Default/images/penguins_busy.jpg \
+	themes/Default/images/penguins_inarow2.jpg \
+	themes/Default/images/penguins_jumping.jpg \
 	styles/Default/keysrc \
 	styles/Default/stylerc \
 	styles/Default/pixmaps/close_focused.xpm \

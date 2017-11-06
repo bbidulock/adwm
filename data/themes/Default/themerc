@@ -1,0 +1,41 @@
+Adwm*theme.name:			Default
+Adwm*theme.author:			Brian Bidulock
+Adwm*theme.date:			Wed Feb 5 2014
+Adwm*theme.credits:			
+Adwm*theme.comments:			For ADWM.
+
+Adwm*styleName:				Default
+Adwm*styleFile:				stylerc
+Adwm*dockFile:				dockrc
+Adwm*keysFile:				keysrc
+
+Adwm*tags.number:			8
+Adwm*tags.rows:				2
+Adwm*tags.cols:				0
+
+Adwm*tags.name0:			\ 1 
+Adwm*tags.name1:			\ 2 
+Adwm*tags.name3:			\ 3 
+Adwm*tags.name4:			\ 4 
+
+Adwm*tags.image.repeat:			1
+
+Adwm*tags.color:			rfb:00/20/40
+Adwm*tags.color0:			rfb:00/20/40
+Adwm*tags.color1:			rfb:20/40/00
+Adwm*tags.color2:			rfb:40/00/20
+Adwm*tags.color3:			rfb:20/00/40
+
+Adwm*tags.image:			penguin_inflight.jpg
+Adwm*tags.image0:			penguin_inflight.jpg
+Adwm*tags.image1:			penguins_busy.jpg
+Adwm*tags.image2:			penguins_inarow2.jpg
+Adwm*tags.image3:			penguins_jumping.jpg
+
+Adwm*tags.image.how:			4
+Adwm*tags.image0.how:			4
+Adwm*tags.image1.how:			4
+Adwm*tags.image2.how:			4
+Adwm*tags.image3.how:			4
+
+! vim: set ft=xdefaults:

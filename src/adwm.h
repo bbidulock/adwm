@@ -969,9 +969,23 @@ struct View {
 	Client *lastsel;		/* last selected client for view */
 };					/* per-tag settings */
 
+typedef enum {
+	PlaceImageCenter,		/* center on screen at original size */
+	PlaceImageScaled,		/* scaled to w or h of screen orig aspect */
+	PlaceImageTiled,		/* tiled over the screen */
+	PlaceImageFull,			/* scaled with aspect adjused to screen */
+	PlaceImageClipped,		/* same as full but clip where necessary to
+					   avoid changing aspect too drastically */
+} PlaceImage;
+
 struct Tag {
 	Atom dt;			/* desktop atom for this tag */
 	char name[64];			/* desktop name for this tag */
+	unsigned long color;		/* color of desktop background */
+	char *image;			/* image name for this desktop background */
+	Pixmap pixmap;			/* pixmap of loaded image */
+	Geometry w;			/* size and position of the pixmap */
+	PlaceImage how;			/* how the pixmap is placed */
 };
 
 typedef enum {

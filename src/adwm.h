@@ -1282,6 +1282,8 @@ void *erealloc(void *ptr, size_t size);
 void eprint(const char *errstr, ...);
 Client *findclient(Window w);
 const char *getresource(const char *resource, const char *defval);
+const char *getscreenres(const char *resource, const char *defval);
+const char *getsessionres(const char *resource, const char *defval);
 Client *getclient(Window w, int part);
 View *getview(int x, int y);
 Bool gettextprop(Window w, Atom atom, char **text);

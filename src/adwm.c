@@ -2057,13 +2057,38 @@ getcmapwins(Window w)
 const char *
 getresource(const char *resource, const char *defval)
 {
-	static char name[256], class[256], *type;
-	XrmValue value;
+	static char name[256], clas[256], *type = NULL;
+	XrmValue value = { 0, NULL };
 
 	snprintf(name, sizeof(name), "%s.%s", RESNAME, resource);
-	snprintf(class, sizeof(class), "%s.%s", RESCLASS, resource);
-	XrmGetResource(xrdb, name, class, &type, &value);
-	if (value.addr)
+	snprintf(clas, sizeof(clas), "%s.%s", RESCLASS, resource);
+	if (XrmGetResource(xrdb, name, clas, &type, &value) && value.addr)
+		return value.addr;
+	return defval;
+}
+
+const char *
+getscreenres(const char *resource, const char *defval)
+{
+	static char name[256], clas[256], *type = NULL;
+	XrmValue value = { 0, NULL };
+
+	snprintf(name, sizeof(name), "%s.screen%d.%s", RESNAME, scr->screen, resource);
+	snprintf(clas, sizeof(clas), "%s.Screen%d.%s", RESCLASS, scr->screen, resource);
+	if (XrmGetResource(xrdb, name, clas, &type, &value) && value.addr)
+		return value.addr;
+	return defval;
+}
+
+const char *
+getsessionres(const char *resource, const char *defval)
+{
+	static char name[256], clas[256], *type = NULL;
+	XrmValue value = { 0, NULL };
+
+	snprintf(name, sizeof(name), "%s.session.%s", RESNAME, resource);
+	snprintf(clas, sizeof(clas), "%s.Session.%s", RESCLASS, resource);
+	if (XrmGetResource(xrdb, name, clas, &type, &value) && value.addr)
 		return value.addr;
 	return defval;
 }

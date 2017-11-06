@@ -36,11 +36,10 @@ void getshadow(const char *descrip, TextShadow * shadow);
 const char *
 readres(const char *name, const char *clas, const char *defval)
 {
-	char *type;
-	XrmValue value;
+	char *type = NULL;
+	XrmValue value = { 0, NULL };
 
-	XrmGetResource(xresdb, name, clas, &type, &value);
-	if (value.addr)
+	if (XrmGetResource(xresdb, name, clas, &type, &value) && value.addr)
 		return value.addr;
 	return defval;
 }

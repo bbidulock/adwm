@@ -439,7 +439,7 @@ attachalist(Client *c, Bool front)
 	} else {
 		for (s = scr->alist; s && s != sel; s = s->anext) ;
 		assert(s == sel);
-		c->anext = s->fnext;
+		c->anext = s->anext;
 		s->anext = c;
 	}
 }

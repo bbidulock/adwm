@@ -441,6 +441,7 @@ n_del_notify(Notify *n)
 	char **p;
 
 	for (npp = &notifies;(np = *npp) != n;) npp = &np->next;
+	assert(np == n);
 	if (np == n)
 		*npp = n->next;
 	sn_startup_sequence_unref(n->seq);
@@ -461,6 +462,7 @@ n_end_notify(SnStartupSequence *seq)
 	Notify *n;
 
 	for (n = notifies; n && n->seq != seq; n = n->next) ;
+	assert(n != NULL);
 	if (n) {
 		DPRINTF("NOTIFY: END: %s\n", n->id);
 		n->complete = True;
@@ -2505,11 +2507,13 @@ find_startup_seq(Client *c)
 	const char *binary, *wmclass;
 	pid_t pid = 0;
 
-	for (np = &notifies; (n = *np); ) {
+	np = &notifies;
+	while ((n = *np)) {
 		/* 1500 seconds old is just plain too old */
 		if ((user_time > n->timestamp) && user_time - n->timestamp > 1500000) {
 			_DPRINTF("%s %lu - %lu > 15000: deleting as too old\n", n->id, user_time, n->timestamp);
 			n_del_notify(n);
+			assert(*np != n); /* to be sure */
 		} else
 			/* yes, this works while deleting */
 			np = &n->next;

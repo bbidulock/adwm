@@ -1309,7 +1309,7 @@ eprint(const char *errstr, ...)
 	va_end(ap);
 
 	dumpstack(__FILE__, __LINE__, __func__);
-	exit(EXIT_FAILURE);
+	abort();
 }
 
 static Bool
@@ -4131,7 +4131,6 @@ run(void)
 				continue;
 			}
 			eprint("%s", "poll failed: %s\n", strerror(errno));
-			exit(EXIT_FAILURE);
 		} else {
 			if (pfd.revents & (POLLNVAL | POLLHUP | POLLERR)) {
 				if (pfd.revents & POLLNVAL)
@@ -4141,7 +4140,6 @@ run(void)
 				if (pfd.revents & POLLERR)
 					EPRINTF("POLLERR bit set!\n");
 				eprint("%s", "poll error\n");
-				exit(EXIT_FAILURE);
 			}
 			if (pfd.revents & POLLIN) {
 				while (XPending(dpy) && running) {
@@ -5020,7 +5018,8 @@ sighandler(int sig)
 
 		wait(&status);
 		signum = 0;
-	}
+	} else if (signum == SIGSEGV || signum == SIGBUS)
+		eprint("fatal: caught signal %d\n", signum);
 }
 
 void
@@ -5306,7 +5305,7 @@ spawn(const char *arg)
 		}
 		execvp(we.we_wordv[0], we.we_wordv);
 		EPRINTF("execvp %s (%s) failed: %s\n", we.we_wordv[0], arg, strerror(errno));
-		exit(EXIT_FAILURE);
+		abort();
 	} else {
 		wordfree(&we);
 	}
@@ -6150,8 +6149,8 @@ xerrorstart(Display *dsply, XErrorEvent *ee)
 int
 xioerror(Display *dsply)
 {
-	dumpstack(__FILE__, __LINE__, __func__);
 	EPRINTF("error is %s\n", strerror(errno));
+	dumpstack(__FILE__, __LINE__, __func__);
 	return xioerrorxlib(dsply);
 }
 
@@ -6197,6 +6196,8 @@ main(int argc, char *argv[])
 	signal(SIGTERM, sighandler);
 	signal(SIGQUIT, sighandler);
 	signal(SIGCHLD, sighandler);
+	signal(SIGSEGV, sighandler);
+	signal(SIGBUS, sighandler);
 	cargc = argc;
 	cargv = argv;
 

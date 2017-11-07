@@ -488,7 +488,6 @@ initimage(void)
 	}
 	default:
 		eprint("Unsuppoted visual class\n");
-		exit(EXIT_FAILURE);
 		break;
 	}
 }

@@ -221,10 +221,10 @@ OpenBox Specific:
 
 _OPENBOX_PID:				supported (but not set)
 
-_OB_CONTROL:				NOT supported
-	OB_CONTROL_RECONFIG(1)		    NOT supported
-	OB_CONTROL_RESTART(2)		    NOT supported
-	OB_CONTROL_QUIT(3)		    NOT supported
+_OB_CONTROL:				supported
+	OB_CONTROL_RECONFIG(1)		    supported
+	OB_CONTROL_RESTART(2)		    supported
+	OB_CONTROL_QUIT(3)		    supported
 
 2. Root Window Properties
 

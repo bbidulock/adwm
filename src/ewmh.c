@@ -3032,6 +3032,10 @@ ewmh_update_kde_splash_progress()
 	XSendEvent(dpy, scr->root, False, SubstructureNotifyMask, &ev);
 }
 
+#define OB_CONTROL_RECONFIG	1
+#define OB_CONTROL_RESTART	2
+#define OB_CONTROL_QUIT		3
+
 Bool
 clientmessage(XEvent *e)
 {
@@ -3274,6 +3278,15 @@ clientmessage(XEvent *e)
 				scr->colormapnotified = True;
 			if (ev->data.l[1] == 0)
 				scr->colormapnotified = False;
+		} else if (message_type == _XA_OB_CONTROL) {
+			if (ev->data.l[0] == OB_CONTROL_RECONFIG)
+				reload();
+			else
+			if (ev->data.l[0] == OB_CONTROL_RESTART)
+				restart(NULL);
+			else
+			if (ev->data.l[0] == OB_CONTROL_QUIT)
+				quit(NULL);
 		}
 	} else {
 		if (0) {

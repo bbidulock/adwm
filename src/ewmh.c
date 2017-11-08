@@ -220,20 +220,20 @@ char *atomnames[NATOMS] = {
 	"_OB_WM_STATE_UNDECORATED",
 	"_OB_WM_ACTION_UNDECORATE",
 
-	"_NET_SN_APPLICATION_ID",
-	"_NET_SN_LAUNCHER",
-	"_NET_SN_LAUNCHEE",
-	"_NET_SN_HOSTNAME",
-	"_NET_SN_PID",
-	"_NET_SN_SEQUENCE",
-	"_NET_SN_TIMESTAMP",
-	"_NET_SN_NAME",
-	"_NET_SN_DESCRIPTION",
-	"_NET_SN_ICON_NAME",
-	"_NET_SN_BINARY_NAME",
-	"_NET_SN_WMCLASS",
-	"_NET_SN_SCREEN",
-	"_NET_SN_WORKSPACE"
+	"_NET_APP_APPLICATION_ID",
+	"_NET_APP_LAUNCHER",
+	"_NET_APP_LAUNCHEE",
+	"_NET_APP_HOSTNAME",
+	"_NET_APP_PID",
+	"_NET_APP_SEQUENCE",
+	"_NET_APP_TIMESTAMP",
+	"_NET_APP_NAME",
+	"_NET_APP_DESCRIPTION",
+	"_NET_APP_ICON_NAME",
+	"_NET_APP_BINARY_NAME",
+	"_NET_APP_WMCLASS",
+	"_NET_APP_SCREEN",
+	"_NET_APP_WORKSPACE"
 };
 
 #define _NET_WM_STATE_REMOVE	0
@@ -594,7 +594,6 @@ initewmh(char *name)
 	data[0] = data[1] = data[2] = data[3] = 64;
 	XChangeProperty(dpy, root, XA_WM_ICON_SIZE, XA_CARDINAL, 32,
 			PropModeReplace, (unsigned char *) data, 4);
-
 	ewmh_update_net_client_lists();
 }
 
@@ -2387,90 +2386,90 @@ ewmh_update_sn_app_props(Client *c, Notify *n)
 	} else
 		_CPRINTF(c, "%s sequence has no id!\n", n->id);
 	if ((text = n->launcher)) {
-		XChangeProperty(dpy, win, _XA_NET_SN_LAUNCHER,
+		XChangeProperty(dpy, win, _XA_NET_APP_LAUNCHER,
 				_XA_UTF8_STRING, 8, PropModeReplace,
 				(unsigned char *) text, strlen(text) + 1);
 	} else
 		CPRINTF(c, "%s sequence has no launcher!\n", n->id);
 	if ((text = n->launchee)) {
-		XChangeProperty(dpy, win, _XA_NET_SN_LAUNCHEE,
+		XChangeProperty(dpy, win, _XA_NET_APP_LAUNCHEE,
 				_XA_UTF8_STRING, 8, PropModeReplace,
 				(unsigned char *) text, strlen(text) + 1);
 	} else
 		CPRINTF(c, "%s sequence has no launchee!\n", n->id);
 	if ((text = n->hostname)) {
-		XChangeProperty(dpy, win, _XA_NET_SN_HOSTNAME,
+		XChangeProperty(dpy, win, _XA_NET_APP_HOSTNAME,
 				_XA_UTF8_STRING, 8, PropModeReplace,
 				(unsigned char *) text, strlen(text) + 1);
 	} else
 		CPRINTF(c, "%s sequence has no hostname!\n", n->id);
 	if (n->pid != -1) {
 		data = n->pid;
-		XChangeProperty(dpy, win, _XA_NET_SN_PID,
+		XChangeProperty(dpy, win, _XA_NET_APP_PID,
 				XA_CARDINAL, 32, PropModeReplace,
 				(unsigned char *) &data, 1);
 	} else
 		CPRINTF(c, "%s sequence has no pid!\n", n->id);
 	if (n->sequence != -1) {
 		data = n->sequence;
-		XChangeProperty(dpy, win, _XA_NET_SN_SEQUENCE,
+		XChangeProperty(dpy, win, _XA_NET_APP_SEQUENCE,
 				XA_CARDINAL, 32, PropModeReplace,
 				(unsigned char *) &data, 1);
 	} else
 		CPRINTF(c, "%s sequence has no sequence!\n", n->id);
 	if (n->timestamp != -1) {
 		data = n->timestamp;
-		XChangeProperty(dpy, win, _XA_NET_SN_TIMESTAMP,
+		XChangeProperty(dpy, win, _XA_NET_APP_TIMESTAMP,
 				XA_CARDINAL, 32, PropModeReplace,
 				(unsigned char *) &data, 1);
 	} else
 		CPRINTF(c, "%s sequence has no timestamp!\n", n->id);
 	if ((text = sn_startup_sequence_get_application_id(seq))) {
-		XChangeProperty(dpy, win, _XA_NET_SN_APPLICATION_ID,
+		XChangeProperty(dpy, win, _XA_NET_APP_APPLICATION_ID,
 				_XA_UTF8_STRING, 8, PropModeReplace,
 				(unsigned char *) text, strlen(text) + 1);
 	} else
 		_CPRINTF(c, "%s sequence has no application id!\n", n->id);
 	if ((text = sn_startup_sequence_get_name(seq))) {
-		XChangeProperty(dpy, win, _XA_NET_SN_NAME,
+		XChangeProperty(dpy, win, _XA_NET_APP_NAME,
 				_XA_UTF8_STRING, 8, PropModeReplace,
 				(unsigned char *) text, strlen(text) + 1);
 	} else
 		CPRINTF(c, "%s sequence has no name!\n", n->id);
 	if ((text = sn_startup_sequence_get_description(seq))) {
-		XChangeProperty(dpy, win, _XA_NET_SN_DESCRIPTION,
+		XChangeProperty(dpy, win, _XA_NET_APP_DESCRIPTION,
 				_XA_UTF8_STRING, 8, PropModeReplace,
 				(unsigned char *) text, strlen(text) + 1);
 	} else
 		CPRINTF(c, "%s sequence has no description!\n", n->id);
 	if ((text = sn_startup_sequence_get_icon_name(seq))) {
-		XChangeProperty(dpy, win, _XA_NET_SN_ICON_NAME,
+		XChangeProperty(dpy, win, _XA_NET_APP_ICON_NAME,
 				_XA_UTF8_STRING, 8, PropModeReplace,
 				(unsigned char *) text, strlen(text) + 1);
 	} else
 		CPRINTF(c, "%s sequence has no icon name!\n", n->id);
 	if ((text = sn_startup_sequence_get_binary_name(seq))) {
-		XChangeProperty(dpy, win, _XA_NET_SN_BINARY_NAME,
+		XChangeProperty(dpy, win, _XA_NET_APP_BINARY_NAME,
 				_XA_UTF8_STRING, 8, PropModeReplace,
 				(unsigned char *) text, strlen(text) + 1);
 	} else
 		CPRINTF(c, "%s sequence has no binary name!\n", n->id);
 	if ((text = sn_startup_sequence_get_wmclass(seq))) {
-		XChangeProperty(dpy, win, _XA_NET_SN_WMCLASS,
+		XChangeProperty(dpy, win, _XA_NET_APP_WMCLASS,
 				_XA_UTF8_STRING, 8, PropModeReplace,
 				(unsigned char *) text, strlen(text) + 1);
 	} else
 		CPRINTF(c, "%s sequence has no wmclass!\n", n->id);
 	if (sn_startup_sequence_get_screen(seq) != -1) {
 		data = sn_startup_sequence_get_screen(seq);
-		XChangeProperty(dpy, win, _XA_NET_SN_SCREEN,
+		XChangeProperty(dpy, win, _XA_NET_APP_SCREEN,
 				XA_CARDINAL, 32, PropModeReplace,
 				(unsigned char *) &data, 1);
 	} else
 		_CPRINTF(c, "%s sequence has no screen!\n", n->id);
 	if (sn_startup_sequence_get_workspace(seq) != -1) {
 		data = sn_startup_sequence_get_workspace(seq);
-		XChangeProperty(dpy, win, _XA_NET_SN_WORKSPACE,
+		XChangeProperty(dpy, win, _XA_NET_APP_WORKSPACE,
 				XA_CARDINAL, 32, PropModeReplace,
 				(unsigned char *) &data, 1);
 	} else

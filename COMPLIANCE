@@ -170,6 +170,21 @@ _NET_FRAME_EXTENTS:			supported
 _NET_WM_OPAQUE_REGION:			NOT supported
 _NET_WM_BYPASS_COMPOSITOR:		NOT supported
 
+_NET_APP_APPLICATION_ID:*		supported
+_NET_APP_LAUNCHER:*			supported
+_NET_APP_LAUNCHEE:*			supported
+_NET_APP_HOSTNAME:*			supported
+_NET_APP_PID:*				supported
+_NET_APP_SEQUENCE:*			supported
+_NET_APP_TIMESTAMP:*			supported
+_NET_APP_NAME:*				supported
+_NET_APP_DESCRIPTION:*			supported
+_NET_APP_ICON_NAME:*			supported
+_NET_APP_BINARY_NAME:*			supported
+_NET_APP_WMCLASS:*			supported
+_NET_APP_SCREEN:*			supported
+_NET_APP_WORKSPACE:*			supported
+
 Section 6: Window Manager Protocols
 
 _NET_WM_PING:				supported

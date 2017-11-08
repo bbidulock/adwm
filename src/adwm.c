@@ -1702,8 +1702,7 @@ focusurgent(Client *c)
 		return;
 	if (!(v = c->cview))
 		return;
-	for (s = scr->flist; s && (s == c || !shouldsel(s) || !s->is.attn);
-	     s = s->fnext) ;
+	for (s = scr->flist; s && (s == c || !shouldfocus(s) || !s->is.attn); s = s->fnext) ;
 	if (s)
 		focus(s);
 }

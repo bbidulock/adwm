@@ -421,7 +421,9 @@ attachflist(Client *c, Bool front)
 		scr->flist = c;
 	} else {
 		for (s = scr->flist; s && s != took; s = s->fnext) ;
+		assert(s != NULL);
 		assert(s == took);
+		assert(s != c);
 		c->fnext = s->fnext;
 		s->fnext = c;
 	}
@@ -432,13 +434,15 @@ attachalist(Client *c, Bool front)
 {
 	Client *s;
 
-	assert(c->anext == NULL);
+	assert(c && c->anext == NULL);
 	if (front || !sel || sel == c) {
 		c->anext = scr->alist;
 		scr->alist = c;
 	} else {
 		for (s = scr->alist; s && s != sel; s = s->anext) ;
+		assert(s != NULL);
 		assert(s == sel);
+		assert(s != c);
 		c->anext = s->anext;
 		s->anext = c;
 	}

@@ -531,7 +531,7 @@ sn_handler(SnMonitorEvent * event, void *dummy)
 void
 initewmh(char *name)
 {
-	long data[4];
+	long data[6];
 	static Bool atoms_interned = False;
 	Window swin = scr->selwin;
 	Window root = scr->root;
@@ -591,9 +591,22 @@ initewmh(char *name)
 			PropModeReplace, (unsigned char *) data, 2);
 	XChangeProperty(dpy, swin, _XA_MOTIF_WM_INFO, _XA_MOTIF_WM_INFO, 32,
 			PropModeReplace, (unsigned char *) data, 2);
-	data[0] = data[1] = data[2] = data[3] = 64;
+#if 1
+	data[0] = data[1] = 56;
+	data[2] = data[3] = 64;
+	data[4] = data[5] = 4;
 	XChangeProperty(dpy, root, XA_WM_ICON_SIZE, XA_CARDINAL, 32,
 			PropModeReplace, (unsigned char *) data, 4);
+#else
+	{
+		XIconSize isizes[3] = {
+			{ 64, 64, 64, 64, 0, 0 }
+			{ 60, 60, 60, 60, 0, 0 },
+			{ 56, 56, 56, 56, 0, 0 },
+		};
+		XSetIconSizes(dpy, root, isizes, 3);
+	}
+#endif
 	ewmh_update_net_client_lists();
 }
 

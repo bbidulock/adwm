@@ -591,7 +591,7 @@ initewmh(char *name)
 			PropModeReplace, (unsigned char *) data, 2);
 	XChangeProperty(dpy, swin, _XA_MOTIF_WM_INFO, _XA_MOTIF_WM_INFO, 32,
 			PropModeReplace, (unsigned char *) data, 2);
-#if 1
+#if 0
 	data[0] = data[1] = 56;
 	data[2] = data[3] = 64;
 	data[4] = data[5] = 4;

@@ -600,9 +600,9 @@ initewmh(char *name)
 #else
 	{
 		XIconSize isizes[3] = {
-			{ 64, 64, 64, 64, 0, 0 }
+			{ 64, 64, 64, 64, 0, 0 },
 			{ 60, 60, 60, 60, 0, 0 },
-			{ 56, 56, 56, 56, 0, 0 },
+			{ 56, 56, 56, 56, 0, 0 }
 		};
 		XSetIconSizes(dpy, root, isizes, 3);
 	}

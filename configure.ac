@@ -336,6 +336,7 @@ AC_DEFINE([RHALFPIXMAP],["rhalf.xbm"],[Right half pixmap.])
 AC_DEFINE([FLOATPIXMAP],["float.xbm"],[Float pixmap.])
 AC_DEFINE([FILLPIXMAP],["fill.xbm"],[Fill pixmap.])
 AC_DEFINE([SIZEPIXMAP],["resize.xbm"],[Resize pixmap.])
+AC_DEFINE([WINPIXMAP],["window.xbm"],[Window icon pixmap.])
 
 AC_DEFINE([MINWIDTH],[12],[Minimum window width in pixels.])
 AC_DEFINE([MINHEIGHT],[12],[Minimum window height in pixels.])

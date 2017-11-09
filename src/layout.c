@@ -560,7 +560,7 @@ tookfocus(Client *next)
 			ewmh_update_net_window_state(last);
 			drawclient(last);
 			if (last != sel)
-				XSetWindowBorder(dpy, last->frame, scr->style.color.norm[ColBorder]);
+				XSetWindowBorder(dpy, last->frame, scr->style.color.norm[ColBorder].pixel);
 		}
 	}
 	if (next && next != last) {
@@ -569,7 +569,7 @@ tookfocus(Client *next)
 			ewmh_update_net_window_state(next);
 			drawclient(next);
 			if (next != sel)
-				XSetWindowBorder(dpy, next->frame, scr->style.color.focu[ColBorder]);
+				XSetWindowBorder(dpy, next->frame, scr->style.color.focu[ColBorder].pixel);
 		}
 		reattachflist(next, True);
 	}

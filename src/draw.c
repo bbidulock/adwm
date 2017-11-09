@@ -17,6 +17,140 @@
 #include "config.h"
 #include "draw.h" /* verification */
 
+static void
+renderbutton(Client *c, ButtonImage *bi, unsigned int w, unsigned int h, XftColor *color)
+{
+	unsigned int iconw, iconh;
+
+	iconw = iconh = scr->style.titleheight;
+	bi->x = bi->y = bi->b = 0;
+#if defined IMLIB2
+	bi->d = scr->depth;
+	imlib_context_set_color(color->color.red,
+				color->color.green,
+				color->color.blue, color->color.alpha);
+	bi->w = imlib_image_get_width();
+	bi->h = imlib_image_get_height();
+	if (bi->h > scr->style.titleheight)
+		bi->h = scr->style.titleheight;
+	if (bi->w > scr->style.titleheight)
+		bi->w = scr->style.titleheight;
+	imlib_render_pixmaps_for_whole_image_at_size(&bi->pixmap.draw,
+						     &bi->pixmap.mask, bi->w, bi->h);
+#else
+	bi->d = 1;
+	bi->bitmap.draw = c->wmh.icon_pixmap;
+	bi->bitmap.mask = c->wmh.icon_mask;
+	bi->w = w;
+	bi->h = h;
+#endif
+	bi->y += (iconw - bi->w + 1) / 2;
+	bi->present = True;
+}
+
+Bool
+createwmicon(Client *c)
+{
+	Bool status = False;
+	Window root;
+	int x, y;
+	unsigned int w, h, b, d;
+
+#if defined IMLIB2
+	Imlib_Image image;
+#endif
+
+	if (!c || !(c->wmh.flags & IconPixmapHint))
+		return (status);
+	if (!XGetGeometry(dpy, c->wmh.icon_pixmap, &root, &x, &y, &w, &h, &b, &d))
+		return (status);
+#if !defined IMLIB2
+	if (w > scr->style.titleheight || h > scr->style.titleheight)
+		return (status);
+#endif
+	if (!c->iconbtn)
+		c->iconbtn = calloc(LastButtonImageType, sizeof(*c->iconbtn));
+#if defined IMLIB2
+	imlib_context_push(scr->context);
+	imlib_context_set_mask(None);
+	imlib_context_set_drawable(c->wmh.icon_pixmap);
+	image = imlib_create_image_from_drawable(c->wmh.icon_mask, 0, 0, w, h, 0);
+	imlib_context_set_image(image);
+#endif
+
+	renderbutton(c, &c->iconbtn[ButtonImageDefault],
+		     w, h, &scr->style.color.sele[ColButton]);
+	renderbutton(c, &c->iconbtn[ButtonImageFocus],
+		     w, h, &scr->style.color.focu[ColButton]);
+	renderbutton(c, &c->iconbtn[ButtonImageUnfocus],
+		     w, h, &scr->style.color.norm[ColButton]);
+	renderbutton(c, &c->iconbtn[ButtonImagePressed],
+		     w, h, &scr->style.color.sele[ColButton]);
+
+#if defined IMLIB2
+	imlib_free_image_and_decache();
+	imlib_context_pop();
+#endif
+	status = True;
+	return (status);
+}
+
+Bool
+createneticon(Client *c, long *data, unsigned long n)
+{
+	Bool status = False;
+
+#if defined IMLIB2
+	Imlib_Image image;
+	unsigned int h, w, i;
+	ButtonImage *bi;
+	DATA32 *pixels;
+
+	if (!data)
+		return (status);
+	if (n < 2)
+		goto done;
+	w = data[0];
+	h = data[1];
+	if (w == 0 || h == 0)
+		goto done;
+	if (n < w * h + 2)
+		goto done;
+	imlib_context_push(scr->context);
+	if (!(image = imlib_create_image(w, h)))
+		goto pop;
+	imlib_context_set_image(image);
+	imlib_context_set_mask(None);
+	imlib_image_set_has_alpha(1);
+	if (!(pixels = imlib_image_get_data()))
+		goto free;
+	for (i = 0; i + 2 < n; i++)
+		pixels[i] = data[i + 2] & 0xffffffff;
+	imlib_image_put_back_data(pixels);
+	if (!c->iconbtn)
+		c->iconbtn = calloc(LastButtonImageType, sizeof(*c->iconbtn));
+	bi = &c->iconbtn[ButtonImageDefault];
+	bi->w = imlib_image_get_width();
+	bi->h = imlib_image_get_height();
+	if (bi->h > scr->style.titleheight)
+		bi->h = scr->style.titleheight;
+	if (bi->w > scr->style.titleheight)
+		bi->w = scr->style.titleheight;
+	imlib_render_pixmaps_for_whole_image_at_size(&bi->pixmap.draw,
+						     &bi->pixmap.mask, bi->w, bi->h);
+	bi->x = bi->y = bi->b = 0;
+	bi->d = scr->depth;
+	bi->present = True;
+      free:
+	imlib_free_image_and_decache();
+      pop:
+	imlib_context_pop();
+      done:
+#endif
+	XFree(data);
+	return (status);
+}
+
 enum { Normal, Focused, Selected };
 enum { AlignLeft, AlignCenter, AlignRight };	/* title position */
 
@@ -39,9 +173,10 @@ static ButtonImage *
 buttonimage(AScreen *ds, Client *c, ElementType type)
 {
 	Bool pressed, hovered, focused, enabled, present, toggled;
+	ButtonImage *image;
 	ElementClient *ec;
 	Element *e;
-	int image;
+	int which;
 	const char *name = NULL;
 
 	(void) name;
@@ -51,6 +186,7 @@ buttonimage(AScreen *ds, Client *c, ElementType type)
 		present = True;
 		toggled = False;
 		enabled = True;
+		break;
 	case IconifyBtn:
 		name = "iconify";
 		present = c->has.but.min;
@@ -111,6 +247,12 @@ buttonimage(AScreen *ds, Client *c, ElementType type)
 		toggled = c->is.moveresize;
 		enabled = c->can.size || c->can.sizev || c->can.sizeh;
 		break;
+	case IconBtn:
+		name = "icon";
+		present = True;
+		toggled = False;
+		enabled = True;
+		break;
 	default:
 		name = "unknown";
 		present = False;
@@ -135,69 +277,71 @@ buttonimage(AScreen *ds, Client *c, ElementType type)
 		return NULL;
 	}
 
-	if (pressed == 0x1 && toggled && e->image[ButtonImageToggledPressedB1].present) {
+	image = (type == IconBtn && c->iconbtn) ? c->iconbtn : e->image;
+
+	if (pressed == 0x1 && toggled && image[ButtonImageToggledPressedB1].present) {
 		XPRINTF("button %s assigned toggled.pressed.b1 image\n", name);
-		return &e->image[ButtonImageToggledPressedB1];
+		return &image[ButtonImageToggledPressedB1];
 	}
-	if (pressed == 0x2 && toggled && e->image[ButtonImageToggledPressedB2].present) {
+	if (pressed == 0x2 && toggled && image[ButtonImageToggledPressedB2].present) {
 		XPRINTF("button %s assigned toggled.pressed.b2 image\n", name);
-		return &e->image[ButtonImageToggledPressedB2];
+		return &image[ButtonImageToggledPressedB2];
 	}
-	if (pressed == 0x4 && toggled && e->image[ButtonImageToggledPressedB3].present) {
+	if (pressed == 0x4 && toggled && image[ButtonImageToggledPressedB3].present) {
 		XPRINTF("button %s assigned toggled.pressed.b3 image\n", name);
-		return &e->image[ButtonImageToggledPressedB3];
+		return &image[ButtonImageToggledPressedB3];
 	}
-	if (pressed && toggled && e->image[ButtonImageToggledPressed].present) {
+	if (pressed && toggled && image[ButtonImageToggledPressed].present) {
 		XPRINTF("button %s assigned toggled.pressed image\n", name);
-		return &e->image[ButtonImageToggledPressed];
+		return &image[ButtonImageToggledPressed];
 	}
-	if (pressed == 0x1 && e->image[ButtonImagePressedB1].present) {
+	if (pressed == 0x1 && image[ButtonImagePressedB1].present) {
 		XPRINTF("button %s assigned pressed.b1 image\n", name);
-		return &e->image[ButtonImagePressedB1];
+		return &image[ButtonImagePressedB1];
 	}
-	if (pressed == 0x2 && e->image[ButtonImagePressedB2].present) {
+	if (pressed == 0x2 && image[ButtonImagePressedB2].present) {
 		XPRINTF("button %s assigned pressed.b2 image\n", name);
-		return &e->image[ButtonImagePressedB2];
+		return &image[ButtonImagePressedB2];
 	}
-	if (pressed == 0x4 && e->image[ButtonImagePressedB3].present) {
+	if (pressed == 0x4 && image[ButtonImagePressedB3].present) {
 		XPRINTF("button %s assigned pressed.b3 image\n", name);
-		return &e->image[ButtonImagePressedB3];
+		return &image[ButtonImagePressedB3];
 	}
-	if (pressed && e->image[ButtonImagePressed].present) {
+	if (pressed && image[ButtonImagePressed].present) {
 		XPRINTF("button %s assigned pressed image\n", name);
-		return &e->image[ButtonImagePressed];
+		return &image[ButtonImagePressed];
 	}
-	image = ButtonImageHover + (hovered ? 0 : (focused ? 1 : 2));
-	image += toggled ? 3 : 0;
-	image += enabled ? 0 : 6;
-	if (hovered && !e->image[image].present) {
+	which = ButtonImageHover + (hovered ? 0 : (focused ? 1 : 2));
+	which += toggled ? 3 : 0;
+	which += enabled ? 0 : 6;
+	if (hovered && !image[which].present) {
 		XPRINTF("button %s has no hovered image %d, using %s instead\n", name,
-			image, focused ? "focused" : "unfocus");
-		image += focused ? 1 : 2;
+			which, focused ? "focused" : "unfocus");
+		which += focused ? 1 : 2;
 	}
-	if (!focused && !e->image[image].present) {
+	if (!focused && !image[which].present) {
 		XPRINTF("button %s has no unfocus image %d, using focused instead\n",
-			name, image);
-		image -= 1;
+			name, which);
+		which -= 1;
 	}
-	if (toggled && !e->image[image].present) {
+	if (toggled && !image[which].present) {
 		XPRINTF("button %s has no toggled image %d, using untoggled instead\n",
-			name, image);
-		image -= 3;
+			name, which);
+		which -= 3;
 	}
-	if (!enabled && !e->image[image].present) {
+	if (!enabled && !image[which].present) {
 		XPRINTF("button %s missing disabled image %d, skipping button\n", name,
-			image);
+			which);
 		return NULL;
 	}
-	if (e->image[image].present) {
-		XPRINTF("button %s going with chosen image %d\n", name, image);
-		return &e->image[image];
+	if (image[which].present) {
+		XPRINTF("button %s going with chosen image %d\n", name, which);
+		return &image[which];
 	}
-	if (e->image[ButtonImageDefault].present) {
+	if (image[ButtonImageDefault].present) {
 		XPRINTF("button %s missing chosen image %d, going with default\n", name,
-			image);
-		return &e->image[ButtonImageDefault];
+			which);
+		return &image[ButtonImageDefault];
 	}
 	XPRINTF("button %s missing default image, skipping button\n", name);
 	return NULL;
@@ -239,6 +383,8 @@ elementtype(char which)
 		return FloatBtn;
 	case 'Z':
 		return SizeBtn;
+	case 'P':
+		return IconBtn;
 	case 'T':
 		return TitleTags;
 	case 'N':
@@ -263,14 +409,14 @@ elementw(AScreen *ds, Client *c, char which)
 	switch (type) {
 		unsigned int j;
 
-	case TitleName:
-		w = textw(ds, c->name, hilite);
-		break;
 	case TitleTags:
 		for (j = 0; j < ds->ntags; j++) {
 			if (c->tags & (1ULL << j))
 				w += textw(ds, ds->tags[j].name, hilite);
 		}
+		break;
+	case TitleName:
+		w = textw(ds, c->name, hilite);
 		break;
 	case TitleSep:
 		w = ds->dc.h / 2;
@@ -285,7 +431,7 @@ elementw(AScreen *ds, Client *c, char which)
 
 static int
 drawtext(AScreen *ds, const char *text, Drawable drawable, XftDraw * xftdrawable,
-	 unsigned long col[ColLast], int hilite, int x, int y, int mw)
+	 XftColor *col, int hilite, int x, int y, int mw)
 {
 	int w, h;
 	char buf[256];
@@ -319,24 +465,24 @@ drawtext(AScreen *ds, const char *text, Drawable drawable, XftDraw * xftdrawable
 		return 0;	/* too long */
 	while (x <= 0)
 		x = ds->dc.x++;
-	XSetForeground(dpy, ds->dc.gc, col[ColBG]);
+	XSetForeground(dpy, ds->dc.gc, col[ColBG].pixel);
 	XSetFillStyle(dpy, ds->dc.gc, FillSolid);
 	status =
 	    XFillRectangle(dpy, drawable, ds->dc.gc, x - ds->dc.font[hilite].height / 2,
 			   0, w + ds->dc.font[hilite].height, h);
 	if (!status)
-		DPRINTF("Could not fill rectangle, error %d\n", status);
+		XPRINTF("Could not fill rectangle, error %d\n", status);
 	if ((drop = ds->style.drop[hilite]))
-		XftDrawStringUtf8(xftdrawable, ds->style.color.shadow[hilite],
+		XftDrawStringUtf8(xftdrawable, &ds->style.color.hue[hilite][ColShadow],
 				  ds->style.font[hilite], x + drop, y + drop,
 				  (unsigned char *) buf, len);
-	XftDrawStringUtf8(xftdrawable, ds->style.color.font[hilite],
+	XftDrawStringUtf8(xftdrawable, &ds->style.color.hue[hilite][ColFG],
 			  ds->style.font[hilite], x, y, (unsigned char *) buf, len);
 	return w + ds->dc.font[hilite].height;
 }
 
 static int
-drawbutton(AScreen *ds, Client *c, ElementType type, unsigned long col[ColLast], int x)
+drawbutton(AScreen *ds, Client *c, ElementType type, XftColor *col, int x)
 {
 	ElementClient *ec = &c->element[type];
 	Drawable d = ds->dc.draw.pixmap;
@@ -354,25 +500,45 @@ drawbutton(AScreen *ds, Client *c, ElementType type, unsigned long col[ColLast],
 	ec->g.h = bi->h;
 
 #if defined IMLIB2 || defined XPM
-	if (bi->pixmap) {
-		XPRINTF("Copying pixmap 0x%lx with geom %dx%d+%d+%d to drawable 0x%lx\n",
-			bi->pixmap, ec->g.w, ec->g.h, ec->g.x, ec->g.y, d);
-		XCopyArea(dpy, bi->pixmap, d, ds->dc.gc, 0, bi->y, ec->g.w, ec->g.h,
+	if (bi->pixmap.draw) {
+		XPRINTF("Copying pixmap 0x%lx mask 0x%lx with geom %dx%d+%d+%d to drawable 0x%lx\n",
+			bi->pixmap.draw, bi->pixmap.mask, ec->g.w, ec->g.h, ec->g.x, ec->g.y, d);
+#if 0
+		if (bi->pixmap.mask) {
+			XSetClipOrigin(dpy, ds->dc.gc, 0, bi->y);
+			XSetClipMask(dpy, ds->dc.gc, bi->pixmap.mask);
+		}
+#endif
+		XCopyArea(dpy, bi->pixmap.draw, d, ds->dc.gc, 0, bi->y, ec->g.w, ec->g.h,
 			  ec->g.x, ec->g.y);
+#if 0
+		if (bi->pixmap.mask)
+			XSetClipMask(dpy, ds->dc.gc, None);
+#endif
 		return ec->g.w;
 	} else
 #endif
-	if (bi->bitmap) {
-		XSetForeground(dpy, ds->dc.gc, col[ColBG]);
+	if (bi->bitmap.draw) {
+		XSetForeground(dpy, ds->dc.gc, col[ColBG].pixel);
 		XSetFillStyle(dpy, ds->dc.gc, FillSolid);
 		status =
 		    XFillRectangle(dpy, d, ds->dc.gc, ec->g.x, 0, ds->dc.h, ds->dc.h);
 		if (!status)
-			DPRINTF("Could not fill rectangle, error %d\n", status);
-		XSetForeground(dpy, ds->dc.gc, ec->pressed ? col[ColFG] : col[ColButton]);
-		XSetBackground(dpy, ds->dc.gc, col[ColBG]);
-		XCopyPlane(dpy, bi->bitmap, d, ds->dc.gc, 0, 0, ec->g.w, ec->g.h, ec->g.x,
+			XPRINTF("Could not fill rectangle, error %d\n", status);
+		XSetForeground(dpy, ds->dc.gc, ec->pressed ? col[ColFG].pixel : col[ColButton].pixel);
+		XSetBackground(dpy, ds->dc.gc, col[ColBG].pixel);
+#if 0
+		if (bi->bitmap.mask) {
+			XSetClipOrigin(dpy, ds->dc.gc, 0, 0);
+			XSetClipMask(dpy, ds->dc.gc, bi->bitmap.mask);
+		}
+#endif
+		XCopyPlane(dpy, bi->bitmap.draw, d, ds->dc.gc, 0, 0, ec->g.w, ec->g.h, ec->g.x,
 			   ec->g.y + bi->y, 1);
+#if 0
+		if (bi->bitmap.mask)
+			XSetClipMask(dpy, ds->dc.gc, None);
+#endif
 		return ds->dc.h;
 	}
 	XPRINTF("button %d has no pixmap or bitmap\n", type);
@@ -383,7 +549,7 @@ static int
 drawelement(AScreen *ds, char which, int x, int position, Client *c)
 {
 	int w = 0;
-	unsigned long *color = c == sel ? ds->style.color.sele : ds->style.color.norm;
+	XftColor *color = c == sel ? ds->style.color.sele : ds->style.color.norm;
 	int hilite = (c == sel) ? Selected : (c->is.focused ? Focused : Normal);
 	ElementType type = elementtype(which);
 	ElementClient *ec = &c->element[type];
@@ -412,15 +578,15 @@ drawelement(AScreen *ds, char which, int x, int position, Client *c)
 								hilite, x, ds->dc.y,
 								ds->dc.w) : 0;
 		break;
-	case TitleSep:
-		XSetForeground(dpy, ds->dc.gc, color[ColBorder]);
-		XDrawLine(dpy, ds->dc.draw.pixmap, ds->dc.gc, ds->dc.x + ds->dc.h / 4, 0,
-			  ds->dc.x + ds->dc.h / 4, ds->dc.h);
-		w = ds->dc.h / 2;
-		break;
 	case TitleName:
 		w = drawtext(ds, c->name, ds->dc.draw.pixmap, ds->dc.draw.xft, color,
 			     hilite, ds->dc.x, ds->dc.y, ds->dc.w);
+		break;
+	case TitleSep:
+		XSetForeground(dpy, ds->dc.gc, color[ColBorder].pixel);
+		XDrawLine(dpy, ds->dc.draw.pixmap, ds->dc.gc, ds->dc.x + ds->dc.h / 4, 0,
+			  ds->dc.x + ds->dc.h / 4, ds->dc.h);
+		w = ds->dc.h / 2;
 		break;
 	default:
 		if (0 <= type && type < LastBtn)
@@ -443,7 +609,7 @@ drawdockapp(Client *c, AScreen *ds)
 	int status;
 	unsigned long pixel;
 
-	pixel = (c == sel) ? ds->style.color.sele[ColBG] : ds->style.color.norm[ColBG];
+	pixel = (c == sel) ? ds->style.color.sele[ColBG].pixel : ds->style.color.norm[ColBG].pixel;
 	/* to avoid clearing window, initiallly set to norm[ColBG] */
 	// XSetWindowBackground(dpy, c->frame, pixel);
 	// XClearArea(dpy, c->frame, 0, 0, 0, 0, True);
@@ -461,7 +627,7 @@ drawdockapp(Client *c, AScreen *ds)
 	    XFillRectangle(dpy, c->frame, ds->gc, ds->dc.x, ds->dc.y, ds->dc.w,
 			   ds->dc.h);
 	if (!status)
-		DPRINTF("Could not fill rectangle, error %d\n", status);
+		XPRINTF("Could not fill rectangle, error %d\n", status);
 	CPRINTF(c, "Filled dockapp frame %dx%d+%d+%d\n", ds->dc.w, ds->dc.h, ds->dc.x,
 		ds->dc.y);
 	/* note that ParentRelative dockapps need the background set to the foregroudn */
@@ -516,7 +682,7 @@ drawclient(Client *c)
 
 	/* might be drawing a client that is not on the current screen */
 	if (!(ds = getscreen(c->win, True))) {
-		DPRINTF("What? no screen for window 0x%lx???\n", c->win);
+		XPRINTF("What? no screen for window 0x%lx???\n", c->win);
 		return;
 	}
 	if (c == sel && !ds->colormapnotified)
@@ -539,7 +705,7 @@ drawclient(Client *c)
 		XftDrawChange(ds->dc.draw.xft, ds->dc.draw.pixmap);
 	}
 	XSetForeground(dpy, ds->dc.gc,
-		       c == sel ? ds->style.color.sele[ColBG] : ds->style.color.norm[ColBG]);
+		       c == sel ? ds->style.color.sele[ColBG].pixel : ds->style.color.norm[ColBG].pixel);
 	XSetLineAttributes(dpy, ds->dc.gc, ds->style.border, LineSolid, CapNotLast,
 			   JoinMiter);
 	XSetFillStyle(dpy, ds->dc.gc, FillSolid);
@@ -547,7 +713,7 @@ drawclient(Client *c)
 	    XFillRectangle(dpy, ds->dc.draw.pixmap, ds->dc.gc, ds->dc.x, ds->dc.y,
 			   ds->dc.w, ds->dc.h);
 	if (!status)
-		DPRINTF("Could not fill rectangle, error %d\n", status);
+		XPRINTF("Could not fill rectangle, error %d\n", status);
 	/* Don't know about this... */
 	if (ds->dc.w < textw(ds, c->name, (c == sel) ? Selected : (c->is.focused ? Focused : Normal))) {
 		ds->dc.w -= elementw(ds, c, CloseBtn);
@@ -597,19 +763,21 @@ drawclient(Client *c)
       end:
 	if (ds->style.outline) {
 		XSetForeground(dpy, ds->dc.gc,
-			       c == sel ? ds->style.color.sele[ColBorder] : ds->style.color.
-			       norm[ColBorder]);
+			       c == sel ? ds->style.color.sele[ColBorder].pixel :
+			       ds->style.color.norm[ColBorder].pixel);
 		XDrawLine(dpy, ds->dc.draw.pixmap, ds->dc.gc, 0, ds->dc.h - 1, ds->dc.w,
 			  ds->dc.h - 1);
 	}
-	if (c->title)
+	if (c->title) {
 		XCopyArea(dpy, ds->dc.draw.pixmap, c->title, ds->dc.gc, 0, 0, c->c.w,
 			  ds->dc.h, 0, 0);
+	}
 	ds->dc.x = ds->dc.y = 0;
 	ds->dc.w = c->c.w;
 	ds->dc.h = ds->style.gripsheight;
 	XSetForeground(dpy, ds->dc.gc,
-		       c == sel ? ds->style.color.sele[ColBG] : ds->style.color.norm[ColBG]);
+		       c == sel ? ds->style.color.sele[ColBG].pixel :
+		       ds->style.color.norm[ColBG].pixel);
 	XSetLineAttributes(dpy, ds->dc.gc, ds->style.border, LineSolid, CapNotLast,
 			   JoinMiter);
 	XSetFillStyle(dpy, ds->dc.gc, FillSolid);
@@ -617,11 +785,11 @@ drawclient(Client *c)
 	    XFillRectangle(dpy, ds->dc.draw.pixmap, ds->dc.gc, ds->dc.x, ds->dc.y,
 			   ds->dc.w, ds->dc.h);
 	if (!status)
-		DPRINTF("Could not fill rectangle, error %d\n", status);
+		XPRINTF("Could not fill rectangle, error %d\n", status);
 	if (ds->style.outline) {
 		XSetForeground(dpy, ds->dc.gc,
-			       c == sel ? ds->style.color.sele[ColBorder] : ds->style.color.
-			       norm[ColBorder]);
+			       c == sel ? ds->style.color.sele[ColBorder].pixel :
+			       ds->style.color.norm[ColBorder].pixel);
 		XDrawLine(dpy, ds->dc.draw.pixmap, ds->dc.gc, 0, 0, ds->dc.w, 0);
 		/* needs to be adjusted to do ds->style.gripswidth instead */
 		ds->dc.x = ds->dc.w / 2 - ds->dc.w / 5;
@@ -636,6 +804,18 @@ drawclient(Client *c)
 			  ds->dc.h, 0, 0);
 }
 
+static Bool
+alloccolor(const char *colstr, XftColor *color)
+{
+	Bool status;
+
+	status = XftColorAllocName(dpy, scr->visual, scr->colormap, colstr, color);
+	if (!status)
+		eprint("error, cannot allocate color '%s'\n", colstr);
+	return (status);
+}
+
+#if 0
 static unsigned long
 getcolor(const char *colstr)
 {
@@ -646,13 +826,14 @@ getcolor(const char *colstr)
 		eprint("error, cannot allocate color '%s'\n", colstr);
 	return color.pixel;
 }
+#endif
 
 static void
 freepixmap(ButtonImage *bi)
 {
-	if (bi->pixmap) {
-		XFreePixmap(dpy, bi->pixmap);
-		bi->pixmap = None;
+	if (bi->pixmap.draw) {
+		XFreePixmap(dpy, bi->pixmap.draw);
+		bi->pixmap.draw = None;
 	}
 }
 
@@ -674,7 +855,7 @@ initpixmap(const char *file, ButtonImage *bi)
 		xa.depth = scr->depth;
 		xa.valuemask |= XpmDepth;
 
-		if (XpmReadFileToPixmap(dpy, scr->drawable, path, &bi->pixmap, &bi->mask, &xa)
+		if (XpmReadFileToPixmap(dpy, scr->drawable, path, &bi->pixmap.draw, &bi->pixmap.mask, &xa)
 		    == Success) {
 			if ((bi->w = xa.width) && (bi->h = xa.height)) {
 				if (bi->h > scr->style.titleheight) {
@@ -704,10 +885,15 @@ initpixmap(const char *file, ButtonImage *bi)
 			if (bi->w > 2 * scr->style.titleheight)
 				bi->w = 2 * scr->style.titleheight;
 			imlib_render_pixmaps_for_whole_image_at_size
-			    (&bi->pixmap, &bi->mask, bi->w, bi->h);
-		} else {
-			DPRINTF("could not load image file %s\n", path);
-		}
+			    (&bi->pixmap.draw, &bi->pixmap.mask, bi->w, bi->h);
+			imlib_free_image_and_decache();
+			if (!bi->pixmap.draw) {
+				XPRINTF("could not render image file %s at %dx%d\n", path, bi->w, bi->h);
+				image = NULL;
+			}
+		} else
+			XPRINTF("could not load image file %s\n", path);
+
 		imlib_context_pop();
 		if (image) {
 			free(path);
@@ -716,17 +902,18 @@ initpixmap(const char *file, ButtonImage *bi)
 	}
 #endif
 	if (strstr(path, ".xbm") && strlen(strstr(path, ".xbm")) == 4) {
-		bi->bitmap =
+		bi->bitmap.draw =
 		    XCreatePixmap(dpy, scr->root, scr->style.titleheight,
 				  scr->style.titleheight, 1);
 		if (BitmapSuccess ==
-		    XReadBitmapFile(dpy, scr->root, path, &bi->w, &bi->h, &bi->bitmap,
+		    XReadBitmapFile(dpy, scr->root, path, &bi->w, &bi->h, &bi->bitmap.draw,
 				    &bi->x, &bi->y)) {
 			if (bi->x == -1 || bi->y == -1)
 				bi->x = bi->y = 0;
 			free(path);
 			return 0;
-		}
+		} else
+			XPRINTF("could not load image file %s\n", path);
 	}
 	free(path);
 	return 1;
@@ -1007,7 +1194,7 @@ initelement(ElementType type, const char *name, const char *def,
 			     !initpixmap(getscreenres(res, def), &e->image[i])))
 				e->action = action;
 			else
-				DPRINTF("could not load pixmap for %s\n", res);
+				EPRINTF("could not load pixmap for %s\n", res);
 			def = NULL;
 		}
 	} else {
@@ -1112,6 +1299,13 @@ initbuttons()
 			[Button4-Button1] = { NULL,		NULL		},
 			[Button5-Button1] = { NULL,		NULL		},
 		} },
+		[IconBtn]	= { "button.icon",	WINPIXMAP,	{
+			[Button1-Button1] = { NULL,		b_menu		},
+			[Button2-Button1] = { NULL,		b_menu		},
+			[Button3-Button1] = { NULL,		b_menu		},
+			[Button4-Button1] = { NULL,		NULL		},
+			[Button5-Button1] = { NULL,		NULL		},
+		} },
 		[TitleTags]	= { "title.tags",	NULL,		{
 			[Button1-Button1] = { NULL,		NULL		},
 			[Button2-Button1] = { NULL,		NULL		},
@@ -1134,11 +1328,10 @@ initbuttons()
 			[Button5-Button1] = { NULL,		NULL		},
 		} },
 		/* *INDENT-ON* */
-
 	};
 
-	XSetForeground(dpy, scr->dc.gc, scr->style.color.norm[ColButton]);
-	XSetBackground(dpy, scr->dc.gc, scr->style.color.norm[ColBG]);
+	XSetForeground(dpy, scr->dc.gc, scr->style.color.norm[ColButton].pixel);
+	XSetBackground(dpy, scr->dc.gc, scr->style.color.norm[ColBG].pixel);
 
 	for (i = 0; i < LastElement; i++)
 		initelement(i, setup[i].name, setup[i].def, &setup[i].action[0][0]);
@@ -1176,55 +1369,24 @@ initfont(const char *fontstr, int hilite)
 	scr->dc.font[hilite].descent = scr->style.font[hilite]->descent;
 }
 
+static void
+freecolor(XftColor *color)
+{
+	if (color->pixel)
+		XftColorFree(dpy, scr->visual, scr->colormap, color);
+}
+
 void
 freestyle()
 {
+	int i, j;
+
 	freebuttons();
-	if (scr->style.color.font[Normal]) {
-		XftColorFree(dpy, scr->visual,
-			     scr->colormap,
-			     scr->style.color.font[Normal]);
-		free(scr->style.color.font[Normal]);
-		scr->style.color.font[Normal] = NULL;
+	for (i = 0; i <= Selected; i++) {
+		for (j = 0; j < ColLast; j++)
+			freecolor(&scr->style.color.hue[i][j]);
+		freefont(i);
 	}
-	if (scr->style.color.font[Focused]) {
-		XftColorFree(dpy, scr->visual,
-			     scr->colormap,
-			     scr->style.color.font[Focused]);
-		free(scr->style.color.font[Focused]);
-		scr->style.color.font[Focused] = NULL;
-	}
-	if (scr->style.color.font[Selected]) {
-		XftColorFree(dpy, scr->visual,
-			     scr->colormap,
-			     scr->style.color.font[Selected]);
-		free(scr->style.color.font[Selected]);
-		scr->style.color.font[Selected] = NULL;
-	}
-	if (scr->style.color.shadow[Normal]) {
-		XftColorFree(dpy, scr->visual,
-			     scr->colormap,
-			     scr->style.color.shadow[Normal]);
-		free(scr->style.color.shadow[Normal]);
-		scr->style.color.shadow[Normal] = NULL;
-	}
-	if (scr->style.color.shadow[Focused]) {
-		XftColorFree(dpy, scr->visual,
-			     scr->colormap,
-			     scr->style.color.shadow[Focused]);
-		free(scr->style.color.shadow[Focused]);
-		scr->style.color.shadow[Focused] = NULL;
-	}
-	if (scr->style.color.shadow[Selected]) {
-		XftColorFree(dpy, scr->visual,
-			     scr->colormap,
-			     scr->style.color.shadow[Selected]);
-		free(scr->style.color.shadow[Selected]);
-		scr->style.color.shadow[Selected] = NULL;
-	}
-	freefont(Normal);
-	freefont(Focused);
-	freefont(Selected);
 	if (scr->dc.gc) {
 		XFreeGC(dpy, scr->dc.gc);
 		scr->dc.gc = None;
@@ -1245,72 +1407,29 @@ initstyle(Bool reload)
 	Client *c;
 
 	freestyle();
-	scr->style.color.sele[ColBorder] =
-	    getcolor(getscreenres("selected.border", SELBORDERCOLOR));
-	scr->style.color.sele[ColBG] = getcolor(getscreenres("selected.bg", SELBGCOLOR));
-	scr->style.color.sele[ColFG] = getcolor(getscreenres("selected.fg", SELFGCOLOR));
-	scr->style.color.sele[ColButton] =
-	    getcolor(getscreenres("selected.button", SELBUTTONCOLOR));
 
-	scr->style.color.focu[ColBorder] =
-	    getcolor(getscreenres("focused.border", FOCBORDERCOLOR));
-	scr->style.color.focu[ColBG] = getcolor(getscreenres("focused.bg", FOCBGCOLOR));
-	scr->style.color.focu[ColFG] = getcolor(getscreenres("focused.fg", FOCFGCOLOR));
-	scr->style.color.focu[ColButton] =
-	    getcolor(getscreenres("focused.button", FOCBUTTONCOLOR));
+	alloccolor(getscreenres("selected.border", SELBORDERCOLOR), &scr->style.color.sele[ColBorder]);
+	alloccolor(getscreenres("selected.bg", SELBGCOLOR), &scr->style.color.sele[ColBG]);
+	alloccolor(getscreenres("selected.fg", SELFGCOLOR), &scr->style.color.sele[ColFG]);
+	alloccolor(getscreenres("selected.button", SELBUTTONCOLOR), &scr->style.color.sele[ColButton]);
 
-	scr->style.color.norm[ColBorder] =
-	    getcolor(getscreenres("normal.border", NORMBORDERCOLOR));
-	scr->style.color.norm[ColBG] = getcolor(getscreenres("normal.bg", NORMBGCOLOR));
-	scr->style.color.norm[ColFG] = getcolor(getscreenres("normal.fg", NORMFGCOLOR));
-	scr->style.color.norm[ColButton] =
-	    getcolor(getscreenres("normal.button", NORMBUTTONCOLOR));
+	alloccolor(getscreenres("focused.border", FOCBORDERCOLOR), &scr->style.color.focu[ColBorder]);
+	alloccolor(getscreenres("focused.bg", FOCBGCOLOR), &scr->style.color.focu[ColBG]);
+	alloccolor(getscreenres("focused.fg", FOCFGCOLOR), &scr->style.color.focu[ColFG]);
+	alloccolor(getscreenres("focused.button", FOCBUTTONCOLOR), &scr->style.color.focu[ColButton]);
 
-	scr->style.color.font[Selected] = emallocz(sizeof(XftColor));
-	scr->style.color.font[Focused] = emallocz(sizeof(XftColor));
-	scr->style.color.font[Normal] = emallocz(sizeof(XftColor));
-	XftColorAllocName(dpy, scr->visual,
-			  scr->colormap,
-			  getscreenres("selected.fg", SELFGCOLOR),
-			  scr->style.color.font[Selected]);
-	XftColorAllocName(dpy, scr->visual,
-			  scr->colormap,
-			  getscreenres("focused.fg", FOCFGCOLOR),
-			  scr->style.color.font[Focused]);
-	XftColorAllocName(dpy, scr->visual,
-			  scr->colormap,
-			  getscreenres("normal.fg", NORMFGCOLOR),
-			  scr->style.color.font[Normal]);
-	if (!scr->style.color.font[Selected] || !scr->style.color.font[Focused] || !scr->style.color.font[Normal])
-		eprint("error, cannot allocate colors\n");
+	alloccolor(getscreenres("normal.border", NORMBORDERCOLOR), &scr->style.color.norm[ColBorder]);
+	alloccolor(getscreenres("normal.bg", NORMBGCOLOR), &scr->style.color.norm[ColBG]);
+	alloccolor(getscreenres("normal.fg", NORMFGCOLOR), &scr->style.color.norm[ColFG]);
+	alloccolor(getscreenres("normal.button", NORMBUTTONCOLOR), &scr->style.color.norm[ColButton]);
 
-	if ((scr->style.drop[Selected] = atoi(getscreenres("selected.drop", "0")))) {
-		scr->style.color.shadow[Selected] = emallocz(sizeof(XftColor));
-		XftColorAllocName(dpy, scr->visual,
-				  scr->colormap,
-				  getscreenres("selected.shadow", SELBORDERCOLOR),
-				  scr->style.color.shadow[Selected]);
-		if (!scr->style.color.shadow[Selected])
-			eprint("error, cannot allocate colors\n");
-	}
-	if ((scr->style.drop[Focused] = atoi(getscreenres("focused.drop", "0")))) {
-		scr->style.color.shadow[Focused] = emallocz(sizeof(XftColor));
-		XftColorAllocName(dpy, scr->visual,
-				  scr->colormap,
-				  getscreenres("focused.shadow", SELBORDERCOLOR),
-				  scr->style.color.shadow[Focused]);
-		if (!scr->style.color.shadow[Focused])
-			eprint("error, cannot allocate colors\n");
-	}
-	if ((scr->style.drop[Normal] = atoi(getscreenres("normal.drop", "0")))) {
-		scr->style.color.shadow[Normal] = emallocz(sizeof(XftColor));
-		XftColorAllocName(dpy, scr->visual,
-				  scr->colormap,
-				  getscreenres("normal.shadow", NORMBORDERCOLOR),
-				  scr->style.color.shadow[Normal]);
-		if (!scr->style.color.shadow[Normal])
-			eprint("error, cannot allocate colors\n");
-	}
+	if ((scr->style.drop[Selected] = atoi(getscreenres("selected.drop", "0"))))
+		alloccolor(getscreenres("selected.shadow", SELBORDERCOLOR), &scr->style.color.sele[ColShadow]);
+	if ((scr->style.drop[Focused] = atoi(getscreenres("focused.drop", "0"))))
+		alloccolor(getscreenres("focused.shadow", FOCBORDERCOLOR), &scr->style.color.focu[ColShadow]);
+	if ((scr->style.drop[Normal] = atoi(getscreenres("normal.drop", "0"))))
+		alloccolor(getscreenres("normal.shadow", NORMBORDERCOLOR), &scr->style.color.norm[ColShadow]);
+
 	initfont(getscreenres("selected.font", getscreenres("font", FONT)), Selected);
 	initfont(getscreenres("focused.font", getscreenres("font", FONT)), Focused);
 	initfont(getscreenres("normal.font", getscreenres("font", FONT)), Normal);

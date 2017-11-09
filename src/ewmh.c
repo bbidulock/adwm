@@ -139,6 +139,7 @@ char *atomnames[NATOMS] = {
 	"_NET_WM_STRUT_PARTIAL",
 	"_NET_WM_STRUT",
 	"_NET_WM_PID",
+	"_NET_WM_ICON",
 	"_NET_WM_NAME",
 	"_NET_WM_VISIBLE_NAME",
 	"_NET_WM_ICON_NAME",
@@ -591,12 +592,12 @@ initewmh(char *name)
 			PropModeReplace, (unsigned char *) data, 2);
 	XChangeProperty(dpy, swin, _XA_MOTIF_WM_INFO, _XA_MOTIF_WM_INFO, 32,
 			PropModeReplace, (unsigned char *) data, 2);
-#if 0
+#if 1
 	data[0] = data[1] = 56;
-	data[2] = data[3] = 64;
-	data[4] = data[5] = 4;
+	data[2] = data[3] = 56;
+	data[4] = data[5] = 0;
 	XChangeProperty(dpy, root, XA_WM_ICON_SIZE, XA_CARDINAL, 32,
-			PropModeReplace, (unsigned char *) data, 4);
+			PropModeReplace, (unsigned char *) data, 6);
 #else
 	{
 		XIconSize isizes[3] = {
@@ -3371,15 +3372,31 @@ getatom(Window win, Atom atom, unsigned long *nitems)
 {
 	int format, status;
 	Atom *ret = NULL;
-	unsigned long extra;
+	unsigned long extra, num = 64;
 	Atom real;
 
-	status = XGetWindowProperty(dpy, win, atom, 0L, 64L, False, XA_ATOM,
+      try_harder:
+	status = XGetWindowProperty(dpy, win, atom, 0L, num, False, XA_ATOM,
 				    &real, &format, nitems, &extra,
 				    (unsigned char **) &ret);
 	if (status != Success) {
 		*nitems = 0;
 		return NULL;
+	}
+	if (extra) {
+		num += ((extra + 1) >> 2);
+		if (ret) {
+			XFree(ret);
+			ret = NULL;
+		}
+		goto try_harder;
+	}
+	/* don't return empty properties */
+	if (*nitems == 0) {
+		if (ret) {
+			XFree(ret);
+			ret = NULL;
+		}
 	}
 	return ret;
 }
@@ -3389,15 +3406,24 @@ getcard(Window win, Atom atom, unsigned long *nitems)
 {
 	int format, status;
 	long *ret = NULL;
-	unsigned long extra;
+	unsigned long extra, num = 64;
 	Atom real;
 
-	status = XGetWindowProperty(dpy, win, atom, 0L, 64L, False, XA_CARDINAL,
+      try_harder:
+	status = XGetWindowProperty(dpy, win, atom, 0L, num, False, XA_CARDINAL,
 				    &real, &format, nitems, &extra,
 				    (unsigned char **) &ret);
 	if (status != Success) {
 		*nitems = 0;
 		return NULL;
+	}
+	if (extra) {
+		num += ((extra + 1) >> 2);
+		if (ret) {
+			XFree(ret);
+			ret = NULL;
+		}
+		goto try_harder;
 	}
 	/* don't return empty properties */
 	if (*nitems == 0) {
@@ -3414,15 +3440,31 @@ getwind(Window win, Atom atom, unsigned long *nitems)
 {
 	int format, status;
 	Window *ret = NULL;
-	unsigned long extra;
+	unsigned long extra, num = 64;
 	Atom real;
 
-	status = XGetWindowProperty(dpy, win, atom, 0L, 64L, False, XA_WINDOW,
+      try_harder:
+	status = XGetWindowProperty(dpy, win, atom, 0L, num, False, XA_WINDOW,
 				    &real, &format, nitems, &extra,
 				    (unsigned char **) &ret);
 	if (status != Success) {
 		*nitems = 0;
 		return NULL;
+	}
+	if (extra) {
+		num += ((extra + 1) >> 2);
+		if (ret) {
+			XFree(ret);
+			ret = NULL;
+		}
+		goto try_harder;
+	}
+	/* don't return empty properties */
+	if (*nitems == 0) {
+		if (ret) {
+			XFree(ret);
+			ret = NULL;
+		}
 	}
 	return ret;
 }
@@ -3474,6 +3516,29 @@ getnetpid(Client *c)
 		XFree(card);
 	}
 	return (pid);
+}
+
+Bool
+getneticon(Client *c)
+{
+	long *card = NULL;
+	unsigned long n = 0;
+	Window win, w[4] = { None, };
+	int i;
+
+	w[0] = c->win;
+	if ((win = c->leader) && (win != c->win))
+		w[1] = win;
+	if ((win = c->session) && (win != c->win))
+		w[2] = win;
+	if ((win = c->transfor) && (win != c->win) && (win != scr->root))
+		w[3] = win;
+
+	for (i = 0; i < sizeof(w) / sizeof(w[0]); i++)
+		if ((card = getcard(w[i], _XA_NET_WM_ICON, &n)))
+			if (createneticon(c, card, n))
+				return (True);
+	return False;
 }
 
 Bool

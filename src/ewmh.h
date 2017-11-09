@@ -18,6 +18,7 @@ void ewmh_del_client(Client *c, WithdrawCause cause);
 void setopacity(Client *c, unsigned opacity);
 int getstruts(Client *c);
 pid_t getnetpid(Client *c);
+Bool getneticon(Client *c);
 Bool getclasshint(Client *c, XClassHint *ch);
 Bool getgrpclasshint(Client *c, XClassHint * ch);
 Bool getcommand(Client *c, char ***argvp, int *argcp);

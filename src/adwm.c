@@ -422,13 +422,42 @@ setwmstate(Window win, long state, Window icon)
 }
 
 static void
+applywmhints(Client *c, XWMHints *wmh)
+{
+	if (!wmh || !c)
+		return;
+	c->wmh = *wmh;
+	if (!(c->wmh.flags & InputHint))
+		c->wmh.input = False;
+	if (!(c->wmh.flags & StateHint))
+		c->wmh.initial_state = NormalState;
+	if (!(c->wmh.flags & IconPixmapHint))
+		c->wmh.icon_pixmap = None;
+	if (!(c->wmh.flags & IconWindowHint))
+		c->wmh.icon_window = None;
+	if (!(c->wmh.flags & IconPositionHint))
+		c->wmh.icon_x = c->wmh.icon_y = 0;
+	if (!(c->wmh.flags & IconMaskHint))
+		c->wmh.icon_mask = None;
+	if (!(c->wmh.flags & WindowGroupHint))
+		c->wmh.window_group = None;
+}
+
+static void
 applystate(Client *c)
 {
-	XWMHints *wmh;
 	int state = NormalState;
 
-	if ((wmh = XGetWMHints(dpy, c->win)) && (wmh->flags & StateHint))
-		state = wmh->initial_state;
+	{
+		XWMHints *wmh;
+
+		if ((wmh = XGetWMHints(dpy, c->win))) {
+			applywmhints(c, wmh);
+			XFree(wmh);
+		}
+	}
+	if (c->wmh.flags & StateHint)
+		state = c->wmh.initial_state;
 
 	switch (state) {
 #if 0
@@ -464,8 +493,7 @@ applystate(Client *c)
 		c->is.floater = True;
 		c->is.sticky = True;
 		c->tags = ((1ULL << scr->ntags) - 1);
-		c->icon = ((wmh->flags & IconWindowHint) && wmh->icon_window) ?
-		    wmh->icon_window : c->win;
+		c->icon = ((c->wmh.flags & IconWindowHint) && c->wmh.icon_window) ?  c->wmh.icon_window : c->win;
 		/* fall through */
 	case IconicState:
 		/* application wants to start as icon */
@@ -482,8 +510,6 @@ applystate(Client *c)
 		break;
 	}
 	c->winstate = state;
-	if (wmh)
-		XFree(wmh);
 }
 
 static void
@@ -1578,7 +1604,7 @@ focus(Client *c)
 		setclientstate(c, NormalState); /* probably does nothing */
 		drawclient(c);
 		raisetiled(c); /* this will restack, probably when not necessary */
-		XSetWindowBorder(dpy, c->frame, scr->style.color.sele[ColBorder]);
+		XSetWindowBorder(dpy, c->frame, scr->style.color.sele[ColBorder].pixel);
 		if ((c->is.shaded && scr->options.autoroll))
 			arrange(c->cview);
 		else if (o && ((WTCHECK(c, WindowTypeDock)||c->is.dockapp) != (WTCHECK(o, WindowTypeDock)||o->is.dockapp)))
@@ -1588,7 +1614,7 @@ focus(Client *c)
 		CPRINTF(o, "deselecting\n");
 		drawclient(o);
 		lowertiled(o); /* does nothing at the moment */
-		XSetWindowBorder(dpy, o->frame, scr->style.color.norm[ColBorder]);
+		XSetWindowBorder(dpy, o->frame, scr->style.color.norm[ColBorder].pixel);
 		if ((o->is.shaded && scr->options.autoroll))
 			arrange(o->cview);
 		else if (c && ((WTCHECK(o, WindowTypeDock)||o->is.dockapp) != (WTCHECK(c, WindowTypeDock)||c->is.dockapp)) && o->cview != c->cview)
@@ -2728,7 +2754,7 @@ manage(Window w, XWindowAttributes *wa)
 		visual = DefaultVisual(dpy, scr->screen);
 		twa.colormap = DefaultColormap(dpy, scr->screen);
 		mask |= CWColormap;
-		twa.background_pixel = scr->style.color.norm[ColBG];
+		twa.background_pixel = scr->style.color.norm[ColBG].pixel;
 		mask |= CWBackPixel;
 	} else {
 		/* all other frames, titles, grips can be created with 32 ARGB visual */
@@ -2751,7 +2777,7 @@ manage(Window w, XWindowAttributes *wa)
 	wc.border_width = c->c.b;
 	XConfigureWindow(dpy, c->frame, CWBorderWidth, &wc);
 	send_configurenotify(c, None);
-	XSetWindowBorder(dpy, c->frame, scr->style.color.norm[ColBorder]);
+	XSetWindowBorder(dpy, c->frame, scr->style.color.norm[ColBorder].pixel);
 
 	twa.event_mask = ExposureMask | MOUSEMASK | WINDOWMASK;
 	/* we create title as root's child as a workaround for 32bit visuals */
@@ -5713,7 +5739,6 @@ unmapnotify(XEvent *e)
 void
 updatehints(Client *c)
 {
-	XWMHints *wmh;
 	Window leader;
 	int take_focus, give_focus;
 
@@ -5724,25 +5749,31 @@ updatehints(Client *c)
 	give_focus = c->is.dockapp ? 0 : GIVE_FOCUS;
 	c->can.focus = take_focus | give_focus;
 
-	if ((wmh = XGetWMHints(dpy, c->win))) {
+	{
+		XWMHints *wmh;
 
-		if (wmh->flags & XUrgencyHint && !c->is.attn) {
-			c->is.attn = True;
-			if (c->is.managed)
-				ewmh_update_net_window_state(c);
+		if ((wmh = XGetWMHints(dpy, c->win))) {
+			applywmhints(c, wmh);
+			XFree(wmh);
 		}
-		if (wmh->flags & InputHint)
-			c->can.focus = take_focus | (wmh->input ? GIVE_FOCUS : 0);
-		if (wmh->flags & WindowGroupHint) {
-			leader = wmh->window_group;
-			if (c->leader != leader) {
-				removegroup(c, c->leader, ClientGroup);
-				c->leader = leader;
-				updategroup(c, c->leader, ClientGroup, &c->nonmodal);
-			}
-		}
-		XFree(wmh);
 	}
+	if (c->wmh.flags & XUrgencyHint && !c->is.attn) {
+		c->is.attn = True;
+		if (c->is.managed)
+			ewmh_update_net_window_state(c);
+	}
+	if (c->wmh.flags & InputHint)
+		c->can.focus = take_focus | (c->wmh.input ? GIVE_FOCUS : 0);
+	if (c->wmh.flags & WindowGroupHint) {
+		leader = c->wmh.window_group;
+		if (c->leader != leader) {
+			removegroup(c, c->leader, ClientGroup);
+			c->leader = leader;
+			updategroup(c, c->leader, ClientGroup, &c->nonmodal);
+		}
+	}
+	if (c->wmh.flags & IconPixmapHint)
+		createwmicon(c);
 }
 
 void

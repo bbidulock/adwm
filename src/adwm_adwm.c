@@ -1188,6 +1188,7 @@ initbuttons_ADWM(AdwmStyle *style, Bool reload)
 		[FillBtn]	= { "button.fill",	FILLPIXMAP  },
 		[FloatBtn]	= { "button.float",	FLOATPIXMAP },
 		[SizeBtn]	= { "button.resize",	SIZEPIXMAP  },
+		[IconBtn]	= { "button.icon",	WINPIXMAP   },
 		[TitleTags]	= { "title.tags",	NULL	    },
 		[TitleName]	= { "title.name",	NULL	    },
 		[TitleSep]	= { "title.sep",	NULL	    },

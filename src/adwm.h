@@ -54,9 +54,9 @@ enum {
 	WindowTypeUtil, WindowTypeSplash, WindowTypeDialog, WindowTypeDrop,
 	WindowTypePopup, WindowTypeTooltip, WindowTypeNotify, WindowTypeCombo,
 	WindowTypeDnd, WindowTypeNormal,
-	StrutPartial, Strut, WindowPid, WindowName, WindowNameVisible, WindowIconName,
-	WindowIconNameVisible, WindowUserTime, UserTimeWindow, NetStartupId,
-	StartupInfo, StartupInfoBegin,
+	StrutPartial, Strut, WindowPid, WindowIcon, WindowName, WindowNameVisible,
+	WindowIconName, WindowIconNameVisible, WindowUserTime, UserTimeWindow,
+	NetStartupId, StartupInfo, StartupInfoBegin,
 	WindowSync, WindowCounter, WindowFsMonitors,
 	WindowState, WindowStateModal, WindowStateSticky, WindowStateMaxV,
 	WindowStateMaxH, WindowStateShaded, WindowStateNoTaskbar, WindowStateNoPager,
@@ -198,6 +198,7 @@ enum {
 #define _XA_NET_WM_STRUT_PARTIAL		atom[StrutPartial]
 #define _XA_NET_WM_STRUT			atom[Strut]
 #define _XA_NET_WM_PID				atom[WindowPid]
+#define _XA_NET_WM_ICON				atom[WindowIcon]
 #define _XA_NET_WM_NAME				atom[WindowName]
 #define _XA_NET_WM_VISIBLE_NAME			atom[WindowNameVisible]
 #define _XA_NET_WM_ICON_NAME			atom[WindowIconName]
@@ -345,6 +346,7 @@ enum {
 	ColBG,
 	ColBorder,
 	ColButton,
+	ColShadow,
 	ColLast
 };					/* colors */
 
@@ -379,6 +381,7 @@ typedef enum {
 	FillBtn,
 	FloatBtn,
 	SizeBtn,
+	IconBtn,
 	TitleTags,
 	TitleName,
 	TitleSep,
@@ -761,11 +764,28 @@ typedef struct {
 } Layout;
 
 typedef struct {
+	struct {
+		Pixmap draw, mask;
+	}
+#if defined IMLIB2 || defined XPM
+	pixmap,
+#endif
+	bitmap;
+	Bool present;
+	int x, y;
+	unsigned w, h, b, d;
+
+} ButtonImage;
+
+typedef struct {
+	ButtonImage *image;
+	Bool (**action) (Client *, XEvent *);
+} Element;
+
+typedef struct {
 	Bool present, hovered;
 	unsigned pressed;
-	struct {
-		int x, y, w, h, b;
-	} g;
+	Geometry g;
 } ElementClient;
 
 typedef union {
@@ -880,6 +900,7 @@ typedef union {
 } WithUnion;
 
 struct Client {
+	XWMHints wmh;
 	char *name;
 	char *icon_name;
 	int monitor;			/* initial monitor */
@@ -919,6 +940,7 @@ struct Client {
 	Window session;
 	Window *cmapwins;
 	Colormap cmap;
+	ButtonImage *iconbtn;
 	ElementClient *element;
 	Time user_time;
 #ifdef SYNC
@@ -1090,22 +1112,6 @@ typedef struct {
 } DC;					/* draw context */
 
 typedef struct {
-#if defined IMLIB2 || defined XPM
-	Pixmap pixmap, mask;
-#endif
-	Pixmap bitmap;
-	Bool present;
-	int x, y;
-	unsigned w, h, b;
-
-} ButtonImage;
-
-typedef struct {
-	ButtonImage *image;
-	Bool (**action) (Client *, XEvent *);
-} Element;
-
-typedef struct {
 	int border;
 	int margin;
 	int outline;
@@ -1118,12 +1124,13 @@ typedef struct {
 	char titlelayout[32];
 	XftFont *font[3];
 	int drop[3];
-	struct {
-		unsigned long norm[ColLast];
-		unsigned long focu[ColLast];
-		unsigned long sele[ColLast];
-		XftColor *font[3];
-		XftColor *shadow[3];
+	union {
+		struct {
+			XftColor norm[ColLast];
+			XftColor focu[ColLast];
+			XftColor sele[ColLast];
+		};
+		XftColor hue[3][ColLast];
 	} color;
 } Style;
 

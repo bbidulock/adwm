@@ -716,8 +716,8 @@ buttonpress(XEvent *e)
 
 			if (!ec->present)
 				continue;
-			if (ev->x >= ec->g.x && ev->x < ec->g.x + ec->g.w
-			    && ev->y >= ec->g.y && ev->y < ec->g.y + ec->g.h) {
+			if (ev->x >= ec->eg.x && ev->x < ec->eg.x + ec->eg.w
+			    && ev->y >= ec->eg.y && ev->y < ec->eg.y + ec->eg.h) {
 				if (ev->type == ButtonPress) {
 					DPRINTF("ELEMENT %d PRESSED\n", i);
 					ec->pressed |= (1 << button);
@@ -1136,8 +1136,8 @@ motionnotify(XEvent *e)
 				}
 				continue;
 			}
-			if (ev->x >= ec->g.x && ev->x < ec->g.x + ec->g.w &&
-			    ev->y >= ec->g.y && ev->y < ec->g.y + ec->g.h) {
+			if (ev->x >= ec->eg.x && ev->x < ec->eg.x + ec->eg.w &&
+			    ev->y >= ec->eg.y && ev->y < ec->eg.y + ec->eg.h) {
 				if (!ec->hovered) {
 					ec->hovered = True;
 					needdraw = True;
@@ -2678,6 +2678,7 @@ manage(Window w, XWindowAttributes *wa)
 
 	ewmh_process_net_window_user_time_window(c);
 	ewmh_process_net_startup_id(c);
+	ewmh_process_net_window_icon(c);
 
 	if ((c->with.time) && latertime(c->user_time))
 		focusnew = False;

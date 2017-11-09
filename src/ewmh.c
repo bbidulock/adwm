@@ -2766,6 +2766,28 @@ ewmh_process_net_window_user_time_window(Client *c)
 }
 
 void
+ewmh_process_net_window_icon(Client *c)
+{
+	long *card = NULL;
+	unsigned long n = 0;
+	Window win, w[4] = { None, };
+	int i;
+
+	w[0] = c->win;
+	if ((win = c->leader) && (win != c->win))
+		w[1] = win;
+	if ((win = c->session) && (win != c->win))
+		w[2] = win;
+	if ((win = c->transfor) && (win != c->win) && (win != scr->root))
+		w[3] = win;
+
+	for (i = 0; i < sizeof(w) / sizeof(w[0]); i++)
+		if ((card = getcard(w[i], _XA_NET_WM_ICON, &n)))
+			if (createneticon(c, card, n))
+				break;
+}
+
+void
 ewmh_process_net_window_opacity(Client *c)
 {
 	long *opacity;
@@ -3516,29 +3538,6 @@ getnetpid(Client *c)
 		XFree(card);
 	}
 	return (pid);
-}
-
-Bool
-getneticon(Client *c)
-{
-	long *card = NULL;
-	unsigned long n = 0;
-	Window win, w[4] = { None, };
-	int i;
-
-	w[0] = c->win;
-	if ((win = c->leader) && (win != c->win))
-		w[1] = win;
-	if ((win = c->session) && (win != c->win))
-		w[2] = win;
-	if ((win = c->transfor) && (win != c->win) && (win != scr->root))
-		w[3] = win;
-
-	for (i = 0; i < sizeof(w) / sizeof(w[0]); i++)
-		if ((card = getcard(w[i], _XA_NET_WM_ICON, &n)))
-			if (createneticon(c, card, n))
-				return (True);
-	return False;
 }
 
 Bool

@@ -20,9 +20,6 @@
 static void
 renderbutton(Client *c, ButtonImage *bi, unsigned int w, unsigned int h, XftColor *color)
 {
-	unsigned int iconw, iconh;
-
-	iconw = iconh = scr->style.titleheight;
 	bi->x = bi->y = bi->b = 0;
 #if defined IMLIB2
 	bi->d = scr->depth;
@@ -44,7 +41,6 @@ renderbutton(Client *c, ButtonImage *bi, unsigned int w, unsigned int h, XftColo
 	bi->w = w;
 	bi->h = h;
 #endif
-	bi->y += (iconw - bi->w + 1) / 2;
 	bi->present = True;
 }
 
@@ -67,10 +63,7 @@ createwmicon(Client *c)
 #if !defined IMLIB2
 	if (w > scr->style.titleheight || h > scr->style.titleheight)
 		return (status);
-#endif
-	if (!c->iconbtn)
-		c->iconbtn = calloc(LastButtonImageType, sizeof(*c->iconbtn));
-#if defined IMLIB2
+#else
 	imlib_context_push(scr->context);
 	imlib_context_set_mask(None);
 	imlib_context_set_drawable(c->wmh.icon_pixmap);
@@ -78,14 +71,7 @@ createwmicon(Client *c)
 	imlib_context_set_image(image);
 #endif
 
-	renderbutton(c, &c->iconbtn[ButtonImageDefault],
-		     w, h, &scr->style.color.sele[ColButton]);
-	renderbutton(c, &c->iconbtn[ButtonImageFocus],
-		     w, h, &scr->style.color.focu[ColButton]);
-	renderbutton(c, &c->iconbtn[ButtonImageUnfocus],
-		     w, h, &scr->style.color.norm[ColButton]);
-	renderbutton(c, &c->iconbtn[ButtonImagePressed],
-		     w, h, &scr->style.color.sele[ColButton]);
+	renderbutton(c, &c->iconbtn, w, h, &scr->style.color.norm[ColButton]);
 
 #if defined IMLIB2
 	imlib_free_image_and_decache();
@@ -127,9 +113,7 @@ createneticon(Client *c, long *data, unsigned long n)
 	for (i = 0; i + 2 < n; i++)
 		pixels[i] = data[i + 2] & 0xffffffff;
 	imlib_image_put_back_data(pixels);
-	if (!c->iconbtn)
-		c->iconbtn = calloc(LastButtonImageType, sizeof(*c->iconbtn));
-	bi = &c->iconbtn[ButtonImageDefault];
+	bi = &c->iconbtn;
 	bi->w = imlib_image_get_width();
 	bi->h = imlib_image_get_height();
 	if (bi->h > scr->style.titleheight)
@@ -277,7 +261,10 @@ buttonimage(AScreen *ds, Client *c, ElementType type)
 		return NULL;
 	}
 
-	image = (type == IconBtn && c->iconbtn) ? c->iconbtn : e->image;
+	if (type == IconBtn && c->iconbtn.present)
+		return &c->iconbtn;
+
+	image = e->image;
 
 	if (pressed == 0x1 && toggled && image[ButtonImageToggledPressedB1].present) {
 		XPRINTF("button %s assigned toggled.pressed.b1 image\n", name);
@@ -486,6 +473,8 @@ drawbutton(AScreen *ds, Client *c, ElementType type, XftColor *col, int x)
 {
 	ElementClient *ec = &c->element[type];
 	Drawable d = ds->dc.draw.pixmap;
+	unsigned long fg, bg;
+	Geometry g = { 0, };
 	ButtonImage *bi;
 	int status;
 
@@ -494,52 +483,49 @@ drawbutton(AScreen *ds, Client *c, ElementType type, XftColor *col, int x)
 		return 0;
 	}
 
-	ec->g.x = x;
-	ec->g.y = (ds->dc.h - bi->h) / 2;
-	ec->g.w = bi->w;
-	ec->g.h = bi->h;
+	/* geometry of the container */
+	g.x = x;
+	g.y = 0;
+	g.w = max(ds->dc.h, bi->w);
+	g.h = ds->dc.h;
 
-#if defined IMLIB2 || defined XPM
-	if (bi->pixmap.draw) {
-		XPRINTF("Copying pixmap 0x%lx mask 0x%lx with geom %dx%d+%d+%d to drawable 0x%lx\n",
-			bi->pixmap.draw, bi->pixmap.mask, ec->g.w, ec->g.h, ec->g.x, ec->g.y, d);
-#if 0
-		if (bi->pixmap.mask) {
-			XSetClipOrigin(dpy, ds->dc.gc, 0, bi->y);
-			XSetClipMask(dpy, ds->dc.gc, bi->pixmap.mask);
-		}
-#endif
-		XCopyArea(dpy, bi->pixmap.draw, d, ds->dc.gc, 0, bi->y, ec->g.w, ec->g.h,
-			  ec->g.x, ec->g.y);
-#if 0
-		if (bi->pixmap.mask)
-			XSetClipMask(dpy, ds->dc.gc, None);
-#endif
-		return ec->g.w;
-	} else
-#endif
-	if (bi->bitmap.draw) {
-		XSetForeground(dpy, ds->dc.gc, col[ColBG].pixel);
+	/* element client geometry used to detect element under pointer */
+	ec->eg.x = g.x + (g.w - bi->w) / 2;
+	ec->eg.y = g.y + (g.h - bi->h) / 2;
+	ec->eg.w = bi->w;
+	ec->eg.h = bi->h;
+
+	fg = ec->pressed ? col[ColFG].pixel : col[ColButton].pixel;
+	bg = bi->bg.pixel ? : col[ColBG].pixel;
+
+	{
+		/* TODO: eventually this should be a texture */
+		/* always draw the element background */
+		XSetForeground(dpy, ds->dc.gc, bg);
 		XSetFillStyle(dpy, ds->dc.gc, FillSolid);
-		status =
-		    XFillRectangle(dpy, d, ds->dc.gc, ec->g.x, 0, ds->dc.h, ds->dc.h);
+		status = XFillRectangle(dpy, d, ds->dc.gc, ec->eg.x, ec->eg.y, ec->eg.w, ec->eg.h);
 		if (!status)
 			XPRINTF("Could not fill rectangle, error %d\n", status);
-		XSetForeground(dpy, ds->dc.gc, ec->pressed ? col[ColFG].pixel : col[ColButton].pixel);
-		XSetBackground(dpy, ds->dc.gc, col[ColBG].pixel);
-#if 0
-		if (bi->bitmap.mask) {
-			XSetClipOrigin(dpy, ds->dc.gc, 0, 0);
-			XSetClipMask(dpy, ds->dc.gc, bi->bitmap.mask);
-		}
-#endif
-		XCopyPlane(dpy, bi->bitmap.draw, d, ds->dc.gc, 0, 0, ec->g.w, ec->g.h, ec->g.x,
-			   ec->g.y + bi->y, 1);
-#if 0
-		if (bi->bitmap.mask)
-			XSetClipMask(dpy, ds->dc.gc, None);
-#endif
-		return ds->dc.h;
+		XSetForeground(dpy, ds->dc.gc, fg);
+		XSetBackground(dpy, ds->dc.gc, bg);
+	}
+	/* position clip mask over button image */
+	XSetClipOrigin(dpy, ds->dc.gc, ec->eg.x - bi->x, ec->eg.y - bi->y);
+
+	if (bi->pixmap.draw) {
+		XPRINTF("Copying pixmap 0x%lx mask 0x%lx with geom %dx%d+%d+%d to drawable 0x%lx\n",
+		        bi->pixmap.draw, bi->pixmap.mask, ec->eg.w, ec->eg.h, ec->eg.x, ec->eg.y, d);
+		XSetClipMask(dpy, ds->dc.gc, bi->pixmap.mask);
+		XCopyArea(dpy, bi->pixmap.draw, d, ds->dc.gc,
+			  bi->x, bi->y, bi->w, bi->h, ec->eg.x, ec->eg.y);
+		XSetClipMask(dpy, ds->dc.gc, None);
+		return g.w;
+	} else if (bi->bitmap.draw) {
+		XSetClipMask(dpy, ds->dc.gc, bi->bitmap.mask ? : bi->bitmap.draw);
+		XCopyPlane(dpy, bi->bitmap.draw, d, ds->dc.gc,
+			   bi->x, bi->y, bi->w, bi->h, ec->eg.x, ec->eg.y, 1);
+		XSetClipMask(dpy, ds->dc.gc, None);
+		return g.w;
 	}
 	XPRINTF("button %d has no pixmap or bitmap\n", type);
 	return 0;
@@ -560,11 +546,12 @@ drawelement(AScreen *ds, char which, int x, int position, Client *c)
 	XPRINTF("drawing element '%c' for client %s\n", which, c->name);
 
 	ec->present = False;
-	ec->g.x = ds->dc.x;
-	ec->g.y = 0;
-	ec->g.w = 0;
-	ec->g.h = ds->style.titleheight;
-	ec->g.b = 0;		/* later */
+	/* element client geometry used to detect element under pointer */
+	ec->eg.x = ds->dc.x;
+	ec->eg.y = 0;
+	ec->eg.w = 0;
+	ec->eg.h = ds->style.titleheight;
+	ec->eg.b = 0;		/* later */
 
 	switch (type) {
 		unsigned int j;
@@ -577,16 +564,19 @@ drawelement(AScreen *ds, char which, int x, int position, Client *c)
 								ds->dc.draw.xft, color,
 								hilite, x, ds->dc.y,
 								ds->dc.w) : 0;
+		ec->eg.w = w;
 		break;
 	case TitleName:
 		w = drawtext(ds, c->name, ds->dc.draw.pixmap, ds->dc.draw.xft, color,
 			     hilite, ds->dc.x, ds->dc.y, ds->dc.w);
+		ec->eg.w = w;
 		break;
 	case TitleSep:
 		XSetForeground(dpy, ds->dc.gc, color[ColBorder].pixel);
 		XDrawLine(dpy, ds->dc.draw.pixmap, ds->dc.gc, ds->dc.x + ds->dc.h / 4, 0,
 			  ds->dc.x + ds->dc.h / 4, ds->dc.h);
 		w = ds->dc.h / 2;
+		ec->eg.w = w;
 		break;
 	default:
 		if (0 <= type && type < LastBtn)
@@ -595,9 +585,8 @@ drawelement(AScreen *ds, char which, int x, int position, Client *c)
 	}
 	if (w) {
 		ec->present = True;
-		ec->g.w = w;
 		XPRINTF("element '%c' at %dx%d+%d+%d:%d for client '%s'\n",
-			which, ec->g.w, ec->g.h, ec->g.x, ec->g.y, ec->g.b, c->name);
+			which, ec->eg.w, ec->eg.h, ec->eg.x, ec->eg.y, ec->eg.b, c->name);
 	} else
 		XPRINTF("missing element '%c' for client %s\n", which, c->name);
 	return w;
@@ -809,6 +798,8 @@ alloccolor(const char *colstr, XftColor *color)
 {
 	Bool status;
 
+	if (!colstr)
+		return (False);
 	status = XftColorAllocName(dpy, scr->visual, scr->colormap, colstr, color);
 	if (!status)
 		eprint("error, cannot allocate color '%s'\n", colstr);
@@ -837,13 +828,13 @@ freepixmap(ButtonImage *bi)
 	}
 }
 
-static int
+static Bool
 initpixmap(const char *file, ButtonImage *bi)
 {
 	char *path;
 
 	if (!file || !(path = findrcpath(file)))
-		return 1;
+		return False;
 #ifdef XPM
 	if (strstr(path, ".xpm") && strlen(strstr(path, ".xpm")) == 4) {
 		XpmAttributes xa = { 0, };
@@ -855,15 +846,17 @@ initpixmap(const char *file, ButtonImage *bi)
 		xa.depth = scr->depth;
 		xa.valuemask |= XpmDepth;
 
-		if (XpmReadFileToPixmap(dpy, scr->drawable, path, &bi->pixmap.draw, &bi->pixmap.mask, &xa)
-		    == Success) {
+		if (XpmReadFileToPixmap(dpy, scr->drawable, path,
+					&bi->pixmap.draw, &bi->pixmap.mask,
+					&xa) == Success) {
 			if ((bi->w = xa.width) && (bi->h = xa.height)) {
 				if (bi->h > scr->style.titleheight) {
+					/* read lower down into image */
 					bi->y += (bi->h - scr->style.titleheight) / 2;
 					bi->h = scr->style.titleheight;
 				}
 				free(path);
-				return 0;
+				return True;
 			}
 		}
 	}
@@ -888,7 +881,8 @@ initpixmap(const char *file, ButtonImage *bi)
 			    (&bi->pixmap.draw, &bi->pixmap.mask, bi->w, bi->h);
 			imlib_free_image_and_decache();
 			if (!bi->pixmap.draw) {
-				XPRINTF("could not render image file %s at %dx%d\n", path, bi->w, bi->h);
+				XPRINTF("could not render image file %s at %dx%d\n", path,
+					bi->w, bi->h);
 				image = NULL;
 			}
 		} else
@@ -897,26 +891,27 @@ initpixmap(const char *file, ButtonImage *bi)
 		imlib_context_pop();
 		if (image) {
 			free(path);
-			return 0;
+			return True;
 		}
 	}
 #endif
 	if (strstr(path, ".xbm") && strlen(strstr(path, ".xbm")) == 4) {
-		bi->bitmap.draw =
-		    XCreatePixmap(dpy, scr->root, scr->style.titleheight,
-				  scr->style.titleheight, 1);
-		if (BitmapSuccess ==
-		    XReadBitmapFile(dpy, scr->root, path, &bi->w, &bi->h, &bi->bitmap.draw,
-				    &bi->x, &bi->y)) {
+		if (XReadBitmapFile(dpy, scr->root, path, &bi->w, &bi->h,
+				    &bi->bitmap.draw, &bi->x, &bi->y) == BitmapSuccess) {
 			if (bi->x == -1 || bi->y == -1)
 				bi->x = bi->y = 0;
+			if (bi->h > scr->style.titleheight) {
+				/* read lower down into image */
+				bi->y += (bi->h - scr->style.titleheight) / 2;
+				bi->h = scr->style.titleheight;
+			}
 			free(path);
-			return 0;
+			return True;
 		} else
 			XPRINTF("could not load image file %s\n", path);
 	}
 	free(path);
-	return 1;
+	return False;
 }
 
 static Bool
@@ -1154,7 +1149,7 @@ static void
 initelement(ElementType type, const char *name, const char *def,
 	    Bool (**action) (Client *, XEvent *))
 {
-	char res[128];
+	char res[128] = { 0, }, buf[128] = { 0, }, *bgdef;
 
 	static const char *kind[LastButtonImageType] = {
 		[ButtonImageDefault] = "",
@@ -1189,9 +1184,22 @@ initelement(ElementType type, const char *name, const char *def,
 		free(e->image);
 		e->image = ecalloc(LastButtonImageType, sizeof(*e->image));
 		for (i = 0; i < LastButtonImageType; i++) {
+			if (i == 0 || !e->image[0].bg.pixel) {
+				bgdef = NULL;
+			} else {
+				snprintf(buf, sizeof(buf), "#%02x%02x%02x",
+						e->image[0].bg.color.red,
+						e->image[0].bg.color.green,
+						e->image[0].bg.color.blue);
+				bgdef = buf;
+			}
+			snprintf(res, sizeof(res), "%s%s.bg", name, kind[i]);
+			alloccolor(getscreenres(res, bgdef), &e->image[i].bg);
+			bgdef = NULL;
+
 			snprintf(res, sizeof(res), "%s%s.pixmap", name, kind[i]);
 			if ((e->image[i].present =
-			     !initpixmap(getscreenres(res, def), &e->image[i])))
+			     initpixmap(getscreenres(res, def), &e->image[i])))
 				e->action = action;
 			else
 				EPRINTF("could not load pixmap for %s\n", res);

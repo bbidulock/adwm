@@ -771,6 +771,7 @@ typedef struct {
 	pixmap,
 #endif
 	bitmap;
+	XftColor bg;
 	Bool present;
 	int x, y;
 	unsigned w, h, b, d;
@@ -785,7 +786,7 @@ typedef struct {
 typedef struct {
 	Bool present, hovered;
 	unsigned pressed;
-	Geometry g;
+	Geometry eg;
 } ElementClient;
 
 typedef union {
@@ -940,7 +941,7 @@ struct Client {
 	Window session;
 	Window *cmapwins;
 	Colormap cmap;
-	ButtonImage *iconbtn;
+	ButtonImage iconbtn;
 	ElementClient *element;
 	Time user_time;
 #ifdef SYNC

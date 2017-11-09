@@ -536,7 +536,7 @@ setclientstate(Client *c, long state)
 		break;
 	}
 	if (c->winstate != state) {
-		setwmstate(c->win, state, c->is.dockapp ? (c->icon ? : c->win) : None);
+		setwmstate(c->win, state, c->is.dockapp ? c->frame : None);
 		c->winstate = state;
 	}
 }

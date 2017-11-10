@@ -229,58 +229,95 @@ Bool
 createneticon(Client *c, long *data, unsigned long n)
 {
 #if defined IMLIB2
-	Imlib_Image image;
-	unsigned int h, w, i;
+	Imlib_Image *images = NULL, image;
+	unsigned int h, w, i, z, m;
 	ButtonImage *bi;
 	DATA32 *pixels;
+	unsigned long rem;
+	long *icon;
 
 	if (!data)
 		return (False);
-	if (n < 2)
-		goto done;
-	w = data[0];
-	h = data[1];
-	if (w == 0 || h == 0)
-		goto done;
-	if (n < w * h + 2) {
-		EPRINTF("Invalid format w = %u, h = %u, n = %lu\n", w, h, n);
-		goto done;
-	}
 	imlib_context_push(scr->context);
-	if (!(image = imlib_create_image(w, h))) {
-		EPRINTF("Could not create image %u x %u\n", w, h);
-		goto pop;
+	for (m = 0, icon = data, rem = n; rem > 2; m++, icon += z, rem -= z) {
+
+		if (!(images = reallocarray(images, m + 1, sizeof(*images))))
+			break;
+		images[m] = NULL;
+
+		if (rem < 2)
+			break;
+		w = icon[0];
+		h = icon[1];
+		z = w * h + 2;
+		if (w == 0 || h == 0)
+			continue;
+		if (rem < z) {
+			EPRINTF("Invalid format w = %u, h = %u, rem = %lu\n", w, h, rem);
+			break;
+		}
+		if (!(images[m] = imlib_create_image(w, h))) {
+			EPRINTF("Could not create image %u x %u\n", w, h);
+			continue;
+		}
+		imlib_context_set_image(images[m]);
+		if (!(pixels = imlib_image_get_data())) {
+			EPRINTF("Could not get image data\n");
+			imlib_free_image();
+			images[m] = NULL;
+			continue;
+		}
+		for (i = 0; i + 2 < rem; i++)
+			pixels[i] = icon[i + 2] & 0xffffffff;
+		imlib_image_put_back_data(pixels);
 	}
-	imlib_context_set_image(image);
-	if (!(pixels = imlib_image_get_data())) {
-		EPRINTF("Could not get image data\n");
-		goto free;
+	for (h = -1U, image = NULL, i = 0; i < m; i++) {
+		if (!images[i])
+			continue;
+		imlib_context_set_image(images[i]);
+		w = imlib_image_get_height();
+		if (w == scr->style.titleheight) {
+			if (image) {
+				imlib_context_set_image(image);
+				imlib_free_image();
+			}
+			image = images[i];
+			break;
+		} else if (w < scr->style.titleheight)
+			continue;
+		else if (w - scr->style.titleheight < h) {
+			h = w - scr->style.titleheight;
+			if (image) {
+				imlib_context_set_image(image);
+				imlib_free_image();
+			}
+			image = images[i];
+		}
 	}
-	for (i = 0; i + 2 < n; i++)
-		pixels[i] = data[i + 2] & 0xffffffff;
-	imlib_image_put_back_data(pixels);
-	bi = &c->iconbtn;
-	bi->w = imlib_image_get_width();
-	bi->h = imlib_image_get_height();
-	if (bi->h > scr->style.titleheight) {
-		bi->w = ((bi->w + bi->h - 1) / bi->h) * scr->style.titleheight;
-		bi->h = scr->style.titleheight;
+	free(images);
+	images = NULL;
+	if (image) {
+		imlib_context_set_image(image);
+		bi = &c->iconbtn;
+		bi->w = imlib_image_get_width();
+		bi->h = imlib_image_get_height();
+		if (bi->h > scr->style.titleheight) {
+			bi->w = ((bi->w + bi->h - 1) / bi->h) * scr->style.titleheight;
+			bi->h = scr->style.titleheight;
+		}
+		if (bi->pixmap.image) {
+			imlib_context_set_image(bi->pixmap.image);
+			imlib_free_image();
+		}
+		bi->pixmap.image = image;
+		bi->x = bi->y = bi->b = 0;
+		bi->d = scr->depth;
+		bi->present = True;
+		imlib_context_pop();
+		XFree(data);
+		return (True);
 	}
-	if (bi->pixmap.image) {
-		imlib_context_set_image(bi->pixmap.image);
-		imlib_free_image();
-	}
-	bi->pixmap.image = image;
-	bi->x = bi->y = bi->b = 0;
-	bi->d = scr->depth;
-	bi->present = True;
-	XFree(data);
-	return (True);
-      free:
-	imlib_free_image();
-      pop:
 	imlib_context_pop();
-      done:
 #endif
 	XFree(data);
 	return (False);

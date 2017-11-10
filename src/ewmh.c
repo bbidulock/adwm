@@ -2345,31 +2345,13 @@ ewmh_update_net_window_visible_name(Client *c)
 {
 	if (c->name) {
 		XTextProperty prop = { NULL, };
-		char *list[2] = { NULL, };
-		char *vname = NULL;
-		Class *r;
+		char *list[2] = { c->name, NULL };
 
-		if ((r = getclass(c)) && r->count > 1) {
-			char buf[16] = { 0, };
-			int i, len;
-
-			for (i = 0; i < r->count; i++)
-				if (r->members[i] == c->win)
-					break;
-			snprintf(buf, sizeof(buf), "[%d] ", i + 1);
-			len = strlen(buf) + strlen(c->name);
-			if ((vname = calloc(len + 1, sizeof(*vname)))) {
-				strncpy(vname, buf, len);
-				strncat(vname, c->name, len);
-			}
-		}
-		list[0] = vname ? : c->name;
 		if (Xutf8TextListToTextProperty(dpy, list, 1, XUTF8StringStyle, &prop) == Success) {
 			XSetTextProperty(dpy, c->win, &prop, _XA_NET_WM_VISIBLE_NAME);
 			if (prop.value)
 				XFree(prop.value);
 		}
-		free(vname);
 	} else {
 		XDeleteProperty(dpy, c->win, _XA_NET_WM_VISIBLE_NAME);
 	}
@@ -2381,33 +2363,13 @@ ewmh_update_net_window_visible_icon_name(Client *c)
 
 	if (c->icon_name) {
 		XTextProperty prop = { NULL, };
-		char *list[2] = { NULL, };
-		char *vname = NULL;
-		Class *r;
+		char *list[2] = { c->icon_name, NULL };
 
-		if ((r = getclass(c)) && r->count > 1) {
-			char buf[16] = { 0, };
-			int i, len;
-
-			for (i = 0; i < r->count; i++)
-				if (r->members[i] == c->win)
-					break;
-			/* TODO: add this format string to style */
-			snprintf(buf, sizeof(buf), "[%d] ", i + 1);
-			len = strlen(buf) + strlen(c->icon_name);
-			if ((vname = calloc(len + 1, sizeof(*vname)))) {
-				strncpy(vname, buf, len);
-				strncat(vname, c->icon_name, len);
-			}
-		}
-		list[0] = vname ? : c->name;
 		if (Xutf8TextListToTextProperty(dpy, list, 1, XUTF8StringStyle, &prop) == Success) {
-			XSetTextProperty(dpy, c->win, &prop,
-					 _XA_NET_WM_VISIBLE_ICON_NAME);
+			XSetTextProperty(dpy, c->win, &prop, _XA_NET_WM_VISIBLE_ICON_NAME);
 			if (prop.value)
 				XFree(prop.value);
 		}
-		free(vname);
 	} else {
 		XDeleteProperty(dpy, c->win, _XA_NET_WM_VISIBLE_ICON_NAME);
 	}

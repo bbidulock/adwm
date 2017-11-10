@@ -5980,6 +5980,33 @@ updatesizehints(Client *c)
 		c->can.fill = False;
 }
 
+static void
+addprefix(Client *c, char **name)
+{
+	char *vname = NULL;
+	Class *r;
+
+	if ((r = getclass(c)) && r->count > 1) {
+		char buf[16] = { 0, };
+		int i, len;
+
+		for (i = 0; i < r->count; i++)
+			if (r->members[i] == c->win)
+				break;
+		/* TODO: add this format string to style */
+		snprintf(buf, sizeof(buf), "[%d] ", i + 1);
+		len = strlen(buf) + strlen(*name);
+		if ((vname = calloc(len + 1, sizeof(*vname)))) {
+			strncpy(vname, buf, len);
+			strncat(vname, *name, len);
+		}
+	}
+	if (vname) {
+		free(*name);
+		*name = vname;
+	}
+}
+
 void
 updatetitle(Client *c)
 {
@@ -5988,6 +6015,7 @@ updatetitle(Client *c)
 	    (!gettextprop(c->win, _XA_NET_WM_NAME, &c->name) || !c->name) &&
 	    (!gettextprop(c->win, XA_WM_NAME, &c->name)))
 		return;
+	addprefix(c, &c->name);
 	ewmh_update_net_window_visible_name(c);
 }
 
@@ -5999,6 +6027,7 @@ updateiconname(Client *c)
 	    (!gettextprop(c->win, _XA_NET_WM_ICON_NAME, &c->icon_name) || !c->icon_name) &&
 	    (!gettextprop(c->win, XA_WM_ICON_NAME, &c->icon_name)))
 		return;
+	addprefix(c, &c->icon_name);
 	ewmh_update_net_window_visible_icon_name(c);
 }
 

@@ -26,13 +26,7 @@ Section 4: Client to Window Manager Communication
 4.1.6 Changing Window Attributes:	supported
 4.1.7 Input Focus:			supported
 4.1.8 Colormaps:			supported
-4.1.9 Icons:				supported (dock apps)
-
-	The icon_pixmap field of the WM_HINTS property is ignored.
-	The icon_window field of the WM_HINTS property is also
-	ignored, except for dock apps, which appears to be in
-	violation of the ICCCM.
-
+4.1.9 Icons:				supported
 4.1.10 Pop-up Windows:			supported
 4.1.11 Window Groups:			supported
 

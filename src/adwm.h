@@ -69,6 +69,7 @@ enum {
 	WindowActionAbove, WindowActionBelow, WindowActionFloat, WindowActionFill,
 	WindowActionMaxL, WindowActionMaxR,
 	WMCheck, CloseWindow, WindowPing, Supported,
+	KwmWindowIcon,
 	SystemTrayWindows, WindowFrameStrut, WindowForSysTray, WindowTypeOverride,
 	KdeSplashProgress, WindowChangeState,
 	ObPid, ObControl, ObConfigFile, ObTheme, ObVersion,
@@ -255,6 +256,7 @@ enum {
 #define _XA_NET_WM_PING				atom[WindowPing]
 #define _XA_NET_SUPPORTED			atom[Supported]
 
+#define _XA_KWM_WIN_ICON			atom[KwmWindowIcon]
 #define _XA_KDE_NET_SYSTEM_TRAY_WINDOWS		atom[SystemTrayWindows]
 #define _XA_KDE_NET_WM_FRAME_STRUT		atom[WindowFrameStrut]
 #define _XA_KDE_NET_WM_SYSTEM_TRAY_WINDOW_FOR	atom[WindowForSysTray]

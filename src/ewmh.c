@@ -196,6 +196,7 @@ char *atomnames[NATOMS] = {
 	"_NET_WM_PING",
 	"_NET_SUPPORTED",
 
+	"KWM_WIN_ICON",
 	"_KDE_NET_SYSTEM_TRAY_WINDOWS",
 	"_KDE_NET_WM_FRAME_STRUT",
 	"_KDE_NET_WM_SYSTEM_TRAY_WINDOW_FOR",
@@ -2784,6 +2785,11 @@ ewmh_process_net_window_icon(Client *c)
 		if ((card = getcard(w[i], _XA_NET_WM_ICON, &n)))
 			if (createneticon(c, card, n))
 				break;
+}
+
+void
+kwm_process_window_icon(Client *c)
+{
 }
 
 void

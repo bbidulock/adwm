@@ -6182,11 +6182,13 @@ updateclass(Client *c)
 			if ((s = getclient(r->members[0], ClientWindow)) && s->is.managed) {
 				updatetitle(s);
 				updateiconname(s);
+				drawclient(s);
 			}
 		}
 		if (c->is.managed) {
 			updatetitle(c);
 			updateiconname(c);
+			drawclient(c);
 		}
 		XSaveContext(dpy, c->win, context[ClientClass], (XPointer) r);
 	}
@@ -6220,6 +6222,7 @@ removeclass(Client *c)
 				if ((s = getclient(r->members[i], ClientWindow)) && s->is.managed) {
 					updatetitle(s);
 					updateiconname(s);
+					drawclient(s);
 				}
 			}
 		}

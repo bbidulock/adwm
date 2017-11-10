@@ -471,28 +471,32 @@ findrcpath(const char *file)
 		return (path);
 	if (*file == '/') {
 		path = strdup(file);
-		return (path);
-	}
-	/* check relative to themefile, stylefile, rcfile directory */
-	for (i = 2; i < 5; i++) {
-		if (!config.files[i])
-			continue;
-		if ((path = finddirpath(config.files[i], file))) {
-			if (!access(path, R_OK))
-				return (path);
-			free(path);
-			path = NULL;
+		if (!access(path, R_OK))
+			return (path);
+		free(path);
+		path = NULL;
+	} else {
+		/* check relative to themefile, stylefile, rcfile directory */
+		for (i = 2; i < 5; i++) {
+			if (!config.files[i])
+				continue;
+			if ((path = finddirpath(config.files[i], file))) {
+				if (!access(path, R_OK))
+					return (path);
+				free(path);
+				path = NULL;
+			}
 		}
-	}
-	/* check relative to pdir, rdir, xdir, udir, sdir */
-	for (i = 0; i < 5; i++) {
-		if (!config.dirs[i])
-			continue;
-		if ((path = finddirpath(config.dirs[i], file))) {
-			if (!access(path, R_OK))
-				return (path);
-			free(path);
-			path = NULL;
+		/* check relative to pdir, rdir, xdir, udir, sdir */
+		for (i = 0; i < 5; i++) {
+			if (!config.dirs[i])
+				continue;
+			if ((path = finddirpath(config.dirs[i], file))) {
+				if (!access(path, R_OK))
+					return (path);
+				free(path);
+				path = NULL;
+			}
 		}
 	}
 	return (path);

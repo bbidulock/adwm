@@ -1,4 +1,4 @@
 #define window_width 6
 #define window_height 6
-static unsigned char window_bits[] = {
+static char window_bits[] = {
   0x3f, 0x21, 0x21, 0x3f, 0x21, 0x3f, };

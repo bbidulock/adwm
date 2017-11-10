@@ -17,75 +17,95 @@
 #include "config.h"
 #include "draw.h" /* verification */
 
-static void
-renderbutton(Client *c, ButtonImage *bi, unsigned int w, unsigned int h, XftColor *color)
-{
-	bi->x = bi->y = bi->b = 0;
-#if defined IMLIB2
-	bi->d = scr->depth;
-	imlib_context_set_color(color->color.red,
-				color->color.green,
-				color->color.blue, color->color.alpha);
-	bi->w = imlib_image_get_width();
-	bi->h = imlib_image_get_height();
-	if (bi->h > scr->style.titleheight)
-		bi->h = scr->style.titleheight;
-	if (bi->w > scr->style.titleheight)
-		bi->w = scr->style.titleheight;
-	imlib_render_pixmaps_for_whole_image_at_size(&bi->pixmap.draw,
-						     &bi->pixmap.mask, bi->w, bi->h);
-#else
-	bi->d = 1;
-	bi->bitmap.draw = c->wmh.icon_pixmap;
-	bi->bitmap.mask = c->wmh.icon_mask;
-	bi->w = w;
-	bi->h = h;
-#endif
-	bi->present = True;
-}
-
 Bool
 createwmicon(Client *c)
 {
-	Bool status = False;
 	Window root;
 	int x, y;
 	unsigned int w, h, b, d;
-
+	ButtonImage *bi;
 #if defined IMLIB2
 	Imlib_Image image;
 #endif
 
 	if (!c || !(c->wmh.flags & IconPixmapHint))
-		return (status);
+		return (False);
 	if (!XGetGeometry(dpy, c->wmh.icon_pixmap, &root, &x, &y, &w, &h, &b, &d))
-		return (status);
-#if !defined IMLIB2
-	if (w > scr->style.titleheight || h > scr->style.titleheight)
-		return (status);
-#else
-	imlib_context_push(scr->context);
-	imlib_context_set_mask(None);
-	imlib_context_set_drawable(c->wmh.icon_pixmap);
-	image = imlib_create_image_from_drawable(c->wmh.icon_mask, 0, 0, w, h, 0);
-	imlib_context_set_image(image);
-#endif
-
-	renderbutton(c, &c->iconbtn, w, h, &scr->style.color.norm[ColButton]);
-
+		return (False);
+	bi = &c->iconbtn;
 #if defined IMLIB2
-	imlib_free_image_and_decache();
-	imlib_context_pop();
+	imlib_context_push(scr->context);
+	imlib_context_set_drawable(c->wmh.icon_pixmap);
+	imlib_context_set_color(255,255,255,255);
+	image = imlib_create_image_from_drawable(c->wmh.icon_mask, 0, 0, w, h, 1);
+	if (!image) {
+		EPRINTF("could not load pixmap 0x%lx mask 0x%lx\n", c->wmh.icon_pixmap, c->wmh.icon_mask);
+		imlib_context_pop();
+		return (False);
+	}
+	imlib_context_set_image(image);
+	bi->x = bi->y = bi->b = 0;
+	bi->d = d;
+	bi->w = imlib_image_get_width();
+	bi->h = imlib_image_get_height();
+	if (bi->h > scr->style.titleheight) {
+		int w = ((bi->w + bi->h - 1) / bi->h) * scr->style.titleheight;
+		int h = scr->style.titleheight;
+		Imlib_Image scaled = imlib_create_image(w, h);
+
+		if (!scaled) {
+			EPRINTF("Could not create image %d x %d\n", w, h);
+			imlib_free_image();
+			imlib_context_pop();
+			return (False);
+		}
+		imlib_context_set_image(scaled);
+		imlib_blend_image_onto_image(image, True, 0, 0, bi->w, bi->h, 0, 0, w, h);
+		imlib_context_set_image(image);
+		imlib_free_image();
+		image = scaled;
+		imlib_context_set_image(image);
+		bi->w = w;
+		bi->h = h;
+	}
+#if 1
+	if (bi->pixmap.draw)
+		imlib_free_pixmap_and_mask(bi->pixmap.draw);
+	imlib_render_pixmaps_for_whole_image(&bi->pixmap.draw, &bi->pixmap.mask);
+#else
+	if (d > 1) {
+		if (bi->pixmap.image) {
+			imlib_context_set_image(bi->pixmap.image);
+			imlib_free_image();
+		}
+		bi->pixmap.image = image;
+	} else {
+		if (bi->bitmap.image) {
+			imlib_context_set_image(bi->bitmap.image);
+			imlib_free_image();
+		}
+		bi->bitmap.image = image;
+	}
 #endif
-	status = True;
-	return (status);
+	bi->present = True;
+	imlib_context_pop();
+#else
+	if (w > scr->style.titleheight || h > scr->style.titleheight)
+		return (False);
+	bi->x = bi->y = bi->b = 0;
+	bi->d = d;
+	bi->bitmap.draw = c->wmh.icon_pixmap;
+	bi->bitmap.mask = c->wmh.icon_mask;
+	bi->w = w;
+	bi->h = h;
+	bi->present = True;
+#endif
+	return (True);
 }
 
 Bool
 createneticon(Client *c, long *data, unsigned long n)
 {
-	Bool status = False;
-
 #if defined IMLIB2
 	Imlib_Image image;
 	unsigned int h, w, i;
@@ -93,46 +113,55 @@ createneticon(Client *c, long *data, unsigned long n)
 	DATA32 *pixels;
 
 	if (!data)
-		return (status);
+		return (False);
 	if (n < 2)
 		goto done;
 	w = data[0];
 	h = data[1];
 	if (w == 0 || h == 0)
 		goto done;
-	if (n < w * h + 2)
+	if (n < w * h + 2) {
+		EPRINTF("Invalid format w = %u, h = %u, n = %lu\n", w, h, n);
 		goto done;
+	}
 	imlib_context_push(scr->context);
-	if (!(image = imlib_create_image(w, h)))
+	if (!(image = imlib_create_image(w, h))) {
+		EPRINTF("Could not create image %u x %u\n", w, h);
 		goto pop;
+	}
 	imlib_context_set_image(image);
-	imlib_context_set_mask(None);
-	imlib_image_set_has_alpha(1);
-	if (!(pixels = imlib_image_get_data()))
+	if (!(pixels = imlib_image_get_data())) {
+		EPRINTF("Could not get image data\n");
 		goto free;
+	}
 	for (i = 0; i + 2 < n; i++)
 		pixels[i] = data[i + 2] & 0xffffffff;
 	imlib_image_put_back_data(pixels);
 	bi = &c->iconbtn;
 	bi->w = imlib_image_get_width();
 	bi->h = imlib_image_get_height();
-	if (bi->h > scr->style.titleheight)
+	if (bi->h > scr->style.titleheight) {
+		bi->w = ((bi->w + bi->h - 1) / bi->h) * scr->style.titleheight;
 		bi->h = scr->style.titleheight;
-	if (bi->w > scr->style.titleheight)
-		bi->w = scr->style.titleheight;
-	imlib_render_pixmaps_for_whole_image_at_size(&bi->pixmap.draw,
-						     &bi->pixmap.mask, bi->w, bi->h);
+	}
+	if (bi->pixmap.image) {
+		imlib_context_set_image(bi->pixmap.image);
+		imlib_free_image();
+	}
+	bi->pixmap.image = image;
 	bi->x = bi->y = bi->b = 0;
 	bi->d = scr->depth;
 	bi->present = True;
+	XFree(data);
+	return (True);
       free:
-	imlib_free_image_and_decache();
+	imlib_free_image();
       pop:
 	imlib_context_pop();
       done:
 #endif
 	XFree(data);
-	return (status);
+	return (False);
 }
 
 enum { Normal, Focused, Selected };
@@ -473,7 +502,7 @@ drawbutton(AScreen *ds, Client *c, ElementType type, XftColor *col, int x)
 {
 	ElementClient *ec = &c->element[type];
 	Drawable d = ds->dc.draw.pixmap;
-	unsigned long fg, bg;
+	XftColor *fg, *bg;
 	Geometry g = { 0, };
 	ButtonImage *bi;
 	int status;
@@ -495,24 +524,78 @@ drawbutton(AScreen *ds, Client *c, ElementType type, XftColor *col, int x)
 	ec->eg.w = bi->w;
 	ec->eg.h = bi->h;
 
-	fg = ec->pressed ? col[ColFG].pixel : col[ColButton].pixel;
-	bg = bi->bg.pixel ? : col[ColBG].pixel;
+	fg = ec->pressed ? &col[ColFG] : &col[ColButton];
+	bg = bi->bg.pixel ? &bi->bg : &col[ColBG];
 
-	{
-		/* TODO: eventually this should be a texture */
-		/* always draw the element background */
-		XSetForeground(dpy, ds->dc.gc, bg);
-		XSetFillStyle(dpy, ds->dc.gc, FillSolid);
-		status = XFillRectangle(dpy, d, ds->dc.gc, ec->eg.x, ec->eg.y, ec->eg.w, ec->eg.h);
-		if (!status)
-			XPRINTF("Could not fill rectangle, error %d\n", status);
-		XSetForeground(dpy, ds->dc.gc, fg);
-		XSetBackground(dpy, ds->dc.gc, bg);
-	}
-	/* position clip mask over button image */
-	XSetClipOrigin(dpy, ds->dc.gc, ec->eg.x - bi->x, ec->eg.y - bi->y);
+#if defined IMLIB2
+	if (bi->pixmap.image) {
+		Imlib_Image image;
+		int w, h;
 
+		imlib_context_push(scr->context);
+		imlib_context_set_image(bi->pixmap.image);
+		w = imlib_image_get_width();
+		h = imlib_image_get_height();
+		image = imlib_create_image(ec->eg.w, ec->eg.h);
+		imlib_context_set_image(image);
+		imlib_context_set_color(bg->color.red, bg->color.green, bg->color.blue, 255);
+		imlib_image_fill_rectangle(0, 0, ec->eg.w, ec->eg.h);
+		imlib_context_set_blend(0);
+		imlib_context_set_anti_alias(1);
+		imlib_blend_image_onto_image(bi->pixmap.image, False,
+				0, 0, w, h, 0, 0, ec->eg.w, ec->eg.h);
+		imlib_context_set_drawable(d);
+		imlib_render_image_on_drawable(ec->eg.x, ec->eg.y);
+		imlib_free_image();
+		imlib_context_pop();
+		return g.w;
+	} else
+	if (bi->bitmap.image) {
+		Imlib_Image image, mask;
+		int w, h;
+
+		imlib_context_push(scr->context);
+		imlib_context_set_image(bi->bitmap.image);
+		w = imlib_image_get_width();
+		h = imlib_image_get_height();
+		image = imlib_create_image(ec->eg.w, ec->eg.h);
+		imlib_context_set_image(image);
+		imlib_context_set_color(bg->color.red, bg->color.green, bg->color.blue, 255);
+		imlib_image_fill_rectangle(0, 0, ec->eg.w, ec->eg.h);
+		mask = imlib_create_image(w, h);
+		imlib_context_set_image(mask);
+		imlib_context_set_color(fg->color.red, fg->color.green, fg->color.blue, 255);
+		imlib_image_fill_rectangle(0, 0, w, h);
+		imlib_image_copy_alpha_to_image(bi->bitmap.image, 0, 0);
+		imlib_context_set_image(image);
+		imlib_context_set_blend(0);
+		imlib_context_set_anti_alias(1);
+		imlib_blend_image_onto_image(mask, False,
+				0, 0, w, h, 0, 0, ec->eg.w, ec->eg.h);
+		imlib_context_set_drawable(d);
+		imlib_render_image_on_drawable(ec->eg.x, ec->eg.y);
+		imlib_free_image();
+		imlib_context_set_image(mask);
+		imlib_free_image();
+		imlib_context_pop();
+		return g.w;
+	} else
+#endif
 	if (bi->pixmap.draw) {
+		{
+			/* TODO: eventually this should be a texture */
+			/* always draw the element background */
+			XSetForeground(dpy, ds->dc.gc, bg->pixel);
+			XSetFillStyle(dpy, ds->dc.gc, FillSolid);
+			status = XFillRectangle(dpy, d, ds->dc.gc, ec->eg.x, ec->eg.y, ec->eg.w, ec->eg.h);
+			if (!status)
+				XPRINTF("Could not fill rectangle, error %d\n", status);
+			XSetForeground(dpy, ds->dc.gc, fg->pixel);
+			XSetBackground(dpy, ds->dc.gc, bg->pixel);
+		}
+		/* position clip mask over button image */
+		XSetClipOrigin(dpy, ds->dc.gc, ec->eg.x - bi->x, ec->eg.y - bi->y);
+
 		XPRINTF("Copying pixmap 0x%lx mask 0x%lx with geom %dx%d+%d+%d to drawable 0x%lx\n",
 		        bi->pixmap.draw, bi->pixmap.mask, ec->eg.w, ec->eg.h, ec->eg.x, ec->eg.y, d);
 		XSetClipMask(dpy, ds->dc.gc, bi->pixmap.mask);
@@ -520,7 +603,22 @@ drawbutton(AScreen *ds, Client *c, ElementType type, XftColor *col, int x)
 			  bi->x, bi->y, bi->w, bi->h, ec->eg.x, ec->eg.y);
 		XSetClipMask(dpy, ds->dc.gc, None);
 		return g.w;
-	} else if (bi->bitmap.draw) {
+	} else
+	if (bi->bitmap.draw) {
+		{
+			/* TODO: eventually this should be a texture */
+			/* always draw the element background */
+			XSetForeground(dpy, ds->dc.gc, bg->pixel);
+			XSetFillStyle(dpy, ds->dc.gc, FillSolid);
+			status = XFillRectangle(dpy, d, ds->dc.gc, ec->eg.x, ec->eg.y, ec->eg.w, ec->eg.h);
+			if (!status)
+				XPRINTF("Could not fill rectangle, error %d\n", status);
+			XSetForeground(dpy, ds->dc.gc, fg->pixel);
+			XSetBackground(dpy, ds->dc.gc, bg->pixel);
+		}
+		/* position clip mask over button image */
+		XSetClipOrigin(dpy, ds->dc.gc, ec->eg.x - bi->x, ec->eg.y - bi->y);
+
 		XSetClipMask(dpy, ds->dc.gc, bi->bitmap.mask ? : bi->bitmap.draw);
 		XCopyPlane(dpy, bi->bitmap.draw, d, ds->dc.gc,
 			   bi->x, bi->y, bi->w, bi->h, ec->eg.x, ec->eg.y, 1);
@@ -828,6 +926,225 @@ freepixmap(ButtonImage *bi)
 	}
 }
 
+#ifdef IMLIB2
+const char *
+imlib_error_string(Imlib_Load_Error error)
+{
+	switch (error) {
+	case IMLIB_LOAD_ERROR_NONE:
+		return ("IMLIB_LOAD_ERROR_NONE");
+	case IMLIB_LOAD_ERROR_FILE_DOES_NOT_EXIST:
+		return ("IMLIB_LOAD_ERROR_FILE_DOES_NOT_EXIST");
+	case IMLIB_LOAD_ERROR_FILE_IS_DIRECTORY:
+		return ("IMLIB_LOAD_ERROR_FILE_IS_DIRECTORY");
+	case IMLIB_LOAD_ERROR_PERMISSION_DENIED_TO_READ:
+		return ("IMLIB_LOAD_ERROR_PERMISSION_DENIED_TO_READ");
+	case IMLIB_LOAD_ERROR_NO_LOADER_FOR_FILE_FORMAT:
+		return ("IMLIB_LOAD_ERROR_NO_LOADER_FOR_FILE_FORMAT");
+	case IMLIB_LOAD_ERROR_PATH_TOO_LONG:
+		return ("IMLIB_LOAD_ERROR_PATH_TOO_LONG");
+	case IMLIB_LOAD_ERROR_PATH_COMPONENT_NON_EXISTANT:
+		return ("IMLIB_LOAD_ERROR_PATH_COMPONENT_NON_EXISTANT");
+	case IMLIB_LOAD_ERROR_PATH_COMPONENT_NOT_DIRECTORY:
+		return ("IMLIB_LOAD_ERROR_PATH_COMPONENT_NOT_DIRECTORY");
+	case IMLIB_LOAD_ERROR_PATH_POINTS_OUTSIDE_ADDRESS_SPACE:
+		return ("IMLIB_LOAD_ERROR_PATH_POINTS_OUTSIDE_ADDRESS_SPACE");
+	case IMLIB_LOAD_ERROR_TOO_MANY_SYMBOLIC_LINKS:
+		return ("IMLIB_LOAD_ERROR_TOO_MANY_SYMBOLIC_LINKS");
+	case IMLIB_LOAD_ERROR_OUT_OF_MEMORY:
+		return ("IMLIB_LOAD_ERROR_OUT_OF_MEMORY");
+	case IMLIB_LOAD_ERROR_OUT_OF_FILE_DESCRIPTORS:
+		return ("IMLIB_LOAD_ERROR_OUT_OF_FILE_DESCRIPTORS");
+	case IMLIB_LOAD_ERROR_PERMISSION_DENIED_TO_WRITE:
+		return ("IMLIB_LOAD_ERROR_PERMISSION_DENIED_TO_WRITE");
+	case IMLIB_LOAD_ERROR_OUT_OF_DISK_SPACE:
+		return ("IMLIB_LOAD_ERROR_OUT_OF_DISK_SPACE");
+	case IMLIB_LOAD_ERROR_UNKNOWN:
+		return ("IMLIB_LOAD_ERROR_UNKNOWN");
+	}
+	return ("IMLIB_LOAD_ERROR_UNKNOWN");
+}
+#endif
+
+#ifdef XPM
+static Bool
+initxpm(char *path, ButtonImage *bi)
+{
+	Pixmap draw = None, mask = None;
+	XpmAttributes xa = { 0, };
+	int status;
+
+	xa.visual = scr->visual;
+	xa.valuemask |= XpmVisual;
+	xa.colormap = scr->colormap;
+	xa.valuemask |= XpmColormap;
+	xa.depth = scr->depth;
+	xa.valuemask |= XpmDepth;
+
+	status = XpmReadFileToPixmap(dpy, scr->drawable, path, &draw, &mask, &xa);
+	if (status != Success || !draw) {
+		EPRINTF("could not load xpm file %s\n", path);
+		return False;
+	}
+	if (bi->pixmap.draw)
+		XFreePixmap(dpy, bi->pixmap.draw);
+	if (bi->pixmap.mask)
+		XFreePixmap(dpy, bi->pixmap.mask);
+	bi->pixmap.draw = draw;
+	bi->pixmap.mask = mask;
+	bi->w = xa.width;
+	bi->h = xa.height;
+	if (bi->h > scr->style.titleheight) {
+		/* read lower down into image to clip top and bottom by same amount */
+		bi->y += (bi->h - scr->style.titleheight) / 2;
+		bi->h = scr->style.titleheight;
+	}
+	free(path);
+	return True;
+}
+#endif
+
+static Bool
+initxbm(char *path, ButtonImage *bi)
+{
+	Pixmap draw = None, mask = None;
+	int status;
+
+	status =
+	    XReadBitmapFile(dpy, scr->root, path, &bi->w, &bi->h, &draw, &bi->x, &bi->y);
+	if (status != BitmapSuccess || !draw) {
+		EPRINTF("could not load xbm file %s\n", path);
+		return False;
+	}
+	if (bi->bitmap.draw)
+		XFreePixmap(dpy, bi->bitmap.draw);
+	if (bi->bitmap.mask)
+		XFreePixmap(dpy, bi->bitmap.mask);
+	bi->bitmap.draw = draw;
+	bi->bitmap.mask = mask;
+	/* don't care about hostspot: not a cursor */
+	bi->x = bi->y = 0;
+	if (bi->h > scr->style.titleheight) {
+		/* read lower down into image to clip top and bottom by same amount */
+		bi->y += (bi->h - scr->style.titleheight) / 2;
+		bi->h = scr->style.titleheight;
+	}
+	free(path);
+	return True;
+}
+
+static Bool
+initext(char *path, ButtonImage *bi)
+{
+	Imlib_Image image;
+	Imlib_Load_Error error;
+
+	imlib_context_push(scr->context);
+
+	image = imlib_load_image_with_error_return(path, &error);
+	if (!image) {
+		EPRINTF("%s: could not load image file %s\n",
+			imlib_error_string(error), path);
+		imlib_context_pop();
+		return False;
+	}
+	imlib_context_set_image(image);
+	bi->w = imlib_image_get_width();
+	bi->h = imlib_image_get_height();
+	if (bi->h > scr->style.titleheight) {
+		/* read lower down into image to clip top and bottom by same amount */
+		bi->y += (bi->h - scr->style.titleheight) / 2;
+		bi->h = scr->style.titleheight;
+	}
+	if (bi->pixmap.image) {
+		imlib_context_set_image(bi->pixmap.image);
+		imlib_free_image();
+	}
+	bi->pixmap.image = image;
+	free(path);
+	return True;
+}
+
+static Bool
+initbitmap(char *path, ButtonImage *bi)
+{
+	unsigned char *data = NULL;
+	Imlib_Image image;
+	DATA32 *pixels;
+	int status;
+
+	status = XReadBitmapFileData(path, &bi->w, &bi->h, &data, &bi->x, &bi->y);
+	if (status != BitmapSuccess || !data) {
+		EPRINTF("could not load image file %s\n", path);
+		return False;
+	}
+	/* don't care about hotspot: not a cursor */
+	bi->x = bi->y = 0;
+	imlib_context_push(scr->context);
+	image = imlib_create_image(bi->w, bi->h);
+	if (!image) {
+		EPRINTF("Cannot create image %d x %d\n", bi->w, bi->h);
+		imlib_context_pop();
+		XFree(data);
+		return False;
+	}
+	imlib_context_set_image(image);
+	pixels = imlib_image_get_data();
+	if (!pixels) {
+		EPRINTF("Cannot get image data\n");
+		imlib_free_image();
+		imlib_context_pop();
+		XFree(data);
+		return False;
+	}
+	{
+		unsigned int i, j, stride = (bi->w + 7) >> 3;
+		DATA32 *p = pixels;
+
+		for (i = 0; i < bi->h; i++) {
+			unsigned char *row = &data[i * stride];
+
+			for (j = 0; j < bi->w; j++) {
+				unsigned char *byte = &row[j >> 3];
+				unsigned bit = j % 8;
+
+				if ((*byte >> bit) & 0x1) {
+					/* it is a one */
+					*p++ = 0xffffffff;
+				} else {
+					/* it is a zero */
+					*p++ = 0x00000000;
+				}
+			}
+		}
+	}
+	imlib_image_put_back_data(pixels);
+	bi->w = imlib_image_get_width();
+	bi->h = imlib_image_get_height();
+	if (bi->h > scr->style.titleheight) {
+		/* read lower down into image to clip top and bottom by same amount */
+		bi->y += (bi->h - scr->style.titleheight) / 2;
+		bi->h = scr->style.titleheight;
+	}
+#if 0
+	if (bi->pixmap.draw)
+		imlib_free_pixmap_and_mask(bi->pixmap.draw);
+	imlib_render_pixmaps_for_whole_image(&bi->pixmap.draw, &bi->pixmap.mask);
+#else
+	if (bi->bitmap.image) {
+		imlib_context_set_image(bi->bitmap.image);
+		imlib_free_image();
+	}
+	bi->bitmap.image = image;
+#endif
+	imlib_context_pop();
+	bi->x = bi->y = bi->b = 0;
+	bi->d = 1;
+	XFree(data);
+	free(path);
+	return True;
+}
+
 static Bool
 initpixmap(const char *file, ButtonImage *bi)
 {
@@ -836,80 +1153,54 @@ initpixmap(const char *file, ButtonImage *bi)
 	if (!file || !(path = findrcpath(file)))
 		return False;
 #ifdef XPM
-	if (strstr(path, ".xpm") && strlen(strstr(path, ".xpm")) == 4) {
-		XpmAttributes xa = { 0, };
-
-		xa.visual = scr->visual;
-		xa.valuemask |= XpmVisual;
-		xa.colormap = scr->colormap;
-		xa.valuemask |= XpmColormap;
-		xa.depth = scr->depth;
-		xa.valuemask |= XpmDepth;
-
-		if (XpmReadFileToPixmap(dpy, scr->drawable, path,
-					&bi->pixmap.draw, &bi->pixmap.mask,
-					&xa) == Success) {
-			if ((bi->w = xa.width) && (bi->h = xa.height)) {
-				if (bi->h > scr->style.titleheight) {
-					/* read lower down into image */
-					bi->y += (bi->h - scr->style.titleheight) / 2;
-					bi->h = scr->style.titleheight;
-				}
-				free(path);
-				return True;
-			}
-		}
-	}
+	/* use libxpm for xpms because it works best */
+	if (strstr(path, ".xpm") && strlen(strstr(path, ".xpm")) == 4)
+		if (initxpm(path, bi))
+			return True;
 #endif
+	if (strstr(path, ".xbm") && strlen(strstr(path, ".xbm")) == 4)
+		if (initxbm(path, bi))
+			return True;
 #ifdef IMLIB2
 	if (!strstr(path, ".xbm") || strlen(strstr(path, ".xbm")) != 4) {
-		Imlib_Image image;
-
-		imlib_context_push(scr->context);
-		imlib_context_set_mask(None);
-
-		if ((image = imlib_load_image(path))) {
-			imlib_context_set_image(image);
-			imlib_context_set_mask(None);
-			bi->w = imlib_image_get_width();
-			bi->h = imlib_image_get_height();
-			if (bi->h > scr->style.titleheight)
-				bi->h = scr->style.titleheight;
-			if (bi->w > 2 * scr->style.titleheight)
-				bi->w = 2 * scr->style.titleheight;
-			imlib_render_pixmaps_for_whole_image_at_size
-			    (&bi->pixmap.draw, &bi->pixmap.mask, bi->w, bi->h);
-			imlib_free_image_and_decache();
-			if (!bi->pixmap.draw) {
-				XPRINTF("could not render image file %s at %dx%d\n", path,
-					bi->w, bi->h);
-				image = NULL;
-			}
-		} else
-			XPRINTF("could not load image file %s\n", path);
-
-		imlib_context_pop();
-		if (image) {
-			free(path);
+		if (initext(path, bi))
 			return True;
-		}
+	} else {
+		if (initbitmap(path, bi))
+			return True;
 	}
 #endif
-	if (strstr(path, ".xbm") && strlen(strstr(path, ".xbm")) == 4) {
-		if (XReadBitmapFile(dpy, scr->root, path, &bi->w, &bi->h,
-				    &bi->bitmap.draw, &bi->x, &bi->y) == BitmapSuccess) {
-			if (bi->x == -1 || bi->y == -1)
-				bi->x = bi->y = 0;
-			if (bi->h > scr->style.titleheight) {
-				/* read lower down into image */
-				bi->y += (bi->h - scr->style.titleheight) / 2;
-				bi->h = scr->style.titleheight;
-			}
-			free(path);
-			return True;
-		} else
-			XPRINTF("could not load image file %s\n", path);
+	EPRINTF("could not load button element from %s\n", path);
+	if (bi->pixmap.draw) {
+		XFreePixmap(dpy, bi->pixmap.draw);
+		bi->pixmap.draw = None;
 	}
+	if (bi->pixmap.mask) {
+		XFreePixmap(dpy, bi->pixmap.mask);
+		bi->pixmap.mask = None;
+	}
+	if (bi->bitmap.draw) {
+		XFreePixmap(dpy, bi->bitmap.draw);
+		bi->bitmap.draw = None;
+	}
+	if (bi->bitmap.mask) {
+		XFreePixmap(dpy, bi->bitmap.mask);
+		bi->bitmap.mask = None;
+	}
+#ifdef IMLIB2
+	imlib_context_push(scr->context);
+	if (bi->pixmap.image) {
+		imlib_context_set_image(bi->pixmap.image);
+		imlib_free_image();
+		bi->pixmap.image = NULL;
+	}
+	if (bi->bitmap.image) {
+		imlib_context_set_image(bi->bitmap.image);
+		imlib_free_image();
+		bi->bitmap.image = NULL;
+	}
+	imlib_context_pop();
+#endif
 	free(path);
 	return False;
 }
@@ -1202,7 +1493,7 @@ initelement(ElementType type, const char *name, const char *def,
 			     initpixmap(getscreenres(res, def), &e->image[i])))
 				e->action = action;
 			else
-				EPRINTF("could not load pixmap for %s\n", res);
+				XPRINTF("could not load pixmap for %s\n", res);
 			def = NULL;
 		}
 	} else {

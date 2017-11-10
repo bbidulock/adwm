@@ -248,8 +248,8 @@ initimage(void)
 	imlib_context_set_drawable(scr->drawable);
 	imlib_context_set_colormap(scr->colormap);
 	imlib_context_set_visual(scr->visual);
-	imlib_context_set_anti_alias(1);
 	imlib_context_set_dither_mask(1);
+	imlib_context_set_anti_alias(1);
 	imlib_context_set_dither(1);
 	imlib_context_set_blend(1);
 	imlib_context_set_mask(None);

@@ -766,6 +766,9 @@ typedef struct {
 typedef struct {
 	struct {
 		Pixmap draw, mask;
+#if defined IMLIB2
+		Imlib_Image image;
+#endif
 	}
 #if defined IMLIB2 || defined XPM
 	pixmap,

@@ -110,9 +110,10 @@ if test "x$enable_xrender" != xno ; then
 	PKG_CHECK_MODULES([XRENDER],[xrender],
 		[AC_DEFINE([RENDER],[1], [Define to 1 to support RENDER extension.])],
 		[enable_xrender=no])
+else
+	AC_MSG_CHECKING([for xrender])
+	AC_MSG_RESULT([disabled])
 fi
-AC_MSG_CHECKING([for RENDER support])
-AC_MSG_RESULT([${enable_xrender:-yes}])
 AM_CONDITIONAL([HAVE_RENDER],[test  "x$enable_xrender" != "xno"])
 
 AC_ARG_ENABLE([xdamage],
@@ -122,9 +123,10 @@ if test "x$enable_xdamage" != xno ; then
 	PKG_CHECK_MODULES([XDAMAGE],[xdamage],
 		[AC_DEFINE([DAMAGE],[1], [Define to 1 to support DAMAGE extension.])],
 		[enable_xdamage=no])
+else
+	AC_MSG_CHECKING([for xdamage])
+	AC_MSG_RESULT([disabled])
 fi
-AC_MSG_CHECKING([for DAMAGE support])
-AC_MSG_RESULT([${enable_xdamage:-yes}])
 AM_CONDITIONAL([HAVE_DAMAGE],[test  "x$enable_xdamage" != "xno"])
 
 AC_ARG_ENABLE([xcomposite],
@@ -134,9 +136,10 @@ if test "x$enable_xcomposite" != xno ; then
 	PKG_CHECK_MODULES([XCOMPOSITE],[xcomposite],
 		[AC_DEFINE([XCOMPOSITE],[1], [Define to 1 to support Composite extension.])],
 		[enable_xcomposite=no])
+else
+	AC_MSG_CHECKING([for xcomposite])
+	AC_MSG_RESULT([disabled])
 fi
-AC_MSG_CHECKING([for Composite support])
-AC_MSG_RESULT([${enable_xcomposite:-yes}])
 AM_CONDITIONAL([HAVE_XCOMPOSITE],[test  "x$enable_xcomposite" != "xno"])
 
 AC_ARG_ENABLE([xrandr],
@@ -146,9 +149,10 @@ if test "x$enable_xrandr" != xno ; then
 	PKG_CHECK_MODULES([XRANDR],[xrandr],
 		[AC_DEFINE([XRANDR],[1], [Define to 1 to support XRANDR extension.])],
 		[enable_xrandr=no])
+else
+	AC_MSG_CHECKING([for xrandr])
+	AC_MSG_RESULT([disabled])
 fi
-AC_MSG_CHECKING([for XRANDR support])
-AC_MSG_RESULT([${enable_xrandr:-yes}])
 AM_CONDITIONAL([HAVE_XRANDR],[test  "x$enable_xrandr" != "xno"])
 
 AC_ARG_ENABLE([xinerama],
@@ -158,9 +162,10 @@ if test "x$enable_xinerama" != xno ; then
 	PKG_CHECK_MODULES([XINERAMA],[xinerama],
 		[AC_DEFINE([XINERAMA],[1], [Define to 1 to support XINERAMA extension.])],
 		[enable_xinerama=no])
+else
+	AC_MSG_CHECKING([for xinerama])
+	AC_MSG_RESULT([disabled])
 fi
-AC_MSG_CHECKING([for XINERAMA support])
-AC_MSG_RESULT([${enable_xinerama:-yes}])
 AM_CONDITIONAL([HAVE_XINERAMA],[test  "x$enable_xinerama" != "xno"])
 
 AC_ARG_ENABLE([xsync],
@@ -170,9 +175,10 @@ if test "x$enable_xsync" != xno ; then
 	PKG_CHECK_MODULES([XSYNC],[xext],
 		[AC_DEFINE([SYNC],[1], [Define to 1 to support XSYNC extension.])],
 		[enable_xsync=no])
+else
+	AC_MSG_CHECKING([for xsync])
+	AC_MSG_RESULT([disabled])
 fi
-AC_MSG_CHECKING([for XSYNC support])
-AC_MSG_RESULT([${enable_xsync:-yes}])
 
 AC_ARG_ENABLE([xshape],
 	AC_HELP_STRING([--disable-xshape],
@@ -181,9 +187,10 @@ if test "x$enable_xshape" != xno ; then
 	PKG_CHECK_MODULES([XSHAPE],[xext],
 		[AC_DEFINE([SHAPE],[1], [Define to 1 to support SHAPE extension.])],
 		[enable_xshape=no])
+else
+	AC_MSG_CHECKING([for xshape])
+	AC_MSG_RESULT([disabled])
 fi
-AC_MSG_CHECKING([for SHAPE support])
-AC_MSG_RESULT([${enable_xshape:-yes}])
 
 AC_ARG_ENABLE([startup-notification],
 	AC_HELP_STRING([--disable-startup-notification],
@@ -192,9 +199,33 @@ if test "x$enable_startup_notification" != xno ; then
 	PKG_CHECK_MODULES([SN],[libstartup-notification-1.0],
 		[AC_DEFINE([STARTUP_NOTIFICATION],[1], [Define to 1 to support startup notification.])],
 		[enable_startup_notification=no])
+else
+	AC_MSG_CHECKING([for libstartup-notification-1.0])
+	AC_MSG_RESULT([disabled])
 fi
-AC_MSG_CHECKING([for startup notification support])
-AC_MSG_RESULT([${enable_startup_notification:-yes}])
+
+AC_ARG_ENABLE([gdk-pixbuf],
+	AC_HELP_STRING([--disable-gdk-pixbuf],
+		[Disable gdk-pixbuf library @<:@default=auto@:>@]))
+if test "x$enable_gdk_pixbur" != xno ; then
+	PKG_CHECK_MODULES([PIXBUF],[gdk-pixbuf-xlib-2.0],
+		[AC_DEFINE([PIXBUF],[1],[Define to 1 to support GDK PIXBUF X11 graphics support.])],
+		[enable_gdk_pixbuf=no])
+else
+	AC_MSG_CHECKING([for gdk-pixbuf-xlib-2.0])
+	AC_MSG_RESULT([disabled])
+fi
+
+AC_ARG_ENABLE([use-gdk-pixbuf],
+	AC_HELP_STRING([--disable-use-gdk-pixbuf],
+		[Disable use of gdk-pixbuf for drawing @<:@default=auto@:>@]))
+if test "x$enable_gdk_pixbuf" != xno -a "x$enable_use_gdk_pixbuf" != xno ; then
+	AC_DEFINE([USE_PIXBUF],[1],[Define to 1 to use GDK PIXBUF X11 for rendering pixmaps.])
+else
+	enable_use_gdk_pixbuf=no
+fi
+AC_MSG_CHECKING([for gdk-pixbuf use])
+AC_MSG_RESULT([${enable_use_gdk_pixbuf:-yes}])
 
 AC_ARG_ENABLE([imlib2],
 	AC_HELP_STRING([--disable-imlib2],
@@ -203,9 +234,10 @@ if test "x$enable_imlib2" != xno ; then
 	PKG_CHECK_MODULES([IMLIB2],[imlib2],
 		[AC_DEFINE([IMLIB2],[1],[Define to 1 to support IMLIB2 advanced graphics support.])],
 		[enable_imlib2=no])
+else
+	AC_MSG_CHECKING([for imlib2])
+	AC_MSG_RESULT([disabled])
 fi
-AC_MSG_CHECKING([for imlib2 support])
-AC_MSG_RESULT([${enable_imlib2:-yes}])
 
 AC_ARG_ENABLE([use-imlib2],
 	AC_HELP_STRING([--disable-use-imlib2],
@@ -225,9 +257,10 @@ if test "x$enable_xpm" != xno ; then
 	PKG_CHECK_MODULES([XPM],[xpm],
 		[AC_DEFINE([XPM],[1],[Defined to 1 for XPM library support.])],
 		[enable_xpm=no])
+else
+	AC_MSG_CHECKING([for xpm])
+	AC_MSG_RESULT([disabled])
 fi
-AC_MSG_CHECKING([for libxpm support])
-AC_MSG_RESULT([${enable_libxpm:-yes}])
 
 AC_ARG_ENABLE([debug],
 	AC_HELP_STRING([--enable-debug],

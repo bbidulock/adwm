@@ -592,6 +592,8 @@ initewmh(char *name)
 			PropModeReplace, (unsigned char *) data, 2);
 	XChangeProperty(dpy, swin, _XA_MOTIF_WM_INFO, _XA_MOTIF_WM_INFO, 32,
 			PropModeReplace, (unsigned char *) data, 2);
+#if 0
+	/* not here */
 #if 1
 	data[0] = data[1] = 56;
 	data[2] = data[3] = 56;
@@ -607,6 +609,7 @@ initewmh(char *name)
 		};
 		XSetIconSizes(dpy, root, isizes, 3);
 	}
+#endif
 #endif
 	ewmh_update_net_client_lists();
 }
@@ -2340,17 +2343,33 @@ wmh_update_win_maximized_geometry(Client *c)
 void
 ewmh_update_net_window_visible_name(Client *c)
 {
-	XTextProperty prop = { NULL, };
-
 	if (c->name) {
-		char *list[2] = { c->name, NULL };
+		XTextProperty prop = { NULL, };
+		char *list[2] = { NULL, };
+		char *vname = NULL;
+		Class *r;
 
-		if (Xutf8TextListToTextProperty(dpy, list, 1, XUTF8StringStyle, &prop)
-		    == Success) {
+		if ((r = getclass(c)) && r->count > 1) {
+			char buf[16] = { 0, };
+			int i, len;
+
+			for (i = 0; i < r->count; i++)
+				if (r->members[i] == c->win)
+					break;
+			snprintf(buf, sizeof(buf), "[%d] ", i + 1);
+			len = strlen(buf) + strlen(c->name);
+			if ((vname = calloc(len + 1, sizeof(*vname)))) {
+				strncpy(vname, buf, len);
+				strncat(vname, c->name, len);
+			}
+		}
+		list[0] = vname ? : c->name;
+		if (Xutf8TextListToTextProperty(dpy, list, 1, XUTF8StringStyle, &prop) == Success) {
 			XSetTextProperty(dpy, c->win, &prop, _XA_NET_WM_VISIBLE_NAME);
 			if (prop.value)
 				XFree(prop.value);
 		}
+		free(vname);
 	} else {
 		XDeleteProperty(dpy, c->win, _XA_NET_WM_VISIBLE_NAME);
 	}
@@ -2359,18 +2378,36 @@ ewmh_update_net_window_visible_name(Client *c)
 void
 ewmh_update_net_window_visible_icon_name(Client *c)
 {
-	XTextProperty prop = { NULL, };
 
 	if (c->icon_name) {
-		char *list[2] = { c->icon_name, NULL };
+		XTextProperty prop = { NULL, };
+		char *list[2] = { NULL, };
+		char *vname = NULL;
+		Class *r;
 
-		if (Xutf8TextListToTextProperty(dpy, list, 1, XUTF8StringStyle,
-						&prop) == Success) {
+		if ((r = getclass(c)) && r->count > 1) {
+			char buf[16] = { 0, };
+			int i, len;
+
+			for (i = 0; i < r->count; i++)
+				if (r->members[i] == c->win)
+					break;
+			/* TODO: add this format string to style */
+			snprintf(buf, sizeof(buf), "[%d] ", i + 1);
+			len = strlen(buf) + strlen(c->icon_name);
+			if ((vname = calloc(len + 1, sizeof(*vname)))) {
+				strncpy(vname, buf, len);
+				strncat(vname, c->icon_name, len);
+			}
+		}
+		list[0] = vname ? : c->name;
+		if (Xutf8TextListToTextProperty(dpy, list, 1, XUTF8StringStyle, &prop) == Success) {
 			XSetTextProperty(dpy, c->win, &prop,
 					 _XA_NET_WM_VISIBLE_ICON_NAME);
 			if (prop.value)
 				XFree(prop.value);
 		}
+		free(vname);
 	} else {
 		XDeleteProperty(dpy, c->win, _XA_NET_WM_VISIBLE_ICON_NAME);
 	}

@@ -357,6 +357,7 @@ enum {
 	ClientGrips,
 	ClientFrame,
 	ClientTimeWindow,
+	ClientClass,
 	ClientGroup,
 	ClientTransFor,
 	ClientTransForGroup,
@@ -632,6 +633,7 @@ enum {
 typedef struct Tag Tag;
 typedef struct View View;
 typedef struct Monitor Monitor;
+typedef struct Class Class;
 typedef struct Client Client;
 typedef struct AScreen AScreen;
 typedef struct Group Group;
@@ -903,8 +905,16 @@ typedef union {
 	unsigned with;
 } WithUnion;
 
+struct Class {
+	Class *next;			/* next in list */
+	XClassHint ch;			/* res_class and res_name */
+	Window *members;		/* windows with this res_class and name */
+	unsigned count;			/* count of windows */
+};
+
 struct Client {
 	XWMHints wmh;
+	XClassHint ch;
 	char *name;
 	char *icon_name;
 	int monitor;			/* initial monitor */
@@ -1361,6 +1371,7 @@ void discardcrossing(Client *c);
 Bool canselect(Client *c);
 Bool selectok(Client *c);
 Group *getleader(Window leader, int group);
+Class *getclass(Client *c);
 void updategeom(Monitor *m);
 extern Cursor cursor[CursorLast];
 extern ExtensionInfo einfo[BaseLast];
@@ -1474,6 +1485,7 @@ extern AScreen *scr;
 extern AScreen *screens;
 extern AScreen *event_scr;
 extern Bool (*actions[LastOn][Button5-Button1+1][2]) (Client *, XEvent *);
+extern Class *classes;
 extern Client *sel;
 extern Client *gave;			/* gave focus last */
 extern Client *took;			/* took focus last */

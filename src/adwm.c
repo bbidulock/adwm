@@ -89,6 +89,7 @@ void run(void);
 void scan(void);
 void tag(Client *c, int index);
 void updatestruts(void);
+void updateclasshint(Client *c);
 void updatehints(Client *c);
 void updatesizehints(Client *c);
 void updatetitle(Client *c);
@@ -97,6 +98,9 @@ void updatesession(Client *c);
 void updategroup(Client *c, Window leader, int group, int *nonmodal);
 Window *getgroup(Window leader, int group, unsigned int *count);
 void removegroup(Client *c, Window leader, int group);
+Class *getclass(Client *c);
+void updateclass(Client *c);
+void removeclass(Client *c);
 void updateiconname(Client *c);
 void updatecmapwins(Client *c);
 int xerror(Display *dpy, XErrorEvent *ee);
@@ -129,6 +133,7 @@ XrmDatabase xrdb;
 Bool otherwm;
 Bool running = True;
 Bool lockfocus = False;
+Class *classes = NULL;
 Client *focuslock = NULL;
 Client *sel;
 Client *gave;				/* gave focus last */
@@ -364,14 +369,12 @@ applyrules(Client *c)
 	unsigned int i, j;
 	regmatch_t tmp;
 	Bool matched = False;
-	XClassHint ch = { 0, };
 	View *cv = c->cview ? : selview();
 	Monitor *cm = (cv && cv->curmon) ? cv->curmon : nearmonitor(); /* XXX: necessary? */
 
 	/* rule matching */
-	getclasshint(c, &ch);
 	snprintf(buf, sizeof(buf), "%s:%s:%s",
-		 ch.res_class ? ch.res_class : "", ch.res_name ? ch.res_name : "",
+		 c->ch.res_class ? c->ch.res_class : "", c->ch.res_name ? c->ch.res_name : "",
 		 c->name);
 	buf[LENGTH(buf) - 1] = 0;
 	for (i = 0; i < nrules; i++)
@@ -387,10 +390,6 @@ applyrules(Client *c)
 				}
 			}
 		}
-	if (ch.res_class)
-		XFree(ch.res_class);
-	if (ch.res_name)
-		XFree(ch.res_name);
 	if (!matched && cm)
 		c->tags = cm->curview->seltags;
 }
@@ -2623,6 +2622,7 @@ manage(Window w, XWindowAttributes *wa)
 	c->u.h = wa->height;
 	c->u.b = wa->border_width;
 
+	updateclasshint(c);
 	updatehints(c);
 	updatesizehints(c);
 	updatetitle(c);
@@ -3270,7 +3270,7 @@ updatesessionprop(Client *c, Atom prop, int state)
 			goto bad;
 		case XA_WM_CLASS:
 			/* Client leaders are never managed and should not have this
-			   property.  We get this property on demand anyhoo. */
+			   property. */
 			ewmh_process_net_startup_id(c);
 			goto bad;
 		case XA_WM_TRANSIENT_FOR:
@@ -3464,8 +3464,7 @@ updateleaderprop(Client *c, Atom prop, int state)
 			goto bad;
 		case XA_WM_CLASS:
 			/* Class should not be on a group basis (unless WM_WINDOW_ROLE is
-			   provided). We check this property on demand, so we can ignore
-			   updates. */
+			   provided). */
 			ewmh_process_net_startup_id(c);
 			break;
 		case XA_WM_TRANSIENT_FOR:
@@ -3686,7 +3685,7 @@ updateclientprop(Client *c, Atom prop, int state)
 			updatehints(c);
 			break;
 		case XA_WM_CLASS:
-			/* We check this property on demand, so we can ignore updates. */
+			updateclasshint(c);
 			ewmh_process_net_startup_id(c);
 			break;
 		case XA_WM_TRANSIENT_FOR:
@@ -5139,6 +5138,28 @@ initstruts(Bool reload)
 	arrange(NULL);
 }
 
+/* This must be done after the style has loaded because we want to set one of the sizes
+ * to the size of icons desired for the titlebar.  Not sure whether toolkits will detect a change in
+ * this property and supply better sizes in _NET_WM_ICON or not.
+ *
+ * We want 56x56 so that we can put the icon in the clip, we want 32x32 for and feedback
+ * displays that we add in the future.  We also want hxh where h = scr->style.titleheight
+ * so that we do not have to scale icons when placing them in the titlebar.  The first one
+ * should be the most desired one for now, which is the titlebar icon.
+ */
+static void
+initsizes(Bool reload)
+{
+	int h = scr->style.titleheight;
+	XIconSize isizes[3] = {
+		{ h, h, h, h, 0, 0 },
+		/* try to specify most of the standard sizes 64 and down */
+		{ 32, 32, 64, 64, 8, 8 },
+		{ 12, 12, 24, 24, 4, 4 }
+	};
+	XSetIconSizes(dpy, scr->root, isizes, 3);
+}
+
 static void
 findscreen(Bool reload)
 {
@@ -5258,6 +5279,7 @@ initialize(const char *conf, AdwmOperations * ops, Bool reload)
 
 		initstyle(reload);	/* init appearance */
 		initstruts(reload);	/* initialize struts and workareas */
+		initsizes(reload);	/* init icon sizes */
 	}
 
 	findscreen(reload);	/* find current screen (with pointer) */
@@ -5584,6 +5606,7 @@ unmanage(Client *c, WithdrawCause cause)
 		}
 	}
 	ewmh_release_user_time_window(c);
+	removeclass(c);
 	removegroup(c, c->leader, ClientGroup);
 	removegroup(c, c->session, ClientSession);
 	if (c->is.grptrans)
@@ -5735,6 +5758,21 @@ unmapnotify(XEvent *e)
 		}
 	}
 	return False;
+}
+
+void
+updateclasshint(Client *c)
+{
+	if (c->ch.res_class) {
+		XFree(c->ch.res_class);
+		c->ch.res_class = NULL;
+	}
+	if (c->ch.res_name) {
+		XFree(c->ch.res_name);
+		c->ch.res_name = NULL;
+	}
+	getclasshint(c, &c->ch);
+	updateclass(c);
 }
 
 void
@@ -6049,6 +6087,111 @@ removegroup(Client *c, Window leader, int group)
 			g->members = list;
 			g->count = j;
 		}
+	}
+}
+
+Class *
+getclass(Client *c)
+{
+	Class *r = NULL;
+
+	if (c->win)
+		XFindContext(dpy, c->win, context[ClientClass], (XPointer *) &r);
+	return r;
+}
+
+Class *
+findclass(XClassHint *ch)
+{
+	Class *r;
+
+	if (!ch->res_class || !ch->res_name)
+		return NULL;
+	for (r = classes; r; r = r->next)
+		if (!strcmp(r->ch.res_class, ch->res_class) &&
+		    !strcmp(r->ch.res_name, ch->res_name))
+			break;
+	if (!r) {
+		r = ecalloc(1, sizeof(*r));
+		r->next = classes;
+		classes = r;
+		r->ch.res_class = strdup(ch->res_class);
+		r->ch.res_name = strdup(ch->res_name);
+		r->members = NULL;
+		r->count = 0;
+	}
+	return (r);
+}
+
+void
+updateclass(Client *c)
+{
+	Class *r;
+	
+	if (!c->ch.res_class || !c->ch.res_name) {
+		removeclass(c);
+		return;
+	}
+	if ((r = getclass(c))) {
+		if (!strcmp(r->ch.res_class, c->ch.res_class) &&
+				!strcmp(r->ch.res_name, c->ch.res_name))
+			return;
+		removeclass(c);
+		r = NULL;
+	}
+	if (!r) {
+		r = findclass(&c->ch);
+		r->members = reallocarray(r->members, r->count + 1, sizeof(*r->members));
+		r->members[r->count] = c->win;
+		r->count++;
+		if (r->count > 1) {
+			Client *s;
+
+			if ((s = getclient(r->members[0], ClientWindow)) && s->is.managed) {
+				updatetitle(s);
+				updateiconname(s);
+			}
+		}
+		if (c->is.managed) {
+			updatetitle(c);
+			updateiconname(c);
+		}
+		XSaveContext(dpy, c->win, context[ClientClass], (XPointer) r);
+	}
+}
+
+void
+removeclass(Client *c)
+{
+	Class *r;
+
+	if ((r = getclass(c))) {
+		Window *list;
+		unsigned int i, j;
+
+		list = ecalloc(r->count, sizeof(*list));
+		for (i = 0, j = 0; i < r->count; i++)
+			if (r->members[i] != c->win)
+				list[j++] = r->members[i];
+		if (j == 0) {
+			free(list);
+			free(r->members);
+			r->members = NULL;
+			r->count = 0;
+		} else {
+			free(r->members);
+			r->members = list;
+			r->count = j;
+			for (i = 0; i < r->count; i++) {
+				Client *s;
+
+				if ((s = getclient(r->members[i], ClientWindow)) && s->is.managed) {
+					updatetitle(s);
+					updateiconname(s);
+				}
+			}
+		}
+		XDeleteContext(dpy, c->win, context[ClientClass]);
 	}
 }
 

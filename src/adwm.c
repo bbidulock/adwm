@@ -2729,7 +2729,9 @@ manage(Window w, XWindowAttributes *wa)
 		}
 	}
 
-	c->with.struts = getstruts(c);
+	c->with.struts = getstruts(c) ? True : False;
+	if (c->with.struts)
+		c->r.b = c->c.b = 0;
 
 	/* try not grabbing Button4 and Button5 */
 	XGrabButton(dpy, Button1, AnyModifier, c->win, True,
@@ -3806,7 +3808,9 @@ updateclientprop(Client *c, Atom prop, int state)
 			   window manager MUST watch for property notify events if the
 			   window manager uses this property to assign special semantics
 			   to the window. */
-			c->with.struts = getstruts(c);
+			c->with.struts = getstruts(c) ? True : False;
+			if (c->with.struts)
+				c->r.b = c->c.b = 0;
 			updatestruts();
 		} else if (prop == _XA_NET_WM_STRUT_PARTIAL) {
 			/* The client MAY change this property at any time, therefore the
@@ -3815,7 +3819,9 @@ updateclientprop(Client *c, Atom prop, int state)
 			   to the window.  If both this property and the _NET_WM_STRUT
 			   property values are set, the window manager MUST ignore the
 			   _NET_WM_STRUPT property and use this one instead. */
-			c->with.struts = getstruts(c);
+			c->with.struts = getstruts(c) ? True : False;
+			if (c->with.struts)
+				c->r.b = c->c.b = 0;
 			updatestruts();
 #if 0
 		} else if (prop == _XA_NET_WM_ICON_GEOMETRY) {

@@ -2790,6 +2790,14 @@ ewmh_process_net_window_icon(Client *c)
 void
 kwm_process_window_icon(Client *c)
 {
+	long *card = NULL;
+	unsigned long n = 0;
+
+	if ((card = getcard(c->win, _XA_KWM_WIN_ICON, &n))) {
+		Pixmap icon = (n > 0) ? card[0] : None;
+		Pixmap mask = (n > 1) ? card[1] : None;
+		createkwmicon(c, icon, mask);
+	}
 }
 
 void

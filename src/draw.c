@@ -90,14 +90,136 @@ createwmicon(Client *c)
 	bi->present = True;
 	imlib_context_pop();
 #else
-	if (w > scr->style.titleheight || h > scr->style.titleheight)
+	if (h > scr->style.titleheight + 2)
 		return (False);
 	bi->x = bi->y = bi->b = 0;
 	bi->d = d;
-	bi->bitmap.draw = c->wmh.icon_pixmap;
-	bi->bitmap.mask = c->wmh.icon_mask;
 	bi->w = w;
 	bi->h = h;
+	if (bi->h > scr->style.titleheight) {
+		/* read lower down into image to clip top and bottom by same amount */
+		bi->y += (bi->h - scr->style.titleheight) / 2;
+		bi->h = scr->style.titleheight;
+	}
+	if (d > 1) {
+		if (bi->pixmap.draw)
+			XFreePixmap(dpy, bi->pixmap.draw);
+		if (bi->pixmap.mask)
+			XFreePixmap(dpy, bi->pixmap.mask);
+		bi->bitmap.draw = icon;
+		bi->bitmap.mask = mask;
+	} else {
+		if (bi->bitmap.draw)
+			XFreePixmap(dpy, bi->bitmap.draw);
+		if (bi->bitmap.mask)
+			XFreePixmap(dpy, bi->bitmap.mask);
+		bi->bitmap.draw = icon;
+		bi->bitmap.mask = mask;
+	}
+	bi->present = True;
+#endif
+	return (True);
+}
+
+Bool
+createkwmicon(Client *c, Pixmap icon, Pixmap mask)
+{
+	Window root;
+	int x, y;
+	unsigned int w, h, b, d;
+	ButtonImage *bi;
+#if defined IMLIB2
+	Imlib_Image image;
+#endif
+
+	if (!c || !icon)
+		return (False);
+	if (!XGetGeometry(dpy, icon, &root, &x, &y, &w, &h, &b, &d))
+		return (False);
+	bi = &c->iconbtn;
+#if defined IMLIB2
+	imlib_context_push(scr->context);
+	imlib_context_set_drawable(icon);
+	imlib_context_set_color(255,255,255,255);
+	image = imlib_create_image_from_drawable(mask, 0, 0, w, h, 1);
+	if (!image) {
+		EPRINTF("could not load pixmap 0x%lx mask 0x%lx\n", icon, mask);
+		imlib_context_pop();
+		return (False);
+	}
+	imlib_context_set_image(image);
+	bi->x = bi->y = bi->b = 0;
+	bi->d = d;
+	bi->w = imlib_image_get_width();
+	bi->h = imlib_image_get_height();
+	if (bi->h > scr->style.titleheight) {
+		int w = ((bi->w + bi->h - 1) / bi->h) * scr->style.titleheight;
+		int h = scr->style.titleheight;
+		Imlib_Image scaled = imlib_create_image(w, h);
+
+		if (!scaled) {
+			EPRINTF("Could not create image %d x %d\n", w, h);
+			imlib_free_image();
+			imlib_context_pop();
+			return (False);
+		}
+		imlib_context_set_image(scaled);
+		imlib_blend_image_onto_image(image, True, 0, 0, bi->w, bi->h, 0, 0, w, h);
+		imlib_context_set_image(image);
+		imlib_free_image();
+		image = scaled;
+		imlib_context_set_image(image);
+		bi->w = w;
+		bi->h = h;
+	}
+#if 1
+	if (bi->pixmap.draw)
+		imlib_free_pixmap_and_mask(bi->pixmap.draw);
+	imlib_render_pixmaps_for_whole_image(&bi->pixmap.draw, &bi->pixmap.mask);
+#else
+	if (d > 1) {
+		if (bi->pixmap.image) {
+			imlib_context_set_image(bi->pixmap.image);
+			imlib_free_image();
+		}
+		bi->pixmap.image = image;
+	} else {
+		if (bi->bitmap.image) {
+			imlib_context_set_image(bi->bitmap.image);
+			imlib_free_image();
+		}
+		bi->bitmap.image = image;
+	}
+#endif
+	bi->present = True;
+	imlib_context_pop();
+#else
+	if (h > scr->style.titleheight + 2)
+		return (False);
+	bi->x = bi->y = bi->b = 0;
+	bi->d = d;
+	bi->w = w;
+	bi->h = h;
+	if (bi->h > scr->style.titleheight) {
+		/* read lower down into image to clip top and bottom by same amount */
+		bi->y += (bi->h - scr->style.titleheight) / 2;
+		bi->h = scr->style.titleheight;
+	}
+	if (d > 1) {
+		if (bi->pixmap.draw)
+			XFreePixmap(dpy, bi->pixmap.draw);
+		if (bi->pixmap.mask)
+			XFreePixmap(dpy, bi->pixmap.mask);
+		bi->bitmap.draw = icon;
+		bi->bitmap.mask = mask;
+	} else {
+		if (bi->bitmap.draw)
+			XFreePixmap(dpy, bi->bitmap.draw);
+		if (bi->bitmap.mask)
+			XFreePixmap(dpy, bi->bitmap.mask);
+		bi->bitmap.draw = icon;
+		bi->bitmap.mask = mask;
+	}
 	bi->present = True;
 #endif
 	return (True);

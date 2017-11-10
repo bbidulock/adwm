@@ -161,7 +161,7 @@ _NET_WM_ALLOWED_ACTIONS:		supported
 _NET_WM_STRUT:				supported
 _NET_WM_STRUT_PARTIAL:			supported
 _NET_WM_ICON_GEOMETRY:			NOT supported (n/a)
-_NET_WM_ICON:				NOT supported (n/a)
+_NET_WM_ICON:				supported
 _NET_WM_PID:				supported
 _NET_WM_HANDLED_ICONS:			supported (trivial)
 _NET_WM_USER_TIME:			supported
@@ -271,7 +271,7 @@ _ICEWMBG_QUIT:				supported
 
 KDE Specific:
 
-KWM_WIN_ICON:				NOT supported
+KWM_WIN_ICON:				supported
 
 _KDE_NET_SYSTEM_TRAY_WINDOWS:		supported
 _KDE_NET_WM_FRAME_STRUT:		supported

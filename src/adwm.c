@@ -2678,6 +2678,9 @@ manage(Window w, XWindowAttributes *wa)
 
 	ewmh_process_net_window_user_time_window(c);
 	ewmh_process_net_startup_id(c);
+
+	/* TODO: collect WM_HINTS icon and these two together */
+	kwm_process_window_icon(c);
 	ewmh_process_net_window_icon(c);
 
 	if ((c->with.time) && latertime(c->user_time))

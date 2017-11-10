@@ -267,7 +267,7 @@ createneticon(Client *c, long *data, unsigned long n)
 			images[m] = NULL;
 			continue;
 		}
-		for (i = 0; i + 2 < rem; i++)
+		for (i = 0; i + 2 < z; i++)
 			pixels[i] = icon[i + 2] & 0xffffffff;
 		imlib_image_put_back_data(pixels);
 	}

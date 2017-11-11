@@ -110,7 +110,6 @@ int xerrorstart(Display *dsply, XErrorEvent *ee);
 int (*xerrorxlib) (Display *, XErrorEvent *);
 int xioerror(Display *dpy);
 int (*xioerrorxlib) (Display *);
-unsigned long ignore_request = 0;
 
 Bool issystray(Window win);
 void manageoverride(Window win, XWindowAttributes *wa);
@@ -130,6 +129,7 @@ XdgDirs xdgdirs = { NULL, };
 #ifdef STARTUP_NOTIFICATION
 SnDisplay *sn_dpy;
 #endif
+XErrorTrap *traps = NULL;
 XrmDatabase xrdb;
 Bool otherwm;
 Bool running = True;
@@ -2589,6 +2589,7 @@ manage(Window w, XWindowAttributes *wa)
 		return;
 	}
 	DPRINTF("managing window 0x%lx\n", w);
+	xtrap_push(False);
 	c = emallocz(sizeof(Client));
 	c->win = w;
 	c->name = ecalloc(1, 1);
@@ -2911,6 +2912,7 @@ manage(Window w, XWindowAttributes *wa)
 		arrange(NULL);
 		focus(sel);
 	}
+	xtrap_pop();
 }
 
 static Bool
@@ -4101,11 +4103,12 @@ getscreen(Window win, Bool query)
 		return (s);
 	if (!query)
 		return (s);
-	ignorenext();
+	xtrap_push(True);
 	if (XQueryTree(dpy, win, &wroot, &parent, &wins, &num))
 		XFindContext(dpy, wroot, context[ScreenContext], (XPointer *) &s);
 	else
 		EPRINTF("XQueryTree(0x%lx) failed!\n", win);
+	xtrap_pop();
 	if (wins)
 		XFree(wins);
 	return (s);
@@ -5165,6 +5168,7 @@ initstruts(Bool reload)
 static void
 initsizes(Bool reload)
 {
+#if 0
 	int h = scr->style.titleheight;
 	XIconSize isizes[3] = {
 		{ h, h, h, h, 0, 0 },
@@ -5173,6 +5177,11 @@ initsizes(Bool reload)
 		{ 12, 12, 24, 24, 4, 4 }
 	};
 	XSetIconSizes(dpy, scr->root, isizes, 3);
+#else
+	XIconSize isizes = { 32, 32, 64, 64, 8, 8 };
+
+	XSetIconSizes(dpy, scr->root, &isizes, 1);
+#endif
 }
 
 static void
@@ -6329,24 +6338,43 @@ updatecmapwins(Client *c)
 }
 
 void
-ignorenext(void)
+_xtrap_push(Bool ignore, const char *time, const char *file, int line, const char *func)
 {
-	ignore_request = NextRequest(dpy);
+	static char buf[256] = { 0, };
+	XErrorTrap *trap;
+
+	snprintf(buf, sizeof(buf), NAME ": X: [%s] %12s: +%4d : %s() :", time, file, line, func);
+	if ((trap = calloc(1, sizeof(*trap)))) {
+		trap->next = traps;
+		traps = trap;
+		trap->trap_string = strdup(buf);
+		trap->trap_next = NextRequest(dpy);
+		trap->trap_last = LastKnownRequestProcessed(dpy);
+		trap->trap_qlen = QLength(dpy);
+		trap->trap_ignore = ignore;
+	}
 }
 
-/* There's no way to check accesses to destroyed windows, thus those cases are
- * ignored (ebastardly on UnmapNotify's).  Other types of errors call Xlibs
- * default error handler, which may call exit.	*/
-int
-xerror(Display *dsply, XErrorEvent *ee)
+void
+_xtrap_pop(int canary)
 {
-	Bool dead = True;
-	char msg[81] = { 0, }, req[81] = { 0, }, num[81] = { 0, };
+	XErrorTrap *trap;
 
-	if (ignore_request && ee->serial == ignore_request) {
-		ignore_request = 0;
-		return (0);
-	}
+	if ((trap = traps->next)) {
+		traps = trap->next;
+		trap->next = NULL;
+		free(trap->trap_string);
+		trap->trap_string = NULL;
+		free(trap);
+	} else
+		EPRINTF("_xtrap_pop() when no trap was pushed!\n");
+}
+
+Bool
+xerror_critical(Display *dsply, XErrorEvent *ee, XErrorTrap *trap)
+{
+	Bool critical = True;
+
 	if (ee->error_code == BadWindow
 	    || (ee->request_code == X_SetInputFocus && ee->error_code == BadMatch)
 	    || (ee->request_code == X_PolyText8 && ee->error_code == BadDrawable)
@@ -6357,19 +6385,51 @@ xerror(Display *dsply, XErrorEvent *ee)
 	    || (ee->request_code == X_CopyArea && ee->error_code == BadDrawable)
 	    || (ee->request_code == 134 && ee->error_code == 134)
 	    )
-		dead = False;
+		critical = False;
+	return (critical);
+}
+
+/* There's no way to check accesses to destroyed windows, thus those cases are
+ * ignored (ebastardly on UnmapNotify's).  Other types of errors call Xlibs
+ * default error handler, which may call exit.	*/
+int
+xerror(Display *dsply, XErrorEvent *ee)
+{
+	char msg[81] = { 0, }, req[81] = { 0,}, num[81] = { 0,};
+	XErrorTrap *trap;
+	Bool ignore = False, critical;
+
+	for (trap = traps; trap; trap = trap->next) {
+		if (ee->serial >= trap->trap_next) {
+			fprintf(stderr, "%s xerror occured during trap\n",
+				trap->trap_string);
+			fflush(stderr);
+			ignore = trap->trap_ignore;
+		} else if (!trap->next) {
+			if (ee->serial > trap->trap_last) {
+				fprintf(stderr, "%s xerror occured before trap\n",
+					trap->trap_string);
+				fflush(stderr);
+			}
+		}
+	}
+
 	snprintf(num, 80, "%d", ee->request_code);
 	XGetErrorDatabaseText(dsply, "XRequest", num, "", req, 80);
 	if (!req[0])
 		snprintf(req, 80, "[request_code=%d]", ee->request_code);
 	if (XGetErrorText(dsply, ee->error_code, msg, 80) != Success)
 		msg[0] = '\0';
-	if (!dead) {
+	critical = xerror_critical(dsply, ee, trap);
+	if (critical) {
+		EPRINTF("Fatal X error %s(0x%lx): %s\n", req, ee->resourceid, msg);
+		dumpstack(__FILE__, __LINE__, __func__);
+	} else {
 		EPRINTF("X error %s(0x%lx): %s\n", req, ee->resourceid, msg);
+	}
+	if (ignore || !critical) {
 		return 0;
 	}
-	EPRINTF("Fatal X error %s(0x%lx): %s\n", req, ee->resourceid, msg);
-	dumpstack(__FILE__, __LINE__, __func__);
 	return xerrorxlib(dsply, ee);	/* may call exit */
 }
 

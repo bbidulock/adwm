@@ -168,17 +168,32 @@ imlib_createkwmicon(Client *c, Pixmap *data, unsigned long n)
 Bool
 createwmicon(Client *c)
 {
-	return imlib_createwmicon(c);
+	Bool result;
+
+	xtrap_push(False);
+	result = imlib_createwmicon(c);
+	xtrap_pop();
+	return (result);
 }
 Bool
 createkwmicon(Client *c, Pixmap *data, unsigned long n)
 {
-	return imlib_createkwmicon(c, data, n);
+	Bool result;
+
+	xtrap_push(False);
+	result = imlib_createkwmicon(c, data, n);
+	xtrap_pop();
+	return (result);
 }
 Bool
 createdataicon(Client *c, unsigned w, unsigned h, long *data)
 {
-	return imlib_createdataicon(c, w, h, data);
+	Bool result;
+
+	xtrap_push(False);
+	result = imlib_createdataicon(c, w, h, data);
+	xtrap_pop();
+	return (result);
 }
 #else				/* !defined IMLIB2 || !defined USE_IMLIB2 */
 #if defined PIXBUF && defined USE_PIXBUF
@@ -298,17 +313,32 @@ gdk_createkwmicon(Client *c, Pixmap *data, unsigned long n)
 Bool
 createwmicon(Client *c)
 {
-	return gdk_createwmicon(c);
+	Bool result;
+
+	xtrap_push(False);
+	result = gdk_createwmicon(c);
+	xtrap_pop();
+	return (result);
 }
 Bool
 createkwmicon(Client *c, Pixmap *data, unsigned long n)
 {
-	return gdk_createkwmicon(c, data, n);
+	Bool result;
+
+	xtrap_push(False);
+	result = gdk_createkwmicon(c, data, n);
+	xtrap_pop();
+	return (result);
 }
 Bool
 createdataicon(Client *c, unsigned w, unsigned h, long *data)
 {
-	return gdk_createdataicon(c, w, h, data);
+	Bool result;
+
+	xtrap_push(False);
+	result = gdk_createdataicon(c, w, h, data);
+	xtrap_pop();
+	return (result);
 }
 #else				/* !defined PIXBUF || !defined USE_PIXBUF */
 Bool
@@ -356,17 +386,32 @@ xlib_createkwmicon(Client *c, Pixmap *data, unsigned long n)
 Bool
 createwmicon(Client *c)
 {
-	return xlib_createwmicon(c);
+	Bool result;
+
+	xtrap_push(False);
+	result = xlib_createwmicon(c);
+	xtrap_pop();
+	return (result);
 }
 Bool
 createkwmicon(Client *c, Pixmap *data, unsigned long n)
 {
-	return xlib_createkwmicon(c, data, n);
+	Bool result;
+
+	xtrap_push(False);
+	result = xlib_createkwmicon(c, data, n);
+	xtrap_pop();
+	return (result);
 }
 Bool
 createdataicon(Client *c, unsigned w, unsigned h, long *data)
 {
-	return xlib_createdataicon(c, w, h, data);
+	Bool result;
+
+	xtrap_push(False);
+	result = xlib_createdataicon(c, w, h, data);
+	xtrap_pop();
+	return (result);
 }
 #endif				/* !defined PIXBUF || !defined USE_PIXBUF */
 #endif				/* !defined IMLIB2 || !defined USE_IMLIB2 */

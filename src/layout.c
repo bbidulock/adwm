@@ -643,20 +643,24 @@ enterclient(XEvent *e, Client *c)
 		/* FIXME: incorporate isfloating() check into skip.sloppy setting */
 		if (!c->skip.sloppy && isfloating(c, c->cview)) {
 			CPRINTF(c, "FOCUS: sloppy focus\n");
-			focus(c);
+			if (!checkfocuslock(c, e->xany.serial))
+				focus(c);
 		}
 		break;
 	case AllSloppy:
 		if (!c->skip.sloppy) {
 			CPRINTF(c, "FOCUS: sloppy focus\n");
-			focus(c);
+			if (!checkfocuslock(c, e->xany.serial))
+				focus(c);
 		}
 		break;
 	case SloppyRaise:
 		if (!c->skip.sloppy) {
 			CPRINTF(c, "FOCUS: sloppy focus\n");
-			focus(c);
-			raiseclient(c); /* probably should not do this here */
+			if (!checkfocuslock(c, e->xany.serial)) {
+				focus(c);
+				raiseclient(c); /* probably should not do this here */
+			}
 		}
 		break;
 	}
@@ -1428,8 +1432,7 @@ updatefloat(Client *c, View *v)
 			calc_rhalf(c, &wa, &g);
 			CPRINTF(c, "g: %dx%d+%d+%d:%d\n", g.w, g.h, g.x, g.y, g.b);
 		} else if (c->is.fill) {
-			calc_fill(c, v, &wa, &g);
-			CPRINTF(c, "g: %dx%d+%d+%d:%d\n", g.w, g.h, g.x, g.y, g.b);
+			calc_fill(c, v, &wa, &g); CPRINTF(c, "g: %dx%d+%d+%d:%d\n", g.w, g.h, g.x, g.y, g.b);
 		} else {
 			if (c->is.maxv) {
 				calc_maxv(c, &wa, &g);
@@ -1453,7 +1456,7 @@ updatefloat(Client *c, View *v)
 	reconfigure(c, &g, False);
 	if (c->is.max)
 		ewmh_update_net_window_fs_monitors(c);
-	discardcrossing(NULL);
+	focuslockclient(NULL);
 }
 
 static void
@@ -3010,7 +3013,7 @@ restack_client(Client *c, int stack_mode, Client *o)
 		return;
 	}
 	if (restack())
-		discardcrossing(NULL);
+		focuslockclient(NULL);
 }
 
 void
@@ -3028,7 +3031,7 @@ toggleabove(Client *c)
 	c->is.above = !c->is.above;
 	if (c->is.managed) {
 		if (restack())
-			discardcrossing(NULL);
+			focuslockclient(NULL);
 		ewmh_update_net_window_state(c);
 	}
 }
@@ -3041,7 +3044,7 @@ togglebelow(Client *c)
 	c->is.below = !c->is.below;
 	if (c->is.managed) {
 		if (restack())
-			discardcrossing(NULL);
+			focuslockclient(NULL);
 		ewmh_update_net_window_state(c);
 	}
 }
@@ -3069,7 +3072,7 @@ arrange(View *ov)
 		if (scr->options.useveil) {
 			XUnmapWindow(dpy, m->veil);
 		}
-		discardcrossing(NULL);
+		focuslockclient(NULL);
 	}
 }
 
@@ -3167,7 +3170,7 @@ raiseclient(Client *c)
 	detachstack(c);
 	attachstack(c, True);
 	if (restack())
-		discardcrossing(NULL);
+		focuslockclient(NULL);
 }
 
 void
@@ -3176,7 +3179,7 @@ lowerclient(Client *c)
 	detachstack(c);
 	attachstack(c, False);
 	if (restack())
-		discardcrossing(NULL);
+		focuslockclient(NULL);
 }
 
 void
@@ -4204,7 +4207,7 @@ mousemove_from(Client *c, int from, XEvent *e, Bool toggle)
 	}
 	if (move_finish(c, v, &was))
 		moved = True;
-	discardcrossing(c);
+	focuslockclient(c);
 	ewmh_update_net_window_state(c);
 	return moved;
 }
@@ -4753,7 +4756,7 @@ mouseresize_from(Client *c, int from, XEvent *e, Bool toggle)
 	}
 	if (resize_finish(c, v, &was))
 		resized = True;
-	discardcrossing(c);
+	focuslockclient(c);
 	ewmh_update_net_window_state(c);
 	return resized;
 }
@@ -5725,7 +5728,7 @@ moveto(Client *c, RelativeDirection position)
 	}
 	reconfigure(c, &g, False);
 	save(c);
-	discardcrossing(c);
+	focuslockclient(c);
 }
 
 void
@@ -5824,7 +5827,7 @@ moveby(Client *c, RelativeDirection direction, int amount)
 		g.y = m->sc.y - (g.h + g.b);
 	reconfigure(c, &g, False);
 	save(c);
-	discardcrossing(c);
+	focuslockclient(c);
 }
 
 void
@@ -6051,7 +6054,7 @@ snapto(Client *c, RelativeDirection direction)
 	}
 	reconfigure(c, &g, False);
 	save(c);
-	discardcrossing(c);
+	focuslockclient(c);
 }
 
 void
@@ -6118,7 +6121,7 @@ edgeto(Client *c, int direction)
 	}
 	reconfigure(c, &g, False);
 	save(c);
-	discardcrossing(c);
+	focuslockclient(c);
 }
 
 void
@@ -6293,7 +6296,7 @@ togglefull(Client *c)
 		ewmh_update_net_window_state(c);
 		updatefloat(c, v);
 		if (restack())
-			discardcrossing(NULL);
+			focuslockclient(NULL);
 	}
 }
 
@@ -6309,7 +6312,7 @@ togglemax(Client *c)
 		ewmh_update_net_window_state(c);
 		updatefloat(c, v);
 		if (restack())
-			discardcrossing(NULL);
+			focuslockclient(NULL);
 	}
 }
 

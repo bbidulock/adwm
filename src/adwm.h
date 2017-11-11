@@ -1391,7 +1391,8 @@ Bool selectionclear(XEvent *e);
 Bool with_transients(Client *c, Bool (*each) (Client *, int), int data);
 
 /* needed by layout.c */
-void discardcrossing(Client *c);
+void focuslockclient(Client *c);
+Bool checkfocuslock(Client *c, unsigned long serial);
 Bool canselect(Client *c);
 Bool selectok(Client *c);
 Group *getleader(Window leader, int group);

@@ -133,6 +133,7 @@ XrmDatabase xrdb;
 Bool otherwm;
 Bool running = True;
 Bool lockfocus = False;
+unsigned long focus_request = 0;
 Class *classes = NULL;
 Client *focuslock = NULL;
 Client *sel;
@@ -1197,44 +1198,26 @@ installcolormaps(AScreen *s, Client *c, Window *w)
 	installcolormap(s, *w);
 }
 
-static Bool
-need_discard(Display *dpy, XEvent *ev, XPointer arg)
-{
-	Client *s = (Client *) arg;
-	Client *c;
-
-	geteventscr(ev);
-	if (ev->type != EnterNotify || ev->xcrossing.mode != NotifyNormal)
-		return False;
-	if ((c = findclient(ev->xcrossing.window))) {
-		if (ev->xcrossing.detail == NotifyInferior)
-			return False;
-		if (c == s)
-			return False;
-		return True;
-	}
-	if (ev->xcrossing.window == event_scr->root
-	    && ev->xcrossing.detail == NotifyInferior)
-		if (sel && (WTCHECK(sel, WindowTypeDock) || sel->is.dockapp
-			    || sel->is.bastard))
-			return True;
-	return False;
-}
-
-static void
-discarding(Client *c)
-{
-	XEvent ev;
-
-	XSync(dpy, False);
-	while (XCheckIfEvent(dpy, &ev, &need_discard, (XPointer) c)) ;
-}
-
 void
-discardcrossing(Client *c)
+focuslockclient(Client *c)
 {
 	lockfocus = True;
-	focuslock = c ? : sel;
+	focus_request = NextRequest(dpy);
+	XSync(dpy, False);
+	focuslock = c ? : gave ? : took ? : sel;
+}
+
+Bool
+checkfocuslock(Client *c, unsigned long serial)
+{
+	if (lockfocus) {
+		if (serial > focus_request) {
+			lockfocus = False;
+			focus_request = 0;
+		} else if (c && c == focuslock)
+			return (False);
+	}
+	return (lockfocus);
 }
 
 static Bool
@@ -1558,18 +1541,21 @@ focuschange(XEvent *e)
 	}
 	if ((c = findclient(ev->window)) && c->is.managed) {
 		if (c == took && e->type == FocusOut) {
-			tookfocus(NULL);
+			if (!checkfocuslock(NULL, e->xany.serial))
+				tookfocus(NULL);
 			return True;
 		}
 		if (c != took && e->type == FocusIn) {
-			tookfocus(c);
+			if (!checkfocuslock(c, e->xany.serial))
+				tookfocus(c);
 			return True;
 		}
 		return True;
 	}
 	if (e->type != FocusIn)
 		return True;
-	tookfocus(NULL);
+	if (!checkfocuslock(NULL, e->xany.serial))
+		tookfocus(NULL);
 	return True;
 }
 
@@ -4196,13 +4182,7 @@ run(void)
 					if (handle_event(&ev))
 						XFlush(dpy);
 					else
-						XPRINTF("WARNING: Event %d not handled\n",
-							ev.type);
-					if (lockfocus) {
-						discarding(focuslock);
-						lockfocus = False;
-						focuslock = NULL;
-					}
+						XPRINTF("WARNING: Event %d not handled\n", ev.type);
 				}
 			}
 		}

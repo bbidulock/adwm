@@ -203,7 +203,7 @@ toggleview(View *cv, int index)
 	arrange(cv);
 	c = lastselected(cv);
 	focus(c);
-	discardcrossing(c);
+	focuslockclient(c);
 	ewmh_update_net_current_desktop();
 }
 
@@ -274,7 +274,7 @@ view(View *ov, int index)
 	arrange(cv);
 	c = lastselected(cv);
 	focus(c);
-	discardcrossing(c);
+	focuslockclient(c);
 	ewmh_update_net_current_desktop();
 }
 

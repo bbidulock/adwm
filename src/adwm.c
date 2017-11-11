@@ -6348,6 +6348,7 @@ _xtrap_push(Bool ignore, const char *time, const char *file, int line, const cha
 		trap->next = traps;
 		traps = trap;
 		trap->trap_string = strdup(buf);
+		XSync(dpy, False);
 		trap->trap_next = NextRequest(dpy);
 		trap->trap_last = LastKnownRequestProcessed(dpy);
 		trap->trap_qlen = QLength(dpy);
@@ -6360,6 +6361,7 @@ _xtrap_pop(int canary)
 {
 	XErrorTrap *trap;
 
+	XSync(dpy, False);
 	if ((trap = traps)) {
 		traps = trap->next;
 		trap->next = NULL;

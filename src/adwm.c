@@ -102,7 +102,6 @@ Class *getclass(Client *c);
 void updateclass(Client *c);
 void removeclass(Client *c);
 void updateiconname(Client *c);
-void updateicon(Client *c);
 void updatecmapwins(Client *c);
 int xerror(Display *dpy, XErrorEvent *ee);
 int xerrordummy(Display *dsply, XErrorEvent *ee);
@@ -2629,7 +2628,6 @@ manage(Window w, XWindowAttributes *wa)
 	updatesizehints(c);
 	updatetitle(c);
 	updateiconname(c);
-	updateicon(c);
 	applyrules(c);
 	applyatoms(c);
 
@@ -2873,6 +2871,7 @@ manage(Window w, XWindowAttributes *wa)
 	ewmh_update_net_window_state(c);
 	ewmh_update_net_window_desktop(c);
 	ewmh_update_net_window_extents(c);
+	ewmh_process_net_window_icon(c);
 	ewmh_update_ob_app_props(c);
 
 	if (c->grips && c->c.g) {
@@ -3613,9 +3612,9 @@ updateleaderprop(Client *c, Atom prop, int state)
 			/* Set of icons to display.  We don't do this so we can ignore
 			   it.  At some point we might display iconified windows in a
 			   windowmaker-style clip. */
-			updateicon(c);
+			ewmh_process_net_window_icon(c);
 		} else if (prop == _XA_KWM_WIN_ICON) {
-			updateicon(c);
+			ewmh_process_net_window_icon(c);
 		} else if (prop == _XA_NET_WM_PID) {
 			/* Normally set on individual (managed) windows.  This property
 			   should not change after the window is managed, however, some
@@ -3693,7 +3692,7 @@ updateclientprop(Client *c, Atom prop, int state)
 			break;
 		case XA_WM_HINTS:
 			updatehints(c);
-			updateicon(c);
+			ewmh_process_net_window_icon(c);
 			break;
 		case XA_WM_CLASS:
 			updateclasshint(c);
@@ -3840,9 +3839,9 @@ updateclientprop(Client *c, Atom prop, int state)
 			/* Set of icons to display.  We don't do this so we can ignore
 			   it.  At some point we might display iconified windows in a
 			   windowmaker-style clip. */
-			updateicon(c);
+			ewmh_process_net_window_icon(c);
 		} else if (prop == _XA_KWM_WIN_ICON) {
-			updateicon(c);
+			ewmh_process_net_window_icon(c);
 		} else if (prop == _XA_NET_WM_PID) {
 			/* This property should not change after the window is managed,
 			   however, some startup notification assistance programs might
@@ -6051,29 +6050,6 @@ updateiconname(Client *c)
 		return;
 	addprefix(c, &c->icon_name);
 	ewmh_update_net_window_visible_icon_name(c);
-}
-
-void
-updateicon(Client *c)
-{
-	unsigned long n = 0;
-	long *card;
-	Pixmap *pixmap;
-
-	if ((card = getcard(c->win, _XA_NET_WM_ICON, &n))) {
-		if (n < 2 || n < 2 + card[0] * card[1])
-			XFree(card);
-		else if (createneticon(c, card, n))
-			return;
-	}
-	if ((pixmap = getpixmaps(c->win, _XA_KWM_WIN_ICON, &n))) {
-		if (n < 2)
-			XFree(pixmap);
-		else if (createkwmicon(c, pixmap, n))
-			return;
-	}
-	if (createwmicon(c))
-		return;
 }
 
 void

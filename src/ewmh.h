@@ -57,6 +57,7 @@ void ewmh_process_net_window_state(Client *c);
 void ewmh_process_net_window_sync_request_counter(Client *);
 void ewmh_process_net_window_user_time(Client *);
 void ewmh_process_net_window_user_time_window(Client *);
+void ewmh_process_net_window_icon(Client *c);
 void ewmh_process_net_window_opacity(Client *);
 void ewmh_update_net_window_desktop(Client *);
 void ewmh_update_net_window_extents(Client *);

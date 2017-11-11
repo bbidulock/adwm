@@ -2786,6 +2786,29 @@ ewmh_process_net_window_user_time_window(Client *c)
 }
 
 void
+ewmh_process_net_window_icon(Client *c)
+{
+	unsigned long n = 0;
+	long *card;
+	Pixmap *pixmap;
+
+	if ((card = getcard(c->win, _XA_NET_WM_ICON, &n))) {
+		if (n < 2 || n < 2 + card[0] * card[1])
+			XFree(card);
+		else if (createneticon(c, card, n))
+			return;
+	}
+	if ((pixmap = getpixmaps(c->win, _XA_KWM_WIN_ICON, &n))) {
+		if (n < 2)
+			XFree(pixmap);
+		else if (createkwmicon(c, pixmap, n))
+			return;
+	}
+	if (createwmicon(c))
+		return;
+}
+
+void
 ewmh_process_net_window_opacity(Client *c)
 {
 	long *opacity;

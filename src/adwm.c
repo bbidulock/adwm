@@ -2670,7 +2670,6 @@ manage(Window w, XWindowAttributes *wa)
 	updatesession(c);
 
 	ewmh_process_net_window_user_time_window(c);
-	ewmh_process_net_startup_id(c);
 
 	if ((c->with.time) && latertime(c->user_time))
 		focusnew = False;
@@ -2853,6 +2852,7 @@ manage(Window w, XWindowAttributes *wa)
 
 	ban(c);
 
+	ewmh_process_net_startup_id(c);
 	ewmh_process_net_window_desktop(c);
 	ewmh_process_net_window_desktop_mask(c);
 	ewmh_process_net_window_sync_request_counter(c);

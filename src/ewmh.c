@@ -621,9 +621,11 @@ exitewmh(WithdrawCause cause)
 	XDeleteProperty(dpy, scr->root, _XA_WIN_SUPPORTING_WM_CHECK);
 	XDeleteProperty(dpy, scr->root, _XA_NET_SUPPORTING_WM_CHECK);
 	XDeleteProperty(dpy, scr->root, _XA_WIN_DESKTOP_BUTTON_PROXY);
+	XDeleteProperty(dpy, scr->root, _XA_MOTIF_WM_INFO);
 
 	XDeleteProperty(dpy, scr->root, _XA_WIN_PROTOCOLS);
 	XDeleteProperty(dpy, scr->root, _XA_NET_SUPPORTED);
+
 	XDeleteProperty(dpy, scr->root, XA_WM_ICON_SIZE);
 
 	switch (cause) {
@@ -642,6 +644,10 @@ exitewmh(WithdrawCause cause)
 			_XA_WIN_WORKSPACE,
 			_XA_WIN_WORKSPACES,
 
+			_XA_NET_WM_NAME,
+			_XA_NET_WM_PID,
+			_XA_OPENBOX_PID,
+			_XA_OB_VERSION,
 			_XA_NET_ACTIVE_WINDOW,
 			_XA_NET_CLIENT_LIST,
 			_XA_NET_CLIENT_LIST_STACKING,
@@ -668,6 +674,11 @@ exitewmh(WithdrawCause cause)
 		Atom props[] = {
 			_XA_ECHINUS_LAYOUT,
 			_XA_ECHINUS_SELTAGS,
+
+			_XA_NET_WM_NAME,
+			_XA_NET_WM_PID,
+			_XA_OPENBOX_PID,
+			_XA_OB_VERSION,
 
 			_XA_WIN_WORKAREA,
 			_XA_NET_WORKAREA,

@@ -6360,7 +6360,7 @@ _xtrap_pop(int canary)
 {
 	XErrorTrap *trap;
 
-	if ((trap = traps->next)) {
+	if ((trap = traps)) {
 		traps = trap->next;
 		trap->next = NULL;
 		free(trap->trap_string);

@@ -2946,7 +2946,7 @@ maprequest(XEvent *e)
 	}
 	if (issystray(ev->window))
 		return True;
-	if (!(c = getclient(ev->window, ClientWindow)) && !c->is.managed) {
+	if (!(c = getclient(ev->window, ClientWindow)) || !c->is.managed) {
 		manage(ev->window, &wa);
 		return True;
 	}

@@ -5159,17 +5159,28 @@ initsizes(Bool reload)
 {
 #if 1
 	int h = scr->style.titleheight;
+
+	if (h < 12) {
+		EPRINTF("Icon size is too small: %d\n", h);
+		h = 12;
+	}
+	if (h > 64) {
+		EPRINTF("Icon size is too large: %d\n", h);
+		h = 64;
+	}
 	long data[18] = { h, h, h, h, 1, 1, 32, 32, 64, 64, 8, 8, 12, 12, 24, 24, 4, 4 };
+	/* maybe it is letting size increment be zero that is causing problems */
 	XChangeProperty(dpy, scr->root, XA_WM_ICON_SIZE, XA_WM_ICON_SIZE, 32,
-			PropModeReplace, (unsigned char *)data, 18);
+			PropModeReplace, (unsigned char *) data, 18);
 #else
 #if 0
 	int h = scr->style.titleheight;
+
 	XIconSize isizes[3] = {
-		{ h, h, h, h, 0, 0 },
+		{h, h, h, h, 0, 0},
 		/* try to specify most of the standard sizes 64 and down */
-		{ 32, 32, 64, 64, 8, 8 },
-		{ 12, 12, 24, 24, 4, 4 }
+		{32, 32, 64, 64, 8, 8},
+		{12, 12, 24, 24, 4, 4}
 	};
 	XSetIconSizes(dpy, scr->root, isizes, 3);
 #else

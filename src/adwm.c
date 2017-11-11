@@ -5634,6 +5634,14 @@ unmanage(Client *c, WithdrawCause cause)
 #endif
 	free(c->name);
 	free(c->icon_name);
+	if (c->ch.res_name) {
+		XFree(c->ch.res_name);
+		c->ch.res_name = NULL;
+	}
+	if (c->ch.res_class) {
+		XFree(c->ch.res_class);
+		c->ch.res_class = NULL;
+	}
 	free(c);
 	XSync(dpy, False);
 	XSetErrorHandler(xerror);

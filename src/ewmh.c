@@ -796,7 +796,7 @@ ewmh_update_ob_app_props(Client *c)
 			XChangeProperty(dpy, c->win, _XA_OB_APP_GROUP_CLASS,
 					_XA_UTF8_STRING, 8, PropModeReplace,
 					(unsigned char *) ch.res_class,
-					strlen(ch.res_class));
+					strlen(ch.res_class) + 1);
 			XFree(ch.res_class);
 			ch.res_class = NULL;
 		}
@@ -804,27 +804,23 @@ ewmh_update_ob_app_props(Client *c)
 			XChangeProperty(dpy, c->win, _XA_OB_APP_GROUP_NAME,
 					_XA_UTF8_STRING, 8, PropModeReplace,
 					(unsigned char *) ch.res_name,
-					strlen(ch.res_name));
+					strlen(ch.res_name) + 1);
 			XFree(ch.res_name);
 			ch.res_name = NULL;
 		}
 	}
-	if (getclasshint(c, &ch)) {
-		if (ch.res_class) {
+	if (c->ch.res_name || c->ch.res_class) {
+		if (c->ch.res_class) {
 			XChangeProperty(dpy, c->win, _XA_OB_APP_CLASS,
 					_XA_UTF8_STRING, 8, PropModeReplace,
-					(unsigned char *) ch.res_class,
-					strlen(ch.res_class));
-			XFree(ch.res_class);
-			ch.res_class = NULL;
+					(unsigned char *) c->ch.res_class,
+					strlen(c->ch.res_class) + 1);
 		}
-		if (ch.res_name) {
+		if (c->ch.res_name) {
 			XChangeProperty(dpy, c->win, _XA_OB_APP_NAME,
 					_XA_UTF8_STRING, 8, PropModeReplace,
-					(unsigned char *) ch.res_name,
-					strlen(ch.res_name));
-			XFree(ch.res_name);
-			ch.res_name = NULL;
+					(unsigned char *) c->ch.res_name,
+					strlen(c->ch.res_name) + 1);
 		}
 	}
 	{
@@ -833,7 +829,7 @@ ewmh_update_ob_app_props(Client *c)
 		XChangeProperty(dpy, c->win, _XA_OB_APP_TITLE,
 				_XA_UTF8_STRING, 8, PropModeReplace,
 				(unsigned char *) title,
-				strlen(title));
+				strlen(title) + 1);
 	}
 	{
 		char *role = NULL;
@@ -842,7 +838,7 @@ ewmh_update_ob_app_props(Client *c)
 			XChangeProperty(dpy, c->win, _XA_OB_APP_ROLE,
 					_XA_UTF8_STRING, 8, PropModeReplace,
 					(unsigned char *) role,
-					strlen(role));
+					strlen(role) + 1);
 			free(role);
 		}
 	}
@@ -875,7 +871,7 @@ ewmh_update_ob_app_props(Client *c)
 		XChangeProperty(dpy, c->win, _XA_OB_APP_TYPE,
 				_XA_UTF8_STRING, 8, PropModeReplace,
 				(unsigned char *) type,
-				strlen(type));
+				strlen(type) + 1);
 
 	}
 }
@@ -2534,7 +2530,6 @@ find_startup_seq(Client *c)
 {
 	Notify *n = NULL, **np;
 	SnStartupSequence *seq = NULL;
-	XClassHint ch = { NULL, };
 	char **argv = NULL, *machine = NULL, *startup_id = NULL;
 	int argc;
 	const char *binary, *wmclass;
@@ -2580,23 +2575,23 @@ find_startup_seq(Client *c)
 			if (n)
 				break;
 		}
-		if (getclasshint(c, &ch)) {
+		if (c->ch.res_name || c->ch.res_class) {
 			for (n = notifies; n; n = n->next) {
 				DPRINTF("checking WM_CLASS for '%s'\n",
 					sn_startup_sequence_get_id(n->seq));
 				if (machine && n->hostname && strcasecmp(machine, n->hostname))
 					continue;	/* wrong host */
 				if ((wmclass = sn_startup_sequence_get_wmclass(n->seq))) {
-					if (ch.res_name && !strcmp(wmclass, ch.res_name))
+					if (c->ch.res_name && !strcmp(wmclass, c->ch.res_name))
 						break;
-					if (ch.res_class && !strcmp(wmclass, ch.res_class))
+					if (c->ch.res_class && !strcmp(wmclass, c->ch.res_class))
 						break;
 				}
 			}
 			if (n)
 				break;
 			DPRINTF("cannot find startup for (%s,%s)\n",
-				ch.res_name, ch.res_class);
+				c->ch.res_name, c->ch.res_class);
 		}
 		if (getcommand(c, &argv, &argc)) {
 			for (n = notifies; n; n = n->next) {
@@ -2613,7 +2608,7 @@ find_startup_seq(Client *c)
 				break;
 			DPRINTF("cannot find startup for !%s\n", argv[0]);
 		}
-		if (ch.res_name || ch.res_class) {
+		if (c->ch.res_name || c->ch.res_class) {
 			/* try again, case insensitive */
 			for (n = notifies; n; n = n->next) {
 				DPRINTF("checking WM_CLASS for '%s'\n",
@@ -2621,16 +2616,16 @@ find_startup_seq(Client *c)
 				if (machine && n->hostname && strcasecmp(machine, n->hostname))
 					continue;	/* wrong host */
 				if ((wmclass = sn_startup_sequence_get_wmclass(n->seq))) {
-					if (ch.res_name && !strcasecmp(wmclass, ch.res_name))
+					if (c->ch.res_name && !strcasecmp(wmclass, c->ch.res_name))
 						break;
-					if (ch.res_class && !strcasecmp(wmclass, ch.res_class))
+					if (c->ch.res_class && !strcasecmp(wmclass, c->ch.res_class))
 						break;
 				}
 			}
 			if (n)
 				break;
 			DPRINTF("cannot find startup for (%s,%s) (no case)\n",
-				ch.res_name, ch.res_class);
+				c->ch.res_name, c->ch.res_class);
 		}
 	}
 	while (0);
@@ -2674,10 +2669,6 @@ find_startup_seq(Client *c)
 		free(startup_id);
 	if (machine)
 		free(machine);
-	if (ch.res_name)
-		XFree(ch.res_name);
-	if (ch.res_class)
-		XFree(ch.res_class);
 	if (argv)
 		XFreeStringList(argv);
 	return (seq);

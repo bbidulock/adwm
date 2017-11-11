@@ -5334,17 +5334,12 @@ getclientstrings(Client *c, char **name, char **clas, char **cmd)
 	char *str = NULL, *nam = NULL, *cls = NULL;
 	int i;
 	size_t tot = 0;
-	XClassHint ch = { NULL, };
 
-	if (getclasshint(c, &ch)) {
-		if (ch.res_name) {
-			nam = strdup(ch.res_name);
-			XFree(ch.res_name);
-		}
-		if (ch.res_class) {
-			cls = strdup(ch.res_class);
-			XFree(ch.res_class);
-		}
+	if (c->ch.res_name || c->ch.res_class) {
+		if (c->ch.res_name)
+			nam = strdup(c->ch.res_name);
+		if (c->ch.res_class)
+			cls = strdup(c->ch.res_class);
 	}
 	*name = nam;
 	*clas = cls;

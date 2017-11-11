@@ -17,6 +17,9 @@
 #ifdef IMLIB2
 #include <Imlib2.h>
 #endif
+#ifdef PIXBUF
+#include <gdk-pixbuf-xlib/gdk-pixbuf-xlib.h>
+#endif
 #ifdef XPM
 #include <X11/xpm.h>
 #endif
@@ -739,6 +742,10 @@ typedef struct {
 	int x, y, w, h;
 } Workarea;
 
+typedef struct {
+	int t, l, r, b;
+} Extents;
+
 struct Monitor {
 	Workarea sc, wa;
 	unsigned long struts[LastStrut];
@@ -920,6 +927,7 @@ struct Client {
 	char *name;
 	char *icon_name;
 	int monitor;			/* initial monitor */
+	Extents e;
 	ClientGeometry c, r, s, u;	/* current, restore, static, supplied */
 	int basew, baseh, incw, inch, maxw, maxh, minw, minh;
 	int minax, maxax, minay, maxay, gravity;
@@ -1244,7 +1252,8 @@ struct AScreen {
 	Element element[LastElement];
 	Style style;
 #ifdef IMLIB2
-	Imlib_Context context;
+	Imlib_Context context;		/* context for 32-bit ARGB visuals */
+	Imlib_Context rootctx;		/* context for default root visuals */
 #endif
 	Window drawable;		/* proper drawable for GC creation */
 	Visual *visual;

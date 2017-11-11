@@ -241,6 +241,9 @@ initimage(void)
 		scr->colormap = DefaultColormap(dpy, scr->screen);
 		scr->drawable = scr->root;
 	}
+#ifdef PIXBUF
+	gdk_pixbuf_xlib_init_with_depth(dpy, scr->screen, scr->depth);
+#endif
 #ifdef IMLIB2
 	scr->context = imlib_context_new();
 	imlib_context_push(scr->context);
@@ -248,6 +251,19 @@ initimage(void)
 	imlib_context_set_drawable(scr->drawable);
 	imlib_context_set_colormap(scr->colormap);
 	imlib_context_set_visual(scr->visual);
+	imlib_context_set_dither_mask(1);
+	imlib_context_set_anti_alias(1);
+	imlib_context_set_dither(1);
+	imlib_context_set_blend(1);
+	imlib_context_set_mask(None);
+	imlib_context_pop();
+
+	scr->rootctx = imlib_context_new();
+	imlib_context_push(scr->rootctx);
+	imlib_context_set_display(dpy);
+	imlib_context_set_drawable(scr->root);
+	imlib_context_set_colormap(DefaultColormap(dpy, scr->screen));
+	imlib_context_set_visual(DefaultVisual(dpy, scr->screen));
 	imlib_context_set_dither_mask(1);
 	imlib_context_set_anti_alias(1);
 	imlib_context_set_dither(1);

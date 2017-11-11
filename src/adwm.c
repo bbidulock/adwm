@@ -102,6 +102,7 @@ Class *getclass(Client *c);
 void updateclass(Client *c);
 void removeclass(Client *c);
 void updateiconname(Client *c);
+void updateicon(Client *c);
 void updatecmapwins(Client *c);
 int xerror(Display *dpy, XErrorEvent *ee);
 int xerrordummy(Display *dsply, XErrorEvent *ee);
@@ -720,22 +721,22 @@ buttonpress(XEvent *e)
 				if (ev->type == ButtonPress) {
 					DPRINTF("ELEMENT %d PRESSED\n", i);
 					ec->pressed |= (1 << button);
-					drawclient(c);
+					drawclient(c); /* just for button */
 					/* resize needs to be on button press */
 					if (action) {
 						(*action) (c, (XEvent *) ev);
-						drawclient(c);
+						drawclient(c); /* just for button */
 					}
 				} else if (ev->type == ButtonRelease) {
 					/* only process release if processed press */
 					if (ec->pressed & (1 << button)) {
 						DPRINTF("ELEMENT %d RELEASED\n", i);
 						ec->pressed &= ~(1 << button);
-						drawclient(c);
+						drawclient(c); /* just for button */
 						/* resize needs to be on button press */
 						if (action) {
 							(*action) (c, (XEvent *) ev);
-							drawclient(c);
+							drawclient(c); /* just for button */
 						}
 					}
 				}
@@ -743,7 +744,7 @@ buttonpress(XEvent *e)
 					return True;
 			} else {
 				ec->pressed &= ~(1 << button);
-				drawclient(c);
+				drawclient(c); /* just for button */
 			}
 		}
 		if ((action = actions[OnClientTitle][button][direct])) {
@@ -754,7 +755,7 @@ buttonpress(XEvent *e)
 			DPRINTF("No action for On=%d, button=%d, direct=%d\n",
 				OnClientTitle, button + Button1, direct);
 		XUngrabPointer(dpy, ev->time);
-		drawclient(c);
+		drawclient(c); /* just for button */
 	} else if ((c = getclient(ev->window, ClientGrips)) && ev->window == c->grips) {
 		if ((action = actions[OnClientGrips][button][direct])) {
 			DPRINTF("Action %p for On=%d, button=%d, direct=%d\n", action,
@@ -764,7 +765,7 @@ buttonpress(XEvent *e)
 			DPRINTF("No action for On=%d, button=%d, direct=%d\n",
 				ClientGrips, button + Button1, direct);
 		XUngrabPointer(dpy, ev->time);
-		drawclient(c);
+		drawclient(c); /* just for button */
 	} else if ((c = getclient(ev->window, ClientIcon)) && ev->window == c->icon) {
 		DPRINTF("ICON %s: 0x%lx button: %d\n", c->name, ev->window, ev->button);
 		if ((CLEANMASK(ev->state) & modkey) != modkey) {
@@ -779,7 +780,7 @@ buttonpress(XEvent *e)
 			DPRINTF("No action for On=%d, button=%d, direct=%d\n", ClientIcon,
 				button + Button1, direct);
 		XUngrabPointer(dpy, ev->time);
-		drawclient(c);
+		drawclient(c); /* just for button */
 	} else if ((c = getclient(ev->window, ClientWindow)) && ev->window == c->win) {
 		DPRINTF("WINDOW %s: 0x%lx button: %d\n", c->name, ev->window, ev->button);
 		if ((CLEANMASK(ev->state) & modkey) != modkey) {
@@ -794,7 +795,7 @@ buttonpress(XEvent *e)
 			DPRINTF("No action for On=%d, button=%d, direct=%d\n",
 				OnClientWindow, button + Button1, direct);
 		XUngrabPointer(dpy, ev->time);
-		drawclient(c);
+		drawclient(c); /* just for button */
 	} else if ((c = getclient(ev->window, ClientFrame)) && ev->window == c->frame) {
 		DPRINTF("FRAME %s: 0x%lx button: %d\n", c->name, ev->window, ev->button);
 		if (c->is.dockapp) {
@@ -815,7 +816,7 @@ buttonpress(XEvent *e)
 					OnClientFrame, button + Button1, direct);
 		}
 		XUngrabPointer(dpy, ev->time);
-		drawclient(c);
+		drawclient(c); /* just for button */
 	} else
 		return False;
 	return True;
@@ -1149,7 +1150,7 @@ motionnotify(XEvent *e)
 			}
 		}
 		if (needdraw)
-			drawclient(c);
+			drawclient(c); /* just for button */
 		return True;
 	}
 	return False;
@@ -1349,7 +1350,7 @@ expose(XEvent *e)
 		XSync(dpy, False);
 		/* discard all exposures for the same window */
 		while (XCheckWindowEvent(dpy, ev->window, ExposureMask, &tmp)) ;
-		drawclient(c);
+		drawclient(c); /* just for exposure */
 		return True;
 	}
 	return False;
@@ -1601,7 +1602,7 @@ focus(Client *c)
 		   could take the focus because its child window is an icon (e.g.
 		   dockapp). */
 		setclientstate(c, NormalState); /* probably does nothing */
-		drawclient(c);
+		drawclient(c); /* just for focus change */
 		raisetiled(c); /* this will restack, probably when not necessary */
 		XSetWindowBorder(dpy, c->frame, scr->style.color.sele[ColBorder].pixel);
 		if ((c->is.shaded && scr->options.autoroll))
@@ -1611,7 +1612,7 @@ focus(Client *c)
 	}
 	if (o && o != c) {
 		CPRINTF(o, "deselecting\n");
-		drawclient(o);
+		drawclient(o); /* just for focus change */
 		lowertiled(o); /* does nothing at the moment */
 		XSetWindowBorder(dpy, o->frame, scr->style.color.norm[ColBorder].pixel);
 		if ((o->is.shaded && scr->options.autoroll))
@@ -2377,7 +2378,7 @@ leavenotify(XEvent *e)
 			}
 		}
 		if (needdraw)
-			drawclient(c);
+			drawclient(c); /* just for button */
 	}
 	return True;
 }
@@ -2627,6 +2628,7 @@ manage(Window w, XWindowAttributes *wa)
 	updatesizehints(c);
 	updatetitle(c);
 	updateiconname(c);
+	updateicon(c);
 	applyrules(c);
 	applyatoms(c);
 
@@ -2678,10 +2680,6 @@ manage(Window w, XWindowAttributes *wa)
 
 	ewmh_process_net_window_user_time_window(c);
 	ewmh_process_net_startup_id(c);
-
-	/* TODO: collect WM_HINTS icon and these two together */
-	kwm_process_window_icon(c);
-	ewmh_process_net_window_icon(c);
 
 	if ((c->with.time) && latertime(c->user_time))
 		focusnew = False;
@@ -2873,6 +2871,7 @@ manage(Window w, XWindowAttributes *wa)
 	setwmstate(c->win, c->winstate, c->is.dockapp ? (c->icon ? : c->win) : None);
 	ewmh_update_net_window_state(c);
 	ewmh_update_net_window_desktop(c);
+	ewmh_update_net_window_extents(c);
 	ewmh_update_ob_app_props(c);
 
 	if (c->grips && c->c.g) {
@@ -3389,10 +3388,12 @@ updatesessionprop(Client *c, Atom prop, int state)
 		} else if (prop == _XA_NET_WM_ICON_GEOMETRY) {
 			/* Client leaders are never managed. */
 			goto bad;
+#endif
 		} else if (prop == _XA_NET_WM_ICON) {
 			/* Client leaders are never managed. */
 			goto bad;
-#endif
+		} else if (prop == _XA_KWM_WIN_ICON) {
+			goto bad;
 		} else if (prop == _XA_NET_WM_PID) {
 			/* Could be set on a client leader window (so that it will apply
 			   to all members of the session).  This property should not
@@ -3455,7 +3456,7 @@ updateleaderprop(Client *c, Atom prop, int state)
 		switch (prop) {
 		case XA_WM_NAME:
 			updatetitle(c);
-			drawclient(c);
+			drawclient(c); /* just for title */
 			break;
 		case XA_WM_ICON_NAME:
 			updateiconname(c);
@@ -3567,7 +3568,7 @@ updateleaderprop(Client *c, Atom prop, int state)
 			goto bad;
 		} else if (prop == _XA_NET_WM_NAME) {
 			updatetitle(c);
-			drawclient(c);
+			drawclient(c); /* just for title */
 		} else if (prop == _XA_NET_WM_VISIBLE_NAME) {
 			/* Should only ever be set by the window manager. */
 			goto bad;
@@ -3605,12 +3606,14 @@ updateleaderprop(Client *c, Atom prop, int state)
 			   to animate window iconification (in this case of a group).  We
 			   don't do this so we can ignore it. */
 			goto bad;
+#endif
 		} else if (prop == _XA_NET_WM_ICON) {
 			/* Set of icons to display.  We don't do this so we can ignore
 			   it.  At some point we might display iconified windows in a
 			   windowmaker-style clip. */
-			goto bad;
-#endif
+			updateicon(c);
+		} else if (prop == _XA_KWM_WIN_ICON) {
+			updateicon(c);
 		} else if (prop == _XA_NET_WM_PID) {
 			/* Normally set on individual (managed) windows.  This property
 			   should not change after the window is managed, however, some
@@ -3678,7 +3681,7 @@ updateclientprop(Client *c, Atom prop, int state)
 		switch (prop) {
 		case XA_WM_NAME:
 			updatetitle(c);
-			drawclient(c);
+			drawclient(c); /* just for title */
 			break;
 		case XA_WM_ICON_NAME:
 			updateiconname(c);
@@ -3688,6 +3691,7 @@ updateclientprop(Client *c, Atom prop, int state)
 			break;
 		case XA_WM_HINTS:
 			updatehints(c);
+			updateicon(c);
 			break;
 		case XA_WM_CLASS:
 			updateclasshint(c);
@@ -3748,7 +3752,7 @@ updateclientprop(Client *c, Atom prop, int state)
 			goto bad;
 		} else if (prop == _XA_WM_COLORMAP_WINDOWS) {
 			updatecmapwins(c);
-			drawclient(c);
+			drawclient(c); /* just for colormap */
 		} else if (prop == _XA_WIN_LAYER) {
 			/* Should only be set by the window manager after the window is
 			   managed.  Clients should use client messages instead. */
@@ -3778,7 +3782,7 @@ updateclientprop(Client *c, Atom prop, int state)
 			goto bad;
 		} else if (prop == _XA_NET_WM_NAME) {
 			updatetitle(c);
-			drawclient(c);
+			drawclient(c); /* just for title */
 		} else if (prop == _XA_NET_WM_VISIBLE_NAME) {
 			/* Should only ever be set by the window manager. */
 			goto bad;
@@ -3829,12 +3833,14 @@ updateclientprop(Client *c, Atom prop, int state)
 			   to animate window iconification.  We don't do this so we can
 			   ignore it. */
 			return False;
+#endif
 		} else if (prop == _XA_NET_WM_ICON) {
 			/* Set of icons to display.  We don't do this so we can ignore
 			   it.  At some point we might display iconified windows in a
 			   windowmaker-style clip. */
-			return False;
-#endif
+			updateicon(c);
+		} else if (prop == _XA_KWM_WIN_ICON) {
+			updateicon(c);
 		} else if (prop == _XA_NET_WM_PID) {
 			/* This property should not change after the window is managed,
 			   however, some startup notification assistance programs might
@@ -5820,8 +5826,6 @@ updatehints(Client *c)
 			updategroup(c, c->leader, ClientGroup, &c->nonmodal);
 		}
 	}
-	if (c->wmh.flags & IconPixmapHint)
-		createwmicon(c);
 }
 
 void
@@ -6041,6 +6045,29 @@ updateiconname(Client *c)
 }
 
 void
+updateicon(Client *c)
+{
+	unsigned long n = 0;
+	long *card;
+	Pixmap *pixmap;
+
+	if ((card = getcard(c->win, _XA_NET_WM_ICON, &n))) {
+		if (n < 2 || n < 2 + card[0] * card[1])
+			XFree(card);
+		else if (createneticon(c, card, n))
+			return;
+	}
+	if ((pixmap = getpixmaps(c->win, _XA_KWM_WIN_ICON, &n))) {
+		if (n < 2)
+			XFree(pixmap);
+		else if (createkwmicon(c, pixmap, n))
+			return;
+	}
+	if (createwmicon(c))
+		return;
+}
+
+void
 updatetransientfor(Client *c)
 {
 	Window trans;
@@ -6188,13 +6215,13 @@ updateclass(Client *c)
 			if ((s = getclient(r->members[0], ClientWindow)) && s->is.managed) {
 				updatetitle(s);
 				updateiconname(s);
-				drawclient(s);
+				drawclient(s); /* just for title */
 			}
 		}
 		if (c->is.managed) {
 			updatetitle(c);
 			updateiconname(c);
-			drawclient(c);
+			drawclient(c); /* just for title */
 		}
 		XSaveContext(dpy, c->win, context[ClientClass], (XPointer) r);
 	}
@@ -6228,7 +6255,7 @@ removeclass(Client *c)
 				if ((s = getclient(r->members[i], ClientWindow)) && s->is.managed) {
 					updatetitle(s);
 					updateiconname(s);
-					drawclient(s);
+					drawclient(s); /* just for title */
 				}
 			}
 		}

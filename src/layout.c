@@ -558,7 +558,7 @@ tookfocus(Client *next)
 		if (last->is.focused) {
 			last->is.focused = False;
 			ewmh_update_net_window_state(last);
-			drawclient(last);
+			drawclient(last); /* just for focus */
 			if (last != sel)
 				XSetWindowBorder(dpy, last->frame, scr->style.color.norm[ColBorder].pixel);
 		}
@@ -567,7 +567,7 @@ tookfocus(Client *next)
 		if (!next->is.focused) {
 			next->is.focused = True;
 			ewmh_update_net_window_state(next);
-			drawclient(next);
+			drawclient(next); /* just for focus */
 			if (next != sel)
 				XSetWindowBorder(dpy, next->frame, scr->style.color.focu[ColBorder].pixel);
 		}
@@ -820,8 +820,7 @@ reconfigure_dockapp(Client *c, ClientGeometry *n, Bool force)
 	}
 	XSync(dpy, False);
 	drawclient(c);
-	if (fmask & (CWWidth | CWHeight))
-		ewmh_update_net_window_extents(c);
+	ewmh_update_net_window_extents(c);
 	XSync(dpy, False);
 }
 
@@ -982,8 +981,7 @@ reconfigure(Client *c, ClientGeometry *n, Bool force)
 	    ((tchange && n->t) || (gchange && n->g) || (hchange && n->v)
 	     || (wmask & CWWidth)))
 		drawclient(c);
-	if (tchange || gchange || hchange || (fmask & CWBorderWidth))
-		ewmh_update_net_window_extents(c);
+	ewmh_update_net_window_extents(c);
 	XSync(dpy, False);
 }
 
@@ -4190,6 +4188,7 @@ mousemove_from(Client *c, int from, XEvent *e, Bool toggle)
 				c->tags = nv->seltags;
 				ewmh_update_net_window_desktop(c);
 				drawclient(c);
+				ewmh_update_net_window_extents(c);
 				arrange(NULL);
 				v = nv;
 			}

@@ -17,131 +17,32 @@
 #include "config.h"
 #include "draw.h" /* verification */
 
+#if defined IMLIB2 && defined USE_IMLIB2
 Bool
-createwmicon(Client *c)
+imlib_createpixmapicon(Client *c, Pixmap icon, Pixmap mask)
 {
 	Window root;
 	int x, y;
 	unsigned int w, h, b, d;
 	ButtonImage *bi;
-#if defined IMLIB2
 	Imlib_Image image;
-#endif
-
-	if (!c || !(c->wmh.flags & IconPixmapHint))
-		return (False);
-	if (!XGetGeometry(dpy, c->wmh.icon_pixmap, &root, &x, &y, &w, &h, &b, &d))
-		return (False);
-	bi = &c->iconbtn;
-#if defined IMLIB2
-	imlib_context_push(scr->context);
-	imlib_context_set_drawable(c->wmh.icon_pixmap);
-	imlib_context_set_color(255,255,255,255);
-	image = imlib_create_image_from_drawable(c->wmh.icon_mask, 0, 0, w, h, 1);
-	if (!image) {
-		EPRINTF("could not load pixmap 0x%lx mask 0x%lx\n", c->wmh.icon_pixmap, c->wmh.icon_mask);
-		imlib_context_pop();
-		return (False);
-	}
-	imlib_context_set_image(image);
-	bi->x = bi->y = bi->b = 0;
-	bi->d = d;
-	bi->w = imlib_image_get_width();
-	bi->h = imlib_image_get_height();
-	if (bi->h > scr->style.titleheight) {
-		int w = ((bi->w + bi->h - 1) / bi->h) * scr->style.titleheight;
-		int h = scr->style.titleheight;
-		Imlib_Image scaled = imlib_create_image(w, h);
-
-		if (!scaled) {
-			EPRINTF("Could not create image %d x %d\n", w, h);
-			imlib_free_image();
-			imlib_context_pop();
-			return (False);
-		}
-		imlib_context_set_image(scaled);
-		imlib_blend_image_onto_image(image, True, 0, 0, bi->w, bi->h, 0, 0, w, h);
-		imlib_context_set_image(image);
-		imlib_free_image();
-		image = scaled;
-		imlib_context_set_image(image);
-		bi->w = w;
-		bi->h = h;
-	}
-#if 1
-	if (bi->pixmap.draw)
-		imlib_free_pixmap_and_mask(bi->pixmap.draw);
-	imlib_render_pixmaps_for_whole_image(&bi->pixmap.draw, &bi->pixmap.mask);
-#else
-	if (d > 1) {
-		if (bi->pixmap.image) {
-			imlib_context_set_image(bi->pixmap.image);
-			imlib_free_image();
-		}
-		bi->pixmap.image = image;
-	} else {
-		if (bi->bitmap.image) {
-			imlib_context_set_image(bi->bitmap.image);
-			imlib_free_image();
-		}
-		bi->bitmap.image = image;
-	}
-#endif
-	bi->present = True;
-	imlib_context_pop();
-#else
-	if (h > scr->style.titleheight + 2)
-		return (False);
-	bi->x = bi->y = bi->b = 0;
-	bi->d = d;
-	bi->w = w;
-	bi->h = h;
-	if (bi->h > scr->style.titleheight) {
-		/* read lower down into image to clip top and bottom by same amount */
-		bi->y += (bi->h - scr->style.titleheight) / 2;
-		bi->h = scr->style.titleheight;
-	}
-	if (d > 1) {
-		if (bi->pixmap.draw)
-			XFreePixmap(dpy, bi->pixmap.draw);
-		if (bi->pixmap.mask)
-			XFreePixmap(dpy, bi->pixmap.mask);
-		bi->bitmap.draw = icon;
-		bi->bitmap.mask = mask;
-	} else {
-		if (bi->bitmap.draw)
-			XFreePixmap(dpy, bi->bitmap.draw);
-		if (bi->bitmap.mask)
-			XFreePixmap(dpy, bi->bitmap.mask);
-		bi->bitmap.draw = icon;
-		bi->bitmap.mask = mask;
-	}
-	bi->present = True;
-#endif
-	return (True);
-}
-
-Bool
-createkwmicon(Client *c, Pixmap icon, Pixmap mask)
-{
-	Window root;
-	int x, y;
-	unsigned int w, h, b, d;
-	ButtonImage *bi;
-#if defined IMLIB2
-	Imlib_Image image;
-#endif
 
 	if (!c || !icon)
 		return (False);
 	if (!XGetGeometry(dpy, icon, &root, &x, &y, &w, &h, &b, &d))
 		return (False);
 	bi = &c->iconbtn;
-#if defined IMLIB2
-	imlib_context_push(scr->context);
+	imlib_context_push(scr->rootctx);
 	imlib_context_set_drawable(icon);
-	imlib_context_set_color(255,255,255,255);
-	image = imlib_create_image_from_drawable(mask, 0, 0, w, h, 1);
+
+	if (h <= scr->style.titleheight + 2) {
+		image = imlib_create_image_from_drawable(mask, 0, 0, w, h, 1);
+	} else {
+		image = imlib_create_scaled_image_from_drawable(mask, 0, 0, w, h,
+							    scr->style.titleheight,
+							    scr->style.titleheight, 1, 0);
+		w = h = scr->style.titleheight;
+	}
 	if (!image) {
 		EPRINTF("could not load pixmap 0x%lx mask 0x%lx\n", icon, mask);
 		imlib_context_pop();
@@ -153,29 +54,21 @@ createkwmicon(Client *c, Pixmap icon, Pixmap mask)
 	bi->w = imlib_image_get_width();
 	bi->h = imlib_image_get_height();
 	if (bi->h > scr->style.titleheight) {
-		int w = ((bi->w + bi->h - 1) / bi->h) * scr->style.titleheight;
-		int h = scr->style.titleheight;
-		Imlib_Image scaled = imlib_create_image(w, h);
-
-		if (!scaled) {
-			EPRINTF("Could not create image %d x %d\n", w, h);
-			imlib_free_image();
-			imlib_context_pop();
-			return (False);
-		}
-		imlib_context_set_image(scaled);
-		imlib_blend_image_onto_image(image, True, 0, 0, bi->w, bi->h, 0, 0, w, h);
-		imlib_context_set_image(image);
-		imlib_free_image();
-		image = scaled;
-		imlib_context_set_image(image);
-		bi->w = w;
-		bi->h = h;
+		/* read lower down into image to clip top and bottom by same amount */
+		bi->y += (bi->h - scr->style.titleheight) / 2;
+		bi->h = scr->style.titleheight;
 	}
 #if 1
-	if (bi->pixmap.draw)
+	imlib_context_pop();
+	imlib_context_push(scr->context);
+	imlib_context_set_image(image);
+	if (bi->pixmap.draw) {
 		imlib_free_pixmap_and_mask(bi->pixmap.draw);
+		bi->pixmap.draw = None;
+		bi->pixmap.mask = None;
+	}
 	imlib_render_pixmaps_for_whole_image(&bi->pixmap.draw, &bi->pixmap.mask);
+	imlib_free_image();
 #else
 	if (d > 1) {
 		if (bi->pixmap.image) {
@@ -193,134 +86,333 @@ createkwmicon(Client *c, Pixmap icon, Pixmap mask)
 #endif
 	bi->present = True;
 	imlib_context_pop();
-#else
-	if (h > scr->style.titleheight + 2)
+	return (True);
+}
+Bool
+imlib_createdataicon(Client *c, unsigned w, unsigned h, long *data)
+{
+	Imlib_Image image;
+	ButtonImage *bi;
+	DATA32 *pixels;
+	unsigned i, z;
+
+	imlib_context_push(scr->context);
+	image = imlib_create_image(w, h);
+	if (!image) {
+		EPRINTF("could not create image %ux%u\n", w, h);
 		return (False);
+	}
+	imlib_context_set_image(image);
+	pixels = imlib_image_get_data();
+	if (!pixels) {
+		EPRINTF("could not get image data\n");
+		imlib_free_image();
+		imlib_context_pop();
+		return (False);
+	}
+	for (i = 0, z = w * h; i < z; i++)
+		pixels[i] = data[i];
+	imlib_image_put_back_data(pixels);
+	imlib_image_set_has_alpha(1);
+	if (h > scr->style.titleheight) {
+		unsigned hs = scr->style.titleheight;
+		unsigned ws = ((w + h - 1) / h) * hs;
+		Imlib_Image scaled =
+		    imlib_create_cropped_scaled_image(0, 0, w, h, ws, hs);
+
+		imlib_free_image();
+		if (!scaled) {
+			EPRINTF("could not scale image %ux%u to %dx%d\n", w, h, ws, hs);
+			imlib_context_pop();
+			return (False);
+		}
+		imlib_context_set_image(scaled);
+		image = scaled;
+		w = ws;
+		h = hs;
+	}
+	bi = &c->iconbtn;
 	bi->x = bi->y = bi->b = 0;
-	bi->d = d;
+	bi->d = scr->depth;
+	bi->w = w;
+	bi->h = h;
+#if 1
+	if (bi->pixmap.draw) {
+		imlib_free_pixmap_and_mask(bi->pixmap.draw);
+		bi->pixmap.draw = None;
+		bi->pixmap.mask = None;
+	}
+	imlib_render_pixmaps_for_whole_image(&bi->pixmap.draw, &bi->pixmap.mask);
+	imlib_free_image();
+#else
+	if (bi->pixmap.image) {
+		imlib_context_set_image(bi->pixmap.image);
+		imlib_free_image();
+	}
+	bi->pixmap.image = image;
+#endif
+	bi->present = True;
+	imlib_context_pop();
+	return True;
+}
+Bool
+imlib_createwmicon(Client *c)
+{
+	return imlib_createpixmapicon(c, c->wmh.icon_pixmap, c->wmh.icon_mask);
+}
+Bool
+imlib_createkwmicon(Client *c, Pixmap *data, unsigned long n)
+{
+	return imlib_createpixmapicon(c, data[0], data[1]);
+}
+Bool
+createwmicon(Client *c)
+{
+	return imlib_createwmicon(c);
+}
+Bool
+createkwmicon(Client *c, Pixmap *data, unsigned long n)
+{
+	return imlib_createkwmicon(c, data, n);
+}
+Bool
+createdataicon(Client *c, unsigned w, unsigned h, long *data)
+{
+	return imlib_createdataicon(c, w, h, data);
+}
+#else				/* !defined IMLIB2 || !defined USE_IMLIB2 */
+#if defined PIXBUF && defined USE_PIXBUF
+Bool
+gdk_createpixmapicon(Client *c, Pixmap icon, Pixmap mask)
+{
+	GdkPixbuf *gicon = NULL, *gmask = NULL;
+	Window root;
+	int x, y;
+	unsigned int w, h, b, d;
+	ButtonImage *bi;
+
+	if (!c || !icon)
+		return (False);
+	if (!XGetGeometry(dpy, icon, &root, &x, &y, &w, &h, &b, &d))
+		return (False);
+	if (icon)
+		gicon = gdk_pixbuf_xlib_get_from_drawable(NULL, icon,
+							 DefaultColormap(dpy, scr->screen),
+							 DefaultVisual(dpy, scr->screen),
+							 0, 0, 0, 0, w, h);
+	if (!gicon) {
+		EPRINTF("could not get pixbuf from drawable\n");
+		return (False);
+	}
+	if (mask)
+		gmask = gdk_pixbuf_xlib_get_from_drawable(NULL, mask,
+							 DefaultColormap(dpy, scr->screen),
+							 DefaultVisual(dpy, scr->screen),
+							 0, 0, 0, 0, w, h);
+	if (gmask) {
+		GdkPixbuf *alpha;
+		guchar *src, *dst;
+		int src_stride, dst_stride, i, j;
+
+		alpha = gdk_pixbuf_add_alpha(gicon, FALSE, 0, 0, 0);
+		dst = gdk_pixbuf_get_pixels(alpha);
+		src = gdk_pixbuf_get_pixels(gmask);
+		dst_stride = gdk_pixbuf_get_rowstride(alpha);
+		src_stride = gdk_pixbuf_get_rowstride(gmask);
+		for (i = 0; i < h; i++) {
+			for (j = 0; j < w; j++) {
+				guchar *s = src + i * src_stride + j * 3;
+				guchar *d = dst + i * dst_stride + j * 4;
+
+				if (s[0] == 0)
+					d[3] = 0;	/* transparent */
+				else
+					d[3] = 255;	/* opaque */
+			}
+		}
+		g_object_unref(G_OBJECT(gicon));
+		gicon = alpha;
+		g_object_unref(G_OBJECT(gmask));
+		gmask = NULL;
+		if (!gicon) {
+			EPRINTF("could not mask pixbuf\n");
+			return (False);
+		}
+	}
+	if (h > scr->style.titleheight + 2) {
+		GdkPixbuf *scaled;
+
+		w = scr->style.titleheight;
+		h = scr->style.titleheight;
+		scaled = gdk_pixbuf_scale_simple(gicon, w, h, GDK_INTERP_BILINEAR);
+		g_object_unref(G_OBJECT(gicon));
+		gicon = scaled;
+		if (!gicon) {
+			EPRINTF("could not scale pixbuf\n");
+			return (False);
+		}
+	}
+	bi = &c->iconbtn;
+	bi->x = bi->y = bi->b = 0;
+	bi->d = scr->depth;
 	bi->w = w;
 	bi->h = h;
 	if (bi->h > scr->style.titleheight) {
-		/* read lower down into image to clip top and bottom by same amount */
+		/* read lower down into image to clip top and bottom by same
+		   amount */
 		bi->y += (bi->h - scr->style.titleheight) / 2;
 		bi->h = scr->style.titleheight;
 	}
-	if (d > 1) {
-		if (bi->pixmap.draw)
-			XFreePixmap(dpy, bi->pixmap.draw);
-		if (bi->pixmap.mask)
-			XFreePixmap(dpy, bi->pixmap.mask);
-		bi->bitmap.draw = icon;
-		bi->bitmap.mask = mask;
-	} else {
-		if (bi->bitmap.draw)
-			XFreePixmap(dpy, bi->bitmap.draw);
-		if (bi->bitmap.mask)
-			XFreePixmap(dpy, bi->bitmap.mask);
-		bi->bitmap.draw = icon;
-		bi->bitmap.mask = mask;
+	if (bi->pixmap.draw) {
+		XFreePixmap(dpy, bi->pixmap.draw);
+		bi->pixmap.draw = None;
+	}
+	if (bi->pixmap.mask) {
+		XFreePixmap(dpy, bi->pixmap.mask);
+		bi->pixmap.mask = None;
+	}
+	gdk_pixbuf_xlib_render_pixmap_and_mask(gicon,
+					       &bi->pixmap.draw,
+					       &bi->pixmap.mask, 128);
+	if (!bi->pixmap.draw) {
+		EPRINTF("could not render pixbuf\n");
+		return (False);
 	}
 	bi->present = True;
-#endif
-	return (True);
+	return True;
 }
+Bool
+gdk_createwmicon(Client *c)
+{
+	return gdk_createpixmapicon(c, c->wmh.icon_pixmap, c->wmh.icon_mask);
+}
+Bool
+gdk_createdataicon(Client *c, unsigned w, unsigned h, long *data)
+{
+}
+Bool
+gdk_createkwmicon(Client *c, Pixmap *data, unsigned long n)
+{
+	return gdk_createpixmapicon(c, data[0], data[1]);
+}
+Bool
+createwmicon(Client *c)
+{
+	return gdk_createwmicon(c);
+}
+Bool
+createkwmicon(Client *c, Pixmap *data, unsigned long n)
+{
+	return gdk_createkwmicon(c, data, n);
+}
+Bool
+createdataicon(Client *c, unsigned w, unsigned h, long *data)
+{
+	return gdk_createdataicon(c, w, h, data);
+}
+#else				/* !defined PIXBUF || !defined USE_PIXBUF */
+Bool
+xlib_createpixmapicon(Client *c, Pixmap icon, Pixmap mask)
+{
+	Window root;
+	int x, y;
+	unsigned int w, h, b, d;
+	ButtonImage *bi;
+	XImage *xicon = NULL, *xmask = NULL, *alpha;
+
+	if (!c || !(c->wmh.flags & IconPixmapHint))
+		return (False);
+	if (!XGetGeometry(dpy, icon, &root, &x, &y, &w, &h, &b, &d))
+		return (False);
+	if (icon) {
+		xicon = XGetImage(dpy, icon, 0, 0, w, h, 0xffffffff, ZPixmap);
+	}
+	if (!xicon)
+		return (False);
+	if (mask) {
+		xmask = XGetImage(dpy, mask, 0, 0, w, h, 0xffffffff, ZPixmap);
+	}
+	if (xmask) {
+		alpha = XCreateImage(dpy, scr->visual, 32, ZPixmap, 0, NULL, w, h, 0, 0);
+		if (alpha) {
+			alpha->data = ecalloc(alpha->bytes_per_line * h);
+		}
+	}
+}
+Bool
+xlib_createdataicon(Client *c, unsigned w, unsigned h, long *data)
+{
+}
+Bool
+xlib_createwmicon(Client *c)
+{
+	return xlib_createpixmapicon(c, c->wmh.icon_pixmap, c->wmh.icon_mask);
+}
+Bool
+xlib_createkwmicon(Client *c, Pixmap *data, unsigned long n)
+{
+	return xlib_createpixmapicon(c, data[0], data[1]);
+}
+Bool
+createwmicon(Client *c)
+{
+	return xlib_createwmicon(c);
+}
+Bool
+createkwmicon(Client *c, Pixmap *data, unsigned long n)
+{
+	return xlib_createkwmicon(c, data, n);
+}
+Bool
+createdataicon(Client *c, unsigned w, unsigned h, long *data)
+{
+	return xlib_createdataicon(c, w, h, data);
+}
+#endif				/* !defined PIXBUF || !defined USE_PIXBUF */
+#endif				/* !defined IMLIB2 || !defined USE_IMLIB2 */
 
 Bool
 createneticon(Client *c, long *data, unsigned long n)
 {
-#if defined IMLIB2
-	Imlib_Image *images = NULL, image;
-	unsigned int h, w, i, z, m;
-	ButtonImage *bi;
-	DATA32 *pixels;
-	unsigned long rem;
+	struct {
+		unsigned w, h;
+		long *icon;
+	} *icons = NULL, *best;
+	unsigned long rem, z;
+	unsigned hdiff, d;
+	Bool status = False;
 	long *icon;
+	int i, m;
 
-	if (!data)
-		return (False);
-	imlib_context_push(scr->context);
+	/* scan icons */
 	for (m = 0, icon = data, rem = n; rem > 2; m++, icon += z, rem -= z) {
+		if (!icon[0] || !icon[1])
+			break;
+		z = 2 + icon[0] * icon[1];
+		if (rem < z)
+			break;
+		if (!(icons = reallocarray(icons, m + 1, sizeof(*icons))))
+			break;
+		icons[m].w = icon[0];
+		icons[m].h = icon[1];
+		icons[m].icon = icon + 2;
+	}
+	for (hdiff = -1U, best = NULL, i = 0; i < m; i++) {
+		if (icons[i].h <= scr->style.titleheight)
+			d = scr->style.titleheight - icons[i].h;
+		else
+			d = icons[i].h - scr->style.titleheight;
 
-		if (!(images = reallocarray(images, m + 1, sizeof(*images))))
-			break;
-		images[m] = NULL;
-
-		if (rem < 2)
-			break;
-		w = icon[0];
-		h = icon[1];
-		z = w * h + 2;
-		if (w == 0 || h == 0)
-			continue;
-		if (rem < z) {
-			EPRINTF("Invalid format w = %u, h = %u, rem = %lu\n", w, h, rem);
-			break;
-		}
-		if (!(images[m] = imlib_create_image(w, h))) {
-			EPRINTF("Could not create image %u x %u\n", w, h);
-			continue;
-		}
-		imlib_context_set_image(images[m]);
-		if (!(pixels = imlib_image_get_data())) {
-			EPRINTF("Could not get image data\n");
-			imlib_free_image();
-			images[m] = NULL;
-			continue;
-		}
-		for (i = 0; i + 2 < z; i++)
-			pixels[i] = icon[i + 2] & 0xffffffff;
-		imlib_image_put_back_data(pixels);
-	}
-	for (h = -1U, image = NULL, i = 0; i < m; i++) {
-		if (!images[i])
-			continue;
-		imlib_context_set_image(images[i]);
-		w = imlib_image_get_height();
-		if (w == scr->style.titleheight) {
-			if (image) {
-				imlib_context_set_image(image);
-				imlib_free_image();
-			}
-			image = images[i];
-			break;
-		} else if (w < scr->style.titleheight)
-			continue;
-		else if (w - scr->style.titleheight < h) {
-			h = w - scr->style.titleheight;
-			if (image) {
-				imlib_context_set_image(image);
-				imlib_free_image();
-			}
-			image = images[i];
+		if (d < hdiff) {
+			best = &icons[i];
+			hdiff = d;
 		}
 	}
-	free(images);
-	images = NULL;
-	if (image) {
-		imlib_context_set_image(image);
-		bi = &c->iconbtn;
-		bi->w = imlib_image_get_width();
-		bi->h = imlib_image_get_height();
-		if (bi->h > scr->style.titleheight) {
-			bi->w = ((bi->w + bi->h - 1) / bi->h) * scr->style.titleheight;
-			bi->h = scr->style.titleheight;
-		}
-		if (bi->pixmap.image) {
-			imlib_context_set_image(bi->pixmap.image);
-			imlib_free_image();
-		}
-		bi->pixmap.image = image;
-		bi->x = bi->y = bi->b = 0;
-		bi->d = scr->depth;
-		bi->present = True;
-		imlib_context_pop();
-		XFree(data);
-		return (True);
-	}
-	imlib_context_pop();
-#endif
+	if (best)
+		status = createdataicon(c, best->w, best->h, best->icon);
+	free(icons);
 	XFree(data);
-	return (False);
+	return (status);
 }
 
 enum { Normal, Focused, Selected };
@@ -689,12 +781,9 @@ drawbutton(AScreen *ds, Client *c, ElementType type, XftColor *col, int x)
 #if defined IMLIB2
 	if (bi->pixmap.image) {
 		Imlib_Image image;
-		int w, h;
 
 		imlib_context_push(scr->context);
 		imlib_context_set_image(bi->pixmap.image);
-		w = imlib_image_get_width();
-		h = imlib_image_get_height();
 		image = imlib_create_image(ec->eg.w, ec->eg.h);
 		imlib_context_set_image(image);
 		imlib_context_set_color(bg->color.red, bg->color.green, bg->color.blue, 255);
@@ -702,7 +791,8 @@ drawbutton(AScreen *ds, Client *c, ElementType type, XftColor *col, int x)
 		imlib_context_set_blend(0);
 		imlib_context_set_anti_alias(1);
 		imlib_blend_image_onto_image(bi->pixmap.image, False,
-				0, 0, w, h, 0, 0, ec->eg.w, ec->eg.h);
+				0, 0, bi->w, bi->h,
+				0, 0, ec->eg.w, ec->eg.h);
 		imlib_context_set_drawable(d);
 		imlib_render_image_on_drawable(ec->eg.x, ec->eg.y);
 		imlib_free_image();
@@ -711,26 +801,24 @@ drawbutton(AScreen *ds, Client *c, ElementType type, XftColor *col, int x)
 	} else
 	if (bi->bitmap.image) {
 		Imlib_Image image, mask;
-		int w, h;
 
 		imlib_context_push(scr->context);
 		imlib_context_set_image(bi->bitmap.image);
-		w = imlib_image_get_width();
-		h = imlib_image_get_height();
 		image = imlib_create_image(ec->eg.w, ec->eg.h);
 		imlib_context_set_image(image);
 		imlib_context_set_color(bg->color.red, bg->color.green, bg->color.blue, 255);
 		imlib_image_fill_rectangle(0, 0, ec->eg.w, ec->eg.h);
-		mask = imlib_create_image(w, h);
+		mask = imlib_create_image(bi->w, bi->h);
 		imlib_context_set_image(mask);
 		imlib_context_set_color(fg->color.red, fg->color.green, fg->color.blue, 255);
-		imlib_image_fill_rectangle(0, 0, w, h);
+		imlib_image_fill_rectangle(0, 0, bi->w, bi->h);
 		imlib_image_copy_alpha_to_image(bi->bitmap.image, 0, 0);
 		imlib_context_set_image(image);
 		imlib_context_set_blend(0);
 		imlib_context_set_anti_alias(1);
 		imlib_blend_image_onto_image(mask, False,
-				0, 0, w, h, 0, 0, ec->eg.w, ec->eg.h);
+				0, 0, bi->w, bi->h,
+				0, 0, ec->eg.w, ec->eg.h);
 		imlib_context_set_drawable(d);
 		imlib_render_image_on_drawable(ec->eg.x, ec->eg.y);
 		imlib_free_image();
@@ -1922,6 +2010,8 @@ initstyle(Bool reload)
 	scr->gc = XCreateGC(dpy, scr->root, 0, 0);
 	initbuttons();
 	/* redraw all existing clients */
-	for (c = scr->clients; c ; c = c->next)
+	for (c = scr->clients; c ; c = c->next) {
 		drawclient(c);
+		ewmh_update_net_window_extents(c);
+	}
 }

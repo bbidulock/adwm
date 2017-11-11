@@ -145,6 +145,7 @@ togglesticky(Client *c)
 			tagonly(c, v->index);
 		ewmh_update_net_window_state(c);
 		drawclient(c);
+		ewmh_update_net_window_extents(c);
 		arrange(NULL);
 	}
 }
@@ -166,6 +167,8 @@ toggletag(Client *c, int index)
 	if (c->is.managed)
 		ewmh_update_net_window_desktop(c);
 	drawclient(c);
+	if (c->is.managed)
+		ewmh_update_net_window_extents(c);
 	arrange(NULL);
 }
 

@@ -2317,12 +2317,32 @@ ewmh_process_state_atom(Client *c, Atom state, int set)
 void
 ewmh_update_net_window_extents(Client *c)
 {
-	long data[4] = {
-		c->c.b + c->c.v,	/* left */
-		c->c.b + c->c.v,	/* right */
-		c->c.b + c->c.t + c->c.v,	/* top */
-		c->c.b + c->c.g + c->c.v,	/* bottom */
-	};
+	int t = c->c.b + c->c.v + c->c.t;
+	int l = c->c.b + c->c.v;
+	int r = c->c.b + c->c.v;
+	int b = c->c.b + c->c.v + c->c.g;
+	Bool change = False;
+
+	if (c->e.t != t) {
+		c->e.t = t;
+		change = True;
+	}
+	if (c->e.l != l) {
+		c->e.l = l;
+		change = True;
+	}
+	if (c->e.r != r) {
+		c->e.r = r;
+		change = True;
+	}
+	if (c->e.b != b) {
+		c->e.b = b;
+		change = True;
+	}
+	if (!change)
+		return;
+
+	long data[4] = { c->e.l, c->e.r, c->e.t, c->e.b };
 
 	XPRINTF("Updating _NET_WM_FRAME_EXTENTS for 0x%lx\n", c->win);
 	XChangeProperty(dpy, c->win, _XA_NET_FRAME_EXTENTS, XA_CARDINAL, 32,
@@ -2766,41 +2786,6 @@ ewmh_process_net_window_user_time_window(Client *c)
 }
 
 void
-ewmh_process_net_window_icon(Client *c)
-{
-	long *card = NULL;
-	unsigned long n = 0;
-	Window win, w[4] = { None, };
-	int i;
-
-	w[0] = c->win;
-	if ((win = c->leader) && (win != c->win))
-		w[1] = win;
-	if ((win = c->session) && (win != c->win))
-		w[2] = win;
-	if ((win = c->transfor) && (win != c->win) && (win != scr->root))
-		w[3] = win;
-
-	for (i = 0; i < sizeof(w) / sizeof(w[0]); i++)
-		if ((card = getcard(w[i], _XA_NET_WM_ICON, &n)))
-			if (createneticon(c, card, n))
-				break;
-}
-
-void
-kwm_process_window_icon(Client *c)
-{
-	long *card = NULL;
-	unsigned long n = 0;
-
-	if ((card = getcard(c->win, _XA_KWM_WIN_ICON, &n))) {
-		Pixmap icon = (n > 0) ? card[0] : None;
-		Pixmap mask = (n > 1) ? card[1] : None;
-		createkwmicon(c, icon, mask);
-	}
-}
-
-void
 ewmh_process_net_window_opacity(Client *c)
 {
 	long *opacity;
@@ -3158,6 +3143,7 @@ clientmessage(XEvent *e)
 				if (c->is.managed)
 					ewmh_update_net_window_desktop(c);
 				drawclient(c);
+				ewmh_update_net_window_extents(c);
 				arrange(NULL);
 			}
 			/* TODO */
@@ -3446,6 +3432,40 @@ getcard(Window win, Atom atom, unsigned long *nitems)
 
       try_harder:
 	status = XGetWindowProperty(dpy, win, atom, 0L, num, False, XA_CARDINAL,
+				    &real, &format, nitems, &extra,
+				    (unsigned char **) &ret);
+	if (status != Success) {
+		*nitems = 0;
+		return NULL;
+	}
+	if (extra) {
+		num += ((extra + 1) >> 2);
+		if (ret) {
+			XFree(ret);
+			ret = NULL;
+		}
+		goto try_harder;
+	}
+	/* don't return empty properties */
+	if (*nitems == 0) {
+		if (ret) {
+			XFree(ret);
+			ret = NULL;
+		}
+	}
+	return ret;
+}
+
+Pixmap *
+getpixmaps(Window win, Atom atom, unsigned long *nitems)
+{
+	int format, status;
+	Pixmap *ret = NULL;
+	unsigned long extra, num = 64;
+	Atom real;
+
+      try_harder:
+	status = XGetWindowProperty(dpy, win, atom, 0L, num, False, XA_PIXMAP,
 				    &real, &format, nitems, &extra,
 				    (unsigned char **) &ret);
 	if (status != Success) {

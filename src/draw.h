@@ -4,7 +4,7 @@
 #define __LOCAL_DRAW_H__
 
 Bool createwmicon(Client *c);
-Bool createkwmicon(Client *c, Pixmap icon, Pixmap mask);
+Bool createkwmicon(Client *c, Pixmap *data, unsigned long n);
 Bool createneticon(Client *c, long *data, unsigned long n);
 void drawclient(Client *c);
 void freestyle();

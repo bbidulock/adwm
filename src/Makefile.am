@@ -12,6 +12,7 @@ AM_CFLAGS = \
 	$(XRENDER_CFLAGS) \
 	$(SN_CFLAGS) \
 	$(XPM_CFLAGS) \
+	$(PIXBUF_CFLAGS) \
 	$(IMLIB2_CFLAGS)
 AM_CPPFLAGS = -include autoconf.h
 
@@ -23,6 +24,7 @@ adwm_SOURCES = adwm.h actions.h config.h draw.h ewmh.h image.h layout.h parse.h 
 	       adwm.c actions.c config.c draw.c ewmh.c image.c layout.c parse.c resource.c tags.c texture.c
 adwm_LDADD = \
 	$(IMLIB2_LIBS) \
+	$(PIXBUF_LIBS) \
 	$(XPM_LIBS) \
 	$(SN_LIBS) \
 	$(XRENDER_LIBS) \

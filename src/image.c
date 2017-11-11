@@ -212,6 +212,7 @@ initimage(void)
 	}
 	XFree(xvi);
 
+	xtrap_push(False);
 	if (visual) {
 		XSetWindowAttributes wa = { 0, };
 		unsigned long mask = 0;
@@ -241,6 +242,7 @@ initimage(void)
 		scr->colormap = DefaultColormap(dpy, scr->screen);
 		scr->drawable = scr->root;
 	}
+	xtrap_pop();
 #ifdef PIXBUF
 	gdk_pixbuf_xlib_init_with_depth(dpy, scr->screen, scr->depth);
 #endif
@@ -248,9 +250,10 @@ initimage(void)
 	scr->context = imlib_context_new();
 	imlib_context_push(scr->context);
 	imlib_context_set_display(dpy);
-	imlib_context_set_drawable(scr->drawable);
-	imlib_context_set_colormap(scr->colormap);
+	imlib_context_set_drawable(None);
 	imlib_context_set_visual(scr->visual);
+	imlib_context_set_colormap(scr->colormap);
+	imlib_context_set_drawable(scr->drawable);
 	imlib_context_set_dither_mask(1);
 	imlib_context_set_anti_alias(1);
 	imlib_context_set_dither(1);
@@ -258,18 +261,21 @@ initimage(void)
 	imlib_context_set_mask(None);
 	imlib_context_pop();
 
+#if 0
 	scr->rootctx = imlib_context_new();
 	imlib_context_push(scr->rootctx);
 	imlib_context_set_display(dpy);
-	imlib_context_set_drawable(scr->root);
-	imlib_context_set_colormap(DefaultColormap(dpy, scr->screen));
+	imlib_context_set_drawable(None);
 	imlib_context_set_visual(DefaultVisual(dpy, scr->screen));
+	imlib_context_set_colormap(DefaultColormap(dpy, scr->screen));
+	imlib_context_set_drawable(scr->root);
 	imlib_context_set_dither_mask(1);
 	imlib_context_set_anti_alias(1);
 	imlib_context_set_dither(1);
 	imlib_context_set_blend(1);
 	imlib_context_set_mask(None);
 	imlib_context_pop();
+#endif
 #endif
 	scr->dither = True;
 	scr->bpp = 0;

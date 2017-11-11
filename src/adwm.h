@@ -1264,7 +1264,9 @@ struct AScreen {
 	Style style;
 #ifdef IMLIB2
 	Imlib_Context context;		/* context for 32-bit ARGB visuals */
+#if 0
 	Imlib_Context rootctx;		/* context for default root visuals */
+#endif
 #endif
 	Window drawable;		/* proper drawable for GC creation */
 	Visual *visual;

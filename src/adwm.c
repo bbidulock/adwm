@@ -698,7 +698,7 @@ buttonpress(XEvent *e)
 			DPRINTF("No action for On=%d, button=%d, direct=%d\n", OnRoot,
 				button + Button1, direct);
 		XUngrabPointer(dpy, ev->time);
-	} else if ((c = getclient(ev->window, ClientTitle)) && ev->window == c->title) {
+	} else if ((c = getclient(ev->window, ClientTitle)) && ev->window == c->title && c->is.managed) {
 		DPRINTF("TITLE %s: 0x%lx button: %d\n", c->name, ev->window, ev->button);
 		for (i = 0; i < LastElement; i++) {
 			ElementClient *ec = &c->element[i];
@@ -755,7 +755,7 @@ buttonpress(XEvent *e)
 				OnClientTitle, button + Button1, direct);
 		XUngrabPointer(dpy, ev->time);
 		drawclient(c); /* just for button */
-	} else if ((c = getclient(ev->window, ClientGrips)) && ev->window == c->grips) {
+	} else if ((c = getclient(ev->window, ClientGrips)) && ev->window == c->grips && c->is.managed) {
 		if ((action = actions[OnClientGrips][button][direct])) {
 			DPRINTF("Action %p for On=%d, button=%d, direct=%d\n", action,
 				ClientGrips, button + Button1, direct);
@@ -765,7 +765,7 @@ buttonpress(XEvent *e)
 				ClientGrips, button + Button1, direct);
 		XUngrabPointer(dpy, ev->time);
 		drawclient(c); /* just for button */
-	} else if ((c = getclient(ev->window, ClientIcon)) && ev->window == c->icon) {
+	} else if ((c = getclient(ev->window, ClientIcon)) && ev->window == c->icon && c->is.managed) {
 		DPRINTF("ICON %s: 0x%lx button: %d\n", c->name, ev->window, ev->button);
 		if ((CLEANMASK(ev->state) & modkey) != modkey) {
 			XAllowEvents(dpy, ReplayPointer, ev->time);
@@ -780,7 +780,7 @@ buttonpress(XEvent *e)
 				button + Button1, direct);
 		XUngrabPointer(dpy, ev->time);
 		drawclient(c); /* just for button */
-	} else if ((c = getclient(ev->window, ClientWindow)) && ev->window == c->win) {
+	} else if ((c = getclient(ev->window, ClientWindow)) && ev->window == c->win && c->is.managed) {
 		DPRINTF("WINDOW %s: 0x%lx button: %d\n", c->name, ev->window, ev->button);
 		if ((CLEANMASK(ev->state) & modkey) != modkey) {
 			XAllowEvents(dpy, ReplayPointer, ev->time);
@@ -795,7 +795,7 @@ buttonpress(XEvent *e)
 				OnClientWindow, button + Button1, direct);
 		XUngrabPointer(dpy, ev->time);
 		drawclient(c); /* just for button */
-	} else if ((c = getclient(ev->window, ClientFrame)) && ev->window == c->frame) {
+	} else if ((c = getclient(ev->window, ClientFrame)) && ev->window == c->frame && c->is.managed) {
 		DPRINTF("FRAME %s: 0x%lx button: %d\n", c->name, ev->window, ev->button);
 		if (c->is.dockapp) {
 			if ((action = actions[OnClientDock][button][direct])) {
@@ -1046,7 +1046,7 @@ configurerequest(XEvent *e)
 	Client *c;
 	XConfigureRequestEvent *ev = &e->xconfigurerequest;
 
-	if ((c = getclient(ev->window, ClientWindow))) {
+	if ((c = getclient(ev->window, ClientWindow)) && c->is.managed) {
 		configureclient(e, c, c->gravity);
 	} else {
 		XWindowChanges wc;
@@ -1070,7 +1070,7 @@ destroynotify(XEvent *e)
 	Client *c;
 	XDestroyWindowEvent *ev = &e->xdestroywindow;
 
-	if ((c = getclient(ev->window, ClientWindow))) {
+	if ((c = getclient(ev->window, ClientWindow)) && c->is.managed) {
 		_CPRINTF(c, "unmanage destroyed window\n");
 		unmanage(c, CauseDestroyed);
 		return True;
@@ -1119,7 +1119,7 @@ motionnotify(XEvent *e)
 
 	pushtime(ev->time);
 
-	if ((c = getclient(ev->window, ClientTitle)) && ev->window == c->title) {
+	if ((c = getclient(ev->window, ClientTitle)) && ev->window == c->title && c->is.managed) {
 		Bool needdraw = False;
 		int i;
 
@@ -1246,7 +1246,7 @@ enternotify(XEvent *e)
 	if (e->type != EnterNotify || ev->mode != NotifyNormal)
 		return False;
 
-	if ((c = findclient(ev->window))) {
+	if ((c = findclient(ev->window)) && c->is.managed) {
 		if (ev->detail == NotifyInferior)
 			return False;
 		CPRINTF(c, "EnterNotify received\n");
@@ -1254,7 +1254,7 @@ enternotify(XEvent *e)
 		if (c != sel)
 			installcolormaps(event_scr, c, c->cmapwins);
 		return True;
-	} else if ((c = getclient(ev->window, ClientColormap))) {
+	} else if ((c = getclient(ev->window, ClientColormap)) && c->is.managed) {
 		installcolormap(event_scr, ev->window);
 		return True;
 	} else if (ev->window == event_scr->root && ev->detail != NotifyInferior) {
@@ -1276,7 +1276,7 @@ colormapnotify(XEvent *e)
 	XColormapEvent *ev = &e->xcolormap;
 	Client *c;
 
-	if ((c = getclient(ev->window, ClientColormap))) {
+	if ((c = getclient(ev->window, ClientColormap)) && c->is.managed) {
 		if (ev->new) {
 			_CPRINTF(c, "colormap for window 0x%lx changed to 0x%lx\n", ev->window, ev->colormap);
 			if (c == sel)
@@ -1343,7 +1343,7 @@ expose(XEvent *e)
 	XExposeEvent *ev = &e->xexpose;
 	Client *c;
 
-	if ((c = getclient(ev->window, ClientAny))) {
+	if ((c = getclient(ev->window, ClientAny)) && c->is.managed) {
 		XEvent tmp;
 
 		XSync(dpy, False);
@@ -1362,7 +1362,7 @@ shapenotify(XEvent *e)
 	XShapeEvent *ev = (typeof(ev)) e;
 	Client *c;
 
-	if ((c = getclient(ev->window, ClientAny)) && ev->window == c->win) {
+	if ((c = getclient(ev->window, ClientAny)) && ev->window == c->win && c->is.managed) {
 		CPRINTF(c, "Got shape notify, redrawing shapes \n");
 		if (!c->is.dockapp)
 			return configureshapes(c);
@@ -1556,7 +1556,7 @@ focuschange(XEvent *e)
 		}
 		break;
 	}
-	if ((c = findclient(ev->window))) {
+	if ((c = findclient(ev->window)) && c->is.managed) {
 		if (c == took && e->type == FocusOut) {
 			tookfocus(NULL);
 			return True;
@@ -2017,6 +2017,9 @@ findclient(Window fwind)
 	Window froot = None, fparent = None, *children = NULL;
 	unsigned int nchild = 0;
 
+	xtrap_push(False);
+	XGrabServer(dpy);
+
 	do {
 		if (children) {
 			XFree(children);
@@ -2027,6 +2030,9 @@ findclient(Window fwind)
 	}
 	while (!c && fwind != froot && (!froot || fparent != froot) &&
 	       XQueryTree(dpy, fwind, &froot, &fparent, &children, &nchild));
+
+	XUngrabServer(dpy);
+	xtrap_pop();
 
 	return (c);
 }
@@ -2362,7 +2368,7 @@ leavenotify(XEvent *e)
 		if (!scr->managed)
 			focus(NULL); /* XXX */
 	}
-	if ((c = getclient(ev->window, ClientTitle)) && ev->window == c->title) {
+	if ((c = getclient(ev->window, ClientTitle)) && ev->window == c->title && c->is.managed) {
 		Bool needdraw = False;
 		int i;
 
@@ -2940,7 +2946,7 @@ maprequest(XEvent *e)
 	}
 	if (issystray(ev->window))
 		return True;
-	if (!(c = getclient(ev->window, ClientWindow))) {
+	if (!(c = getclient(ev->window, ClientWindow)) && !c->is.managed) {
 		manage(ev->window, &wa);
 		return True;
 	}
@@ -3193,7 +3199,7 @@ alarmnotify(XEvent *e)
 	XWindowChanges wc = { 0, };
 	unsigned mask = 0;
 
-	if (!(c = getclient(ae->alarm, ClientAny))) {
+	if (!(c = getclient(ae->alarm, ClientAny)) || !c->is.managed) {
 		XPRINTF("Recevied alarm notify for unknown alarm 0x%08lx\n", ae->alarm);
 		return False;
 	}
@@ -3237,7 +3243,7 @@ reparentnotify(XEvent *e)
 	Client *c;
 	XReparentEvent *ev = &e->xreparent;
 
-	if ((c = getclient(ev->window, ClientWindow))) {
+	if ((c = getclient(ev->window, ClientWindow)) && c->is.managed) {
 		if (ev->parent != c->frame) {
 			_CPRINTF(c, "unmanage reparented window\n");
 			unmanage(c, CauseReparented);
@@ -3989,21 +3995,21 @@ propertynotify(XEvent *e)
 
 	if ((m = getgroup(ev->window, ClientSession, &n))) {
 		for (i = 0; i < n; i++)
-			if ((c = getclient(m[i], ClientWindow)))
+			if ((c = getclient(m[i], ClientWindow)) && c->is.managed)
 				result |= updatesessionprop(c, ev->atom, ev->state);
 		/* client leader windows must not be managed */
 		return result;
 	} else if ((m = getgroup(ev->window, ClientGroup, &n))) {
 		for (i = 0; i < n; i++)
-			if ((c = getclient(m[i], ClientWindow)))
+			if ((c = getclient(m[i], ClientWindow)) && c->is.managed)
 				result |= updateleaderprop(c, ev->atom, ev->state);
 		/* group leader window may also be managed */
-		if ((c = getclient(ev->window, ClientWindow)))
+		if ((c = getclient(ev->window, ClientWindow)) && c->is.managed)
 			result |= updateclientprop(c, ev->atom, ev->state);
 		return result;
-	} else if ((c = getclient(ev->window, ClientWindow))) {
+	} else if ((c = getclient(ev->window, ClientWindow)) && c->is.managed) {
 		return updateclientprop(c, ev->atom, ev->state);
-	} else if ((c = getclient(ev->window, ClientTimeWindow))) {
+	} else if ((c = getclient(ev->window, ClientTimeWindow)) && c->is.managed) {
 		return updateclienttime(c, ev->atom, ev->state);
 	} else if (ev->window == scr->root) {
 		return updaterootprop(scr->root, ev->atom, ev->state);
@@ -4271,6 +4277,8 @@ scan(void)
 	Window *wins, d1, d2;
 
 	wins = NULL;
+	xtrap_push(False);
+//	XGrabServer(dpy);
 	if (XQueryTree(dpy, scr->root, &d1, &d2, &wins, &num)) {
 		for (i = 0; i < num; i++) {
 			XWindowAttributes wa = { 0, };
@@ -4339,6 +4347,8 @@ scan(void)
 		}
 	} else
 		EPRINTF("XQueryTree(0x%lx) failed\n", scr->root);
+//	XUngrabServer(dpy);
+	xtrap_pop();
 	if (wins)
 		XFree(wins);
 	DPRINTF("done scanning screen %d\n", scr->screen);
@@ -5762,7 +5772,7 @@ unmapnotify(XEvent *e)
 	Client *c;
 	XUnmapEvent *ev = &e->xunmap;
 
-	if ((c = getclient(ev->window, ClientWindow))) {
+	if ((c = getclient(ev->window, ClientWindow)) && c->is.managed) {
 		CPRINTF(c, "self-unmapped window\n");
 		if (ev->send_event) {
 			/* synthetic */

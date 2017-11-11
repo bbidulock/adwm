@@ -3099,7 +3099,7 @@ clientmessage(XEvent *e)
 	Client *c;
 	Atom message_type = ev->message_type;
 
-	if ((c = getclient(ev->window, ClientWindow))) {
+	if ((c = getclient(ev->window, ClientWindow)) && c->is.managed) {
 		if (0) {
 		} else if (message_type == _XA_NET_CLOSE_WINDOW) {
 			if (c->can.close)
@@ -3323,7 +3323,7 @@ clientmessage(XEvent *e)
 		} else if (message_type == _XA_WM_PROTOCOLS) {
 			if (0) {
 			} else if (ev->data.l[0] == _XA_NET_WM_PING) {
-				if ((c = getclient(ev->data.l[2], ClientWindow))) {
+				if ((c = getclient(ev->data.l[2], ClientWindow)) && c->is.managed) {
 					c->is.pinging = 0;
 					c->is.killing = 0;
 				}

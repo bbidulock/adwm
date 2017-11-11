@@ -13,7 +13,8 @@ dist_pkgdata_DATA = \
 	resize.xbm \
 	rhalf.xbm \
 	shade.xbm \
-	stick.xbm
+	stick.xbm \
+	window.xbm
 
 nobase_dist_pkgdata_DATA = \
 	themes/Default/themerc \

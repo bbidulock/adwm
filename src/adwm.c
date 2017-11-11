@@ -5157,6 +5157,12 @@ initstruts(Bool reload)
 static void
 initsizes(Bool reload)
 {
+#if 1
+	int h = scr->style.titleheight;
+	long data[18] = { h, h, h, h, 1, 1, 32, 32, 64, 64, 8, 8, 12, 12, 24, 24, 4, 4 };
+	XChangeProperty(dpy, scr->root, XA_WM_ICON_SIZE, XA_WM_ICON_SIZE, 32,
+			PropModeReplace, (unsigned char *)data, 18);
+#else
 #if 0
 	int h = scr->style.titleheight;
 	XIconSize isizes[3] = {
@@ -5170,6 +5176,7 @@ initsizes(Bool reload)
 	XIconSize isizes = { 32, 32, 64, 64, 8, 8 };
 
 	XSetIconSizes(dpy, scr->root, &isizes, 1);
+#endif
 #endif
 }
 

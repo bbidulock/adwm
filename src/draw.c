@@ -183,7 +183,7 @@ createwmicon(Client *c)
 {
 	Bool result;
 
-	xtrap_push(False);
+	xtrap_push(0,NULL);
 	result = imlib_createwmicon(c);
 	xtrap_pop();
 	return (result);
@@ -193,7 +193,7 @@ createkwmicon(Client *c, Pixmap *data, unsigned long n)
 {
 	Bool result;
 
-	xtrap_push(False);
+	xtrap_push(0,NULL);
 	result = imlib_createkwmicon(c, data, n);
 	xtrap_pop();
 	return (result);
@@ -203,7 +203,7 @@ createdataicon(Client *c, unsigned w, unsigned h, long *data)
 {
 	Bool result;
 
-	xtrap_push(False);
+	xtrap_push(0,NULL);
 	result = imlib_createdataicon(c, w, h, data);
 	xtrap_pop();
 	return (result);
@@ -328,7 +328,7 @@ createwmicon(Client *c)
 {
 	Bool result;
 
-	xtrap_push(False);
+	xtrap_push(0,NULL);
 	result = gdk_createwmicon(c);
 	xtrap_pop();
 	return (result);
@@ -338,7 +338,7 @@ createkwmicon(Client *c, Pixmap *data, unsigned long n)
 {
 	Bool result;
 
-	xtrap_push(False);
+	xtrap_push(0,NULL);
 	result = gdk_createkwmicon(c, data, n);
 	xtrap_pop();
 	return (result);
@@ -348,7 +348,7 @@ createdataicon(Client *c, unsigned w, unsigned h, long *data)
 {
 	Bool result;
 
-	xtrap_push(False);
+	xtrap_push(0,NULL);
 	result = gdk_createdataicon(c, w, h, data);
 	xtrap_pop();
 	return (result);
@@ -401,7 +401,7 @@ createwmicon(Client *c)
 {
 	Bool result;
 
-	xtrap_push(False);
+	xtrap_push(0,NULL);
 	result = xlib_createwmicon(c);
 	xtrap_pop();
 	return (result);
@@ -411,7 +411,7 @@ createkwmicon(Client *c, Pixmap *data, unsigned long n)
 {
 	Bool result;
 
-	xtrap_push(False);
+	xtrap_push(0,NULL);
 	result = xlib_createkwmicon(c, data, n);
 	xtrap_pop();
 	return (result);
@@ -421,7 +421,7 @@ createdataicon(Client *c, unsigned w, unsigned h, long *data)
 {
 	Bool result;
 
-	xtrap_push(False);
+	xtrap_push(0,NULL);
 	result = xlib_createdataicon(c, w, h, data);
 	xtrap_pop();
 	return (result);

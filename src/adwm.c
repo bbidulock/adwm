@@ -2017,7 +2017,7 @@ findclient(Window fwind)
 	Window froot = None, fparent = None, *children = NULL;
 	unsigned int nchild = 0;
 
-	xtrap_push(False);
+	xtrap_push(0,NULL);
 	XGrabServer(dpy);
 
 	do {
@@ -2594,7 +2594,7 @@ manage(Window w, XWindowAttributes *wa)
 		return;
 	}
 	DPRINTF("managing window 0x%lx\n", w);
-	xtrap_push(False);
+	xtrap_push(0,NULL);
 	c = emallocz(sizeof(Client));
 	c->win = w;
 	c->name = ecalloc(1, 1);
@@ -4108,7 +4108,7 @@ getscreen(Window win, Bool query)
 		return (s);
 	if (!query)
 		return (s);
-	xtrap_push(True);
+	xtrap_push(1,NULL);
 	if (XQueryTree(dpy, win, &wroot, &parent, &wins, &num))
 		XFindContext(dpy, wroot, context[ScreenContext], (XPointer *) &s);
 	else
@@ -4277,7 +4277,7 @@ scan(void)
 	Window *wins, d1, d2;
 
 	wins = NULL;
-	xtrap_push(False);
+	xtrap_push(0,NULL);
 //	XGrabServer(dpy);
 	if (XQueryTree(dpy, scr->root, &d1, &d2, &wins, &num)) {
 		for (i = 0; i < num; i++) {
@@ -6324,22 +6324,34 @@ updatecmapwins(Client *c)
 }
 
 void
-_xtrap_push(Bool ignore, const char *time, const char *file, int line, const char *func)
+_xtrap_push(Bool ignore, const char *time, const char *file, int line, const char *func, const char *fmt, ...)
 {
-	static char buf[256] = { 0, };
 	XErrorTrap *trap;
+	va_list args;
+	char *msg;
+	int len;
 
-	snprintf(buf, sizeof(buf), NAME ": X: [%s] %12s: +%4d : %s() :", time, file, line, func);
+	msg = calloc(BUFSIZ + 1, sizeof(*msg));
+	len = snprintf(msg, BUFSIZ, NAME ": X: [%s] %12s: +%4d : %s() : ", time, file, line, func);
+
+	if (fmt && *fmt) {
+		va_start(args, fmt);
+		len += vsnprintf(msg + len, BUFSIZ - len, fmt, args);
+		va_end(args);
+	} else {
+		len += snprintf(msg + len, BUFSIZ - len, "xerror occured during trap\n");
+	}
 	if ((trap = calloc(1, sizeof(*trap)))) {
 		trap->next = traps;
 		traps = trap;
-		trap->trap_string = strdup(buf);
+		trap->trap_string = strdup(msg);
 		XSync(dpy, False);
 		trap->trap_next = NextRequest(dpy);
 		trap->trap_last = LastKnownRequestProcessed(dpy);
 		trap->trap_qlen = QLength(dpy);
 		trap->trap_ignore = ignore;
 	}
+	free(msg);
 }
 
 void
@@ -6389,19 +6401,18 @@ xerror(Display *dsply, XErrorEvent *ee)
 
 	for (trap = traps; trap; trap = trap->next) {
 		if (ee->serial >= trap->trap_next) {
-			fprintf(stderr, "%s xerror occured during trap\n",
-				trap->trap_string);
-			fflush(stderr);
-			ignore = trap->trap_ignore;
-		} else if (!trap->next) {
-			if (ee->serial > trap->trap_last) {
-				fprintf(stderr, "%s xerror occured before trap\n",
-					trap->trap_string);
+			if (trap->trap_string) {
+				fputs(trap->trap_string, stderr);
+				if (trap->trap_string[strlen(trap->trap_string)-1] != '\n')
+					fputc('\n', stderr);
 				fflush(stderr);
 			}
+			ignore = trap->trap_ignore;
+			break;
 		}
 	}
-
+	if (!trap)
+		trap = traps;
 	snprintf(num, 80, "%d", ee->request_code);
 	XGetErrorDatabaseText(dsply, "XRequest", num, "", req, 80);
 	if (!req[0])
@@ -6409,13 +6420,18 @@ xerror(Display *dsply, XErrorEvent *ee)
 	if (XGetErrorText(dsply, ee->error_code, msg, 80) != Success)
 		msg[0] = '\0';
 	critical = xerror_critical(dsply, ee, trap);
-	if (critical) {
-		EPRINTF("Fatal X error %s(0x%lx): %s\n", req, ee->resourceid, msg);
+	EPRINTF("X error %s(0x%lx): %s\n", req, ee->resourceid, msg);
+	EPRINTF("\tResource id 0x%lx\n", ee->resourceid);
+	EPRINTF("\tFailed request %lu\n", ee->serial);
+	if (trap)
+		EPRINTF("\tNext request trap %lu\n", trap->trap_next);
+		EPRINTF("\tNext request now  %lu\n", NextRequest(dsply));
+	if (trap)
+		EPRINTF("\tLast known processed request trap %lu\n", trap->trap_last);
+		EPRINTF("\tLast known processed request now  %lu\n", LastKnownRequestProcessed(dsply));
+	if (critical || ignore)
 		dumpstack(__FILE__, __LINE__, __func__);
-	} else {
-		EPRINTF("X error %s(0x%lx): %s\n", req, ee->resourceid, msg);
-	}
-	if (ignore || !critical) {
+	if (!critical || ignore) {
 		return 0;
 	}
 	return xerrorxlib(dsply, ee);	/* may call exit */

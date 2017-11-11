@@ -1480,11 +1480,12 @@ do { \
 	_was_here--; \
 } while(0)
 
-void _xtrap_push(Bool ignore, const char *time, const char *file, int line, const char *func);
+void _xtrap_push(Bool ignore, const char *time, const char *file, int line, const char *func, const char *fmt, ...)
+     __attribute__((__format__(__printf__, 6, 7)));
 void _xtrap_pop(int canary);
 
-#define xtrap_push(ig) int _xtrap_canary = 0; do { _xtrap_push(ig, _timestamp(), __FILE__, __LINE__, __func__); } while (0)
-#define xtrap_pop()    do { _xtrap_pop (_xtrap_canary); } while (0)
+#define xtrap_push(ig,args...) int _xtrap_canary = 0; do { _xtrap_push(ig, _timestamp(), __FILE__, __LINE__, __func__, args); } while (0)
+#define xtrap_pop()            do { _xtrap_pop (_xtrap_canary); } while (0)
 
 
 #define OPAQUE			0xffffffff

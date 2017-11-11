@@ -212,7 +212,7 @@ initimage(void)
 	}
 	XFree(xvi);
 
-	xtrap_push(False);
+	xtrap_push(0,NULL);
 	if (visual) {
 		XSetWindowAttributes wa = { 0, };
 		unsigned long mask = 0;

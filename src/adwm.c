@@ -2852,7 +2852,6 @@ manage(Window w, XWindowAttributes *wa)
 
 	ban(c);
 
-	ewmh_process_net_startup_id(c);
 	ewmh_process_net_window_desktop(c);
 	ewmh_process_net_window_desktop_mask(c);
 	ewmh_process_net_window_sync_request_counter(c);
@@ -2861,6 +2860,7 @@ manage(Window w, XWindowAttributes *wa)
 	c->is.managed = True;
 	setwmstate(c->win, c->winstate, c->is.dockapp ? (c->icon ? : c->win) : None);
 	ewmh_update_net_window_state(c);
+	ewmh_process_net_startup_id(c);
 	ewmh_update_net_window_desktop(c);
 	ewmh_update_net_window_extents(c);
 	ewmh_process_net_window_icon(c);

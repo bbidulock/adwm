@@ -321,7 +321,7 @@ parse_startup_id(const char *id, char **launcher_p, char **launchee_p, char **ho
 }
 
 #ifdef STARTUP_NOTIFICATION
-static Notify *notifies;
+static Notify *notifies = NULL;
 
 struct SnStartupSequence
 {
@@ -342,10 +342,6 @@ struct SnStartupSequence
 	unsigned int timestamp_set : 1;
 	int creation_serial;
 	struct timeval initiation_time;
-#ifdef sn_startup_sequence_get_names_and_values
-	char **names;
-	char **values;
-#endif
 };
 
 static void
@@ -354,10 +350,6 @@ n_new_notify(SnStartupSequence *seq)
 	const char *text;
 	Notify *n;
 	Time timestamp;
-#ifdef sn_startup_sequence_get_names_and_values
-	char **names, **values, **k, **v;
-	int i;
-#endif
 
 	text = sn_startup_sequence_get_id(seq);
 	n = emallocz(sizeof(*n));
@@ -373,17 +365,6 @@ n_new_notify(SnStartupSequence *seq)
 		if ((timestamp = sn_startup_sequence_get_timestamp(seq)) != -1)
 			n->timestamp = timestamp;
 	DPRINTF("NOTIFY: NEW: %s\n", n->id);
-#ifdef sn_startup_sequence_get_names_and_values
-	sn_startup_sequence_get_names_and_values(seq, &names, &values);
-	for (i = 0, k = names; (*k); k++, i++) ;
-	n->names = calloc(i + 1, sizeof(*names));
-	n->values = calloc(i + 1, sizeof(*values));
-	for (i = 0, k = names, v = values; (*k); k++, v++, i++) {
-		n->names[i] = strdup(*k);
-		n->values[i] = strdup(*v);
-		DPRINTF("NOTIFY: NEW: %s: %s = %s\n", n->id, n->names[i], n->values[i]);
-	}
-#endif
 	n->next = notifies;
 	notifies = n;
 }
@@ -394,38 +375,10 @@ static void
 n_chg_notify(SnStartupSequence *seq)
 {
 	Notify *n;
-#ifdef sn_startup_sequence_get_names_and_values
-	char **names, **values, **nk, **nv, **ok, **ov;
-	int i, j;
-#endif
 
 	for (n = notifies; n && n->seq != seq; n = n->next) ;
 	if (n) {
 		DPRINTF("NOTIFY: CHANGE: %s\n", n->id);
-#ifdef sn_startup_sequence_get_names_and_values
-		sn_startup_sequence_get_names_and_values(seq, &names, &values);
-		for (i = 0, nk = names; (*nk); nk++, i++) ;
-		for (j = 0, ok = n->names; (*ok); ok++, j++) ;
-		n->names = reallocarray(n->names, i + j + 1, sizeof(*names));
-		n->values = reallocarray(n->values, i + j + 1, sizeof(*values));
-		for (nk = names, nv = values; (*nk); nk++, nv++) {
-			for (ok = n->names, ov = n->values; (*ok); ok++, ov++) {
-				if (!strcmp(*ok, *nk)) {
-					free(*ov);
-					*ov = strdup(*nv);
-					DPRINTF("NOTIFY: CHANGE: %s: %s = %s\n", n->id, *ok, *ov);
-					break;
-				}
-			}
-			if (!(*ok)) {
-				DPRINTF("NOTIFY: CHANGE: %s: %s = %s\n", n->id, *nk, *nv);
-				*ok++ = strdup(*nk);
-				*ov++ = strdup(*nv);
-				*ok = NULL;
-				*ov = NULL;
-			}
-		}
-#endif
 		if (n->assigned) {
 			Client *c;
 

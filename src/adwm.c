@@ -1050,7 +1050,7 @@ configurerequest(XEvent *e)
 	XConfigureRequestEvent *ev = &e->xconfigurerequest;
 
 	if ((c = getclient(ev->window, ClientWindow)) && c->is.managed) {
-		configureclient(e, c, c->gravity);
+		configureclient(e, c, c->sh.win_gravity);
 	} else {
 		XWindowChanges wc;
 
@@ -5604,7 +5604,7 @@ unmanage(Client *c, WithdrawCause cause)
 			XUngrabButton(dpy, Button3, AnyModifier, c->icon);
 		}
 		if (cause != CauseReparented) {
-			if (c->gravity == StaticGravity || c->is.dockapp) {
+			if (c->sh.win_gravity == StaticGravity || c->is.dockapp) {
 				/* restore static geometry */
 				wc.x = c->s.x;
 				wc.y = c->s.y;
@@ -5876,155 +5876,88 @@ updatehints(Client *c)
 void
 updatesizehints(Client *c)
 {
-	long *hints, msize = 0;
-	unsigned long n = 0;
+	long supplied = 0;
 
 	/* ICCCM 2.0/4.1.9: Window managers will ignore any WM_NORMAL_HINTS properties
 	   they fined on icon windows. */
-#if 0
-	if (!XGetWMNormalHints(dpy, c->win, &c->sh, &msize) || !c->sh.flags)
-		c->sh.flags = PSize;
-#else
-	if ((hints = gethints(c->win, XA_WM_NORMAL_HINTS, &n))) {
-		// 1 flags
-		c->sh.flags = hints[0];
-		CPRINTF(c, "got %lu words of sh hints 0x%lx\n", n, c->sh.flags);
-		// 2 x
-		// 3 y
-		if (n >= 3) {
-			msize |= (USPosition | PPosition);
-			if (c->sh.flags & (USPosition | PPosition)) {
-				c->sh.x = hints[1];
-				c->sh.y = hints[2];
-			}
-		}
-		// 4 width
-		// 5 height
-		if (n >= 5) {
-			msize |= (USSize | PSize);
-			if (c->sh.flags & (USSize | PSize)) {
-				c->sh.width = hints[3];
-				c->sh.height = hints[4];
-			}
-		}
-		// 6 min_width
-		// 7 min_height
-		if (n >= 7) {
-			msize |= (PMinSize);
-			if (c->sh.flags & (PMinSize)) {
-				c->sh.min_width = hints[5];
-				c->sh.min_height = hints[6];
-			}
-		}
-		// 8 max_width
-		// 9 max_height
-		if (n >= 9) {
-			msize |= (PMaxSize);
-			if (c->sh.flags & (PMaxSize)) {
-				c->sh.max_width = hints[7];
-				c->sh.max_height = hints[8];
-			}
-		}
-		// 10 width_inc
-		// 11 height_inc
-		if (n >= 11) {
-			msize |= (PResizeInc);
-			if (c->sh.flags & (PResizeInc)) {
-				c->sh.width_inc = hints[9];
-				c->sh.height_inc = hints[10];
-			}
-		}
-		// 12 min_aspect.x
-		// 13 min_aspect.y
-		// 14 max_aspect.x
-		// 15 max_aspect.y
-		if (n >= 15) {
-			msize |= (PAspect);
-			if (c->sh.flags & (PAspect)) {
-				c->sh.min_aspect.x = hints[11];
-				c->sh.min_aspect.y = hints[12];
-				c->sh.max_aspect.x = hints[13];
-				c->sh.max_aspect.y = hints[14];
-			}
-		}
-		// 16 base_width
-		// 17 base_height
-		if (n >= 17) {
-			msize |= (PBaseSize);
-			if (c->sh.flags & (PBaseSize)) {
-				c->sh.base_width = hints[15];
-				c->sh.base_height = hints[16];
-			}
-		}
-		// 18 win_gravity
-		if (n >= 18) {
-			msize |= (PWinGravity);
-			if (c->sh.flags & (PWinGravity)) {
-				c->sh.win_gravity = hints[17];
-			}
-		}
-		c->sh.flags &= msize;
-	}
-#endif
-	c->flags = c->sh.flags;
+	if (!XGetWMNormalHints(dpy, c->win, &c->sh, &supplied))
+		return;
 
-	if (c->flags & (USPosition | PPosition)) {
-		if (c->sh.x || c->sh.y) {
-			c->u.x = c->sh.x;
-			c->u.y = c->sh.y;
-		}
+	if (c->sh.flags & (USPosition | PPosition)) {
+		/* can't trust these values, overwrite with those from
+		   XGetWindowAttributes() */
+		c->sh.x = c->u.x;
+		c->sh.y = c->u.y;
+	} else {
+		c->sh.x = 0;
+		c->sh.y = 0;
 	}
-	if (c->flags & (USSize | PSize)) {
-		if (c->sh.width && c->sh.height) {
-			/* some clients (namely ROXterm) are putting pure garbage in
-			   these fields. */
-			c->u.w = c->sh.width;
-			c->u.h = c->sh.height;
-		}
+	if (c->sh.flags & (USSize | PSize)) {
+		/* can't trust these values, overwrite with those from
+		   XGetWindowAttributes() */
+		/* some clients (namely ROXterm) are putting pure garbage in these
+		   fields. */
+		c->sh.width = c->u.w;
+		c->sh.height = c->u.h;
+	} else {
+		c->sh.width = 0;
+		c->sh.height = 0;
 	}
-	if (c->flags & PBaseSize) {
-		c->basew = c->sh.base_width;
-		c->baseh = c->sh.base_height;
-	} else if (c->flags & PMinSize) {
-		c->basew = c->sh.min_width;
-		c->baseh = c->sh.min_height;
-	} else
-		c->basew = c->baseh = 0;
-	if (c->flags & PResizeInc) {
-		c->incw = c->sh.width_inc;
-		c->inch = c->sh.height_inc;
-	} else
-		c->incw = c->inch = 0;
-	if (c->flags & PMaxSize) {
-		c->maxw = c->sh.max_width;
-		c->maxh = c->sh.max_height;
-	} else
-		c->maxw = c->maxh = 0;
-	if (c->flags & PMinSize) {
-		c->minw = c->sh.min_width;
-		c->minh = c->sh.min_height;
-	} else if (c->flags & PBaseSize) {
-		c->minw = c->sh.base_width;
-		c->minh = c->sh.base_height;
-	} else
-		c->minw = c->minh = 0;
-	if (c->flags & PAspect) {
-		c->minax = c->sh.min_aspect.x;
-		c->minay = c->sh.min_aspect.y;
-		c->maxax = c->sh.max_aspect.x;
-		c->maxay = c->sh.max_aspect.y;
-	} else
-		c->minax = c->maxax = c->minay = c->maxay = 0;
-	if (c->flags & PWinGravity)
-		c->gravity = c->sh.win_gravity;
+	if (c->sh.flags & PBaseSize) {
+		c->sh.base_width = c->sh.base_width;
+		c->sh.base_height = c->sh.base_height;
+	} else if (c->sh.flags & PMinSize) {
+		c->sh.base_width = c->sh.min_width;
+		c->sh.base_height = c->sh.min_height;
+	} else {
+		c->sh.base_width = 0;
+		c->sh.base_height = 0;
+	}
+	if (c->sh.flags & PResizeInc) {
+		c->sh.width_inc = c->sh.width_inc;
+		c->sh.height_inc = c->sh.height_inc;
+	} else {
+		c->sh.width_inc = 0;
+		c->sh.height_inc = 0;
+	}
+	if (c->sh.flags & PMaxSize) {
+		c->sh.max_width = c->sh.max_width;
+		c->sh.max_height = c->sh.max_height;
+	} else {
+		c->sh.max_width = 0;
+		c->sh.max_height = 0;
+	}
+	if (c->sh.flags & PMinSize) {
+		c->sh.min_width = c->sh.min_width;
+		c->sh.min_height = c->sh.min_height;
+	} else if (c->sh.flags & PBaseSize) {
+		c->sh.min_width = c->sh.base_width;
+		c->sh.min_height = c->sh.base_height;
+	} else {
+		c->sh.min_width = 0;
+		c->sh.min_height = 0;
+	}
+	if (c->sh.flags & PAspect) {
+		c->sh.min_aspect.x = c->sh.min_aspect.x;
+		c->sh.min_aspect.y = c->sh.min_aspect.y;
+		c->sh.max_aspect.x = c->sh.max_aspect.x;
+		c->sh.max_aspect.y = c->sh.max_aspect.y;
+	} else {
+		c->sh.min_aspect.x = 0;
+		c->sh.min_aspect.y = 0;
+		c->sh.max_aspect.x = 0;
+		c->sh.max_aspect.y = 0;
+	}
+	if (c->sh.flags & PWinGravity)
+		c->sh.win_gravity = c->sh.win_gravity;
 	else
-		c->gravity = NorthWestGravity;
-	if (c->maxw && c->minw && c->maxw == c->minw) {
+		c->sh.win_gravity = NorthWestGravity;
+	if (c->sh.max_width && c->sh.min_width && c->sh.max_width == c->sh.min_width) {
 		c->can.sizeh = False;
 		c->can.maxh = False;
 		c->can.fillh = False;
 	}
-	if (c->maxh && c->minh && c->maxh == c->minh) {
+	if (c->sh.max_height && c->sh.min_height && c->sh.max_height == c->sh.min_height) {
 		c->can.sizev = False;
 		c->can.maxv = False;
 		c->can.fillv = False;

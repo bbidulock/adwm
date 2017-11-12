@@ -941,10 +941,10 @@ struct Client {
 	int monitor;			/* initial monitor */
 	Extents e;
 	ClientGeometry c, r, s, u;	/* current, restore, static, supplied */
-	int basew, baseh, incw, inch, maxw, maxh, minw, minh;
-	int minax, maxax, minay, maxay, gravity;
+//	int basew, baseh, incw, inch, maxw, maxh, minw, minh;
+//	int minax, maxax, minay, maxay, gravity;
 	int ignoreunmap;
-	long flags;
+//	long flags;
 	int wintype;
 	int winstate;
 	int breadcrumb;

@@ -3234,7 +3234,7 @@ clientmessage(XEvent *e)
 				cev.height = ev->data.l[4];
 			}
 			if (gravity == 0)
-				gravity = c->gravity;
+				gravity = c->sh.win_gravity;
 			configureclient((XEvent *) &cev, c, gravity);
 		} else if (message_type == _XA_NET_WM_MOVERESIZE) {
 			int x_root = (int) ev->data.l[0];

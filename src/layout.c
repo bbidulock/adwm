@@ -1013,35 +1013,35 @@ constrain(Client *c, ClientGeometry *g)
 		h = 1;
 
 	/* temporarily remove base dimensions */
-	w -= c->basew;
-	h -= c->baseh;
+	w -= c->sh.base_width;
+	h -= c->sh.base_height;
 
 	/* adjust for aspect limits */
-	if (c->minay > 0 && c->maxay > 0 && c->minax > 0 && c->maxax > 0) {
-		if (w * c->maxay > h * c->maxax)
-			w = h * c->maxax / c->maxay;
-		else if (w * c->minay < h * c->minax)
-			h = w * c->minay / c->minax;
+	if (c->sh.min_aspect.y > 0 && c->sh.max_aspect.y > 0 && c->sh.min_aspect.x > 0 && c->sh.max_aspect.x > 0) {
+		if (w * c->sh.max_aspect.y > h * c->sh.max_aspect.x)
+			w = h * c->sh.max_aspect.x / c->sh.max_aspect.y;
+		else if (w * c->sh.min_aspect.y < h * c->sh.min_aspect.x)
+			h = w * c->sh.min_aspect.y / c->sh.min_aspect.x;
 	}
 
 	/* adjust for increment value */
-	if (c->incw)
-		w -= w % c->incw;
-	if (c->inch)
-		h -= h % c->inch;
+	if (c->sh.width_inc)
+		w -= w % c->sh.width_inc;
+	if (c->sh.height_inc)
+		h -= h % c->sh.height_inc;
 
 	/* restore base dimensions */
-	w += c->basew;
-	h += c->baseh;
+	w += c->sh.base_width;
+	h += c->sh.base_height;
 
-	if (c->minw > 0 && w < c->minw)
-		w = c->minw;
-	if (c->minh > 0 && h < c->minh)
-		h = c->minh;
-	if (c->maxw > 0 && w > c->maxw)
-		w = c->maxw;
-	if (c->maxh > 0 && h > c->maxh)
-		h = c->maxh;
+	if (c->sh.min_width > 0 && w < c->sh.min_width)
+		w = c->sh.min_width;
+	if (c->sh.min_height > 0 && h < c->sh.min_height)
+		h = c->sh.min_height;
+	if (c->sh.max_width > 0 && w > c->sh.max_width)
+		w = c->sh.max_width;
+	if (c->sh.max_height > 0 && h > c->sh.max_height)
+		h = c->sh.max_height;
 
 	/* restore decoration */
 	h += g->t + g->g;
@@ -4885,13 +4885,13 @@ moveresizeclient(Client *c, int dx, int dy, int dw, int dh, int gravity)
 		g = c->c;
 		getreference(&xr, &yr, (Geometry *) &g, gravity);
 
-		if (dw && c->incw && (abs(dw) < c->incw))
-			dw = (dw / abs(dw)) * c->incw;
-		if (dh && c->inch && (abs(dh) < c->inch))
-			dh = (dh / abs(dh)) * c->inch;
+		if (dw && c->sh.width_inc && (abs(dw) < c->sh.width_inc))
+			dw = (dw / abs(dw)) * c->sh.width_inc;
+		if (dh && c->sh.height_inc && (abs(dh) < c->sh.height_inc))
+			dh = (dh / abs(dh)) * c->sh.height_inc;
 		g.w += dw;
 		g.h += dh;
-		if (c->gravity != StaticGravity) {
+		if (c->sh.win_gravity != StaticGravity) {
 			DPRINTF("CALLING: constrain()\n");
 			constrain(c, &g);
 		}
@@ -5235,7 +5235,7 @@ place_undermouse(Client *c, WindowPlacement p, ClientGeometry *g, View *v, Worka
 	}
 	getworkarea(v->curmon, w);
 
-	putreference(g->x, g->y, (Geometry *) g, c->gravity);
+	putreference(g->x, g->y, (Geometry *) g, c->sh.win_gravity);
 
 	/* keep center of window inside work area, otherwise wnck task bars figure its on
 	   a different monitor */
@@ -5667,9 +5667,9 @@ moveto(Client *c, RelativeDirection position)
 
 	switch (position) {
 	case RelativeNone:
-		if (c->gravity == ForgetGravity)
+		if (c->sh.win_gravity == ForgetGravity)
 			return;
-		return moveto(c, c->gravity);
+		return moveto(c, c->sh.win_gravity);
 	case RelativeNorthWest:
 		g.x = w.x;
 		g.y = w.y;
@@ -5740,9 +5740,9 @@ moveby(Client *c, RelativeDirection direction, int amount)
 		int dx, dy;
 
 	case RelativeNone:
-		if (c->gravity == ForgetGravity)
+		if (c->sh.win_gravity == ForgetGravity)
 			return;
-		return moveby(c, c->gravity, amount);
+		return moveby(c, c->sh.win_gravity, amount);
 	case RelativeNorthWest:
 		g.x -= amount;
 		g.y -= amount;
@@ -5841,9 +5841,9 @@ snapto(Client *c, RelativeDirection direction)
 
 	switch (direction) {
 	case RelativeNone:
-		if (c->gravity == ForgetGravity)
+		if (c->sh.win_gravity == ForgetGravity)
 			return;
-		return snapto(c, c->gravity);
+		return snapto(c, c->sh.win_gravity);
 	case RelativeNorthWest:
 		min1 = g.y + g.b;
 		max1 = g.y + g.b + g.h;
@@ -6067,9 +6067,9 @@ edgeto(Client *c, int direction)
 
 	switch (direction) {
 	case RelativeNone:
-		if (c->gravity == ForgetGravity)
+		if (c->sh.win_gravity == ForgetGravity)
 			return;
-		return edgeto(c, c->gravity);
+		return edgeto(c, c->sh.win_gravity);
 	case RelativeNorthWest:
 		g.x = w.x;
 		g.y = w.y;

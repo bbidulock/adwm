@@ -205,7 +205,7 @@ k_moveresizekb(XEvent *e, Key *k)
 		int dw = 0, dh = 0, dx = 0, dy = 0;
 
 		sscanf(k->arg, "%d %d %d %d", &dx, &dy, &dw, &dh);
-		moveresizekb(sel, dx, dy, dw, dh, sel->gravity);
+		moveresizekb(sel, dx, dy, dw, dh, sel->sh.win_gravity);
 	}
 }
 

@@ -344,6 +344,79 @@ struct SnStartupSequence
 	struct timeval initiation_time;
 };
 
+static Notify **
+n_find_n(Notify * n)
+{
+	Notify *np, **npp = NULL;
+
+	if (!n) {
+		EPRINTF("Passed a null pointer\n");
+		return (npp);
+	}
+	for (npp = &notifies; (np = *npp) && np != n; npp = &np->next) ;
+	if (!np || np != n) {
+		EPRINTF("Could not find notify %p\n", n);
+		return (NULL);
+	}
+	return (npp);
+}
+
+static Notify *
+n_find_seq(SnStartupSequence *seq)
+{
+	Notify *n = NULL;
+
+	if (!seq) {
+		EPRINTF("Passed a nulil pointer\n");
+		return (n);
+	}
+	for (n = notifies; n && n->seq != seq; n = n->next) ;
+	if (!n) {
+		const char *id = sn_startup_sequence_get_id(seq);
+
+		EPRINTF("Could not find sequence %p : %s\n", seq, id);
+		/* let's try harder */
+		for (n = notifies; n && strcmp(n->id, id); n = n->next) ;
+		if (!n)
+			EPRINTF("Still couldn't find sequence %p : %s\n", seq, id);
+		else
+			EPRINTF("Found sequence by id!\n");
+	}
+	return (n);
+}
+
+static Client *
+c_find_seq(SnStartupSequence *seq)
+{
+	Client *c = NULL;
+
+	if (!seq) {
+		EPRINTF("Passed a nulil pointer\n");
+		return (c);
+	}
+	for (c = scr->clients; c && c->seq != seq; c = c->next) ;
+	if (!c) {
+		const char *id = sn_startup_sequence_get_id(seq);
+
+		EPRINTF("Could not find sequence %p : %s\n", seq, id);
+		/* let's try harder */
+		for (c = scr->clients; c; c = c->next) {
+			const char *id2;
+
+			if (!c->seq)
+				continue;
+			id2 = sn_startup_sequence_get_id(c->seq);
+			if (!strcmp(id, id2))
+				break;
+		}
+		if (!c)
+			EPRINTF("Still couldn't find sequence %p : %s\n", seq, id);
+		else
+			EPRINTF("Found sequence by id!\n");
+	}
+	return (c);
+}
+
 static void
 n_new_notify(SnStartupSequence *seq)
 {
@@ -374,50 +447,44 @@ static void ewmh_update_sn_app_props(Client *c, Notify *n);
 static void
 n_chg_notify(SnStartupSequence *seq)
 {
-	Notify *n;
+	Notify *n = n_find_seq(seq);
 
-	for (n = notifies; n && n->seq != seq; n = n->next) ;
 	if (n) {
 		DPRINTF("NOTIFY: CHANGE: %s\n", n->id);
 		if (n->assigned) {
 			Client *c;
 
-			for (c = scr->clients; c && c->seq != seq; c = c->next) ;
-			if (c)
+			if ((c = c_find_seq(seq)))
 				ewmh_update_sn_app_props(c, n);
 		}
+	} else {
+		/* may be a sequence that we never say the start of */
+		/* jsut skip it for now */
 	}
 }
 
 static void
 n_del_notify(Notify *n)
 {
-	Notify *np, **npp;
-	char **p;
+	Notify **np;
 
-	for (npp = &notifies;(np = *npp) != n;) npp = &np->next;
-	assert(np == n);
-	if (np == n)
-		*npp = n->next;
+	np = n_find_n(n);
+	assert(np != NULL);
+	*np = n->next;
 	sn_startup_sequence_unref(n->seq);
 	free(n->id);
 	free(n->launcher);
 	free(n->launchee);
 	free(n->hostname);
-	for (p = n->names; p && (*p); p++) free(*p);
-	for (p = n->values; p && (*p); p++) free(*p);
-	free(n->names);
-	free(n->values);
+	memset(n, 0, sizeof(*n));
 	free(n);
 }
 
 static void
 n_end_notify(SnStartupSequence *seq)
 {
-	Notify *n;
+	Notify *n = n_find_seq(seq);
 
-	for (n = notifies; n && n->seq != seq; n = n->next) ;
-	assert(n != NULL);
 	if (n) {
 		DPRINTF("NOTIFY: END: %s\n", n->id);
 		n->complete = True;
@@ -427,6 +494,9 @@ n_end_notify(SnStartupSequence *seq)
 		   */
 		if (n->assigned)
 			n_del_notify(n);
+	} else {
+		/* May be completiion of a sqeuence that we never got the begin for */
+		/* we just won't ref it and were are done with it */
 	}
 }
 

@@ -19,24 +19,158 @@
 
 #if defined IMLIB2 && defined USE_IMLIB2
 Bool
-imlib_createpixmapicon(Client *c, Pixmap icon, Pixmap mask)
+createbitmapicon(Client *c, Pixmap icon, Pixmap mask, unsigned w, unsigned h)
 {
-	Window root;
-	int x, y;
-	unsigned int w, h, b, d;
-	ButtonImage *bi;
 	Imlib_Image image;
+	ButtonImage *bi;
+	DATA32 *pixels, *p;
+	XImage *xicon, *xmask = NULL;
+	unsigned i, j;
 
-	if (!c || !icon)
+	if (h <= scr->style.titleheight + 2) {
+		bi = &c->iconbtn;
+		bi->x = bi->y = bi->b = 0;
+		bi->d = 1;
+		bi->w = w;
+		bi->h = h;
+		if (bi->h > scr->style.titleheight) {
+			/* read lower down into image to clip top and bottom by same
+			   amount */
+			bi->y += (bi->h - scr->style.titleheight) / 2;
+			bi->h = scr->style.titleheight;
+		}
+		bi->bitmap.draw = icon;
+		bi->bitmap.mask = mask;
+		bi->present = True;
+		return (True);
+	}
+	/* need to scale: do it as 32-bit ARGB white visual */
+	if (!(xicon = XGetImage(dpy, icon, 0, 0, w, h, 0x1, XYBitmap))) {
+		EPRINTF("could not get bitmap 0x%lx %ux%u\n", icon, w, h);
 		return (False);
-	if (!XGetGeometry(dpy, icon, &root, &x, &y, &w, &h, &b, &d))
+	}
+	if (mask && !(xmask = XGetImage(dpy, mask, 0, 0, w, h, 0x1, XYBitmap))) {
+		EPRINTF("could not get bitmap 0x%lx %ux%u\n", icon, w, h);
+		XDestroyImage(xicon);
 		return (False);
+	}
+	imlib_context_push(scr->context);
+	image = imlib_create_image(w, h);
+	if (!image) {
+		EPRINTF("could not create image %ux%u\n", w, h);
+		imlib_context_pop();
+		XDestroyImage(xicon);
+		if (xmask)
+			XDestroyImage(xmask);
+		return (False);
+	}
+	imlib_context_set_image(image);
+	imlib_context_set_mask(None);
+	pixels = imlib_image_get_data();
+	if (!pixels) {
+		EPRINTF("could not get image data\n");
+		imlib_free_image();
+		imlib_context_pop();
+		XDestroyImage(xicon);
+		if (xmask)
+			XDestroyImage(xmask);
+		return (False);
+	}
+	for (p = pixels, i = 0; i < h; i++) {
+		for (j = 0; j < w; j++, p++) {
+			/* treat anything outside the bitmap as zero */
+			if (i <= xicon->height && j <= xicon->width
+			    && XGetPixel(xicon, i, j)) {
+				/* a one in the bitmap */
+				*p = 0xffffffff;	/* opaque white */
+			} else {
+				/* a zero in the bitmap */
+				*p = 0xff000000;	/* opaque black */
+			}
+		}
+	}
+	XDestroyImage(xicon);
+	if (xmask) {
+		for (p = pixels, i = 0; i < h; i++) {
+			for (j = 0; j < w; j++, p++) {
+			/* treat anything outside the bitmap as zero */
+				if (i <= xmask->height && j <= xmask->width
+				    && XGetPixel(xmask, i, j)) {
+					/* a one in the bitmap */
+					*p |= 0xff000000;	/* opaque */
+				} else {
+					/* a zero in the bitmap */
+					*p &= 0x00ffffff;	/* transparent */
+				}
+			}
+		}
+		XDestroyImage(xmask);
+	}
+	imlib_image_put_back_data(pixels);
+	imlib_image_set_has_alpha(1);
+	if (h > scr->style.titleheight) {
+		unsigned hs = scr->style.titleheight, ws = hs;
+		Imlib_Image scaled =
+			imlib_create_cropped_scaled_image(0, 0, w, h, ws, hs);
+
+		imlib_free_image();
+		if (!scaled) {
+			EPRINTF("could not scale image %ux%u to %dx%d\n", w, h, ws, hs);
+			imlib_context_pop();
+			return (False);
+		}
+		imlib_context_set_image(scaled);
+		imlib_context_set_mask(None);
+		image = scaled;
+		w = ws;
+		h = hs;
+	}
 	bi = &c->iconbtn;
+	bi->x = bi->y = bi->b = 0;
+	bi->d = scr->depth;
+	bi->w = w;
+	bi->h = h;
+#if 1
+	if (bi->pixmap.draw) {
+		imlib_free_pixmap_and_mask(bi->pixmap.draw);
+		bi->pixmap.draw = None;
+		bi->pixmap.mask = None;
+	}
+	imlib_render_pixmaps_for_whole_image(&bi->pixmap.draw, &bi->pixmap.mask);
+	imlib_free_image();
+#else
+	if (bi->pixmap.image) {
+		imlib_context_set_image(bi->pixmap.image);
+		imlib_context_set_mask(None);
+		imlib_free_image();
+	}
+	bi->pixmap.image = image;
+#endif
+	bi->present = True;
+	imlib_context_pop();
+	return True;
+}
+Bool
+createpixmapicon(Client *c, Pixmap icon, Pixmap mask, unsigned w, unsigned h, unsigned d)
+{
+	Imlib_Image image;
+	ButtonImage *bi;
+
 	imlib_context_push(scr->context);
 	imlib_context_set_drawable(None);
-	imlib_context_set_visual(DefaultVisual(dpy, scr->screen));
-	imlib_context_set_colormap(DefaultColormap(dpy, scr->screen));
-	imlib_context_set_drawable(scr->root);
+	if (d == DefaultDepth(dpy, scr->screen)) {
+		imlib_context_set_visual(DefaultVisual(dpy, scr->screen));
+		imlib_context_set_colormap(DefaultColormap(dpy, scr->screen));
+		imlib_context_set_drawable(scr->root);
+	} else if (d == scr->depth) {
+		imlib_context_set_visual(scr->visual);
+		imlib_context_set_colormap(scr->colormap);
+		imlib_context_set_drawable(scr->drawable);
+	} else {
+		EPRINTF("Unexpected visual depth for pixmap 0x%lx: %ux%ux%u\n", icon, w, h, d);
+		imlib_context_pop();
+		return (False);
+	}
 	imlib_context_set_drawable(icon);
 
 	if (h <= scr->style.titleheight + 2) {
@@ -58,6 +192,7 @@ imlib_createpixmapicon(Client *c, Pixmap icon, Pixmap mask)
 	}
 	imlib_context_set_image(image);
 	imlib_context_set_mask(None);
+	bi = &c->iconbtn;
 	bi->x = bi->y = bi->b = 0;
 	bi->d = d;
 	bi->w = imlib_image_get_width();
@@ -99,7 +234,7 @@ imlib_createpixmapicon(Client *c, Pixmap icon, Pixmap mask)
 	return (True);
 }
 Bool
-imlib_createdataicon(Client *c, unsigned w, unsigned h, long *data)
+createdataicon(Client *c, unsigned w, unsigned h, long *data)
 {
 	Imlib_Image image;
 	ButtonImage *bi;
@@ -110,6 +245,7 @@ imlib_createdataicon(Client *c, unsigned w, unsigned h, long *data)
 	image = imlib_create_image(w, h);
 	if (!image) {
 		EPRINTF("could not create image %ux%u\n", w, h);
+		imlib_context_pop();
 		return (False);
 	}
 	imlib_context_set_image(image);
@@ -126,8 +262,8 @@ imlib_createdataicon(Client *c, unsigned w, unsigned h, long *data)
 	imlib_image_put_back_data(pixels);
 	imlib_image_set_has_alpha(1);
 	if (h > scr->style.titleheight) {
-		unsigned hs = scr->style.titleheight;
-		unsigned ws = ((w + h - 1) / h) * hs;
+		unsigned hs = scr->style.titleheight, ws = hs;
+
 		Imlib_Image scaled =
 		    imlib_create_cropped_scaled_image(0, 0, w, h, ws, hs);
 
@@ -167,46 +303,6 @@ imlib_createdataicon(Client *c, unsigned w, unsigned h, long *data)
 	bi->present = True;
 	imlib_context_pop();
 	return True;
-}
-Bool
-imlib_createwmicon(Client *c)
-{
-	return imlib_createpixmapicon(c, c->wmh.icon_pixmap, c->wmh.icon_mask);
-}
-Bool
-imlib_createkwmicon(Client *c, Pixmap *data, unsigned long n)
-{
-	return imlib_createpixmapicon(c, data[0], data[1]);
-}
-Bool
-createwmicon(Client *c)
-{
-	Bool result;
-
-	xtrap_push(0,NULL);
-	result = imlib_createwmicon(c);
-	xtrap_pop();
-	return (result);
-}
-Bool
-createkwmicon(Client *c, Pixmap *data, unsigned long n)
-{
-	Bool result;
-
-	xtrap_push(0,NULL);
-	result = imlib_createkwmicon(c, data, n);
-	xtrap_pop();
-	return (result);
-}
-Bool
-createdataicon(Client *c, unsigned w, unsigned h, long *data)
-{
-	Bool result;
-
-	xtrap_push(0,NULL);
-	result = imlib_createdataicon(c, w, h, data);
-	xtrap_pop();
-	return (result);
 }
 #else				/* !defined IMLIB2 || !defined USE_IMLIB2 */
 #if defined PIXBUF && defined USE_PIXBUF
@@ -428,6 +524,89 @@ createdataicon(Client *c, unsigned w, unsigned h, long *data)
 }
 #endif				/* !defined PIXBUF || !defined USE_PIXBUF */
 #endif				/* !defined IMLIB2 || !defined USE_IMLIB2 */
+
+Bool
+createwmicon(Client *c)
+{
+	Window root;
+	int x, y;
+	unsigned int w, h, b, d;
+	Pixmap icon = c->wmh.icon_pixmap;
+	Pixmap mask = c->wmh.icon_mask;
+
+	if (!c || !icon)
+		return (False);
+	if (!XGetGeometry(dpy, icon, &root, &x, &y, &w, &h, &b, &d))
+		return (False);
+	/* Watch out for the depth of the pixmap, old apps like xeyes will use a bitmap
+	   (1-deep pixmap) for the icon.  More modern applications (like xterm) will use
+	   a pixmap with default visual and depth. */
+	if (d == 1)
+		return createbitmapicon(c, icon, mask, w, h);
+	if (d > 1)
+		return createpixmapicon(c, icon, mask, w, h, d);
+	return (False);
+}
+
+Bool
+createkwmicon(Client *c, Pixmap *data, unsigned long n)
+{
+	Window root;
+	int x, y;
+	unsigned b;
+	struct {
+		Pixmap icon, mask;
+		unsigned w, h, d;
+	} *icons = NULL, *best;
+	unsigned long rem;
+	unsigned hdiff, dbest;
+	Bool status = False;
+	Pixmap *icon;
+	int i, m;
+
+	/* scan icons */
+	for (m = 0, icon = data, rem = n; rem >= 2; m++, icon += 2, rem -= 2) {
+		if (!icon[0])
+			break;
+		if (rem < 2)
+			break;
+		if (!(icons = reallocarray(icons, m + 1, sizeof(*icons))))
+			break;
+		icons[m].icon = icon[0];
+		icons[m].mask = icon[1];
+		if (!XGetGeometry(dpy, icon[0], &root, &x, &y,
+					&icons[m].w, &icons[m].h, &b,
+					&icons[m].d))
+			break;
+	}
+	for (hdiff = -1U, dbest = 0, best = NULL, i = 0; i < m; i++) {
+		if (icons[i].h <= scr->style.titleheight)
+			b = scr->style.titleheight - icons[i].h;
+		else
+			b = icons[i].h - scr->style.titleheight;
+
+		if (best && b == hdiff) {
+			if (icons[i].d > dbest) {
+				best = &icons[i];
+				dbest = icons[i].d;
+			}
+		}
+		if (b < hdiff) {
+			best = &icons[i];
+			hdiff = b;
+			dbest = icons[i].d;
+		}
+	}
+	if (best) {
+		if (best->d == 1)
+			status = createbitmapicon(c, best->icon, best->mask, best->w, best->h);
+		else if (best->d > 1)
+			status = createpixmapicon(c, best->icon, best->mask, best->w, best->h, best->d);
+	}
+	free(icons);
+	XFree(data);
+	return (status);
+}
 
 Bool
 createneticon(Client *c, long *data, unsigned long n)

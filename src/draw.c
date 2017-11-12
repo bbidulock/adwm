@@ -417,6 +417,13 @@ createdataicon(Client *c, unsigned w, unsigned h, long *data)
 }
 #else				/* !defined PIXBUF || !defined USE_PIXBUF */
 Bool
+createbitmapicon(Client *c, Pixmap icon, Pixmap mask, unsigned w, unsigned h)
+{
+	Imlib_Image image;
+	ButtonImage *bi;
+	XImage *xicon, *xmask = NULL;
+}
+Bool
 createpixmapicon(Client *c, Pixmap icon, Pixmap mask, unsigned w, unsigned h, unsigned d)
 {
 	XImage *xicon = NULL, *xmask = NULL, *alpha;

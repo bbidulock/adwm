@@ -6478,7 +6478,7 @@ main(int argc, char *argv[])
 			XPRINTF("have %s extension (%d,%d,%d)\n", einfo[i].name, einfo[i].opcode, einfo[i].event, einfo[i].error);
 			if (einfo[i].version) {
 				einfo[i].version(dpy, &einfo[i].major, &einfo[i].minor);
-				OPRINTF("have %-10s extension version %d.%d\n", einfo[i].name, einfo[i].major, einfo[i].minor);
+				_OPRINTF("have %-10s extension version %d.%d\n", einfo[i].name, einfo[i].major, einfo[i].minor);
 			}
 		} else
 			XPRINTF("%s", "%s extension is not supported\n", einfo[i].name);

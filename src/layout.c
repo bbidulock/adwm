@@ -757,9 +757,6 @@ reconfigure_dockapp(Client *c, ClientGeometry *n, Bool force)
 	XWindowChanges wwc, fwc;
 	unsigned wmask, fmask;
 
-	GPRINTF(&c->r, "initial c->r geometry\n");
-	GPRINTF(&c->c, "initial c->c geometry\n");
-	GPRINTF(n,     "initial n    geometry\n");
 	wmask = fmask = 0;
 	if (c->c.x != (fwc.x = n->x)) {
 		c->c.x = n->x;
@@ -793,18 +790,19 @@ reconfigure_dockapp(Client *c, ClientGeometry *n, Bool force)
 	wwc.width = c->r.w;
 	wwc.height = c->r.h;
 	wwc.border_width = c->r.b;
-	GPRINTF(&c->r, "final   c->r geometry\n");
-	GPRINTF(&c->c, "final   c->c geometry\n");
-	GPRINTF(n,     "final   n    geometry\n");
 	if (fmask) {
 		DPRINTF("frame wc = %ux%u+%d+%d:%d\n", fwc.width, fwc.height, fwc.x,
 			fwc.y, fwc.border_width);
+		xtrap_push(1,NULL);
 		XConfigureWindow(dpy, c->frame, fmask, &fwc);
+		xtrap_pop();
 	}
 	if (wmask) {
 		DPRINTF("wind  wc = %ux%u+%d+%d:%d\n", wwc.width, wwc.height, wwc.x,
 			wwc.y, wwc.border_width);
+		xtrap_push(1,NULL);
 		XConfigureWindow(dpy, c->icon, wmask, &wwc);
+		xtrap_pop();
 	}
 	if (force || ((fmask | wmask) && !(wmask & (CWWidth | CWHeight)))) {
 		XConfigureEvent ce;
@@ -858,6 +856,9 @@ reconfigure(Client *c, ClientGeometry *n, Bool force)
 		n->y = DisplayHeight(dpy, scr->screen) - n->h - 2 * n->b;
 	DPRINTF("x = %d y = %d w = %d h = %d b = %d t = %d g = %d v = %d\n", n->x, n->y,
 		n->w, n->h, n->b, n->t, n->g, n->v);
+	if (n->w > 1600 || n->h > 1600)
+		BKTRACE("x = %d y = %d w = %d h = %d b = %d t = %d g = %d v = %d\n", n->x, n->y,
+			n->w, n->h, n->b, n->t, n->g, n->v);
 
 	if (c->is.dockapp)
 		return reconfigure_dockapp(c, n, force);
@@ -932,8 +933,10 @@ reconfigure(Client *c, ClientGeometry *n, Bool force)
 			fwc.y, fwc.border_width);
 		if (!c->is.dockapp)
 			configureshapes(c);
+		xtrap_push(1,NULL);
 		XConfigureWindow(dpy, c->frame,
 				 CWX | CWY | CWWidth | CWHeight | CWBorderWidth, &fwc);
+		xtrap_pop();
 	}
 	wwc.x = 0;
 	wwc.border_width = 0;
@@ -951,7 +954,9 @@ reconfigure(Client *c, ClientGeometry *n, Bool force)
 	if (wmask) {
 		DPRINTF("wind  wc = %ux%u+%d+%d:%d\n", wwc.width, wwc.height, wwc.x,
 			wwc.y, wwc.border_width);
+		xtrap_push(1,NULL);
 		XConfigureWindow(dpy, c->win, wmask | CWX | CWY | CWBorderWidth, &wwc);
+		xtrap_pop();
 	}
 	/* ICCCM 2.0 4.1.5 */
 	if (force || ((fmask | wmask) && !(wmask & (CWWidth | CWHeight))))
@@ -1187,6 +1192,7 @@ configuremonitors(XEvent *e, Client *c)
 		g.t = 0;
 		g.g = 0;
 		g.v = 0;
+		DPRINTF("CALLING reconfigure()\n");
 		reconfigure(c, &g, False);
 	}
 	return True;
@@ -1411,38 +1417,26 @@ updatefloat(Client *c, View *v)
 	if (!isfloating(c, v))
 		return;
 	getworkarea(v->curmon, &wa);
-	CPRINTF(c, "r: %dx%d+%d+%d:%d\n", c->r.w, c->r.h, c->r.x, c->r.y, c->r.b);
 	g = c->r;
-	CPRINTF(c, "g: %dx%d+%d+%d:%d\n", g.w, g.h, g.x, g.y, g.b);
 	g.b = scr->style.border;
-	CPRINTF(c, "g: %dx%d+%d+%d:%d\n", g.w, g.h, g.x, g.y, g.b);
 	get_decor(c, v, &g);
-	CPRINTF(c, "g: %dx%d+%d+%d:%d\n", g.w, g.h, g.x, g.y, g.b);
 	if (c->is.full) {
 		calc_full(c, v, &g);
-		CPRINTF(c, "g: %dx%d+%d+%d:%d\n", g.w, g.h, g.x, g.y, g.b);
 	} else {
 		if (c->is.max) {
 			calc_max(c, &wa, &g);
-			CPRINTF(c, "g: %dx%d+%d+%d:%d\n", g.w, g.h, g.x, g.y, g.b);
 		} else if (c->is.lhalf) {
 			calc_lhalf(c, &wa, &g);
-			CPRINTF(c, "g: %dx%d+%d+%d:%d\n", g.w, g.h, g.x, g.y, g.b);
 		} else if (c->is.rhalf) {
 			calc_rhalf(c, &wa, &g);
-			CPRINTF(c, "g: %dx%d+%d+%d:%d\n", g.w, g.h, g.x, g.y, g.b);
 		} else if (c->is.fill) {
-			calc_fill(c, v, &wa, &g); CPRINTF(c, "g: %dx%d+%d+%d:%d\n", g.w, g.h, g.x, g.y, g.b);
+			calc_fill(c, v, &wa, &g);
 		} else {
 			if (c->is.maxv) {
 				calc_maxv(c, &wa, &g);
-				CPRINTF(c, "g: %dx%d+%d+%d:%d\n", g.w, g.h, g.x, g.y,
-					g.b);
 			}
 			if (c->is.maxh) {
 				calc_maxh(c, &wa, &g);
-				CPRINTF(c, "g: %dx%d+%d+%d:%d\n", g.w, g.h, g.x, g.y,
-					g.b);
 			}
 		}
 	}
@@ -1451,8 +1445,6 @@ updatefloat(Client *c, View *v)
 		DPRINTF("CALLING: constrain()\n");
 		constrain(c, &g);
 	}
-	CPRINTF(c, "g: %dx%d+%d+%d:%d\n", g.w, g.h, g.x, g.y, g.b);
-	DPRINTF("CALLING reconfigure()\n");
 	reconfigure(c, &g, False);
 	if (c->is.max)
 		ewmh_update_net_window_fs_monitors(c);
@@ -5721,6 +5713,7 @@ moveto(Client *c, RelativeDirection position)
 	default:
 		return;
 	}
+	DPRINTF("CALLING reconfigure()\n");
 	reconfigure(c, &g, False);
 	save(c);
 	focuslockclient(c);
@@ -5820,6 +5813,7 @@ moveby(Client *c, RelativeDirection direction, int amount)
 		g.y = m->sc.y + m->sc.h - 1;
 	if (g.y + g.h + g.b < m->sc.y)
 		g.y = m->sc.y - (g.h + g.b);
+	DPRINTF("CALLING reconfigure()\n");
 	reconfigure(c, &g, False);
 	save(c);
 	focuslockclient(c);
@@ -6047,6 +6041,7 @@ snapto(Client *c, RelativeDirection direction)
 	default:
 		return;
 	}
+	DPRINTF("CALLING reconfigure()\n");
 	reconfigure(c, &g, False);
 	save(c);
 	focuslockclient(c);
@@ -6114,6 +6109,7 @@ edgeto(Client *c, int direction)
 	default:
 		return;
 	}
+	DPRINTF("CALLING reconfigure()\n");
 	reconfigure(c, &g, False);
 	save(c);
 	focuslockclient(c);
@@ -6400,6 +6396,7 @@ toggleundec(Client *c)
 		c->has.border = c->needs.border;
 	}
 	if (c->is.managed) {
+		DPRINTF("CALLING reconfigure()\n");
 		reconfigure(c, &c->c, False);
 		ewmh_update_net_window_state(c);
 		updatefloat(c, v);

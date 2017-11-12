@@ -2997,8 +2997,9 @@ ewmh_process_net_window_sync_request_counter(Client *c)
 	unsigned long extra, nitems = 0;
 	Atom real;
 
-	if (!((c->icon && checkatom(c->icon, _XA_WM_PROTOCOLS, _XA_NET_WM_SYNC_REQUEST)) ||
-			  checkatom(c->win, _XA_WM_PROTOCOLS, _XA_NET_WM_SYNC_REQUEST)))
+	/* ICCCM 2.0/4.1.9: Window managers will ignore any WM_PROTOCOLS properties they
+	   find on icon windows. */
+	if (!checkatom(c->win, _XA_WM_PROTOCOLS, _XA_NET_WM_SYNC_REQUEST))
 		return;
 	status = XGetWindowProperty(dpy, c->win, _XA_NET_WM_SYNC_REQUEST_COUNTER, 0L, 1L,
 				    False, AnyPropertyType, &real, &format, &nitems,
@@ -3626,32 +3627,23 @@ getgrpclasshint(Client *c, XClassHint * ch)
 {
 	Window win;
 
-	if (((win = c->session)  && (win != c->win) &&
-	     XGetClassHint(dpy, win, ch)) ||
-	    ((win = c->leader)   && (win != c->win) &&
-	     XGetClassHint(dpy, win, ch)) ||
-	    ((win = c->transfor) && (win != c->win) && (win != scr->root) &&
-	     XGetClassHint(dpy, win, ch)) ||
-	    ((win = c->win)      &&
-	     XGetClassHint(dpy, win, ch)) ||
-	    ((win = c->icon)     && (win != c->win) &&
-	     XGetClassHint(dpy, win, ch)))
+	/* ICCCM 2.0/4.1.9: Window managers will ignore any WM_CLASS hints they find on
+	   icon windows. */
+	if (((win = c->leader) && XGetClassHint(dpy, win, ch)) ||
+	    ((win = c->win)    && XGetClassHint(dpy, win, ch)))
 		return True;
 	return False;
 }
 
 Bool
-getclasshint(Client *c, XClassHint *ch)
+getclasshint(Client *c, XClassHint * ch)
 {
 	Window win;
-	if (((win = c->icon)     && (win != c->win) &&
-	     XGetClassHint(dpy, win, ch)) ||
-	    ((win = c->win)      &&
-	     XGetClassHint(dpy, win, ch)) ||
-	    ((win = c->leader)   && (win != c->win) &&
-	     XGetClassHint(dpy, win, ch)) ||
-	    ((win = c->transfor) && (win != c->win) && (win != scr->root) &&
-	     XGetClassHint(dpy, win, ch)))
+
+	/* ICCCM 2.0/4.1.9: Window managers will ignore any WM_CLASS properties
+	   they find on icon windows. */
+	if (((win = c->win)    && XGetClassHint(dpy, win, ch)) ||
+	    ((win = c->leader) && XGetClassHint(dpy, win, ch)))
 		return True;
 	return False;
 }
@@ -3661,15 +3653,13 @@ getcommand(Client *c, char ***v, int *n)
 {
 	Window win;
 
-	if (((win = c->win)     &&
-	     XGetCommand(dpy, win, v, n)) ||
-	    ((win = c->session) && (win != c->win) &&
-	     XGetCommand(dpy, win, v, n)) ||
-	    ((win = c->leader)  && (win != c->win) &&
-	     XGetCommand(dpy, win, v, n))
-	    ) {
+	/* ICCCM 2.0/4.1.9: Window managers will ignore any WM_COMMAND properties
+	   they find on icon windows. */
+	if (((win = c->win)     && XGetCommand(dpy, win, v, n)) ||
+	    ((win = c->session) && XGetCommand(dpy, win, v, n)) ||
+	    ((win = c->leader)  && XGetCommand(dpy, win, v, n)))
 		return True;
-	}
+
 	return False;
 }
 
@@ -3712,15 +3702,13 @@ getclientmachine(Client *c)
 	Window win;
 	char *host = NULL;
 
-	if (((win = c->win) &&
-	     gettextprop(win, XA_WM_CLIENT_MACHINE, &host)) ||
-	    ((win = c->leader) && win != c->win &&
-	     gettextprop(win, XA_WM_CLIENT_MACHINE, &host)) ||
-	    ((win = c->session) && win != c->win &&
-	     gettextprop(win, XA_WM_CLIENT_MACHINE, &host))
-	    ) {
+	/* ICCCM 2.0/4.1.9: Window managers will ignore any WM_CLIENT_MACHINE properties
+	   they find * on icon windows. */
+	if (((win = c->win)     && gettextprop(win, XA_WM_CLIENT_MACHINE, &host)) ||
+	    ((win = c->session) && gettextprop(win, XA_WM_CLIENT_MACHINE, &host)) ||
+	    ((win = c->leader)  && gettextprop(win, XA_WM_CLIENT_MACHINE, &host)))
 		return (host);
-	}
+
 	return (host);
 }
 

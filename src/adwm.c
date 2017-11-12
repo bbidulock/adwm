@@ -451,6 +451,8 @@ applystate(Client *c)
 	{
 		XWMHints *wmh;
 
+		/* ICCCM 2.0/4.1.9: Window managers will ignore any WM_HINTS properties
+		   they find on icon windows. */
 		if ((wmh = XGetWMHints(dpy, c->win))) {
 			applywmhints(c, wmh);
 			XFree(wmh);
@@ -1059,7 +1061,9 @@ configurerequest(XEvent *e)
 		wc.border_width = ev->border_width;
 		wc.sibling = ev->above;
 		wc.stack_mode = ev->detail;
+		xtrap_push(1,NULL);
 		XConfigureWindow(dpy, ev->window, ev->value_mask, &wc);
+		xtrap_pop();
 		XSync(dpy, False);
 	}
 	return True;
@@ -1072,7 +1076,7 @@ destroynotify(XEvent *e)
 	XDestroyWindowEvent *ev = &e->xdestroywindow;
 
 	if ((c = getclient(ev->window, ClientWindow)) && c->is.managed) {
-		_CPRINTF(c, "unmanage destroyed window\n");
+		CPRINTF(c, "unmanage destroyed window\n");
 		unmanage(c, CauseDestroyed);
 		return True;
 	}
@@ -1261,17 +1265,14 @@ colormapnotify(XEvent *e)
 
 	if ((c = getclient(ev->window, ClientColormap)) && c->is.managed) {
 		if (ev->new) {
-			_CPRINTF(c, "colormap for window 0x%lx changed to 0x%lx\n", ev->window, ev->colormap);
 			if (c == sel)
 				installcolormaps(event_scr, c, c->cmapwins);
 			return True;
 		} else {
 			switch (ev->state) {
 			case ColormapInstalled:
-				_CPRINTF(c, "colormap 0x%lx for window 0x%lx installed\n", ev->colormap, ev->window);
 				return True;
 			case ColormapUninstalled:
-				_CPRINTF(c, "colormap 0x%lx for window 0x%lx uninstalled\n", ev->colormap, ev->window);
 				return True;
 			default:
 				break;
@@ -2295,46 +2296,44 @@ killclient(Client *c)
 	if (!c)
 		return;
 	if (!c->is.killing) {
-		Window win;
+		/* ICCCM 2.0/4.1.9 Window managers will ignore any WM_PROTOCOLS
+		   properties they may find on icon windows. */
+		if (!c->is.pinging
+		    && checkatom(c->win, _XA_WM_PROTOCOLS, _XA_NET_WM_PING)) {
+			XEvent ev;
 
-		if (((win = c->icon) && checkatom(win, _XA_WM_PROTOCOLS, _XA_NET_WM_PING)) ||
-	            ((win = c->win)  && checkatom(win, _XA_WM_PROTOCOLS, _XA_NET_WM_PING))) {
-			if (!c->is.pinging) {
-				XEvent ev;
-
-				/* Give me a ping: one ping only.... Red October */
-				ev.type = ClientMessage;
-				ev.xclient.display = dpy;
-				ev.xclient.window = win;
-				ev.xclient.message_type = _XA_WM_PROTOCOLS;
-				ev.xclient.format = 32;
-				ev.xclient.data.l[0] = _XA_NET_WM_PING;
-				ev.xclient.data.l[1] = user_time;
-				ev.xclient.data.l[2] = c->win;
-				ev.xclient.data.l[3] = 0;
-				ev.xclient.data.l[4] = 0;
-				XSendEvent(dpy, c->win, False, NoEventMask, &ev);
-				c->is.pinging = 1;
-			}
+			/* Give me a ping: one ping only.... Red October */
+			ev.type = ClientMessage;
+			ev.xclient.display = dpy;
+			ev.xclient.window = c->win;
+			ev.xclient.message_type = _XA_WM_PROTOCOLS;
+			ev.xclient.format = 32;
+			ev.xclient.data.l[0] = _XA_NET_WM_PING;
+			ev.xclient.data.l[1] = user_time;
+			ev.xclient.data.l[2] = c->win;
+			ev.xclient.data.l[3] = 0;
+			ev.xclient.data.l[4] = 0;
+			XSendEvent(dpy, c->win, False, NoEventMask, &ev);
+			c->is.pinging = 1;
 		}
-		if (((win = c->icon) && checkatom(win, _XA_WM_PROTOCOLS, _XA_WM_DELETE_WINDOW)) ||
-		    ((win = c->win)  && checkatom(win, _XA_WM_PROTOCOLS, _XA_WM_DELETE_WINDOW))) {
-			if (!c->is.closing) {
-				XEvent ev;
+		/* ICCCM 2.0/4.1.9 Window managers will ignore any WM_PROTOCOLS
+		   properties they may find on icon windows. */
+		if (!c->is.closing
+		    && checkatom(c->win, _XA_WM_PROTOCOLS, _XA_WM_DELETE_WINDOW)) {
+			XEvent ev;
 
-				ev.type = ClientMessage;
-				ev.xclient.window = win;
-				ev.xclient.message_type = _XA_WM_PROTOCOLS;
-				ev.xclient.format = 32;
-				ev.xclient.data.l[0] = _XA_WM_DELETE_WINDOW;
-				ev.xclient.data.l[1] = user_time;
-				ev.xclient.data.l[2] = 0;
-				ev.xclient.data.l[3] = 0;
-				ev.xclient.data.l[4] = 0;
-				XSendEvent(dpy, c->win, False, NoEventMask, &ev);
-				c->is.closing = 1;
-				return;
-			}
+			ev.type = ClientMessage;
+			ev.xclient.window = c->win;
+			ev.xclient.message_type = _XA_WM_PROTOCOLS;
+			ev.xclient.format = 32;
+			ev.xclient.data.l[0] = _XA_WM_DELETE_WINDOW;
+			ev.xclient.data.l[1] = user_time;
+			ev.xclient.data.l[2] = 0;
+			ev.xclient.data.l[3] = 0;
+			ev.xclient.data.l[4] = 0;
+			XSendEvent(dpy, c->win, False, NoEventMask, &ev);
+			c->is.closing = 1;
+			return;
 		}
 	}
 	killproc(c);
@@ -2626,6 +2625,8 @@ manage(Window w, XWindowAttributes *wa)
 	/* do this before transients */
 	wmh_process_win_window_hints(c);
 
+	/* ICCCM 2.0/4.1.9: Window managers will ignore any WM_TRANSIENT_FOR properties
+	   they find on icon windows. */
 	if (XGetTransientForHint(dpy, w, &trans) || c->is.grptrans) {
 		if (trans == None || trans == scr->root) {
 			trans = c->leader;
@@ -2682,9 +2683,9 @@ manage(Window w, XWindowAttributes *wa)
 	if (!c->is.floater)
 		c->is.floater = (!c->can.sizeh || !c->can.sizev);
 
-	if (c->has.title)
+	if (c->has.title) {
 		c->c.t = c->r.t = scr->style.titleheight;
-	else {
+	} else {
 		c->can.shade = False;
 		c->has.grips = False;
 	}
@@ -2718,8 +2719,9 @@ manage(Window w, XWindowAttributes *wa)
 	}
 
 	c->with.struts = getstruts(c) ? True : False;
-	if (c->with.struts)
+	if (c->with.struts) {
 		c->r.b = c->c.b = 0;
+	}
 
 	/* try not grabbing Button4 and Button5 */
 	XGrabButton(dpy, Button1, AnyModifier, c->win, True,
@@ -2769,7 +2771,11 @@ manage(Window w, XWindowAttributes *wa)
 	XSaveContext(dpy, c->frame, context[ScreenContext], (XPointer) scr);
 
 	wc.border_width = c->c.b;
-	XConfigureWindow(dpy, c->frame, CWBorderWidth, &wc);
+	{
+		xtrap_push(1,NULL);
+		XConfigureWindow(dpy, c->frame, CWBorderWidth, &wc);
+		xtrap_pop();
+	}
 	send_configurenotify(c, None);
 	XSetWindowBorder(dpy, c->frame, scr->style.color.norm[ColBorder].pixel);
 
@@ -2817,7 +2823,9 @@ manage(Window w, XWindowAttributes *wa)
 		XSelectInput(dpy, c->icon, CLIENTMASK);
 		updateshape(c); /* do not shape frames for dock apps */
 		XReparentWindow(dpy, c->icon, c->frame, c->r.x, c->r.y);
+		xtrap_push(1,NULL);
 		XConfigureWindow(dpy, c->icon, CWBorderWidth, &wc);
+		xtrap_pop();
 		XMapWindow(dpy, c->icon);
 #if 0
 		/* not necessary and doesn't help */
@@ -2846,7 +2854,9 @@ manage(Window w, XWindowAttributes *wa)
 			XReparentWindow(dpy, c->grips, c->frame, 0, c->c.h - c->c.g);
 		if (c->title)
 			XReparentWindow(dpy, c->title, c->frame, 0, 0);
+		xtrap_push(1,NULL);
 		XConfigureWindow(dpy, c->win, CWBorderWidth, &wc);
+		xtrap_pop();
 		XMapWindow(dpy, c->win);
 	}
 
@@ -2932,7 +2942,7 @@ maprequest(XEvent *e)
 	}
 	if (issystray(ev->window))
 		return True;
-	if (!(c = getclient(ev->window, ClientWindow)) || !c->is.managed) {
+	if (!(c = getclient(ev->window, ClientWindow))) {
 		manage(ev->window, &wa);
 		return True;
 	}
@@ -3197,18 +3207,18 @@ alarmnotify(XEvent *e)
 	c->sync.waiting = False;
 
 	if ((wc.width = c->c.w - 2 * c->c.v) != c->sync.w) {
-		XPRINTF("Width changed from %d to %u since last request\n", c->sync.w,
-			wc.width);
+		XPRINTF("Width changed from %d to %u since last request\n", c->sync.w, wc.width);
 		mask |= CWWidth;
 	}
 	if ((wc.height = c->c.h - c->c.t - c->c.g - c->c.v) != c->sync.h) {
-		XPRINTF("Height changed from %d to %u since last request\n", c->sync.h,
-			wc.height);
+		XPRINTF("Height changed from %d to %u since last request\n", c->sync.h, wc.height);
 		mask |= CWHeight;
 	}
 	if (mask && newsize(c, wc.width, wc.height, ae->time)) {
 		DPRINTF("Configuring window %ux%u\n", wc.width, wc.height);
+		xtrap_push(1,NULL);
 		XConfigureWindow(dpy, c->win, mask, &wc);
+		xtrap_pop();
 	}
 	return True;
 }
@@ -4296,10 +4306,14 @@ scan(void)
 				wins[i] = None;
 				continue;
 			}
+			/* ICCCM 2.0/4.1.9: Window managers will ignore any WM_TRANSIENT_FOR properties
+			   they find on icon windows. */
 			if (XGetTransientForHint(dpy, wins[i], &d1)) {
 				DPRINTF("-> skipping 0x%08lx (transient-for property set)\n", wins[i]);
 				continue;
 			}
+			/* ICCCM 2.0/4.1.9: Window managers will ignore any WM_HINTS properties
+			   they find on icon windows. */
 			if (!(wmh = XGetWMHints(dpy, wins[i])) ||
 					((wmh->flags & WindowGroupHint) && (wmh->window_group != wins[i])) ||
 					!(wmh->flags & IconWindowHint)) {
@@ -5521,8 +5535,9 @@ unmanage(Client *c, WithdrawCause cause)
 	Bool doarrange, dostruts;
 	Window *w, trans = None;
 
-	doarrange = !(c->skip.arrange || c->is.floater ||
-		      (cause != CauseDestroyed &&
+	/* ICCCM 2.0/4.1.9: Window managers will ignore any WM_TRANSIENT_FOR properties
+	   they find on icon windows. */
+	doarrange = !(c->skip.arrange || c->is.floater || (cause != CauseDestroyed &&
 		       XGetTransientForHint(dpy, c->win, &trans))) ||
 	    c->is.bastard || c->is.dockapp;
 	dostruts = c->with.struts;
@@ -5604,15 +5619,19 @@ unmanage(Client *c, WithdrawCause cause)
 			}
 			wc.border_width = c->s.b;
 			if (c->icon) {
+				xtrap_push(1,NULL);
 				XReparentWindow(dpy, c->icon, scr->root, wc.x, wc.y);
 				XConfigureWindow(dpy, c->icon,
 						 (CWX | CWY | CWWidth | CWHeight |
 						  CWBorderWidth), &wc);
+				xtrap_pop();
 			} else {
+				xtrap_push(1,NULL);
 				XReparentWindow(dpy, c->win, scr->root, wc.x, wc.y);
 				XConfigureWindow(dpy, c->win,
 						 (CWX | CWY | CWWidth | CWHeight |
 						  CWBorderWidth), &wc);
+				xtrap_pop();
 			}
 			if (!running)
 				XMapWindow(dpy, c->win);
@@ -5820,16 +5839,18 @@ updatehints(Client *c)
 	Window leader;
 	int take_focus, give_focus;
 
-	take_focus =
-	    ((c->icon && checkatom(c->icon, _XA_WM_PROTOCOLS, _XA_WM_TAKE_FOCUS)) ||
-	                 checkatom(c->win, _XA_WM_PROTOCOLS, _XA_WM_TAKE_FOCUS))
-	    ?  TAKE_FOCUS : 0;
+	/* ICCCM 2.0/4.1.9: Window managers will ignore any WM_PROTOCOLS properties
+	   they find on icon windows. ... Clients must not depend on being able to
+	   receive input events by means of their icon windows. */
+	take_focus = checkatom(c->win, _XA_WM_PROTOCOLS, _XA_WM_TAKE_FOCUS) ? TAKE_FOCUS : 0;
 	give_focus = c->is.dockapp ? 0 : GIVE_FOCUS;
 	c->can.focus = take_focus | give_focus;
 
 	{
 		XWMHints *wmh;
 
+		/* ICCCM 2.0/4.1.9: Window managers will ignore any WM_HINTS properties
+		   they find on icon windows. */
 		if ((wmh = XGetWMHints(dpy, c->win))) {
 			applywmhints(c, wmh);
 			XFree(wmh);
@@ -5855,63 +5876,62 @@ updatehints(Client *c)
 void
 updatesizehints(Client *c)
 {
-	long *sh, msize = 0;
-	XSizeHints size = { 0, };
+	long *hints, msize = 0;
 	unsigned long n = 0;
 
+	/* ICCCM 2.0/4.1.9: Window managers will ignore any WM_NORMAL_HINTS properties
+	   they fined on icon windows. */
 #if 0
-	if (!XGetWMNormalHints(dpy, c->win, &size, &msize) || !size.flags)
-		size.flags = PSize;
+	if (!XGetWMNormalHints(dpy, c->win, &c->sh, &msize) || !c->sh.flags)
+		c->sh.flags = PSize;
 #else
-	if (!c->icon || !(sh = gethints(c->icon, XA_WM_NORMAL_HINTS, &n)))
-		sh = gethints(c->win, XA_WM_NORMAL_HINTS, &n);
-	if (sh) {
-		//  1 flags
-		size.flags = sh[0];
-		CPRINTF(c, "got %lu words of size hints 0x%lx\n", n, size.flags);
-		//  2 x
-		//  3 y
+	if ((hints = gethints(c->win, XA_WM_NORMAL_HINTS, &n))) {
+		// 1 flags
+		c->sh.flags = hints[0];
+		CPRINTF(c, "got %lu words of sh hints 0x%lx\n", n, c->sh.flags);
+		// 2 x
+		// 3 y
 		if (n >= 3) {
-			msize |= (USPosition|PPosition);
-			if (size.flags & (USPosition|PPosition)) {
-				size.x = sh[1];
-				size.y = sh[2];
+			msize |= (USPosition | PPosition);
+			if (c->sh.flags & (USPosition | PPosition)) {
+				c->sh.x = hints[1];
+				c->sh.y = hints[2];
 			}
 		}
-		//  4 width
-		//  5 height
+		// 4 width
+		// 5 height
 		if (n >= 5) {
-			msize |= (USSize|PSize);
-			if (size.flags & (USSize|PSize)) {
-				size.width = sh[3];
-				size.height = sh[4];
+			msize |= (USSize | PSize);
+			if (c->sh.flags & (USSize | PSize)) {
+				c->sh.width = hints[3];
+				c->sh.height = hints[4];
 			}
 		}
-		//  6 min_width
-		//  7 min_height
+		// 6 min_width
+		// 7 min_height
 		if (n >= 7) {
 			msize |= (PMinSize);
-			if (size.flags & (PMinSize)) {
-				size.min_width = sh[5];
-				size.min_height = sh[6];
+			if (c->sh.flags & (PMinSize)) {
+				c->sh.min_width = hints[5];
+				c->sh.min_height = hints[6];
 			}
 		}
-		//  8 max_width
-		//  9 max_height
+		// 8 max_width
+		// 9 max_height
 		if (n >= 9) {
 			msize |= (PMaxSize);
-			if (size.flags & (PMaxSize)) {
-				size.max_width = sh[7];
-				size.max_height = sh[8];
+			if (c->sh.flags & (PMaxSize)) {
+				c->sh.max_width = hints[7];
+				c->sh.max_height = hints[8];
 			}
 		}
-		//  10 width_inc
-		//  11 height_inc
+		// 10 width_inc
+		// 11 height_inc
 		if (n >= 11) {
 			msize |= (PResizeInc);
-			if (size.flags & (PResizeInc)) {
-				size.width_inc = sh[9];
-				size.height_inc = sh[10];
+			if (c->sh.flags & (PResizeInc)) {
+				c->sh.width_inc = hints[9];
+				c->sh.height_inc = hints[10];
 			}
 		}
 		// 12 min_aspect.x
@@ -5920,81 +5940,83 @@ updatesizehints(Client *c)
 		// 15 max_aspect.y
 		if (n >= 15) {
 			msize |= (PAspect);
-			if (size.flags & (PAspect)) {
-				size.min_aspect.x = sh[11];
-				size.min_aspect.y = sh[12];
-				size.max_aspect.x = sh[13];
-				size.max_aspect.y = sh[14];
+			if (c->sh.flags & (PAspect)) {
+				c->sh.min_aspect.x = hints[11];
+				c->sh.min_aspect.y = hints[12];
+				c->sh.max_aspect.x = hints[13];
+				c->sh.max_aspect.y = hints[14];
 			}
 		}
 		// 16 base_width
 		// 17 base_height
 		if (n >= 17) {
 			msize |= (PBaseSize);
-			if (size.flags & (PBaseSize)) {
-				size.base_width = sh[15];
-				size.base_height = sh[16];
+			if (c->sh.flags & (PBaseSize)) {
+				c->sh.base_width = hints[15];
+				c->sh.base_height = hints[16];
 			}
 		}
 		// 18 win_gravity
 		if (n >= 18) {
 			msize |= (PWinGravity);
-			if (size.flags & (PWinGravity)) {
-				size.win_gravity = sh[17];
+			if (c->sh.flags & (PWinGravity)) {
+				c->sh.win_gravity = hints[17];
 			}
 		}
-		size.flags &= msize;
+		c->sh.flags &= msize;
 	}
 #endif
-	c->flags = size.flags;
+	c->flags = c->sh.flags;
 
-	if (c->flags & (USPosition|PPosition)) {
-		if (size.x || size.y) {
-			c->u.x = size.x;
-			c->u.y = size.y;
+	if (c->flags & (USPosition | PPosition)) {
+		if (c->sh.x || c->sh.y) {
+			c->u.x = c->sh.x;
+			c->u.y = c->sh.y;
 		}
 	}
-	if (c->flags & (USSize|PSize)) {
-		if (size.width && size.height) {
-			c->u.w = size.width;
-			c->u.h = size.height;
+	if (c->flags & (USSize | PSize)) {
+		if (c->sh.width && c->sh.height) {
+			/* some clients (namely ROXterm) are putting pure garbage in
+			   these fields. */
+			c->u.w = c->sh.width;
+			c->u.h = c->sh.height;
 		}
 	}
 	if (c->flags & PBaseSize) {
-		c->basew = size.base_width;
-		c->baseh = size.base_height;
+		c->basew = c->sh.base_width;
+		c->baseh = c->sh.base_height;
 	} else if (c->flags & PMinSize) {
-		c->basew = size.min_width;
-		c->baseh = size.min_height;
+		c->basew = c->sh.min_width;
+		c->baseh = c->sh.min_height;
 	} else
 		c->basew = c->baseh = 0;
 	if (c->flags & PResizeInc) {
-		c->incw = size.width_inc;
-		c->inch = size.height_inc;
+		c->incw = c->sh.width_inc;
+		c->inch = c->sh.height_inc;
 	} else
 		c->incw = c->inch = 0;
 	if (c->flags & PMaxSize) {
-		c->maxw = size.max_width;
-		c->maxh = size.max_height;
+		c->maxw = c->sh.max_width;
+		c->maxh = c->sh.max_height;
 	} else
 		c->maxw = c->maxh = 0;
 	if (c->flags & PMinSize) {
-		c->minw = size.min_width;
-		c->minh = size.min_height;
+		c->minw = c->sh.min_width;
+		c->minh = c->sh.min_height;
 	} else if (c->flags & PBaseSize) {
-		c->minw = size.base_width;
-		c->minh = size.base_height;
+		c->minw = c->sh.base_width;
+		c->minh = c->sh.base_height;
 	} else
 		c->minw = c->minh = 0;
 	if (c->flags & PAspect) {
-		c->minax = size.min_aspect.x;
-		c->maxax = size.max_aspect.x;
-		c->minay = size.min_aspect.y;
-		c->maxay = size.max_aspect.y;
+		c->minax = c->sh.min_aspect.x;
+		c->minay = c->sh.min_aspect.y;
+		c->maxax = c->sh.max_aspect.x;
+		c->maxay = c->sh.max_aspect.y;
 	} else
 		c->minax = c->maxax = c->minay = c->maxay = 0;
 	if (c->flags & PWinGravity)
-		c->gravity = size.win_gravity;
+		c->gravity = c->sh.win_gravity;
 	else
 		c->gravity = NorthWestGravity;
 	if (c->maxw && c->minw && c->maxw == c->minw) {
@@ -6047,9 +6069,8 @@ addprefix(Client *c, char **name)
 void
 updatetitle(Client *c)
 {
-	if ((!c->icon || !gettextprop(c->icon, _XA_NET_WM_NAME, &c->name) || !c->name) &&
-	    (!c->icon || !gettextprop(c->icon, XA_WM_NAME, &c->name) || !c->name) &&
-	    (!gettextprop(c->win, _XA_NET_WM_NAME, &c->name) || !c->name) &&
+	/* Window managers will ignore any WM_NAME properties they find on icon windows. */
+	if ((!gettextprop(c->win, _XA_NET_WM_NAME, &c->name) || !c->name) &&
 	    (!gettextprop(c->win, XA_WM_NAME, &c->name)))
 		return;
 	addprefix(c, &c->name);
@@ -6059,9 +6080,8 @@ updatetitle(Client *c)
 void
 updateiconname(Client *c)
 {
-	if ((!c->icon || !gettextprop(c->icon, _XA_NET_WM_ICON_NAME, &c->icon_name) || !c->icon_name) &&
-	    (!c->icon || !gettextprop(c->icon, XA_WM_ICON_NAME, &c->icon_name) || !c->icon_name) &&
-	    (!gettextprop(c->win, _XA_NET_WM_ICON_NAME, &c->icon_name) || !c->icon_name) &&
+	/* Window managers will ignore any WM_ICON_NAME properties they find on icon windows. */
+	if ((!gettextprop(c->win, _XA_NET_WM_ICON_NAME, &c->icon_name) || !c->icon_name) &&
 	    (!gettextprop(c->win, XA_WM_ICON_NAME, &c->icon_name)))
 		return;
 	addprefix(c, &c->icon_name);
@@ -6073,6 +6093,8 @@ updatetransientfor(Client *c)
 {
 	Window trans;
 
+	/* ICCCM 2.0/4.1.9: Window managers will ignore any WM_TRANSIENT_FOR properties
+	   they find on icon windows. */
 	if (XGetTransientForHint(dpy, c->win, &trans) && trans == None)
 		trans = scr->root;
 	if (!c->is.floater && (c->is.floater = (trans != None))) {
@@ -6322,6 +6344,8 @@ updatecmapwins(Client *c)
 		free(c->cmapwins);
 		c->cmapwins = NULL;
 	}
+	/* ICCCM 2.0/4.1.9: Window managers will ignore any WM_COLORMAP_WINDOWS
+	   properties they find on icon windows. */
 	if ((c->cmapwins = getcmapwins(c->win))) {
 		for (p = c->cmapwins; p && *p; p++) {
 			XSaveContext(dpy, *p, context[ClientColormap], (XPointer) c);

@@ -935,6 +935,7 @@ struct Class {
 struct Client {
 	XWMHints wmh;
 	XClassHint ch;
+	XSizeHints sh;
 	char *name;
 	char *icon_name;
 	int monitor;			/* initial monitor */
@@ -1430,13 +1431,17 @@ void show_client_state(Client *c);
 		fprintf(stderr, NAME ": D: [%s] %12s: +%4d : %s() : [0x%08lx 0x%08lx 0x%08lx %-20s] ", _timestamp(), __FILE__, __LINE__, __func__,(c)->frame,(c)->win,(c)->icon,(c)->name); \
 		fprintf(stderr, _args); fflush(stderr); } } while (0)
 
-#define __GPRINTF(_num,c,_args...) do { if (options.debug >= _num) { \
+#define __GPRINTF(_num,_g,_args...) do { if (options.debug >= _num) { \
 		fprintf(stderr, NAME ": D: [%s] %12s: +%4d : %s() : %dx%d+%d+%d:%d (%d:%d:%d) ", _timestamp(), __FILE__, __LINE__, __func__,(_g)->w,(_g)->h,(_g)->x,(_g)->y,(_g)->b,(_g)->t,(_g)->g,(_g)->v); \
 		fprintf(stderr, _args); fflush(stderr); } } while (0)
 
 #define __EPRINTF(_args...)	  do { \
 		fprintf(stderr, NAME ": E: [%s] %12s: +%4d : %s() : ", _timestamp(), __FILE__, __LINE__, __func__); \
 		fprintf(stderr, _args); fflush(stderr); } while (0)
+
+#define __BKTRACE(_args...)	 do { \
+		fprintf(stderr, NAME ": B: [%s] %12s: +%4d : %s() : ", _timestamp(), __FILE__, __LINE__, __func__); \
+		fprintf(stderr, _args); dumpstack(__FILE__, __LINE__, __func__); fflush(stderr); } while (0)
 
 #define __OPRINTF(_num, _args...)  do { if (options.debug >= _num) { \
 		fprintf(stdout, NAME ": I: "); \
@@ -1449,6 +1454,7 @@ void show_client_state(Client *c);
 #define _CPRINTF(c,args...)	__CPRINTF(0,c,args)
 #define _GPRINTF(g,args...)	__GPRINTF(0,g,args)
 #define _EPRINTF(args...)	__EPRINTF(args)
+#define _BKTRACE(args...)	__BKTRACE(args)
 #define _OPRINTF(args...)	__OPRINTF(0,args)
 #define _XPRINTF(args...)	__XPRINTF(0,args)
 
@@ -1465,6 +1471,7 @@ void show_client_state(Client *c);
 #endif
 
 #define EPRINTF(args...)	_EPRINTF(args)
+#define BKTRACE(args...)	_BKTRACE(args)
 #define OPRINTF(args...)	_OPRINTF(args)
 #define XPRINTF(args...)	_XPRINTF(args)
 

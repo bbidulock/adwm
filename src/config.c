@@ -399,18 +399,18 @@ findrcfile(const char *file)
 						}
 					} else {
 						free(buf);
-						DPRINTF("Cannot readlink %s: %s\n", path, strerror(errno));
+						XPRINTF("Cannot readlink %s: %s\n", path, strerror(errno));
 						continue;
 					}
 					free(buf);
 				}
 				break;
 			} else {
-				DPRINTF("Cannot stat %s: %s\n", path, strerror(errno));
+				XPRINTF("Cannot stat %s: %s\n", path, strerror(errno));
 				continue;
 			}
 		} else {
-			DPRINTF("Cannot access %s: %s\n", path, strerror(errno));
+			XPRINTF("Cannot access %s: %s\n", path, strerror(errno));
 			continue;
 		}
 	}
@@ -513,48 +513,48 @@ initdockfile(void)
 
 	if (!config.dockfile && (file = getresource("dockFile", "dockrc"))) {
 		if (!(config.dockfile = findrcfile(file)))
-			DPRINTF("Could not find dock file for %s\n", file);
+			XPRINTF("Could not find dock file for %s\n", file);
 		if (config.dockfile && access(config.dockfile, R_OK)) {
-			DPRINTF("Could not access %s: %s\n", config.dockfile, strerror(errno));
+			XPRINTF("Could not access %s: %s\n", config.dockfile, strerror(errno));
 			free(config.dockfile);
 			config.dockfile = NULL;
 		}
 		if (!config.dockfile && strcmp(file, "dockrc")) {
 			if (!(config.dockfile = findrcfile("dockrc")))
-			DPRINTF("Could not find dock file for %s\n", "dockrc");
+			XPRINTF("Could not find dock file for %s\n", "dockrc");
 		}
 		if (config.dockfile && access(config.dockfile, R_OK)) {
-			DPRINTF("Could not access %s: %s\n", config.dockfile, strerror(errno));
+			XPRINTF("Could not access %s: %s\n", config.dockfile, strerror(errno));
 			free(config.dockfile);
 			config.dockfile = NULL;
 		}
 	}
 	if (!config.dockfile) {
 		if (!(config.dockfile = findthemepath("dockrc")))
-			DPRINTF("Could not find dock file for %s\n", file);
+			XPRINTF("Could not find dock file for %s\n", file);
 		if (config.dockfile && access(config.dockfile, R_OK)) {
-			DPRINTF("Could not access %s: %s\n", config.dockfile, strerror(errno));
+			XPRINTF("Could not access %s: %s\n", config.dockfile, strerror(errno));
 			free(config.dockfile);
 			config.dockfile = NULL;
 		}
 	}
 	if (!config.dockfile) {
 		if (!(config.dockfile = findstylepath("dockrc")))
-			DPRINTF("Could not find dock file for %s\n", "dockrc");
+			XPRINTF("Could not find dock file for %s\n", "dockrc");
 		if (config.dockfile && access(config.dockfile, R_OK)) {
-			DPRINTF("Could not access %s: %s\n", config.dockfile, strerror(errno));
+			XPRINTF("Could not access %s: %s\n", config.dockfile, strerror(errno));
 			free(config.dockfile);
 			config.dockfile = NULL;
 		}
 	}
 	if (!config.dockfile) {
-		DPRINTF("Could not find readable dock file.\n");
+		XPRINTF("Could not find readable dock file.\n");
 		return;
 	}
-	DPRINTF("Reading databse file %s\n", config.dockfile);
+	XPRINTF("Reading databse file %s\n", config.dockfile);
 	drdb = XrmGetFileDatabase(config.dockfile);
 	if (!drdb) {
-		DPRINTF("Could not read database file '%s'\n", config.dockfile);
+		XPRINTF("Could not read database file '%s'\n", config.dockfile);
 		return;
 	}
 	XrmMergeDatabases(drdb, &xrdb);
@@ -571,48 +571,48 @@ initkeysfile(void)
 
 	if (!config.keysfile && (file = getresource("keysFile", "keysrc"))) {
 		if (!(config.keysfile = findrcfile(file)))
-			DPRINTF("Could not find keys file for %s\n", file);
+			XPRINTF("Could not find keys file for %s\n", file);
 		if (config.keysfile && access(config.keysfile, R_OK)) {
-			DPRINTF("Could not access %s: %s\n", config.keysfile, strerror(errno));
+			XPRINTF("Could not access %s: %s\n", config.keysfile, strerror(errno));
 			free(config.keysfile);
 			config.keysfile = NULL;
 		}
 		if (!config.keysfile && strcmp(file, "keysrc")) {
 			if (!(config.keysfile = findrcfile("keysrc")))
-				DPRINTF("Could not find keys file for %s\n", "keysrc");
+				XPRINTF("Could not find keys file for %s\n", "keysrc");
 		}
 		if (config.keysfile && access(config.keysfile, R_OK)) {
-			DPRINTF("Could not access %s: %s\n", config.keysfile, strerror(errno));
+			XPRINTF("Could not access %s: %s\n", config.keysfile, strerror(errno));
 			free(config.keysfile);
 			config.keysfile = NULL;
 		}
 	}
 	if (!config.keysfile) {
 		if (!(config.keysfile = findthemepath("keysrc")))
-			DPRINTF("Could not find keys file for %s\n", "keysrc");
+			XPRINTF("Could not find keys file for %s\n", "keysrc");
 		if (config.keysfile && access(config.keysfile, R_OK)) {
-			DPRINTF("Could not access %s: %s\n", config.keysfile, strerror(errno));
+			XPRINTF("Could not access %s: %s\n", config.keysfile, strerror(errno));
 			free(config.keysfile);
 			config.keysfile = NULL;
 		}
 	}
 	if (!config.keysfile) {
 		if (!(config.keysfile = findstylepath("keysrc")))
-			DPRINTF("Could not find keys file for %s\n", "keysrc");
+			XPRINTF("Could not find keys file for %s\n", "keysrc");
 		if (config.keysfile && access(config.keysfile, R_OK)) {
-			DPRINTF("Could not access %s: %s\n", config.keysfile, strerror(errno));
+			XPRINTF("Could not access %s: %s\n", config.keysfile, strerror(errno));
 			free(config.keysfile);
 			config.keysfile = NULL;
 		}
 	}
 	if (!config.keysfile) {
-		DPRINTF("Could not find readable keys file.\n");
+		XPRINTF("Could not find readable keys file.\n");
 		return;
 	}
-	DPRINTF("Reading databse file %s\n", config.keysfile);
+	XPRINTF("Reading databse file %s\n", config.keysfile);
 	krdb = XrmGetFileDatabase(config.keysfile);
 	if (!krdb) {
-		DPRINTF("Could not read database file '%s'\n", config.keysfile);
+		XPRINTF("Could not read database file '%s'\n", config.keysfile);
 		return;
 	}
 	XrmMergeDatabases(krdb, &xrdb);
@@ -640,18 +640,18 @@ initstylefile(void)
 	/* haven't loaded a style file yet */
 	if (!config.stylefile && (file = getresource("styleFile", "stylerc"))) {
 		if (!(config.stylefile = findrcfile(file)))
-			DPRINTF("Could not find style file for %s\n", file);
+			XPRINTF("Could not find style file for %s\n", file);
 		if (config.stylefile && access(config.stylefile, R_OK)) {
-			DPRINTF("Could not access %s: %s\n", config.stylefile, strerror(errno));
+			XPRINTF("Could not access %s: %s\n", config.stylefile, strerror(errno));
 			free(config.stylefile);
 			config.stylefile = NULL;
 		}
 		if (!config.stylefile && strcmp(file, "stylerc")) {
 			if (!(config.stylefile = findrcfile("stylerc")))
-				DPRINTF("Could not find style file for %s\n", "stylerc");
+				XPRINTF("Could not find style file for %s\n", "stylerc");
 		}
 		if (config.stylefile && access(config.stylefile, R_OK)) {
-			DPRINTF("Could not access %s: %s\n", config.stylefile, strerror(errno));
+			XPRINTF("Could not access %s: %s\n", config.stylefile, strerror(errno));
 			free(config.stylefile);
 			config.stylefile = NULL;
 		}
@@ -663,31 +663,31 @@ initstylefile(void)
 		strncat(path, name, len);
 		strncat(path, "/stylerc", len);
 		if (!(config.stylefile = findrcfile(path)))
-			DPRINTF("Could not find style file for %s\n", path);
+			XPRINTF("Could not find style file for %s\n", path);
 		free(path);
 		if (config.stylefile && access(config.stylefile, R_OK)) {
-			DPRINTF("Could not access %s: %s\n", config.stylefile, strerror(errno));
+			XPRINTF("Could not access %s: %s\n", config.stylefile, strerror(errno));
 			free(config.stylefile);
 			config.stylefile = NULL;
 		}
 		if (!config.stylefile && strcmp(name, "Default")) {
 			if (!(config.stylefile = findrcfile("styles/Default/stylerc")))
-				DPRINTF("Could not find style file for %s\n", "styles/Default/stylerc");
+				XPRINTF("Could not find style file for %s\n", "styles/Default/stylerc");
 		}
 		if (config.stylefile && access(config.stylefile, R_OK)) {
-			DPRINTF("Could not access %s: %s\n", config.stylefile, strerror(errno));
+			XPRINTF("Could not access %s: %s\n", config.stylefile, strerror(errno));
 			free(config.stylefile);
 			config.stylefile = NULL;
 		}
 	}
 	if (!config.stylefile) {
-		DPRINTF("Could not find readable style file.\n");
+		XPRINTF("Could not find readable style file.\n");
 		return;
 	}
-	DPRINTF("Reading databse file %s\n", config.stylefile);
+	XPRINTF("Reading databse file %s\n", config.stylefile);
 	srdb = XrmGetFileDatabase(config.stylefile);
 	if (!srdb) {
-		DPRINTF("Could not read database file '%s'\n", config.stylefile);
+		XPRINTF("Could not read database file '%s'\n", config.stylefile);
 		return;
 	}
 	XrmMergeDatabases(srdb, &xrdb);
@@ -713,18 +713,18 @@ initthemefile(void)
 	/* haven't loaded a theme file yet */
 	if (!config.themefile && (file = getresource("themeFile", "themerc"))) {
 		if (!(config.themefile = findrcfile(file)))
-			DPRINTF("Could not find theme file for %s\n", file);
+			XPRINTF("Could not find theme file for %s\n", file);
 		if (config.themefile && access(config.themefile, R_OK)) {
-			DPRINTF("Could not access %s: %s\n", config.themefile, strerror(errno));
+			XPRINTF("Could not access %s: %s\n", config.themefile, strerror(errno));
 			free(config.themefile);
 			config.themefile = NULL;
 		}
 		if (!config.themefile && strcmp(file, "themerc")) {
 			if (!(config.themefile = findrcfile("themerc")))
-				DPRINTF("Could not find theme file for %s\n", "themerc");
+				XPRINTF("Could not find theme file for %s\n", "themerc");
 		}
 		if (config.themefile && access(config.themefile, R_OK)) {
-			DPRINTF("Could not access %s: %s\n", config.themefile, strerror(errno));
+			XPRINTF("Could not access %s: %s\n", config.themefile, strerror(errno));
 			free(config.themefile);
 			config.themefile = NULL;
 		}
@@ -736,31 +736,31 @@ initthemefile(void)
 		strncat(path, name, len);
 		strncat(path, "/themerc", len);
 		if (!(config.themefile = findrcfile(path)))
-			DPRINTF("Could not find theme file for %s\n", path);
+			XPRINTF("Could not find theme file for %s\n", path);
 		free(path);
 		if (config.themefile && access(config.themefile, R_OK)) {
-			DPRINTF("Could not access %s: %s\n", config.themefile, strerror(errno));
+			XPRINTF("Could not access %s: %s\n", config.themefile, strerror(errno));
 			free(config.themefile);
 			config.themefile = NULL;
 		}
 		if (!config.themefile && strcmp(name, "Default")) {
 			if (!(config.themefile = findrcfile("themes/Default/themerc")))
-				DPRINTF("Could not find theme file for %s\n", "themes/Default/themerc");
+				XPRINTF("Could not find theme file for %s\n", "themes/Default/themerc");
 		}
 		if (config.themefile && access(config.themefile, R_OK)) {
-			DPRINTF("Could not access %s: %s\n", config.themefile, strerror(errno));
+			XPRINTF("Could not access %s: %s\n", config.themefile, strerror(errno));
 			free(config.themefile);
 			config.themefile = NULL;
 		}
 	}
 	if (!config.themefile) {
-		DPRINTF("Could not find readable theme file.\n");
+		XPRINTF("Could not find readable theme file.\n");
 		return;
 	}
-	DPRINTF("Reading databse file %s\n", config.themefile);
+	XPRINTF("Reading databse file %s\n", config.themefile);
 	trdb = XrmGetFileDatabase(config.themefile);
 	if (!trdb) {
-		DPRINTF("Could not read database file '%s'\n", config.themefile);
+		XPRINTF("Could not read database file '%s'\n", config.themefile);
 		return;
 	}
 	XrmMergeDatabases(trdb, &xrdb);
@@ -776,28 +776,28 @@ initrcdirs(const char *conf, Bool reload)
 	config.rdir = ecalloc(len + 1, sizeof(*config.rdir));
 	strncpy(config.rdir, xdgdirs.runt, len);
 	strncat(config.rdir, "/adwm/", len);
-	DPRINTF("config.rdir = %s\n", config.rdir);
+	XPRINTF("config.rdir = %s\n", config.rdir);
 
 	free(config.xdir);
 	len = strlen(xdgdirs.conf.home) + strlen("/adwm/");
 	config.xdir = ecalloc(len + 1, sizeof(*config.xdir));
 	strncpy(config.xdir, xdgdirs.conf.home, len);
 	strncat(config.xdir, "/adwm/", len);
-	DPRINTF("config.xdir = %s\n", config.xdir);
+	XPRINTF("config.xdir = %s\n", config.xdir);
 
 	free(config.udir);
 	len = strlen(xdgdirs.home) + strlen("/.adwm/");
 	config.udir = ecalloc(len + 1, sizeof(*config.udir));
 	strncpy(config.udir, xdgdirs.home, len);
 	strncat(config.udir, "/.adwm/", len);
-	DPRINTF("config.udir = %s\n", config.udir);
+	XPRINTF("config.udir = %s\n", config.udir);
 
 	free(config.sdir);
 	len = strlen(SYSCONFPATH) + 1;
 	config.sdir = ecalloc(len + 1, sizeof(*config.sdir));
 	strncpy(config.sdir, SYSCONFPATH, len);
 	strncat(config.sdir, "/", len);
-	DPRINTF("config.sdir = %s\n", config.sdir);
+	XPRINTF("config.sdir = %s\n", config.sdir);
 
 	free(config.pdir);
 	config.pdir = NULL;
@@ -830,7 +830,7 @@ initrcdirs(const char *conf, Bool reload)
 				break;
 		}
 	}
-	DPRINTF("config.pdir = %s\n", config.pdir);
+	XPRINTF("config.pdir = %s\n", config.pdir);
 	/* XXX: if config.rcfile or its directory, config.pdir, doesn't exist, we will
 	   read config.sdir/adwmrc when it comes to reading, and will create config.pdir
 	   and write config.rcfile when it comes to it. */
@@ -860,11 +860,11 @@ initrcfile(const char *conf, Bool reload)
 	dir = strdup(config.pdir);
 	rcfile = strdup(config.rcfile);
 	if (chdir(dir))
-		DPRINTF("Could not change directory to %s: %s\n", dir, strerror(errno));
-	DPRINTF("Reading databse file %s\n", rcfile);
+		XPRINTF("Could not change directory to %s: %s\n", dir, strerror(errno));
+	XPRINTF("Reading databse file %s\n", rcfile);
 	xrdb = XrmGetFileDatabase(rcfile);
 	if (!xrdb) {
-		DPRINTF("Couldn't find database file '%s', using defaults\n", rcfile);
+		XPRINTF("Couldn't find database file '%s', using defaults\n", rcfile);
 		free(dir);
 		dir = strdup(config.sdir);
 		free(rcfile);
@@ -873,11 +873,11 @@ initrcfile(const char *conf, Bool reload)
 		strncpy(rcfile, dir, len);
 		strncat(rcfile, "adwmrc", len);
 		if (chdir(dir))
-			DPRINTF("Could not change directory to %s: %s\n", dir, strerror(errno));
-		DPRINTF("Reading databse file %s\n", rcfile);
+			XPRINTF("Could not change directory to %s: %s\n", dir, strerror(errno));
+		XPRINTF("Reading databse file %s\n", rcfile);
 		xrdb = XrmGetFileDatabase(rcfile);
 		if (!xrdb)
-			DPRINTF("Couldn't find database file '%s', using defaults\n", rcfile);
+			XPRINTF("Couldn't find database file '%s', using defaults\n", rcfile);
 	}
 
 	initthemefile();	/* read theme elements into the database */

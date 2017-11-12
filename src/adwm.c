@@ -661,14 +661,13 @@ buttonpress(XEvent *e)
 
 	pushtime(ev->time);
 
-	DPRINTF
-	    ("BUTTON %d: window 0x%lx root 0x%lx subwindow 0x%lx time %ld x %d y %d x_root %d y_root %d state 0x%x\n",
+	XPRINTF("BUTTON %d: window 0x%lx root 0x%lx subwindow 0x%lx time %ld x %d y %d x_root %d y_root %d state 0x%x\n",
 	     ev->button, ev->window, ev->root, ev->subwindow, ev->time, ev->x, ev->y,
 	     ev->x_root, ev->y_root, ev->state);
 
 	if (ev->type == ButtonRelease && (button_proxy & (1 << button))) {
 		/* if we proxied the press, we must proxy the release too */
-		DPRINTF("BUTTON %d: passing to button proxy, state = 0x%08x\n",
+		XPRINTF("BUTTON %d: passing to button proxy, state = 0x%08x\n",
 			button + Button1, state);
 		XSendEvent(dpy, scr->selwin, False, SubstructureNotifyMask, e);
 		button_proxy &= ~(1 << button);
@@ -676,15 +675,14 @@ buttonpress(XEvent *e)
 	}
 
 	if (ev->window == scr->root) {
-		DPRINTF("SCREEN %d: 0x%lx button: %d\n", scr->screen, ev->window,
+		XPRINTF("SCREEN %d: 0x%lx button: %d\n", scr->screen, ev->window,
 			ev->button);
 		/* _WIN_DESKTOP_BUTTON_PROXY */
 		/* modifiers or not interested in press or release */
 		if (ev->type == ButtonPress) {
 			if (state || (!actions[OnRoot][button][0] &&
 				      !actions[OnRoot][button][1])) {
-				DPRINTF
-				    ("BUTTON %d: passing to button proxy, state = 0x%08x\n",
+				XPRINTF("BUTTON %d: passing to button proxy, state = 0x%08x\n",
 				     button + Button1, state);
 				XUngrabPointer(dpy, ev->time);
 				XSendEvent(dpy, scr->selwin, False,
@@ -694,15 +692,15 @@ buttonpress(XEvent *e)
 			}
 		}
 		if ((action = actions[OnRoot][button][direct])) {
-			DPRINTF("Action %p for On=%d, button=%d, direct=%d\n", action,
+			XPRINTF("Action %p for On=%d, button=%d, direct=%d\n", action,
 				OnRoot, button + Button1, direct);
 			(*action) (NULL, (XEvent *) ev);
 		} else
-			DPRINTF("No action for On=%d, button=%d, direct=%d\n", OnRoot,
+			XPRINTF("No action for On=%d, button=%d, direct=%d\n", OnRoot,
 				button + Button1, direct);
 		XUngrabPointer(dpy, ev->time);
 	} else if ((c = getclient(ev->window, ClientTitle)) && ev->window == c->title && c->is.managed) {
-		DPRINTF("TITLE %s: 0x%lx button: %d\n", c->name, ev->window, ev->button);
+		XPRINTF("TITLE %s: 0x%lx button: %d\n", c->name, ev->window, ev->button);
 		for (i = 0; i < LastElement; i++) {
 			ElementClient *ec = &c->element[i];
 			Bool active;
@@ -721,7 +719,7 @@ buttonpress(XEvent *e)
 			if (ev->x >= ec->eg.x && ev->x < ec->eg.x + ec->eg.w
 			    && ev->y >= ec->eg.y && ev->y < ec->eg.y + ec->eg.h) {
 				if (ev->type == ButtonPress) {
-					DPRINTF("ELEMENT %d PRESSED\n", i);
+					XPRINTF("ELEMENT %d PRESSED\n", i);
 					ec->pressed |= (1 << button);
 					drawclient(c); /* just for button */
 					/* resize needs to be on button press */
@@ -732,7 +730,7 @@ buttonpress(XEvent *e)
 				} else if (ev->type == ButtonRelease) {
 					/* only process release if processed press */
 					if (ec->pressed & (1 << button)) {
-						DPRINTF("ELEMENT %d RELEASED\n", i);
+						XPRINTF("ELEMENT %d RELEASED\n", i);
 						ec->pressed &= ~(1 << button);
 						drawclient(c); /* just for button */
 						/* resize needs to be on button press */
@@ -750,71 +748,71 @@ buttonpress(XEvent *e)
 			}
 		}
 		if ((action = actions[OnClientTitle][button][direct])) {
-			DPRINTF("Action %p for On=%d, button=%d, direct=%d\n", action,
+			XPRINTF("Action %p for On=%d, button=%d, direct=%d\n", action,
 				OnClientTitle, button + Button1, direct);
 			(*action) (c, (XEvent *) ev);
 		} else
-			DPRINTF("No action for On=%d, button=%d, direct=%d\n",
+			XPRINTF("No action for On=%d, button=%d, direct=%d\n",
 				OnClientTitle, button + Button1, direct);
 		XUngrabPointer(dpy, ev->time);
 		drawclient(c); /* just for button */
 	} else if ((c = getclient(ev->window, ClientGrips)) && ev->window == c->grips && c->is.managed) {
 		if ((action = actions[OnClientGrips][button][direct])) {
-			DPRINTF("Action %p for On=%d, button=%d, direct=%d\n", action,
+			XPRINTF("Action %p for On=%d, button=%d, direct=%d\n", action,
 				ClientGrips, button + Button1, direct);
 			(*action) (c, (XEvent *) ev);
 		} else
-			DPRINTF("No action for On=%d, button=%d, direct=%d\n",
+			XPRINTF("No action for On=%d, button=%d, direct=%d\n",
 				ClientGrips, button + Button1, direct);
 		XUngrabPointer(dpy, ev->time);
 		drawclient(c); /* just for button */
 	} else if ((c = getclient(ev->window, ClientIcon)) && ev->window == c->icon && c->is.managed) {
-		DPRINTF("ICON %s: 0x%lx button: %d\n", c->name, ev->window, ev->button);
+		XPRINTF("ICON %s: 0x%lx button: %d\n", c->name, ev->window, ev->button);
 		if ((CLEANMASK(ev->state) & modkey) != modkey) {
 			XAllowEvents(dpy, ReplayPointer, ev->time);
 			return True;
 		}
 		if ((action = actions[OnClientIcon][button][direct])) {
-			DPRINTF("Action %p for On=%d, button=%d, direct=%d\n", action,
+			XPRINTF("Action %p for On=%d, button=%d, direct=%d\n", action,
 				ClientIcon, button + Button1, direct);
 			(*action) (c, (XEvent *) ev);
 		} else
-			DPRINTF("No action for On=%d, button=%d, direct=%d\n", ClientIcon,
+			XPRINTF("No action for On=%d, button=%d, direct=%d\n", ClientIcon,
 				button + Button1, direct);
 		XUngrabPointer(dpy, ev->time);
 		drawclient(c); /* just for button */
 	} else if ((c = getclient(ev->window, ClientWindow)) && ev->window == c->win && c->is.managed) {
-		DPRINTF("WINDOW %s: 0x%lx button: %d\n", c->name, ev->window, ev->button);
+		XPRINTF("WINDOW %s: 0x%lx button: %d\n", c->name, ev->window, ev->button);
 		if ((CLEANMASK(ev->state) & modkey) != modkey) {
 			XAllowEvents(dpy, ReplayPointer, ev->time);
 			return True;
 		}
 		if ((action = actions[OnClientWindow][button][direct])) {
-			DPRINTF("Action %p for On=%d, button=%d, direct=%d\n", action,
+			XPRINTF("Action %p for On=%d, button=%d, direct=%d\n", action,
 				OnClientWindow, button + Button1, direct);
 			(*action) (c, (XEvent *) ev);
 		} else
-			DPRINTF("No action for On=%d, button=%d, direct=%d\n",
+			XPRINTF("No action for On=%d, button=%d, direct=%d\n",
 				OnClientWindow, button + Button1, direct);
 		XUngrabPointer(dpy, ev->time);
 		drawclient(c); /* just for button */
 	} else if ((c = getclient(ev->window, ClientFrame)) && ev->window == c->frame && c->is.managed) {
-		DPRINTF("FRAME %s: 0x%lx button: %d\n", c->name, ev->window, ev->button);
+		XPRINTF("FRAME %s: 0x%lx button: %d\n", c->name, ev->window, ev->button);
 		if (c->is.dockapp) {
 			if ((action = actions[OnClientDock][button][direct])) {
-				DPRINTF("Action %p for On=%d, button=%d, direct=%d\n",
+				XPRINTF("Action %p for On=%d, button=%d, direct=%d\n",
 					action, OnClientDock, button + Button1, direct);
 				(*action) (c, (XEvent *) ev);
 			} else
-				DPRINTF("No action for On=%d, button=%d, direct=%d\n",
+				XPRINTF("No action for On=%d, button=%d, direct=%d\n",
 					OnClientDock, button + Button1, direct);
 		} else {
 			if ((action = actions[OnClientFrame][button][direct])) {
-				DPRINTF("Action %p for On=%d, button=%d, direct=%d\n",
+				XPRINTF("Action %p for On=%d, button=%d, direct=%d\n",
 					action, OnClientFrame, button + Button1, direct);
 				(*action) (c, (XEvent *) ev);
 			} else
-				DPRINTF("No action for On=%d, button=%d, direct=%d\n",
+				XPRINTF("No action for On=%d, button=%d, direct=%d\n",
 					OnClientFrame, button + Button1, direct);
 		}
 		XUngrabPointer(dpy, ev->time);
@@ -969,7 +967,7 @@ cleanup(WithdrawCause cause)
 	for (scr = screens; scr < screens + nscr; scr++) {
 		while (scr->stack) {
 			unban(scr->stack, NULL);
-			DPRINTF("unmanage cleanup\n");
+			XPRINTF("unmanage cleanup\n");
 			unmanage(scr->stack, cause);
 		}
 	}
@@ -1076,7 +1074,7 @@ destroynotify(XEvent *e)
 	XDestroyWindowEvent *ev = &e->xdestroywindow;
 
 	if ((c = getclient(ev->window, ClientWindow)) && c->is.managed) {
-		CPRINTF(c, "unmanage destroyed window\n");
+		XPRINTF(c, "unmanage destroyed window\n");
 		unmanage(c, CauseDestroyed);
 		return True;
 	}
@@ -1236,7 +1234,7 @@ enternotify(XEvent *e)
 	if ((c = findclient(ev->window)) && c->is.managed) {
 		if (ev->detail == NotifyInferior)
 			return False;
-		CPRINTF(c, "EnterNotify received\n");
+		XPRINTF(c, "EnterNotify received\n");
 		enterclient(e, c);
 		if (c != sel)
 			installcolormaps(event_scr, c, c->cmapwins);
@@ -1245,14 +1243,14 @@ enternotify(XEvent *e)
 		installcolormap(event_scr, ev->window);
 		return True;
 	} else if (ev->window == event_scr->root && ev->detail != NotifyInferior) {
-		DPRINTF("Not focusing root\n");
+		XPRINTF("Not focusing root\n");
 		if (sel && (WTCHECK(sel, WindowTypeDock) || sel->is.dockapp || sel->is.bastard)) {
 			focus(NULL);
 			return True;
 		}
 		return False;
 	} else {
-		DPRINTF("Unknown entered window 0x%08lx\n", ev->window);
+		XPRINTF("Unknown entered window 0x%08lx\n", ev->window);
 		return False;
 	}
 }
@@ -1347,7 +1345,7 @@ shapenotify(XEvent *e)
 	Client *c;
 
 	if ((c = getclient(ev->window, ClientAny)) && ev->window == c->win && c->is.managed) {
-		CPRINTF(c, "Got shape notify, redrawing shapes \n");
+		XPRINTF(c, "Got shape notify, redrawing shapes \n");
 		if (!c->is.dockapp)
 			return configureshapes(c);
 	}
@@ -1427,7 +1425,7 @@ static void
 setfocus(Client *c)
 {
 	if (focusok(c)) {
-		CPRINTF(c, "setting focus\n");
+		XPRINTF(c, "setting focus\n");
 		if (c->can.focus & GIVE_FOCUS)
 			XSetInputFocus(dpy, c->icon ? : c->win, RevertToPointerRoot, user_time);
 		if (c->can.focus & TAKE_FOCUS) {
@@ -1455,7 +1453,7 @@ setfocus(Client *c)
 			XSetInputFocus(dpy, PointerRoot, revert, user_time);
 	} else {
 		/* this happens often now */
-		CPRINTF(c, "cannot set focus\n");
+		_CPRINTF(c, "cannot set focus\n");
 	}
 }
 
@@ -1510,12 +1508,12 @@ focuschange(XEvent *e)
 	/* Different approach: don't force focus, just track it.  When it goes to
 	   PointerRoot or None, set it to something reasonable. */
 
-	DPRINTF("FOCUS: XFocusChangeEvent type %s window 0x%lx mode %d detail %d\n",
+	XPRINTF("FOCUS: XFocusChangeEvent type %s window 0x%lx mode %d detail %d\n",
 		 e->type == FocusIn ? "FocusIn" : "FocusOut", ev->window,
 		 ev->mode, ev->detail);
 
 	if (ev->mode != NotifyNormal) {
-		DPRINTF("FOCUS: mode = %d != %d\n", e->xfocus.mode, NotifyNormal);
+		XPRINTF("FOCUS: mode = %d != %d\n", e->xfocus.mode, NotifyNormal);
 		return True;
 	}
 	switch (ev->window) {
@@ -1577,7 +1575,7 @@ focus(Client *c)
 		return;
 	ewmh_update_net_active_window();
 	if (c && c != o) {
-		CPRINTF(c, "selecting\n");
+		XPRINTF(c, "selecting\n");
 		setselected(c);
 		/* clear urgent */
 		if (c->is.attn) {
@@ -1597,7 +1595,7 @@ focus(Client *c)
 			arrange(c->cview);
 	}
 	if (o && o != c) {
-		CPRINTF(o, "deselecting\n");
+		XPRINTF(o, "deselecting\n");
 		drawclient(o); /* just for focus change */
 		lowertiled(o); /* does nothing at the moment */
 		XSetWindowBorder(dpy, o->frame, scr->style.color.norm[ColBorder].pixel);
@@ -2217,23 +2215,23 @@ keypress(XEvent *e)
 
 		switch (ev.type) {
 		case KeyRelease:
-			DPRINTF("KeyRelease: 0x%02lx %s\n", mod, XKeysymToString(keysym));
+			XPRINTF("KeyRelease: 0x%02lx %s\n", mod, XKeysymToString(keysym));
 			/* a key release other than the active key is a release of a
 			   modifier indicating a stop */
 			if (k && k->keysym != keysym) {
-				DPRINTF("KeyRelease: stopping sequence\n");
+				XPRINTF("KeyRelease: stopping sequence\n");
 				if (k->stop)
 					k->stop(&ev, k);
 				k = NULL;
 			}
 			break;
 		case KeyPress:
-			DPRINTF("KeyPress: 0x%02lx %s\n", mod, XKeysymToString(keysym));
+			XPRINTF("KeyPress: 0x%02lx %s\n", mod, XKeysymToString(keysym));
 			/* a press of a different key, even a modifier, or a press of the
 			   same key with a different modifier mask indicates a stop of
 			   the current sequence and the potential start of a new one */
 			if (k && (k->keysym != keysym || k->mod != mod)) {
-				DPRINTF("KeyPress: stopping sequence\n");
+				XPRINTF("KeyPress: stopping sequence\n");
 				if (k->stop)
 					k->stop(&ev, k);
 				k = NULL;
@@ -2244,7 +2242,7 @@ keypress(XEvent *e)
 						break;
 			}
 			if (k) {
-				DPRINTF("KeyPress: activating action for chain: %s\n", showchain(k));
+				XPRINTF("KeyPress: activating action for chain: %s\n", showchain(k));
 				handled = True;
 				if (k->func)
 					k->func(&ev, k);
@@ -2254,7 +2252,7 @@ keypress(XEvent *e)
 			break;
 		}
 	} while (k);
-	DPRINTF("Done handling keypress function\n");
+	XPRINTF("Done handling keypress function\n");
 	XUngrabKeyboard(dpy, user_time);
 	return handled;
 }
@@ -2376,9 +2374,9 @@ leavenotify(XEvent *e)
 void
 show_client_state(Client *c)
 {
-	CPRINTF(c, "%-20s: 0x%08x\n", "wintype", c->wintype);
+	XPRINTF(c, "%-20s: 0x%08x\n", "wintype", c->wintype);
 #if 1
-	CPRINTF(c, "%-20s: 0x%08x\n", "skip.skip", c->skip.skip);
+	XPRINTF(c, "%-20s: 0x%08x\n", "skip.skip", c->skip.skip);
 #else
 	CPRINTF(c, "%-20s: %s\n", "skip.taskbar", c->skip.taskbar ? "true" : "false");
 	CPRINTF(c, "%-20s: %s\n", "skip.pager", c->skip.pager ? "true" : "false");
@@ -2389,7 +2387,7 @@ show_client_state(Client *c)
 	CPRINTF(c, "%-20s: %s\n", "skip.sloppy", c->skip.sloppy ? "true" : "false");
 #endif
 #if 1
-	CPRINTF(c, "%-20s: 0x%08x\n", "is.is", c->is.is);
+	XPRINTF(c, "%-20s: 0x%08x\n", "is.is", c->is.is);
 #else
 	CPRINTF(c, "%-20s: %s\n", "is.transient", c->is.transient ? "true" : "false");
 	CPRINTF(c, "%-20s: %s\n", "is.grptrans", c->is.grptrans ? "true" : "false");
@@ -2417,7 +2415,7 @@ show_client_state(Client *c)
 	CPRINTF(c, "%-20s: %s\n", "is.managed", c->is.managed ? "true" : "false");
 #endif
 #if 1
-	CPRINTF(c, "%-20s: 0x%08x\n", "has.has", c->has.has);
+	XPRINTF(c, "%-20s: 0x%08x\n", "has.has", c->has.has);
 #else
 	CPRINTF(c, "%-20s: %s\n", "has.border", c->has.border ? "true" : "false");
 	CPRINTF(c, "%-20s: %s\n", "has.grips", c->has.grips ? "true" : "false");
@@ -2433,7 +2431,7 @@ show_client_state(Client *c)
 	CPRINTF(c, "%-20s: %s\n", "has.but.half", c->has.but.half ? "true" : "false");
 #endif
 #if 1
-	CPRINTF(c, "%-20s: 0x%08x\n", "needs.has", c->needs.has);
+	XPRINTF(c, "%-20s: 0x%08x\n", "needs.has", c->needs.has);
 #else
 	CPRINTF(c, "%-20s: %s\n", "needs.border", c->needs.border ? "true" : "false");
 	CPRINTF(c, "%-20s: %s\n", "needs.grips", c->needs.grips ? "true" : "false");
@@ -2453,7 +2451,7 @@ show_client_state(Client *c)
 	CPRINTF(c, "%-20s: %s\n", "with.time", c->with.time ? "true" : "false");
 #endif
 #if 1
-	CPRINTF(c, "%-20s: 0x%08x\n", "can.can", c->can.can);
+	XPRINTF(c, "%-20s: 0x%08x\n", "can.can", c->can.can);
 #else
 	CPRINTF(c, "%-20s: %s\n", "can.move", c->can.move ? "true" : "false");
 	CPRINTF(c, "%-20s: %s\n", "can.size", c->can.size ? "true" : "false");
@@ -2578,7 +2576,7 @@ manage(Window w, XWindowAttributes *wa)
 		_CPRINTF(c, "client already managed!\n");
 		return;
 	}
-	DPRINTF("managing window 0x%lx\n", w);
+	XPRINTF("managing window 0x%lx\n", w);
 	xtrap_push(0,NULL);
 	c = emallocz(sizeof(Client));
 	c->win = w;
@@ -2900,14 +2898,12 @@ manage(Window w, XWindowAttributes *wa)
 	XSync(dpy, False);
 	show_client_state(c);
 	if (!c->is.bastard && (focusnew || (canfocus(c) && !canfocus(sel)))) {
-		DPRINTF
-		    ("Focusing newly managed %sclient: frame 0x%08lx win 0x%08lx name %s\n",
+		XPRINTF("Focusing newly managed %sclient: frame 0x%08lx win 0x%08lx name %s\n",
 		     c->is.bastard ? "bastard " : "", c->frame, c->win, c->name);
 		arrange(NULL);
 		focus(c);
 	} else {
-		DPRINTF
-		    ("Lowering newly managed %sclient: frame 0x%08lx win 0x%08lx name %s\n",
+		XPRINTF("Lowering newly managed %sclient: frame 0x%08lx win 0x%08lx name %s\n",
 		     c->is.bastard ? "bastard " : "", c->frame, c->win, c->name);
 		restack_belowif(c, sel);
 		arrange(NULL);
@@ -3141,7 +3137,7 @@ sync_request(Client *c, Time time)
 	if (overflow)
 		XSyncMinValue(&c->sync.val);
 
-	CPRINTF(c, "Arming alarm 0x%08lx\n", c->sync.alarm);
+	XPRINTF(c, "Arming alarm 0x%08lx\n", c->sync.alarm);
 	aa.trigger.counter = c->sync.counter;
 	aa.trigger.wait_value = c->sync.val;
 	aa.trigger.value_type = XSyncAbsolute;
@@ -3152,7 +3148,7 @@ sync_request(Client *c, Time time)
 			 XSyncCACounter | XSyncCAValueType | XSyncCAValue |
 			 XSyncCATestType | XSyncCAEvents, &aa);
 
-	CPRINTF(c, "%s", "Sending client meessage\n");
+	XPRINTF(c, "%s", "Sending client meessage\n");
 	ce.xclient.type = ClientMessage;
 	ce.xclient.message_type = _XA_WM_PROTOCOLS;
 	ce.xclient.display = dpy;
@@ -3174,8 +3170,7 @@ newsize(Client *c, int w, int h, Time time)
 	if (!c->sync.alarm)
 		return True;
 	if (c->sync.waiting) {
-		DPRINTF
-		    ("Deferring size request from %dx%d to %dx%d for 0x%08lx 0x%08lx %s\n",
+		XPRINTF("Deferring size request from %dx%d to %dx%d for 0x%08lx 0x%08lx %s\n",
 		     c->c.w - 2 * c->c.v, c->c.h - c->c.t - c->c.g - c->c.v, w, h, c->frame, c->win, c->name);
 		return False;
 	}
@@ -3199,9 +3194,9 @@ alarmnotify(XEvent *e)
 		XPRINTF("Recevied alarm notify for unknown alarm 0x%08lx\n", ae->alarm);
 		return False;
 	}
-	CPRINTF(c, "alarm notify on 0x%08lx\n", ae->alarm);
+	XPRINTF(c, "alarm notify on 0x%08lx\n", ae->alarm);
 	if (!c->sync.waiting) {
-		DPRINTF("%s", "Alarm was cancelled!\n");
+		XPRINTF("%s", "Alarm was cancelled!\n");
 		return True;
 	}
 	c->sync.waiting = False;
@@ -3215,7 +3210,7 @@ alarmnotify(XEvent *e)
 		mask |= CWHeight;
 	}
 	if (mask && newsize(c, wc.width, wc.height, ae->time)) {
-		DPRINTF("Configuring window %ux%u\n", wc.width, wc.height);
+		XPRINTF("Configuring window %ux%u\n", wc.width, wc.height);
 		xtrap_push(1,NULL);
 		XConfigureWindow(dpy, c->win, mask, &wc);
 		xtrap_pop();
@@ -4036,7 +4031,7 @@ quit(const char *arg)
 {
 	running = False;
 	if (arg) {
-		DPRINTF("cleanup switching\n");
+		XPRINTF("cleanup switching\n");
 		cleanup(CauseSwitching);
 		execlp("sh", "sh", "-c", arg, NULL);
 		eprint("Can't exec '%s': %s\n", arg, strerror(errno));
@@ -4048,7 +4043,7 @@ restart(const char *arg)
 {
 	running = False;
 	if (arg) {
-		DPRINTF("cleanup switching\n");
+		XPRINTF("cleanup switching\n");
 		cleanup(CauseSwitching);
 		execlp("sh", "sh", "-c", arg, NULL);
 		eprint("Can't exec '%s': %s\n", arg, strerror(errno));
@@ -4061,7 +4056,7 @@ restart(const char *arg)
 		for (i = 0; i < cargc; i++)
 			argv[i] = strdup(cargv[i]);
 
-		DPRINTF("cleanup restarting\n");
+		XPRINTF("cleanup restarting\n");
 		cleanup(CauseRestarting);
 		execvp(argv[0], argv);
 		eprint("Can't restart: %s\n", strerror(errno));
@@ -4279,37 +4274,37 @@ scan(void)
 			if (!wins[i])
 				continue;
 
-			DPRINTF("scan checking window 0x%08lx\n", wins[i]);
+			XPRINTF("scan checking window 0x%08lx\n", wins[i]);
 
 			if ((c = getclient(wins[i], ClientAny))) {
-				DPRINTF("-> deleting 0x%08lx (already managed by %s)\n", wins[i], c->name);
+				XPRINTF("-> deleting 0x%08lx (already managed by %s)\n", wins[i], c->name);
 				wins[i] = None;
 				continue;
 			}
 			if (!XGetWindowAttributes(dpy, wins[i], &wa)) {
-				DPRINTF("-> deleting 0x%08lx (no window attributes)\n", wins[i]);
+				XPRINTF("-> deleting 0x%08lx (no window attributes)\n", wins[i]);
 				wins[i] = None;
 				continue;
 			}
 			if (wa.override_redirect) {
-				DPRINTF("-> deleting 0x%08lx (override redirect set)\n", wins[i]);
+				XPRINTF("-> deleting 0x%08lx (override redirect set)\n", wins[i]);
 				wins[i] = None;
 				continue;
 			}
 			if (issystray(wins[i])) {
-				DPRINTF("-> deleting 0x%08lx (is a system tray icon)\n", wins[i]);
+				XPRINTF("-> deleting 0x%08lx (is a system tray icon)\n", wins[i]);
 				wins[i] = None;
 				continue;
 			}
 			if ((wa.map_state != IsViewable) && ((state = getstate(wins[i])) != IconicState) && (state != NormalState)) {
-				DPRINTF("-> deleting 0x%08lx (not viewable and state = %ld)\n", wins[i], state);
+				XPRINTF("-> deleting 0x%08lx (not viewable and state = %ld)\n", wins[i], state);
 				wins[i] = None;
 				continue;
 			}
 			/* ICCCM 2.0/4.1.9: Window managers will ignore any WM_TRANSIENT_FOR properties
 			   they find on icon windows. */
 			if (XGetTransientForHint(dpy, wins[i], &d1)) {
-				DPRINTF("-> skipping 0x%08lx (transient-for property set)\n", wins[i]);
+				XPRINTF("-> skipping 0x%08lx (transient-for property set)\n", wins[i]);
 				continue;
 			}
 			/* ICCCM 2.0/4.1.9: Window managers will ignore any WM_HINTS properties
@@ -4317,12 +4312,12 @@ scan(void)
 			if (!(wmh = XGetWMHints(dpy, wins[i])) ||
 					((wmh->flags & WindowGroupHint) && (wmh->window_group != wins[i])) ||
 					!(wmh->flags & IconWindowHint)) {
-				DPRINTF("-> skipping 0x%08lx (not group leader)\n", wins[i]);
+				XPRINTF("-> skipping 0x%08lx (not group leader)\n", wins[i]);
 				if (wmh)
 					XFree(wmh);
 				continue;
 			}
-			DPRINTF("-> managing 0x%08lx\n", wins[i]);
+			XPRINTF("-> managing 0x%08lx\n", wins[i]);
 			manage(wins[i], &wa);
 			wins[i] = None;
 			if (wmh)
@@ -4335,17 +4330,17 @@ scan(void)
 				continue;
 			if (!XGetWindowAttributes(dpy, wins[i], &wa))
 				continue;
-			DPRINTF("-> managing 0x%08lx\n", wins[i]);
+			XPRINTF("-> managing 0x%08lx\n", wins[i]);
 			manage(wins[i], &wa);
 			wins[i] = None;
 		}
 	} else
-		EPRINTF("XQueryTree(0x%lx) failed\n", scr->root);
+		XPRINTF("XQueryTree(0x%lx) failed\n", scr->root);
 //	XUngrabServer(dpy);
 	xtrap_pop();
 	if (wins)
 		XFree(wins);
-	DPRINTF("done scanning screen %d\n", scr->screen);
+	XPRINTF("done scanning screen %d\n", scr->screen);
 	focus(sel);
 	ewmh_update_kde_splash_progress();
 }
@@ -4380,14 +4375,14 @@ findmonitornear(int row, int col)
 	float dist = hypotf((scr->m.rows + 1) * h, (scr->m.cols + 1) * w);
 	Monitor *m, *best = NULL;
 
-	DPRINTF("Finding monitor nearest (%d,%d), max dist = %f\n", col, row, dist);
+	XPRINTF("Finding monitor nearest (%d,%d), max dist = %f\n", col, row, dist);
 	for (m = scr->monitors; m; m = m->next) {
 		float test;
 
 		test = hypotf((m->row - row) * h, (m->col - col) * w);
-		DPRINTF("Testing monitor %d (%d,%d), dist = %f\n", m->num, m->col, m->row, test);
+		XPRINTF("Testing monitor %d (%d,%d), dist = %f\n", m->num, m->col, m->row, test);
 		if (test <= dist) {
-			DPRINTF("Monitor %d is best!\n", m->num);
+			XPRINTF("Monitor %d is best!\n", m->num);
 			dist = test;
 			best = m;
 		}
@@ -4403,18 +4398,18 @@ updatedock(void)
 	Monitor *m;
 	int i, dockmon;
 
-	DPRINTF("Number of dock monitors is %d\n", scr->nmons);
+	XPRINTF("Number of dock monitors is %d\n", scr->nmons);
 	for (m = scr->monitors, i = 0; i < scr->nmons; i++, m++) {
 		m->dock.position = DockNone;
 		m->dock.wa = m->wa;
 	}
 	scr->dock.monitor = NULL;
-	DPRINTF("Dock monitor option is %d\n", scr->options.dockmon);
+	XPRINTF("Dock monitor option is %d\n", scr->options.dockmon);
 	dockmon = (int) scr->options.dockmon - 1;
-	DPRINTF("Dock monitor chosen is %d\n", dockmon);
+	XPRINTF("Dock monitor chosen is %d\n", dockmon);
 	if (dockmon > scr->nmons - 1)
 		dockmon = scr->nmons - 1;
-	DPRINTF("Dock monitor adjusted is %d\n", dockmon);
+	XPRINTF("Dock monitor adjusted is %d\n", dockmon);
 	/* find the monitor if dock position is screen relative */
 	if (dockmon < 0) {
 		DockPosition pos = scr->options.dockpos;
@@ -4464,28 +4459,28 @@ updatedock(void)
 		if (pos != DockNone) {
 			if ((dm = findmonitornear(row, col))) {
 				dockmon = dm->num;
-				DPRINTF("Found monitor %d near (%d,%d)\n", dockmon, col, row);
+				XPRINTF("Found monitor %d near (%d,%d)\n", dockmon, col, row);
 			} else {
-				DPRINTF("Cannot find monitor near (%d,%d)\n", col, row);
+				XPRINTF("Cannot find monitor near (%d,%d)\n", col, row);
 			}
 		}
 	}
 	if (dockmon >= 0) {
-		DPRINTF("Looking for monitor %d assigned to dock...\n", dockmon);
+		XPRINTF("Looking for monitor %d assigned to dock...\n", dockmon);
 		for (m = scr->monitors; m; m = m->next) {
 			if (m->num == dockmon) {
 				m->dock.position = scr->options.dockpos;
 				m->dock.orient = scr->options.dockori;
 				scr->dock.monitor = m;
-				DPRINTF("Found monitor %d assigned to dock.\n", dockmon);
+				XPRINTF("Found monitor %d assigned to dock.\n", dockmon);
 				break;
 			}
 		}
 	}
 	if (!scr->dock.monitor) {
-		DPRINTF("Did not find monitor assigned dock %d\n", dockmon);
+		XPRINTF("Did not find monitor assigned dock %d\n", dockmon);
 		if ((m = scr->monitors)) {
-			DPRINTF("Falling back to default monitor for dock.\n");
+			XPRINTF("Falling back to default monitor for dock.\n");
 			m->dock.position = scr->options.dockpos;
 			m->dock.orient = scr->options.dockori;
 			scr->dock.monitor = m;
@@ -4564,7 +4559,7 @@ updatemonitors(XEvent *e, int n, Bool size_update, Bool full_update)
 	Bool changed;
 	View *v;
 
-	DPRINTF("There are now %d monitors (was %d)\n", n, scr->nmons);
+	XPRINTF("There are now %d monitors (was %d)\n", n, scr->nmons);
 	for (i = 0; i < n; i++)
 		scr->monitors[i].next = &scr->monitors[i + 1];
 	scr->monitors[n - 1].next = NULL;
@@ -4573,11 +4568,11 @@ updatemonitors(XEvent *e, int n, Bool size_update, Bool full_update)
 	if (full_update)
 		size_update = True;
 	scr->nmons = n;
-	DPRINTF("Performing %s/%s updates\n",
+	XPRINTF("Performing %s/%s updates\n",
 			full_update ? "full" : "partial",
 			size_update ? "resize" : "no-resize");
 	if (e) {
-		DPRINTF("Responding to an event\n");
+		XPRINTF("Responding to an event\n");
 		if (full_update) {
 			for (c = scr->clients; c; c = c->next) {
 				if (isomni(c))
@@ -4599,33 +4594,33 @@ updatemonitors(XEvent *e, int n, Bool size_update, Bool full_update)
 	}
 	updatebarriers();
 	/* find largest monitor */
-	DPRINTF("Finding largest monitor\n");
+	XPRINTF("Finding largest monitor\n");
 	for (w = 0, h = 0, scr->sw = 0, scr->sh = 0, i = 0; i < n; i++) {
 		m = scr->monitors + i;
-		DPRINTF("Processing monitor %d\n", m->index);
+		XPRINTF("Processing monitor %d\n", m->index);
 		w = max(w, m->sc.w);
 		h = max(h, m->sc.h);
-		DPRINTF("Maximum monitor dimensions %dx%d\n", w, h);
+		XPRINTF("Maximum monitor dimensions %dx%d\n", w, h);
 		scr->sw = max(scr->sw, m->sc.x + m->sc.w);
 		scr->sh = max(scr->sh, m->sc.y + m->sc.h);
-		DPRINTF("Maximum screen  dimensions %dx%d\n", w, h);
+		XPRINTF("Maximum screen  dimensions %dx%d\n", w, h);
 	}
-	DPRINTF("Maximum screen  size is now %dx%d\n", scr->sw, scr->sh);
-	DPRINTF("Maximum monitor size is now %dx%d\n", w, h);
+	XPRINTF("Maximum screen  size is now %dx%d\n", scr->sw, scr->sh);
+	XPRINTF("Maximum monitor size is now %dx%d\n", w, h);
 	scr->m.rows = (scr->sh + h - 1) / h;
 	scr->m.cols = (scr->sw + w - 1) / w;
-	DPRINTF("Monitor array is %dx%d\n", scr->m.cols, scr->m.rows);
+	XPRINTF("Monitor array is %dx%d\n", scr->m.cols, scr->m.rows);
 	h = scr->sh / scr->m.rows;
 	w = scr->sw / scr->m.cols;
-	DPRINTF("Each monitor cell is %dx%d\n", w, h);
+	XPRINTF("Each monitor cell is %dx%d\n", w, h);
 	for (i = 0; i < n; i++) {
 		m = scr->monitors + i;
 		m->row = m->my / h;
 		m->col = m->mx / w;
-		DPRINTF("Monitor %d at (%d,%d)\n", i+1, m->col, m->row);
+		XPRINTF("Monitor %d at (%d,%d)\n", i+1, m->col, m->row);
 	}
 	/* handle insane geometries, push overlaps to the right */
-	DPRINTF("Handling insane geometries...\n");
+	XPRINTF("Handling insane geometries...\n");
 	do {
 		changed = False;
 		for (i = 0; i < n && !changed; i++) {
@@ -4635,21 +4630,21 @@ updatemonitors(XEvent *e, int n, Bool size_update, Bool full_update)
 
 				if (m->row != o->row || m->col != o->col)
 					continue;
-				DPRINTF("Monitors %d and %d conflict at (%d,%d)\n",
+				XPRINTF("Monitors %d and %d conflict at (%d,%d)\n",
 						m->index, o->index, m->col, m->row);
 				if (m->mx < o->mx) {
 					o->col++;
-					DPRINTF("Moving monitor %d to the right (%d,%d)\n",
+					XPRINTF("Moving monitor %d to the right (%d,%d)\n",
 							o->index, o->col, o->row);
 					scr->m.cols = max(scr->m.cols, o->col + 1);
-					DPRINTF("Monitor array is now %dx%d\n",
+					XPRINTF("Monitor array is now %dx%d\n",
 							scr->m.cols, scr->m.rows);
 				} else {
 					m->col++;
-					DPRINTF("Moving monitor %d to the right (%d,%d)\n",
+					XPRINTF("Moving monitor %d to the right (%d,%d)\n",
 							m->index, m->col, m->row);
 					scr->m.cols = max(scr->m.cols, m->col + 1);
-					DPRINTF("Monitor array is now %dx%d\n",
+					XPRINTF("Monitor array is now %dx%d\n",
 							scr->m.cols, scr->m.rows);
 				}
 				changed = True;
@@ -4657,14 +4652,14 @@ updatemonitors(XEvent *e, int n, Bool size_update, Bool full_update)
 		}
 	} while (changed);
 	/* update all view pointers */
-	DPRINTF("There are %d tags\n", scr->ntags);
+	XPRINTF("There are %d tags\n", scr->ntags);
 	for (v = scr->views, i = 0; i < scr->ntags; i++, v++)
 		v->curmon = NULL;
 	for (m = scr->monitors, i = 0; i < n; i++, m++) {
-		DPRINTF("Setting view %d to monitor %d\n", m->curview->index, m->index);
+		XPRINTF("Setting view %d to monitor %d\n", m->curview->index, m->index);
 		m->curview->curmon = m;
 	}
-	DPRINTF("Updating dock...\n");
+	XPRINTF("Updating dock...\n");
 	updatedock();
 	updatestruts();
 	ewmh_update_net_desktop_geometry();
@@ -4681,7 +4676,7 @@ initmonitors(XEvent *e)
 	if (e)
 		XRRUpdateConfiguration(e);
 #else
-	DPRINTF("%s", "compiled without RANDR support\n");
+	XPRINTF("%s", "compiled without RANDR support\n");
 #endif
 
 #ifdef XINERAMA
@@ -4689,19 +4684,19 @@ initmonitors(XEvent *e)
 		int i;
 		XineramaScreenInfo *si;
 
-		DPRINTF("XINERAMA extension supported\n");
+		XPRINTF("XINERAMA extension supported\n");
 		if (!XineramaIsActive(dpy)) {
-			DPRINTF("XINERAMA is not active for screen %d\n", scr->screen);
+			XPRINTF("XINERAMA is not active for screen %d\n", scr->screen);
 			goto no_xinerama;
 		}
-		DPRINTF("XINERAMA is active for screen %d\n", scr->screen);
+		XPRINTF("XINERAMA is active for screen %d\n", scr->screen);
 		si = XineramaQueryScreens(dpy, &n);
 		if (!si) {
-			DPRINTF("XINERAMA defines no monitors for screen %d\n",
+			XPRINTF("XINERAMA defines no monitors for screen %d\n",
 				scr->screen);
 			goto no_xinerama;
 		}
-		DPRINTF("XINERAMA defines %d monitors for screen %d\n", n, scr->screen);
+		XPRINTF("XINERAMA defines %d monitors for screen %d\n", n, scr->screen);
 		if (n < 2) {
 			XFree(si);
 			goto no_xinerama;
@@ -4709,37 +4704,37 @@ initmonitors(XEvent *e)
 		for (i = 0; i < n; i++) {
 			if (i < scr->nmons) {
 				m = &scr->monitors[i];
-				DPRINTF("Checking existing monitor %d\n", m->index);
+				XPRINTF("Checking existing monitor %d\n", m->index);
 				if (m->sc.x != si[i].x_org) {
-					DPRINTF("Monitor %d x position changed from %d to %d\n",
+					XPRINTF("Monitor %d x position changed from %d to %d\n",
 							m->index, m->sc.x, si[i].x_org);
 					m->sc.x = m->wa.x = m->dock.wa.x = si[i].x_org;
 					m->mx = m->sc.x + m->sc.w / 2;
 					full_update = True;
 				}
 				if (m->sc.y != si[i].y_org) {
-					DPRINTF("Monitor %d y position changed from %d to %d\n",
+					XPRINTF("Monitor %d y position changed from %d to %d\n",
 							m->index, m->sc.y, si[i].y_org);
 					m->sc.y = m->wa.y = m->dock.wa.y = si[i].y_org;
 					m->my = m->sc.y + m->sc.h / 2;
 					full_update = True;
 				}
 				if (m->sc.w != si[i].width) {
-					DPRINTF("Monitor %d width changed from %d to %d\n",
+					XPRINTF("Monitor %d width changed from %d to %d\n",
 							m->index, m->sc.w, si[i].width);
 					m->sc.w = m->wa.w = m->dock.wa.w = si[i].width;
 					m->mx = m->sc.x + m->sc.w / 2;
 					size_update = True;
 				}
 				if (m->sc.h != si[i].height) {
-					DPRINTF("Monitor %d height changed from %d to %d\n",
+					XPRINTF("Monitor %d height changed from %d to %d\n",
 							m->index, m->sc.h, si[i].height);
 					m->sc.h = m->wa.h = m->dock.wa.h = si[i].height;
 					m->my = m->sc.y + m->sc.h / 2;
 					size_update = True;
 				}
 				if (m->num != si[i].screen_number) {
-					DPRINTF("Monitor %d screen number changed from %d to %d\n",
+					XPRINTF("Monitor %d screen number changed from %d to %d\n",
 							m->index, m->num, si[i].screen_number);
 					m->num = si[i].screen_number;
 					full_update = True;
@@ -4749,7 +4744,7 @@ initmonitors(XEvent *e)
 				int mask = 0;
 				int j;
 
-				DPRINTF("Adding new monitor %d\n", i);
+				XPRINTF("Adding new monitor %d\n", i);
 				scr->monitors =
 				    erealloc(scr->monitors,
 					     (i + 1) * sizeof(*scr->monitors));
@@ -4783,46 +4778,46 @@ initmonitors(XEvent *e)
 				for (j = 0; j < 8; j++)
 					m->bars[j] = None;
 			}
-			DPRINTF("Monitor %d:\n", m->index);
-			DPRINTF("\tindex           = %d\n", m->index);
-			DPRINTF("\tscreen          = %d\n", m->num);
-			DPRINTF("\tscreen.x        = %d\n", m->sc.x);
-			DPRINTF("\tscreen.y        = %d\n", m->sc.y);
-			DPRINTF("\tscreen.w        = %d\n", m->sc.w);
-			DPRINTF("\tscreen.h        = %d\n", m->sc.h);
-			DPRINTF("\tworkarea.x      = %d\n", m->wa.x);
-			DPRINTF("\tworkarea.y      = %d\n", m->wa.y);
-			DPRINTF("\tworkarea.w      = %d\n", m->wa.w);
-			DPRINTF("\tworkarea.h      = %d\n", m->wa.h);
-			DPRINTF("\tdock.workarea.x = %d\n", m->dock.wa.x);
-			DPRINTF("\tdock.workarea.y = %d\n", m->dock.wa.y);
-			DPRINTF("\tdock.workarea.w = %d\n", m->dock.wa.w);
-			DPRINTF("\tdock.workarea.h = %d\n", m->dock.wa.h);
-			DPRINTF("\tmiddle.x        = %d\n", m->mx);
-			DPRINTF("\tmiddle.y        = %d\n", m->my);
-			DPRINTF("\tmiddle.y        = %d\n", m->my);
+			XPRINTF("Monitor %d:\n", m->index);
+			XPRINTF("\tindex           = %d\n", m->index);
+			XPRINTF("\tscreen          = %d\n", m->num);
+			XPRINTF("\tscreen.x        = %d\n", m->sc.x);
+			XPRINTF("\tscreen.y        = %d\n", m->sc.y);
+			XPRINTF("\tscreen.w        = %d\n", m->sc.w);
+			XPRINTF("\tscreen.h        = %d\n", m->sc.h);
+			XPRINTF("\tworkarea.x      = %d\n", m->wa.x);
+			XPRINTF("\tworkarea.y      = %d\n", m->wa.y);
+			XPRINTF("\tworkarea.w      = %d\n", m->wa.w);
+			XPRINTF("\tworkarea.h      = %d\n", m->wa.h);
+			XPRINTF("\tdock.workarea.x = %d\n", m->dock.wa.x);
+			XPRINTF("\tdock.workarea.y = %d\n", m->dock.wa.y);
+			XPRINTF("\tdock.workarea.w = %d\n", m->dock.wa.w);
+			XPRINTF("\tdock.workarea.h = %d\n", m->dock.wa.h);
+			XPRINTF("\tmiddle.x        = %d\n", m->mx);
+			XPRINTF("\tmiddle.y        = %d\n", m->my);
+			XPRINTF("\tmiddle.y        = %d\n", m->my);
 		}
 		XFree(si);
 		updatemonitors(e, n, size_update, full_update);
 		return True;
 
 	} else
-		DPRINTF("no XINERAMA extension for screen %d\n", scr->screen);
+		XPRINTF("no XINERAMA extension for screen %d\n", scr->screen);
       no_xinerama:
 #else
-	DPRINTF("%s", "compiled without XINERAMA support\n");
+	XPRINTF("%s", "compiled without XINERAMA support\n");
 #endif
 #ifdef XRANDR
 	if (einfo[XrandrBase].have) {
 		XRRScreenResources *sr;
 		int i, j;
 
-		DPRINTF("RANDR extension supported\n");
+		XPRINTF("RANDR extension supported\n");
 		if (!(sr = XRRGetScreenResources(dpy, scr->root))) {
-			DPRINTF("RANDR not active for display\n");
+			XPRINTF("RANDR not active for display\n");
 			goto no_xrandr;
 		}
-		DPRINTF("RANDR defines %d ctrc for display\n", sr->ncrtc);
+		XPRINTF("RANDR defines %d ctrc for display\n", sr->ncrtc);
 		if (sr->ncrtc < 2) {
 			XRRFreeScreenResources(sr);
 			goto no_xrandr;
@@ -4830,13 +4825,13 @@ initmonitors(XEvent *e)
 		for (i = 0, n = 0; i < sr->ncrtc; i++) {
 			XRRCrtcInfo *ci;
 
-			DPRINTF("Checking CRTC %d\n", i);
+			XPRINTF("Checking CRTC %d\n", i);
 			if (!(ci = XRRGetCrtcInfo(dpy, sr, sr->crtcs[i]))) {
-				DPRINTF("CRTC %d not defined\n", i);
+				XPRINTF("CRTC %d not defined\n", i);
 				continue;
 			}
 			if (!ci->width || !ci->height) {
-				DPRINTF("CRTC %d is %dx%d\n", i, ci->width, ci->height);
+				XPRINTF("CRTC %d is %dx%d\n", i, ci->width, ci->height);
 				XRRFreeCrtcInfo(ci);
 				continue;
 			}
@@ -4846,44 +4841,44 @@ initmonitors(XEvent *e)
 				    scr->monitors[j].sc.y == scr->monitors[n].sc.y)
 					break;
 			if (j < n) {
-				DPRINTF("Monitor %d is a mirror of %d\n", n, j);
+				XPRINTF("Monitor %d is a mirror of %d\n", n, j);
 				XRRFreeCrtcInfo(ci);
 				continue;
 			}
 
 			if (n < scr->nmons) {
 				m = &scr->monitors[n];
-				DPRINTF("Checking existing monitor %d\n", m->index);
+				XPRINTF("Checking existing monitor %d\n", m->index);
 				if (m->sc.x != ci->x) {
-					DPRINTF("Monitor %d x position changed from %d to %d\n",
+					XPRINTF("Monitor %d x position changed from %d to %d\n",
 							m->index, m->sc.x, ci->x);
 					m->sc.x = m->wa.x = m->dock.wa.x = ci->x;
 					m->mx = m->sc.x + m->sc.w / 2;
 					full_update = True;
 				}
 				if (m->sc.y != ci->y) {
-					DPRINTF("Monitor %d y position changed from %d to %d\n",
+					XPRINTF("Monitor %d y position changed from %d to %d\n",
 							m->index, m->sc.y, ci->y);
 					m->sc.y = m->wa.y = m->dock.wa.y = ci->y;
 					m->my = m->sc.y + m->sc.h / 2;
 					full_update = True;
 				}
 				if (m->sc.w != ci->width) {
-					DPRINTF("Monitor %d width changed from %d to %d\n",
+					XPRINTF("Monitor %d width changed from %d to %d\n",
 							m->index, m->sc.w, ci->width);
 					m->sc.w = m->wa.w = m->dock.wa.w = ci->width;
 					m->mx = m->sc.x + m->sc.w / 2;
 					size_update = True;
 				}
 				if (m->sc.h != ci->height) {
-					DPRINTF("Monitor %d height changed from %d to %d\n",
+					XPRINTF("Monitor %d height changed from %d to %d\n",
 							m->index, m->sc.h, ci->height);
 					m->sc.h = m->wa.h = m->dock.wa.h = ci->height;
 					m->my = m->sc.y + m->sc.h / 2;
 					size_update = True;
 				}
 				if (m->num != i) {
-					DPRINTF("Monitor %d screen number changed from %d to %d\n",
+					XPRINTF("Monitor %d screen number changed from %d to %d\n",
 							m->index, m->num, i);
 					m->num = i;
 					full_update = True;
@@ -4893,7 +4888,7 @@ initmonitors(XEvent *e)
 				int mask = 0;
 				int j;
 
-				DPRINTF("Adding new monitor %d\n", n);
+				XPRINTF("Adding new monitor %d\n", n);
 				scr->monitors =
 				    erealloc(scr->monitors,
 					     (n + 1) * sizeof(*scr->monitors));
@@ -4927,24 +4922,24 @@ initmonitors(XEvent *e)
 				for (j = 0; j < 8; j++)
 					m->bars[j] = None;
 			}
-			DPRINTF("Monitor %d:\n", m->index);
-			DPRINTF("\tindex           = %d\n", m->index);
-			DPRINTF("\tscreen          = %d\n", m->num);
-			DPRINTF("\tscreen.x        = %d\n", m->sc.x);
-			DPRINTF("\tscreen.y        = %d\n", m->sc.y);
-			DPRINTF("\tscreen.w        = %d\n", m->sc.w);
-			DPRINTF("\tscreen.h        = %d\n", m->sc.h);
-			DPRINTF("\tworkarea.x      = %d\n", m->wa.x);
-			DPRINTF("\tworkarea.y      = %d\n", m->wa.y);
-			DPRINTF("\tworkarea.w      = %d\n", m->wa.w);
-			DPRINTF("\tworkarea.h      = %d\n", m->wa.h);
-			DPRINTF("\tdock.workarea.x = %d\n", m->dock.wa.x);
-			DPRINTF("\tdock.workarea.y = %d\n", m->dock.wa.y);
-			DPRINTF("\tdock.workarea.w = %d\n", m->dock.wa.w);
-			DPRINTF("\tdock.workarea.h = %d\n", m->dock.wa.h);
-			DPRINTF("\tmiddle.x        = %d\n", m->mx);
-			DPRINTF("\tmiddle.y        = %d\n", m->my);
-			DPRINTF("\tmiddle.y        = %d\n", m->my);
+			XPRINTF("Monitor %d:\n", m->index);
+			XPRINTF("\tindex           = %d\n", m->index);
+			XPRINTF("\tscreen          = %d\n", m->num);
+			XPRINTF("\tscreen.x        = %d\n", m->sc.x);
+			XPRINTF("\tscreen.y        = %d\n", m->sc.y);
+			XPRINTF("\tscreen.w        = %d\n", m->sc.w);
+			XPRINTF("\tscreen.h        = %d\n", m->sc.h);
+			XPRINTF("\tworkarea.x      = %d\n", m->wa.x);
+			XPRINTF("\tworkarea.y      = %d\n", m->wa.y);
+			XPRINTF("\tworkarea.w      = %d\n", m->wa.w);
+			XPRINTF("\tworkarea.h      = %d\n", m->wa.h);
+			XPRINTF("\tdock.workarea.x = %d\n", m->dock.wa.x);
+			XPRINTF("\tdock.workarea.y = %d\n", m->dock.wa.y);
+			XPRINTF("\tdock.workarea.w = %d\n", m->dock.wa.w);
+			XPRINTF("\tdock.workarea.h = %d\n", m->dock.wa.h);
+			XPRINTF("\tmiddle.x        = %d\n", m->mx);
+			XPRINTF("\tmiddle.y        = %d\n", m->my);
+			XPRINTF("\tmiddle.y        = %d\n", m->my);
 			n++;
 			XRRFreeCrtcInfo(ci);
 		}
@@ -4960,30 +4955,30 @@ initmonitors(XEvent *e)
 	n = 1;
 	if (n <= scr->nmons) {
 		m = &scr->monitors[0];
-		DPRINTF("Checking existing monitor %d\n", m->index);
+		XPRINTF("Checking existing monitor %d\n", m->index);
 		if (m->sc.x != 0) {
-			DPRINTF("Monitor %d x position changed from %d to %d\n",
+			XPRINTF("Monitor %d x position changed from %d to %d\n",
 					m->index, m->sc.x, 0);
 			m->sc.x = m->wa.x = m->dock.wa.x = 0;
 			m->mx = m->sc.x + m->sc.w / 2;
 			full_update = True;
 		}
 		if (m->sc.y != 0) {
-			DPRINTF("Monitor %d y position changed from %d to %d\n",
+			XPRINTF("Monitor %d y position changed from %d to %d\n",
 					m->index, m->sc.y, 0);
 			m->sc.y = m->wa.y = m->dock.wa.y = 0;
 			m->my = m->sc.y + m->sc.h / 2;
 			full_update = True;
 		}
 		if (m->sc.w != DisplayWidth(dpy, scr->screen)) {
-			DPRINTF("Monitor %d width changed from %d to %d\n",
+			XPRINTF("Monitor %d width changed from %d to %d\n",
 					m->index, m->sc.w, (int) DisplayWidth(dpy, scr->screen));
 			m->sc.w = m->wa.w = m->dock.wa.w = DisplayWidth(dpy, scr->screen);
 			m->mx = m->sc.x + m->sc.w / 2;
 			size_update = True;
 		}
 		if (m->sc.h != DisplayHeight(dpy, scr->screen)) {
-			DPRINTF("Monitor %d height changed from %d to %d\n",
+			XPRINTF("Monitor %d height changed from %d to %d\n",
 					m->index, m->sc.h, (int) DisplayHeight(dpy, scr->screen));
 			m->sc.h = m->wa.h = m->dock.wa.h =
 			    DisplayHeight(dpy, scr->screen);
@@ -4991,7 +4986,7 @@ initmonitors(XEvent *e)
 			size_update = True;
 		}
 		if (m->num != 0) {
-			DPRINTF("Monitor %d screen number changed from %d to %d\n",
+			XPRINTF("Monitor %d screen number changed from %d to %d\n",
 					m->index, m->num, 0);
 			m->num = 0;
 			full_update = True;
@@ -5001,7 +4996,7 @@ initmonitors(XEvent *e)
 		int mask = 0;
 		int j;
 
-		DPRINTF("Adding new monitor %d\n", 0);
+		XPRINTF("Adding new monitor %d\n", 0);
 		scr->monitors = erealloc(scr->monitors, n * sizeof(*scr->monitors));
 		m = &scr->monitors[0];
 		full_update = True;
@@ -5032,24 +5027,24 @@ initmonitors(XEvent *e)
 		for (j = 0; j < 8; j++)
 			m->bars[j] = None;
 	}
-	DPRINTF("Monitor %d:\n", m->index);
-	DPRINTF("\tindex           = %d\n", m->index);
-	DPRINTF("\tscreen          = %d\n", m->num);
-	DPRINTF("\tscreen.x        = %d\n", m->sc.x);
-	DPRINTF("\tscreen.y        = %d\n", m->sc.y);
-	DPRINTF("\tscreen.w        = %d\n", m->sc.w);
-	DPRINTF("\tscreen.h        = %d\n", m->sc.h);
-	DPRINTF("\tworkarea.x      = %d\n", m->wa.x);
-	DPRINTF("\tworkarea.y      = %d\n", m->wa.y);
-	DPRINTF("\tworkarea.w      = %d\n", m->wa.w);
-	DPRINTF("\tworkarea.h      = %d\n", m->wa.h);
-	DPRINTF("\tdock.workarea.x = %d\n", m->dock.wa.x);
-	DPRINTF("\tdock.workarea.y = %d\n", m->dock.wa.y);
-	DPRINTF("\tdock.workarea.w = %d\n", m->dock.wa.w);
-	DPRINTF("\tdock.workarea.h = %d\n", m->dock.wa.h);
-	DPRINTF("\tmiddle.x        = %d\n", m->mx);
-	DPRINTF("\tmiddle.y        = %d\n", m->my);
-	DPRINTF("\tmiddle.y        = %d\n", m->my);
+	XPRINTF("Monitor %d:\n", m->index);
+	XPRINTF("\tindex           = %d\n", m->index);
+	XPRINTF("\tscreen          = %d\n", m->num);
+	XPRINTF("\tscreen.x        = %d\n", m->sc.x);
+	XPRINTF("\tscreen.y        = %d\n", m->sc.y);
+	XPRINTF("\tscreen.w        = %d\n", m->sc.w);
+	XPRINTF("\tscreen.h        = %d\n", m->sc.h);
+	XPRINTF("\tworkarea.x      = %d\n", m->wa.x);
+	XPRINTF("\tworkarea.y      = %d\n", m->wa.y);
+	XPRINTF("\tworkarea.w      = %d\n", m->wa.w);
+	XPRINTF("\tworkarea.h      = %d\n", m->wa.h);
+	XPRINTF("\tdock.workarea.x = %d\n", m->dock.wa.x);
+	XPRINTF("\tdock.workarea.y = %d\n", m->dock.wa.y);
+	XPRINTF("\tdock.workarea.w = %d\n", m->dock.wa.w);
+	XPRINTF("\tdock.workarea.h = %d\n", m->dock.wa.h);
+	XPRINTF("\tmiddle.x        = %d\n", m->mx);
+	XPRINTF("\tmiddle.y        = %d\n", m->my);
+	XPRINTF("\tmiddle.y        = %d\n", m->my);
 	updatemonitors(e, n, size_update, full_update);
 	return True;
 }
@@ -5412,13 +5407,13 @@ togglestruts(View *v)
 	else {
 		if (scr->options.hidebastards == 2) {
 			v->barpos = StrutsDown;
-			DPRINTF("Setting struts to StrutsDown\n");
+			XPRINTF("Setting struts to StrutsDown\n");
 		} else if (scr->options.hidebastards) {
 			v->barpos = StrutsHide;
-			DPRINTF("Setting struts to StrutsHide\n");
+			XPRINTF("Setting struts to StrutsHide\n");
 		} else {
 			v->barpos = StrutsOff;
-			DPRINTF("Setting struts to StrutsOff\n");
+			XPRINTF("Setting struts to StrutsOff\n");
 		}
 	}
 	updategeom(v->curmon);
@@ -5798,18 +5793,18 @@ unmapnotify(XEvent *e)
 	XUnmapEvent *ev = &e->xunmap;
 
 	if ((c = getclient(ev->window, ClientWindow)) && c->is.managed) {
-		CPRINTF(c, "self-unmapped window\n");
+		XPRINTF(c, "self-unmapped window\n");
 		if (ev->send_event) {
 			/* synthetic */
 			if (ev->event == event_scr->root) {
-				CPRINTF(c, "unmanage self-unmapped window (synthetic)\n");
+				XPRINTF(c, "unmanage self-unmapped window (synthetic)\n");
 				unmanage(c, CauseUnmapped);
 				return True;
 			}
 		} else {
 			/* real event */
 			if (ev->event == c->frame && c->is.managed) {
-				CPRINTF(c, "unmanage self-unmapped window (real event)\n");
+				XPRINTF(c, "unmanage self-unmapped window (real event)\n");
 				unmanage(c, CauseUnmapped);
 				return True;
 			}
@@ -6480,34 +6475,34 @@ main(int argc, char *argv[])
 	for (i = 0; i < BaseLast; i++) {
 		einfo[i].have = XQueryExtension(dpy, einfo[i].name, &einfo[i].opcode, &einfo[i].event, &einfo[i].error);
 		if (einfo[i].have) {
-			DPRINTF("have %s extension (%d,%d,%d)\n", einfo[i].name, einfo[i].opcode, einfo[i].event, einfo[i].error);
+			XPRINTF("have %s extension (%d,%d,%d)\n", einfo[i].name, einfo[i].opcode, einfo[i].event, einfo[i].error);
 			if (einfo[i].version) {
 				einfo[i].version(dpy, &einfo[i].major, &einfo[i].minor);
 				OPRINTF("have %-10s extension version %d.%d\n", einfo[i].name, einfo[i].major, einfo[i].minor);
 			}
 		} else
-			DPRINTF("%s", "%s extension is not supported\n", einfo[i].name);
+			XPRINTF("%s", "%s extension is not supported\n", einfo[i].name);
 	}
 	nscr = ScreenCount(dpy);
-	DPRINTF("there are %u screens\n", nscr);
+	XPRINTF("there are %u screens\n", nscr);
 	screens = calloc(nscr, sizeof(*screens));
 	for (i = 0, scr = screens; i < nscr; i++, scr++) {
 		scr->screen = i;
 		scr->root = RootWindow(dpy, i);
 		XSaveContext(dpy, scr->root, context[ScreenContext], (XPointer) scr);
-		DPRINTF("screen %d has root 0x%lx\n", scr->screen, scr->root);
+		XPRINTF("screen %d has root 0x%lx\n", scr->screen, scr->root);
 		initimage();
 	}
 	if ((p = getenv("DISPLAY")) && (p = strrchr(p, '.')) && strlen(p + 1)
 	    && strspn(p + 1, "0123456789") == strlen(p + 1) && (i = atoi(p + 1)) < nscr) {
-		DPRINTF("managing one screen: %d\n", i);
+		XPRINTF("managing one screen: %d\n", i);
 		screens[i].managed = True;
 	} else
 		for (scr = screens; scr < screens + nscr; scr++)
 			scr->managed = True;
 	for (scr = screens; scr < screens + nscr; scr++)
 		if (scr->managed) {
-			DPRINTF("checking screen %d\n", scr->screen);
+			XPRINTF("checking screen %d\n", scr->screen);
 			checkotherwm();
 		}
 	for (scr = screens; scr < screens + nscr && !scr->managed; scr++) ;
@@ -6516,12 +6511,12 @@ main(int argc, char *argv[])
 	setup(conf, baseops);
 	for (scr = screens; scr < screens + nscr; scr++)
 		if (scr->managed) {
-			DPRINTF("scanning screen %d\n", scr->screen);
+			XPRINTF("scanning screen %d\n", scr->screen);
 			scan();
 		}
-	DPRINTF("%s", "entering main event loop\n");
+	XPRINTF("%s", "entering main event loop\n");
 	run();
-	DPRINTF("cleanup quitting\n");
+	XPRINTF("cleanup quitting\n");
 	cleanup(CauseQuitting);
 
 	XCloseDisplay(dpy);

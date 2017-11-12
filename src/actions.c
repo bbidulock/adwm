@@ -101,7 +101,7 @@ k_chain(XEvent *e, Key *key)
 {
 	Key *k = NULL;
 
-	DPRINTF("Grabbing keyboard\n");
+	XPRINTF("Grabbing keyboard\n");
 	if (XGrabKeyboard(dpy, scr->root, GrabModeSync, False, GrabModeAsync, e->xkey.time)) {
 		EPRINTF("Could not grab keyboard\n");
 		return;
@@ -121,36 +121,36 @@ k_chain(XEvent *e, Key *key)
 			Key *kp;
 
 		case KeyRelease:
-			DPRINTF("KeyRelease: 0x%02lx %s\n", mod, XKeysymToString(keysym));
+			XPRINTF("KeyRelease: 0x%02lx %s\n", mod, XKeysymToString(keysym));
 			/* a key release other than the active key is a release of a
 			   modifier indicating a stop */
 			if (k && k->keysym != keysym) {
-				DPRINTF("KeyRelease: stopping sequence\n");
+				XPRINTF("KeyRelease: stopping sequence\n");
 				if (k->stop)
 					k->stop(&ev, k);
 				return;
 			}
 			break;
 		case KeyPress:
-			DPRINTF("KeyPress: 0x%02lx %s\n", mod, XKeysymToString(keysym));
+			XPRINTF("KeyPress: 0x%02lx %s\n", mod, XKeysymToString(keysym));
 			/* a press of a different key, even a modifier, or a press of the
 			   same key with a different modifier mask indicates a stop of
 			   the current sequence and the potential start of a new one */
 			if (k && (k->keysym != keysym || k->mod != mod)) {
-				DPRINTF("KeyPress: stopping sequence\n");
+				XPRINTF("KeyPress: stopping sequence\n");
 				if (k->stop)
 					k->stop(&ev, k);
 				return;
 			}
 			for (kp = key->chain; !k && kp; kp = kp->cnext) {
-				DPRINTF("KeyPress: checking 0x%02lx %s against 0x%02lx %s\n",
+				XPRINTF("KeyPress: checking 0x%02lx %s against 0x%02lx %s\n",
 						mod, XKeysymToString(keysym),
 						kp->mod, XKeysymToString(kp->keysym));
 				if (kp->keysym == keysym && kp->mod == mod)
 					k = kp;
 			}
 			if (k) {
-				DPRINTF("KeyPress: activating action for chain: %s\n", showchain(k));
+				XPRINTF("KeyPress: activating action for chain: %s\n", showchain(k));
 				if (k->func)
 					k->func(&ev, k);
 				if (k->chain || !k->stop)
@@ -160,7 +160,7 @@ k_chain(XEvent *e, Key *key)
 			/* Use the Escape key without modifiers to escape from a key
 			   chain. */
 			if (keysym == XK_Escape && !mod) {
-				DPRINTF("Escape KeyPress: stopping sequence\n");
+				XPRINTF("Escape KeyPress: stopping sequence\n");
 				return;
 			}
 			/* unrecognized key presses must be ignored because they may just
@@ -1355,7 +1355,7 @@ k_select_cl(View *cv, Key *k, CycleList * cl)
 		if (!XGrabKeyboard(dpy, scr->root, GrabModeSync, False,
 				   GrabModeAsync, user_time))
 			return;
-		DPRINTF("Could not grab keyboard\n");
+		EPRINTF("Could not grab keyboard\n");
 	}
 	k_stop(NULL, k);
 }
@@ -1764,7 +1764,7 @@ _getviewrandc(View *v, Key *k, int dr, int dc)
 	if (v)
 		idx = v->index;
 	else
-		DPRINTF("ERROR: could not find view idx = %d, dr = %d, dc = %d\n", idx,
+		EPRINTF("ERROR: could not find view idx = %d, dr = %d, dc = %d\n", idx,
 			dr, dc);
 	return idx;
 }

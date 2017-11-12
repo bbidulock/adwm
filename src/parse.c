@@ -334,7 +334,7 @@ freechain(Key *k)
 	Key *c, *cnext;
 
 	if (k) {
-		DPRINTF("Freeing chain: %p: %s\n", k, showchain(k));
+		XPRINTF("Freeing chain: %p: %s\n", k, showchain(k));
 		cnext = k->chain;
 		k->chain = NULL;
 		while ((c = cnext)) {
@@ -357,8 +357,8 @@ mergechain(Key *c, Key *k)
 	Key **lp;
 	Key *next = k->chain;
 
-	DPRINTF("Merging chain %s\n", showchain(k));
-	DPRINTF("   into chain %s\n", showchain(c));
+	XPRINTF("Merging chain %s\n", showchain(k));
+	XPRINTF("   into chain %s\n", showchain(c));
 	k->chain = NULL;
 	freekey(k);
 	k = next;
@@ -370,7 +370,7 @@ mergechain(Key *c, Key *k)
 		if ((*lp)->chain && k->chain)
 			mergechain(*lp, k);
 		else {
-			DPRINTF("Overriding previous key alternate %s!\n", showchain(k));
+			XPRINTF("Overriding previous key alternate %s!\n", showchain(k));
 			k->cnext = (*lp)->cnext;
 			(*lp)->cnext = NULL;
 			freechain(*lp);
@@ -387,27 +387,27 @@ addchain(Key *k)
 {
 	Key **kp;
 
-	DPRINTF("Adding chain: %s ...\n", showchain(k));
+	XPRINTF("Adding chain: %s ...\n", showchain(k));
 	for (kp = &scr->keylist; *kp; kp = &(*kp)->cnext)
 		if ((*kp)->mod == k->mod && (*kp)->keysym == k->keysym)
 			break;
 	if (*kp) {
-		DPRINTF("Overlapping key definition %s\n", XKeysymToString(k->keysym));
+		XPRINTF("Overlapping key definition %s\n", XKeysymToString(k->keysym));
 		if ((*kp)->chain && k->chain)
 			mergechain(*kp, k);
 		else {
-			DPRINTF("Overriding previous key definition: %s!\n", showchain(k));
+			XPRINTF("Overriding previous key definition: %s!\n", showchain(k));
 			k->cnext = (*kp)->cnext;
 			(*kp)->cnext = NULL;
 			freechain(*kp);
 			*kp = k;
 		}
-		DPRINTF("... added chain: %s\n", showchain(*kp));
+		XPRINTF("... added chain: %s\n", showchain(*kp));
 	} else {
-		DPRINTF("Adding new key %s\n", XKeysymToString(k->keysym));
+		XPRINTF("Adding new key %s\n", XKeysymToString(k->keysym));
 		k->cnext = scr->keylist;
 		scr->keylist = k;
-		DPRINTF("... added chain: %s\n", showchain(k));
+		XPRINTF("... added chain: %s\n", showchain(k));
 	}
 }
 
@@ -417,7 +417,7 @@ parsemod(const char *s, const char *e)
 	const char *p;
 	unsigned long mod = 0;
 
-	DPRINTF("Parsing mod keys from '%s'\n", s);
+	XPRINTF("Parsing mod keys from '%s'\n", s);
 	for (p = s; p < e; p++)
 		switch (*p) {
 		case 'A':
@@ -442,7 +442,7 @@ parsemod(const char *s, const char *e)
 		default:
 			if (isblank(*p))
 				break;
-			DPRINTF("Unrecognized character '%c' in key spec\n", *p);
+			XPRINTF("Unrecognized character '%c' in key spec\n", *p);
 			break;
 		}
 	return mod;
@@ -456,10 +456,10 @@ parsesym(const char *s, const char *e)
 
 	for (; s < e && isblank(*s); s++) ;
 	for (; e > s && isblank(*(e - 1)); e--) ;
-	DPRINTF("Parsing keysym from '%s'\n", s);
+	XPRINTF("Parsing keysym from '%s'\n", s);
 	if (s < e && (t = strndup(s, e - s))) {
 		if ((sym = XStringToKeysym(t)) == NoSymbol)
-			EPRINTF("Failed to parse symbol '%s'\n", t);
+			XPRINTF("Failed to parse symbol '%s'\n", t);
 		free(t);
 	}
 	return sym;
@@ -472,7 +472,7 @@ parsearg(const char *s, const char *e)
 
 	for (; s < e && isblank(*s); s++) ;
 	for (; e > s && isblank(*(e - 1)); e--) ;
-	DPRINTF("Parsing arg from '%s'\n", s);
+	XPRINTF("Parsing arg from '%s'\n", s);
 	if (s < e)
 		arg = strndup(s, e - s);
 	return arg;
@@ -483,7 +483,7 @@ parsekey(const char *s, const char *e, Key *k)
 {
 	const char *p, *q;
 
-	DPRINTF("Parsing key from: '%s'\n", s);
+	XPRINTF("Parsing key from: '%s'\n", s);
 	for (p = s; p < e && (isalnum(*p) || isblank(*p) || *p == '_'); p++) ;
 	if (p < e && *p == '+') {
 		k->mod = parsemod(s, p);
@@ -510,7 +510,7 @@ parsechain(const char *s, const char *e, Key *spec)
 	const char *p, *q;
 	Key *chain = NULL, *last = NULL;
 
-	DPRINTF("Parsing chain from: '%s'\n", s);
+	XPRINTF("Parsing chain from: '%s'\n", s);
 
 	for (p = s; p < e; p = (*q == ':' ? q + 1 : q)) {
 		Key *k;
@@ -536,7 +536,7 @@ parsechain(const char *s, const char *e, Key *spec)
 		last = k;
 	}
 	if (chain)
-		DPRINTF("Parsed chain: %s\n", showchain(chain));
+		XPRINTF("Parsed chain: %s\n", showchain(chain));
 	return chain;
 }
 
@@ -546,12 +546,12 @@ parsekeys(const char *s, Key *spec)
 	const char *p, *e;
 	Key *k;
 
-	DPRINTF("Parsing key: '%s'\n", s);
+	XPRINTF("Parsing key: '%s'\n", s);
 	for (p = s; *p != '\0'; p = (*e == ',' ? e + 1 : e)) {
 		/* need to escape ',' in command */
 		for (e = p; *e != '\0' && (*e != ',' || (e > p && *(e - 1) == '\\')); e++) ;
 		if ((k = parsechain(p, e, spec))) {
-			DPRINTF("Adding key: '%s'\n", s);
+			XPRINTF("Adding key: '%s'\n", s);
 			addchain(k);
 		}
 	}
@@ -588,7 +588,7 @@ freekeys(void)
 	while ((k = knext)) {
 		knext = k->cnext;
 		k->cnext = NULL;
-		DPRINTF("Freeing key chain: %s\n", showchain(k));
+		XPRINTF("Freeing key chain: %s\n", showchain(k));
 		freechain(k);
 	}
 }
@@ -607,7 +607,7 @@ initkeys(Bool reload)
 		Key key = { 0, };
 
 		snprintf(t, sizeof(t), "%s", KeyItems[i].name);
-		DPRINTF("Check for key item '%s'\n", t);
+		XPRINTF("Check for key item '%s'\n", t);
 		if (!(res = getresource(t, NULL)))
 			continue;
 		key.func = KeyItems[i].action;
@@ -621,7 +621,7 @@ initkeys(Bool reload)
 
 			snprintf(t, sizeof(t), "%s%s", inc_prefix[i].prefix,
 				 KeyItemsByAmt[j].name);
-			DPRINTF("Check for key item '%s'\n", t);
+			XPRINTF("Check for key item '%s'\n", t);
 			if (!(res = getresource(t, NULL)))
 				continue;
 			key.func = KeyItemsByAmt[j].action;
@@ -639,7 +639,7 @@ initkeys(Bool reload)
 				snprintf(t, sizeof(t), "%s%s%s",
 					 set_prefix[i].prefix, KeyItemsByState[j].name,
 					 set_suffix[l].suffix);
-				DPRINTF("Check for key item '%s'\n", t);
+				XPRINTF("Check for key item '%s'\n", t);
 				if (!(res = getresource(t, NULL)))
 					continue;
 				key.func = KeyItemsByState[j].action;
@@ -657,7 +657,7 @@ initkeys(Bool reload)
 
 			snprintf(t, sizeof(t), "%s%s", KeyItemsByDir[j].name,
 				 rel_suffix[i].suffix);
-			DPRINTF("Check for key item '%s'\n", t);
+			XPRINTF("Check for key item '%s'\n", t);
 			if (!(res = getresource(t, NULL)))
 				continue;
 			key.func = KeyItemsByDir[j].action;
@@ -672,7 +672,7 @@ initkeys(Bool reload)
 			Key key = { 0, };
 
 			snprintf(t, sizeof(t), "%s%d", KeyItemsByTag[j].name, i);
-			DPRINTF("Check for key item '%s'\n", t);
+			XPRINTF("Check for key item '%s'\n", t);
 			if (!(res = getresource(t, NULL)))
 				continue;
 			key.func = KeyItemsByTag[j].action;
@@ -686,7 +686,7 @@ initkeys(Bool reload)
 
 			snprintf(t, sizeof(t), "%s%s", KeyItemsByTag[j].name,
 				 tag_suffix[i].suffix);
-			DPRINTF("Check for key item '%s'\n", t);
+			XPRINTF("Check for key item '%s'\n", t);
 			if (!(res = getresource(t, NULL)))
 				continue;
 			key.func = KeyItemsByTag[j].action;
@@ -703,7 +703,7 @@ initkeys(Bool reload)
 			Key key = { 0, };
 
 			snprintf(t, sizeof(t), "%s%d", KeyItemsByList[j].name, i);
-			DPRINTF("Check for key item '%s'\n", t);
+			XPRINTF("Check for key item '%s'\n", t);
 			if (!(res = getresource(t, NULL)))
 				continue;
 			key.func = KeyItemsByList[j].action;
@@ -721,7 +721,7 @@ initkeys(Bool reload)
 				snprintf(t, sizeof(t), "%s%s%s",
 					 KeyItemsByList[j].name, lst_suffix[i].suffix,
 					 list_which[l].which);
-				DPRINTF("Check for key item '%s'\n", t);
+				XPRINTF("Check for key item '%s'\n", t);
 				if (!(res = getresource(t, NULL)))
 					continue;
 				key.func = KeyItemsByList[j].action;
@@ -740,7 +740,7 @@ initkeys(Bool reload)
 				snprintf(t, sizeof(t), "cycle%s%s%s",
 					 KeyItemsByList[j].name, cyc_suffix[i].suffix,
 					 list_which[l].which);
-				DPRINTF("Check for key item '%s'\n", t);
+				XPRINTF("Check for key item '%s'\n", t);
 				if (!(res = getresource(t, NULL)))
 					continue;
 				key.func = KeyItemsByList[j].action;
@@ -758,7 +758,7 @@ initkeys(Bool reload)
 		Key key = { 0, };
 
 		snprintf(t, sizeof(t), "setlayout%c", layouts[i].symbol);
-		DPRINTF("Check for key item '%s'\n", t);
+		XPRINTF("Check for key item '%s'\n", t);
 		if (!(res = getresource(t, NULL)))
 			continue;
 		key.func = k_setlayout;
@@ -770,7 +770,7 @@ initkeys(Bool reload)
 		Key key = { 0, };
 
 		snprintf(t, sizeof(t), "spawn%d", i);
-		DPRINTF("Check for key item '%s'\n", t);
+		XPRINTF("Check for key item '%s'\n", t);
 		if (!(res = getresource(t, NULL)))
 			continue;
 		key.func = k_spawn;

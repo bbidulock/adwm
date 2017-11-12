@@ -437,7 +437,7 @@ n_new_notify(SnStartupSequence *seq)
 	if (!n->timestamp)
 		if ((timestamp = sn_startup_sequence_get_timestamp(seq)) != -1)
 			n->timestamp = timestamp;
-	DPRINTF("NOTIFY: NEW: %s\n", n->id);
+	XPRINTF("NOTIFY: NEW: %s\n", n->id);
 	n->next = notifies;
 	notifies = n;
 }
@@ -450,7 +450,7 @@ n_chg_notify(SnStartupSequence *seq)
 	Notify *n = n_find_seq(seq);
 
 	if (n) {
-		DPRINTF("NOTIFY: CHANGE: %s\n", n->id);
+		XPRINTF("NOTIFY: CHANGE: %s\n", n->id);
 		if (n->assigned) {
 			Client *c;
 
@@ -486,7 +486,7 @@ n_end_notify(SnStartupSequence *seq)
 	Notify *n = n_find_seq(seq);
 
 	if (n) {
-		DPRINTF("NOTIFY: END: %s\n", n->id);
+		XPRINTF("NOTIFY: END: %s\n", n->id);
 		n->complete = True;
 		/* Cannot delete a notification that has completed before it is assigned
 		   to a client.  This is because the first thing that most toolkits (such 
@@ -506,13 +506,13 @@ n_set_notify(Notify *n, Client *c)
 	SnStartupSequence *seq;
 
 	if ((seq = c->seq)) {
-		EPRINTF("sequence already assigned to client\n");
+		XPRINTF("sequence already assigned to client\n");
 		return (seq);
 	}
 	seq = c->seq = n->seq;
 	sn_startup_sequence_ref(seq);
 	if (n->assigned)
-		EPRINTF("notify already assigned\n");
+		XPRINTF("notify already assigned\n");
 	n->assigned = True;
 	if (!n->complete) {
 		sn_startup_sequence_complete(seq);
@@ -521,7 +521,7 @@ n_set_notify(Notify *n, Client *c)
 	if (n->complete)
 		n_del_notify(n);
 	else
-		EPRINTF("could not find sequence\n");
+		XPRINTF("could not find sequence\n");
 	return (seq);
 }
 
@@ -534,18 +534,18 @@ sn_handler(SnMonitorEvent * event, void *dummy)
 
 	switch (sn_monitor_event_get_type(event)) {
 	case SN_MONITOR_EVENT_INITIATED:
-		DPRINTF("sn initiated id '%s'\n",
+		XPRINTF("sn initiated id '%s'\n",
 			sn_startup_sequence_get_id(seq));
 		n_new_notify(seq);
 		break;
 	case SN_MONITOR_EVENT_CHANGED:
-		DPRINTF("sn changed id '%s'\n",
+		XPRINTF("sn changed id '%s'\n",
 			sn_startup_sequence_get_id(seq));
 		n_chg_notify(seq);
 		break;
 	case SN_MONITOR_EVENT_COMPLETED:
 	case SN_MONITOR_EVENT_CANCELED:
-		DPRINTF("sn completed/canceled id '%s'\n",
+		XPRINTF("sn completed/canceled id '%s'\n",
 			sn_startup_sequence_get_id(seq));
 		n_end_notify(seq);
 		break;
@@ -564,10 +564,10 @@ initewmh(char *name)
 #ifdef STARTUP_NOTIFICATION
 	if (!scr->ctx) {
 		scr->ctx = sn_monitor_context_new(sn_dpy, scr->screen, &sn_handler, NULL, NULL);
-		DPRINTF("startup notification on screen %d\n", scr->screen);
+		XPRINTF("startup notification on screen %d\n", scr->screen);
 	}
 #else
-	DPRINTF("startup notification not supported screen %d\n", scr->screen);
+	XPRINTF("startup notification not supported screen %d\n", scr->screen);
 #endif
 
 	if (!atoms_interned) {
@@ -2442,102 +2442,102 @@ ewmh_update_sn_app_props(Client *c, Notify *n)
 	if (!win)
 		win = c->win;
 
-	CPRINTF(c, "%s updating startup properties on window 0x%lx\n", n->id, win);
+	XPRINTF(c, "%s updating startup properties on window 0x%lx\n", n->id, win);
 	if ((text = sn_startup_sequence_get_id(seq))) {
 		XChangeProperty(dpy, win, _XA_NET_STARTUP_ID,
 				_XA_UTF8_STRING, 8, PropModeReplace,
 				(unsigned char *) text, strlen(text) + 1);
 	} else
-		_CPRINTF(c, "%s sequence has no id!\n", n->id);
+		_XPRINTF(c, "%s sequence has no id!\n", n->id);
 	if ((text = n->launcher)) {
 		XChangeProperty(dpy, win, _XA_NET_APP_LAUNCHER,
 				_XA_UTF8_STRING, 8, PropModeReplace,
 				(unsigned char *) text, strlen(text) + 1);
 	} else
-		CPRINTF(c, "%s sequence has no launcher!\n", n->id);
+		XPRINTF(c, "%s sequence has no launcher!\n", n->id);
 	if ((text = n->launchee)) {
 		XChangeProperty(dpy, win, _XA_NET_APP_LAUNCHEE,
 				_XA_UTF8_STRING, 8, PropModeReplace,
 				(unsigned char *) text, strlen(text) + 1);
 	} else
-		CPRINTF(c, "%s sequence has no launchee!\n", n->id);
+		XPRINTF(c, "%s sequence has no launchee!\n", n->id);
 	if ((text = n->hostname)) {
 		XChangeProperty(dpy, win, _XA_NET_APP_HOSTNAME,
 				_XA_UTF8_STRING, 8, PropModeReplace,
 				(unsigned char *) text, strlen(text) + 1);
 	} else
-		CPRINTF(c, "%s sequence has no hostname!\n", n->id);
+		XPRINTF(c, "%s sequence has no hostname!\n", n->id);
 	if (n->pid != -1) {
 		data = n->pid;
 		XChangeProperty(dpy, win, _XA_NET_APP_PID,
 				XA_CARDINAL, 32, PropModeReplace,
 				(unsigned char *) &data, 1);
 	} else
-		CPRINTF(c, "%s sequence has no pid!\n", n->id);
+		XPRINTF(c, "%s sequence has no pid!\n", n->id);
 	if (n->sequence != -1) {
 		data = n->sequence;
 		XChangeProperty(dpy, win, _XA_NET_APP_SEQUENCE,
 				XA_CARDINAL, 32, PropModeReplace,
 				(unsigned char *) &data, 1);
 	} else
-		CPRINTF(c, "%s sequence has no sequence!\n", n->id);
+		XPRINTF(c, "%s sequence has no sequence!\n", n->id);
 	if (n->timestamp != -1) {
 		data = n->timestamp;
 		XChangeProperty(dpy, win, _XA_NET_APP_TIMESTAMP,
 				XA_CARDINAL, 32, PropModeReplace,
 				(unsigned char *) &data, 1);
 	} else
-		CPRINTF(c, "%s sequence has no timestamp!\n", n->id);
+		XPRINTF(c, "%s sequence has no timestamp!\n", n->id);
 	if ((text = sn_startup_sequence_get_application_id(seq))) {
 		XChangeProperty(dpy, win, _XA_NET_APP_APPLICATION_ID,
 				_XA_UTF8_STRING, 8, PropModeReplace,
 				(unsigned char *) text, strlen(text) + 1);
 	} else
-		_CPRINTF(c, "%s sequence has no application id!\n", n->id);
+		_XPRINTF(c, "%s sequence has no application id!\n", n->id);
 	if ((text = sn_startup_sequence_get_name(seq))) {
 		XChangeProperty(dpy, win, _XA_NET_APP_NAME,
 				_XA_UTF8_STRING, 8, PropModeReplace,
 				(unsigned char *) text, strlen(text) + 1);
 	} else
-		CPRINTF(c, "%s sequence has no name!\n", n->id);
+		XPRINTF(c, "%s sequence has no name!\n", n->id);
 	if ((text = sn_startup_sequence_get_description(seq))) {
 		XChangeProperty(dpy, win, _XA_NET_APP_DESCRIPTION,
 				_XA_UTF8_STRING, 8, PropModeReplace,
 				(unsigned char *) text, strlen(text) + 1);
 	} else
-		CPRINTF(c, "%s sequence has no description!\n", n->id);
+		XPRINTF(c, "%s sequence has no description!\n", n->id);
 	if ((text = sn_startup_sequence_get_icon_name(seq))) {
 		XChangeProperty(dpy, win, _XA_NET_APP_ICON_NAME,
 				_XA_UTF8_STRING, 8, PropModeReplace,
 				(unsigned char *) text, strlen(text) + 1);
 	} else
-		CPRINTF(c, "%s sequence has no icon name!\n", n->id);
+		XPRINTF(c, "%s sequence has no icon name!\n", n->id);
 	if ((text = sn_startup_sequence_get_binary_name(seq))) {
 		XChangeProperty(dpy, win, _XA_NET_APP_BINARY_NAME,
 				_XA_UTF8_STRING, 8, PropModeReplace,
 				(unsigned char *) text, strlen(text) + 1);
 	} else
-		CPRINTF(c, "%s sequence has no binary name!\n", n->id);
+		XPRINTF(c, "%s sequence has no binary name!\n", n->id);
 	if ((text = sn_startup_sequence_get_wmclass(seq))) {
 		XChangeProperty(dpy, win, _XA_NET_APP_WMCLASS,
 				_XA_UTF8_STRING, 8, PropModeReplace,
 				(unsigned char *) text, strlen(text) + 1);
 	} else
-		CPRINTF(c, "%s sequence has no wmclass!\n", n->id);
+		XPRINTF(c, "%s sequence has no wmclass!\n", n->id);
 	if (sn_startup_sequence_get_screen(seq) != -1) {
 		data = sn_startup_sequence_get_screen(seq);
 		XChangeProperty(dpy, win, _XA_NET_APP_SCREEN,
 				XA_CARDINAL, 32, PropModeReplace,
 				(unsigned char *) &data, 1);
 	} else
-		_CPRINTF(c, "%s sequence has no screen!\n", n->id);
+		_XPRINTF(c, "%s sequence has no screen!\n", n->id);
 	if (sn_startup_sequence_get_workspace(seq) != -1) {
 		data = sn_startup_sequence_get_workspace(seq);
 		XChangeProperty(dpy, win, _XA_NET_APP_WORKSPACE,
 				XA_CARDINAL, 32, PropModeReplace,
 				(unsigned char *) &data, 1);
 	} else
-		CPRINTF(c, "%s sequence has no workspace!\n", n->id);
+		XPRINTF(c, "%s sequence has no workspace!\n", n->id);
 }
 #endif
 
@@ -2586,20 +2586,20 @@ find_startup_seq(Client *c)
 	do {
 		if ((startup_id = getstartupid(c))) {
 			for (n = notifies; n; n = n->next) {
-				DPRINTF("comparing '%s' with '%s'\n",
+				XPRINTF("comparing '%s' with '%s'\n",
 					startup_id, sn_startup_sequence_get_id(n->seq));
 				if (!strcmp(startup_id, sn_startup_sequence_get_id(n->seq)))
 					break;
 			}
 			if (n)
 				break;
-			DPRINTF("cannot find startup id '%s'!\n",
+			XPRINTF("cannot find startup id '%s'!\n",
 				startup_id);
 		}
 		if ((pid = getnetpid(c)) && (machine = getclientmachine(c))) {
 			for (n = notifies; n; n = n->next) {
 
-				DPRINTF("checking _NET_WM_PID and WM_CLIENT_MACHINE for '%s'\n",
+				XPRINTF("checking _NET_WM_PID and WM_CLIENT_MACHINE for '%s'\n",
 					sn_startup_sequence_get_id(n->seq));
 				if (n->hostname && strcasecmp(machine, n->hostname))
 					continue;	/* wrong host */
@@ -2611,7 +2611,7 @@ find_startup_seq(Client *c)
 		}
 		if (c->ch.res_name || c->ch.res_class) {
 			for (n = notifies; n; n = n->next) {
-				DPRINTF("checking WM_CLASS for '%s'\n",
+				XPRINTF("checking WM_CLASS for '%s'\n",
 					sn_startup_sequence_get_id(n->seq));
 				if (machine && n->hostname && strcasecmp(machine, n->hostname))
 					continue;	/* wrong host */
@@ -2624,12 +2624,12 @@ find_startup_seq(Client *c)
 			}
 			if (n)
 				break;
-			DPRINTF("cannot find startup for (%s,%s)\n",
+			XPRINTF("cannot find startup for (%s,%s)\n",
 				c->ch.res_name, c->ch.res_class);
 		}
 		if (getcommand(c, &argv, &argc)) {
 			for (n = notifies; n; n = n->next) {
-				DPRINTF("checking WM_COMMAND for '%s'\n",
+				XPRINTF("checking WM_COMMAND for '%s'\n",
 					sn_startup_sequence_get_id(n->seq));
 				if (machine && n->hostname && strcasecmp(machine, n->hostname))
 					continue;	/* wrong host */
@@ -2640,12 +2640,12 @@ find_startup_seq(Client *c)
 			}
 			if (n)
 				break;
-			DPRINTF("cannot find startup for !%s\n", argv[0]);
+			XPRINTF("cannot find startup for !%s\n", argv[0]);
 		}
 		if (c->ch.res_name || c->ch.res_class) {
 			/* try again, case insensitive */
 			for (n = notifies; n; n = n->next) {
-				DPRINTF("checking WM_CLASS for '%s'\n",
+				XPRINTF("checking WM_CLASS for '%s'\n",
 					sn_startup_sequence_get_id(n->seq));
 				if (machine && n->hostname && strcasecmp(machine, n->hostname))
 					continue;	/* wrong host */
@@ -2658,7 +2658,7 @@ find_startup_seq(Client *c)
 			}
 			if (n)
 				break;
-			DPRINTF("cannot find startup for (%s,%s) (no case)\n",
+			XPRINTF("cannot find startup for (%s,%s) (no case)\n",
 				c->ch.res_name, c->ch.res_class);
 		}
 	}
@@ -2675,10 +2675,10 @@ find_startup_seq(Client *c)
 			workspace = sn_startup_sequence_get_workspace(n->seq);
 			if (0 <= workspace && workspace < scr->ntags) {
 				if (c->is.managed) {
-					CPRINTF(c, "moving to workspace %ld for sequence '%s'\n", workspace, n->id);
+					XPRINTF(c, "moving to workspace %ld for sequence '%s'\n", workspace, n->id);
 					tagonly(c, workspace);
 				} else {
-					CPRINTF(c, "marking for workspace %ld for sequence '%s'\n", workspace, n->id);
+					XPRINTF(c, "marking for workspace %ld for sequence '%s'\n", workspace, n->id);
 					c->tags = (1ULL << workspace);
 					/* likely have not been read yet */
 					XChangeProperty(dpy, c->win, _XA_NET_WM_DESKTOP,
@@ -3028,18 +3028,18 @@ ewmh_process_net_window_sync_request_counter(Client *c)
 							 &aa);
 
 			if (c->sync.alarm) {
-				CPRINTF(c, "allocated alarm 0x%08lx\n", c->sync.alarm);
+				XPRINTF(c, "allocated alarm 0x%08lx\n", c->sync.alarm);
 				XSaveContext(dpy, c->sync.alarm, context[ClientAny],
 					     (XPointer) c);
 				XSaveContext(dpy, c->sync.alarm, context[ScreenContext],
 					     (XPointer) scr);
 
 			} else
-				CPRINTF(c, "could not allocate alarm!\n");
+				XPRINTF(c, "could not allocate alarm!\n");
 		} else
-			DPRINTF("SYNC extension not present\n");
+			XPRINTF("SYNC extension not present\n");
 #else
-		DPRINTF("SYNC extension not supported\n");
+		XPRINTF("SYNC extension not supported\n");
 #endif
 	}
 	if (data)
@@ -3588,7 +3588,7 @@ gethints(Window win, Atom atom, unsigned long *nitems)
 		*nitems = 0;
 		return NULL;
 	}
-	DPRINTF("Format of WM_SIZE_HINTS is %d\n", format);
+	XPRINTF("Format of WM_SIZE_HINTS is %d\n", format);
 	/* don't return empty properties */
 	if (*nitems == 0) {
 		if (ret) {

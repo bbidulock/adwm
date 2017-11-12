@@ -44,7 +44,7 @@ createbitmapicon(Client *c, Pixmap icon, Pixmap mask, unsigned w, unsigned h)
 		bi->present = True;
 		return (True);
 	}
-	/* need to scale: do it as 32-bit ARGB white visual */
+	/* need to scale: do it as 32-bit ARGB white/black visual */
 	if (!(xicon = XGetImage(dpy, icon, 0, 0, w, h, 0x1, XYBitmap))) {
 		EPRINTF("could not get bitmap 0x%lx %ux%u\n", icon, w, h);
 		return (False);
@@ -80,32 +80,26 @@ createbitmapicon(Client *c, Pixmap icon, Pixmap mask, unsigned w, unsigned h)
 		for (j = 0; j < w; j++, p++) {
 			/* treat anything outside the bitmap as zero */
 			if (i <= xicon->height && j <= xicon->width
-			    && XGetPixel(xicon, i, j)) {
+			    && XGetPixel(xicon, j, i)) {
 				/* a one in the bitmap */
 				*p = 0xffffffff;	/* opaque white */
 			} else {
 				/* a zero in the bitmap */
 				*p = 0xff000000;	/* opaque black */
 			}
+			if (xmask && i <= xmask->height && j <= xmask->width
+					&& XGetPixel(xmask, j, i)) {
+				/* a one in the bitmap */
+				*p |= 0xff000000;	/* opaque */
+			} else {
+				/* a zero in the bitmap */
+				*p &= 0x00ffffff;	/* transparent */
+			}
 		}
 	}
 	XDestroyImage(xicon);
-	if (xmask) {
-		for (p = pixels, i = 0; i < h; i++) {
-			for (j = 0; j < w; j++, p++) {
-			/* treat anything outside the bitmap as zero */
-				if (i <= xmask->height && j <= xmask->width
-				    && XGetPixel(xmask, i, j)) {
-					/* a one in the bitmap */
-					*p |= 0xff000000;	/* opaque */
-				} else {
-					/* a zero in the bitmap */
-					*p &= 0x00ffffff;	/* transparent */
-				}
-			}
-		}
+	if (xmask)
 		XDestroyImage(xmask);
-	}
 	imlib_image_put_back_data(pixels);
 	imlib_image_set_has_alpha(1);
 	if (h > scr->style.titleheight) {
@@ -307,7 +301,7 @@ createdataicon(Client *c, unsigned w, unsigned h, long *data)
 #else				/* !defined IMLIB2 || !defined USE_IMLIB2 */
 #if defined PIXBUF && defined USE_PIXBUF
 Bool
-gdk_createpixmapicon(Client *c, Pixmap icon, Pixmap mask)
+createpixmapicon(Client *c, Pixmap icon, Pixmap mask)
 {
 	GdkPixbuf *gicon = NULL, *gmask = NULL;
 	Window root;
@@ -406,121 +400,62 @@ gdk_createpixmapicon(Client *c, Pixmap icon, Pixmap mask)
 	return True;
 }
 Bool
-gdk_createwmicon(Client *c)
-{
-	return gdk_createpixmapicon(c, c->wmh.icon_pixmap, c->wmh.icon_mask);
-}
-Bool
-gdk_createdataicon(Client *c, unsigned w, unsigned h, long *data)
-{
-}
-Bool
-gdk_createkwmicon(Client *c, Pixmap *data, unsigned long n)
-{
-	return gdk_createpixmapicon(c, data[0], data[1]);
-}
-Bool
-createwmicon(Client *c)
-{
-	Bool result;
-
-	xtrap_push(0,NULL);
-	result = gdk_createwmicon(c);
-	xtrap_pop();
-	return (result);
-}
-Bool
-createkwmicon(Client *c, Pixmap *data, unsigned long n)
-{
-	Bool result;
-
-	xtrap_push(0,NULL);
-	result = gdk_createkwmicon(c, data, n);
-	xtrap_pop();
-	return (result);
-}
-Bool
 createdataicon(Client *c, unsigned w, unsigned h, long *data)
 {
-	Bool result;
-
-	xtrap_push(0,NULL);
-	result = gdk_createdataicon(c, w, h, data);
-	xtrap_pop();
-	return (result);
 }
 #else				/* !defined PIXBUF || !defined USE_PIXBUF */
 Bool
-xlib_createpixmapicon(Client *c, Pixmap icon, Pixmap mask)
+createpixmapicon(Client *c, Pixmap icon, Pixmap mask, unsigned w, unsigned h, unsigned d)
 {
-	Window root;
-	int x, y;
-	unsigned int w, h, b, d;
-	ButtonImage *bi;
 	XImage *xicon = NULL, *xmask = NULL, *alpha;
+	ButtonImage *bi;
+	unsigned i, j;
 
-	if (!c || !(c->wmh.flags & IconPixmapHint))
-		return (False);
-	if (!XGetGeometry(dpy, icon, &root, &x, &y, &w, &h, &b, &d))
-		return (False);
-	if (icon) {
-		xicon = XGetImage(dpy, icon, 0, 0, w, h, 0xffffffff, ZPixmap);
-	}
-	if (!xicon)
-		return (False);
-	if (mask) {
-		xmask = XGetImage(dpy, mask, 0, 0, w, h, 0xffffffff, ZPixmap);
-	}
-	if (xmask) {
-		alpha = XCreateImage(dpy, scr->visual, 32, ZPixmap, 0, NULL, w, h, 0, 0);
-		if (alpha) {
-			alpha->data = ecalloc(alpha->bytes_per_line * h);
+	if (h <= scr->style.titleheight + 2) {
+		bi = &c->iconbtn;
+		bi->x = bi->y = bi->b = 0;
+		bi->d = 1;
+		bi->w = w;
+		bi->h = h;
+		if (bi->h > scr->style.titleheight) {
+			/* read lower down into image to clip top and bottom by same
+			   amount */
+			bi->y += (bi->h - scr->style.titleheight) / 2;
+			bi->h = scr->style.titleheight;
 		}
+		bi->pixmap.draw = icon;
+		bi->pixmap.mask = mask;
+		bi->present = True;
+		return (True);
 	}
-}
-Bool
-xlib_createdataicon(Client *c, unsigned w, unsigned h, long *data)
-{
-}
-Bool
-xlib_createwmicon(Client *c)
-{
-	return xlib_createpixmapicon(c, c->wmh.icon_pixmap, c->wmh.icon_mask);
-}
-Bool
-xlib_createkwmicon(Client *c, Pixmap *data, unsigned long n)
-{
-	return xlib_createpixmapicon(c, data[0], data[1]);
-}
-Bool
-createwmicon(Client *c)
-{
-	Bool result;
-
-	xtrap_push(0,NULL);
-	result = xlib_createwmicon(c);
-	xtrap_pop();
-	return (result);
-}
-Bool
-createkwmicon(Client *c, Pixmap *data, unsigned long n)
-{
-	Bool result;
-
-	xtrap_push(0,NULL);
-	result = xlib_createkwmicon(c, data, n);
-	xtrap_pop();
-	return (result);
+	/* need to scale: dot it as 32-bit ARGB white/black visual */
+	if (!(xicon = XGetImage(dpy, icon, 0, 0, w, h, 0xffffffff, ZPixmap))) {
+		DPRINTF("could not read ximage 0x%lx: %ux%u\n", icon, w, h);
+		return (False);
+	}
+	if (mask && !(xmask = XGetImage(dpy, mask, 0, 0, w, h, 0x1, XYPixmap))) {
+		DPRINTF("could not read ximage 0x%lx: %ux%u\n", mask, w, h);
+		XDestroyImage(xicon);
+		return (False);
+	}
+	if (mask && !(alpha = XCreateImage(dpy, scr->visual, scr->depth, ZPixmap, 0, NULL, w, h, 0, 0))) {
+		DPRINTF("could not create ximage %ux%ux%u\n", w, h, scr->depth);
+		XDestroyImage(xicon);
+		XDestroyImage(xmask);
+		return (False);
+	}
+	if (alpha && !(alpha->data = ecalloc(alpha->bytes_per_line * alpha->height))) {
+		DPRINTF("could not allocate ximage data %ux%ux%u\n", w, h, scr->depth);
+		XDestroyImage(xicon);
+		XDestroyImage(xmask);
+		XDestroyImage(alpha);
+		return (False);
+	}
+	for (i = 0; i < h; i++) {
 }
 Bool
 createdataicon(Client *c, unsigned w, unsigned h, long *data)
 {
-	Bool result;
-
-	xtrap_push(0,NULL);
-	result = xlib_createdataicon(c, w, h, data);
-	xtrap_pop();
-	return (result);
 }
 #endif				/* !defined PIXBUF || !defined USE_PIXBUF */
 #endif				/* !defined IMLIB2 || !defined USE_IMLIB2 */

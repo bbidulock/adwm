@@ -93,7 +93,7 @@ setfocused(Client *c)
 	Container *cp, *cc;
 
 	if (c) {
-		CPRINTF(c, "setting as focused\n");
+		XPRINTF(c, "setting as focused\n");
 		for (l = c->leaves; l; l = l->client.next)
 			for (cc = (Container *)l; (cp = cc->parent); cc = cp)
 				cp->node.children.focused = cc;
@@ -107,7 +107,7 @@ setselected(Client *c)
 	Container *cp, *cc;
 
 	if (c) {
-		CPRINTF(c, "setting as selected\n");
+		XPRINTF(c, "setting as selected\n");
 		if (c->cview)
 			c->cview->lastsel = c;
 		for (l = c->leaves; l; l = l->client.next)
@@ -123,11 +123,11 @@ delleaf(Leaf *l, Bool active)
 	Container *cp;
 
 	if (!l) {
-		DPRINTF("ERROR: no leaf\n");
+		EPRINTF("ERROR: no leaf\n");
 		assert(l != NULL);
 	}
 	if (l->type != TreeTypeLeaf) {
-		DPRINTF("ERROR: not a leaf\n");
+		EPRINTF("ERROR: not a leaf\n");
 		assert(l->type == TreeTypeLeaf);
 	}
 	if (!(t = l->parent)) {
@@ -163,7 +163,7 @@ appleaf(Container *cp, Leaf *l, Bool active)
 	/* append leaf l into bottom container of cp */
 	/* when cp is a leaf, append after cp */
 	if (l->type != TreeTypeLeaf) {
-		DPRINTF("ERROR: l is not a leaf\n");
+		EPRINTF("ERROR: l is not a leaf\n");
 		assert(l->type == TreeTypeLeaf);
 	}
 	if (l->parent) {
@@ -179,7 +179,7 @@ appleaf(Container *cp, Leaf *l, Bool active)
 			cp = cp->node.children.tail;
 	}
 	if (!cp) {
-		DPRINTF("ERROR: no parent node\n");
+		EPRINTF("ERROR: no parent node\n");
 		assert(cp != NULL);
 	}
 	l->next = l->prev = NULL; /* safety */
@@ -214,7 +214,7 @@ insleaf(Container *cp, Leaf *l, Bool active)
 	/* insert leaf l into bottom container of cp */
 	/* when cp is a leaf, insert before cp */
 	if (l->type != TreeTypeLeaf) {
-		DPRINTF("ERROR: l is not a leaf\n");
+		EPRINTF("ERROR: l is not a leaf\n");
 		assert(l->type == TreeTypeLeaf);
 	}
 	if (l->parent) {
@@ -230,7 +230,7 @@ insleaf(Container *cp, Leaf *l, Bool active)
 			cp = cp->node.children.head;
 	}
 	if (!cp) {
-		DPRINTF("ERROR: no parent node\n");
+		EPRINTF("ERROR: no parent node\n");
 		assert(cp != NULL);
 	}
 	l->next = l->prev = NULL;	/* safety */
@@ -263,7 +263,7 @@ delnode(Container *cc)
 	Container *cp;
 
 	if (cc->type != TreeTypeNode) {
-		DPRINTF("ERROR: attempting to delete non-node\n");
+		EPRINTF("ERROR: attempting to delete non-node\n");
 		assert(cc->type == TreeTypeNode);
 	}
 	if (!(cp = cc->parent)) {
@@ -306,7 +306,7 @@ appnode(Container *cp, Container *cc)
 		cp->node.children.tail->type != TreeTypeLeaf))
 		cp = cp->node.children.tail;
 	if (!cp) {
-		DPRINTF("ERROR: no parent node\n");
+		EPRINTF("ERROR: no parent node\n");
 		assert(cp != NULL);
 	}
 #endif
@@ -339,7 +339,7 @@ insnode(Container *cp, Container *cc)
 		cp->node.children.head->type != TreeTypeLeaf))
 		cp = cp->node.children.tail;
 	if (!cp) {
-		DPRINTF("ERROR: no parent node\n");
+		EPRINTF("ERROR: no parent node\n");
 		assert(cp != NULL);
 	}
 #endif
@@ -642,21 +642,21 @@ enterclient(XEvent *e, Client *c)
 	case SloppyFloat:
 		/* FIXME: incorporate isfloating() check into skip.sloppy setting */
 		if (!c->skip.sloppy && isfloating(c, c->cview)) {
-			CPRINTF(c, "FOCUS: sloppy focus\n");
+			XPRINTF(c, "FOCUS: sloppy focus\n");
 			if (!checkfocuslock(c, e->xany.serial))
 				focus(c);
 		}
 		break;
 	case AllSloppy:
 		if (!c->skip.sloppy) {
-			CPRINTF(c, "FOCUS: sloppy focus\n");
+			XPRINTF(c, "FOCUS: sloppy focus\n");
 			if (!checkfocuslock(c, e->xany.serial))
 				focus(c);
 		}
 		break;
 	case SloppyRaise:
 		if (!c->skip.sloppy) {
-			CPRINTF(c, "FOCUS: sloppy focus\n");
+			XPRINTF(c, "FOCUS: sloppy focus\n");
 			if (!checkfocuslock(c, e->xany.serial)) {
 				focus(c);
 				raiseclient(c); /* probably should not do this here */
@@ -791,15 +791,13 @@ reconfigure_dockapp(Client *c, ClientGeometry *n, Bool force)
 	wwc.height = c->r.h;
 	wwc.border_width = c->r.b;
 	if (fmask) {
-		DPRINTF("frame wc = %ux%u+%d+%d:%d\n", fwc.width, fwc.height, fwc.x,
-			fwc.y, fwc.border_width);
+		XPRINTF("frame wc = %ux%u+%d+%d:%d\n", fwc.width, fwc.height, fwc.x, fwc.y, fwc.border_width);
 		xtrap_push(1,NULL);
 		XConfigureWindow(dpy, c->frame, fmask, &fwc);
 		xtrap_pop();
 	}
 	if (wmask) {
-		DPRINTF("wind  wc = %ux%u+%d+%d:%d\n", wwc.width, wwc.height, wwc.x,
-			wwc.y, wwc.border_width);
+		XPRINTF("wind  wc = %ux%u+%d+%d:%d\n", wwc.width, wwc.height, wwc.x, wwc.y, wwc.border_width);
 		xtrap_push(1,NULL);
 		XConfigureWindow(dpy, c->icon, wmask, &wwc);
 		xtrap_pop();
@@ -846,7 +844,7 @@ reconfigure(Client *c, ClientGeometry *n, Bool force)
 	Bool tchange = False, gchange = False, hchange = False, shaded = False;
 
 	if (n->w <= 0 || n->h <= 0) {
-		CPRINTF(c, "zero width %d or height %d\n", n->w, n->h);
+		_CPRINTF(c, "zero width %d or height %d\n", n->w, n->h);
 		return;
 	}
 	/* offscreen appearance fixes */
@@ -854,11 +852,8 @@ reconfigure(Client *c, ClientGeometry *n, Bool force)
 		n->x = DisplayWidth(dpy, scr->screen) - n->w - 2 * n->b;
 	if (n->y > DisplayHeight(dpy, scr->screen))
 		n->y = DisplayHeight(dpy, scr->screen) - n->h - 2 * n->b;
-	DPRINTF("x = %d y = %d w = %d h = %d b = %d t = %d g = %d v = %d\n", n->x, n->y,
+	XPRINTF("x = %d y = %d w = %d h = %d b = %d t = %d g = %d v = %d\n", n->x, n->y,
 		n->w, n->h, n->b, n->t, n->g, n->v);
-	if (n->w > 1600 || n->h > 1600)
-		BKTRACE("x = %d y = %d w = %d h = %d b = %d t = %d g = %d v = %d\n", n->x, n->y,
-			n->w, n->h, n->b, n->t, n->g, n->v);
 
 	if (c->is.dockapp)
 		return reconfigure_dockapp(c, n, force);
@@ -866,37 +861,37 @@ reconfigure(Client *c, ClientGeometry *n, Bool force)
 	wmask = fmask = 0;
 	if (c->c.x != (fwc.x = n->x)) {
 		c->c.x = n->x;
-		DPRINTF("frame wc.x = %d\n", fwc.x);
+		XPRINTF("frame wc.x = %d\n", fwc.x);
 		fmask |= CWX;
 	}
 	if (c->c.y != (fwc.y = n->y)) {
 		c->c.y = n->y;
-		DPRINTF("frame wc.y = %d\n", fwc.y);
+		XPRINTF("frame wc.y = %d\n", fwc.y);
 		fmask |= CWY;
 	}
 	if (c->c.w - 2 * c->c.v != (wwc.width = n->w - 2 * n->v)) {
-		DPRINTF("wind  wc.w = %u\n", wwc.width);
+		XPRINTF("wind  wc.w = %u\n", wwc.width);
 		wmask |= CWWidth;
 	}
 	if (c->c.w != (fwc.width = n->w)) {
 		c->c.w = n->w;
-		DPRINTF("frame wc.w = %u\n", fwc.width);
+		XPRINTF("frame wc.w = %u\n", fwc.width);
 		fmask |= CWWidth;
 	}
 	if (c->c.h - c->c.t - c->c.g - c->c.v != (wwc.height = n->h - n->t - n->g - n->v)) {
-		DPRINTF("wind  wc.h = %u\n", wwc.height);
+		XPRINTF("wind  wc.h = %u\n", wwc.height);
 		wmask |= CWHeight;
 	}
 	if (c->c.h != (fwc.height = n->h)) {
 		c->c.h = n->h;
-		DPRINTF("frame wc.h = %u\n", fwc.height);
+		XPRINTF("frame wc.h = %u\n", fwc.height);
 		fmask |= CWHeight;
 	}
 	if (n->t && !c->title)
 		n->t = 0;
 	if (c->c.t != (wwc.y = n->t)) {
 		c->c.t = n->t;
-		DPRINTF("wind  wc.y = %d\n", wwc.y);
+		XPRINTF("wind  wc.y = %d\n", wwc.y);
 		wmask |= CWY;
 		tchange = True;
 	}
@@ -914,22 +909,22 @@ reconfigure(Client *c, ClientGeometry *n, Bool force)
 	}
 	if ((n->t || n->v) && (c->is.shaded && (c != sel || !scr->options.autoroll))) {
 		fwc.height = n->t + 2 * n->v;
-		DPRINTF("frame wc.h = %u\n", fwc.height);
+		XPRINTF("frame wc.h = %u\n", fwc.height);
 		fmask |= CWHeight;
 		shaded = True;
 	} else {
 		fwc.height = n->h;
-		DPRINTF("frame wc.h = %u\n", fwc.height);
+		XPRINTF("frame wc.h = %u\n", fwc.height);
 		fmask |= CWHeight;
 		shaded = False;
 	}
 	if (c->c.b != (fwc.border_width = n->b)) {
 		c->c.b = n->b;
-		DPRINTF("frame wc.b = %u\n", fwc.border_width);
+		XPRINTF("frame wc.b = %u\n", fwc.border_width);
 		fmask |= CWBorderWidth;
 	}
 	if (fmask) {
-		DPRINTF("frame wc = %ux%u+%d+%d:%d\n", fwc.width, fwc.height, fwc.x,
+		XPRINTF("frame wc = %ux%u+%d+%d:%d\n", fwc.width, fwc.height, fwc.x,
 			fwc.y, fwc.border_width);
 		if (!c->is.dockapp)
 			configureshapes(c);
@@ -952,7 +947,7 @@ reconfigure(Client *c, ClientGeometry *n, Bool force)
 	} else
 		XMapWindow(dpy, c->win);
 	if (wmask) {
-		DPRINTF("wind  wc = %ux%u+%d+%d:%d\n", wwc.width, wwc.height, wwc.x,
+		XPRINTF("wind  wc = %ux%u+%d+%d:%d\n", wwc.width, wwc.height, wwc.x,
 			wwc.y, wwc.border_width);
 		xtrap_push(1,NULL);
 		XConfigureWindow(dpy, c->win, wmask | CWX | CWY | CWBorderWidth, &wwc);
@@ -1000,7 +995,7 @@ constrain(Client *c, ClientGeometry *g)
 	int w = g->w, h = g->h;
 	Bool ret = False;
 
-	CPRINTF(c, "geometry before constraint: %dx%d+%d+%d:%d[%d,%d]\n",
+	XPRINTF(c, "geometry before constraint: %dx%d+%d+%d:%d[%d,%d]\n",
 		g->w, g->h, g->x, g->y, g->b, g->t, g->g);
 
 	/* remove decoration */
@@ -1056,7 +1051,7 @@ constrain(Client *c, ClientGeometry *g)
 		g->h = h;
 		ret = True;
 	}
-	CPRINTF(c, "geometry after constraints: %dx%d+%d+%d:%d[%d,%d]\n",
+	XPRINTF(c, "geometry after constraints: %dx%d+%d+%d:%d[%d,%d]\n",
 		g->w, g->h, g->x, g->y, g->b, g->t, g->g);
 	return ret;
 }
@@ -1064,7 +1059,7 @@ constrain(Client *c, ClientGeometry *g)
 static void
 save(Client *c)
 {
-	CPRINTF(c, "%dx%d+%d+%d:%d <= %dx%d+%d+%d:%d\n",
+	XPRINTF(c, "%dx%d+%d+%d:%d <= %dx%d+%d+%d:%d\n",
 		c->r.w, c->r.h, c->r.x, c->r.y, c->r.b,
 		c->c.w, c->c.h, c->c.x, c->c.y, c->c.b);
 	c->r = c->c;
@@ -1077,9 +1072,9 @@ restore(Client *c)
 	ClientGeometry g;
 
 	g = c->r;
-	DPRINTF("CALLING: constrain()\n");
+	XPRINTF("CALLING: constrain()\n");
 	constrain(c, &g);
-	DPRINTF("CALLING reconfigure()\n");
+	XPRINTF("CALLING reconfigure()\n");
 	reconfigure(c, &g, False);
 }
 
@@ -1132,7 +1127,7 @@ configureclient(XEvent *e, Client *c, int gravity)
 		   generate configure notifies for the tiled arrangment. Unfortunately,
 		   reconfigure() only does this when the configuration changes, so we
 		   need to ask it to do a forced reconfiguration. */
-		DPRINTF("CALLING reconfigure()\n");
+		XPRINTF("CALLING reconfigure()\n");
 		reconfigure(c, &g, True);
 		if (ev->value_mask & (CWBorderWidth))
 			c->s.b = g.b;
@@ -1192,7 +1187,7 @@ configuremonitors(XEvent *e, Client *c)
 		g.t = 0;
 		g.g = 0;
 		g.v = 0;
-		DPRINTF("CALLING reconfigure()\n");
+		XPRINTF("CALLING reconfigure()\n");
 		reconfigure(c, &g, False);
 	}
 	return True;
@@ -1508,19 +1503,19 @@ pushleaf(Term *n)
 
 	/* push leaf from the node after this one and appeand to this one */
 	if (!(nnew = (Container *) n)) {
-		DPRINTF("ERROR: no node!\n");
+		EPRINTF("ERROR: no node!\n");
 		assert(nnew != NULL);
 	}
 	if (!(nold = nnew->next)) {
-		DPRINTF("ERROR: no next node!\n");
+		EPRINTF("ERROR: no next node!\n");
 		assert(nold != NULL);
 	}
 	if (!(l = nold->term.children.head)) {
-		DPRINTF("ERROR: no leaf node!\n");
+		EPRINTF("ERROR: no leaf node!\n");
 		assert(l != NULL);
 	}
 	if (l->type != TreeTypeLeaf) {
-		DPRINTF("ERROR: not a leaf node!\n");
+		EPRINTF("ERROR: not a leaf node!\n");
 		assert(l->type == TreeTypeLeaf);
 	}
 	if (l->client.client && !l->is.hidden)
@@ -1538,19 +1533,19 @@ popleaf(Term *n)
 
 	/* pop leaf from this node and insert onto the one after this one */
 	if (!(nold = (Container *) n)) {
-		DPRINTF("ERROR: no node!\n");
+		EPRINTF("ERROR: no node!\n");
 		assert(nold != NULL);
 	}
 	if (!(nnew = nold->next)) {
-		DPRINTF("ERROR: no next node!\n");
+		EPRINTF("ERROR: no next node!\n");
 		assert(nnew != NULL);
 	}
 	if (!(l = nold->term.children.tail)) {
-		DPRINTF("ERROR: no leaf node!\n");
+		EPRINTF("ERROR: no leaf node!\n");
 		assert(l != NULL);
 	}
 	if (l->type != TreeTypeLeaf) {
-		DPRINTF("ERROR: not a leaf node!\n");
+		EPRINTF("ERROR: not a leaf node!\n");
 		assert(l->type == TreeTypeLeaf);
 	}
 	if (l->client.client && !l->is.hidden)
@@ -1596,7 +1591,7 @@ arrangedock(View *v)
 	t->c = floating ? t->f : t->t;
 
 	num = countdockapps((Container *) t);
-	DPRINTF("there are %d dock apps\n", num);
+	XPRINTF("there are %d dock apps\n", num);
 	if (!num)
 		return;
 
@@ -1612,7 +1607,7 @@ arrangedock(View *v)
 		major = (num - 1) / minor + 1;
 		break;
 	default:
-		DPRINTF("ERROR: invalid child orientation\n");
+		EPRINTF("ERROR: invalid child orientation\n");
 		return;
 	}
 	while (t->node.children.number < major)
@@ -1725,7 +1720,7 @@ arrangedock(View *v)
 			gf.w = df;
 			break;
 		default:
-			DPRINTF("ERROR: invalid childe orientation\n");
+			EPRINTF("ERROR: invalid childe orientation\n");
 			return;
 		}
 		n->t = gt;
@@ -1828,7 +1823,7 @@ arrangedock(View *v)
 				}
 				g.w -= 2 * g.b;
 				g.h -= 2 * g.b;
-				DPRINTF("CALLING reconfigure()\n");
+				XPRINTF("CALLING reconfigure()\n");
 				reconfigure(c, &g, False);
 			}
 			unban(c, v);
@@ -1954,8 +1949,8 @@ tile(View *v)
 	/* master & slave number */
 	ma.n = (wa.n > v->nmaster) ? v->nmaster : wa.n;
 	sa.n = (ma.n < wa.n) ? wa.n - ma.n : 0;
-	DPRINTF("there are %d masters\n", ma.n);
-	DPRINTF("there are %d slaves\n", sa.n);
+	XPRINTF("there are %d masters\n", ma.n);
+	XPRINTF("there are %d slaves\n", sa.n);
 
 	/* at least one unshaded */
 	ma.s = (ma.s && ma.s == ma.n) ? ma.n - 1 : ma.s;
@@ -1996,12 +1991,12 @@ tile(View *v)
 	sa.th = th + 2 * (sa.b + sa.g);
 
 	overlap = (sa.n > 0) ? ma.b : 0;
-	DPRINTF("overlap is %d\n", overlap);
+	XPRINTF("overlap is %d\n", overlap);
 
 	/* master and slave work area position */
 	switch (v->major) {
 	case OrientBottom:
-		DPRINTF("major orientation is masters bottom(%d)\n", v->major);
+		XPRINTF("major orientation is masters bottom(%d)\n", v->major);
 		ma.x = wa.x;
 		ma.y = wa.y + sa.h;
 		sa.x = wa.x;
@@ -2011,7 +2006,7 @@ tile(View *v)
 		break;
 	case OrientRight:
 	default:
-		DPRINTF("major orientation is masters right(%d)\n", v->major);
+		XPRINTF("major orientation is masters right(%d)\n", v->major);
 		ma.x = wa.x + sa.w;
 		ma.y = wa.y;
 		sa.x = wa.x;
@@ -2020,7 +2015,7 @@ tile(View *v)
 		ma.w += overlap;
 		break;
 	case OrientLeft:
-		DPRINTF("major orientation is masters left(%d)\n", v->major);
+		XPRINTF("major orientation is masters left(%d)\n", v->major);
 		ma.x = wa.x;
 		ma.y = wa.y;
 		sa.x = wa.x + ma.w;
@@ -2028,7 +2023,7 @@ tile(View *v)
 		ma.w += overlap;
 		break;
 	case OrientTop:
-		DPRINTF("major orientation is masters top(%d)\n", v->major);
+		XPRINTF("major orientation is masters top(%d)\n", v->major);
 		ma.x = wa.x;
 		ma.y = wa.y;
 		sa.x = wa.x;
@@ -2036,8 +2031,8 @@ tile(View *v)
 		ma.h += overlap;
 		break;
 	}
-	DPRINTF("master work area %dx%d+%d+%d:%d\n", ma.w, ma.h, ma.x, ma.y, ma.b);
-	DPRINTF("slave  work area %dx%d+%d+%d:%d\n", sa.w, sa.h, sa.x, sa.y, sa.b);
+	XPRINTF("master work area %dx%d+%d+%d:%d\n", ma.w, ma.h, ma.x, ma.y, ma.b);
+	XPRINTF("slave  work area %dx%d+%d+%d:%d\n", sa.w, sa.h, sa.x, sa.y, sa.b);
 
 	/* master tile dimensions */
 	switch (v->minor) {
@@ -2080,28 +2075,28 @@ tile(View *v)
 	/* position of first master */
 	switch (v->minor) {
 	case OrientTop:
-		DPRINTF("minor orientation is top to bottom(%d)\n", v->minor);
+		XPRINTF("minor orientation is top to bottom(%d)\n", v->minor);
 		m.x = ma.x;
 		m.y = ma.y;
 		break;
 	case OrientBottom:
-		DPRINTF("minor orientation is bottom to top(%d)\n", v->minor);
+		XPRINTF("minor orientation is bottom to top(%d)\n", v->minor);
 		m.x = ma.x;
 		m.y = ma.y + ma.h - m.h;
 		break;
 	case OrientLeft:
-		DPRINTF("minor orientation is left to right(%d)\n", v->minor);
+		XPRINTF("minor orientation is left to right(%d)\n", v->minor);
 		m.x = ma.x;
 		m.y = ma.y;
 		break;
 	case OrientRight:
 	default:
-		DPRINTF("minor orientation is right to left(%d)\n", v->minor);
+		XPRINTF("minor orientation is right to left(%d)\n", v->minor);
 		m.x = ma.x + ma.w - m.w;
 		m.y = ma.y;
 		break;
 	}
-	DPRINTF("initial master %dx%d+%d+%d:%d\n", m.w, m.h, m.x, m.y, m.b);
+	XPRINTF("initial master %dx%d+%d+%d:%d\n", m.w, m.h, m.x, m.y, m.b);
 
 	i = 0;
 	c = mc = nexttiled(scr->clients, v);
@@ -2127,7 +2122,7 @@ tile(View *v)
 		g.w -= 2 * (ma.g + g.b);
 		g.h -= 2 * (ma.g + g.b);
 		if (!c->is.moveresize) {
-			DPRINTF("CALLING reconfigure()\n");
+			XPRINTF("CALLING reconfigure()\n");
 			reconfigure(c, &g, False);
 		} else {
 			ClientGeometry C = g;
@@ -2135,7 +2130,7 @@ tile(View *v)
 			/* center it where it was before */
 			C.x = (c->c.x + c->c.w / 2) - C.w / 2;
 			C.y = (c->c.y + c->c.h / 2) - C.h / 2;
-			DPRINTF("CALLING reconfigure()\n");
+			XPRINTF("CALLING reconfigure()\n");
 			reconfigure(c, &C, False);
 		}
 		if (c->is.shaded && (c != sel || !scr->options.autoroll))
@@ -2179,28 +2174,28 @@ tile(View *v)
 	/* position of first slave */
 	switch (v->major) {
 	case OrientRight:
-		DPRINTF("slave orientation is top to bottom(%d)\n", v->major);
+		XPRINTF("slave orientation is top to bottom(%d)\n", v->major);
 		s.x = sa.x;
 		s.y = sa.y;
 		break;
 	case OrientLeft:
-		DPRINTF("slave orientation is bottom to top(%d)\n", v->major);
+		XPRINTF("slave orientation is bottom to top(%d)\n", v->major);
 		s.x = sa.x;
 		s.y = sa.y + sa.h - s.h;
 		break;
 	case OrientTop:
-		DPRINTF("slave orientation is left to right(%d)\n", v->major);
+		XPRINTF("slave orientation is left to right(%d)\n", v->major);
 		s.x = sa.x;
 		s.y = sa.y;
 		break;
 	case OrientBottom:
 	default:
-		DPRINTF("slave orientation is right to left(%d)\n", v->major);
+		XPRINTF("slave orientation is right to left(%d)\n", v->major);
 		s.x = sa.x + sa.w - s.w;
 		s.y = sa.y;
 		break;
 	}
-	DPRINTF("initial slave  %dx%d+%d+%d:%d\n", s.w, s.h, s.x, s.y, s.b);
+	XPRINTF("initial slave  %dx%d+%d+%d:%d\n", s.w, s.h, s.x, s.y, s.b);
 
 	/* lay out the slave area - always top->bot, left->right */
 	n = s;
@@ -2223,7 +2218,7 @@ tile(View *v)
 		g.w -= 2 * (sa.g + g.b);
 		g.h -= 2 * (sa.g + g.b);
 		if (!c->is.moveresize) {
-			DPRINTF("CALLING reconfigure()\n");
+			XPRINTF("CALLING reconfigure()\n");
 			reconfigure(c, &g, False);
 		} else {
 			ClientGeometry C = g;
@@ -2231,7 +2226,7 @@ tile(View *v)
 			/* center it where it was before */
 			C.x = (c->c.x + c->c.w / 2) - C.w / 2;
 			C.y = (c->c.y + c->c.h / 2) - C.h / 2;
-			DPRINTF("CALLING reconfigure()\n");
+			XPRINTF("CALLING reconfigure()\n");
 			reconfigure(c, &C, False);
 		}
 		if (c->is.shaded && (c != sel || !scr->options.autoroll))
@@ -2368,7 +2363,7 @@ grid(View *v)
 		n.t = (v->dectiled && c->has.title) ? scr->style.titleheight : 0;
 		n.g = (v->dectiled && c->has.grips) ? scr->style.gripsheight : 0;
 		if (!c->is.moveresize) {
-			DPRINTF("CALLING reconfigure()\n");
+			XPRINTF("CALLING reconfigure()\n");
 			reconfigure(c, &n, False);
 		} else {
 			ClientGeometry C = n;
@@ -2376,7 +2371,7 @@ grid(View *v)
 			/* center it where it was before */
 			C.x = (c->c.x + c->c.w / 2) - C.w / 2;
 			C.y = (c->c.y + c->c.h / 2) - C.h / 2;
-			DPRINTF("CALLING reconfigure()\n");
+			XPRINTF("CALLING reconfigure()\n");
 			reconfigure(c, &C, False);
 		}
 	}
@@ -2419,7 +2414,7 @@ monocle(View *v)
 	Workarea w;
 
 	getworkarea(v->curmon, &w);
-	DPRINTF("work area is %dx%d+%d+%d\n", w.w, w.h, w.x, w.y);
+	XPRINTF("work area is %dx%d+%d+%d\n", w.w, w.h, w.x, w.y);
 	for (c = nexttiled(scr->clients, v); c; c = nexttiled(c->next, v)) {
 		ClientGeometry g = { 0, };
 
@@ -2434,7 +2429,7 @@ monocle(View *v)
 		g.w -= 2 * g.b;
 		g.h -= 2 * g.b;
 
-		DPRINTF("CALLING reconfigure()\n");
+		XPRINTF("CALLING reconfigure()\n");
 		reconfigure(c, &g, False);
 	}
 }
@@ -2831,7 +2826,7 @@ place_overlap(ClientGeometry *c, ClientGeometry *o)
 	if (wind_overlap(c->x, c->x + c->w, o->x, o->x + o->w) &&
 	    wind_overlap(c->y, c->y + c->h, o->y, o->y + o->h))
 		ret = True;
-	DPRINTF("%dx%d+%d+%d and %dx%d+%d+%d %s\n", c->w, c->h, c->x, c->y,
+	XPRINTF("%dx%d+%d+%d and %dx%d+%d+%d %s\n", c->w, c->h, c->x, c->y,
 		o->w, o->h, o->x, o->y, ret ? "overlap" : "disjoint");
 	return ret;
 }
@@ -3194,7 +3189,7 @@ raisefloater(Client *c)
 {
 	if (c->is.floater || c->skip.arrange || c->is.full ||
 		(c->cview && VFEATURES(c->cview, OVERLAP))) {
-		CPRINTF(c, "raising floating client for focus\n");
+		XPRINTF(c, "raising floating client for focus\n");
 		raiseclient(c);
 	}
 }
@@ -3203,7 +3198,7 @@ void
 raisetiled(Client *c)
 {
 	if (!c->is.dockapp && (c->is.bastard || !isfloating(c, c->cview))) {
-		CPRINTF(c, "raising non-floating client on focus\n");
+		XPRINTF(c, "raising non-floating client on focus\n");
 		raiseclient(c);
 	}
 }
@@ -3214,7 +3209,7 @@ lowertiled(Client *c)
 #if 0
 	/* NEVER do this! */
 	if (!c->is.dockapp && (c->is.bastard || !isfloating(c, c->cview))) {
-		CPRINTF(c, "lowering non-floating client on loss of focus\n");
+		XPRINTF(c, "lowering non-floating client on loss of focus\n");
 		lowerclient(c);
 	}
 #endif
@@ -3763,7 +3758,7 @@ move_cancel(Client *c, View *v, ClientGeometry *orig, IsUnion * was)
 			c->is.shaded = was->shaded;
 		}
 		if (wasfloating) {
-			DPRINTF("CALLING reconfigure()\n");
+			XPRINTF("CALLING reconfigure()\n");
 			reconfigure(c, orig, False);
 			save(c);
 			updatefloat(c, v);
@@ -3830,7 +3825,7 @@ mousemove_from(Client *c, int from, XEvent *e, Bool toggle)
 
 	if (!(v = getview(x_root, y_root)) || (c->cview && v != c->cview))
 		if (!(v = c->cview)) {
-			CPRINTF(c, "No monitor to move from!\n");
+			_CPRINTF(c, "No monitor to move from!\n");
 			XUngrabPointer(dpy, e->xbutton.time);
 			return moved;
 		}
@@ -3845,7 +3840,7 @@ mousemove_from(Client *c, int from, XEvent *e, Bool toggle)
 
 	if (XGrabPointer(dpy, c->frame, False, MOUSEMASK, GrabModeAsync,
 			 GrabModeAsync, None, None, e->xbutton.time) != GrabSuccess) {
-		CPRINTF(c, "Couldn't grab pointer!\n");
+		_CPRINTF(c, "Couldn't grab pointer!\n");
 		XUngrabPointer(dpy, e->xbutton.time);
 		return moved;
 	}
@@ -3873,7 +3868,7 @@ mousemove_from(Client *c, int from, XEvent *e, Bool toggle)
 			if (ev.xclient.message_type == _XA_NET_WM_MOVERESIZE) {
 				if (ev.xclient.data.l[2] == 11) {
 					/* _NET_WM_MOVERESIZE_CANCEL */
-					CPRINTF(c, "Move cancelled!\n");
+					XPRINTF(c, "Move cancelled!\n");
 					moved = move_cancel(c, v, &o, &was);
 					break;
 				}
@@ -3897,7 +3892,7 @@ mousemove_from(Client *c, int from, XEvent *e, Bool toggle)
 				    && abs(dy) < scr->options.dragdist)
 					continue;
 				if (!(moved = move_begin(c, v, toggle, from, &was))) {
-					CPRINTF(c, "Couldn't move client!\n");
+					_CPRINTF(c, "Couldn't move client!\n");
 					break;
 				}
 				n = c->c;
@@ -3909,7 +3904,7 @@ mousemove_from(Client *c, int from, XEvent *e, Bool toggle)
 
 				/* cannot move off monitor when shuffling tiled */
 				if (event_scr != scr || nv != v) {
-					CPRINTF(c, "Cannot move off monitor!\n");
+					_CPRINTF(c, "Cannot move off monitor!\n");
 					continue;
 				}
 				if ((s = onstacked(c, v, ev.xmotion.x_root,
@@ -3921,7 +3916,7 @@ mousemove_from(Client *c, int from, XEvent *e, Bool toggle)
 				n = c->c;
 				n.x = ev.xmotion.x_root - n.w / 2;
 				n.y = ev.xmotion.y_root - n.h / 2;
-				DPRINTF("CALLING reconfigure()\n");
+				XPRINTF("CALLING reconfigure()\n");
 				reconfigure(c, &n, False);
 				continue;
 			}
@@ -4004,7 +3999,7 @@ mousemove_from(Client *c, int from, XEvent *e, Bool toggle)
 							c->is.lhalf = False;
 							c->is.rhalf = False;
 							ewmh_update_net_window_state(c);
-							DPRINTF("CALLING reconfigure()\n");
+							XPRINTF("CALLING reconfigure()\n");
 							reconfigure(c, &o, False);
 							save(c);
 							updatefloat(c, v);
@@ -4016,7 +4011,7 @@ mousemove_from(Client *c, int from, XEvent *e, Bool toggle)
 							c->is.lhalf = True;
 							c->is.rhalf = False;
 							ewmh_update_net_window_state(c);
-							DPRINTF("CALLING reconfigure()\n");
+							XPRINTF("CALLING reconfigure()\n");
 							reconfigure(c, &o, False);
 							save(c);
 							updatefloat(c, v);
@@ -4027,7 +4022,7 @@ mousemove_from(Client *c, int from, XEvent *e, Bool toggle)
 							c->is.lhalf = False;
 							c->is.rhalf = True;
 							ewmh_update_net_window_state(c);
-							DPRINTF("CALLING reconfigure()\n");
+							XPRINTF("CALLING reconfigure()\n");
 							reconfigure(c, &o, False);
 							save(c);
 							updatefloat(c, v);
@@ -4050,22 +4045,22 @@ mousemove_from(Client *c, int from, XEvent *e, Bool toggle)
 							int wayc = wa.y + wa.h / 2;
 
 							if (sl && (abs(n.x - wa.x) < snap)) {
-								DPRINTF("snapping left edge to workspace left edge\n");
+								XPRINTF("snapping left edge to workspace left edge\n");
 								n.x += wa.x - n.x;
 							} else if (sr && (abs(nx2 - wax2) < snap)) {
-								DPRINTF("snapping right edge to workspace right edge\n");
+								XPRINTF("snapping right edge to workspace right edge\n");
 								n.x += wax2 - nx2;
 							} else if (sl && (abs(n.x - sc.x) < snap)) {
-								DPRINTF("snapping left edge to screen left edge\n");
+								XPRINTF("snapping left edge to screen left edge\n");
 								n.x += sc.x - n.x;
 							} else if (sr && (abs(nx2 - scx2) < snap)) {
-								DPRINTF("snapping right edge to screen right edge\n");
+								XPRINTF("snapping right edge to screen right edge\n");
 								n.x += scx2 - nx2;
 							} else if (sl && (abs(n.x - waxc) < snap)) {
-								DPRINTF("snapping left edge to workspace center line\n");
+								XPRINTF("snapping left edge to workspace center line\n");
 								n.x += waxc - n.x;
 							} else if (sr && (abs(nx2 - waxc) < snap)) {
-								DPRINTF("snapping right edge to workspace center line\n");
+								XPRINTF("snapping right edge to workspace center line\n");
 								n.x += waxc - nx2;
 							} else {
 								Bool done = False;
@@ -4078,11 +4073,11 @@ mousemove_from(Client *c, int from, XEvent *e, Bool toggle)
 										continue;
 									if (wind_overlap(n.y, ny2, s->c.y, sy2)) {
 										if (sl && (abs(n.x - sx2) < snap)) {
-											CPRINTF(s, "snapping left edge to other window right edge");
+											XPRINTF(s, "snapping left edge to other window right edge");
 											n.x = sx2;
 											done = True;
 										} else if (sr && (abs(nx2 - s->c.x) < snap)) {
-											CPRINTF(s, "snapping right edge to other window left edge");
+											XPRINTF(s, "snapping right edge to other window left edge");
 											n.x = s->c.x - (n.w + 2 * n.b);
 											done = True;
 										} else
@@ -4098,11 +4093,11 @@ mousemove_from(Client *c, int from, XEvent *e, Bool toggle)
 										continue;
 									if (wind_overlap(n.y, ny2, s->c.y, sy2)) {
 										if (sl && (abs(n.x - s->c.x) < snap)) {
-											CPRINTF(s, "snapping left edge to other window left edge");
+											XPRINTF(s, "snapping left edge to other window left edge");
 											n.x = s->c.x;
 											done = True;
 										} else if (sr && (abs(nx2 - sx2) < snap)) {
-											CPRINTF(s, "snapping right edge to other window right edge");
+											XPRINTF(s, "snapping right edge to other window right edge");
 											n.x = sx2 - (n.w + 2 * n.b);
 											done = True;
 										} else
@@ -4112,22 +4107,22 @@ mousemove_from(Client *c, int from, XEvent *e, Bool toggle)
 								}
 							}
 							if (st && (abs(n.y - wa.y) < snap)) {
-								DPRINTF("snapping top edge to workspace top edge\n");
+								XPRINTF("snapping top edge to workspace top edge\n");
 								n.y += wa.y - n.y;
 							} else if (sb && (abs(ny2 - way2) < snap)) {
-								DPRINTF("snapping bottom edge to workspace bottom edge\n");
+								XPRINTF("snapping bottom edge to workspace bottom edge\n");
 								n.y += way2 - ny2;
 							} else if (st && (abs(n.y - sc.y) < snap)) {
-								DPRINTF("snapping top edge to screen top edge\n");
+								XPRINTF("snapping top edge to screen top edge\n");
 								n.y += sc.y - n.y;
 							} else if (sb && (abs(ny2 - scy2) < snap)) {
-								DPRINTF("snapping bottom edge to screen bottom edge\n");
+								XPRINTF("snapping bottom edge to screen bottom edge\n");
 								n.y += scy2 - ny2;
 							} else if (st && (abs(n.y - wayc) < snap)) {
-								DPRINTF("snapping left edge to workspace center line\n");
+								XPRINTF("snapping left edge to workspace center line\n");
 								n.y += wayc - n.y;
 							} else if (sb && (abs(ny2 - wayc) < snap)) {
-								DPRINTF("snapping right edge to workspace center line\n");
+								XPRINTF("snapping right edge to workspace center line\n");
 								n.y += wayc - ny2;
 							} else {
 								Bool done;
@@ -4140,11 +4135,11 @@ mousemove_from(Client *c, int from, XEvent *e, Bool toggle)
 										continue;
 									if (wind_overlap(n.x, nx2, s->c.x, sx2)) {
 										if (st && (abs(n.y - sy2) < snap)) {
-											CPRINTF(s, "snapping top edge to other window bottom edge");
+											XPRINTF(s, "snapping top edge to other window bottom edge");
 											n.y = sy2;
 											done = True;
 										} else if (sb && (abs(ny2 - s->c.y) < snap)) {
-											CPRINTF(s, "snapping bottom edge to other window top edge");
+											XPRINTF(s, "snapping bottom edge to other window top edge");
 											n.y += s->c.y - ny2;
 											done = True;
 										} else
@@ -4160,11 +4155,11 @@ mousemove_from(Client *c, int from, XEvent *e, Bool toggle)
 										continue;
 									if (wind_overlap(n.x, nx2, s->c.x, sx2)) {
 										if (st && (abs(n.y - s->c.y) < snap)) {
-											CPRINTF(s, "snapping top edge to other window top edge");
+											XPRINTF(s, "snapping top edge to other window top edge");
 											n.y = s->c.y;
 											done = True;
 										} else if (sb && (abs(ny2 - sy2) < snap)) {
-											CPRINTF(s, "snapping bottom edge to other window bottom edge");
+											XPRINTF(s, "snapping bottom edge to other window bottom edge");
 											n.y += sy2 - ny2;
 											done = True;
 										} else
@@ -4188,7 +4183,7 @@ mousemove_from(Client *c, int from, XEvent *e, Bool toggle)
 				v = nv;
 			}
 			if (!isfloater || (!c->is.max && !c->is.lhalf && !c->is.rhalf)) {
-				DPRINTF("CALLING reconfigure()\n");
+				XPRINTF("CALLING reconfigure()\n");
 				reconfigure(c, &n, False);
 				save(c);
 			}
@@ -4344,7 +4339,7 @@ resize_cancel(Client *c, View *v, ClientGeometry *orig, IsUnion * was)
 			c->is.shaded = was->shaded;
 		}
 		if (wasfloating) {
-			DPRINTF("CALLING reconfigure()\n");
+			XPRINTF("CALLING reconfigure()\n");
 			reconfigure(c, orig, False);
 			save(c);
 			updatefloat(c, v);
@@ -4562,22 +4557,22 @@ mouseresize_from(Client *c, int from, XEvent *e, Bool toggle)
 						int wayc = wa.y + wa.h / 2;
 
 						if (sl && (abs(n.x - wa.x) < snap)) {
-							DPRINTF("snapping left edge to workspace left edge\n");
+							XPRINTF("snapping left edge to workspace left edge\n");
 							n.w += n.x - wa.x;
 						} else if (sr && (abs(nx2 - wax2) < snap)) {
-							DPRINTF("snapping right edge to workspace right edge\n");
+							XPRINTF("snapping right edge to workspace right edge\n");
 							n.w += wax2 - nx2;
 						} else if (sl && (abs(n.x - sc.x) < snap)) {
-							DPRINTF("snapping left edge to screen left edge\n");
+							XPRINTF("snapping left edge to screen left edge\n");
 							n.w += n.x - sc.x;
 						} else if (sr && (abs(nx2 - scx2) < snap)) {
-							DPRINTF("snapping right edge to screen right edge\n");
+							XPRINTF("snapping right edge to screen right edge\n");
 							n.w += scx2 - nx2;
 						} else if (sl && (abs(n.x - waxc) < snap)) {
-							DPRINTF("snapping left edge to workspace center line\n");
+							XPRINTF("snapping left edge to workspace center line\n");
 							n.w += n.x - waxc;
 						} else if (sr && (abs(nx2 - waxc) < snap)) {
-							DPRINTF("snapping right edge to workspace center line\n");
+							XPRINTF("snapping right edge to workspace center line\n");
 							n.w += waxc - nx2;
 						} else {
 							Bool done = False;
@@ -4590,11 +4585,11 @@ mouseresize_from(Client *c, int from, XEvent *e, Bool toggle)
 									continue;
 								if (wind_overlap(n.y, ny2, s->c.y, sy2)) {
 									if (sl && (abs(n.x - sx2) < snap)) {
-										CPRINTF(s, "snapping left edge to other window right edge");
+										XPRINTF(s, "snapping left edge to other window right edge");
 										n.w += n.x - sx2;
 										done = True;
 									} else if (sr && (abs(nx2 - s->c.x) < snap)) {
-										CPRINTF(s, "snapping right edge to other window left edge");
+										XPRINTF(s, "snapping right edge to other window left edge");
 										n.w += s->c.x - nx2;
 										done = True;
 									} else
@@ -4610,11 +4605,11 @@ mouseresize_from(Client *c, int from, XEvent *e, Bool toggle)
 									continue;
 								if (wind_overlap(n.y, ny2, s->c.y, sy2)) {
 									if (sl && (abs(n.x - s->c.x) < snap)) {
-										CPRINTF(s, "snapping left edge to other window left edge");
+										XPRINTF(s, "snapping left edge to other window left edge");
 										n.w += n.x - s->c.x;
 										done = True;
 									} else if (sr && (abs(nx2 - sx2) < snap)) {
-										CPRINTF(s, "snapping right edge to other window right edge");
+										XPRINTF(s, "snapping right edge to other window right edge");
 										n.w += sx2 - nx2;
 										done = True;
 									} else
@@ -4624,22 +4619,22 @@ mouseresize_from(Client *c, int from, XEvent *e, Bool toggle)
 							}
 						}
 						if (st && (abs(n.y - wa.y) < snap)) {
-							DPRINTF("snapping top edge to workspace top edge\n");
+							XPRINTF("snapping top edge to workspace top edge\n");
 							n.h += n.y - wa.y;
 						} else if (sb && (abs(ny2 - way2) < snap)) {
-							DPRINTF("snapping bottom edge to workspace bottom edge\n");
+							XPRINTF("snapping bottom edge to workspace bottom edge\n");
 							n.h += way2 - ny2;
 						} else if (st && (abs(n.y - sc.y) < snap)) {
-							DPRINTF("snapping top edge to screen top edge\n");
+							XPRINTF("snapping top edge to screen top edge\n");
 							n.h += n.y - sc.y;
 						} else if (sb && (abs(ny2 - scy2) < snap)) {
-							DPRINTF("snapping bottom edge to screen bottom edge\n");
+							XPRINTF("snapping bottom edge to screen bottom edge\n");
 							n.h += scy2 - ny2;
 						} else if (st && (abs(n.y - wayc) < snap)) {
-							DPRINTF("snapping top edge to workspace center line\n");
+							XPRINTF("snapping top edge to workspace center line\n");
 							n.h += n.y - wayc;
 						} else if (sb && (abs(ny2 - wayc) < snap)) {
-							DPRINTF("snapping bottom edge to workspace center line\n");
+							XPRINTF("snapping bottom edge to workspace center line\n");
 							n.h += wayc - ny2;
 						} else {
 							Bool done;
@@ -4652,11 +4647,11 @@ mouseresize_from(Client *c, int from, XEvent *e, Bool toggle)
 									continue;
 								if (wind_overlap(n.x, nx2, s->c.x, sx2)) {
 									if (st && (abs(n.y - sy2) < snap)) {
-										CPRINTF(s, "snapping top edge to other window bottom edge");
+										XPRINTF(s, "snapping top edge to other window bottom edge");
 										n.h += n.y - sy2;
 										done = True;
 									} else if (sb && (abs(ny2 - s->c.y) < snap)) {
-										CPRINTF(s, "snapping bottom edge to other window top edge");
+										XPRINTF(s, "snapping bottom edge to other window top edge");
 										n.h += s->c.y - ny2;
 										done = True;
 									} else
@@ -4672,11 +4667,11 @@ mouseresize_from(Client *c, int from, XEvent *e, Bool toggle)
 									continue;
 								if (wind_overlap(n.x, nx2, s->c.x, sx2)) {
 									if (st && (abs(n.y - s->c.y) < snap)) {
-										CPRINTF(s, "snapping top edge to other window top edge");
+										XPRINTF(s, "snapping top edge to other window top edge");
 										n.h += n.y - s->c.y;
 										done = True;
 									} else if (sb && (abs(ny2 - sy2) < snap)) {
-										CPRINTF(s, "snapping bottom edge to other window bottom edge");
+										XPRINTF(s, "snapping bottom edge to other window bottom edge");
 										n.h += sy2 - ny2;
 										done = True;
 									} else
@@ -4737,7 +4732,7 @@ mouseresize_from(Client *c, int from, XEvent *e, Bool toggle)
 				n.w = MINWIDTH;
 			if (n.h < MINHEIGHT)
 				n.h = MINHEIGHT;
-			DPRINTF("CALLING reconfigure()\n");
+			XPRINTF("CALLING reconfigure()\n");
 			reconfigure(c, &n, False);
 			if (isfloating(c, v))
 				save(c);
@@ -4892,7 +4887,7 @@ moveresizeclient(Client *c, int dx, int dy, int dw, int dh, int gravity)
 		g.w += dw;
 		g.h += dh;
 		if (c->sh.win_gravity != StaticGravity) {
-			DPRINTF("CALLING: constrain()\n");
+			XPRINTF("CALLING: constrain()\n");
 			constrain(c, &g);
 		}
 		putreference(xr, yr, (Geometry *) &g, gravity);
@@ -5036,7 +5031,7 @@ place_smart(Client *c, WindowPlacement p, ClientGeometry *g, View *v, Workarea *
 		stack = erealloc(stack, (num + 1) * sizeof(*stack));
 		stack[num] = place_geom(s);
 	}
-	DPRINTF("There are %d stacked windows\n", num);
+	XPRINTF("There are %d stacked windows\n", num);
 
 	unobs = ecalloc(num, sizeof(*unobs));
 	memcpy(unobs, stack, num * sizeof(*unobs));
@@ -5058,7 +5053,7 @@ place_smart(Client *c, WindowPlacement p, ClientGeometry *g, View *v, Workarea *
 	free(unobs);
 	unobs = NULL;
 
-	DPRINTF("There are %d unoccluded windows\n", j);
+	XPRINTF("There are %d unoccluded windows\n", j);
 
 	assert(j > 0 || num == 0);	/* first window always unoccluded */
 	num = j;
@@ -5076,127 +5071,127 @@ place_smart(Client *c, WindowPlacement p, ClientGeometry *g, View *v, Workarea *
 	switch (p) {
 	case RowSmartPlacement:
 		/* sort top to bottom, left to right */
-		DPRINTF("sorting top to bottom, left to right\n");
+		XPRINTF("sorting top to bottom, left to right\n");
 		qsort(stack, num, sizeof(*stack), &qsort_t2b_l2r);
 		break;
 	case ColSmartPlacement:
 		/* sort left to right, top to bottom */
-		DPRINTF("sorting left to right, top to bottom\n");
+		XPRINTF("sorting left to right, top to bottom\n");
 		qsort(stack, num, sizeof(*stack), &qsort_l2r_t2b);
 		break;
 	case CascadePlacement:
 	default:
-		DPRINTF("sorting top left to bottom right\n");
+		XPRINTF("sorting top left to bottom right\n");
 		qsort(stack, num, sizeof(*stack), &qsort_cascade);
 		break;
 	}
-	DPRINTF("Sort result:\n");
+	XPRINTF("Sort result:\n");
 	for (i = 0; i < num; i++) {
 		e = stack[i];
-		DPRINTF("%d: %dx%d+%d+%d\n", i, e->w, e->h, e->x, e->y);
+		XPRINTF("%d: %dx%d+%d+%d\n", i, e->w, e->h, e->x, e->y);
 	}
 
 	switch (p) {
 	case RowSmartPlacement:
-		DPRINTF("trying RowSmartPlacement\n");
+		XPRINTF("trying RowSmartPlacement\n");
 		/* try below, right each window */
 		/* below */
 		for (i = 0; i < num; i++) {
 			e = stack[i];
-			DPRINTF("below: %dx%d+%d+%d this\n", e->w, e->h, e->x, e->y);
+			XPRINTF("below: %dx%d+%d+%d this\n", e->w, e->h, e->x, e->y);
 			g->x = e->x;
 			g->y = e->y + e->h;
 			if (g->x < w->x || g->y < w->y || g->x + g->w > w->x + w->w
 			    || g->y + g->h > w->y + w->h) {
-				DPRINTF("below: %dx%d+%d+%d outside\n", g->w, g->h, g->x,
+				XPRINTF("below: %dx%d+%d+%d outside\n", g->w, g->h, g->x,
 					g->y);
 				continue;
 			}
 			for (j = 0; j < num && !place_overlap(g, stack[j]);
 			     j++) ;
 			if (j == num) {
-				DPRINTF("below: %dx%d+%d+%d good\n", g->w, g->h, g->x,
+				XPRINTF("below: %dx%d+%d+%d good\n", g->w, g->h, g->x,
 					g->y);
 				free(stack);
 				return;
 			}
-			DPRINTF("below: %dx%d+%d+%d no good\n", g->w, g->h, g->x, g->y);
+			XPRINTF("below: %dx%d+%d+%d no good\n", g->w, g->h, g->x, g->y);
 		}
 		/* right */
 		for (i = 0; i < num; i++) {
 			e = stack[i];
-			DPRINTF("right: %dx%d+%d+%d this\n", e->w, e->h, e->x, e->y);
+			XPRINTF("right: %dx%d+%d+%d this\n", e->w, e->h, e->x, e->y);
 			g->x = e->x + e->w;
 			g->y = e->y;
 			if (g->x < w->x || g->y < w->y || g->x + g->w > w->x + w->w
 			    || g->y + g->h > w->y + w->h) {
-				DPRINTF("right: %dx%d+%d+%d outside\n", g->w, g->h, g->x,
+				XPRINTF("right: %dx%d+%d+%d outside\n", g->w, g->h, g->x,
 					g->y);
 				continue;
 			}
 			for (j = 0; j < num && !place_overlap(g, stack[j]);
 			     j++) ;
 			if (j == num) {
-				DPRINTF("right: %dx%d+%d+%d good\n", g->w, g->h, g->x,
+				XPRINTF("right: %dx%d+%d+%d good\n", g->w, g->h, g->x,
 					g->y);
 				free(stack);
 				return;
 			}
-			DPRINTF("right: %dx%d+%d+%d no good\n", g->w, g->h, g->x, g->y);
+			XPRINTF("right: %dx%d+%d+%d no good\n", g->w, g->h, g->x, g->y);
 		}
-		DPRINTF("defaulting to CascadePlacement\n");
+		XPRINTF("defaulting to CascadePlacement\n");
 		break;
 	case ColSmartPlacement:
-		DPRINTF("trying ColSmartPlacement\n");
+		XPRINTF("trying ColSmartPlacement\n");
 		/* try right, below each window */
 		/* right */
 		for (i = 0; i < num; i++) {
 			e = stack[i];
-			DPRINTF("right: %dx%d+%d+%d this\n", e->w, e->h, e->x, e->y);
+			XPRINTF("right: %dx%d+%d+%d this\n", e->w, e->h, e->x, e->y);
 			g->x = e->x + e->w;
 			g->y = e->y;
 			if (g->x < w->x || g->y < w->y || g->x + g->w > w->x + w->w
 			    || g->y + g->h > w->y + w->h) {
-				DPRINTF("right: %dx%d+%d+%d outside\n", g->w, g->h, g->x,
+				XPRINTF("right: %dx%d+%d+%d outside\n", g->w, g->h, g->x,
 					g->y);
 				continue;
 			}
 			for (j = 0; j < num && !place_overlap(g, stack[j]);
 			     j++) ;
 			if (j == num) {
-				DPRINTF("right: %dx%d+%d+%d good\n", g->w, g->h, g->x,
+				XPRINTF("right: %dx%d+%d+%d good\n", g->w, g->h, g->x,
 					g->y);
 				free(stack);
 				return;
 			}
-			DPRINTF("right: %dx%d+%d+%d no good\n", g->w, g->h, g->x, g->y);
+			XPRINTF("right: %dx%d+%d+%d no good\n", g->w, g->h, g->x, g->y);
 		}
 		/* below */
 		for (i = 0; i < num; i++) {
 			e = stack[i];
-			DPRINTF("below: %dx%d+%d+%d this\n", e->w, e->h, e->x, e->y);
+			XPRINTF("below: %dx%d+%d+%d this\n", e->w, e->h, e->x, e->y);
 			g->x = e->x;
 			g->y = e->y + e->h;
 			if (g->x < w->x || g->y < w->y || g->x + g->w > w->x + w->w
 			    || g->y + g->h > w->y + w->h) {
-				DPRINTF("below: %dx%d+%d+%d outside\n", g->w, g->h, g->x,
+				XPRINTF("below: %dx%d+%d+%d outside\n", g->w, g->h, g->x,
 					g->y);
 				continue;
 			}
 			for (j = 0; j < num && !place_overlap(g, stack[j]);
 			     j++) ;
 			if (j == num) {
-				DPRINTF("below: %dx%d+%d+%d good\n", g->w, g->h, g->x,
+				XPRINTF("below: %dx%d+%d+%d good\n", g->w, g->h, g->x,
 					g->y);
 				free(stack);
 				return;
 			}
-			DPRINTF("below: %dx%d+%d+%d no good\n", g->w, g->h, g->x, g->y);
+			XPRINTF("below: %dx%d+%d+%d no good\n", g->w, g->h, g->x, g->y);
 		}
-		DPRINTF("defaulting to CascadePlacement\n");
+		XPRINTF("defaulting to CascadePlacement\n");
 		break;
 	default:
-		DPRINTF("trying CascadePlacement\n");
+		XPRINTF("trying CascadePlacement\n");
 		break;
 	}
 
@@ -5516,16 +5511,16 @@ adddockapp(Client *c, Bool choseme, Bool focusme, Bool raiseme)
 	if (getclientstrings(c, &name, &clas, &cmd))
 		l = findleaf((Container *) t, name, clas, cmd);
 	if (l) {
-		DPRINTF("found leaf '%s' '%s' '%s'\n", l->client.name ? : "",
+		XPRINTF("found leaf '%s' '%s' '%s'\n", l->client.name ? : "",
 			l->client.clas ? : "", l->client.command ? : "");
 	} else {
-		DPRINTF("creating leaf\n");
+		XPRINTF("creating leaf\n");
 		l = ecalloc(1, sizeof(*l));
 		l->type = TreeTypeLeaf;
 		l->view = n->view;
 		l->is.dockapp = True;
 		appleaf(n, l, True);
-		DPRINTF("dockapp tree now has %d active children\n", t->node.children.active);
+		XPRINTF("dockapp tree now has %d active children\n", t->node.children.active);
 	}
 	l->client.client = c;
 	l->client.next = c->leaves;
@@ -5549,13 +5544,13 @@ addclient(Client *c, Bool choseme, Bool focusme, Bool raiseme)
 {
 	View *v;
 
-	CPRINTF(c, "initial geometry c: %dx%d+%d+%d:%d t %d g %d v %d\n",
+	XPRINTF(c, "initial geometry c: %dx%d+%d+%d:%d t %d g %d v %d\n",
 		c->c.w, c->c.h, c->c.x, c->c.y, c->c.b, c->c.t, c->c.g, c->c.v);
-	CPRINTF(c, "initial geometry r: %dx%d+%d+%d:%d t %d g %d v %d\n",
+	XPRINTF(c, "initial geometry r: %dx%d+%d+%d:%d t %d g %d v %d\n",
 		c->r.w, c->r.h, c->r.x, c->r.y, c->r.b, c->c.t, c->c.g, c->c.v);
-	CPRINTF(c, "initial geometry s: %dx%d+%d+%d:%d t %d g %d v %d\n",
+	XPRINTF(c, "initial geometry s: %dx%d+%d+%d:%d t %d g %d v %d\n",
 		c->s.w, c->s.h, c->s.x, c->s.y, c->s.b, c->c.t, c->c.g, c->c.v);
-	CPRINTF(c, "initial geometry u: %dx%d+%d+%d:%d t %d g %d v %d\n",
+	XPRINTF(c, "initial geometry u: %dx%d+%d+%d:%d t %d g %d v %d\n",
 		c->u.w, c->u.h, c->u.x, c->u.y, c->u.b, c->c.t, c->c.g, c->c.v);
 
 	if (!c->u.x && !c->u.y && c->can.move && !c->is.dockapp) {
@@ -5566,13 +5561,13 @@ addclient(Client *c, Bool choseme, Bool focusme, Bool raiseme)
 		place(c, ColSmartPlacement);
 	}
 
-	CPRINTF(c, "placed geometry c: %dx%d+%d+%d:%d t %d g %d v %d\n",
+	XPRINTF(c, "placed geometry c: %dx%d+%d+%d:%d t %d g %d v %d\n",
 		c->c.w, c->c.h, c->c.x, c->c.y, c->c.b, c->c.t, c->c.g, c->c.h);
-	CPRINTF(c, "placed geometry r: %dx%d+%d+%d:%d t %d g %d v %d\n",
+	XPRINTF(c, "placed geometry r: %dx%d+%d+%d:%d t %d g %d v %d\n",
 		c->r.w, c->r.h, c->r.x, c->r.y, c->r.b, c->c.t, c->c.g, c->c.h);
-	CPRINTF(c, "placed geometry s: %dx%d+%d+%d:%d t %d g %d v %d\n",
+	XPRINTF(c, "placed geometry s: %dx%d+%d+%d:%d t %d g %d v %d\n",
 		c->s.w, c->s.h, c->s.x, c->s.y, c->s.b, c->c.t, c->c.g, c->c.h);
-	CPRINTF(c, "initial geometry u: %dx%d+%d+%d:%d t %d g %d v %d\n",
+	XPRINTF(c, "initial geometry u: %dx%d+%d+%d:%d t %d g %d v %d\n",
 		c->u.w, c->u.h, c->u.x, c->u.y, c->u.b, c->c.t, c->c.g, c->c.v);
 
 	if (!c->can.move) {
@@ -5713,7 +5708,7 @@ moveto(Client *c, RelativeDirection position)
 	default:
 		return;
 	}
-	DPRINTF("CALLING reconfigure()\n");
+	XPRINTF("CALLING reconfigure()\n");
 	reconfigure(c, &g, False);
 	save(c);
 	focuslockclient(c);
@@ -5813,7 +5808,7 @@ moveby(Client *c, RelativeDirection direction, int amount)
 		g.y = m->sc.y + m->sc.h - 1;
 	if (g.y + g.h + g.b < m->sc.y)
 		g.y = m->sc.y - (g.h + g.b);
-	DPRINTF("CALLING reconfigure()\n");
+	XPRINTF("CALLING reconfigure()\n");
 	reconfigure(c, &g, False);
 	save(c);
 	focuslockclient(c);
@@ -6041,7 +6036,7 @@ snapto(Client *c, RelativeDirection direction)
 	default:
 		return;
 	}
-	DPRINTF("CALLING reconfigure()\n");
+	XPRINTF("CALLING reconfigure()\n");
 	reconfigure(c, &g, False);
 	save(c);
 	focuslockclient(c);
@@ -6109,7 +6104,7 @@ edgeto(Client *c, int direction)
 	default:
 		return;
 	}
-	DPRINTF("CALLING reconfigure()\n");
+	XPRINTF("CALLING reconfigure()\n");
 	reconfigure(c, &g, False);
 	save(c);
 	focuslockclient(c);
@@ -6396,7 +6391,7 @@ toggleundec(Client *c)
 		c->has.border = c->needs.border;
 	}
 	if (c->is.managed) {
-		DPRINTF("CALLING reconfigure()\n");
+		XPRINTF("CALLING reconfigure()\n");
 		reconfigure(c, &c->c, False);
 		ewmh_update_net_window_state(c);
 		updatefloat(c, v);

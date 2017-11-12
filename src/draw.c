@@ -1,3 +1,4 @@
+#include <math.h>
 #include <regex.h>
 #include <ctype.h>
 #include <assert.h>
@@ -25,31 +26,34 @@ createbitmapicon(Client *c, Pixmap icon, Pixmap mask, unsigned w, unsigned h)
 	ButtonImage *bi;
 	DATA32 *pixels, *p;
 	XImage *xicon, *xmask = NULL;
-	unsigned i, j;
+	unsigned i, j, d = scr->depth , th = scr->style.titleheight, tw;
 
-	if (h <= scr->style.titleheight + 2) {
+	XPRINTF("creating bitmap icon 0x%lx mask 0x%lx at %ux%ux%u\n", icon, mask, w, h, 1U);
+	if (h <= th + 2) {
 		bi = &c->iconbtn;
 		bi->x = bi->y = bi->b = 0;
 		bi->d = 1;
 		bi->w = w;
 		bi->h = h;
-		if (bi->h > scr->style.titleheight) {
+		if (bi->h > th) {
 			/* read lower down into image to clip top and bottom by same
 			   amount */
-			bi->y += (bi->h - scr->style.titleheight) / 2;
-			bi->h = scr->style.titleheight;
+			bi->y += (bi->h - th) / 2;
+			bi->h = th;
 		}
 		bi->bitmap.draw = icon;
 		bi->bitmap.mask = mask;
 		bi->present = True;
 		return (True);
 	}
+	tw = round((double)((double)((double) w/(double) h) * (double)th));
+	XPRINTF("scaling bitmap icon 0x%lx mask 0x%lx from %ux%ux%u to %ux%ux%u \n", icon, mask, w, h, 1U, tw, th, d);
 	/* need to scale: do it as 32-bit ARGB white/black visual */
-	if (!(xicon = XGetImage(dpy, icon, 0, 0, w, h, 0x1, XYBitmap))) {
+	if (!(xicon = XGetImage(dpy, icon, 0, 0, w, h, 0x1, XYPixmap))) {
 		EPRINTF("could not get bitmap 0x%lx %ux%u\n", icon, w, h);
 		return (False);
 	}
-	if (mask && !(xmask = XGetImage(dpy, mask, 0, 0, w, h, 0x1, XYBitmap))) {
+	if (mask && !(xmask = XGetImage(dpy, mask, 0, 0, w, h, 0x1, XYPixmap))) {
 		EPRINTF("could not get bitmap 0x%lx %ux%u\n", icon, w, h);
 		XDestroyImage(xicon);
 		return (False);
@@ -102,26 +106,25 @@ createbitmapicon(Client *c, Pixmap icon, Pixmap mask, unsigned w, unsigned h)
 		XDestroyImage(xmask);
 	imlib_image_put_back_data(pixels);
 	imlib_image_set_has_alpha(1);
-	if (h > scr->style.titleheight) {
-		unsigned hs = scr->style.titleheight, ws = hs;
+	if (h > th) {
 		Imlib_Image scaled =
-			imlib_create_cropped_scaled_image(0, 0, w, h, ws, hs);
+			imlib_create_cropped_scaled_image(0, 0, w, h, tw, th);
 
 		imlib_free_image();
 		if (!scaled) {
-			EPRINTF("could not scale image %ux%u to %dx%d\n", w, h, ws, hs);
+			EPRINTF("could not scale image %ux%ux%u to %ux%ux%u\n", w, h, 1U, tw, th, d);
 			imlib_context_pop();
 			return (False);
 		}
 		imlib_context_set_image(scaled);
 		imlib_context_set_mask(None);
 		image = scaled;
-		w = ws;
-		h = hs;
+		w = tw;
+		h = th;
 	}
 	bi = &c->iconbtn;
 	bi->x = bi->y = bi->b = 0;
-	bi->d = scr->depth;
+	bi->d = d;
 	bi->w = w;
 	bi->h = h;
 #if 1
@@ -149,7 +152,28 @@ createpixmapicon(Client *c, Pixmap icon, Pixmap mask, unsigned w, unsigned h, un
 {
 	Imlib_Image image;
 	ButtonImage *bi;
+	unsigned th = scr->style.titleheight, tw;
 
+	XPRINTF("creating pixmap icon 0x%lx mask 0x%lx at %ux%ux%u\n", icon, mask, w, h, d);
+	if (d == scr->depth && h <= th + 2) {
+		bi = &c->iconbtn;
+		bi->x = bi->y = bi->b = 0;
+		bi->d = 1;
+		bi->w = w;
+		bi->h = h;
+		if (bi->h > th) {
+			/* read lower down into image to clip top and bottom by same
+			   amount */
+			bi->y += (bi->h - th) / 2;
+			bi->h = th;
+		}
+		bi->pixmap.draw = icon;
+		bi->pixmap.mask = mask;
+		bi->present = True;
+		return (True);
+	}
+	tw = round((double)((double)((double) w/(double) h) * (double)th));
+	XPRINTF("scaling pixmap icon 0x%lx mask 0x%lx from %ux%ux%u to %ux%ux%u \n", icon, mask, w, h, d, tw, th, (unsigned) scr->depth);
 	imlib_context_push(scr->context);
 	imlib_context_set_drawable(None);
 	if (d == DefaultDepth(dpy, scr->screen)) {
@@ -167,14 +191,7 @@ createpixmapicon(Client *c, Pixmap icon, Pixmap mask, unsigned w, unsigned h, un
 	}
 	imlib_context_set_drawable(icon);
 
-	if (h <= scr->style.titleheight + 2) {
-		image = imlib_create_image_from_drawable(mask, 0, 0, w, h, 1);
-	} else {
-		image = imlib_create_scaled_image_from_drawable(mask, 0, 0, w, h,
-							    scr->style.titleheight,
-							    scr->style.titleheight, 1, 0);
-		w = h = scr->style.titleheight;
-	}
+	image = imlib_create_scaled_image_from_drawable(mask, 0, 0, w, h, tw, th, 1, 0);
 	imlib_context_set_drawable(None);
 	imlib_context_set_visual(scr->visual);
 	imlib_context_set_colormap(scr->colormap);
@@ -188,14 +205,9 @@ createpixmapicon(Client *c, Pixmap icon, Pixmap mask, unsigned w, unsigned h, un
 	imlib_context_set_mask(None);
 	bi = &c->iconbtn;
 	bi->x = bi->y = bi->b = 0;
-	bi->d = d;
-	bi->w = imlib_image_get_width();
-	bi->h = imlib_image_get_height();
-	if (bi->h > scr->style.titleheight) {
-		/* read lower down into image to clip top and bottom by same amount */
-		bi->y += (bi->h - scr->style.titleheight) / 2;
-		bi->h = scr->style.titleheight;
-	}
+	bi->d = scr->depth;
+	bi->w = tw;
+	bi->h = th;
 #if 1
 	imlib_context_set_image(image);
 	imlib_context_set_mask(None);

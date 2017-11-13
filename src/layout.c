@@ -791,14 +791,12 @@ reconfigure_dockapp(Client *c, ClientGeometry *n, Bool force)
 	wwc.height = c->r.h;
 	wwc.border_width = c->r.b;
 	if (fmask) {
-		XPRINTF("frame wc = %ux%u+%d+%d:%d\n", fwc.width, fwc.height, fwc.x, fwc.y, fwc.border_width);
-		xtrap_push(1,NULL);
+		xtrap_push(1,_WCFMTS(fwc, fmask), _WCARGS(fwc, fmask));
 		XConfigureWindow(dpy, c->frame, fmask, &fwc);
 		xtrap_pop();
 	}
 	if (wmask) {
-		XPRINTF("wind  wc = %ux%u+%d+%d:%d\n", wwc.width, wwc.height, wwc.x, wwc.y, wwc.border_width);
-		xtrap_push(1,NULL);
+		xtrap_push(1,_WCFMTS(wwc, wmask), _WCARGS(wwc, wmask));
 		XConfigureWindow(dpy, c->icon, wmask, &wwc);
 		xtrap_pop();
 	}
@@ -839,7 +837,7 @@ check_unmapnotify(Display *dpy, XEvent *ev, XPointer arg)
 static void
 reconfigure(Client *c, ClientGeometry *n, Bool force)
 {
-	XWindowChanges wwc, fwc;
+	XWindowChanges wwc = { 0, }, fwc = { 0, };
 	unsigned wmask, fmask;
 	Bool tchange = False, gchange = False, hchange = False, shaded = False;
 
@@ -924,17 +922,14 @@ reconfigure(Client *c, ClientGeometry *n, Bool force)
 		fmask |= CWBorderWidth;
 	}
 	if (fmask) {
-		XPRINTF("frame wc = %ux%u+%d+%d:%d\n", fwc.width, fwc.height, fwc.x,
-			fwc.y, fwc.border_width);
 		if (!c->is.dockapp)
 			configureshapes(c);
-		xtrap_push(1,NULL);
-		XConfigureWindow(dpy, c->frame,
-				 CWX | CWY | CWWidth | CWHeight | CWBorderWidth, &fwc);
+		xtrap_push(1,_WCFMTS(fwc, fmask),_WCARGS(fwc, fmask));
+		XConfigureWindow(dpy, c->frame, fmask, &fwc);
 		xtrap_pop();
 	}
-	wwc.x = 0;
-	wwc.border_width = 0;
+	wwc.x = 0; wmask |= CWX;
+	wwc.border_width = 0; wmask |= CWBorderWidth;
 	if ((wmask & (CWWidth | CWHeight))
 	    && !newsize(c, wwc.width, wwc.height, CurrentTime))
 		wmask &= ~(CWWidth | CWHeight);
@@ -947,10 +942,8 @@ reconfigure(Client *c, ClientGeometry *n, Bool force)
 	} else
 		XMapWindow(dpy, c->win);
 	if (wmask) {
-		XPRINTF("wind  wc = %ux%u+%d+%d:%d\n", wwc.width, wwc.height, wwc.x,
-			wwc.y, wwc.border_width);
-		xtrap_push(1,NULL);
-		XConfigureWindow(dpy, c->win, wmask | CWX | CWY | CWBorderWidth, &wwc);
+		xtrap_push(1,_WCFMTS(wwc, wmask),_WCARGS(wwc, wmask));
+		XConfigureWindow(dpy, c->win, wmask, &wwc);
 		xtrap_pop();
 	}
 	/* ICCCM 2.0 4.1.5 */

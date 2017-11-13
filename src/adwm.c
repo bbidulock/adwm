@@ -1047,10 +1047,17 @@ configurerequest(XEvent *e)
 	Client *c;
 	XConfigureRequestEvent *ev = &e->xconfigurerequest;
 
-	if ((c = getclient(ev->window, ClientWindow)) && c->is.managed) {
-		configureclient(e, c, c->sh.win_gravity);
-	} else {
-		XWindowChanges wc;
+	if ((c = getclient(ev->window, ClientWindow))) {
+		if (c->is.managed)
+			configureclient(e, c, c->sh.win_gravity);
+		else
+			EPRINTF(__CFMTS(c) "trying to change config of unmanaged window 0x%lx\n", __CARGS(c), ev->window);
+	}
+	else
+	if ((c = getclient(ev->window, ClientAny)))
+		EPRINTF(__CFMTS(c) "trying to change config of non-client window 0x%lx\n", __CARGS(c), ev->window);
+	if (!c) {
+		XWindowChanges wc = { 0, };
 
 		wc.x = ev->x;
 		wc.y = ev->y;
@@ -1059,7 +1066,7 @@ configurerequest(XEvent *e)
 		wc.border_width = ev->border_width;
 		wc.sibling = ev->above;
 		wc.stack_mode = ev->detail;
-		xtrap_push(1,NULL);
+		xtrap_push(1,_WCFMTS(wc, ev->value_mask), _WCARGS(wc, ev->value_mask));
 		XConfigureWindow(dpy, ev->window, ev->value_mask, &wc);
 		xtrap_pop();
 		XSync(dpy, False);
@@ -2769,11 +2776,7 @@ manage(Window w, XWindowAttributes *wa)
 	XSaveContext(dpy, c->frame, context[ScreenContext], (XPointer) scr);
 
 	wc.border_width = c->c.b;
-	{
-		xtrap_push(1,NULL);
-		XConfigureWindow(dpy, c->frame, CWBorderWidth, &wc);
-		xtrap_pop();
-	}
+	XConfigureWindow(dpy, c->frame, CWBorderWidth, &wc);
 	send_configurenotify(c, None);
 	XSetWindowBorder(dpy, c->frame, scr->style.color.norm[ColBorder].pixel);
 
@@ -2821,9 +2824,7 @@ manage(Window w, XWindowAttributes *wa)
 		XSelectInput(dpy, c->icon, CLIENTMASK);
 		updateshape(c); /* do not shape frames for dock apps */
 		XReparentWindow(dpy, c->icon, c->frame, c->r.x, c->r.y);
-		xtrap_push(1,NULL);
 		XConfigureWindow(dpy, c->icon, CWBorderWidth, &wc);
-		xtrap_pop();
 		XMapWindow(dpy, c->icon);
 #if 0
 		/* not necessary and doesn't help */
@@ -2852,9 +2853,7 @@ manage(Window w, XWindowAttributes *wa)
 			XReparentWindow(dpy, c->grips, c->frame, 0, c->c.h - c->c.g);
 		if (c->title)
 			XReparentWindow(dpy, c->title, c->frame, 0, 0);
-		xtrap_push(1,NULL);
 		XConfigureWindow(dpy, c->win, CWBorderWidth, &wc);
-		xtrap_pop();
 		XMapWindow(dpy, c->win);
 	}
 
@@ -3211,7 +3210,7 @@ alarmnotify(XEvent *e)
 	}
 	if (mask && newsize(c, wc.width, wc.height, ae->time)) {
 		XPRINTF("Configuring window %ux%u\n", wc.width, wc.height);
-		xtrap_push(1,NULL);
+		xtrap_push(1,_WCFMTS(wc, mask), _WCARGS(wc, mask));
 		XConfigureWindow(dpy, c->win, mask, &wc);
 		xtrap_pop();
 	}
@@ -5599,35 +5598,31 @@ unmanage(Client *c, WithdrawCause cause)
 			XUngrabButton(dpy, Button3, AnyModifier, c->icon);
 		}
 		if (cause != CauseReparented) {
+			unsigned mask = 0;
+
 			if (c->sh.win_gravity == StaticGravity || c->is.dockapp) {
 				/* restore static geometry */
-				wc.x = c->s.x;
-				wc.y = c->s.y;
-				wc.width = c->s.w;
-				wc.height = c->s.h;
+				wc.x = c->s.x; mask |= CWX;
+				wc.y = c->s.y; mask |= CWY;
+				wc.width = c->s.w; mask |= CWWidth;
+				wc.height = c->s.h; mask |= CWHeight;
 			} else {
 				/* restore geometry */
-				wc.x = c->r.x;
-				wc.y = c->r.y;
-				wc.width = c->r.w;
-				wc.height = c->r.h;
+				wc.x = c->r.x; mask |= CWX;
+				wc.y = c->r.y; mask |= CWY;
+				wc.width = c->r.w; mask |= CWWidth;
+				wc.height = c->r.h; mask |= CWHeight;
 			}
-			wc.border_width = c->s.b;
+			wc.border_width = c->s.b; mask |= CWBorderWidth;
+			xtrap_push(1,_WCFMTS(wc, mask), _WCARGS(wc, mask));
 			if (c->icon) {
-				xtrap_push(1,NULL);
 				XReparentWindow(dpy, c->icon, scr->root, wc.x, wc.y);
-				XConfigureWindow(dpy, c->icon,
-						 (CWX | CWY | CWWidth | CWHeight |
-						  CWBorderWidth), &wc);
-				xtrap_pop();
+				XConfigureWindow(dpy, c->icon, mask, &wc);
 			} else {
-				xtrap_push(1,NULL);
 				XReparentWindow(dpy, c->win, scr->root, wc.x, wc.y);
-				XConfigureWindow(dpy, c->win,
-						 (CWX | CWY | CWWidth | CWHeight |
-						  CWBorderWidth), &wc);
-				xtrap_pop();
+				XConfigureWindow(dpy, c->win, mask, &wc);
 			}
+			xtrap_pop();
 			if (!running)
 				XMapWindow(dpy, c->win);
 		}

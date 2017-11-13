@@ -1423,6 +1423,20 @@ void show_client_state(Client *c);
 #define NAME "adwm"
 #endif
 
+#define _WCFMTS(_wc,_mask)	"%d%sx%d%s+%d%s+%d%s:%d%s (%d%s-0x%lx%s)"
+#define _WCARGS(_wc,_mask)	(_wc).x, ((_mask) & CWX) ? "!" : "", \
+				(_wc).y, ((_mask) & CWY) ? "!" : "", \
+				(_wc).width, ((_mask) & CWWidth) ? "!" : "", \
+				(_wc).height, ((_mask) & CWHeight) ? "!" : "", \
+				(_wc).border_width, ((_mask) & CWBorderWidth) ? "!" : "", \
+				(_wc).stack_mode, ((_mask) & CWStackMode) ? "!" : "", \
+				(_wc).sibling, ((_mask) & CWSibling) ? "!" : ""
+
+#define __GFMTS(_g)	"%dx%d+%d+%d:%d (%d:%d:%d) "
+#define __GARGS(_g)	(_g)->w,(_g)->h,(_g)->x,(_g)->y,(_g)->b,(_g)->t,(_g)->g,(_g)->v
+#define __CFMTS(_c)	"[0x%08lx 0x%08lx 0x%08lx %-20s] "
+#define __CARGS(_c)	(_c)->frame,(_c)->win,(_c)->icon,(_c)->name
+
 #define __PTRACE(_num)		  do { if (options.debug >= _num) { \
 		fprintf(stderr, NAME ": T: [%s] %12s: +%4d : %s()\n", _timestamp(), __FILE__, __LINE__, __func__); \
 		fflush(stderr); } } while (0)
@@ -1431,12 +1445,12 @@ void show_client_state(Client *c);
 		fprintf(stderr, NAME ": D: [%s] %12s: +%4d : %s() : ", _timestamp(), __FILE__, __LINE__, __func__); \
 		fprintf(stderr, _args); fflush(stderr); } } while (0)
 
-#define __CPRINTF(_num,c,_args...) do { if (options.debug >= _num) { \
-		fprintf(stderr, NAME ": D: [%s] %12s: +%4d : %s() : [0x%08lx 0x%08lx 0x%08lx %-20s] ", _timestamp(), __FILE__, __LINE__, __func__,(c)->frame,(c)->win,(c)->icon,(c)->name); \
+#define __CPRINTF(_num,_c,_args...) do { if (options.debug >= _num) { \
+		fprintf(stderr, NAME ": D: [%s] %12s: +%4d : %s() : " __CFMTS(_c), _timestamp(), __FILE__, __LINE__, __func__,__CARGS(_c)); \
 		fprintf(stderr, _args); fflush(stderr); } } while (0)
 
 #define __GPRINTF(_num,_g,_args...) do { if (options.debug >= _num) { \
-		fprintf(stderr, NAME ": D: [%s] %12s: +%4d : %s() : %dx%d+%d+%d:%d (%d:%d:%d) ", _timestamp(), __FILE__, __LINE__, __func__,(_g)->w,(_g)->h,(_g)->x,(_g)->y,(_g)->b,(_g)->t,(_g)->g,(_g)->v); \
+		fprintf(stderr, NAME ": D: [%s] %12s: +%4d : %s() : " __GFMTS(_g), _timestamp(), __FILE__, __LINE__, __func__,__GARGS(_g); \
 		fprintf(stderr, _args); fflush(stderr); } } while (0)
 
 #define __EPRINTF(_args...)	  do { \

@@ -1129,22 +1129,26 @@ union Container {
 	Leaf leaf;
 };
 
+struct _FontInfo {
+	XGlyphInfo *extents;
+	int ascent;
+	int descent;
+	int height;
+	int width;
+};
+
+struct _DrawInfo {
+	Pixmap pixmap;
+	XftDraw *xft;
+	int w;
+	int h;
+};
+
 typedef struct {
 	int x, y, w, h;
-	struct {
-		XGlyphInfo *extents;
-		int ascent;
-		int descent;
-		int height;
-		int width;
-	} font[3];
+	struct _FontInfo font[3];
 	GC gc;
-	struct {
-		Pixmap pixmap;
-		XftDraw *xft;
-		int w;
-		int h;
-	} draw;
+	struct _DrawInfo draw;
 } DC;					/* draw context */
 
 typedef struct {

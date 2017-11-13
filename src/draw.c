@@ -888,13 +888,17 @@ elementw(AScreen *ds, Client *c, char which)
 }
 
 static int
-drawtext(AScreen *ds, const char *text, Drawable drawable, XftDraw * xftdrawable,
+drawtext(AScreen *ds, const char *text, Drawable drawable, XftDraw *xftdraw,
 	 XftColor *col, int hilite, int x, int y, int mw)
 {
 	int w, h;
 	char buf[256];
 	unsigned int len, olen;
-	int drop, status;
+	int gap, status;
+	XftFont *font = ds->style.font[hilite];
+	struct _FontInfo *info = &ds->dc.font[hilite];
+	XftColor *fcol = ds->style.color.hue[hilite];
+	int drop = ds->style.drop[hilite];
 
 	if (!text)
 		return 0;
@@ -905,8 +909,9 @@ drawtext(AScreen *ds, const char *text, Drawable drawable, XftDraw * xftdrawable
 	memcpy(buf, text, len);
 	buf[len] = 0;
 	h = ds->style.titleheight;
-	y = ds->dc.h / 2 + ds->dc.font[hilite].ascent / 2 - 1 - ds->style.outline;
-	x += ds->dc.font[hilite].height / 2;
+	y = ds->dc.h / 2 + info->ascent / 2 - 1 - ds->style.outline;
+	gap = info->height / 2;
+	x += gap;
 	/* shorten text if necessary */
 	while (len && (w = textnw(ds, buf, len, hilite)) > mw) {
 		buf[--len] = 0;
@@ -923,20 +928,38 @@ drawtext(AScreen *ds, const char *text, Drawable drawable, XftDraw * xftdrawable
 		return 0;	/* too long */
 	while (x <= 0)
 		x = ds->dc.x++;
-	XSetForeground(dpy, ds->dc.gc, col[ColBG].pixel);
-	XSetFillStyle(dpy, ds->dc.gc, FillSolid);
-	status =
-	    XFillRectangle(dpy, drawable, ds->dc.gc, x - ds->dc.font[hilite].height / 2,
-			   0, w + ds->dc.font[hilite].height, h);
-	if (!status)
-		XPRINTF("Could not fill rectangle, error %d\n", status);
-	if ((drop = ds->style.drop[hilite]))
-		XftDrawStringUtf8(xftdrawable, &ds->style.color.hue[hilite][ColShadow],
-				  ds->style.font[hilite], x + drop, y + drop,
+
+#if defined RENDER && defined USE_RENDER
+	Picture dst = XftDrawPicture(xftdraw);
+	Picture src = XftDrawSrcPicture(xftdraw, &fcol[ColFG]);
+	Picture shd = XftDrawSrcPicture(xftdraw, &fcol[ColShadow]);
+
+	if (dst && src) {
+		/* xrender */
+		XRenderFillRectangle(dpy, PictOpSrc, dst, &col[ColBG].color, x - gap, 0,
+				     w + gap * 2, h);
+		if (drop)
+			XftTextRenderUtf8(dpy, PictOpSrc, shd, font, dst, 0, 0, x + drop,
+					  y + drop, (FcChar8 *) buf, len);
+		XftTextRenderUtf8(dpy, PictOpSrc, src, font, dst, 0, 0, x + drop,
+				  y + drop, (FcChar8 *) buf, len);
+	} else
+#endif
+	{
+		/* non-xrender */
+		XSetForeground(dpy, ds->dc.gc, col[ColBG].pixel);
+		XSetFillStyle(dpy, ds->dc.gc, FillSolid);
+		status =
+		    XFillRectangle(dpy, drawable, ds->dc.gc, x - gap, 0, w + gap * 2, h);
+		if (!status)
+			XPRINTF("Could not fill rectangle, error %d\n", status);
+		if (drop)
+			XftDrawStringUtf8(xftdraw, &fcol[ColShadow], font, x + drop,
+					  y + drop, (unsigned char *) buf, len);
+		XftDrawStringUtf8(xftdraw, &fcol[ColFG], font, x, y,
 				  (unsigned char *) buf, len);
-	XftDrawStringUtf8(xftdrawable, &ds->style.color.hue[hilite][ColFG],
-			  ds->style.font[hilite], x, y, (unsigned char *) buf, len);
-	return w + ds->dc.font[hilite].height;
+	}
+	return w + gap * 2;
 }
 
 static int

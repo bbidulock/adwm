@@ -24,6 +24,9 @@
 -ss
 -hnl
 -nbc
+-TPicture
+-TXRenderColor
+-TXftDraw
 -TSnStartupSequence
 -TXClientMessageEvent
 -TSequence

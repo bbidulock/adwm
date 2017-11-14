@@ -752,7 +752,7 @@ configureshapes(Client *c)
 }
 
 static void
-reconfigure_dockapp(Client *c, ClientGeometry *n, Bool force)
+reconfigure_dockapp(Client *c, const ClientGeometry *n)
 {
 	XWindowChanges wwc, fwc;
 	unsigned wmask, fmask;
@@ -800,30 +800,13 @@ reconfigure_dockapp(Client *c, ClientGeometry *n, Bool force)
 		XConfigureWindow(dpy, c->icon, wmask, &wwc);
 		xtrap_pop();
 	}
-	if (force || ((fmask | wmask) && !(wmask & (CWWidth | CWHeight)))) {
-		XConfigureEvent ce;
-
-		ce.type = ConfigureNotify;
-		ce.display = dpy;
-		ce.event = c->icon;
-		ce.window = c->icon;
-		ce.x = c->c.x + c->c.b + c->r.x;
-		ce.y = c->c.y + c->c.b + c->r.y;
-		ce.width = c->r.w;
-		ce.height = c->r.h;
-		ce.border_width = c->r.b;
-		ce.above = None;
-		ce.override_redirect = False;
-		XSendEvent(dpy, c->icon, False, StructureNotifyMask, (XEvent *) &ce);
-	}
+	if ((fmask | wmask) && !(wmask & (CWWidth | CWHeight)))
+		send_configurenotify(c);
 	XSync(dpy, False);
 	drawclient(c);
 	ewmh_update_net_window_extents(c);
 	XSync(dpy, False);
 }
-
-/* FIXME: this does not handle moving the window across monitor
- * or desktop boundaries. */
 
 static Bool
 check_unmapnotify(Display *dpy, XEvent *ev, XPointer arg)
@@ -834,29 +817,40 @@ check_unmapnotify(Display *dpy, XEvent *ev, XPointer arg)
 		&& ev->xunmap.window == c->win && ev->xunmap.event == c->frame);
 }
 
+/* FIXME: this does not handle moving the window across monitor
+ * or desktop boundaries. */
+
 static void
-reconfigure(Client *c, ClientGeometry *n, Bool force)
+reconfigure(Client *c, const ClientGeometry *n)
 {
-	XWindowChanges wwc = { 0, }, fwc = { 0, };
-	unsigned wmask, fmask;
-	Bool tchange = False, gchange = False, hchange = False, shaded = False;
+	XWindowChanges wwc = { 0, }, fwc = {
+	0,};
+	unsigned wmask = 0, fmask = 0;
+	Bool tchange = False;		/* titlebar height or presence changed */
+	Bool gchange = False;		/* grip height or presense changed */
+	Bool vchange = False;		/* all-around grip width or presence changed */
+	Bool shaded = False;		/* the window will be shaded */
+	int t = c->title ? n->t : 0;
+	int g = c->grips ? n->g : 0;
+	int v = c->grips ? n->v : 0;
 
 	if (n->w <= 0 || n->h <= 0) {
 		_CPRINTF(c, "zero width %d or height %d\n", n->w, n->h);
 		return;
 	}
+#if 0
 	/* offscreen appearance fixes */
 	if (n->x > DisplayWidth(dpy, scr->screen))
 		n->x = DisplayWidth(dpy, scr->screen) - n->w - 2 * n->b;
 	if (n->y > DisplayHeight(dpy, scr->screen))
 		n->y = DisplayHeight(dpy, scr->screen) - n->h - 2 * n->b;
+#endif
 	XPRINTF("x = %d y = %d w = %d h = %d b = %d t = %d g = %d v = %d\n", n->x, n->y,
 		n->w, n->h, n->b, n->t, n->g, n->v);
 
 	if (c->is.dockapp)
-		return reconfigure_dockapp(c, n, force);
+		return reconfigure_dockapp(c, n);
 
-	wmask = fmask = 0;
 	if (c->c.x != (fwc.x = n->x)) {
 		c->c.x = n->x;
 		XPRINTF("frame wc.x = %d\n", fwc.x);
@@ -867,7 +861,7 @@ reconfigure(Client *c, ClientGeometry *n, Bool force)
 		XPRINTF("frame wc.y = %d\n", fwc.y);
 		fmask |= CWY;
 	}
-	if (c->c.w - 2 * c->c.v != (wwc.width = n->w - 2 * n->v)) {
+	if (c->c.w - 2 * c->c.v != (wwc.width = n->w - 2 * v)) {
 		XPRINTF("wind  wc.w = %u\n", wwc.width);
 		wmask |= CWWidth;
 	}
@@ -876,7 +870,7 @@ reconfigure(Client *c, ClientGeometry *n, Bool force)
 		XPRINTF("frame wc.w = %u\n", fwc.width);
 		fmask |= CWWidth;
 	}
-	if (c->c.h - c->c.t - c->c.g - c->c.v != (wwc.height = n->h - n->t - n->g - n->v)) {
+	if (c->c.h - c->c.t - c->c.g - c->c.v != (wwc.height = n->h - t - g - v)) {
 		XPRINTF("wind  wc.h = %u\n", wwc.height);
 		wmask |= CWHeight;
 	}
@@ -885,28 +879,24 @@ reconfigure(Client *c, ClientGeometry *n, Bool force)
 		XPRINTF("frame wc.h = %u\n", fwc.height);
 		fmask |= CWHeight;
 	}
-	if (n->t && !c->title)
-		n->t = 0;
-	if (c->c.t != (wwc.y = n->t)) {
-		c->c.t = n->t;
+	if (c->c.t != (wwc.y = t)) {
+		c->c.t = t;
 		XPRINTF("wind  wc.y = %d\n", wwc.y);
 		wmask |= CWY;
 		tchange = True;
 	}
-	if (n->g && !c->grips)
-		n->g = 0;
-	if (c->c.g != n->g) {
-		c->c.g = n->g;
+	if (c->c.g != g) {
+		c->c.g = g;
 		gchange = True;
 	}
-	if (n->v && !c->grips)
-		n->v = 0;
-	if (c->c.v != n->v) {
-		c->c.v = n->v;
-		hchange = True;
+	if (c->c.v != (wwc.x = v)) {
+		c->c.v = v;
+		XPRINTF("wind  wc.x = %d\n", wwc.x);
+		wmask |= CWX;
+		vchange = True;
 	}
-	if ((n->t || n->v) && (c->is.shaded && (c != sel || !scr->options.autoroll))) {
-		fwc.height = n->t + 2 * n->v;
+	if ((t || v) && (c->is.shaded && (c != sel || !scr->options.autoroll))) {
+		fwc.height = t + 2 * v;
 		XPRINTF("frame wc.h = %u\n", fwc.height);
 		fmask |= CWHeight;
 		shaded = True;
@@ -922,16 +912,13 @@ reconfigure(Client *c, ClientGeometry *n, Bool force)
 		fmask |= CWBorderWidth;
 	}
 	if (fmask) {
-		if (!c->is.dockapp)
-			configureshapes(c);
-		xtrap_push(1,_WCFMTS(fwc, fmask),_WCARGS(fwc, fmask));
+		configureshapes(c);
+		xtrap_push(1, _WCFMTS(fwc, fmask), _WCARGS(fwc, fmask));
 		XConfigureWindow(dpy, c->frame, fmask, &fwc);
 		xtrap_pop();
 	}
-	wwc.x = 0; wmask |= CWX;
-	wwc.border_width = 0; wmask |= CWBorderWidth;
-	if ((wmask & (CWWidth | CWHeight))
-	    && !newsize(c, wwc.width, wwc.height, CurrentTime))
+	/* do we send sync request _before_ configure? */
+	if ((wmask & (CWWidth | CWHeight)) && !newsize(c, wwc.width, wwc.height, CurrentTime))
 		wmask &= ~(CWWidth | CWHeight);
 	if (shaded) {
 		XEvent ev;
@@ -942,40 +929,65 @@ reconfigure(Client *c, ClientGeometry *n, Bool force)
 	} else
 		XMapWindow(dpy, c->win);
 	if (wmask) {
-		xtrap_push(1,_WCFMTS(wwc, wmask),_WCARGS(wwc, wmask));
-		XConfigureWindow(dpy, c->win, wmask, &wwc);
+		/* if we are configuring otherwise, also set border to zero */
+		xtrap_push(1, _WCFMTS(wwc, wmask | CWBorderWidth), _WCARGS(wwc, wmask | CWBorderWidth));
+		XConfigureWindow(dpy, c->win, wmask | CWBorderWidth, &wwc);
 		xtrap_pop();
 	}
 	/* ICCCM 2.0 4.1.5 */
-	if (force || ((fmask | wmask) && !(wmask & (CWWidth | CWHeight))))
-		send_configurenotify(c, None);
+	if ((fmask | wmask) && !(wmask & (CWWidth | CWHeight)))
+		send_configurenotify(c);
 	XSync(dpy, False);
-	if (c->title && (tchange || ((wmask | fmask) & (CWWidth)))) {
+	if (c->title && (tchange || vchange || ((wmask | fmask) & CWWidth))) {
+		/* this is ok for all-around grips */
 		if (tchange) {
-			if (n->t)
+			if (t)
 				XMapWindow(dpy, c->title);
 			else
 				XUnmapWindow(dpy, c->title);
 		}
-		if (n->t && (tchange || ((wmask | fmask) & (CWWidth)))) {
-			XRectangle r = { 0, 0, wwc.width, n->t };
+		if (t && (tchange || vchange || ((wmask | fmask) & CWWidth))) {
+			XRectangle r = { v, v, wwc.width, t };
 
 			XMoveResizeWindow(dpy, c->title, r.x, r.y, r.width, r.height);
 		}
 	}
+	if (c->tgrip && (vchange || ((wmask | fmask) & (CWWidth|CWHeight)))) {
+		if (vchange) {
+			if (v) {
+				XMapWindow(dpy, c->tgrip);
+				XMapWindow(dpy, c->lgrip);
+				XMapWindow(dpy, c->rgrip);
+			} else {
+				XUnmapWindow(dpy, c->tgrip);
+				XUnmapWindow(dpy, c->lgrip);
+				XUnmapWindow(dpy, c->rgrip);
+			}
+		}
+		if (v && (vchange || ((wmask | fmask) & (CWWidth|CWHeight)))) {
+			XRectangle tr = { 0, 0, fwc.width, v };
+			XRectangle lr = { 0, 0, v, fwc.height };
+			XRectangle rr = { fwc.width - v, 0, v, fwc.height };
+
+			XMoveResizeWindow(dpy, c->tgrip, tr.x, tr.y, tr.width, tr.height);
+			XMoveResizeWindow(dpy, c->lgrip, lr.x, lr.y, lr.width, lr.height);
+			XMoveResizeWindow(dpy, c->rgrip, rr.x, rr.y, rr.width, rr.height);
+		}
+
+	}
 	if (c->grips) {
-		if (shaded || !n->g)
-			XUnmapWindow(dpy, c->grips);
-		else
+		if (g && (!shaded || v))
 			XMapWindow(dpy, c->grips);
-		if (n->g && (gchange || ((wmask | fmask) & (CWWidth | CWHeight | CWY)))) {
-			XRectangle r = { 0, n->h - n->g, wwc.width, n->g };
+		else
+			XUnmapWindow(dpy, c->grips);
+		if (g && (gchange || vchange || ((wmask | fmask) & (CWWidth | CWHeight | CWY)))) {
+			XRectangle r = { 0, n->h - g, wwc.width, g };
 
 			XMoveResizeWindow(dpy, c->grips, r.x, r.y, r.width, r.height);
 		}
 	}
-	if (((c->title && n->t) || (c->grips && n->g)) &&
-	    ((tchange && n->t) || (gchange && n->g) || (hchange && n->v)
+	if (((c->title && t) || (c->grips && g) || (c->grips && v)) &&
+	    ((tchange && t) || (gchange && g) || (vchange && v)
 	     || (wmask & CWWidth)))
 		drawclient(c);
 	ewmh_update_net_window_extents(c);
@@ -1068,73 +1080,7 @@ restore(Client *c)
 	XPRINTF("CALLING: constrain()\n");
 	constrain(c, &g);
 	XPRINTF("CALLING reconfigure()\n");
-	reconfigure(c, &g, False);
-}
-
-Bool
-configureclient(XEvent *e, Client *c, int gravity)
-{
-	XConfigureRequestEvent *ev = &e->xconfigurerequest;
-	View *v;
-
-	/* XXX: if c->cmon is set, we are displayed on a monitor, but c->curview should
-	   also be set.  We only need the monitor for the layout.  When there is no cmon,
-	   use one of the views to which the client is tagged? How meaningful is it
-	   moving a window not in the current view? Perhaps we should treat it a just
-	   moving the saved floating state.  This is the only function that calls
-	   findcurmonitor(). */
-
-	/* This is not quite correct anymore.  The client requests reconfiguration of its
-	   interior window and uses the border width specified or last specified and the
-	   specified gravity as though it was never reparented and has no decorative
-	   border.  We need to move and resize the frame so that the reference points are
-	   intact. */
-
-	if (!(v = c->cview ? : selview()))
-		return False;
-	if ((!c->is.max && isfloating(c, v)) || c->is.bastard) {
-		ClientGeometry g;
-		int dx, dy, dw, dh;
-
-		g = c->c;
-
-		/* we should really refuse to do anything at this point... */
-		dx = (ev->value_mask & CWX) ? ev->x - g.x : 0;
-		dy = (ev->value_mask & CWY) ? ev->y - g.y : 0;
-		dw = (ev->value_mask & CWWidth) ? ev->width - g.w : 0;
-		dh = (ev->value_mask & CWHeight) ? ev->height - (g.h - g.t - g.g) : 0;
-		g.b = (ev->value_mask & CWBorderWidth) ? ev->border_width : g.b;
-
-		moveresizeclient(c, dx, dy, dw, dh, gravity);
-		/* TODO: check _XA_WIN_CLIENT_MOVING and handle moves between monitors */
-	} else {
-		ClientGeometry g;
-
-		CPRINTF(c, "refusing to reconfigure client\n");
-		g = c->c;
-
-		g.b = (ev->value_mask & CWBorderWidth) ? ev->border_width : g.b;
-
-		/* When a client requests a different configuration and it is in tiling
-		   mode or maximized, we need to refuse whatever it asked for and
-		   generate configure notifies for the tiled arrangment. Unfortunately,
-		   reconfigure() only does this when the configuration changes, so we
-		   need to ask it to do a forced reconfiguration. */
-		XPRINTF("CALLING reconfigure()\n");
-		reconfigure(c, &g, True);
-		if (ev->value_mask & (CWBorderWidth))
-			c->s.b = g.b;
-	}
-	if (ev->value_mask & CWStackMode) {
-		Client *s = NULL;
-
-		if (ev->value_mask & CWSibling)
-			if (!(s = getclient(ev->above, ClientAny)))
-				return False;
-		/* might want to make this optional */
-		restack_client(c, ev->detail, s);
-	}
-	return True;
+	reconfigure(c, &g);
 }
 
 static Monitor *
@@ -1181,7 +1127,7 @@ configuremonitors(XEvent *e, Client *c)
 		g.g = 0;
 		g.v = 0;
 		XPRINTF("CALLING reconfigure()\n");
-		reconfigure(c, &g, False);
+		reconfigure(c, &g);
 	}
 	return True;
 }
@@ -1433,7 +1379,7 @@ updatefloat(Client *c, View *v)
 		DPRINTF("CALLING: constrain()\n");
 		constrain(c, &g);
 	}
-	reconfigure(c, &g, False);
+	reconfigure(c, &g);
 	if (c->is.max)
 		ewmh_update_net_window_fs_monitors(c);
 	focuslockclient(NULL);
@@ -1817,7 +1763,7 @@ arrangedock(View *v)
 				g.w -= 2 * g.b;
 				g.h -= 2 * g.b;
 				XPRINTF("CALLING reconfigure()\n");
-				reconfigure(c, &g, False);
+				reconfigure(c, &g);
 			}
 			unban(c, v);
 			switch (n->term.children.ori) {
@@ -2116,7 +2062,7 @@ tile(View *v)
 		g.h -= 2 * (ma.g + g.b);
 		if (!c->is.moveresize) {
 			XPRINTF("CALLING reconfigure()\n");
-			reconfigure(c, &g, False);
+			reconfigure(c, &g);
 		} else {
 			ClientGeometry C = g;
 
@@ -2124,7 +2070,7 @@ tile(View *v)
 			C.x = (c->c.x + c->c.w / 2) - C.w / 2;
 			C.y = (c->c.y + c->c.h / 2) - C.h / 2;
 			XPRINTF("CALLING reconfigure()\n");
-			reconfigure(c, &C, False);
+			reconfigure(c, &C);
 		}
 		if (c->is.shaded && (c != sel || !scr->options.autoroll))
 			if (ma.s)
@@ -2212,7 +2158,7 @@ tile(View *v)
 		g.h -= 2 * (sa.g + g.b);
 		if (!c->is.moveresize) {
 			XPRINTF("CALLING reconfigure()\n");
-			reconfigure(c, &g, False);
+			reconfigure(c, &g);
 		} else {
 			ClientGeometry C = g;
 
@@ -2220,7 +2166,7 @@ tile(View *v)
 			C.x = (c->c.x + c->c.w / 2) - C.w / 2;
 			C.y = (c->c.y + c->c.h / 2) - C.h / 2;
 			XPRINTF("CALLING reconfigure()\n");
-			reconfigure(c, &C, False);
+			reconfigure(c, &C);
 		}
 		if (c->is.shaded && (c != sel || !scr->options.autoroll))
 			if (sa.s)
@@ -2357,7 +2303,7 @@ grid(View *v)
 		n.g = (v->dectiled && c->has.grips) ? scr->style.gripsheight : 0;
 		if (!c->is.moveresize) {
 			XPRINTF("CALLING reconfigure()\n");
-			reconfigure(c, &n, False);
+			reconfigure(c, &n);
 		} else {
 			ClientGeometry C = n;
 
@@ -2365,7 +2311,7 @@ grid(View *v)
 			C.x = (c->c.x + c->c.w / 2) - C.w / 2;
 			C.y = (c->c.y + c->c.h / 2) - C.h / 2;
 			XPRINTF("CALLING reconfigure()\n");
-			reconfigure(c, &C, False);
+			reconfigure(c, &C);
 		}
 	}
 	free(rc);
@@ -2423,7 +2369,7 @@ monocle(View *v)
 		g.h -= 2 * g.b;
 
 		XPRINTF("CALLING reconfigure()\n");
-		reconfigure(c, &g, False);
+		reconfigure(c, &g);
 	}
 }
 
@@ -3392,16 +3338,30 @@ reparentclient(Client *c, AScreen *new_scr, int x, int y)
 		/* some of what unmanage() does */
 		delclient(c);
 		ewmh_del_client(c, CauseReparented);
-		XDeleteContext(dpy, c->title, context[ScreenContext]);
-		XDeleteContext(dpy, c->grips, context[ScreenContext]);
+		if (c->title)
+			XDeleteContext(dpy, c->title, context[ScreenContext]);
+		if (c->grips)
+			XDeleteContext(dpy, c->grips, context[ScreenContext]);
+		if (c->tgrip) {
+			XDeleteContext(dpy, c->tgrip, context[ScreenContext]);
+			XDeleteContext(dpy, c->lgrip, context[ScreenContext]);
+			XDeleteContext(dpy, c->rgrip, context[ScreenContext]);
+		}
 		XDeleteContext(dpy, c->frame, context[ScreenContext]);
 		XDeleteContext(dpy, c->win, context[ScreenContext]);
 		XUnmapWindow(dpy, c->frame);
 		c->is.managed = False;
 		scr = new_scr;
 		/* some of what manage() does */
-		XSaveContext(dpy, c->title, context[ScreenContext], (XPointer) scr);
-		XSaveContext(dpy, c->grips, context[ScreenContext], (XPointer) scr);
+		if (c->title)
+			XSaveContext(dpy, c->title, context[ScreenContext], (XPointer) scr);
+		if (c->grips)
+			XSaveContext(dpy, c->grips, context[ScreenContext], (XPointer) scr);
+		if (c->tgrip) {
+			XSaveContext(dpy, c->tgrip, context[ScreenContext], (XPointer) scr);
+			XSaveContext(dpy, c->lgrip, context[ScreenContext], (XPointer) scr);
+			XSaveContext(dpy, c->rgrip, context[ScreenContext], (XPointer) scr);
+		}
 		XSaveContext(dpy, c->frame, context[ScreenContext], (XPointer) scr);
 		XSaveContext(dpy, c->win, context[ScreenContext], (XPointer) scr);
 		if (!(v = getview(x, y)))
@@ -3752,7 +3712,7 @@ move_cancel(Client *c, View *v, ClientGeometry *orig, IsUnion * was)
 		}
 		if (wasfloating) {
 			XPRINTF("CALLING reconfigure()\n");
-			reconfigure(c, orig, False);
+			reconfigure(c, orig);
 			save(c);
 			updatefloat(c, v);
 		} else
@@ -3910,7 +3870,7 @@ mousemove_from(Client *c, int from, XEvent *e, Bool toggle)
 				n.x = ev.xmotion.x_root - n.w / 2;
 				n.y = ev.xmotion.y_root - n.h / 2;
 				XPRINTF("CALLING reconfigure()\n");
-				reconfigure(c, &n, False);
+				reconfigure(c, &n);
 				continue;
 			}
 			switch (from) {
@@ -3993,7 +3953,7 @@ mousemove_from(Client *c, int from, XEvent *e, Bool toggle)
 							c->is.rhalf = False;
 							ewmh_update_net_window_state(c);
 							XPRINTF("CALLING reconfigure()\n");
-							reconfigure(c, &o, False);
+							reconfigure(c, &o);
 							save(c);
 							updatefloat(c, v);
 							restack();
@@ -4005,7 +3965,7 @@ mousemove_from(Client *c, int from, XEvent *e, Bool toggle)
 							c->is.rhalf = False;
 							ewmh_update_net_window_state(c);
 							XPRINTF("CALLING reconfigure()\n");
-							reconfigure(c, &o, False);
+							reconfigure(c, &o);
 							save(c);
 							updatefloat(c, v);
 						}
@@ -4016,7 +3976,7 @@ mousemove_from(Client *c, int from, XEvent *e, Bool toggle)
 							c->is.rhalf = True;
 							ewmh_update_net_window_state(c);
 							XPRINTF("CALLING reconfigure()\n");
-							reconfigure(c, &o, False);
+							reconfigure(c, &o);
 							save(c);
 							updatefloat(c, v);
 						}
@@ -4177,7 +4137,7 @@ mousemove_from(Client *c, int from, XEvent *e, Bool toggle)
 			}
 			if (!isfloater || (!c->is.max && !c->is.lhalf && !c->is.rhalf)) {
 				XPRINTF("CALLING reconfigure()\n");
-				reconfigure(c, &n, False);
+				reconfigure(c, &n);
 				save(c);
 			}
 			continue;
@@ -4333,7 +4293,7 @@ resize_cancel(Client *c, View *v, ClientGeometry *orig, IsUnion * was)
 		}
 		if (wasfloating) {
 			XPRINTF("CALLING reconfigure()\n");
-			reconfigure(c, orig, False);
+			reconfigure(c, orig);
 			save(c);
 			updatefloat(c, v);
 		} else
@@ -4726,7 +4686,7 @@ mouseresize_from(Client *c, int from, XEvent *e, Bool toggle)
 			if (n.h < MINHEIGHT)
 				n.h = MINHEIGHT;
 			XPRINTF("CALLING reconfigure()\n");
-			reconfigure(c, &n, False);
+			reconfigure(c, &n);
 			if (isfloating(c, v))
 				save(c);
 			continue;
@@ -4797,6 +4757,7 @@ getreference(int *xr, int *yr, Geometry *g, int gravity)
 		*yr = g->y + 2 * g->b + g->h;
 		break;
 	case StaticGravity:
+		/* is this correct? */
 		*xr = g->x + g->b;
 		*yr = g->y + g->b;
 		break;
@@ -4852,6 +4813,332 @@ putreference(int xr, int yr, Geometry *g, int gravity)
 	}
 }
 
+static void
+getclientgeometry(Client *c, Geometry *g, int gravity)
+{
+	if (c->is.dockapp) {
+		/* dock apps should not be configuring their icon windows,
+		 * unless they are also their top-level window */
+		g->x = c->r.x + c->c.x;
+		g->y = c->r.y + c->c.y;
+		g->w = c->r.w;
+		g->h = c->r.h;
+		g->b = c->r.b;
+	} else {
+		g->x = c->c.x + c->c.v;
+		g->y = c->c.y + c->c.v + c->c.t;
+		g->w = c->c.w - 2 * c->c.v;
+		g->h = c->c.h - c->c.v - c->c.t - c->c.g;
+		g->b = c->s.b;	/* client expected border */
+		gravity = c->sh.win_gravity;
+	}
+	getreference(&g->x, &g->y, g, gravity);
+}
+
+static void
+putclientgeometry(Client *c, Geometry *g, ClientGeometry *n, int gravity)
+{
+	/* don't do this with dock apps */
+	assert(!c->is.dockapp);
+
+	putreference(g->x, g->y, g, gravity);
+	if (c->is.dockapp) {
+		*n = c->c;
+		c->r.x = g->x - n->x;
+		c->r.y = g->y - n->y;
+		c->r.w = g->w;
+		c->r.h = g->h;
+		c->s.b = g->b;
+	} else {
+		*n = c->c;
+		n->x = g->x - n->v;
+		n->y = g->y - n->v - n->t;
+		n->w = g->w + 2 * n->v;
+		n->h = g->h + n->v + n->t + n->g;
+		c->s.b = g->b;
+	}
+}
+
+/*
+   ICCCM 2.0/4.1.5: Configuring the Window
+
+     * Not changing the size, location, border width, or stacking order of
+       the window at all.
+
+       A client will receive a synthetic ConfigureNotify event that
+       describes the (unchanged) geometry of the window. The (x,y)
+       coordinates will be in the root coordinate system, adjusted for the
+       border width the client requested, irrespective of any reparenting
+       that has taken place. The border_width will be the border width the
+       client requested. The client will not receive a real
+       ConfigureNotify event because no change has actually taken place.
+
+     * Moving or restacking the window without resizing it or changing its
+       border width.
+
+       A client will receive a synthetic ConfigureNotify event following
+       the change that describes the new geometry of the window. The
+       event's (x,y) coordinates will be in the root coordinate system
+       adjusted for the border width the client requested. The
+       border_width will be the border width the client requested. The
+       client may not receive a real ConfigureNotify event that describes
+       this change because the window manager may have reparented the
+       top-level window. If the client does receive a real event, the
+       synthetic event will follow the real one.
+
+   The general rule is that coordinates in real ConfigureNotify events are
+   in the parent's space; in synthetic events, they are in the root space.
+ */
+void
+send_configurenotify(Client *c)
+{
+	XConfigureEvent ev = { 0, };
+	Geometry g = { 0, };
+	Window above = c->snext ? c->snext->win : None;
+
+	getclientgeometry(c, &g, c->sh.win_gravity);
+	ev.type = ConfigureNotify;
+	ev.display = dpy;
+	ev.event = c->win;
+	ev.window = c->win;
+	ev.x = g.x;
+	ev.y = g.y;
+	if (c->sync.waiting) {
+		ev.width = c->sync.w;
+		ev.height = c->sync.h;
+	} else {
+		ev.width = g.w;
+		ev.height = g.h;
+	}
+	ev.border_width = g.b;
+	ev.above = above;
+	ev.override_redirect = False;
+	XSendEvent(dpy, c->win, False, StructureNotifyMask, (XEvent *) &ev);
+}
+
+/*
+   ICCCM 2.0/4.1.5: Configuring the Window
+
+   Clients can resize and reposition their top-level windows by using the
+   ConfigureWindow request. The attributes of the window that can be
+   altered with this request are as follows:
+
+     * The [x,y] location of the window's upper left-outer corner
+     * The [width,height] of the inner region of the window (excluding
+       borders)
+     * The border width of the window
+     * The window's position in the stack
+
+   The coordinate system in which the location is expressed is that of the
+   root (irrespective of any reparenting that may have occurred). The
+   border width to be used and win_gravity position hint to be used are
+   those most recently requested by the client. Client configure requests
+   are interpreted by the window manager in the same manner as the initial
+   window geometry mapped from the Withdrawn state, as described in
+   section 4.1.2.3. Clients must be aware that there is no guarantee that
+   the window manager will allocate them the requested size or location
+   and must be prepared to deal with any size and location. If the window
+   manager decides to respond to a ConfigureRequest request by:
+
+     * Not changing the size, location, border width, or stacking order of
+       the window at all.
+
+       A client will receive a synthetic ConfigureNotify event that
+       describes the (unchanged) geometry of the window. The (x,y)
+       coordinates will be in the root coordinate system, adjusted for the
+       border width the client requested, irrespective of any reparenting
+       that has taken place. The border_width will be the border width the
+       client requested. The client will not receive a real
+       ConfigureNotify event because no change has actually taken place.
+
+     * Moving or restacking the window without resizing it or changing its
+       border width.
+
+       A client will receive a synthetic ConfigureNotify event following
+       the change that describes the new geometry of the window. The
+       event's (x,y) coordinates will be in the root coordinate system
+       adjusted for the border width the client requested. The
+       border_width will be the border width the client requested. The
+       client may not receive a real ConfigureNotify event that describes
+       this change because the window manager may have reparented the
+       top-level window. If the client does receive a real event, the
+       synthetic event will follow the real one.
+
+     * Resizing the window or changing its border width (regardless of
+       whether the window was also moved or restacked).
+
+       A client that has selected for StructureNotify events will receive
+       a real ConfigureNotify event. Note that the coordinates in this
+       event are relative to the parent, which may not be the root if the
+       window has been reparented. The coordinates will reflect the actual
+       border width of the window (which the window manager may have
+       changed). The TranslateCoordinates request can be used to convert
+       the coordinates if required.
+
+   The general rule is that coordinates in real ConfigureNotify events are
+   in the parent's space; in synthetic events, they are in the root space.
+
+                           Advice to Implementors
+
+     Clients cannot distinguish between the case where a top-level window
+     is resized and moved from the case where the window is resized but
+     not moved, since a real ConfigureNotify event will be received in
+     both cases. Clients that are concerned with keeping track of the
+     absolute position of a top-level window should keep a piece of state
+     indicating whether they are certain of its position. Upon receipt of
+     a real ConfigureNotify event on the top-level window, the client
+     should note that the position is unknown. Upon receipt of a
+     synthetic ConfigureNotify event, the client should note the position
+     as known, using the position in this event. If the client receives a
+     KeyPress , KeyRelease , ButtonPress , ButtonRelease , MotionNotify ,
+     EnterNotify , or LeaveNotify event on the window (or on any
+     descendant), the client can deduce the top-level window's position
+     from the difference between the (event-x, event-y) and (root-x,
+     root-y) coordinates in these events. Only when the position is
+     unknown does the client need to use the TranslateCoordinates request
+     to find the position of a top-level window.
+
+   Clients should be aware that their borders may not be visible. Window
+   managers are free to use reparenting techniques to decorate client's
+   top-level windows with borders containing titles, controls, and other
+   details to maintain a consistent look-and-feel. If they do, they are
+   likely to override the client's attempts to set the border width and
+   set it to zero. Clients, therefore, should not depend on the top-level
+   window's border being visible or use it to display any critical
+   information. Other window managers will allow the top-level windows
+   border to be visible.
+
+                                 Convention
+
+     Clients should set the desired value of the border-width attribute
+     on all ConfigureWindow requests to avoid a race condition.
+
+   Clients that change their position in the stack must be aware that they
+   may have been reparented, which means that windows that used to be
+   siblings no longer are. Using a nonsibling as the sibling parameter on
+   a ConfigureWindow request will cause an error.
+
+                                 Convention
+
+     Clients that use a ConfigureWindow request to request a change in
+     their position in the stack should do so using None in the sibling
+     field.
+
+   Clients that must position themselves in the stack relative to some
+   window that was originally a sibling must do the ConfigureWindow
+   request (in case they are running under a nonreparenting window
+   manager), be prepared to deal with a resulting error, and then follow
+   with a synthetic ConfigureRequest event by invoking a SendEvent request
+   with the following arguments:
+     __________________________________________________________________
+
+   Argument Value
+     __________________________________________________________________
+
+   destination: The root
+   propagate: False
+   event-mask: ( SubstructureRedirect|SubstructureNotify )
+   event: a ConfigureRequest with:
+   event: The root
+   window: The window itself
+   ... Other parameters from the ConfigureWindow request
+     __________________________________________________________________
+
+   Window managers are in any case free to position windows in the stack
+   as they see fit, and so clients should not rely on receiving the
+   stacking order they have requested. Clients should ignore the
+   above-sibling field of both real and synthetic ConfigureNotify events
+   received on their top-level windows because this field may not contain
+   useful information.
+ */
+Bool
+configureclient(Client *c, XEvent *e, int gravity)
+{
+	XConfigureRequestEvent *ev = &e->xconfigurerequest;
+	Client *o = NULL;
+	Geometry g = { 0, };
+	ClientGeometry n = { 0, };
+	unsigned may, will;
+	int stack_mode = Above;
+	View *v;
+
+	if (!(v = c->cview ? : selview())) {
+		EPRINTF(__CFMTS(c) "refusing to reconfigure client\n", __CARGS(c));
+		send_configurenotify(c);
+		return True;
+	}
+	if (c->is.dockapp || (!c->is.bastard && !isfloating(c, v))) {
+		EPRINTF(__CFMTS(c) "refusing to reconfigure client\n", __CARGS(c));
+		send_configurenotify(c);
+		return True;
+	}
+	getclientgeometry(c, &g, gravity);
+
+	may = CWX | CWY | CWWidth | CWHeight | CWBorderWidth | CWSibling | CWStackMode;
+
+	if (c->is.max || c->is.lhalf || c->is.rhalf || c->is.fill || c->is.full
+	    || c->is.moveresize)
+		may &= ~(CWX | CWY | CWWidth | CWHeight);
+	if (c->is.maxv)
+		may &= ~(CWY | CWWidth);
+	if (c->is.maxh)
+		may &= ~(CWX | CWWidth);
+
+	will = ev->value_mask & may;
+
+	if (will & CWX) {
+		if (g.x != ev->x)
+			g.x = ev->x;
+		else
+			will &= ~CWX;
+	}
+	if (will & CWY) {
+		if (g.y != ev->y)
+			g.y = ev->y;
+		else
+			will &= ~CWY;
+	}
+	if (will & CWWidth) {
+		if (g.w != ev->width)
+			g.w = ev->width;
+		else
+			will &= ~CWWidth;
+	}
+	if (will & CWHeight) {
+		if (g.h != ev->height)
+			g.h = ev->height;
+		else
+			will &= ~CWHeight;
+	}
+	if (will & CWBorderWidth) {
+		if (g.b != ev->border_width)
+			g.b = ev->border_width;
+		else
+			will &= ~CWBorderWidth;
+	}
+
+	putclientgeometry(c, &g, &n, gravity);
+
+	if (will & CWSibling) {
+		if (ev->above && !(o = getclient(ev->above, ClientAny)))
+			will &= ~(CWSibling | CWStackMode);
+	}
+	if (will & CWStackMode)
+		stack_mode = ev->detail;
+	if (will & (CWSibling | CWStackMode))
+		restack_client(c, stack_mode, o);
+
+	if (will & (CWX | CWY | CWWidth | CWHeight | CWBorderWidth)) {
+		/* let reconfigure decide when to send a notify */
+		/* careful: reconfigure() will not set a notify if nothing changed */
+		reconfigure(c, &n);
+		return True;
+	}
+	/* send a configure notify anyhoo, restack or not */
+	send_configurenotify(c);
+	return True;
+}
+
 void
 moveresizeclient(Client *c, int dx, int dy, int dw, int dh, int gravity)
 {
@@ -4864,7 +5151,7 @@ moveresizeclient(Client *c, int dx, int dy, int dw, int dh, int gravity)
 		return;
 	if (!(v = clientview(c)))
 		return;
-	if (!isfloating(c, v) && !c->is.bastard)
+	if ((!isfloating(c, v) && !c->is.bastard) || c->is.dockapp)
 		return;
 	if (dw || dh) {
 		ClientGeometry g;
@@ -4910,16 +5197,22 @@ moveresizekb(Client *c, int dx, int dy, int dw, int dh, int gravity)
 {
 	if (!c)
 		return;
+	/* moveresizeclient should handle c->can checks */
 	if (!c->can.move) {
 		dx = 0;
 		dy = 0;
 	}
 	/* constraints should handle this */
+	if (!c->can.size) {
+		dw = 0;
+		dh = 0;
+	}
 	if (!c->can.sizeh)
 		dw = 0;
 	if (!c->can.sizev)
 		dh = 0;
-	moveresizeclient(c, dx, dy, dw, dh, gravity);
+	if (dx || dy || dw || dh)
+		moveresizeclient(c, dx, dy, dw, dh, gravity);
 }
 
 static void
@@ -5702,7 +5995,7 @@ moveto(Client *c, RelativeDirection position)
 		return;
 	}
 	XPRINTF("CALLING reconfigure()\n");
-	reconfigure(c, &g, False);
+	reconfigure(c, &g);
 	save(c);
 	focuslockclient(c);
 }
@@ -5802,7 +6095,7 @@ moveby(Client *c, RelativeDirection direction, int amount)
 	if (g.y + g.h + g.b < m->sc.y)
 		g.y = m->sc.y - (g.h + g.b);
 	XPRINTF("CALLING reconfigure()\n");
-	reconfigure(c, &g, False);
+	reconfigure(c, &g);
 	save(c);
 	focuslockclient(c);
 }
@@ -6030,7 +6323,7 @@ snapto(Client *c, RelativeDirection direction)
 		return;
 	}
 	XPRINTF("CALLING reconfigure()\n");
-	reconfigure(c, &g, False);
+	reconfigure(c, &g);
 	save(c);
 	focuslockclient(c);
 }
@@ -6098,7 +6391,7 @@ edgeto(Client *c, int direction)
 		return;
 	}
 	XPRINTF("CALLING reconfigure()\n");
-	reconfigure(c, &g, False);
+	reconfigure(c, &g);
 	save(c);
 	focuslockclient(c);
 }
@@ -6385,7 +6678,7 @@ toggleundec(Client *c)
 	}
 	if (c->is.managed) {
 		XPRINTF("CALLING reconfigure()\n");
-		reconfigure(c, &c->c, False);
+		reconfigure(c, &c->c);
 		ewmh_update_net_window_state(c);
 		updatefloat(c, v);
 	}

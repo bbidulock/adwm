@@ -3125,7 +3125,7 @@ clientmessage(XEvent *e)
 	Client *c;
 	Atom message_type = ev->message_type;
 
-	if ((c = getclient(ev->window, ClientWindow)) && c->is.managed) {
+	if ((c = getmanaged(ev->window, ClientWindow))) {
 		if (0) {
 		} else if (message_type == _XA_NET_CLOSE_WINDOW) {
 			if (c->can.close)
@@ -3235,7 +3235,7 @@ clientmessage(XEvent *e)
 			}
 			if (gravity == 0)
 				gravity = c->sh.win_gravity;
-			configureclient((XEvent *) &cev, c, gravity);
+			configureclient(c, (XEvent *) &cev, gravity);
 		} else if (message_type == _XA_NET_WM_MOVERESIZE) {
 			int x_root = (int) ev->data.l[0];
 			int y_root = (int) ev->data.l[1];
@@ -3349,7 +3349,7 @@ clientmessage(XEvent *e)
 		} else if (message_type == _XA_WM_PROTOCOLS) {
 			if (0) {
 			} else if (ev->data.l[0] == _XA_NET_WM_PING) {
-				if ((c = getclient(ev->data.l[2], ClientWindow)) && c->is.managed) {
+				if ((c = getmanaged(ev->data.l[2], ClientWindow))) {
 					c->is.pinging = 0;
 					c->is.killing = 0;
 				}

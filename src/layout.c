@@ -3352,16 +3352,21 @@ swapstacked(Client *c, Client *s)
 }
 
 static void
-tearout(Client *c)
+tearout(Client *c, int x_root, int y_root)
 {
-#if 1
-	save(c);	/* tear out at current geometry */
+#if 0
+	if (tiled || !move)
+		save(c);	/* tear out at current geometry */
 #else
 	/* rather than tearing out at the current tiled or maximized/maximus
 	 * state, tear out at the restore (previously saved) state, but move the
 	 * restore position so that the pointer will stil be in the same place,
 	 * proportionally, in the restored window as it was in the current
 	 * geometry, without moving the pointer. */
+	float pdown = (float) (y_root - c->c.y + c->c.b) / (float) c->c.h;
+	float pleft = (float) (x_root - c->c.x + c->c.b) / (float) c->c.w;
+	c->r.y = y_root - (int) roundf(pdown * (float) c->r.h);
+	c->r.x = x_root - (int) roundf(pleft * (float) c->r.w);
 #endif
 }
 
@@ -3674,7 +3679,7 @@ ismoveevent(Display *display, XEvent *event, XPointer arg)
 }
 
 static Bool
-move_begin(Client *c, View *v, Bool toggle, int from, IsUnion * was)
+move_begin(Client *c, View *v, Bool toggle, int from, IsUnion * was, int x_root, int y_root)
 {
 	Bool isfloater;
 
@@ -3706,17 +3711,19 @@ move_begin(Client *c, View *v, Bool toggle, int from, IsUnion * was)
 		if ((was->shaded = c->is.shaded))
 			c->is.shaded = False;
 		if (!isfloater) {
-			tearout(c);
+			tearout(c, x_root, y_root);
 			/* XXX: could this not just be raiseclient(c) ??? */
 			detachstack(c);
 			attachstack(c, True);
 			togglefloating(c);
 		} else if (was->is) {
+			tearout(c, x_root, y_root);
 			was->floater = isfloater;
 			updatefloat(c, v);
 			raiseclient(c);
-		} else
+		} else {
 			raiseclient(c);
+		}
 	} else {
 		/* can't move tiled in monocle mode */
 		if (!c->is.dockapp && !VFEATURES(v, MMOVE)) {
@@ -3884,7 +3891,7 @@ mousemove_from(Client *c, int from, XEvent *e, Bool toggle)
 				if (abs(dx) < scr->options.dragdist
 				    && abs(dy) < scr->options.dragdist)
 					continue;
-				if (!(moved = move_begin(c, v, toggle, from, &was))) {
+				if (!(moved = move_begin(c, v, toggle, from, &was, x_root, y_root))) {
 					_CPRINTF(c, "Couldn't move client!\n");
 					break;
 				}
@@ -4242,7 +4249,7 @@ isresizeevent(Display *display, XEvent *event, XPointer arg)
 }
 
 static Bool
-resize_begin(Client *c, View *v, Bool toggle, int from, IsUnion * was)
+resize_begin(Client *c, View *v, Bool toggle, int from, IsUnion * was, int x_root, int y_root)
 {
 	Bool isfloater;
 
@@ -4288,18 +4295,21 @@ resize_begin(Client *c, View *v, Bool toggle, int from, IsUnion * was)
 			c->is.rhalf = False;
 		if ((was->shaded = c->is.shaded))
 			c->is.shaded = False;
-		save(c);	/* resize from current geometry */
 		if (!isfloater) {
+			save(c); /* resize from current geometry */
 			/* XXX: could this not just be raiseclient(c) ??? */
 			detachstack(c);
 			attachstack(c, True);
 			togglefloating(c);
 		} else if (was->is) {
+			save(c); /* resize from current geometry */
 			was->floater = isfloater;
 			updatefloat(c, v);
 			raiseclient(c);
-		} else
+		} else {
+			save(c); /* resize from current geometry */
 			raiseclient(c);
+		}
 	} else {
 		/* can't resize tiled yet... */
 		c->is.moveresize = False;
@@ -4443,7 +4453,7 @@ mouseresize_from(Client *c, int from, XEvent *e, Bool toggle)
 				if (abs(dx) < scr->options.dragdist
 				    && abs(dy) < scr->options.dragdist)
 					continue;
-				if (!(resized = resize_begin(c, v, toggle, from, &was)))
+				if (!(resized = resize_begin(c, v, toggle, from, &was, x_root, y_root)))
 					break;
 				o = c->c;
 				n = c->c;

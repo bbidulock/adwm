@@ -232,6 +232,10 @@ view(View *ov, int index)
 	Client *c;
 	View *cv;
 
+	if (!ov) {
+		EPRINTF("Null view pointer.\n");
+		return;
+	}
 	if (0 > index || index >= scr->ntags) {
 		XPRINTF("WARNING: bad index %d\n", index);
 		return;

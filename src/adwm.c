@@ -1038,7 +1038,7 @@ configurerequest(XEvent *e)
 		wc.border_width = ev->border_width;
 		wc.sibling = ev->above;
 		wc.stack_mode = ev->detail;
-		xtrap_push(1,_WCFMTS(wc, ev->value_mask), _WCARGS(wc, ev->value_mask));
+		xtrap_push(1,_WCFMTS(wc, ev->value_mask) "configuring unmanaged window 0x%lx\n", _WCARGS(wc, ev->value_mask), ev->window);
 		XConfigureWindow(dpy, ev->window, ev->value_mask, &wc);
 		xtrap_pop();
 		XSync(dpy, False);

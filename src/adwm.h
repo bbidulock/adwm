@@ -940,7 +940,8 @@ struct Client {
 	char *icon_name;
 	int monitor;			/* initial monitor */
 	Extents e;
-	ClientGeometry c, r, s, u;	/* current, restore, static, supplied */
+	Geometry s, u;			/* static and initial */
+	ClientGeometry c, r;		/* current, restore */
 //	int basew, baseh, incw, inch, maxw, maxh, minw, minh;
 //	int minax, maxax, minay, maxay, gravity;
 	int ignoreunmap;
@@ -1427,7 +1428,7 @@ void show_client_state(Client *c);
 #define NAME "adwm"
 #endif
 
-#define _WCFMTS(_wc,_mask)	"%d%sx%d%s+%d%s+%d%s:%d%s (%d%s-0x%lx%s)"
+#define _WCFMTS(_wc,_mask)	"%d%sx%d%s+%d%s+%d%s:%d%s (%d%s-0x%lx%s) "
 #define _WCARGS(_wc,_mask)	(_wc).x, ((_mask) & CWX) ? "!" : "", \
 				(_wc).y, ((_mask) & CWY) ? "!" : "", \
 				(_wc).width, ((_mask) & CWWidth) ? "!" : "", \

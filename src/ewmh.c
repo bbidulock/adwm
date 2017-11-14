@@ -3210,11 +3210,11 @@ clientmessage(XEvent *e)
 			unsigned flags = (unsigned) ev->data.l[0];
 			unsigned source = ((flags >> 12) & 0x0f);
 			unsigned gravity = flags & 0xff;
-			XConfigureRequestEvent cev;
+			XConfigureRequestEvent cev = { 0, };
 
 			if (!c->can.move && !c->can.size)
 				return False;
-			if (source != 0 && source != 2)
+			if (source != 0 && source != 1 && source != 2)
 				return False;
 			cev.value_mask = 0;
 			if (c->can.move && (flags & (1 << 8))) {
@@ -3304,14 +3304,16 @@ clientmessage(XEvent *e)
 			unsigned source = ev->data.l[0];
 			Window sibling = ev->data.l[1];
 			unsigned detail = ev->data.l[2];
-			Client *o = NULL;
+			XConfigureRequestEvent cev;
 
-			if (sibling)
-				if (!(o = getclient(sibling, ClientAny)))
-					return False;
-			if (source == 1)
+			if (source != 0 && source != 1 && source != 2)
 				return False;
-			restack_client(c, detail, o);
+			cev.value_mask = 0;
+			cev.value_mask |= CWSibling;
+			cev.above = sibling;
+			cev.value_mask |= CWStackMode;
+			cev.detail = detail;
+			configureclient(c, (XEvent *) &cev, c->sh.win_gravity);
 		} else if (message_type == _XA_NET_REQUEST_FRAME_EXTENTS) {
 			ewmh_update_net_window_extents(c);
 		} else

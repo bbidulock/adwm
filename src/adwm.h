@@ -1455,7 +1455,7 @@ void show_client_state(Client *c);
 		fprintf(stderr, _args); fflush(stderr); } } while (0)
 
 #define __GPRINTF(_num,_g,_args...) do { if (options.debug >= _num) { \
-		fprintf(stderr, NAME ": D: [%s] %12s: +%4d : %s() : " __GFMTS(_g), _timestamp(), __FILE__, __LINE__, __func__,__GARGS(_g); \
+		fprintf(stderr, NAME ": D: [%s] %12s: +%4d : %s() : " __GFMTS(_g), _timestamp(), __FILE__, __LINE__, __func__,__GARGS(_g)); \
 		fprintf(stderr, _args); fflush(stderr); } } while (0)
 
 #define __EPRINTF(_args...)	  do { \

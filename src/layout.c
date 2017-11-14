@@ -900,11 +900,11 @@ reconfigure(Client *c, const ClientGeometry *n, Bool force)
 		XPRINTF("frame wc.h = %u\n", fwc.height);
 		fmask |= CWHeight;
 	}
-	if (c->c.b + c->c.v != (wwc.x = n->b + v)) {
+	if (c->c.v != (wwc.x = v)) {
 		XPRINTF("wind  wc.x = %d\n", wwc.x);
 		wmask |= CWX;
 	}
-	if (c->c.b + c->c.v + c->c.t != (wwc.y = n->b + v + t)) {
+	if (c->c.v + c->c.t != (wwc.y = v + t)) {
 		XPRINTF("wind  wc.y = %d\n", wwc.y);
 		wmask |= CWY;
 	}
@@ -2087,7 +2087,7 @@ tile(View *v)
 		g.w -= 2 * (ma.g + g.b);
 		g.h -= 2 * (ma.g + g.b);
 		if (!c->is.moveresize) {
-			XPRINTF("CALLING reconfigure()\n");
+			XPRINTF(&g, "CALLING reconfigure()\n");
 			reconfigure(c, &g, False);
 		} else {
 			ClientGeometry C = g;
@@ -2095,7 +2095,7 @@ tile(View *v)
 			/* center it where it was before */
 			C.x = (c->c.x + c->c.w / 2) - C.w / 2;
 			C.y = (c->c.y + c->c.h / 2) - C.h / 2;
-			XPRINTF("CALLING reconfigure()\n");
+			XPRINTF(&C, "CALLING reconfigure()\n");
 			reconfigure(c, &C, False);
 		}
 		if (c->is.shaded && (c != sel || !scr->options.autoroll))
@@ -2183,7 +2183,7 @@ tile(View *v)
 		g.w -= 2 * (sa.g + g.b);
 		g.h -= 2 * (sa.g + g.b);
 		if (!c->is.moveresize) {
-			XPRINTF("CALLING reconfigure()\n");
+			XPRINTF(&g, "CALLING reconfigure()\n");
 			reconfigure(c, &g, False);
 		} else {
 			ClientGeometry C = g;
@@ -2191,7 +2191,7 @@ tile(View *v)
 			/* center it where it was before */
 			C.x = (c->c.x + c->c.w / 2) - C.w / 2;
 			C.y = (c->c.y + c->c.h / 2) - C.h / 2;
-			XPRINTF("CALLING reconfigure()\n");
+			XPRINTF(&C, "CALLING reconfigure()\n");
 			reconfigure(c, &C, False);
 		}
 		if (c->is.shaded && (c != sel || !scr->options.autoroll))

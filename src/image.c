@@ -196,12 +196,11 @@ initimage(void)
 {
 	int i, count, nvi;
 	XPixmapFormatValues *pmv;
+	XRenderPictFormat *format;
 	XVisualInfo *xvi, templ = { .screen = scr->screen, .depth = 32, .class = TrueColor, };
 	Visual *visual = NULL;
 
 	if ((xvi = XGetVisualInfo(dpy, VisualScreenMask|VisualDepthMask|VisualClassMask, &templ, &nvi))) {
-		XRenderPictFormat *format;
-
 		for (i = 0; i < nvi; i++) {
 			format = XRenderFindVisualFormat(dpy, xvi[i].visual);
 			if (format->type == PictTypeDirect && format->direct.alphaMask) {
@@ -220,6 +219,7 @@ initimage(void)
 		scr->depth = 32;
 		scr->visual = visual;
 		scr->colormap = XCreateColormap(dpy, scr->root, visual, AllocNone);
+		scr->format = XRenderFindStandardFormat(dpy, PictStandardARGB32);
 
 		/* make a window with proper depth for creating GCs */
 		wa.override_redirect = True;
@@ -240,6 +240,7 @@ initimage(void)
 		scr->depth = DefaultDepth(dpy, scr->screen);
 		scr->visual = DefaultVisual(dpy, scr->screen);
 		scr->colormap = DefaultColormap(dpy, scr->screen);
+		scr->format = XRenderFindVisualFormat(dpy, scr->visual);
 		scr->drawable = scr->root;
 	}
 	xtrap_pop();

@@ -788,6 +788,9 @@ typedef struct {
 typedef struct {
 	struct {
 		Pixmap draw, mask;
+#if defined RENDER
+		Picture pict;
+#endif
 #if defined IMLIB2
 		Imlib_Image image;
 #endif
@@ -1281,6 +1284,9 @@ struct AScreen {
 	Visual *visual;
 	Colormap colormap;
 	unsigned int depth;
+#ifdef RENDER
+	XRenderPictFormat *format;
+#endif
 	Bool dither;
 	unsigned int bpp;
 	unsigned char *rctab;		/* red color table */

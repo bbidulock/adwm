@@ -416,6 +416,238 @@ createdataicon(Client *c, unsigned w, unsigned h, long *data)
 {
 }
 #else				/* !defined PIXBUF || !defined USE_PIXBUF */
+#if defined RENDER && defined USE_RENDER
+Bool
+createbitmapicon(Client *c, Pixmap icon, Pixmap mask, unsigned w, unsigned h)
+{
+	XImage *xicon = NULL, *mask = NULL, *alpha;
+	ButtonImage *bi;
+	unsigned i, j, d = scr->depth, th = scr->style.titleheight;
+	unsigned long mask = 0;
+	Pixmap pixmap;
+	Picture pict;
+	XRenderPictureAttributes pa = { 0, };
+
+	if (!(xicon = XGetImage(dpy, icon, 0, 0, w, h, 0x1, XYPixmap))) {
+		EPRINTF("could not get bitmap 0x%lx %ux%u\n", icon, w, h);
+		return (False);
+	}
+	if (mask && !(xmask = XGetImage(dpy, mask, 0, 0, w, h, 0x1, XYPimap))) {
+		EPRINTF("could not get bitmap 0x%lx %ux%u\n", mask, w, h);
+		return (False);
+	}
+	if (mask && !(alpha = XCreateImage(dpy, scr->visual, d, ZPixmap, 0, NULL, w, h, 0, 0))) {
+		DPRINTF("could not create ximage %ux%ux%u\n", w, h, d);
+		XDestroyImage(xicon);
+		XDestroyImage(xmask);
+		return (False);
+	}
+	if (alpha && !(alpha->data = ecalloc(alpha->bytes_per_line * alpha->height))) {
+		DPRINTF("could not allocate ximage data %ux%ux%u\n", w, h, d);
+		XDestroyImage(xicon);
+		XDestroyImage(xmask);
+		XDestroyImage(alpha);
+		return (False);
+	}
+	for (j = 0; j < h; j++) {
+		for (i = 0; i < w; i++) {
+			if (XGetPixel(xicon, i, j)) {
+				XPutPixel(alpha, i, j, 0xffffffff);
+			} else {
+				XPutPixel(alpha, i, j, 0xff000000);
+			}
+			if (xmask && j < xmask->height && i < xmask->width
+			    && XGetPixel(mask, i, j)) {
+				XPutPixel(alpha, i, j,
+					  XGetPixel(alpha, i, j) | 0xff000000);
+			} else {
+				XPutPixel(alpha, i, j,
+					  XGetPixel(alpha, i, j) & 0x00ffffff);
+			}
+		}
+	}
+	XDestroyImage(xicon);
+	if (xmask)
+		XDestroyImage(xmask);
+	pixmap = XCreatePixmap(dpy, scr->drawable, w, h, d);
+	XPutImage(dpy, pixmap, scr->dc.gc, alpha, 0, 0, 0, 0, w, h);
+	XDestroyImage(alpha);
+
+	pa.repeat = RepeatNone;
+	mask |= CPRepeat;
+	pa.poly_edge = PolyEdgeSmooth;
+	mask |= CPPolyEdge;
+	pa.component_alpha = True;
+	mask |= CPComponentAlpha;
+	pict = XRenderCreatePicture(dpy, pixmap, scr->format, mask, &pa);
+
+	bi = &c->iconbtn;
+	bi->x = bi->y = bi->b = 0;
+	bi->d = d;
+	bi->w = w;
+	bi->h = h;
+	if (h > th) {
+		XDouble scale = (XDouble) th / (XDouble) h;
+		XTransform trans = { 
+			{ XDoubleToFixed(scale), 0, 0 },
+			{ 0, XDoubleToFixed(scale), 0 },
+			{ 0, 0, XDoubleToFixed(1.0)   }
+		};
+		XRenderSetPictureTransform(dpy, pict, &trans);
+		XRenderSetPictureFilter(dpy, pict, FilterBilinear, NULL, 0);
+		bi->w = w * scale;
+		bi->h = h * scale;
+	}
+	if (bi->bitmap.pict) {
+		XRenderFreePicture(dpy, bi->bitmap.pict);
+		bi->bitmap.pict = None;
+	}
+	bi->bitmap.pict = pict;
+	bi->present = True;
+	return (True);
+}
+Bool
+createpixmapicon(Client *c, Pixmap icon, Pixmap mask, unsigned w, unsigned h, unsigned d)
+{
+	XImage *xicon = NULL, *mask = NULL, *alpha;
+	ButtonImage *bi;
+	unsigned i, j, d = scr->depth, th = scr->style.titleheight;
+	unsigned long mask = 0, pixel;
+	Pixmap pixmap;
+	Picture pict;
+	XRenderPictureAttributes pa = { 0, };
+
+	if (!(xicon = XGetImage(dpy, icon, 0, 0, w, h, DefaultDepth(dpy, scr->screen), ZPixmap))) {
+		EPRINTF("could not get pixmap 0x%lx %ux%u\n", icon, w, h);
+		return (False);
+	}
+	if (mask && !(xmask = XGetImage(dpy, mask, 0, 0, w, h, 0x1, XYPimap))) {
+		EPRINTF("could not get bitmap 0x%lx %ux%u\n", mask, w, h);
+		return (False);
+	}
+	if (mask && !(alpha = XCreateImage(dpy, scr->visual, d, ZPixmap, 0, NULL, w, h, 0, 0))) {
+		DPRINTF("could not create ximage %ux%ux%u\n", w, h, d);
+		XDestroyImage(xicon);
+		XDestroyImage(xmask);
+		return (False);
+	}
+	if (alpha && !(alpha->data = ecalloc(alpha->bytes_per_line * alpha->height))) {
+		DPRINTF("could not allocate ximage data %ux%ux%u\n", w, h, d);
+		XDestroyImage(xicon);
+		XDestroyImage(xmask);
+		XDestroyImage(alpha);
+		return (False);
+	}
+	for (j = 0; j < h; j++) {
+		for (i = 0; i < w; i++) {
+			pixel = XGetPixel(xicon, i, j);
+			if (xmask && j < xmask->height && i < xmask->width && XGetPixel(mask, i, j)) {
+				XPutPixel(alpha, i, j, pixel | 0xff000000);
+			} else {
+				XPutPixel(alpha, i, j, pixel & 0x00ffffff);
+			}
+		}
+	}
+	XDestroyImage(xicon);
+	if (xmask)
+		XDestroyImage(xmask);
+	pixmap = XCreatePixmap(dpy, scr->drawable, w, h, d);
+	XPutImage(dpy, pixmap, scr->dc.gc, alpha, 0, 0, 0, 0, w, h);
+	XDestroyImage(alpha);
+
+	pa.repeat = RepeatNone;
+	mask |= CPRepeat;
+	pa.poly_edge = PolyEdgeSmooth;
+	mask |= CPPolyEdge;
+	pa.component_alpha = True;
+	mask |= CPComponentAlpha;
+	pict = XRenderCreatePicture(dpy, pixmap, scr->format, mask, &pa);
+
+	bi = &c->iconbtn;
+	bi->x = bi->y = bi->b = 0;
+	bi->d = d;
+	bi->w = w;
+	bi->h = h;
+	if (h > th) {
+		/* get XRender to scale the image for us */
+		XDouble scale = (XDouble) th / (XDouble) h;
+		XTransform trans = {
+			{ XDoubleToFixed(scale), 0, 0 },
+			{ 0, XDoubleToFixed(scale), 0 },
+			{ 0, 0, XDoubleToFixed(1.0)   }
+		};
+		XRenderSetPictureTransform(dpy, pict, &trans);
+		XRenderSetPictureFilter(dpy, pict, FilterBilinear, NULL, 0);
+		bi->w = w * scale;
+		bi->h = h * scale;
+	}
+	if (bi->pixmap.pict) {
+		XRenderFreePicture(dpy, bi->pixmap.pict);
+		bi->pixmap.pict = None;
+	}
+	bi->pixmap.pict = pict;
+	bi->present = True;
+	return (True);
+}
+
+Bool
+createdataicon(Client *c, unsigned w, unsigned h, long *data)
+{
+	XImage *alpha;
+	ButtonImage *bi;
+	unsigned i, j, d = scr->depth, th = scr->style.titleheight;
+	unsigned long mask = 0, pixel, *p;
+	Pixmap pixmap;
+	Picture pict;
+	XRenderPictureAttributes pa = { 0, };
+
+	if (!(alpha = XCreateImage(dpy, scr->visual, d, ZPixmap, 0, NULL, w, h, 0, 0))) {
+		DPRINTF("could not create ximage %ux%ux%u\n", w, h, d);
+		return (False);
+	}
+	for (p = data, j = 0; j < h; j++)
+		for (i = 0; i < w; i++, p++)
+			XPutPixel(alpha, i, j, *p);
+
+	pixmap = XCreatePixmap(xpy, scr->drawable, w, h, d);
+	XPutImage(dpy, pixmap, scr->dc.gc, alpha, 0, 0, 0, 0, w, h);
+	XDestroyImage(alpha);
+
+	pa.repeat = RepeatNone;
+	mask |= CPRepeat;
+	pa.poly_edge = PolyEdgeSmooth;
+	mask |= CPPolyEdge;
+	pa.component_alpha = True;
+	mask |= CPComponentAlpha;
+	pict = XRenderCreatePicture(dpy, pixmap, scr->format, mask, &pa);
+
+	bi = &c->iconbtn;
+	bi->x = bi->y = bi->b = 0;
+	bi->d = d;
+	bi->w = w;
+	bi->h = h;
+	if (h > th) {
+		/* get XRender to scale the image for us */
+		XDouble scale = (XDouble) th / (XDouble) h;
+		XTransform trans = {
+			{ XDoubleToFixed(scale), 0, 0 },
+			{ 0, XDoubleToFixed(scale), 0 },
+			{ 0, 0, XDoubleToFixed(1.0)   }
+		};
+		XRenderSetPictureTransform(dpy, pict, &trans);
+		XRenderSetPictureFilter(dpy, pict, FilterBilinear, NULL, 0);
+		bi->w = w * scale;
+		bi->h = h * scale;
+	}
+	if (bi->pixmap.pict) {
+		XRenderFreePicture(dpy, bi->pixmap.pict);
+		bi->pixmap.pict = None;
+	}
+	bi->pixmap.pict = pict;
+	bi->present = True;
+	return (True);
+}
+#else				/* !defined RENDER || !defined USE_RENDER */
 Bool
 createbitmapicon(Client *c, Pixmap icon, Pixmap mask, unsigned w, unsigned h)
 {
@@ -458,24 +690,24 @@ createpixmapicon(Client *c, Pixmap icon, Pixmap mask, unsigned w, unsigned h, un
 		return (False);
 	}
 	if (mask && !(alpha = XCreateImage(dpy, scr->visual, scr->depth, ZPixmap, 0, NULL, w, h, 0, 0))) {
-		DPRINTF("could not create ximage %ux%ux%u\n", w, h, scr->depth);
+		DPRINTF("could not create ximage %ux%ux%u\n", w, h, d);
 		XDestroyImage(xicon);
 		XDestroyImage(xmask);
 		return (False);
 	}
 	if (alpha && !(alpha->data = ecalloc(alpha->bytes_per_line * alpha->height))) {
-		DPRINTF("could not allocate ximage data %ux%ux%u\n", w, h, scr->depth);
+		DPRINTF("could not allocate ximage data %ux%ux%u\n", w, h, d);
 		XDestroyImage(xicon);
 		XDestroyImage(xmask);
 		XDestroyImage(alpha);
 		return (False);
 	}
-	for (i = 0; i < h; i++) {
 }
 Bool
 createdataicon(Client *c, unsigned w, unsigned h, long *data)
 {
 }
+#endif				/* !defined RENDER || !defined USE_RENDER */
 #endif				/* !defined PIXBUF || !defined USE_PIXBUF */
 #endif				/* !defined IMLIB2 || !defined USE_IMLIB2 */
 
@@ -992,6 +1224,15 @@ drawbutton(AScreen *ds, Client *c, ElementType type, XftColor *col, int x)
 	fg = ec->pressed ? &col[ColFG] : &col[ColButton];
 	bg = bi->bg.pixel ? &bi->bg : &col[ColBG];
 
+#if defined RENDER && defined USE_RENDER
+	if (bi->pixmap.pict) {
+		Picture dst = XftDrawPicture(ds->dc.draw.xft);
+
+		XRenderFillRectangle(dpy, PictOpSrc, dst, &bg->color, g.x, g.y, g.w, g.h);
+		XRenderComposite(dpy, PictOpOver, bi->pixmap.pict, None, dst,
+				0, 0, 0, 0, ec->eg.x, ec->eg.y, ec->eg.w, ec->eg.h);
+	} else
+#endif
 #if defined IMLIB2
 	if (bi->pixmap.image) {
 		Imlib_Image image;
@@ -1435,6 +1676,79 @@ imlib_error_string(Imlib_Load_Error error)
 #endif
 
 #ifdef XPM
+#if defined RENDER && defined USE_RENDER
+static Bool
+initxpm(char *path, ButtonImage *bi)
+{
+	XImage *xicon = NULL, *xmask = NULL;
+	XpmAttributes xa = { 0, };
+	unsigned long pixel;
+	unsigned w, h, d = scr->depth;
+	int status, i, j;
+
+	xa.visual = scr->visual;
+	xa.valuemask |= XpmVisual;
+	xa.colormap = scr->colormap;
+	xa.valuemask |= XpmColormap;
+	xa.depth = scr->depth;
+	xa.valuemask |= XpmDepth;
+
+	status = XpmReadFileToImage(dpy, path, &xicon, &xmask, &xa);
+	if (status != Success || !xicon) {
+		EPRINTF("could not load xpm file %s\n", path);
+		return False;
+	}
+	w = xa.width;
+	h = xa.height;
+
+	if (!(alpha = XCreateImage(dpy, scr->visual, d, ZPixmap, 0, NULL, w, h, 0, 0))) {
+		DPRINTF("could not create ximage %ux%ux%u\n", w, h, d);
+		XDestroyImage(xicon);
+		XDestroyImage(xmask);
+		return (False);
+	}
+	for (j = 0; j < xicon->height; j++) {
+		for (i = 0; i < xicon->width; i++) {
+			pixel = XGetPixel(xicon, i, j);
+			if (xmask && j < xmask->height && i < xmask->width && XGetPixel(mask, i, j)) {
+				XPutPixel(xicon, i, j, pixel | 0xff000000);
+			} else {
+				XPutPixel(xicon, i, j, pixel & 0x00ffffff);
+			}
+
+		}
+	}
+	XDestroyImage(xicon);
+	if (xmask)
+		XDestroyImage(xmask);
+	pixmap = XCreatePixmap(dpy, scr->drawable, w, h, d);
+	XPutImage(dpy, pixmap, scr->dc.gc, alpha, 0, 0, 0, 0, w, h);
+	XDestroyImage(alpha);
+
+	pa.repeat = RepeatNone;
+	mask |= CPRepeat;
+	pa.poly_edge = PolyEdgeSmooth;
+	mask |= CPPolyEdge;
+	pa.component_alpha = True;
+	mask |= CPComponentAlpha;
+	pict = XRenderCreatePicture(dpy, pixmap, scr->format, mask, &pa);
+
+	if (bi->pixmap.pict) {
+		XRenderFreePicture(dpy, bi->pixmap.pict);
+		bi->pixmap.pict = None;
+	}
+	bi->pixmap.pict = pict;
+	bi->w = xa.width;
+	bi->h = xa.height;
+	if (bi->h > scr->style.titleheight) {
+		/* read lower down into image to clip top and bottom by same amount */
+		bi->y += (bi->h - scr->style.titleheight) / 2;
+		bi->h = scr->style.titleheight;
+	}
+	free(path);
+	return True;
+}
+#else				/* defined RENDER && defined USE_RENDER */
 static Bool
 initxpm(char *path, ButtonImage *bi)
 {
@@ -1470,6 +1784,7 @@ initxpm(char *path, ButtonImage *bi)
 	free(path);
 	return True;
 }
+#endif				/* defined RENDER && defined USE_RENDER */
 #endif
 
 static Bool

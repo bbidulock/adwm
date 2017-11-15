@@ -776,28 +776,28 @@ initrcdirs(const char *conf, Bool reload)
 	config.rdir = ecalloc(len + 1, sizeof(*config.rdir));
 	strncpy(config.rdir, xdgdirs.runt, len);
 	strncat(config.rdir, "/adwm/", len);
-	XPRINTF("config.rdir = %s\n", config.rdir);
+	OPRINTF("config.rdir = %s\n", config.rdir);
 
 	free(config.xdir);
 	len = strlen(xdgdirs.conf.home) + strlen("/adwm/");
 	config.xdir = ecalloc(len + 1, sizeof(*config.xdir));
 	strncpy(config.xdir, xdgdirs.conf.home, len);
 	strncat(config.xdir, "/adwm/", len);
-	XPRINTF("config.xdir = %s\n", config.xdir);
+	OPRINTF("config.xdir = %s\n", config.xdir);
 
 	free(config.udir);
 	len = strlen(xdgdirs.home) + strlen("/.adwm/");
 	config.udir = ecalloc(len + 1, sizeof(*config.udir));
 	strncpy(config.udir, xdgdirs.home, len);
 	strncat(config.udir, "/.adwm/", len);
-	XPRINTF("config.udir = %s\n", config.udir);
+	OPRINTF("config.udir = %s\n", config.udir);
 
 	free(config.sdir);
 	len = strlen(SYSCONFPATH) + 1;
 	config.sdir = ecalloc(len + 1, sizeof(*config.sdir));
 	strncpy(config.sdir, SYSCONFPATH, len);
 	strncat(config.sdir, "/", len);
-	XPRINTF("config.sdir = %s\n", config.sdir);
+	OPRINTF("config.sdir = %s\n", config.sdir);
 
 	free(config.pdir);
 	config.pdir = NULL;
@@ -830,7 +830,7 @@ initrcdirs(const char *conf, Bool reload)
 				break;
 		}
 	}
-	XPRINTF("config.pdir = %s\n", config.pdir);
+	OPRINTF("config.pdir = %s\n", config.pdir);
 	/* XXX: if config.rcfile or its directory, config.pdir, doesn't exist, we will
 	   read config.sdir/adwmrc when it comes to reading, and will create config.pdir
 	   and write config.rcfile when it comes to it. */

@@ -127,7 +127,6 @@ imlib_createbitmapicon(AScreen *ds, Client *c, Pixmap icon, Pixmap mask, unsigne
 	bi->d = d;
 	bi->w = w;
 	bi->h = h;
-#if 1
 	if (bi->pixmap.draw) {
 		imlib_free_pixmap_and_mask(bi->pixmap.draw);
 		bi->pixmap.draw = None;
@@ -135,14 +134,6 @@ imlib_createbitmapicon(AScreen *ds, Client *c, Pixmap icon, Pixmap mask, unsigne
 	}
 	imlib_render_pixmaps_for_whole_image(&bi->pixmap.draw, &bi->pixmap.mask);
 	imlib_free_image();
-#else
-	if (bi->pixmap.image) {
-		imlib_context_set_image(bi->pixmap.image);
-		imlib_context_set_mask(None);
-		imlib_free_image();
-	}
-	bi->pixmap.image = image;
-#endif
 	bi->present = True;
 	imlib_context_pop();
 	return True;
@@ -208,7 +199,6 @@ imlib_createpixmapicon(AScreen *ds, Client *c, Pixmap icon, Pixmap mask, unsigne
 	bi->d = ds->depth;
 	bi->w = tw;
 	bi->h = th;
-#if 1
 	imlib_context_set_image(image);
 	imlib_context_set_mask(None);
 	if (bi->pixmap.draw) {
@@ -218,23 +208,6 @@ imlib_createpixmapicon(AScreen *ds, Client *c, Pixmap icon, Pixmap mask, unsigne
 	}
 	imlib_render_pixmaps_for_whole_image(&bi->pixmap.draw, &bi->pixmap.mask);
 	imlib_free_image();
-#else
-	if (d > 1) {
-		if (bi->pixmap.image) {
-			imlib_context_set_image(bi->pixmap.image);
-			imlib_context_set_mask(None);
-			imlib_free_image();
-		}
-		bi->pixmap.image = image;
-	} else {
-		if (bi->bitmap.image) {
-			imlib_context_set_image(bi->bitmap.image);
-			imlib_context_set_mask(None);
-			imlib_free_image();
-		}
-		bi->bitmap.image = image;
-	}
-#endif
 	bi->present = True;
 	imlib_context_pop();
 	return (True);
@@ -290,7 +263,6 @@ imlib_createdataicon(AScreen *ds, Client *c, unsigned w, unsigned h, long *data)
 	bi->d = ds->depth;
 	bi->w = w;
 	bi->h = h;
-#if 1
 	if (bi->pixmap.draw) {
 		imlib_free_pixmap_and_mask(bi->pixmap.draw);
 		bi->pixmap.draw = None;
@@ -298,14 +270,6 @@ imlib_createdataicon(AScreen *ds, Client *c, unsigned w, unsigned h, long *data)
 	}
 	imlib_render_pixmaps_for_whole_image(&bi->pixmap.draw, &bi->pixmap.mask);
 	imlib_free_image();
-#else
-	if (bi->pixmap.image) {
-		imlib_context_set_image(bi->pixmap.image);
-		imlib_context_set_mask(None);
-		imlib_free_image();
-	}
-	bi->pixmap.image = image;
-#endif
 	bi->present = True;
 	imlib_context_pop();
 	return True;
@@ -746,7 +710,6 @@ ximage_createbitmapicon(AScreen *ds, Client *c, Pixmap icon, Pixmap mask, unsign
 			EPRINTF("could not allocate colors %ux%ux%u\n", sw, sh, d);
 			goto error;
 		}
-#if 1
 		double pppx = (double) w / (double) sw;
 		double pppy = (double) h / (double) sh;
 
@@ -785,26 +748,6 @@ ximage_createbitmapicon(AScreen *ds, Client *c, Pixmap icon, Pixmap mask, unsign
 				}
 			}
 		}
-#else
-		for (j = 0; j < h; j++) {
-			l = trunc(j * scale);
-			for (i = 0; i < w; i++) {
-				k = trunc(i * scale);
-				n = l * sw + k;
-				m = n << 2;
-				counts[n]++;
-				if (!xmask || XGetPixel(xmask, i, j)) {
-					if (XGetPixel(xicon, i, j)) {
-						colors[n]++;
-						chanls[m+0] += 255;
-						chanls[m+1] += 255;
-						chanls[m+2] += 255;
-						chanls[m+3] += 255;
-					}
-				}
-			}
-		}
-#endif
 		unsigned amax = 0;
 		for (l = 0; l < sh; l++) {
 			for (k = 0; k < sw; k++) {
@@ -1000,7 +943,6 @@ ximage_createpixmapicon(AScreen *ds, Client *c, Pixmap icon, Pixmap mask, unsign
 			EPRINTF("could not allocate colors %ux%ux%u\n", sw, sh, d);
 			goto error;
 		}
-#if 1
 		double pppx = (double) w / (double) sw;
 		double pppy = (double) h / (double) sh;
 
@@ -1043,25 +985,6 @@ ximage_createpixmapicon(AScreen *ds, Client *c, Pixmap icon, Pixmap mask, unsign
 				}
 			}
 		}
-#else
-		for (j = 0; j < h; j++) {
-			l = trunc(j * scale);
-			for (i = 0; i < w; i++) {
-				k = trunc(i * scale);
-				n = l * sw + k;
-				m = n << 2;
-				counts[n]++;
-				if (!xmask || XGetPixel(xmask, i, j)) {
-					colors[n]++;
-					pixel = XGetPixel(xicon, i, j);
-					chanls[m+0] += 255;
-					chanls[m+1] += (pixel >> 16) & 0xff;
-					chanls[m+2] += (pixel >>  8) & 0xff;
-					chanls[m+3] += (pixel >>  0) & 0xff;
-				}
-			}
-		}
-#endif
 		unsigned amax = 0;
 		for (l = 0; l < sh; l++) {
 			for (k = 0; k < sw; k++) {
@@ -1244,7 +1167,6 @@ ximage_createdataicon(AScreen *ds, Client *c, unsigned w, unsigned h, long *data
 			goto error;
 		}
 
-#if 1
 		double pppx = (double) w / (double) sw;
 		double pppy = (double) h / (double) sh;
 
@@ -1289,25 +1211,6 @@ ximage_createdataicon(AScreen *ds, Client *c, unsigned w, unsigned h, long *data
 				}
 			}
 		}
-#else
-		for (p = data, j = 0; j < h; j++) {
-			l = trunc(j * scale);
-			for (i = 0; i < w; i++, p++) {
-				k = trunc(i * scale);
-				n = l * sw + k;
-				m = n << 2;
-				pixel = *p;
-				counts[n]++;
-				if (pixel & 0xFF000000) {
-					colors[n]++;
-					chanls[m+0] += (pixel >> 24) & 0xff;
-					chanls[m+1] += (pixel >> 16) & 0xff;
-					chanls[m+2] += (pixel >>  8) & 0xff;
-					chanls[m+3] += (pixel >>  0) & 0xff;
-				}
-			}
-		}
-#endif
 		unsigned amax = 0;
 		for (l = 0; l < sh; l++) {
 			for (k = 0; k < sw; k++) {
@@ -2781,41 +2684,6 @@ drawdockapp(Client *c, AScreen *ds)
 	   update on timer */
 	// XClearWindow(dpy, c->icon ? : c->win);
 	// XClearArea(dpy, c->icon ? : c->win, 0, 0, 0, 0, True);
-#if 0
-	/* doesn't work */
-	{
-		XEvent ev;
-
-		ev.xexpose.type = Expose;
-		ev.xexpose.serial = 0;
-		ev.xexpose.send_event = False;
-		ev.xexpose.display = dpy;
-		ev.xexpose.window = c->icon ? : c->win;
-		ev.xexpose.x = 0;
-		ev.xexpose.y = 0;
-		ev.xexpose.width = c->r.w;
-		ev.xexpose.height = c->r.h;
-		ev.xexpose.count = 0;
-
-		XSendEvent(dpy, c->icon ? : c->win, False, NoEventMask, &ev);
-
-		ev.xconfigure.type = ConfigureNotify;
-		ev.xconfigure.serial = 0;
-		ev.xconfigure.send_event = True;
-		ev.xconfigure.display = dpy;
-		ev.xconfigure.event = c->icon ? : c->win;
-		ev.xconfigure.window = c->icon ? : c->win;
-		ev.xconfigure.x = c->c.x + c->c.b + c->r.x;
-		ev.xconfigure.y = c->c.y + c->c.b + c->r.y;
-		ev.xconfigure.width = c->r.w;
-		ev.xconfigure.height = c->r.h;
-		ev.xconfigure.border_width = c->r.b;
-		ev.xconfigure.above = None;
-		ev.xconfigure.override_redirect = False;
-
-		XSendEvent(dpy, c->icon ? : c->win, False, NoEventMask, &ev);
-	}
-#endif
 }
 
 void
@@ -2967,19 +2835,6 @@ alloccolor(const char *colstr, XftColor *color)
 		eprint("error, cannot allocate color '%s'\n", colstr);
 	return (status);
 }
-
-#if 0
-static unsigned long
-getcolor(const char *colstr)
-{
-	XColor color, exact;
-
-	if (!XAllocNamedColor(dpy, scr->colormap, colstr,
-			      &color, &exact))
-		eprint("error, cannot allocate color '%s'\n", colstr);
-	return color.pixel;
-}
-#endif
 
 static void
 freepixmap(ButtonImage *bi)
@@ -3301,18 +3156,12 @@ initbitmap(char *path, ButtonImage *bi)
 		bi->y += (bi->h - scr->style.titleheight) / 2;
 		bi->h = scr->style.titleheight;
 	}
-#if 0
-	if (bi->pixmap.draw)
-		imlib_free_pixmap_and_mask(bi->pixmap.draw);
-	imlib_render_pixmaps_for_whole_image(&bi->pixmap.draw, &bi->pixmap.mask);
-#else
 	if (bi->bitmap.image) {
 		imlib_context_set_image(bi->bitmap.image);
 		imlib_context_set_mask(None);
 		imlib_free_image();
 	}
 	bi->bitmap.image = image;
-#endif
 	imlib_context_pop();
 	bi->x = bi->y = bi->b = 0;
 	bi->d = 1;

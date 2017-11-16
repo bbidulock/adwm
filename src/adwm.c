@@ -579,27 +579,17 @@ ban(Client *c)
 
 	setclientstate(c, c->is.icon ? IconicState : NormalState);
 	if (!c->is.banned) {
-#if 1
 		XEvent ev;
-#endif
+
 		c->is.banned = True;
 		relfocus(c);
 		XUnmapWindow(dpy, c->frame);
-#if 0
-		XSelectInput(dpy, c->frame, FRAMEMASK & ~SubstructureNotifyMask);
-		XSync(dpy, False);
-		XUnmapWindow(dpy, c->win);
-		XSync(dpy, False);
-		XSelectInput(dpy, c->frame, FRAMEMASK);
-		XSync(dpy, False);
-#else
 		if (c->is.dockapp)
 			XUnmapWindow(dpy, c->icon ? : c->win);
 		else
 			XUnmapWindow(dpy, c->win);
 		XSync(dpy, False);
 		XCheckIfEvent(dpy, &ev, &check_unmapnotify, (XPointer) c);
-#endif
 	}
 }
 
@@ -615,11 +605,9 @@ unban(Client *c, View *v)
 			if (c->is.dockapp) {
 				if (!sel || !sel->is.dockapp)
 					hide = True;
-#if 1
 			} else if (WTCHECK(c, WindowTypeDock)) {
 				if (!sel || sel != c)
 					hide = True;
-#endif
 			}
 		}
 		c->cview = v;
@@ -2374,109 +2362,11 @@ void
 show_client_state(Client *c)
 {
 	XPRINTF(c, "%-20s: 0x%08x\n", "wintype", c->wintype);
-#if 1
 	XPRINTF(c, "%-20s: 0x%08x\n", "skip.skip", c->skip.skip);
-#else
-	CPRINTF(c, "%-20s: %s\n", "skip.taskbar", c->skip.taskbar ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "skip.pager", c->skip.pager ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "skip.winlist", c->skip.winlist ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "skip.cycle", c->skip.cycle ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "skip.focus", c->skip.focus ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "skip.arrange", c->skip.arrange ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "skip.sloppy", c->skip.sloppy ? "true" : "false");
-#endif
-#if 1
 	XPRINTF(c, "%-20s: 0x%08x\n", "is.is", c->is.is);
-#else
-	CPRINTF(c, "%-20s: %s\n", "is.transient", c->is.transient ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "is.grptrans", c->is.grptrans ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "is.banned", c->is.banned ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "is.floater", c->is.floater ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "is.max", c->is.max ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "is.maxv", c->is.maxv ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "is.maxh", c->is.maxh ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "is.lhalf", c->is.lhalf ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "is.rhalf", c->is.rhalf ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "is.shaded", c->is.shaded ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "is.icon", c->is.icon ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "is.fill", c->is.fill ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "is.modal", c->is.modal ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "is.above", c->is.above ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "is.below", c->is.below ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "is.attn", c->is.attn ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "is.sticky", c->is.sticky ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "is.hidden", c->is.hidden ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "is.bastard", c->is.bastard ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "is.full", c->is.full ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "is.focused", c->is.focused ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "is.selected", c->is.selected ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "is.dockapp", c->is.dockapp ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "is.managed", c->is.managed ? "true" : "false");
-#endif
-#if 1
 	XPRINTF(c, "%-20s: 0x%08x\n", "has.has", c->has.has);
-#else
-	CPRINTF(c, "%-20s: %s\n", "has.border", c->has.border ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "has.grips", c->has.grips ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "has.title", c->has.title ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "has.but.menu", c->has.but.menu ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "has.but.min", c->has.but.min ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "has.but.max", c->has.but.max ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "has.but.close", c->has.but.close ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "has.but.size", c->has.but.size ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "has.but.shade", c->has.but.shade ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "has.but.fill", c->has.but.fill ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "has.but.floats", c->has.but.floats ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "has.but.half", c->has.but.half ? "true" : "false");
-#endif
-#if 1
 	XPRINTF(c, "%-20s: 0x%08x\n", "needs.has", c->needs.has);
-#else
-	CPRINTF(c, "%-20s: %s\n", "needs.border", c->needs.border ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "needs.grips", c->needs.grips ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "needs.title", c->needs.title ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "needs.but.menu", c->needs.but.menu ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "needs.but.min", c->needs.but.min ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "needs.but.max", c->needs.but.max ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "needs.but.close", c->needs.but.close ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "needs.but.size", c->needs.but.size ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "needs.but.shade", c->needs.but.shade ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "needs.but.fill", c->needs.but.fill ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "needs.but.floats", c->needs.but.floats ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "needs.but.half", c->needs.but.half ? "true" : "false");
-#endif
-#if 0
-	CPRINTF(c, "%-20s: %s\n", "with.struts", c->with.struts ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "with.time", c->with.time ? "true" : "false");
-#endif
-#if 1
 	XPRINTF(c, "%-20s: 0x%08x\n", "can.can", c->can.can);
-#else
-	CPRINTF(c, "%-20s: %s\n", "can.move", c->can.move ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "can.size", c->can.size ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "can.sizev", c->can.sizev ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "can.sizeh", c->can.sizeh ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "can.min", c->can.min ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "can.max", c->can.max ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "can.maxv", c->can.maxv ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "can.maxh", c->can.maxh ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "can.lhalf", c->can.lhalf ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "can.rhalf", c->can.rhalf ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "can.close", c->can.close ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "can.shade", c->can.shade ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "can.stick", c->can.stick ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "can.full", c->can.full ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "can.above", c->can.above ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "can.below", c->can.below ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "can.fill", c->can.fill ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "can.fillh", c->can.fillh ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "can.fillv", c->can.fillv ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "can.floats", c->can.floats ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "can.hide", c->can.hide ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "can.tag", c->can.tag ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "can.arrange", c->can.arrange ? "true" : "false");
-	CPRINTF(c, "%-20s: %s\n", "can.focus", c->can.focus ? "true" : "false");
-#endif
 }
 
 static void
@@ -5183,7 +5073,6 @@ initstruts(Bool reload)
 static void
 initsizes(Bool reload)
 {
-#if 1
 	int h = scr->style.titleheight;
 
 	if (h < 12) {
@@ -5198,23 +5087,6 @@ initsizes(Bool reload)
 	/* maybe it is letting size increment be zero that is causing problems */
 	XChangeProperty(dpy, scr->root, XA_WM_ICON_SIZE, XA_WM_ICON_SIZE, 32,
 			PropModeReplace, (unsigned char *) data, 18);
-#else
-#if 0
-	int h = scr->style.titleheight;
-
-	XIconSize isizes[3] = {
-		{h, h, h, h, 0, 0},
-		/* try to specify most of the standard sizes 64 and down */
-		{32, 32, 64, 64, 8, 8},
-		{12, 12, 24, 24, 4, 4}
-	};
-	XSetIconSizes(dpy, scr->root, isizes, 3);
-#else
-	XIconSize isizes = { 32, 32, 64, 64, 8, 8 };
-
-	XSetIconSizes(dpy, scr->root, &isizes, 1);
-#endif
-#endif
 }
 
 static void

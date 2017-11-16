@@ -298,18 +298,6 @@ appnode(Container *cp, Container *cc)
 		DPRINTF("WARNING: attempting to append attached node\n");
 		delnode(cc);
 	}
-#if 0
-	if (cp->type == TreeTypeLeaf)
-		cp = cp->parent;
-	/* find bottom of tree */
-	while ((cp && cp->node.children.tail &&
-		cp->node.children.tail->type != TreeTypeLeaf))
-		cp = cp->node.children.tail;
-	if (!cp) {
-		EPRINTF("ERROR: no parent node\n");
-		assert(cp != NULL);
-	}
-#endif
 	cc->next = cc->prev = NULL;	/* safety */
 	cc->parent = cp;
 	if ((cc->prev = cp->node.children.tail))
@@ -331,18 +319,6 @@ insnode(Container *cp, Container *cc)
 		DPRINTF("WARNING: attempting to append attached node\n");
 		delnode(cc);
 	}
-#if 0
-	if (cp->type == TreeTypeLeaf)
-		cp = cp->parent;
-	/* find bottom of tree */
-	while ((cp && cp->node.children.head &&
-		cp->node.children.head->type != TreeTypeLeaf))
-		cp = cp->node.children.tail;
-	if (!cp) {
-		EPRINTF("ERROR: no parent node\n");
-		assert(cp != NULL);
-	}
-#endif
 	cc->next = cc->prev = NULL;	/* safety */
 	cc->parent = cp;
 	if ((cc->next = cp->node.children.head))
@@ -623,14 +599,6 @@ enterclient(XEvent *e, Client *c)
 		CPRINTF(c, "FOCUS: should not focus (nor casually select) client.\n");
 		return True;
 	}
-	/* don't think this helps really */
-#if 0
-	/* focus when switching monitors */
-	if (!isvisible(sel, c->cview)) {
-		CPRINTF(c, "FOCUS: monitor switching focus\n");
-		focus(c);
-	}
-#endif
 	/* NOTE: this is where we can delay entering docks when theay are autoraised.  We 
 	   can use motion later to set the focus Need the timestamp from the Event,
 	   however.  Or we can select them here, but let the autoraise function delay
@@ -3354,20 +3322,16 @@ swapstacked(Client *c, Client *s)
 static void
 tearout(Client *c, int x_root, int y_root)
 {
-#if 0
-	if (tiled || !move)
-		save(c);	/* tear out at current geometry */
-#else
-	/* rather than tearing out at the current tiled or maximized/maximus
-	 * state, tear out at the restore (previously saved) state, but move the
-	 * restore position so that the pointer will stil be in the same place,
-	 * proportionally, in the restored window as it was in the current
-	 * geometry, without moving the pointer. */
+	/* rather than tearing out at the current tiled or maximized/maximus state, tear
+	   out at the restore (previously saved) state, but move the restore position so
+	   that the pointer will stil be in the same place, proportionally, in the
+	   restored window as it was in the current geometry, without moving the pointer. 
+	 */
 	float pdown = (float) (y_root - c->c.y + c->c.b) / (float) c->c.h;
 	float pleft = (float) (x_root - c->c.x + c->c.b) / (float) c->c.w;
+
 	c->r.y = y_root - (int) roundf(pdown * (float) c->r.h);
 	c->r.x = x_root - (int) roundf(pleft * (float) c->r.w);
-#endif
 }
 
 static void

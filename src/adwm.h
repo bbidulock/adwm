@@ -788,11 +788,12 @@ typedef struct {
 typedef struct {
 	struct {
 		Pixmap draw, mask;
-#if defined RENDER
-		Picture pict;
-#endif
+		XImage *ximage;
 #if defined IMLIB2
 		Imlib_Image image;
+#endif
+#if defined RENDER
+		Picture pict;
 #endif
 	}
 #if defined IMLIB2 || defined XPM
@@ -1445,8 +1446,8 @@ void show_client_state(Client *c);
 
 #define __GFMTS(_g)	"%dx%d+%d+%d:%d (%d:%d:%d) "
 #define __GARGS(_g)	(_g)->w,(_g)->h,(_g)->x,(_g)->y,(_g)->b,(_g)->t,(_g)->g,(_g)->v
-#define __CFMTS(_c)	"[0x%08lx 0x%08lx 0x%08lx %-20s] "
-#define __CARGS(_c)	(_c)->frame,(_c)->win,(_c)->icon,(_c)->name
+#define __CFMTS(_c)	"{%-8s,%-8s} [0x%08lx 0x%08lx 0x%08lx %-20s] "
+#define __CARGS(_c)	(_c)->ch.res_class, (_c)->ch.res_name, (_c)->frame,(_c)->win,(_c)->icon,(_c)->name
 
 #define __PTRACE(_num)		  do { if (options.debug >= _num) { \
 		fprintf(stderr, NAME ": T: [%s] %12s: +%4d : %s()\n", _timestamp(), __FILE__, __LINE__, __func__); \
@@ -1473,8 +1474,8 @@ void show_client_state(Client *c);
 		fprintf(stderr, _args); dumpstack(__FILE__, __LINE__, __func__); fflush(stderr); } while (0)
 
 #define __OPRINTF(_num, _args...)  do { if (options.debug >= _num) { \
-		fprintf(stdout, NAME ": I: "); \
-		fprintf(stdout, _args); fflush(stdout); } } while (0)
+		fprintf(stderr, NAME ": I: "); \
+		fprintf(stderr, _args); fflush(stderr); } } while (0)
 
 #define __XPRINTF(_num, _args...)  do { } while(0)
 

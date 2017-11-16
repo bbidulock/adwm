@@ -854,7 +854,7 @@ reconfigure(Client *c, const ClientGeometry *n, Bool force)
 	int v = c->grips ? n->v : 0;
 
 	if (n->w <= 0 || n->h <= 0) {
-		_CPRINTF(c, "zero width %d or height %d\n", n->w, n->h);
+		EPRINTF(__CFMTS(c) "zero width %d or height %d\n", __CARGS(c), n->w, n->h);
 		return;
 	}
 #if 0
@@ -3825,7 +3825,7 @@ mousemove_from(Client *c, int from, XEvent *e, Bool toggle)
 
 	if (!(v = getview(x_root, y_root)) || (c->cview && v != c->cview))
 		if (!(v = c->cview)) {
-			_CPRINTF(c, "No monitor to move from!\n");
+			EPRINTF(__CFMTS(c) "No monitor to move from!\n", __CARGS(c));
 			XUngrabPointer(dpy, e->xbutton.time);
 			return moved;
 		}
@@ -3840,7 +3840,7 @@ mousemove_from(Client *c, int from, XEvent *e, Bool toggle)
 
 	if (XGrabPointer(dpy, c->frame, False, MOUSEMASK, GrabModeAsync,
 			 GrabModeAsync, None, None, e->xbutton.time) != GrabSuccess) {
-		_CPRINTF(c, "Couldn't grab pointer!\n");
+		EPRINTF(__CFMTS(c) "Couldn't grab pointer!\n", __CARGS(c));
 		XUngrabPointer(dpy, e->xbutton.time);
 		return moved;
 	}
@@ -3892,7 +3892,7 @@ mousemove_from(Client *c, int from, XEvent *e, Bool toggle)
 				    && abs(dy) < scr->options.dragdist)
 					continue;
 				if (!(moved = move_begin(c, v, toggle, from, &was, x_root, y_root))) {
-					_CPRINTF(c, "Couldn't move client!\n");
+					EPRINTF(__CFMTS(c) "Couldn't move client!\n", __CARGS(c));
 					break;
 				}
 				n = c->c;
@@ -3904,7 +3904,7 @@ mousemove_from(Client *c, int from, XEvent *e, Bool toggle)
 
 				/* cannot move off monitor when shuffling tiled */
 				if (event_scr != scr || nv != v) {
-					_CPRINTF(c, "Cannot move off monitor!\n");
+					EPRINTF(__CFMTS(c) "Cannot move off monitor!\n", __CARGS(c));
 					continue;
 				}
 				if ((s = onstacked(c, v, ev.xmotion.x_root,

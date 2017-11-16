@@ -2448,7 +2448,7 @@ ewmh_update_sn_app_props(Client *c, Notify *n)
 				_XA_UTF8_STRING, 8, PropModeReplace,
 				(unsigned char *) text, strlen(text) + 1);
 	} else
-		_XPRINTF(c, "%s sequence has no id!\n", n->id);
+		XPRINTF(c, "%s sequence has no id!\n", n->id);
 	if ((text = n->launcher)) {
 		XChangeProperty(dpy, win, _XA_NET_APP_LAUNCHER,
 				_XA_UTF8_STRING, 8, PropModeReplace,
@@ -2493,7 +2493,7 @@ ewmh_update_sn_app_props(Client *c, Notify *n)
 				_XA_UTF8_STRING, 8, PropModeReplace,
 				(unsigned char *) text, strlen(text) + 1);
 	} else
-		_XPRINTF(c, "%s sequence has no application id!\n", n->id);
+		XPRINTF(c, "%s sequence has no application id!\n", n->id);
 	if ((text = sn_startup_sequence_get_name(seq))) {
 		XChangeProperty(dpy, win, _XA_NET_APP_NAME,
 				_XA_UTF8_STRING, 8, PropModeReplace,
@@ -2530,7 +2530,7 @@ ewmh_update_sn_app_props(Client *c, Notify *n)
 				XA_CARDINAL, 32, PropModeReplace,
 				(unsigned char *) &data, 1);
 	} else
-		_XPRINTF(c, "%s sequence has no screen!\n", n->id);
+		XPRINTF(c, "%s sequence has no screen!\n", n->id);
 	if (sn_startup_sequence_get_workspace(seq) != -1) {
 		data = sn_startup_sequence_get_workspace(seq);
 		XChangeProperty(dpy, win, _XA_NET_APP_WORKSPACE,
@@ -2573,7 +2573,7 @@ find_startup_seq(Client *c)
 	while ((n = *np)) {
 		/* 1500 seconds old is just plain too old */
 		if ((user_time > n->timestamp) && user_time - n->timestamp > 1500000) {
-			_DPRINTF("%s %lu - %lu > 15000: deleting as too old\n", n->id, user_time, n->timestamp);
+			XPRINTF("%s %lu - %lu > 15000: deleting as too old\n", n->id, user_time, n->timestamp);
 			n_del_notify(n);
 			assert(*np != n); /* to be sure */
 		} else
@@ -2666,7 +2666,7 @@ find_startup_seq(Client *c)
 	if (n) {
 		long workspace;
 
-		_CPRINTF(c, "FOUND STARTUP ID '%s'!\n", n->id);
+		XPRINTF(c, "FOUND STARTUP ID '%s'!\n", n->id);
 		if (!startup_id)
 			setstartupid(c, n->id);
 		/* Note that if the window has mapped itself on the wrong workspace, we
@@ -2690,7 +2690,7 @@ find_startup_seq(Client *c)
 				}
 			}
 		} else
-			_CPRINTF(c, "workspace not defined in sequence '%s'\n", n->id);
+			XPRINTF(c, "workspace not defined in sequence '%s'\n", n->id);
 		if (strstr(n->id, "xdg-launch") == n->id)
 			if (0 <= n->sequence && n->sequence < scr->nmons)
 				c->monitor = n->sequence + 1;

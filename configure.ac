@@ -116,6 +116,17 @@ else
 fi
 AM_CONDITIONAL([HAVE_RENDER],[test  "x$enable_xrender" != "xno"])
 
+AC_ARG_ENABLE([use-xrender],
+	AC_HELP_STRING([--enable-use-xrender],
+		[Enable use of xrenderfor drawing @<:@default=auto@:>@]))
+if test "x$enable_xrender" != xno -a "x$enable_use_xrender" = xyes ; then
+	AC_DEFINE([USE_RENDER],[1],[Define to 1 to use RENDER for rendering pixmaps.])
+else
+	enable_use_xrender=no
+fi
+AC_MSG_CHECKING([for xrender use])
+AC_MSG_RESULT([${enable_use_xrender:-no}])
+
 AC_ARG_ENABLE([xdamage],
 	AC_HELP_STRING([--disable-xdamage],
 		[Disable DAMAGE support @<:@default=auto@:>@]))
@@ -217,15 +228,15 @@ else
 fi
 
 AC_ARG_ENABLE([use-gdk-pixbuf],
-	AC_HELP_STRING([--disable-use-gdk-pixbuf],
-		[Disable use of gdk-pixbuf for drawing @<:@default=auto@:>@]))
-if test "x$enable_gdk_pixbuf" != xno -a "x$enable_use_gdk_pixbuf" != xno ; then
+	AC_HELP_STRING([--enable-use-gdk-pixbuf],
+		[Enable use of gdk-pixbuf for drawing @<:@default=no@:>@]))
+if test "x$enable_gdk_pixbuf" != xno -a "x$enable_use_gdk_pixbuf" = xyes ; then
 	AC_DEFINE([USE_PIXBUF],[1],[Define to 1 to use GDK PIXBUF X11 for rendering pixmaps.])
 else
 	enable_use_gdk_pixbuf=no
 fi
 AC_MSG_CHECKING([for gdk-pixbuf use])
-AC_MSG_RESULT([${enable_use_gdk_pixbuf:-yes}])
+AC_MSG_RESULT([${enable_use_gdk_pixbuf:-no}])
 
 AC_ARG_ENABLE([imlib2],
 	AC_HELP_STRING([--disable-imlib2],
@@ -240,15 +251,15 @@ else
 fi
 
 AC_ARG_ENABLE([use-imlib2],
-	AC_HELP_STRING([--disable-use-imlib2],
-		[Disable use of imlib2 for drawing textures @<:@default=auto@:>@]))
-if test "x$enable_imlib2" != xno -a "x$enable_use_imlib2" != xno ; then
+	AC_HELP_STRING([--enable-use-imlib2],
+		[Enable use of imlib2 for drawing textures @<:@default=no@:>@]))
+if test "x$enable_imlib2" != xno -a "x$enable_use_imlib2" = xyes ; then
 	AC_DEFINE([USE_IMLIB2],[1],[Define to 1 to use IMLIB2 for rendering pixmaps and textures.])
 else
 	enable_use_imlib2=no
 fi
 AC_MSG_CHECKING([for imlib2 use])
-AC_MSG_RESULT([${enable_use_imlib2:-yes}])
+AC_MSG_RESULT([${enable_use_imlib2:-no}])
 
 AC_ARG_ENABLE([xpm],
 	AC_HELP_STRING([--disable-libxpm],

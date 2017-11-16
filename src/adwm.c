@@ -1376,11 +1376,11 @@ selectok(Client *c)
 	if ((!c->is.dockapp && c->is.icon) || c->is.hidden)
 		return False;
 	if (!clientview(c) && !c->can.select) {
-		_CPRINTF(c, "attempt to select an unselectable client\n");
+		EPRINTF(__CFMTS(c) "attempt to select an unselectable client\n", __CARGS(c));
 		return False;
 	}
 	if (!isvisible(c, NULL)) {
-		_CPRINTF(c, "attempt to select an invisible client\n");
+		EPRINTF(__CFMTS(c) "attempt to select an invisible client\n", __CARGS(c));
 		return False;
 	}
 	return True;
@@ -1394,7 +1394,7 @@ focusok(Client *c)
 	if (!canfocus(c))
 		return False;
 	if (!isviewable(c)) {
-		_CPRINTF(c, "attempt to focus unviewable client\n");
+		EPRINTF(__CFMTS(c) "attempt to focus unviewable client\n", __CARGS(c));
 		return False;
 	}
 	return True;
@@ -1432,7 +1432,7 @@ setfocus(Client *c)
 			XSetInputFocus(dpy, PointerRoot, revert, user_time);
 	} else {
 		/* this happens often now */
-		_CPRINTF(c, "cannot set focus\n");
+		XPRINTF(c, "cannot set focus\n");
 	}
 }
 
@@ -2572,7 +2572,7 @@ manage(Window w, XWindowAttributes *wa)
 	Visual *visual;
 
 	if ((c = getclient(w, ClientAny))) {
-		_CPRINTF(c, "client already managed!\n");
+		EPRINTF(__CFMTS(c) "client already managed!\n", __CARGS(c));
 		return;
 	}
 	XPRINTF("managing window 0x%lx\n", w);
@@ -2871,6 +2871,7 @@ manage(Window w, XWindowAttributes *wa)
 	ewmh_process_net_startup_id(c);
 	ewmh_update_net_window_desktop(c);
 	ewmh_update_net_window_extents(c);
+	XPRINTF(c, "updating icon due initial manage\n");
 	ewmh_process_net_window_icon(c);
 	ewmh_update_ob_app_props(c);
 
@@ -3249,7 +3250,7 @@ reparentnotify(XEvent *e)
 
 	if ((c = getmanaged(ev->window, ClientWindow))) {
 		if (ev->parent != c->frame) {
-			_CPRINTF(c, "unmanage reparented window\n");
+			XPRINTF(c, "unmanage reparented window\n");
 			unmanage(c, CauseReparented);
 		}
 		return True;
@@ -3448,7 +3449,7 @@ updatesessionprop(Client *c, Atom prop, int state)
 	}
 	return True;
       bad:
-	_CPRINTF(c, "bad attempt to change client leader %s\n", (name = XGetAtomName(dpy, prop)));
+	XPRINTF(c, "bad attempt to change client leader %s\n", (name = XGetAtomName(dpy, prop)));
 	if (name)
 		XFree(name);
 	return False;
@@ -3622,8 +3623,10 @@ updateleaderprop(Client *c, Atom prop, int state)
 			/* Set of icons to display.  We don't do this so we can ignore
 			   it.  At some point we might display iconified windows in a
 			   windowmaker-style clip. */
+			XPRINTF(c, "updating icon due to _NET_WM_ICON update\n");
 			ewmh_process_net_window_icon(c);
 		} else if (prop == _XA_KWM_WIN_ICON) {
+			XPRINTF(c, "updating icon due to KWM_WIN_ICON update\n");
 			ewmh_process_net_window_icon(c);
 		} else if (prop == _XA_NET_WM_PID) {
 			/* Normally set on individual (managed) windows.  This property
@@ -3677,7 +3680,7 @@ updateleaderprop(Client *c, Atom prop, int state)
 	}
 	return True;
       bad:
-	_CPRINTF(c, "bad attempt to change group leader %s\n", (name = XGetAtomName(dpy, prop)));
+	XPRINTF(c, "bad attempt to change group leader %s\n", (name = XGetAtomName(dpy, prop)));
 	if (name)
 		XFree(name);
 	return False;
@@ -3702,7 +3705,6 @@ updateclientprop(Client *c, Atom prop, int state)
 			break;
 		case XA_WM_HINTS:
 			updatehints(c);
-			ewmh_process_net_window_icon(c);
 			break;
 		case XA_WM_CLASS:
 			updateclasshint(c);
@@ -3849,8 +3851,10 @@ updateclientprop(Client *c, Atom prop, int state)
 			/* Set of icons to display.  We don't do this so we can ignore
 			   it.  At some point we might display iconified windows in a
 			   windowmaker-style clip. */
+			XPRINTF(c, "updating icon due to _NET_WM_ICON update\n");
 			ewmh_process_net_window_icon(c);
 		} else if (prop == _XA_KWM_WIN_ICON) {
+			XPRINTF(c, "updating icon due to KWM_WIN_ICON update\n");
 			ewmh_process_net_window_icon(c);
 		} else if (prop == _XA_NET_WM_PID) {
 			/* This property should not change after the window is managed,
@@ -5864,20 +5868,32 @@ updatehints(Client *c)
 	Window leader;
 	int take_focus, give_focus;
 
-	/* ICCCM 2.0/4.1.9: Window managers will ignore any WM_PROTOCOLS properties
-	   they find on icon windows. ... Clients must not depend on being able to
-	   receive input events by means of their icon windows. */
-	take_focus = checkatom(c->win, _XA_WM_PROTOCOLS, _XA_WM_TAKE_FOCUS) ? TAKE_FOCUS : 0;
+	/* ICCCM 2.0/4.1.9: Window managers will ignore any WM_PROTOCOLS properties they
+	   find on icon windows. ... Clients must not depend on being able to receive
+	   input events by means of their icon windows. */
+	take_focus =
+	    checkatom(c->win, _XA_WM_PROTOCOLS, _XA_WM_TAKE_FOCUS) ? TAKE_FOCUS : 0;
 	give_focus = c->is.dockapp ? 0 : GIVE_FOCUS;
 	c->can.focus = take_focus | give_focus;
 
 	{
 		XWMHints *wmh;
 
+		/* UXTerm updates WM_HINTS all the time without changing it */
 		/* ICCCM 2.0/4.1.9: Window managers will ignore any WM_HINTS properties
 		   they find on icon windows. */
 		if ((wmh = XGetWMHints(dpy, c->win))) {
-			applywmhints(c, wmh);
+			if (c->is.managed) {
+				if (((c->wmh.flags ^ wmh->flags) & (IconPixmapHint | IconMaskHint))
+				    || wmh->icon_window != c->wmh.icon_window
+				    || wmh->icon_mask != c->wmh.icon_mask) {
+					applywmhints(c, wmh);
+					XPRINTF(c, "updating icon due to WM_HINTS update\n");
+					ewmh_process_net_window_icon(c);
+				} else
+					applywmhints(c, wmh);
+			} else
+				applywmhints(c, wmh);
 			XFree(wmh);
 		}
 	}
@@ -6508,7 +6524,7 @@ main(int argc, char *argv[])
 			XPRINTF("have %s extension (%d,%d,%d)\n", einfo[i].name, einfo[i].opcode, einfo[i].event, einfo[i].error);
 			if (einfo[i].version) {
 				einfo[i].version(dpy, &einfo[i].major, &einfo[i].minor);
-				_OPRINTF("have %-10s extension version %d.%d\n", einfo[i].name, einfo[i].major, einfo[i].minor);
+				OPRINTF("have %-10s extension version %d.%d\n", einfo[i].name, einfo[i].major, einfo[i].minor);
 			}
 		} else
 			XPRINTF("%s", "%s extension is not supported\n", einfo[i].name);

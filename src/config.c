@@ -368,6 +368,10 @@ initconfig(Bool reload)
 	options.ntags = strtoul(getsessionres("tags.number", "5"), NULL, 0);
 	if (options.ntags < 1 || options.ntags > MAXTAGS)
 		options.ntags = 5;
+	options.prependdirs = getsessionres("icon.prependdirs", NULL);
+	options.appenddirs = getsessionres("icon.appenddirs", NULL);
+	options.icontheme = getsessionres("icon.theme", NULL);
+	options.extensions = getsessionres("icon.extensions", "png,svg,xpm");
 }
 
 char *

@@ -24,6 +24,8 @@
 -ss
 -hnl
 -nbc
+-TIconTheme
+-TIconDirectory
 -TPicture
 -TXRenderColor
 -TXftDraw

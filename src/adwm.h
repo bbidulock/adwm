@@ -1237,6 +1237,11 @@ typedef struct {
 	int ncolumns;
 	const char *deflayout;
 	int ntags;
+	/* the following should probably be in theme file */
+	const char *prependdirs; /* directories to prepend to icon search paths */
+	const char *appenddirs;	 /* directories to append to icon search paths */
+	const char *icontheme;	 /* the icon theme to use */
+	const char *extensions;	 /* the list of icon filename extensions in order of preference */
 } Options;
 
 struct AScreen {

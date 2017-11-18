@@ -266,10 +266,22 @@ AC_ARG_ENABLE([xpm],
 		[Disable xpm library @<:@default=auto@:>@]))
 if test "x$enable_xpm" != xno ; then
 	PKG_CHECK_MODULES([XPM],[xpm],
-		[AC_DEFINE([XPM],[1],[Defined to 1 for XPM library support.])],
+		[AC_DEFINE([XPM],[1],[Define to 1 for XPM library support.])],
 		[enable_xpm=no])
 else
 	AC_MSG_CHECKING([for xpm])
+	AC_MSG_RESULT([disabled])
+fi
+
+AC_ARG_ENABLE([libpng],
+	AC_HELP_STRING([--disable-libpng],
+		[Disable png library @<:@default=auto@:>@]))
+if test "x$enable_libpng" != xno; then
+	PKG_CHECK_MODULES([LIBPNG],[libpng >= 1.6],
+		[AC_DEFINE([LIBPNG],[1],[Define to 1 for LIBPNG library support.])],
+		[enable_libpng=no])
+else
+	AC_MSG_CHECKING([for libpng])
 	AC_MSG_RESULT([disabled])
 fi
 

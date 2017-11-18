@@ -70,6 +70,7 @@
 #include "actions.h"
 #include "config.h"
 #include "image.h"
+#include "icons.h"
 
 #define EXTRANGE    16		/* all X11 extension event must fit in this range */
 
@@ -5186,6 +5187,7 @@ initialize(const char *conf, AdwmOperations * ops, Bool reload)
 	initrcfile(conf, reload);	/* find the configuration file */
 	initrules(reload);	/* initialize window class.name rules */
 	initconfig(reload);	/* initialize configuration */
+	initicons(reload);	/* initialize icon theme */
 
 	for (scr = screens; scr < screens + nscr; scr++) {
 		if (!scr->managed)

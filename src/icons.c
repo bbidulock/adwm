@@ -12,6 +12,9 @@
 #include <X11/Xutil.h>
 #include <X11/Xresource.h>
 #include <X11/Xft/Xft.h>
+#ifdef LIBPNG
+#include <png.h>
+#endif
 #include "adwm.h"
 #include "ewmh.h"
 #include "layout.h"
@@ -30,14 +33,14 @@ typedef struct IconDirectory IconDirectory;
 struct IconDirectory {
 	IconTheme *theme;
 	IconDirectory *next;
-	char *directory;
+	char *subdir;
 	int size;
-	int minsize;
-	int maxsize;
-	int threshold;
 	int scale;
 	char *context;
 	char *type;
+	int maxsize;
+	int minsize;
+	int threshold;
 };
 
 struct IconTheme {
@@ -52,7 +55,251 @@ struct IconTheme {
 
 IconTheme *themes = NULL;
 
-Bool
+static char **
+freestringlist(char **list)
+{
+	char **str;
+
+	for (str = list; str && *str; str++)
+		free(*str);
+	free(list);
+	return (NULL);
+}
+
+static char *
+_FindAnyIconHelper(char **files, const char *iconname, int size, const char *ext)
+{
+	char **file, **good = NULL, *p, **maybe, *best = NULL;
+	int n = 0;
+
+	for (file = files; file && *file; file++) {
+		if (!strncmp(*file, iconname, strlen(iconname))
+		    && (p = strrchr(*file, '.'))
+		    && !strcmp(p + 1, ext)) {
+			good = reallocarray(good, n + 2, sizeof(*good));
+			good[n++] = strdup(*file);
+			good[n] = NULL;
+		}
+	}
+	if (n > 0)
+		goto found;
+	/* try without attention to case */
+	for (file = files; file && *file; file++) {
+		if (!strncasecmp(*file, iconname, strlen(iconname))
+		    && (p = strrchr(*file, '.'))
+		    && !strcasecmp(p + 1, ext)) {
+			good = reallocarray(good, n + 2, sizeof(*good));
+			good[n++] = strdup(*file);
+			good[n] = NULL;
+		}
+	}
+      found:
+	if (!good)
+		return (NULL);
+	if (n == 1)
+		best = good[0];
+#if defined IMLIB2 && defined USE_IMLIB2
+	if (!best) {
+		int hdiff = 0x7fffffff;
+
+		imlib_context_push(scr->context);
+		for (maybe = good; maybe && *maybe; maybe++) {
+			Imlib_Image image;
+
+			if ((image = imliib_load_image(*maybe))) {
+				int h, d;
+				imlib_context_set_image(image);
+				h = imlib_image_get_height();
+				d = abs(size - h);
+				if (d < hdiff) {
+					hdiff = d;
+					best = *maybe;
+				}
+				imlib_free_image();
+			}
+		}
+		imlib_context_pop();
+	}
+#else
+#if defined PIXBUF && defined USE_PIXBUF
+	if (!best) {
+		int hdiff = 0x7fffffff;
+
+		for (maybe = good; maybe && *maybe; maybe++) {
+			GdkPixbufFormat *format;
+			int w = 0, h = 0;
+
+			if ((format = gdk_pixbuf_get_file_info(*maybe, &w, &h))) {
+				int d = abs(size - h);
+				if (d < hdiff) {
+					hdiff = d;
+					best = *maybe;
+				}
+			}
+		}
+	}
+#else
+	if (!best) {
+		if (!strcmp(ext, "xpm")) {
+#ifdef XPM
+			int hdiff = 0x7fffffff;
+
+			for (maybe = good; maybe && *maybe; maybe++) {
+				XImage *xicon = NULL, *xmask = NULL;
+				XpmAttributes xa = { 0, };
+
+				if (XpmReadFileToImage(dpy, *maybe, &xicon, &xmask, &xa) == XpmSuccess) {
+					int h = xa.height, d = abs(size -h);
+					if (d < hdiff) {
+						hdiff = d;
+						best = *maybe;
+					}
+					if (xicon)
+						XDestroyImage(xicon);
+					if (xmask)
+						XDestroyImage(xmask);
+				}
+			}
+#endif
+		} else
+		if (!strcmp(ext, "png")) {
+#ifdef LIBPNG
+			int hdiff = 0x7fffffff;
+
+			for (maybe = good; maybe && *maybe; maybe++) {
+				FILE *f;
+
+				if ((f = fopen(*maybe, "rb"))) {
+					png_structp png_ptr;
+
+					if ((png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL))) {
+						png_infop info_ptr;
+
+						if ((info_ptr = png_create_info_struct(png_ptr))) {
+							if (setjmp(png_jmpbuf(png_ptr)) == 0) {
+								png_uint_32 width, height;
+								int dummy = 0;
+
+								png_init_io(png_ptr, f);
+								png_read_info(png_ptr, info_ptr);
+								if (png_get_IHDR(png_ptr, info_ptr, &width, &height, &dummy, &dummy, &dummy, &dummy, &dummy)) {
+									if (height < 0x7fffffff) {
+										int h = height, d = abs(h - size);
+										
+										if (d < hdiff) {
+											hdiff = d;
+											best = *maybe;
+										}
+									}
+								} else
+									png_error(png_ptr, "png_get_IHDR failed");
+							}
+							png_destroy_info_struct(png_ptr, &info_ptr);
+						}
+						png_destroy_read_struct(&png_ptr, NULL, NULL);
+					}
+					fclose(f);
+				}
+			}
+#endif
+		}
+	}
+#endif
+#endif
+	if (!best) {
+		size_t max = 0;
+
+		/* just pick the bigest (st_size) one */
+		for (maybe = good; maybe && *maybe; maybe++) {
+			struct stat st;
+
+			if (stat(*maybe, &st))
+				continue;
+			if (st.st_size > max) {
+				max = st.st_size;
+				best = *maybe;
+			}
+		}
+	}
+	if (!best)
+		/* just pick one! */
+		best = good[0];
+
+	p = strdup(best);
+	good = freestringlist(good);
+	return (p);
+}
+
+static char *
+_LookupIconInDirectory(const char *directory, const char *iconname, int size, const char *ext)
+{
+	DIR *dir;
+	char *file = NULL;
+	int nr = 0, nd = 0;
+	char **s_reg = NULL, **s_dir = NULL, **search;
+
+	if ((dir = opendir(directory))) {
+		struct dirent *d;
+		char path[PATH_MAX + 1] = { 0, };
+		struct stat st = { 0, };
+
+		while ((d = readdir(dir))) {
+			if (!strcmp(d->d_name, ".") || !strcmp(d->d_name, ".."))
+				continue;
+			strncpy(path, directory, PATH_MAX);
+			strncat(path, "/", PATH_MAX);
+			strncat(path, d->d_name, PATH_MAX);
+			if (stat(path, &st))
+				continue;
+			if (S_ISDIR(st.st_mode)) {
+				s_dir = reallocarray(s_dir, nd + 2, sizeof(*s_dir));
+				s_dir[nd] = ecalloc(1, sizeof(*s_dir[nd]));
+				s_dir[nd++] = strdup(path);
+				s_dir[nd] = NULL;
+				continue;
+			}
+			if (S_ISREG(st.st_mode) && !access(path, R_OK)) {
+				s_reg = reallocarray(s_reg, nr + 2, sizeof(*s_reg));
+				s_reg[nr] = ecalloc(1, sizeof(*s_reg[nr]));
+				s_reg[nr++] = strdup(path);
+				s_reg[nr] = NULL;
+				continue;
+			}
+		}
+		closedir(dir);
+		/* search files in this directory first */
+		file = _FindAnyIconHelper(s_reg, iconname, size, ext);
+		s_reg = freestringlist(s_reg);
+		if (!file)
+			/* search files in subdirectories next (no specific order) */
+			for (search = s_dir; search && *search; search++)
+				if ((file = _LookupIconInDirectory(*search, iconname, size, ext)))
+					break;
+		s_dir = freestringlist(s_dir);
+	}
+	return (file);
+}
+
+static char *
+_LookupAnyIcon(const char *iconname, int size, char **fexts)
+{
+	char **ext;
+
+	/* look in some other places */
+	for (ext = fexts; ext && *ext; ext++) {
+		char **search;
+
+		for (search = dirs; search && *search; search++) {
+			char *file;
+
+			if ((file = _LookupIconInDirectory(*search, iconname, size, *ext)))
+				return (file);
+		}
+	}
+	return (NULL);
+}
+
+static Bool
 DirectoryMatchesSize(IconTheme *theme, IconDirectory *subdir, int iconsize)
 {
 	if (!subdir->minsize)
@@ -71,7 +318,7 @@ DirectoryMatchesSize(IconTheme *theme, IconDirectory *subdir, int iconsize)
 	return (False);
 }
 
-int
+static int
 DirectorySizeDistance(IconTheme *theme, IconDirectory *subdir, int iconsize)
 {
 	if (!subdir->minsize)
@@ -100,34 +347,45 @@ DirectorySizeDistance(IconTheme *theme, IconDirectory *subdir, int iconsize)
 	return (0);
 }
 
-char *
+static char *
 _LookupIcon(const char *iconname, int size, IconTheme *theme, char **fexts)
 {
 	IconDirectory *id;
-	char **ext, **dir;
-	static char buf[PATH_MAX + 1] = { 0, };
+	char **ext, **xdg, *p;
+	char buf[PATH_MAX + 1] = { 0, };
 
 	if (!fexts)
 		fexts = exts;
 	for (id = theme->dirs; id; id = id->next) {
 		if (DirectoryMatchesSize(theme, id, size)) {
-			for (dir = dirs; dir && *dir; dir++) {
+			for (xdg = xdgs; xdg && *xdg; xdg++) {
 				for (ext = exts; ext && *ext; ext++) {
-					snprintf(buf, sizeof(buf), "%s/%s/%s/%s.%s", *dir, theme->name, id->directory, iconname, *ext);
+					snprintf(buf, sizeof(buf), "%s/%s/%s/%s.%s", *xdg, theme->name, id->subdir, iconname, *ext);
+					if (!access(buf, R_OK))
+						return (strdup(buf));
+					/* try lower-casing the file name */
+					for (p = strrchr(buf, '/'); p && *p; p++)
+						*p = tolower(*p);
 					if (!access(buf, R_OK))
 						return (strdup(buf));
 				}
 			}
 		}
 	}
-	int minimal_size = 0x7fffffff, dist;
+	int minimal_size = 0x7fffffff, dist, missing;
 	char *closest = NULL;
 
 	for (id = theme->dirs; id; id = id->next) {
-		for (dir = dirs; dir && *dir; dir++) {
+		for (xdg = xdgs; xdg && *xdg; xdg++) {
 			for (ext = exts; ext && *ext; ext++) {
-				snprintf(buf, sizeof(buf), "%s/%s/%s/%s.%s", *dir, theme->name, id->directory, iconname, *ext);
-				if (!access(buf, R_OK) && (dist = DirectorySizeDistance(theme, id, size)) < minimal_size) {
+				snprintf(buf, sizeof(buf), "%s/%s/%s/%s.%s", *xdg, theme->name, id->subdir, iconname, *ext);
+				if ((missing = access(buf, R_OK))) {
+					/* try lower-casing the file name */
+					for (p = strrchr(buf, '/'); p && *p; p++)
+						*p = tolower(*p);
+					missing = access(buf, R_OK);
+				}
+				if (!missing && (dist = DirectorySizeDistance(theme, id, size)) < minimal_size) {
 					free(closest);
 					closest = strdup(buf);
 					minimal_size = dist;
@@ -140,7 +398,7 @@ _LookupIcon(const char *iconname, int size, IconTheme *theme, char **fexts)
 	return (NULL);
 }
 
-char *
+static char *
 _FindBestIconHelper(const char **iconlist, int size, const char *name, char **fexts)
 {
 	IconTheme *theme;
@@ -162,20 +420,24 @@ _FindBestIconHelper(const char **iconlist, int size, const char *name, char **fe
 	return (NULL);
 }
 
-char *
+static char *
 _LookupFallbackIcon(const char *iconname, char **fexts)
 {
-	char **dir, **ext;
-	static char buf[PATH_MAX + 1] = { 0, };
+	char **dir, **ext, *p;
+	char buf[PATH_MAX + 1] = { 0, };
 
 	if (!fexts)
 		fexts = exts;
 	for (dir = dirs; dir && *dir; dir++) {
 		for (ext = exts; ext && *ext; ext++) {
 			snprintf(buf, sizeof(buf), "%s/%s.%s", *dir, iconname, *ext);
-			if (!access(buf, R_OK)) {
+			if (!access(buf, R_OK))
 				return strdup(buf);
-			}
+			/* try lower-casing the file name */
+			for (p = strrchr(buf, '/'); p && *p; p++)
+				*p = tolower(*p);
+			if (!access(buf, R_OK))
+				return strdup(buf);
 		}
 	}
 	return (NULL);
@@ -195,10 +457,13 @@ FindBestIcon(const char **iconlist, int size, char **fexts)
 	for (icon = iconlist; icon && *icon; icon++)
 		if ((file = _LookupFallbackIcon(*icon, fexts)))
 			return (file);
+	for (icon = iconlist; icon && *icon; icon++)
+		if ((file = _LookupAnyIcon(*icon, size, fexts)))
+			return (file);
 	return (NULL);
 }
 
-char *
+static char *
 _FindIconHelper(const char *icon, int size, const char *name, char **fexts)
 {
 	IconTheme *theme;
@@ -226,30 +491,32 @@ FindIcon(const char *icon, int size, char **fexts)
 		return (file);
 	if ((file = _FindIconHelper(icon, size, "hicolor", fexts)))
 		return (file);
-	return _LookupFallbackIcon(icon, fexts);
+	if ((file = _LookupFallbackIcon(icon, fexts)))
+		return (file);
+	return _LookupAnyIcon(icon, size, fexts);
 }
 
-IconDirectory *
+static IconDirectory *
 allocicondir(IconTheme *theme, char *subdir)
 {
 	IconDirectory *dir;
 
 	dir = ecalloc(1, sizeof(*dir));
 	dir->theme = theme;
-	dir->directory = subdir;
+	dir->subdir = subdir;
 	dir->next = theme->dirs;
 	theme->dirs = dir;
 	return (dir);
 }
 
-void
+static void
 freeicontheme(IconTheme *it)
 {
 	IconDirectory *dir;
 
 	while ((dir = it->dirs)) {
 		it->dirs = dir->next;
-		free(dir->directory);
+		free(dir->subdir);
 		free(dir->context);
 		free(dir->type);
 		free(dir);
@@ -262,7 +529,7 @@ freeicontheme(IconTheme *it)
 	free(it);
 }
 
-void
+static void
 freeiconthemes(void)
 {
 	IconTheme *it;
@@ -274,7 +541,7 @@ freeiconthemes(void)
 	}
 }
 
-void
+static void
 removeicontheme(IconTheme *it)
 {
 	IconTheme **pit;
@@ -287,7 +554,7 @@ removeicontheme(IconTheme *it)
 	freeicontheme(it);
 }
 
-IconTheme *
+static IconTheme *
 allocicontheme(char *name, char *path)
 {
 	IconTheme *it;
@@ -312,7 +579,33 @@ allocicontheme(char *name, char *path)
 	return (it);
 }
 
-void
+static Bool
+issubdir(const char *path, const char *subdir)
+{
+	size_t len = strlen(path) + 1 + strlen(subdir) + 1;
+	char *dir = ecalloc(len + 1, sizeof(*dir));
+	struct stat st;
+
+	strncpy(dir, path, len);
+	if (strrchr(dir, '/'))
+		*strrchr(dir, '/') = '\0';
+	strncat(dir, "/", len);
+	strncat(dir, subdir, len);
+
+	if (stat(dir, &st)) {
+		EPRINTF("%s: %s\n", strerror(errno), dir);
+		free(dir);
+		return (False);
+	}
+	free(dir);
+	if (!S_ISDIR(st.st_mode)) {
+		EPRINTF("%s: not a directory\n", dir);
+		return (False);
+	}
+	return (True);
+}
+
+static void
 newicontheme(const char *name, const char *path)
 {
 	FILE *file;
@@ -320,61 +613,105 @@ newicontheme(const char *name, const char *path)
 	if ((file = fopen(path, "r"))) {
 		IconTheme *it;
 		IconDirectory *dir = NULL;
-		size_t len;
 		char *p, *q;
 		Bool parsed_theme = False;
 		Bool parsing_theme = False;
 		Bool parsing_dir = False;
 		char *key, *val;
 		char *section = NULL;
-		static char buf[BUFSIZ + 1] = { 0, };
+		static char buf[8*BUFSIZ + 1] = { 0, };
 
 		it = allocicontheme(strdup(name), strdup(path));
 
 		while ((p = fgets(buf, sizeof(buf), file))) {
+			if (p[0] == '#')
+				continue;
 			if ((q = strchr(p, '\r')))
 				*q = '\0';
 			if ((q = strchr(p, '\n')))
 				*q = '\0';
 			if (*p == '[' && (q = strchr(p, ']'))) {
+				Bool listed;
+
 				*q = '\0';
 				free(section);
 				section = strdup(p + 1);
+
+				{
+					size_t len = strlen(section) + 3;
+					char *target = ecalloc(len, sizeof(*target));
+
+					strncpy(target, ",", len);
+					strncat(target, section, len);
+					strncat(target, ",", len);
+					listed = (it->dnames && strstr(it->dnames, target)) || (it->snames && strstr(it->snames, target)) ? True : False;
+					free(target);
+				}
+
 				if (!strcmp(p + 1, "Icon Theme")) {
 					if (!parsed_theme)
 						parsing_theme = True;
 					parsing_dir = False;
-				} else if ((it->dnames && (p = strstr(it->dnames, section))
-					    && (q = p + strlen(section)) && *(p - 1) == ',' && *q == ',') ||
-				           (it->snames && (p = strstr(it->snames, section))
-					    && (q = p + strlen(section)) && *(p - 1) == ',' && *q == ',')) {
+				} else if (listed || issubdir(path, section)) {
+					if (!listed)
+						EPRINTF("theme %s: subdir %s exists but is not listed in %s\n", name, section, path);
 					if (parsing_theme) {
 						parsed_theme = True;
 						parsing_theme = False;
 					}
-					parsing_dir = True;
-					dir = allocicondir(it, section);
-					section = NULL;
-				} else
-					EPRINTF("do not now what to do with section %s in icon.theme %s\n", section, path);
-
+					if (parsed_theme) {
+						parsing_dir = True;
+						dir = allocicondir(it, section);
+						section = NULL;
+					} else {
+						parsing_theme = False;
+						parsing_dir = False;
+					}
+				} else {
+					EPRINTF("theme %s: unknown section %s in %s\n", name, section, path);
+					parsing_theme = False;
+					parsing_dir = False;
+					dir = NULL;
+				}
 			} else if (parsing_theme) {
 				if ((key = p) && (val = strchr(key, '=')) && !strchr(key, '[')) {
 					*val++ = '\0';
 					if (!strcmp(key, "Directories")) {
-						len = strlen(val) + 3;
+						size_t len = strlen(val) + 3;
 						it->dnames = ecalloc(len + 1, sizeof(*it->dnames));
 						strncpy(it->dnames, ",", len);
 						strncat(it->dnames, val, len);
 						strncat(it->dnames, ",", len);
 					} else if (!strcmp(key, "ScaledDirectories")) {
-						len = strlen(val) + 3;
+						size_t len = strlen(val) + 3;
 						it->snames = ecalloc(len + 1, sizeof(*it->snames));
 						strncpy(it->snames, ",", len);
 						strncat(it->snames, val, len);
 						strncat(it->snames, ",", len);
 					} else if (!strcmp(key, "Inherits"))
 						it->inherits = strdup(val);
+					else if (!strcmp(key, "DisplayDepth")) { }
+					else if (!strcmp(key, "DesktopDefault")) { }
+					else if (!strcmp(key, "DesktopSizes")) { }
+					else if (!strcmp(key, "ToolbarDefault")) { }
+					else if (!strcmp(key, "ToolbarSizes")) { }
+					else if (!strcmp(key, "MainToolbarDefault")) { }
+					else if (!strcmp(key, "MainToolbarSizes")) { }
+					else if (!strcmp(key, "SmallDefault")) { }
+					else if (!strcmp(key, "SmallSizes")) { }
+					else if (!strcmp(key, "PanelDefault")) { }
+					else if (!strcmp(key, "PanelSizes")) { }
+					else if (!strcmp(key, "DialogDefault")) { }
+					else if (!strcmp(key, "DialogSizes")) { }
+					else if (!strcmp(key, "Name")) { }
+					else if (!strcmp(key, "Example")) { }
+					else if (!strcmp(key, "Comment")) { }
+					else if (!strcmp(key, "Hidden")) { }
+					else if (!strcmp(key, "LinkOverlay")) { }
+					else if (!strcmp(key, "LockOverlay")) { }
+					else if (!strcmp(key, "ShareOverlay")) { }
+					else if (!strcmp(key, "ZipOverlay")) { }
+					else if (strstr(key, "X-") == key) { }
 					else
 						EPRINTF("do not know what to do with key %s in %s\n", key, section);
 				}
@@ -389,22 +726,44 @@ newicontheme(const char *name, const char *path)
 						dir->context = strdup(val);
 					else if (!strcmp(key, "Type"))
 						dir->type = strdup(val);
-					else if (!strcmp(key, "MinSize"))
+					else if (!strcasecmp(key, "MinSize"))
 						dir->minsize = atoi(val);
-					else if (!strcmp(key, "MaxSize"))
+					else if (!strcasecmp(key, "MaxSize"))
 						dir->maxsize = atoi(val);
 					else if (!strcmp(key, "Threshold"))
 						dir->threshold = atoi(val);
+					else if (strstr(key, "X-") == key) { }
 					else
 						EPRINTF("do not know what to do with key %s in %s\n", key, section);
 				}
 			}
 		}
 		fclose(file);
+		for (dir = it->dirs; dir; dir = dir->next) {
+			if (!dir->type)
+				dir->type = strdup("Threshold");
+			if (strcmp(dir->type, "Threshold") && strcmp(dir->type, "Fixed") && strcmp(dir->type, "Scalable")) {
+				EPRINTF("%s %s unknown Type=%s\n", dir->theme->name, dir->subdir, dir->type);
+				free(dir->type);
+				dir->type = strdup("Threshold");
+			}
+			if (!dir->size)
+				EPRINTF("%s %s invalid Size=%d\n", dir->theme->name, dir->subdir, dir->size);
+			if (!strcmp(dir->type, "Threshold")) {
+				if (!dir->threshold)
+					dir->threshold = 2;
+			} else
+			if (!strcmp(dir->type, "Scalable")) {
+				if (!dir->maxsize)
+					dir->maxsize = dir->size;
+				if (!dir->minsize)
+					dir->minsize = dir->size;
+			}
+		}
 	}
 }
 
-void
+static void
 rescanicons(void)
 {
 	char **xdg;
@@ -412,18 +771,22 @@ rescanicons(void)
 
 	freeiconthemes();
 
+	_DPRINTF("rescanning icon theme directories\n");
 	for (xdg = xdgs; xdg && *xdg; xdg++) ;
 	for (xdg--; xdg >= xdgs; xdg--) {
+		_DPRINTF("searching directory for theme files %s\n", *xdg);
 		if ((dir = opendir(*xdg))) {
 			struct dirent *d;
-			static char path[PATH_MAX + 1] = { 0, };
+			char path[PATH_MAX + 1] = { 0, };
 
 			while ((d = readdir(dir))) {
 				if (!strcmp(d->d_name, ".") || !strcmp(d->d_name, ".."))
 					continue;
 				snprintf(path, PATH_MAX, "%s/%s/index.theme", *xdg, d->d_name);
-				if (!access(path, R_OK))
+				if (!access(path, R_OK)) {
+					_DPRINTF("found theme %s file %s\n", d->d_name, path);
 					newicontheme(d->d_name, path);
+				}
 			}
 			closedir(dir);
 		}
@@ -431,7 +794,7 @@ rescanicons(void)
 }
 
 void
-initicons(void)
+initicons(Bool reload)
 {
 	const char *p, *q, *env;
 	char *l, *e;
@@ -439,10 +802,16 @@ initicons(void)
 	size_t len;
 	const char *home = getenv("HOME") ? : "~";
 
+	dirs = freestringlist(dirs);
+	xdgs = freestringlist(xdgs);
+	exts = freestringlist(exts);
+
+	_DPRINTF("initializing icon theme\n");
 	for (p = options.prependdirs; p && (q = strchrnul(p, ':')); p = q + 1) {
 		dirs = reallocarray(dirs, i + 2, sizeof(*dirs));
 		dirs[i + 1] = NULL;
 		dirs[i] = strndup(p, q - p);
+		_DPRINTF("added directory to search paths: %s\n", dirs[i]);
 		i++;
 		if (!*q)
 			break;
@@ -454,58 +823,39 @@ initicons(void)
 		dirs[i] = ecalloc(len + 1, sizeof(*dirs[i]));
 		strncpy(dirs[i], home, len);
 		strncat(dirs[i], "/.icons", len);
+		_DPRINTF("added directory to search paths: %s\n", dirs[i]);
 		i++;
 	}
 	if ((env = getenv("XDG_DATA_HOME"))) {
 		xdgs = reallocarray(xdgs, j + 2, sizeof(*xdgs));
 		xdgs[j + 1] = NULL;
-		xdgs[j] = strdup(env);
+		len = strlen(env) + strlen("/icons") + 1;
+		xdgs[j] = ecalloc(len + 1, sizeof(*xdgs[j]));
+		strncpy(xdgs[j], env, len);
+		strncat(xdgs[j], "/icons", len);
+		_DPRINTF("added directory to XDG paths: %s\n", xdgs[j]);
 		j++;
 	} else {
 		xdgs = reallocarray(xdgs, j + 2, sizeof(*xdgs));
 		xdgs[j + 1] = NULL;
-		len = strlen(home) + strlen("/.local/share") + 1;
+		len = strlen(home) + strlen("/.local/share/icons") + 1;
 		xdgs[j] = ecalloc(len + 1, sizeof(*xdgs[j]));
 		strncpy(xdgs[j], home, len);
-		strncat(xdgs[j], "/.local/share", len);
+		strncpy(xdgs[j], home, len);
+		strncat(xdgs[j], "/.local/share/icons", len);
+		_DPRINTF("added directory to XDG paths: %s\n", xdgs[j]);
 		j++;
 	}
 	env = getenv("XDG_DATA_DIRS") ? : "/usr/local/share:/usr/share";
 	for (p = env; (q = strchrnul(p, ':')); p = q + 1) {
 		xdgs = reallocarray(xdgs, j + 2, sizeof(*xdgs));
 		xdgs[j + 1] = NULL;
-		xdgs[j] = strndup(p, q - p);
-		j++;
-		if (!*q)
-			break;
-	}
-	if ((env = getenv("XDG_DATA_HOME"))) {
-		dirs = reallocarray(dirs, i + 2, sizeof(*dirs));
-		dirs[i + 1] = NULL;
-		len = strlen(env) + strlen("/icons") + 1;
-		dirs[i] = ecalloc(len + 1, sizeof(*dirs[i]));
-		strncpy(dirs[i], env, len);
-		strncat(dirs[i], "/icons", len);
-		i++;
-	} else {
-		dirs = reallocarray(dirs, i + 2, sizeof(*dirs));
-		dirs[i + 1] = NULL;
-		len = strlen(home) + strlen("/.local/share/icons") + 1;
-		dirs[i] = ecalloc(len + 1, sizeof(*dirs[i]));
-		strncpy(dirs[i], home, len);
-		strncpy(dirs[i], home, len);
-		strncat(dirs[i], "/.local/share/icons", len);
-		i++;
-	}
-	env = getenv("XDG_DATA_DIRS") ? : "/usr/local/share:/usr/share";
-	for (p = env; (q = strchrnul(p, ':')); p = q + 1) {
-		dirs = reallocarray(dirs, i + 2, sizeof(*dirs));
-		dirs[i + 1] = NULL;
 		len = (q - p) + strlen("/icons") + 1;
-		dirs[i] = ecalloc(len + 1, sizeof(*dirs[i]));
-		strncpy(dirs[i], p, q - p);
-		strncat(dirs[i], "/icons", len);
-		i++;
+		xdgs[j] = ecalloc(len + 1, sizeof(*xdgs[j]));
+		strncpy(xdgs[j], p, q - p);
+		strncat(xdgs[j], "/icons", len);
+		_DPRINTF("added directory to XDG paths: %s\n", xdgs[j]);
+		j++;
 		if (!*q)
 			break;
 	}
@@ -516,6 +866,8 @@ initicons(void)
 		dirs[i] = ecalloc(len + 1, sizeof(*dirs[i]));
 		strncpy(dirs[i], env, len);
 		strncat(dirs[i], "/pixmaps", len);
+		_DPRINTF("added directory to search paths: %s\n", dirs[i]);
+		_DPRINTF("added directory to search paths: %s\n", dirs[i]);
 		i++;
 	} else {
 		dirs = reallocarray(dirs, i + 2, sizeof(*dirs));
@@ -524,6 +876,8 @@ initicons(void)
 		dirs[i] = ecalloc(len + 1, sizeof(*dirs[i]));
 		strncpy(dirs[i], home, len);
 		strncat(dirs[i], "/.local/share/pixmaps", len);
+		_DPRINTF("added directory to search paths: %s\n", dirs[i]);
+		_DPRINTF("added directory to search paths: %s\n", dirs[i]);
 		i++;
 	}
 	env = getenv("XDG_DATA_DIRS") ? : "/usr/local/share:/usr/share";
@@ -534,6 +888,8 @@ initicons(void)
 		dirs[i] = ecalloc(len + 1, sizeof(*dirs[i]));
 		strncpy(dirs[i], p, (q - p));
 		strncat(dirs[i], "/pixmaps", len);
+		_DPRINTF("added directory to search paths: %s\n", dirs[i]);
+		_DPRINTF("added directory to search paths: %s\n", dirs[i]);
 		i++;
 		if (!*q)
 			break;
@@ -542,6 +898,8 @@ initicons(void)
 		dirs = reallocarray(dirs, i + 2, sizeof(*dirs));
 		dirs[i + 1] = NULL;
 		dirs[i] = strndup(p, q - p);
+		_DPRINTF("added directory to search paths: %s\n", dirs[i]);
+		_DPRINTF("added directory to search paths: %s\n", dirs[i]);
 		i++;
 		if (!*q)
 			break;
@@ -550,6 +908,7 @@ initicons(void)
 		exts = reallocarray(exts, k + 2, sizeof(*exts));
 		exts[k + 1] = NULL;
 		exts[k] = strndup(p, q - p);
+		_DPRINTF("added file extension preference list: %s\n", exts[k]);
 		k++;
 		if (!*q)
 			break;
@@ -558,42 +917,37 @@ initicons(void)
 		if ((env = getenv("XDG_ICON_THEME")))
 			options.icontheme = strdup(env);
 		else {
-			static char buf[BUFSIZ + 1] = { 0, };
-			l = NULL;
-			strncpy(buf, home, BUFSIZ);
-			strncat(buf, "/.gtkrc-2.0.xde", BUFSIZ);
-			if (!access(buf, R_OK))
-				l = buf;
-			else {
-				strncpy(buf, home, BUFSIZ);
-				strncat(buf, "/.gtkrc-2.0", BUFSIZ);
-				if (!access(buf, R_OK))
-					l = buf;
+			char buf[PATH_MAX + 1] = { 0, };
+			int missing;
+			FILE *file;
+			strncpy(buf, home, PATH_MAX);
+			strncat(buf, "/.gtkrc-2.0.xde", PATH_MAX);
+			if ((missing = access(buf, R_OK))) {
+				strncpy(buf, home, PATH_MAX);
+				strncat(buf, "/.gtkrc-2.0", PATH_MAX);
+				missing = access(buf, R_OK);
 			}
-			if (l) {
-				FILE *file;
-
-				if ((file = fopen(l, "r"))) {
-					while ((l = fgets(buf, sizeof(buf), file))) {
-						if ((e = strchr(l, '\r')))
-							*e = '\0';
-						if ((e = strchr(l, '\n')))
-							*e = '\0';
-						if (!strncmp(buf, "gtk-icon-theme-name=", 20)) {
-							l = buf + 20;
-							if (*l == '"')
-								l++;
-							e = strchrnul(l, '"');
-							options.icontheme = strndup(l, e - l);
-						}
+			if (!missing && (file = fopen(buf, "r"))) {
+				while ((l = fgets(buf, sizeof(buf), file))) {
+					if ((e = strchr(l, '\r')))
+						*e = '\0';
+					if ((e = strchr(l, '\n')))
+						*e = '\0';
+					if (!strncmp(buf, "gtk-icon-theme-name=", 20)) {
+						l = buf + 20;
+						if (*l == '"')
+							l++;
+						e = strchrnul(l, '"');
+						options.icontheme = strndup(l, e - l);
 					}
-					fclose(file);
 				}
+				fclose(file);
 			}
 
 		}
 		if (!options.icontheme)
 			options.icontheme = strdup("hicolor");
 	}
+	_DPRINTF("using icon theme %s\n", options.icontheme);
 	rescanicons();
 }

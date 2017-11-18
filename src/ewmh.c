@@ -2798,6 +2798,9 @@ ewmh_process_net_window_icon(Client *c)
 	long *card;
 	Pixmap *pixmap;
 
+	/* better than scaling the crap we get below */
+	if (createappicon(c))
+		return;
 	if ((card = getcard(c->win, _XA_NET_WM_ICON, &n))) {
 		if (n < 2 || n < 2 + card[0] * card[1])
 			XFree(card);

@@ -16,6 +16,7 @@
 #include "tags.h"
 #include "actions.h"
 #include "config.h"
+#include "icons.h"
 #include "draw.h" /* verification */
 
 #if defined IMLIB2 && defined USE_IMLIB2
@@ -1976,6 +1977,86 @@ createneticon(Client *c, long *data, unsigned long n)
 	free(icons);
 	XFree(data);
 	return (status);
+}
+
+Bool
+createpngicon(AScreen *ds, Client *c, const char *file)
+{
+	EPRINTF("would create PNG icon %s\n", file);
+	/* for now */
+	return (False);
+}
+
+Bool
+createsvgicon(AScreen *ds, Client *c, const char *file)
+{
+	EPRINTF("would create SVG icon %s\n", file);
+	/* for now */
+	return (False);
+}
+
+Bool
+createxpmicon(AScreen *ds, Client *c, const char *file)
+{
+	EPRINTF("would create XPM icon %s\n", file);
+	/* for now */
+	return (False);
+}
+
+Bool
+createxbmicon(AScreen *ds, Client *c, const char *file)
+{
+	EPRINTF("would create XBM icon %s\n", file);
+	/* for now */
+	return (False);
+}
+
+Bool
+createappicon(Client *c)
+{
+	const char *names[4] = { NULL, };
+	const char *exts[5] = { NULL, };
+	char *file, *p;
+	int i = 0, j = 0;
+	Bool result = False;
+
+#ifdef STARTUP_NOTIFICATION
+	if (c->seq)
+		names[i++] = sn_startup_sequence_get_icon_name(c->seq);
+#endif
+	if (c->ch.res_class)
+		names[i++] = c->ch.res_class;
+	if (c->ch.res_name)
+		names[i++] = c->ch.res_name;
+	names[i] = NULL;
+
+#if defined LIBPNG || defined IMLIB2 || defined PIXBUF
+	exts[j++] = "png";
+#endif
+#if defined IMLIB2 || defined PIXBUF
+	exts[j++] = "svg";
+#endif
+#if defined XPM || defined IMLIB2 || defined PIXBUF
+	exts[j++] = "xpm";
+#endif
+	exts[j++] = "xbm";
+	exts[j] = NULL;
+
+	if (!(file = FindBestIcon(names, scr->style.titleheight, exts)))
+		return (result);
+	if ((p = strrchr(file, '.'))) {
+		p++;
+		if (!strcmp(p, "png"))
+			result = createpngicon(scr, c, file);
+		else if (!strcmp(p, "svg"))
+			result = createsvgicon(scr, c, file);
+		else if (!strcmp(p, "xpm"))
+			result = createxpmicon(scr, c, file);
+		else if (!strcmp(p, "xbm"))
+			result = createxbmicon(scr, c, file);
+	}
+	free(file);
+	return (result);
 }
 
 enum { Normal, Focused, Selected };

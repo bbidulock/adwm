@@ -281,15 +281,17 @@ _LookupIconInDirectory(const char *directory, const char *iconname, int size, co
 }
 
 static char *
-_LookupAnyIcon(const char *iconname, int size, char **fexts)
+_LookupAnyIcon(const char *iconname, int size, const char **fexts)
 {
-	char **ext;
+	char **search;
 
 	/* look in some other places */
-	for (ext = fexts; ext && *ext; ext++) {
-		char **search;
+	if (!fexts)
+		fexts = (const char **) exts;
+	for (search = dirs; search && *search; search++) {
+		const char **ext;
 
-		for (search = dirs; search && *search; search++) {
+		for (ext = fexts; ext && *ext; ext++) {
 			char *file;
 
 			if ((file = _LookupIconInDirectory(*search, iconname, size, *ext)))
@@ -348,14 +350,14 @@ DirectorySizeDistance(IconTheme *theme, IconDirectory *subdir, int iconsize)
 }
 
 static char *
-_LookupIcon(const char *iconname, int size, IconTheme *theme, char **fexts)
+_LookupIcon(const char *iconname, int size, IconTheme *theme, const char **fexts)
 {
 	IconDirectory *id;
 	char **ext, **xdg, *p;
 	char buf[PATH_MAX + 1] = { 0, };
 
 	if (!fexts)
-		fexts = exts;
+		fexts = (const char **) exts;
 	for (id = theme->dirs; id; id = id->next) {
 		if (DirectoryMatchesSize(theme, id, size)) {
 			for (xdg = xdgs; xdg && *xdg; xdg++) {
@@ -399,7 +401,7 @@ _LookupIcon(const char *iconname, int size, IconTheme *theme, char **fexts)
 }
 
 static char *
-_FindBestIconHelper(const char **iconlist, int size, const char *name, char **fexts)
+_FindBestIconHelper(const char **iconlist, int size, const char *name, const char **fexts)
 {
 	IconTheme *theme;
 	const char **icon;
@@ -421,13 +423,13 @@ _FindBestIconHelper(const char **iconlist, int size, const char *name, char **fe
 }
 
 static char *
-_LookupFallbackIcon(const char *iconname, char **fexts)
+_LookupFallbackIcon(const char *iconname, const char **fexts)
 {
 	char **dir, **ext, *p;
 	char buf[PATH_MAX + 1] = { 0, };
 
 	if (!fexts)
-		fexts = exts;
+		fexts = (const char **) exts;
 	for (dir = dirs; dir && *dir; dir++) {
 		for (ext = exts; ext && *ext; ext++) {
 			snprintf(buf, sizeof(buf), "%s/%s.%s", *dir, iconname, *ext);
@@ -444,7 +446,7 @@ _LookupFallbackIcon(const char *iconname, char **fexts)
 }
 
 char *
-FindBestIcon(const char **iconlist, int size, char **fexts)
+FindBestIcon(const char **iconlist, int size, const char **fexts)
 {
 	char *file;
 	const char **icon;
@@ -464,7 +466,7 @@ FindBestIcon(const char **iconlist, int size, char **fexts)
 }
 
 static char *
-_FindIconHelper(const char *icon, int size, const char *name, char **fexts)
+_FindIconHelper(const char *icon, int size, const char *name, const char **fexts)
 {
 	IconTheme *theme;
 	char *file;
@@ -483,7 +485,7 @@ _FindIconHelper(const char *icon, int size, const char *name, char **fexts)
 }
 
 char *
-FindIcon(const char *icon, int size, char **fexts)
+FindIcon(const char *icon, int size, const char **fexts)
 {
 	char *file;
 

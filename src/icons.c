@@ -803,6 +803,7 @@ initicons(Bool reload)
 	int i = 0, j = 0, k = 0;
 	size_t len;
 	const char *home = getenv("HOME") ? : "~";
+	struct stat st;
 
 	dirs = freestringlist(dirs);
 	xdgs = freestringlist(xdgs);
@@ -813,8 +814,13 @@ initicons(Bool reload)
 		dirs = reallocarray(dirs, i + 2, sizeof(*dirs));
 		dirs[i + 1] = NULL;
 		dirs[i] = strndup(p, q - p);
-		_DPRINTF("added directory to search paths: %s\n", dirs[i]);
-		i++;
+		if (!stat(dirs[i], &st) && S_ISDIR(st.st_mode)) {
+			_DPRINTF("added directory to search paths: %s\n", dirs[i]);
+			i++;
+		} else {
+			free(dirs[i]);
+			dirs[i] = NULL;
+		}
 		if (!*q)
 			break;
 	}
@@ -825,8 +831,13 @@ initicons(Bool reload)
 		dirs[i] = ecalloc(len + 1, sizeof(*dirs[i]));
 		strncpy(dirs[i], home, len);
 		strncat(dirs[i], "/.icons", len);
-		_DPRINTF("added directory to search paths: %s\n", dirs[i]);
-		i++;
+		if (!stat(dirs[i], &st) && S_ISDIR(st.st_mode)) {
+			_DPRINTF("added directory to search paths: %s\n", dirs[i]);
+			i++;
+		} else {
+			free(dirs[i]);
+			dirs[i] = NULL;
+		}
 	}
 	if ((env = getenv("XDG_DATA_HOME"))) {
 		xdgs = reallocarray(xdgs, j + 2, sizeof(*xdgs));
@@ -868,9 +879,13 @@ initicons(Bool reload)
 		dirs[i] = ecalloc(len + 1, sizeof(*dirs[i]));
 		strncpy(dirs[i], env, len);
 		strncat(dirs[i], "/pixmaps", len);
-		_DPRINTF("added directory to search paths: %s\n", dirs[i]);
-		_DPRINTF("added directory to search paths: %s\n", dirs[i]);
-		i++;
+		if (!stat(dirs[i], &st) && S_ISDIR(st.st_mode)) {
+			_DPRINTF("added directory to search paths: %s\n", dirs[i]);
+			i++;
+		} else {
+			free(dirs[i]);
+			dirs[i] = NULL;
+		}
 	} else {
 		dirs = reallocarray(dirs, i + 2, sizeof(*dirs));
 		dirs[i + 1] = NULL;
@@ -878,9 +893,13 @@ initicons(Bool reload)
 		dirs[i] = ecalloc(len + 1, sizeof(*dirs[i]));
 		strncpy(dirs[i], home, len);
 		strncat(dirs[i], "/.local/share/pixmaps", len);
-		_DPRINTF("added directory to search paths: %s\n", dirs[i]);
-		_DPRINTF("added directory to search paths: %s\n", dirs[i]);
-		i++;
+		if (!stat(dirs[i], &st) && S_ISDIR(st.st_mode)) {
+			_DPRINTF("added directory to search paths: %s\n", dirs[i]);
+			i++;
+		} else {
+			free(dirs[i]);
+			dirs[i] = NULL;
+		}
 	}
 	env = getenv("XDG_DATA_DIRS") ? : "/usr/local/share:/usr/share";
 	for (p = env; (q = strchrnul(p, ':')); p = q + 1) {
@@ -890,9 +909,13 @@ initicons(Bool reload)
 		dirs[i] = ecalloc(len + 1, sizeof(*dirs[i]));
 		strncpy(dirs[i], p, (q - p));
 		strncat(dirs[i], "/pixmaps", len);
-		_DPRINTF("added directory to search paths: %s\n", dirs[i]);
-		_DPRINTF("added directory to search paths: %s\n", dirs[i]);
-		i++;
+		if (!stat(dirs[i], &st) && S_ISDIR(st.st_mode)) {
+			_DPRINTF("added directory to search paths: %s\n", dirs[i]);
+			i++;
+		} else {
+			free(dirs[i]);
+			dirs[i] = NULL;
+		}
 		if (!*q)
 			break;
 	}
@@ -900,9 +923,13 @@ initicons(Bool reload)
 		dirs = reallocarray(dirs, i + 2, sizeof(*dirs));
 		dirs[i + 1] = NULL;
 		dirs[i] = strndup(p, q - p);
-		_DPRINTF("added directory to search paths: %s\n", dirs[i]);
-		_DPRINTF("added directory to search paths: %s\n", dirs[i]);
-		i++;
+		if (!stat(dirs[i], &st) && S_ISDIR(st.st_mode)) {
+			_DPRINTF("added directory to search paths: %s\n", dirs[i]);
+			i++;
+		} else {
+			free(dirs[i]);
+			dirs[i] = NULL;
+		}
 		if (!*q)
 			break;
 	}

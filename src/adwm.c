@@ -99,6 +99,11 @@ void updatesession(Client *c);
 void updategroup(Client *c, Window leader, int group, int *nonmodal);
 Window *getgroup(Window leader, int group, unsigned int *count);
 void removegroup(Client *c, Window leader, int group);
+#ifdef STARTUP_NOTIFICATION
+Appl *getappl(Client *c);
+void updateappl(Client *c);
+void removeappl(Client *c);
+#endif
 Class *getclass(Client *c);
 void updateclass(Client *c);
 void removeclass(Client *c);
@@ -135,6 +140,7 @@ Bool otherwm;
 Bool running = True;
 Bool lockfocus = False;
 unsigned long focus_request = 0;
+Appl *appls = NULL;
 Class *classes = NULL;
 Client *focuslock = NULL;
 Client *sel;
@@ -5559,6 +5565,7 @@ unmanage(Client *c, WithdrawCause cause)
 		}
 	}
 	ewmh_release_user_time_window(c);
+	removeappl(c);
 	removeclass(c);
 	removegroup(c, c->leader, ClientGroup);
 	removegroup(c, c->session, ClientSession);
@@ -5582,6 +5589,7 @@ unmanage(Client *c, WithdrawCause cause)
 		XFree(c->ch.res_class);
 		c->ch.res_class = NULL;
 	}
+	removebutton(&c->button);
 	free(c);
 	XSync(dpy, False);
 	XSetErrorHandler(xerror);
@@ -6026,6 +6034,106 @@ removegroup(Client *c, Window leader, int group)
 	}
 }
 
+#ifdef STARTUP_NOTIFICATION
+Appl *
+getappl(Client *c)
+{
+	Appl *a = NULL;
+
+	if (c->win)
+		XFindContext(dpy, c->win, context[ClientAppl], (XPointer *) &a);
+	return (a);
+}
+
+Appl *
+findappl(SnStartupSequence *seq)
+{
+	Appl *a;
+	const char *appid, *str;
+
+	if (!seq)
+		return NULL;
+	if (!(appid = sn_startup_sequence_get_application_id(seq)))
+		return NULL;
+	for (a = appls; a; a = a->next)
+		if (!strcmp(a->appid, appid))
+			break;
+	if (!a) {
+		a = ecalloc(1, sizeof(*a));
+		a->next = appls;
+		appls = a;
+		a->appid = strdup(appid);
+		if ((str = sn_startup_sequence_get_name(seq)))
+			a->name = strdup(str);
+		if ((str = sn_startup_sequence_get_description(seq)))
+			a->description = strdup(str);
+		if ((str = sn_startup_sequence_get_wmclass(seq)))
+			a->wmclass = strdup(str);
+		if ((str = sn_startup_sequence_get_binary_name(seq)))
+			a->binary = strdup(str);
+		if ((str = sn_startup_sequence_get_icon_name(seq)))
+			a->icon = strdup(str);
+		a->members = NULL;
+		a->count = 0;
+	}
+	return (a);
+}
+
+void
+updateappl(Client *c)
+{
+	Appl *a;
+	const char *appid;
+
+	if (!c->seq || !(appid = sn_startup_sequence_get_application_id(c->seq))) {
+		removeappl(c);
+		return;
+	}
+	if ((a = getappl(c))) {
+		if (!strcmp(a->appid, appid))
+			return;
+		removeappl(c);
+		a = NULL;
+	}
+	if (!a) {
+		a = findappl(c->seq);
+		a->members = reallocarray(a->members, a->count + 1, sizeof(*a->members));
+		a->members[a->count] = c->win;
+		a->count++;
+		XSaveContext(dpy, c->win, context[ClientAppl], (XPointer) a);
+	}
+}
+
+void
+removeappl(Client *c)
+{
+	Appl *a;
+
+	if ((a = getappl(c))) {
+		Window *list;
+		unsigned i, j;
+
+		list = ecalloc(a->count, sizeof(*list));
+		for (i = 0, j = 0; i < a->count; i++)
+			if (a->members[i] != c->win)
+				list[j++] = a->members[i];
+		if (j == 0) {
+			free(list);
+			free(a->members);
+			a->members = NULL;
+			a->count = 0;
+			/* we never actually delete applications, just their members */
+		} else {
+			free(a->members);
+			a->members = list;
+			a->count = j;
+		}
+		XDeleteContext(dpy, c->win, context[ClientAppl]);
+	}
+}
+
+#endif
+
 Class *
 getclass(Client *c)
 {
@@ -6037,7 +6145,7 @@ getclass(Client *c)
 }
 
 Class *
-findclass(XClassHint *ch)
+findclass(const XClassHint *ch)
 {
 	Class *r;
 
@@ -6116,6 +6224,7 @@ removeclass(Client *c)
 			free(r->members);
 			r->members = NULL;
 			r->count = 0;
+			/* we never actually delete classes, just their members */
 		} else {
 			free(r->members);
 			r->members = list;
@@ -6132,6 +6241,40 @@ removeclass(Client *c)
 		}
 		XDeleteContext(dpy, c->win, context[ClientClass]);
 	}
+}
+
+ButtonImage **
+getbuttons(Client *c)
+{
+	static ButtonImage *buttons[4] = { NULL, };
+	int i = 0;
+
+#ifdef STARTUP_NOTIFICATION
+	{
+		Appl *a = getappl(c);
+		if (a)
+			buttons[i++] = &a->button;
+	}
+#endif
+	{
+		Class *r = getclass(c);
+		if (r)
+			buttons[i++] = &r->button;
+	}
+	buttons[i++] = &c->button;
+	buttons[i] = NULL;
+	return (buttons);
+}
+
+ButtonImage *
+getbutton(Client *c)
+{
+	ButtonImage **bis;
+
+	for (bis = getbuttons(c); bis && *bis; bis++)
+		if ((*bis)->present)
+			break;
+	return (*bis);
 }
 
 void

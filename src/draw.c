@@ -19,19 +19,63 @@
 #include "icons.h"
 #include "draw.h" /* verification */
 
+void
+removebutton(ButtonImage *bi)
+{
+#if defined IMLIB2 || defined XPM
+	if (bi->pixmap.draw)
+		XFreePixmap(dpy, bi->pixmap.draw);
+	if (bi->pixmap.mask)
+		XFreePixmap(dpy, bi->pixmap.mask);
+	if (bi->pixmap.ximage)
+		XDestroyImage(bi->pixmap.ximage);
+#if defined IMLIB2
+	if (bi->pixmap.image) {
+		imlib_context_push(scr->context);
+		imlib_context_set_image(bi->pixmap.image);
+		imlib_free_image();
+		imlib_context_pop();
+	}
+#endif
+#if defined RENDER
+	if (bi->pixmap.pict)
+		XRenderFreePicture(dpy, bi->pixmap.pict);
+#endif
+#endif
+	if (bi->bitmap.draw)
+		XFreePixmap(dpy, bi->bitmap.draw);
+	if (bi->bitmap.mask)
+		XFreePixmap(dpy, bi->bitmap.mask);
+	if (bi->bitmap.ximage)
+		XDestroyImage(bi->bitmap.ximage);
+#if defined IMLIB2
+	if (bi->bitmap.image) {
+		imlib_context_push(scr->context);
+		imlib_context_set_image(bi->bitmap.image);
+		imlib_free_image();
+		imlib_context_pop();
+	}
+#endif
+#if defined RENDER
+	if (bi->bitmap.pict)
+		XRenderFreePicture(dpy, bi->bitmap.pict);
+#endif
+	/* we don't use or allocate bi->bg for icon buttons */
+}
+
 #if defined IMLIB2 && defined USE_IMLIB2
 static Bool
 imlib_createbitmapicon(AScreen *ds, Client *c, Pixmap icon, Pixmap mask, unsigned w, unsigned h)
 {
 	Imlib_Image image;
-	ButtonImage *bi;
+	ButtonImage *bi, **bis;
 	DATA32 *pixels, *p;
 	XImage *xicon, *xmask = NULL;
 	unsigned i, j, d = ds->depth , th = ds->style.titleheight, tw;
 
 	XPRINTF("creating bitmap icon 0x%lx mask 0x%lx at %ux%ux%u\n", icon, mask, w, h, 1U);
 	if (h <= th + 2) {
-		bi = &c->iconbtn;
+		bi = &c->button;
 		bi->x = bi->y = bi->b = 0;
 		bi->d = 1;
 		bi->w = w;
@@ -123,19 +167,21 @@ imlib_createbitmapicon(AScreen *ds, Client *c, Pixmap icon, Pixmap mask, unsigne
 		w = tw;
 		h = th;
 	}
-	bi = &c->iconbtn;
-	bi->x = bi->y = bi->b = 0;
-	bi->d = d;
-	bi->w = w;
-	bi->h = h;
-	if (bi->pixmap.draw) {
-		imlib_free_pixmap_and_mask(bi->pixmap.draw);
-		bi->pixmap.draw = None;
-		bi->pixmap.mask = None;
+	for (bis = getbuttons(c); bis && *bis; bis++) {
+		bi = *bis;
+		bi->x = bi->y = bi->b = 0;
+		bi->d = d;
+		bi->w = w;
+		bi->h = h;
+		if (bi->pixmap.draw) {
+			imlib_free_pixmap_and_mask(bi->pixmap.draw);
+			bi->pixmap.draw = None;
+			bi->pixmap.mask = None;
+		}
+		imlib_render_pixmaps_for_whole_image(&bi->pixmap.draw, &bi->pixmap.mask);
+		bi->present = True;
 	}
-	imlib_render_pixmaps_for_whole_image(&bi->pixmap.draw, &bi->pixmap.mask);
 	imlib_free_image();
-	bi->present = True;
 	imlib_context_pop();
 	return True;
 }
@@ -143,12 +189,12 @@ static Bool
 imlib_createpixmapicon(AScreen *ds, Client *c, Pixmap icon, Pixmap mask, unsigned w, unsigned h, unsigned d)
 {
 	Imlib_Image image;
-	ButtonImage *bi;
+	ButtonImage *bi, *bis;
 	unsigned th = ds->style.titleheight, tw;
 
 	XPRINTF("creating pixmap icon 0x%lx mask 0x%lx at %ux%ux%u\n", icon, mask, w, h, d);
 	if (d == ds->depth && h <= th + 2) {
-		bi = &c->iconbtn;
+		bi = &c->button;
 		bi->x = bi->y = bi->b = 0;
 		bi->d = 1;
 		bi->w = w;
@@ -195,21 +241,23 @@ imlib_createpixmapicon(AScreen *ds, Client *c, Pixmap icon, Pixmap mask, unsigne
 	}
 	imlib_context_set_image(image);
 	imlib_context_set_mask(None);
-	bi = &c->iconbtn;
-	bi->x = bi->y = bi->b = 0;
-	bi->d = ds->depth;
-	bi->w = tw;
-	bi->h = th;
-	imlib_context_set_image(image);
-	imlib_context_set_mask(None);
-	if (bi->pixmap.draw) {
-		imlib_free_pixmap_and_mask(bi->pixmap.draw);
-		bi->pixmap.draw = None;
-		bi->pixmap.mask = None;
+	for (bis = getbuttons(c); bis && *bis; bis++) {
+		bi = *bis;
+		bi->x = bi->y = bi->b = 0;
+		bi->d = ds->depth;
+		bi->w = tw;
+		bi->h = th;
+		imlib_context_set_image(image);
+		imlib_context_set_mask(None);
+		if (bi->pixmap.draw) {
+			imlib_free_pixmap_and_mask(bi->pixmap.draw);
+			bi->pixmap.draw = None;
+			bi->pixmap.mask = None;
+		}
+		imlib_render_pixmaps_for_whole_image(&bi->pixmap.draw, &bi->pixmap.mask);
+		bi->present = True;
 	}
-	imlib_render_pixmaps_for_whole_image(&bi->pixmap.draw, &bi->pixmap.mask);
 	imlib_free_image();
-	bi->present = True;
 	imlib_context_pop();
 	return (True);
 }
@@ -217,7 +265,7 @@ static Bool
 imlib_createdataicon(AScreen *ds, Client *c, unsigned w, unsigned h, long *data)
 {
 	Imlib_Image image;
-	ButtonImage *bi;
+	ButtonImage *bi, **bis;
 	DATA32 *pixels;
 	unsigned i, z;
 
@@ -259,19 +307,21 @@ imlib_createdataicon(AScreen *ds, Client *c, unsigned w, unsigned h, long *data)
 		w = ws;
 		h = hs;
 	}
-	bi = &c->iconbtn;
-	bi->x = bi->y = bi->b = 0;
-	bi->d = ds->depth;
-	bi->w = w;
-	bi->h = h;
-	if (bi->pixmap.draw) {
-		imlib_free_pixmap_and_mask(bi->pixmap.draw);
-		bi->pixmap.draw = None;
-		bi->pixmap.mask = None;
+	for (bis = getbuttons(c); bis && *bis; bis++) {
+		bi = *bis;
+		bi->x = bi->y = bi->b = 0;
+		bi->d = ds->depth;
+		bi->w = w;
+		bi->h = h;
+		if (bi->pixmap.draw) {
+			imlib_free_pixmap_and_mask(bi->pixmap.draw);
+			bi->pixmap.draw = None;
+			bi->pixmap.mask = None;
+		}
+		imlib_render_pixmaps_for_whole_image(&bi->pixmap.draw, &bi->pixmap.mask);
+		bi->present = True;
 	}
-	imlib_render_pixmaps_for_whole_image(&bi->pixmap.draw, &bi->pixmap.mask);
 	imlib_free_image();
-	bi->present = True;
 	imlib_context_pop();
 	return True;
 }
@@ -285,7 +335,7 @@ gdk_createpixmapicon(AScreen *ds, Client *c, Pixmap icon, Pixmap mask)
 	Window root;
 	int x, y;
 	unsigned int w, h, b, d;
-	ButtonImage *bi;
+	ButtonImage *bi, **bis;
 
 	if (!c || !icon)
 		return (False);
@@ -348,33 +398,36 @@ gdk_createpixmapicon(AScreen *ds, Client *c, Pixmap icon, Pixmap mask)
 			return (False);
 		}
 	}
-	bi = &c->iconbtn;
-	bi->x = bi->y = bi->b = 0;
-	bi->d = ds->depth;
-	bi->w = w;
-	bi->h = h;
-	if (bi->h > ds->style.titleheight) {
-		/* read lower down into image to clip top and bottom by same
-		   amount */
-		bi->y += (bi->h - ds->style.titleheight) / 2;
-		bi->h = ds->style.titleheight;
+	for (bis = getbuttons(c); bis && *bis; bis++) {
+		bi = *bis;
+		bi->x = bi->y = bi->b = 0;
+		bi->d = ds->depth;
+		bi->w = w;
+		bi->h = h;
+		if (bi->h > ds->style.titleheight) {
+			/* read lower down into image to clip top and bottom by same
+			   amount */
+			bi->y += (bi->h - ds->style.titleheight) / 2;
+			bi->h = ds->style.titleheight;
+		}
+		if (bi->pixmap.draw) {
+			XFreePixmap(dpy, bi->pixmap.draw);
+			bi->pixmap.draw = None;
+		}
+		if (bi->pixmap.mask) {
+			XFreePixmap(dpy, bi->pixmap.mask);
+			bi->pixmap.mask = None;
+		}
+		gdk_pixbuf_xlib_render_pixmap_and_mask(gicon,
+						       &bi->pixmap.draw,
+						       &bi->pixmap.mask, 128);
+		if (!bi->pixmap.draw) {
+			EPRINTF("could not render pixbuf\n");
+			bi->present = False;
+			continue;
+		}
+		bi->present = True;
 	}
-	if (bi->pixmap.draw) {
-		XFreePixmap(dpy, bi->pixmap.draw);
-		bi->pixmap.draw = None;
-	}
-	if (bi->pixmap.mask) {
-		XFreePixmap(dpy, bi->pixmap.mask);
-		bi->pixmap.mask = None;
-	}
-	gdk_pixbuf_xlib_render_pixmap_and_mask(gicon,
-					       &bi->pixmap.draw,
-					       &bi->pixmap.mask, 128);
-	if (!bi->pixmap.draw) {
-		EPRINTF("could not render pixbuf\n");
-		return (False);
-	}
-	bi->present = True;
 	return True;
 }
 static Bool
@@ -389,7 +442,7 @@ static Bool
 xrender_createbitmapicon(AScreen *ds, Client *c, Pixmap icon, Pixmap mask, unsigned w, unsigned h)
 {
 	XImage *xicon = NULL, *xmask = NULL, *alpha;
-	ButtonImage *bi;
+	ButtonImage *bi, **bis;
 	unsigned i, j, d = ds->depth, th = ds->style.titleheight;
 	unsigned long valuemask = 0;
 	Pixmap pixmap;
@@ -449,36 +502,38 @@ xrender_createbitmapicon(AScreen *ds, Client *c, Pixmap icon, Pixmap mask, unsig
 	valuemask |= CPComponentAlpha;
 	pict = XRenderCreatePicture(dpy, pixmap, ds->format, valuemask, &pa);
 
-	bi = &c->iconbtn;
-	bi->x = bi->y = bi->b = 0;
-	bi->d = d;
-	bi->w = w;
-	bi->h = h;
-	if (h > th) {
-		XDouble scale = (XDouble) th / (XDouble) h;
-		XTransform trans = {
-			{ { XDoubleToFixed(scale), 0, 0 },
-			  { 0, XDoubleToFixed(scale), 0 },
-			  { 0, 0, XDoubleToFixed(1.0)   } }
-		};
-		XRenderSetPictureTransform(dpy, pict, &trans);
-		XRenderSetPictureFilter(dpy, pict, FilterBilinear, NULL, 0);
-		bi->w = w * scale;
-		bi->h = h * scale;
+	for (bis = getbuttons(c); bis && *bis; bis++) {
+		bi = *bis;
+		bi->x = bi->y = bi->b = 0;
+		bi->d = d;
+		bi->w = w;
+		bi->h = h;
+		if (h > th) {
+			XDouble scale = (XDouble) th / (XDouble) h;
+			XTransform trans = {
+				{ { XDoubleToFixed(scale), 0, 0 },
+				  { 0, XDoubleToFixed(scale), 0 },
+				  { 0, 0, XDoubleToFixed(1.0)   } }
+			};
+			XRenderSetPictureTransform(dpy, pict, &trans);
+			XRenderSetPictureFilter(dpy, pict, FilterBilinear, NULL, 0);
+			bi->w = w * scale;
+			bi->h = h * scale;
+		}
+		if (bi->bitmap.pict) {
+			XRenderFreePicture(dpy, bi->bitmap.pict);
+			bi->bitmap.pict = None;
+		}
+		bi->bitmap.pict = pict;
+		bi->present = True;
 	}
-	if (bi->bitmap.pict) {
-		XRenderFreePicture(dpy, bi->bitmap.pict);
-		bi->bitmap.pict = None;
-	}
-	bi->bitmap.pict = pict;
-	bi->present = True;
 	return (True);
 }
 static Bool
 xrender_createpixmapicon(AScreen *ds, Client *c, Pixmap icon, Pixmap mask, unsigned w, unsigned h, unsigned d)
 {
 	XImage *xicon = NULL, *xmask = NULL, *alpha;
-	ButtonImage *bi;
+	ButtonImage *bi, **bis;
 	unsigned i, j, th = ds->style.titleheight;
 	unsigned long valuemask = 0, pixel;
 	Pixmap pixmap;
@@ -531,37 +586,39 @@ xrender_createpixmapicon(AScreen *ds, Client *c, Pixmap icon, Pixmap mask, unsig
 	valuemask |= CPComponentAlpha;
 	pict = XRenderCreatePicture(dpy, pixmap, ds->format, valuemask, &pa);
 
-	bi = &c->iconbtn;
-	bi->x = bi->y = bi->b = 0;
-	bi->d = ds->depth;
-	bi->w = w;
-	bi->h = h;
-	if (h > th) {
-		/* get XRender to scale the image for us */
-		XDouble scale = (XDouble) th / (XDouble) h;
-		XTransform trans = {
-			{ { XDoubleToFixed(scale), 0, 0 },
-			  { 0, XDoubleToFixed(scale), 0 },
-			  { 0, 0, XDoubleToFixed(1.0)   } }
-		};
-		XRenderSetPictureTransform(dpy, pict, &trans);
-		XRenderSetPictureFilter(dpy, pict, FilterBilinear, NULL, 0);
-		bi->w = w * scale;
-		bi->h = h * scale;
+	for (bis = getbuttons(c); bis && *bis; bis++) {
+		bi = *bis;
+		bi->x = bi->y = bi->b = 0;
+		bi->d = ds->depth;
+		bi->w = w;
+		bi->h = h;
+		if (h > th) {
+			/* get XRender to scale the image for us */
+			XDouble scale = (XDouble) th / (XDouble) h;
+			XTransform trans = {
+				{ { XDoubleToFixed(scale), 0, 0 },
+				  { 0, XDoubleToFixed(scale), 0 },
+				  { 0, 0, XDoubleToFixed(1.0)   } }
+			};
+			XRenderSetPictureTransform(dpy, pict, &trans);
+			XRenderSetPictureFilter(dpy, pict, FilterBilinear, NULL, 0);
+			bi->w = w * scale;
+			bi->h = h * scale;
+		}
+		if (bi->pixmap.pict) {
+			XRenderFreePicture(dpy, bi->pixmap.pict);
+			bi->pixmap.pict = None;
+		}
+		bi->pixmap.pict = pict;
+		bi->present = True;
 	}
-	if (bi->pixmap.pict) {
-		XRenderFreePicture(dpy, bi->pixmap.pict);
-		bi->pixmap.pict = None;
-	}
-	bi->pixmap.pict = pict;
-	bi->present = True;
 	return (True);
 }
 static Bool
 xrender_createdataicon(AScreen *ds, Client *c, unsigned w, unsigned h, long *data)
 {
 	XImage *alpha;
-	ButtonImage *bi;
+	ButtonImage *bi, **bis;
 	unsigned i, j, d = ds->depth, th = ds->style.titleheight;
 	unsigned long mask = 0;
 	long *p;
@@ -589,30 +646,32 @@ xrender_createdataicon(AScreen *ds, Client *c, unsigned w, unsigned h, long *dat
 	mask |= CPComponentAlpha;
 	pict = XRenderCreatePicture(dpy, pixmap, ds->format, mask, &pa);
 
-	bi = &c->iconbtn;
-	bi->x = bi->y = bi->b = 0;
-	bi->d = d;
-	bi->w = w;
-	bi->h = h;
-	if (h > th) {
-		/* get XRender to scale the image for us */
-		XDouble scale = (XDouble) th / (XDouble) h;
-		XTransform trans = {
-			{ { XDoubleToFixed(scale), 0, 0 },
-			  { 0, XDoubleToFixed(scale), 0 },
-			  { 0, 0, XDoubleToFixed(1.0)   } }
-		};
-		XRenderSetPictureTransform(dpy, pict, &trans);
-		XRenderSetPictureFilter(dpy, pict, FilterBilinear, NULL, 0);
-		bi->w = w * scale;
-		bi->h = h * scale;
+	for (bis = getbuttons(c); bis && *bis; bis++) {
+		bi = *bis;
+		bi->x = bi->y = bi->b = 0;
+		bi->d = d;
+		bi->w = w;
+		bi->h = h;
+		if (h > th) {
+			/* get XRender to scale the image for us */
+			XDouble scale = (XDouble) th / (XDouble) h;
+			XTransform trans = {
+				{ { XDoubleToFixed(scale), 0, 0 },
+				  { 0, XDoubleToFixed(scale), 0 },
+				  { 0, 0, XDoubleToFixed(1.0)   } }
+			};
+			XRenderSetPictureTransform(dpy, pict, &trans);
+			XRenderSetPictureFilter(dpy, pict, FilterBilinear, NULL, 0);
+			bi->w = w * scale;
+			bi->h = h * scale;
+		}
+		if (bi->pixmap.pict) {
+			XRenderFreePicture(dpy, bi->pixmap.pict);
+			bi->pixmap.pict = None;
+		}
+		bi->pixmap.pict = pict;
+		bi->present = True;
 	}
-	if (bi->pixmap.pict) {
-		XRenderFreePicture(dpy, bi->pixmap.pict);
-		bi->pixmap.pict = None;
-	}
-	bi->pixmap.pict = pict;
-	bi->present = True;
 	return (True);
 }
 #endif				/* defined RENDER && defined USE_RENDER */
@@ -622,7 +681,7 @@ static Bool
 ximage_createbitmapicon(AScreen *ds, Client *c, Pixmap icon, Pixmap mask, unsigned w, unsigned h)
 {
 	XImage *xicon = NULL, *xmask = NULL, *ximage = NULL;
-	ButtonImage *bi;
+	ButtonImage *bi, **bis;
 	unsigned i, j, k, l, d = ds->depth, th = ds->style.titleheight;
 	unsigned long pixel;
 	double *chanls = NULL; unsigned m; /* we all float down here... */
@@ -824,18 +883,21 @@ ximage_createbitmapicon(AScreen *ds, Client *c, Pixmap icon, Pixmap mask, unsign
 	if (xmask)
 		XDestroyImage(xmask);
 
-	bi = &c->iconbtn;
-	bi->x = bi->y = bi->b = 0;
-	bi->d = ds->depth;
-	bi->w = w;
-	bi->h = h;
-	if (bi->bitmap.ximage) {
-		XDestroyImage(bi->bitmap.ximage);
-		bi->bitmap.ximage = NULL;
+	for (bis = getbuttons(c); bis && *bis; bis++) {
+		bi = *bis;
+		bi->x = bi->y = bi->b = 0;
+		bi->d = ds->depth;
+		bi->w = w;
+		bi->h = h;
+		if (bi->bitmap.ximage) {
+			XDestroyImage(bi->bitmap.ximage);
+			bi->bitmap.ximage = NULL;
+		}
+		XPRINTF(__CFMTS(c) "assigning ximage %p\n", __CARGS(c), ximage);
+		bi->bitmap.ximage = XSubImage(ximage, 0, 0, ximage->width, ximage->height);
+		bi->present = True;
 	}
-	XPRINTF(__CFMTS(c) "assigning ximage %p\n", __CARGS(c), ximage);
-	bi->bitmap.ximage = ximage;
-	bi->present = True;
+	XDestroyImage(ximage);
 	return (True);
 
       error:
@@ -854,7 +916,7 @@ static Bool
 ximage_createpixmapicon(AScreen *ds, Client *c, Pixmap icon, Pixmap mask, unsigned w, unsigned h, unsigned d)
 {
 	XImage *xicon = NULL, *xmask = NULL, *ximage = NULL;
-	ButtonImage *bi;
+	ButtonImage *bi, **bis;
 	unsigned i, j, k, l, th = ds->style.titleheight;
 	unsigned long pixel;
 	double *chanls = NULL; unsigned m;
@@ -1057,18 +1119,21 @@ ximage_createpixmapicon(AScreen *ds, Client *c, Pixmap icon, Pixmap mask, unsign
 	if (xmask)
 		XDestroyImage(xmask);
 
-	bi = &c->iconbtn;
-	bi->x = bi->y = bi->b = 0;
-	bi->d = ds->depth;
-	bi->w = w;
-	bi->h = h;
-	if (bi->pixmap.ximage) {
-		XDestroyImage(bi->pixmap.ximage);
-		bi->pixmap.ximage = NULL;
+	for (bis = getbuttons(c); bis && *bis; bis++) {
+		bi = *bis;
+		bi->x = bi->y = bi->b = 0;
+		bi->d = ds->depth;
+		bi->w = w;
+		bi->h = h;
+		if (bi->pixmap.ximage) {
+			XDestroyImage(bi->pixmap.ximage);
+			bi->pixmap.ximage = NULL;
+		}
+		XPRINTF(__CFMTS(c) "assigning ximage %p\n", __CARGS(c), ximage);
+		bi->pixmap.ximage = XSubImage(ximage, 0, 0, ximage->width, ximage->height);
+		bi->present = True;
 	}
-	XPRINTF(__CFMTS(c) "assigning ximage %p\n", __CARGS(c), ximage);
-	bi->pixmap.ximage = ximage;
-	bi->present = True;
+	XDestroyImage(ximage);
 	return (True);
 
       error:
@@ -1087,7 +1152,7 @@ static Bool
 ximage_createdataicon(AScreen *ds, Client *c, unsigned w, unsigned h, long *data)
 {
 	XImage *ximage = NULL;
-	ButtonImage *bi;
+	ButtonImage *bi, **bis;
 	unsigned i, j, k, l, d = ds->depth, th = ds->style.titleheight;
 	unsigned long pixel;
 	double *chanls = NULL; unsigned m;
@@ -1276,19 +1341,22 @@ ximage_createdataicon(AScreen *ds, Client *c, unsigned w, unsigned h, long *data
 		}
 	}
 
-	bi = &c->iconbtn;
-	bi->x = bi->y = bi->b = 0;
-	bi->d = d;
-	bi->w = w;
-	bi->h = h;
-	if (bi->pixmap.ximage) {
-		XDestroyImage(bi->pixmap.ximage);
-		bi->pixmap.ximage = NULL;
+	for (bis = getbuttons(c); bis && *bis; bis++) {
+		bi = *bis;
+		bi->x = bi->y = bi->b = 0;
+		bi->d = d;
+		bi->w = w;
+		bi->h = h;
+		if (bi->pixmap.ximage) {
+			XDestroyImage(bi->pixmap.ximage);
+			bi->pixmap.ximage = NULL;
+		}
+		XPRINTF(__CFMTS(c) "assigning ximage %p (%dx%dx%d+%d+%d)\n", __CARGS(c), ximage,
+				bi->w, bi->h, bi->d, bi->x, bi->y);
+		bi->pixmap.ximage = XSubImage(ximage, 0, 0, ximage->width, ximage->height);
+		bi->present = True;
 	}
-	XPRINTF(__CFMTS(c) "assigning ximage %p (%dx%dx%d+%d+%d)\n", __CARGS(c), ximage,
-			bi->w, bi->h, bi->d, bi->x, bi->y);
-	bi->pixmap.ximage = ximage;
-	bi->present = True;
+	XDestroyImage(ximage);
 	return (True);
 
       error:
@@ -1305,10 +1373,9 @@ static Bool
 xlib_createbitmapicon(AScreen *ds, Client *c, Pixmap icon, Pixmap mask, unsigned w, unsigned h)
 {
 	XImage *xicon = NULL, *xmask = NULL, *alpha = NULL;
-	ButtonImage *bi;
+	ButtonImage *bi, **bis;
 	unsigned i, j, k, l, d = ds->depth, th = ds->style.titleheight;
 	unsigned long pixel, fg, bg;
-	Pixmap pixmap;
 	double *chanls = NULL; unsigned m; /* we all float down here... */
 	double *counts = NULL; unsigned n;
 	double *colors = NULL;
@@ -1444,26 +1511,27 @@ xlib_createbitmapicon(AScreen *ds, Client *c, Pixmap icon, Pixmap mask, unsigned
 	XDestroyImage(xicon);
 	if (xmask)
 		XDestroyImage(xmask);
-	pixmap = XCreatePixmap(dpy, ds->drawable, w, h, ds->depth);
-	XPutImage(dpy, pixmap, ds->dc.gc, alpha, 0, 0, 0, 0, w, h);
-	XDestroyImage(alpha);
 
-	bi = &c->iconbtn;
-	bi->x = bi->y = bi->b = 0;
-	bi->d = ds->depth;
-	bi->w = w;
-	bi->h = h;
-	if (bi->pixmap.draw) {
-		XFreePixmap(dpy, bi->pixmap.draw);
-		bi->pixmap.draw = None;
+	for (bis = getbuttons(c); bis && *bis; bis++) {
+		bi = *bis;
+		bi->x = bi->y = bi->b = 0;
+		bi->d = ds->depth;
+		bi->w = w;
+		bi->h = h;
+		if (bi->pixmap.draw) {
+			XFreePixmap(dpy, bi->pixmap.draw);
+			bi->pixmap.draw = None;
+		}
+		if (bi->pixmap.mask) {
+			XFreePixmap(dpy, bi->pixmap.mask);
+			bi->pixmap.mask = None;
+		}
+		bi->pixmap.draw = XCreatePixmap(dpy, ds->drawable, w, h, ds->depth);
+		XPRINTF(__CFMTS(c) "assigning pixmap 0x%lx\n", __CARGS(c), bi->pixmap.draw);
+		XPutImage(dpy, bi->pixmap.draw, ds->dc.gc, alpha, 0, 0, 0, 0, w, h);
+		bi->present = True;
 	}
-	if (bi->pixmap.mask) {
-		XFreePixmap(dpy, bi->pixmap.mask);
-		bi->pixmap.mask = None;
-	}
-	XPRINTF(__CFMTS(c) "assigning pixmap 0x%lx\n", __CARGS(c), pixmap);
-	bi->pixmap.draw = pixmap;
-	bi->present = True;
+	XDestroyImage(alpha);
 	return (True);
 
       error:
@@ -1482,10 +1550,9 @@ static Bool
 xlib_createpixmapicon(AScreen *ds, Client *c, Pixmap icon, Pixmap mask, unsigned w, unsigned h, unsigned d)
 {
 	XImage *xicon = NULL, *xmask = NULL, *alpha = NULL;
-	ButtonImage *bi;
+	ButtonImage *bi, **bis;
 	unsigned i, j, k, l, th = ds->style.titleheight;
 	unsigned long pixel, bg;
-	Pixmap pixmap;
 	double *chanls = NULL; unsigned m;
 	double *counts = NULL; unsigned n;
 	double *colors = NULL;
@@ -1625,26 +1692,27 @@ xlib_createpixmapicon(AScreen *ds, Client *c, Pixmap icon, Pixmap mask, unsigned
 	XDestroyImage(xicon);
 	if (xmask)
 		XDestroyImage(xmask);
-	pixmap = XCreatePixmap(dpy, ds->drawable, w, h, ds->depth);
-	XPutImage(dpy, pixmap, ds->dc.gc, alpha, 0, 0, 0, 0, w, h);
-	XDestroyImage(alpha);
 
-	bi = &c->iconbtn;
-	bi->x = bi->y = bi->b = 0;
-	bi->d = ds->depth;
-	bi->w = w;
-	bi->h = h;
-	if (bi->pixmap.draw) {
-		XFreePixmap(dpy, bi->pixmap.draw);
-		bi->pixmap.draw = None;
+	for (bis = getbuttons(c); bis && *bis; bis++) {
+		bi = *bis;
+		bi->x = bi->y = bi->b = 0;
+		bi->d = ds->depth;
+		bi->w = w;
+		bi->h = h;
+		if (bi->pixmap.draw) {
+			XFreePixmap(dpy, bi->pixmap.draw);
+			bi->pixmap.draw = None;
+		}
+		if (bi->pixmap.mask) {
+			XFreePixmap(dpy, bi->pixmap.mask);
+			bi->pixmap.mask = None;
+		}
+		bi->pixmap.draw = XCreatePixmap(dpy, ds->drawable, w, h, ds->depth);
+		XPRINTF(__CFMTS(c) "assigning pixmap 0x%lx\n", __CARGS(c), bi->pixmap.draw);
+		XPutImage(dpy, bi->pixmap.draw, ds->dc.gc, alpha, 0, 0, 0, 0, w, h);
+		bi->present = True;
 	}
-	if (bi->pixmap.mask) {
-		XFreePixmap(dpy, bi->pixmap.mask);
-		bi->pixmap.mask = None;
-	}
-	XPRINTF(__CFMTS(c) "assigning pixmap 0x%lx\n", __CARGS(c), pixmap);
-	bi->pixmap.draw = pixmap;
-	bi->present = True;
+	XDestroyImage(alpha);
 	return (True);
 
       error:
@@ -1663,10 +1731,9 @@ static Bool
 xlib_createdataicon(AScreen *ds, Client *c, unsigned w, unsigned h, long *data)
 {
 	XImage *alpha;
-	ButtonImage *bi;
+	ButtonImage *bi, **bis;
 	unsigned i, j, k, l, d = ds->depth, th = ds->style.titleheight;
 	unsigned long pixel, bg;
-	Pixmap pixmap;
 	double *chanls = NULL; unsigned m;
 	double *counts = NULL; unsigned n;
 	double *colors = NULL;
@@ -1792,26 +1859,27 @@ xlib_createdataicon(AScreen *ds, Client *c, unsigned w, unsigned h, long *data)
 			goto error;
 		}
 	}
-	pixmap = XCreatePixmap(dpy, ds->drawable, w, h, d);
-	XPutImage(dpy, pixmap, ds->dc.gc, alpha, 0, 0, 0, 0, w, h);
-	XDestroyImage(alpha);
 
-	bi = &c->iconbtn;
-	bi->x = bi->y = bi->b = 0;
-	bi->d = d;
-	bi->w = w;
-	bi->h = h;
-	if (bi->pixmap.draw) {
-		XFreePixmap(dpy, bi->pixmap.draw);
-		bi->pixmap.draw = None;
+	for (bis = getbuttons(c); bis && *bis; bis++) {
+		bi = *bis;
+		bi->x = bi->y = bi->b = 0;
+		bi->d = d;
+		bi->w = w;
+		bi->h = h;
+		if (bi->pixmap.draw) {
+			XFreePixmap(dpy, bi->pixmap.draw);
+			bi->pixmap.draw = None;
+		}
+		if (bi->pixmap.mask) {
+			XFreePixmap(dpy, bi->pixmap.mask);
+			bi->pixmap.mask = None;
+		}
+		bi->pixmap.draw = XCreatePixmap(dpy, ds->drawable, w, h, d);
+		XPRINTF(__CFMTS(c) "assigning pixmap 0x%lx\n", __CARGS(c), bi->pixmap.draw);
+		XPutImage(dpy, bi->pixmap.draw, ds->dc.gc, alpha, 0, 0, 0, 0, w, h);
+		bi->present = True;
 	}
-	if (bi->pixmap.mask) {
-		XFreePixmap(dpy, bi->pixmap.mask);
-		bi->pixmap.mask = None;
-	}
-	XPRINTF(__CFMTS(c) "assigning pixmap 0x%lx\n", __CARGS(c), pixmap);
-	bi->pixmap.draw = pixmap;
-	bi->present = True;
+	XDestroyImage(alpha);
 	return (True);
 
       error:
@@ -2185,8 +2253,8 @@ buttonimage(AScreen *ds, Client *c, ElementType type)
 		return NULL;
 	}
 
-	if (type == IconBtn && c->iconbtn.present)
-		return &c->iconbtn;
+	if (type == IconBtn && (image = getbutton(c)))
+		return (image);
 
 	image = e->image;
 
@@ -2392,9 +2460,9 @@ drawtext(AScreen *ds, const char *text, Drawable drawable, XftDraw *xftdraw,
 		XRenderFillRectangle(dpy, PictOpSrc, dst, &col[ColBG].color, x - gap, 0,
 				     w + gap * 2, h);
 		if (drop)
-			XftTextRenderUtf8(dpy, PictOpSrc, shd, font, dst, 0, 0, x + drop,
+			XftTextRenderUtf8(dpy, PictOpOver, shd, font, dst, 0, 0, x + drop,
 					  y + drop, (FcChar8 *) buf, len);
-		XftTextRenderUtf8(dpy, PictOpSrc, src, font, dst, 0, 0, x + drop,
+		XftTextRenderUtf8(dpy, PictOpOver, src, font, dst, 0, 0, x + drop,
 				  y + drop, (FcChar8 *) buf, len);
 	} else
 #endif
@@ -2557,7 +2625,7 @@ drawbutton(AScreen *ds, Client *c, ElementType type, XftColor *col, int x)
 	if (bi->pixmap.pict) {
 		Picture dst = XftDrawPicture(ds->dc.draw.xft);
 
-		XRenderFillRectangle(dpy, PictOpSrc, dst, &bg->color, g.x, g.y, g.w, g.h);
+		XRenderFillRectangle(dpy, PictOpOver, dst, &bg->color, g.x, g.y, g.w, g.h);
 		XRenderComposite(dpy, PictOpOver, bi->pixmap.pict, None, dst,
 				0, 0, 0, 0, ec->eg.x, ec->eg.y, ec->eg.w, ec->eg.h);
 	} else

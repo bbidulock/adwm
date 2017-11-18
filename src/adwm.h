@@ -373,6 +373,7 @@ enum {
 	ClientGrips,
 	ClientFrame,
 	ClientTimeWindow,
+	ClientAppl,
 	ClientClass,
 	ClientGroup,
 	ClientTransFor,
@@ -649,6 +650,7 @@ enum {
 typedef struct Tag Tag;
 typedef struct View View;
 typedef struct Monitor Monitor;
+typedef struct Appl Appl;
 typedef struct Class Class;
 typedef struct Client Client;
 typedef struct AScreen AScreen;
@@ -929,10 +931,24 @@ typedef union {
 	unsigned with;
 } WithUnion;
 
+struct Appl {
+	Appl *next;			/* next in list */
+	char *appid;			/* application id (unique) */
+	char *name;			/* application name (or NULL) */
+	char *description;		/* description (or NULL) */
+	char *wmclass;			/* wmclass (or NULL) */
+	char *binary;			/* binary name (or NULL) */
+	char *icon;			/* icon name (or NULL) */
+	ButtonImage button;		/* titlebar icon for this appid */
+	Window *members;		/* windows with this appid */
+	unsigned count;			/* count of windows */
+};
+
 struct Class {
 	Class *next;			/* next in list */
 	XClassHint ch;			/* res_class and res_name */
 	Window *members;		/* windows with this res_class and name */
+	ButtonImage button;		/* titlebar icon for this class */
 	unsigned count;			/* count of windows */
 };
 
@@ -984,7 +1000,7 @@ struct Client {
 	Window session;
 	Window *cmapwins;
 	Colormap cmap;
-	ButtonImage iconbtn;
+	ButtonImage button;
 	ElementClient *element;
 	Time user_time;
 #ifdef SYNC
@@ -1429,8 +1445,15 @@ void unban(Client *c, View *v);
 extern Group window_stack;
 void unmanage(Client *c, WithdrawCause cause);
 
+/* needed by ewmh.c */
+#ifdef STARTUP_NOTIFICATION
+void updateappl(Client *c);
+#endif
+
 /* needed by draw.c */
 void installcolormaps(AScreen *s, Client *c, Window *w);
+ButtonImage **getbuttons(Client *c);
+ButtonImage *getbutton(Client *c);
 
 void show_client_state(Client *c);
 

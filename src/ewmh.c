@@ -522,6 +522,7 @@ n_set_notify(Notify *n, Client *c)
 		n_del_notify(n);
 	else
 		XPRINTF("could not find sequence\n");
+	updateappl(c);
 	return (seq);
 }
 

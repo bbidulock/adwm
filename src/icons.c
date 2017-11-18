@@ -27,8 +27,9 @@ char **xdgs = NULL;
 char **dirs = NULL;
 char **exts = NULL;
 
-typedef struct IconTheme IconTheme;
 typedef struct IconDirectory IconDirectory;
+typedef struct IconTheme IconTheme;
+typedef struct IconThemeName IconThemeName;
 
 struct IconDirectory {
 	IconTheme *theme;
@@ -53,7 +54,38 @@ struct IconTheme {
 	IconDirectory *dirs;
 };
 
+struct IconThemeName {
+	IconThemeName *next;
+	char *name;
+};
+
 IconTheme *themes = NULL;
+IconThemeName *themenames = NULL;
+
+void
+pushthemename(const char *name)
+{
+	IconThemeName *itn;
+
+	itn = ecalloc(1, sizeof(*itn));
+	itn->name = strdup(name);
+	itn->next = themenames;
+	themenames = itn;
+}
+
+char *
+popthemename(void)
+{
+	IconThemeName *itn;
+	char *name = NULL;
+
+	if ((itn = themenames)) {
+		themenames = itn->next;
+		name = itn->name;
+		free(itn);
+	}
+	return (name);
+}
 
 static char **
 freestringlist(char **list)
@@ -607,7 +639,7 @@ issubdir(const char *path, const char *subdir)
 	return (True);
 }
 
-static void
+static IconTheme *
 newicontheme(const char *name, const char *path)
 {
 	FILE *file;
@@ -762,9 +794,12 @@ newicontheme(const char *name, const char *path)
 					dir->minsize = dir->size;
 			}
 		}
+		return (it);
 	}
+	return (NULL);
 }
 
+#if 0
 static void
 rescanicons(void)
 {
@@ -794,6 +829,38 @@ rescanicons(void)
 		}
 	}
 }
+#else
+static void
+rescanicons(void)
+{
+	char *name;
+
+	freeiconthemes();
+
+	while ((name = popthemename())) {
+		size_t nlen = strlen(name);
+		char **xdg;
+
+		for (xdg = xdgs; xdg && *xdg; xdg++) ;
+		for (xdg--; xdg >= xdgs; xdg--) {
+			IconTheme *it;
+			size_t len = strlen(*xdg) + nlen + 13 + 1;
+			char *path = ecalloc(len, sizeof(*path));
+
+			strncpy(path, *xdg, len);
+			strncat(path, "/", len);
+			strncat(path, name, len);
+			strncat(path, "/index.theme", len);
+			if (!access(path, R_OK) && (it = newicontheme(name, path))
+			    && it->inherits && strcmp(it->inherits, name)
+			    && strcmp(it->inherits, "hicolor"))
+				pushthemename(it->inherits);
+			free(path);
+		}
+		free(name);
+	}
+}
+#endif
 
 void
 initicons(Bool reload)
@@ -846,8 +913,13 @@ initicons(Bool reload)
 		xdgs[j] = ecalloc(len + 1, sizeof(*xdgs[j]));
 		strncpy(xdgs[j], env, len);
 		strncat(xdgs[j], "/icons", len);
-		_DPRINTF("added directory to XDG paths: %s\n", xdgs[j]);
-		j++;
+		if (!stat(xdgs[j], &st) && S_ISDIR(st.st_mode)) {
+			_DPRINTF("added directory to XDG paths: %s\n", xdgs[j]);
+			j++;
+		} else {
+			free(xdgs[j]);
+			xdgs[j] = NULL;
+		}
 	} else {
 		xdgs = reallocarray(xdgs, j + 2, sizeof(*xdgs));
 		xdgs[j + 1] = NULL;
@@ -857,7 +929,13 @@ initicons(Bool reload)
 		strncpy(xdgs[j], home, len);
 		strncat(xdgs[j], "/.local/share/icons", len);
 		_DPRINTF("added directory to XDG paths: %s\n", xdgs[j]);
-		j++;
+		if (!stat(xdgs[j], &st) && S_ISDIR(st.st_mode)) {
+			_DPRINTF("added directory to XDG paths: %s\n", xdgs[j]);
+			j++;
+		} else {
+			free(xdgs[j]);
+			xdgs[j] = NULL;
+		}
 	}
 	env = getenv("XDG_DATA_DIRS") ? : "/usr/local/share:/usr/share";
 	for (p = env; (q = strchrnul(p, ':')); p = q + 1) {
@@ -868,7 +946,13 @@ initicons(Bool reload)
 		strncpy(xdgs[j], p, q - p);
 		strncat(xdgs[j], "/icons", len);
 		_DPRINTF("added directory to XDG paths: %s\n", xdgs[j]);
-		j++;
+		if (!stat(xdgs[j], &st) && S_ISDIR(st.st_mode)) {
+			_DPRINTF("added directory to XDG paths: %s\n", xdgs[j]);
+			j++;
+		} else {
+			free(xdgs[j]);
+			xdgs[j] = NULL;
+		}
 		if (!*q)
 			break;
 	}
@@ -978,5 +1062,8 @@ initicons(Bool reload)
 			options.icontheme = strdup("hicolor");
 	}
 	_DPRINTF("using icon theme %s\n", options.icontheme);
+	pushthemename("hicolor");
+	if (options.icontheme && strcmp(options.icontheme, "hicolor"))
+		pushthemename(options.icontheme);
 	rescanicons();
 }

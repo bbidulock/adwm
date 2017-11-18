@@ -312,7 +312,7 @@ _LookupIconInDirectory(const char *directory, const char *iconname, int size, co
 	return (file);
 }
 
-static char *
+char *
 _LookupAnyIcon(const char *iconname, int size, const char **fexts)
 {
 	char **search;
@@ -491,9 +491,11 @@ FindBestIcon(const char **iconlist, int size, const char **fexts)
 	for (icon = iconlist; icon && *icon; icon++)
 		if ((file = _LookupFallbackIcon(*icon, fexts)))
 			return (file);
+#if 0
 	for (icon = iconlist; icon && *icon; icon++)
 		if ((file = _LookupAnyIcon(*icon, size, fexts)))
 			return (file);
+#endif
 	return (NULL);
 }
 
@@ -527,7 +529,11 @@ FindIcon(const char *icon, int size, const char **fexts)
 		return (file);
 	if ((file = _LookupFallbackIcon(icon, fexts)))
 		return (file);
-	return _LookupAnyIcon(icon, size, fexts);
+#if 0
+	if ((file = _LookupAnyIcon(icon, size, fexts)))
+		return (file);
+#endif
+	return (NULL);
 }
 
 static IconDirectory *

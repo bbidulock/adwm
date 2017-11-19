@@ -807,37 +807,6 @@ newicontheme(const char *name, const char *path)
 	return (NULL);
 }
 
-#if 0
-static void
-rescanicons(void)
-{
-	char **xdg;
-	DIR *dir;
-
-	freeiconthemes();
-
-	_DPRINTF("rescanning icon theme directories\n");
-	for (xdg = xdgs; xdg && *xdg; xdg++) ;
-	for (xdg--; xdg >= xdgs; xdg--) {
-		_DPRINTF("searching directory for theme files %s\n", *xdg);
-		if ((dir = opendir(*xdg))) {
-			struct dirent *d;
-			char path[PATH_MAX + 1] = { 0, };
-
-			while ((d = readdir(dir))) {
-				if (!strcmp(d->d_name, ".") || !strcmp(d->d_name, ".."))
-					continue;
-				snprintf(path, PATH_MAX, "%s/%s/index.theme", *xdg, d->d_name);
-				if (!access(path, R_OK)) {
-					_DPRINTF("found theme %s file %s\n", d->d_name, path);
-					newicontheme(d->d_name, path);
-				}
-			}
-			closedir(dir);
-		}
-	}
-}
-#else
 static void
 rescanicons(void)
 {
@@ -868,7 +837,6 @@ rescanicons(void)
 		free(name);
 	}
 }
-#endif
 
 static Bool
 already(char **list, char *item)

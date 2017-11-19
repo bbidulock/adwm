@@ -21,30 +21,7 @@
 
 Options options;
 
-typedef struct {
-	union {
-		struct {
-			char *pdir;	/* private directory */
-			char *rdir;	/* runtime directory ${XDG_RUNTIME_DIR}/adwm */
-			char *xdir;	/* XDG directory ${XDG_CONFIG_DIR}/adwm */
-			char *udir;	/* user directory ${HOME}/.adwm */
-			char *sdir;	/* system directory /usr/share/adwm */
-		};
-		char *dirs[5];
-	};
-	union {
-		struct {
-			char *dockfile;	/* dockrc file */
-			char *keysfile;	/* kerysrc file */
-			char *themefile;	/* themerc file */
-			char *stylefile;	/* stylerc file */
-			char *rcfile;	/* rcfile */
-		};
-		char *files[5];
-	};
-} AdwmConfig;
-
-AdwmConfig config = { NULL, };
+AdwmPlaces config = { NULL, };
 
 void
 inittags(Bool reload)
@@ -627,13 +604,16 @@ initstylefile(void)
 {
 	XrmDatabase srdb;
 	const char *file, *name;
-	char *path;
+	char *path, *p, *q;
 	int len;
 
 	free(config.stylefile);
 	config.stylefile = NULL;
+	free(config.stylename);
+	config.stylename = NULL;
 
 	if ((name = getresource("style.name", NULL))) {
+		config.stylename = strdup(name);
 		/* already loaded a style, must be included in themerc */
 		if (config.themefile)
 			config.stylefile = strdup(config.themefile);
@@ -661,6 +641,7 @@ initstylefile(void)
 		}
 	}
 	if (!config.stylefile && (name = getresource("styleName", "Default"))) {
+		config.stylename = strdup(name);
 		len = strlen("styles/") + strlen(name) + strlen("/stylerc");
 		path = ecalloc(len + 1, sizeof(*path));
 		strncpy(path, "styles/", len);
@@ -688,6 +669,12 @@ initstylefile(void)
 		XPRINTF("Could not find readable style file.\n");
 		return;
 	}
+	if (!config.stylename && (p = q = config.stylefile) && (q = strrchr(q, '/'))) {
+		*q = '\0';
+		if ((p = strrchr(p, '/')))
+			config.stylename = strdup(p + 1);
+		*q = '/';
+	}
 	XPRINTF("Reading databse file %s\n", config.stylefile);
 	srdb = XrmGetFileDatabase(config.stylefile);
 	if (!srdb) {
@@ -702,14 +689,17 @@ initthemefile(void)
 {
 	XrmDatabase trdb;
 	const char *file, *name;
-	char *path;
+	char *path, *p, *q;
 	int len;
 
 	free(config.themefile);
 	config.themefile = NULL;
+	free(config.themename);
+	config.themename = NULL;
 
 	if ((name = getresource("theme.name", NULL))) {
 		/* already loaded a theme, must be included in adwmrc */
+		config.themename = strdup(name);
 		if (config.rcfile)
 			config.themefile = strdup(config.rcfile);
 		return;
@@ -734,6 +724,7 @@ initthemefile(void)
 		}
 	}
 	if (!config.themefile && (name = getresource("themeName", "Default"))) {
+		config.themename = strdup(name);
 		len = strlen("themes/") + strlen(name) + strlen("/themerc");
 		path = ecalloc(len + 1, sizeof(*path));
 		strncpy(path, "themes/", len);
@@ -760,6 +751,12 @@ initthemefile(void)
 	if (!config.themefile) {
 		XPRINTF("Could not find readable theme file.\n");
 		return;
+	}
+	if (!config.themename && (p = q = config.themefile) && (q = strrchr(q, '/'))) {
+		*q = '\0';
+		if ((p = strrchr(p, '/')))
+			config.themename = strdup(p + 1);
+		*q = '/';
 	}
 	XPRINTF("Reading databse file %s\n", config.themefile);
 	trdb = XrmGetFileDatabase(config.themefile);

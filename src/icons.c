@@ -25,6 +25,8 @@
 #include "config.h"
 #include "icons.h" /* verification */
 
+extern AdwmPlaces config;
+
 char **xdgs = NULL;
 char **dirs = NULL;
 char **exts = NULL;
@@ -861,10 +863,16 @@ initicons(Bool reload)
 	size_t len;
 	const char *home = getenv("HOME") ? : "~";
 	struct stat st;
+	IconTheme *it;
 
 	dirs = freestringlist(dirs);
 	xdgs = freestringlist(xdgs);
 	exts = freestringlist(exts);
+	
+	free(config.iconname);
+	config.iconname = NULL;
+	free(config.iconfile);
+	config.iconfile = NULL;
 
 	OPRINTF("initializing icon theme\n");
 	for (p = options.prependdirs; p && (q = strchrnul(p, ':')); p = q + 1) {
@@ -1058,5 +1066,11 @@ initicons(Bool reload)
 	pushthemename("hicolor");
 	if (options.icontheme && strcmp(options.icontheme, "hicolor"))
 		pushthemename(options.icontheme);
+	if (options.icontheme)
+		config.iconname = strdup(options.icontheme);
 	rescanicons();
+
+	for (it = themes; it && strcmp(it->name, options.icontheme); it = it->next) ;
+	if (it && it->path) 
+		config.iconfile = strdup(it->path);
 }

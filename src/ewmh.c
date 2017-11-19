@@ -20,7 +20,10 @@
 #include "layout.h"
 #include "draw.h"
 #include "tags.h"
+#include "config.h"
 #include "ewmh.h" /* verification */
+
+extern AdwmPlaces config;
 
 Atom atom[NATOMS];
 
@@ -632,7 +635,75 @@ initewmh(char *name)
 			PropModeReplace, (unsigned char *) data, 2);
 	XChangeProperty(dpy, swin, _XA_MOTIF_WM_INFO, _XA_MOTIF_WM_INFO, 32,
 			PropModeReplace, (unsigned char *) data, 2);
+
+	XChangeProperty(dpy, root, _XA_ADWM_CHECK, XA_WINDOW, 32,
+			PropModeReplace, (unsigned char *) &swin, 1);
+	XChangeProperty(dpy, swin, _XA_ADWM_CHECK, XA_WINDOW, 32,
+			PropModeReplace, (unsigned char *) &swin, 1);
+
 	ewmh_update_net_client_lists();
+
+
+	if (config.stylename)
+		XChangeProperty(dpy, root, _XA_ADWM_STYLE_NAME, _XA_UTF8_STRING, 8,
+				PropModeReplace, (unsigned char *) config.stylename,
+				strlen(config.stylename));
+	else
+		XDeleteProperty(dpy, root, _XA_ADWM_STYLE_NAME);
+
+	if (config.stylefile)
+		XChangeProperty(dpy, root, _XA_ADWM_STYLE, _XA_UTF8_STRING, 8,
+				PropModeReplace, (unsigned char *) config.stylefile,
+				strlen(config.stylefile));
+	else
+		XDeleteProperty(dpy, root, _XA_ADWM_STYLE);
+
+	if (config.themename)
+		XChangeProperty(dpy, root, _XA_ADWM_THEME_NAME, _XA_UTF8_STRING, 8,
+				PropModeReplace, (unsigned char *) config.themename,
+				strlen(config.themename));
+	else
+		XDeleteProperty(dpy, root, _XA_ADWM_THEME_NAME);
+
+	if (config.themefile)
+		XChangeProperty(dpy, root, _XA_ADWM_THEME, _XA_UTF8_STRING, 8,
+				PropModeReplace, (unsigned char *) config.themefile,
+				strlen(config.themefile));
+	else
+		XDeleteProperty(dpy, root, _XA_ADWM_THEME);
+
+	XChangeProperty(dpy, root, _XA_ADWM_RCFILE, _XA_UTF8_STRING, 8,
+			PropModeReplace, (unsigned char *) config.rcfile,
+			strlen(config.rcfile));
+	XChangeProperty(dpy, root, _XA_ADWM_PRVDIR, _XA_UTF8_STRING, 8,
+			PropModeReplace, (unsigned char *) config.pdir,
+			strlen(config.pdir));
+	XChangeProperty(dpy, root, _XA_ADWM_RUNDIR, _XA_UTF8_STRING, 8,
+			PropModeReplace, (unsigned char *) config.rdir,
+			strlen(config.rdir));
+	XChangeProperty(dpy, root, _XA_ADWM_USRDIR, _XA_UTF8_STRING, 8,
+			PropModeReplace, (unsigned char *) config.udir,
+			strlen(config.udir));
+	XChangeProperty(dpy, root, _XA_ADWM_XDGDIR, _XA_UTF8_STRING, 8,
+			PropModeReplace, (unsigned char *) config.xdir,
+			strlen(config.xdir));
+	XChangeProperty(dpy, root, _XA_ADWM_SYSDIR, _XA_UTF8_STRING, 8,
+			PropModeReplace, (unsigned char *) config.sdir,
+			strlen(config.sdir));
+
+	if (config.iconname)
+		XChangeProperty(dpy, root, _XA_ADWM_ICON_THEME_NAME, _XA_UTF8_STRING, 8,
+				PropModeReplace, (unsigned char *) config.iconname,
+				strlen(config.iconname));
+	else
+		XDeleteProperty(dpy, root, _XA_ADWM_ICON_THEME_NAME);
+
+	if (config.iconfile)
+		XChangeProperty(dpy, root, _XA_ADWM_ICON_THEME, _XA_UTF8_STRING, 8,
+				PropModeReplace, (unsigned char *) config.iconfile,
+				strlen(config.iconfile));
+	else
+		XDeleteProperty(dpy, root, _XA_ADWM_ICON_THEME);
 }
 
 void

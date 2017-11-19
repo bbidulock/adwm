@@ -870,6 +870,17 @@ rescanicons(void)
 }
 #endif
 
+static Bool
+already(char **list, char *item)
+{
+	char **p;
+
+	for (p = list; p && *p && *p != item && strcmp(*p, item); p++) ;
+	if (p && *p && *p != item)
+		return True;
+	return False;
+}
+
 void
 initicons(Bool reload)
 {
@@ -889,7 +900,7 @@ initicons(Bool reload)
 		dirs = reallocarray(dirs, i + 2, sizeof(*dirs));
 		dirs[i + 1] = NULL;
 		dirs[i] = strndup(p, q - p);
-		if (!stat(dirs[i], &st) && S_ISDIR(st.st_mode)) {
+		if (!already(dirs, dirs[i]) && !stat(dirs[i], &st) && S_ISDIR(st.st_mode)) {
 			_DPRINTF("added directory to search paths: %s\n", dirs[i]);
 			i++;
 		} else {
@@ -906,7 +917,7 @@ initicons(Bool reload)
 		dirs[i] = ecalloc(len + 1, sizeof(*dirs[i]));
 		strncpy(dirs[i], home, len);
 		strncat(dirs[i], "/.icons", len);
-		if (!stat(dirs[i], &st) && S_ISDIR(st.st_mode)) {
+		if (!already(dirs, dirs[i]) && !stat(dirs[i], &st) && S_ISDIR(st.st_mode)) {
 			_DPRINTF("added directory to search paths: %s\n", dirs[i]);
 			i++;
 		} else {
@@ -921,7 +932,7 @@ initicons(Bool reload)
 		xdgs[j] = ecalloc(len + 1, sizeof(*xdgs[j]));
 		strncpy(xdgs[j], env, len);
 		strncat(xdgs[j], "/icons", len);
-		if (!stat(xdgs[j], &st) && S_ISDIR(st.st_mode)) {
+		if (!already(xdgs, xdgs[j]) && !stat(xdgs[j], &st) && S_ISDIR(st.st_mode)) {
 			_DPRINTF("added directory to XDG paths: %s\n", xdgs[j]);
 			j++;
 		} else {
@@ -937,7 +948,7 @@ initicons(Bool reload)
 		strncpy(xdgs[j], home, len);
 		strncat(xdgs[j], "/.local/share/icons", len);
 		_DPRINTF("added directory to XDG paths: %s\n", xdgs[j]);
-		if (!stat(xdgs[j], &st) && S_ISDIR(st.st_mode)) {
+		if (!already(xdgs, xdgs[j]) && !stat(xdgs[j], &st) && S_ISDIR(st.st_mode)) {
 			_DPRINTF("added directory to XDG paths: %s\n", xdgs[j]);
 			j++;
 		} else {
@@ -954,7 +965,7 @@ initicons(Bool reload)
 		strncpy(xdgs[j], p, q - p);
 		strncat(xdgs[j], "/icons", len);
 		_DPRINTF("added directory to XDG paths: %s\n", xdgs[j]);
-		if (!stat(xdgs[j], &st) && S_ISDIR(st.st_mode)) {
+		if (!already(xdgs, xdgs[j]) && !stat(xdgs[j], &st) && S_ISDIR(st.st_mode)) {
 			_DPRINTF("added directory to XDG paths: %s\n", xdgs[j]);
 			j++;
 		} else {
@@ -971,7 +982,7 @@ initicons(Bool reload)
 		dirs[i] = ecalloc(len + 1, sizeof(*dirs[i]));
 		strncpy(dirs[i], env, len);
 		strncat(dirs[i], "/pixmaps", len);
-		if (!stat(dirs[i], &st) && S_ISDIR(st.st_mode)) {
+		if (!already(dirs, dirs[i]) && !stat(dirs[i], &st) && S_ISDIR(st.st_mode)) {
 			_DPRINTF("added directory to search paths: %s\n", dirs[i]);
 			i++;
 		} else {
@@ -985,7 +996,7 @@ initicons(Bool reload)
 		dirs[i] = ecalloc(len + 1, sizeof(*dirs[i]));
 		strncpy(dirs[i], home, len);
 		strncat(dirs[i], "/.local/share/pixmaps", len);
-		if (!stat(dirs[i], &st) && S_ISDIR(st.st_mode)) {
+		if (!already(dirs, dirs[i]) && !stat(dirs[i], &st) && S_ISDIR(st.st_mode)) {
 			_DPRINTF("added directory to search paths: %s\n", dirs[i]);
 			i++;
 		} else {
@@ -1001,7 +1012,7 @@ initicons(Bool reload)
 		dirs[i] = ecalloc(len + 1, sizeof(*dirs[i]));
 		strncpy(dirs[i], p, (q - p));
 		strncat(dirs[i], "/pixmaps", len);
-		if (!stat(dirs[i], &st) && S_ISDIR(st.st_mode)) {
+		if (!already(dirs, dirs[i]) && !stat(dirs[i], &st) && S_ISDIR(st.st_mode)) {
 			_DPRINTF("added directory to search paths: %s\n", dirs[i]);
 			i++;
 		} else {
@@ -1015,7 +1026,7 @@ initicons(Bool reload)
 		dirs = reallocarray(dirs, i + 2, sizeof(*dirs));
 		dirs[i + 1] = NULL;
 		dirs[i] = strndup(p, q - p);
-		if (!stat(dirs[i], &st) && S_ISDIR(st.st_mode)) {
+		if (!already(dirs, dirs[i]) && !stat(dirs[i], &st) && S_ISDIR(st.st_mode)) {
 			_DPRINTF("added directory to search paths: %s\n", dirs[i]);
 			i++;
 		} else {
@@ -1029,8 +1040,13 @@ initicons(Bool reload)
 		exts = reallocarray(exts, k + 2, sizeof(*exts));
 		exts[k + 1] = NULL;
 		exts[k] = strndup(p, q - p);
-		_DPRINTF("added file extension preference list: %s\n", exts[k]);
-		k++;
+		if (!already(exts, exts[k])) {
+			_DPRINTF("added file extension preference list: %s\n", exts[k]);
+			k++;
+		} else {
+			free(exts[k]);
+			exts[k] = NULL;
+		}
 		if (!*q)
 			break;
 	}

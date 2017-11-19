@@ -34,6 +34,9 @@ enum {
 	WMChangeState, WMTakeFocus, WMClientLeader, WMWindowRole, WMColormapWindows,
 	WMColormapNotify,
 	ELayout, ESelTags,
+	ADwmRcFile, ADwmPrvDir, ADwmRunDir, ADwmUsrDir, ADwmXdgDir, ADwmSysDir,
+	ADwmStyleName, ADwmThemeName, ADwmIconThemeName, ADwmCursorThemeName,
+	ADwmStyle, ADwmTheme, ADwmIconTheme, ADwmCursorTheme, ADwmCheck,
 	WMReload, WMRestart, WMShutdown, DeskLayout,
 	/* MWM/DTWM properties follow */
 	WMDesktop, MWMBindings, MWMDefaultBindings, MWMMessages, MWMOffset, MWMHints,
@@ -104,6 +107,21 @@ enum {
 #define _XA_WM_COLORMAP_NOTIFY			atom[WMColormapNotify]
 #define _XA_ECHINUS_LAYOUT			atom[ELayout]
 #define _XA_ECHINUS_SELTAGS			atom[ESelTags]
+#define _XA_ADWM_RCFILE				atom[ADwmRcFile]
+#define _XA_ADWM_PRVDIR				atom[ADwmPrvDir]
+#define _XA_ADWM_RUNDIR				atom[ADwmRunDir]
+#define _XA_ADWM_USRDIR				atom[ADwmUsrDir]
+#define _XA_ADWM_XDGDIR				atom[ADwmXdgDir]
+#define _XA_ADWM_SYSDIR				atom[ADwmSysDir]
+#define _XA_ADWM_STYLE_NAME			atom[ADwmStyleName]
+#define _XA_ADWM_THEME_NAME			atom[ADwmThemeName]
+#define _XA_ADWM_ICON_THEME_NAME		atom[ADwmIconThemeName]
+#define _XA_ADWM_CURSOR_THEME_NAME		atom[ADwmCursorThemeName]
+#define _XA_ADWM_STYLE				atom[ADwmStyle]
+#define _XA_ADWM_THEME				atom[ADwmTheme]
+#define _XA_ADWM_ICON_THEME			atom[ADwmIconTheme]
+#define _XA_ADWM_CURSOR_THEME			atom[ADwmCursorTheme]
+#define _XA_ADWM_CHECK				atom[ADwmCheck]
 #define _XA_NET_RELOAD				atom[WMReload]
 #define _XA_NET_RESTART				atom[WMRestart]
 #define _XA_NET_SHUTDOWN			atom[WMShutdown]

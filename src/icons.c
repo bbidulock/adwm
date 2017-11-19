@@ -69,6 +69,7 @@ pushthemename(const char *name)
 {
 	IconThemeName *itn;
 
+	OPRINTF("adding theme %s to scan list\n", name);
 	itn = ecalloc(1, sizeof(*itn));
 	itn->name = strdup(name);
 	itn->next = themenames;
@@ -604,6 +605,7 @@ allocicontheme(char *name, char *path)
 	/* We go backward through directories, so if we have a duplicate we want to
 	   overwrite it with the new directory data of the same name. */
 
+	OPRINTF("creating new icon theme %s: %s\n", name, path);
 	for (it = themes; it; it = it->next) {
 		if (!strcmp(name, it->name)) {
 			removeicontheme(it);
@@ -818,6 +820,7 @@ rescanicons(void)
 		size_t nlen = strlen(name);
 		char **xdg;
 
+		OPRINTF("searching for theme %s\n", name);
 		for (xdg = xdgs; xdg && *xdg; xdg++) ;
 		for (xdg--; xdg >= xdgs; xdg--) {
 			IconTheme *it;
@@ -863,13 +866,13 @@ initicons(Bool reload)
 	xdgs = freestringlist(xdgs);
 	exts = freestringlist(exts);
 
-	_DPRINTF("initializing icon theme\n");
+	OPRINTF("initializing icon theme\n");
 	for (p = options.prependdirs; p && (q = strchrnul(p, ':')); p = q + 1) {
 		dirs = reallocarray(dirs, i + 2, sizeof(*dirs));
 		dirs[i + 1] = NULL;
 		dirs[i] = strndup(p, q - p);
 		if (!already(dirs, dirs[i]) && !stat(dirs[i], &st) && S_ISDIR(st.st_mode)) {
-			_DPRINTF("added directory to search paths: %s\n", dirs[i]);
+			OPRINTF("added directory to search paths: %s\n", dirs[i]);
 			i++;
 		} else {
 			free(dirs[i]);
@@ -886,7 +889,7 @@ initicons(Bool reload)
 		strncpy(dirs[i], home, len);
 		strncat(dirs[i], "/.icons", len);
 		if (!already(dirs, dirs[i]) && !stat(dirs[i], &st) && S_ISDIR(st.st_mode)) {
-			_DPRINTF("added directory to search paths: %s\n", dirs[i]);
+			OPRINTF("added directory to search paths: %s\n", dirs[i]);
 			i++;
 		} else {
 			free(dirs[i]);
@@ -901,7 +904,7 @@ initicons(Bool reload)
 		strncpy(xdgs[j], env, len);
 		strncat(xdgs[j], "/icons", len);
 		if (!already(xdgs, xdgs[j]) && !stat(xdgs[j], &st) && S_ISDIR(st.st_mode)) {
-			_DPRINTF("added directory to XDG paths: %s\n", xdgs[j]);
+			OPRINTF("added directory to XDG paths: %s\n", xdgs[j]);
 			j++;
 		} else {
 			free(xdgs[j]);
@@ -915,9 +918,8 @@ initicons(Bool reload)
 		strncpy(xdgs[j], home, len);
 		strncpy(xdgs[j], home, len);
 		strncat(xdgs[j], "/.local/share/icons", len);
-		_DPRINTF("added directory to XDG paths: %s\n", xdgs[j]);
 		if (!already(xdgs, xdgs[j]) && !stat(xdgs[j], &st) && S_ISDIR(st.st_mode)) {
-			_DPRINTF("added directory to XDG paths: %s\n", xdgs[j]);
+			OPRINTF("added directory to XDG paths: %s\n", xdgs[j]);
 			j++;
 		} else {
 			free(xdgs[j]);
@@ -932,9 +934,8 @@ initicons(Bool reload)
 		xdgs[j] = ecalloc(len + 1, sizeof(*xdgs[j]));
 		strncpy(xdgs[j], p, q - p);
 		strncat(xdgs[j], "/icons", len);
-		_DPRINTF("added directory to XDG paths: %s\n", xdgs[j]);
 		if (!already(xdgs, xdgs[j]) && !stat(xdgs[j], &st) && S_ISDIR(st.st_mode)) {
-			_DPRINTF("added directory to XDG paths: %s\n", xdgs[j]);
+			OPRINTF("added directory to XDG paths: %s\n", xdgs[j]);
 			j++;
 		} else {
 			free(xdgs[j]);
@@ -951,7 +952,7 @@ initicons(Bool reload)
 		strncpy(dirs[i], env, len);
 		strncat(dirs[i], "/pixmaps", len);
 		if (!already(dirs, dirs[i]) && !stat(dirs[i], &st) && S_ISDIR(st.st_mode)) {
-			_DPRINTF("added directory to search paths: %s\n", dirs[i]);
+			OPRINTF("added directory to search paths: %s\n", dirs[i]);
 			i++;
 		} else {
 			free(dirs[i]);
@@ -965,7 +966,7 @@ initicons(Bool reload)
 		strncpy(dirs[i], home, len);
 		strncat(dirs[i], "/.local/share/pixmaps", len);
 		if (!already(dirs, dirs[i]) && !stat(dirs[i], &st) && S_ISDIR(st.st_mode)) {
-			_DPRINTF("added directory to search paths: %s\n", dirs[i]);
+			OPRINTF("added directory to search paths: %s\n", dirs[i]);
 			i++;
 		} else {
 			free(dirs[i]);
@@ -981,7 +982,7 @@ initicons(Bool reload)
 		strncpy(dirs[i], p, (q - p));
 		strncat(dirs[i], "/pixmaps", len);
 		if (!already(dirs, dirs[i]) && !stat(dirs[i], &st) && S_ISDIR(st.st_mode)) {
-			_DPRINTF("added directory to search paths: %s\n", dirs[i]);
+			OPRINTF("added directory to search paths: %s\n", dirs[i]);
 			i++;
 		} else {
 			free(dirs[i]);
@@ -995,7 +996,7 @@ initicons(Bool reload)
 		dirs[i + 1] = NULL;
 		dirs[i] = strndup(p, q - p);
 		if (!already(dirs, dirs[i]) && !stat(dirs[i], &st) && S_ISDIR(st.st_mode)) {
-			_DPRINTF("added directory to search paths: %s\n", dirs[i]);
+			OPRINTF("added directory to search paths: %s\n", dirs[i]);
 			i++;
 		} else {
 			free(dirs[i]);
@@ -1009,7 +1010,7 @@ initicons(Bool reload)
 		exts[k + 1] = NULL;
 		exts[k] = strndup(p, q - p);
 		if (!already(exts, exts[k])) {
-			_DPRINTF("added file extension preference list: %s\n", exts[k]);
+			OPRINTF("added file extension preference list: %s\n", exts[k]);
 			k++;
 		} else {
 			free(exts[k]);
@@ -1053,7 +1054,7 @@ initicons(Bool reload)
 		if (!options.icontheme)
 			options.icontheme = strdup("hicolor");
 	}
-	_DPRINTF("using icon theme %s\n", options.icontheme);
+	OPRINTF("using icon theme %s\n", options.icontheme);
 	pushthemename("hicolor");
 	if (options.icontheme && strcmp(options.icontheme, "hicolor"))
 		pushthemename(options.icontheme);

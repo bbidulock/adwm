@@ -1491,6 +1491,9 @@ void updateappl(Client *c);
 
 /* needed by draw.c */
 void installcolormaps(AScreen *s, Client *c, Window *w);
+ButtonImage *getappbutton(Client *c);
+ButtonImage *getresbutton(Client *c);
+ButtonImage *getwinbutton(Client *c);
 ButtonImage **getbuttons(Client *c);
 ButtonImage *getbutton(Client *c);
 

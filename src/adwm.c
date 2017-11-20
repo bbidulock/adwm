@@ -6264,6 +6264,34 @@ removeclass(Client *c)
 	}
 }
 
+ButtonImage *
+getappbutton(Client *c)
+{
+	Appl *a = getappl(c);
+
+	if (a)
+		return &a->button;
+	return (NULL);
+}
+
+ButtonImage *
+getresbutton(Client *c)
+{
+	Class *r = getclass(c);
+
+	if (r)
+		return &r->button;
+	return (NULL);
+}
+
+ButtonImage *
+getwinbutton(Client *c)
+{
+	if (c)
+		return &c->button;
+	return (NULL);
+}
+
 ButtonImage **
 getbuttons(Client *c)
 {
@@ -6271,18 +6299,13 @@ getbuttons(Client *c)
 	int i = 0;
 
 #ifdef STARTUP_NOTIFICATION
-	{
-		Appl *a = getappl(c);
-		if (a)
-			buttons[i++] = &a->button;
-	}
+	if ((buttons[i] = getappbutton(c)))
+		i++;
 #endif
-	{
-		Class *r = getclass(c);
-		if (r)
-			buttons[i++] = &r->button;
-	}
-	buttons[i++] = &c->button;
+	if ((buttons[i] = getresbutton(c)))
+		i++;
+	if ((buttons[i] = getwinbutton(c)))
+		i++;
 	buttons[i] = NULL;
 	return (buttons);
 }

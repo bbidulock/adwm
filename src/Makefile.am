@@ -21,8 +21,10 @@ bin_PROGRAMS = adwm
 
 AM_INSTALLCHECK_STD_OPTIONS_EXEMPT = adwm
 
-adwm_SOURCES = adwm.h actions.h config.h draw.h ewmh.h image.h layout.h parse.h resource.h tags.h texture.h icons.h util.h \
-	       adwm.c actions.c config.c draw.c ewmh.c image.c layout.c parse.c resource.c tags.c texture.c icons.c
+adwm_SOURCES = adwm.h actions.h config.h draw.h imlib.h pixbuf.h render.h ximage.h xlib.h \
+	       ewmh.h image.h layout.h parse.h resource.h tags.h texture.h icons.h util.h \
+	       adwm.c actions.c config.c draw.c imlib.c pixbuf.c render.c ximage.c xlib.c \
+	       ewmh.c image.c layout.c parse.c resource.c tags.c texture.c icons.c
 adwm_LDADD = \
 	$(IMLIB2_LIBS) \
 	$(PIXBUF_LIBS) \

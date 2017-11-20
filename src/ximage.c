@@ -912,36 +912,36 @@ ximage_drawnormal(AScreen *ds, Client *c)
 		XFreePixmap(dpy, ds->dc.draw.pixmap);
 		ds->dc.draw.w = ds->dc.w;
 		XPRINTF(__CFMTS(c) "creating title pixmap %dx%dx%d\n", __CARGS(c),
-				ds->dc.w, ds->dc.draw.h, ds->depth);
+			ds->dc.w, ds->dc.draw.h, ds->depth);
 		ds->dc.draw.pixmap = XCreatePixmap(dpy, ds->root, ds->dc.w,
 						   ds->dc.draw.h, ds->depth);
 		XftDrawChange(ds->dc.draw.xft, ds->dc.draw.pixmap);
 	}
-	XSetForeground(dpy, ds->dc.gc,
-		       c == sel ? ds->style.color.sele[ColBG].pixel : ds->style.color.norm[ColBG].pixel);
+	XSetForeground(dpy, ds->dc.gc, c == sel ?
+		       ds->style.color.sele[ColBG].pixel :
+		       ds->style.color.norm[ColBG].pixel);
 	XSetLineAttributes(dpy, ds->dc.gc, ds->style.border, LineSolid, CapNotLast,
 			   JoinMiter);
 	XSetFillStyle(dpy, ds->dc.gc, FillSolid);
-	status =
-	    XFillRectangle(dpy, ds->dc.draw.pixmap, ds->dc.gc, ds->dc.x, ds->dc.y,
-			   ds->dc.w, ds->dc.h);
+	status = XFillRectangle(dpy, ds->dc.draw.pixmap, ds->dc.gc,
+				ds->dc.x, ds->dc.y, ds->dc.w, ds->dc.h);
 	if (!status)
 		XPRINTF("Could not fill rectangle, error %d\n", status);
 	/* Don't know about this... */
-	if (ds->dc.w < textw(ds, c->name, (c == sel) ? Selected : (c->is.focused ? Focused : Normal))) {
+	if (ds->dc.w < textw(ds, c->name, (c == sel) ?
+			     Selected : (c->is.focused ? Focused : Normal))) {
 		ds->dc.w -= elementw(ds, c, CloseBtn);
 		ximage_drawtext(ds, c->name, ds->dc.draw.pixmap, ds->dc.draw.xft,
-			 c == sel ? ds->style.color.sele : ds->style.color.norm,
-			 c == sel ? 1 : 0, ds->dc.x, ds->dc.y, ds->dc.w);
+				c == sel ? ds->style.color.sele : ds->style.color.norm,
+				c == sel ? 1 : 0, ds->dc.x, ds->dc.y, ds->dc.w);
 		ximage_drawbutton(ds, c, CloseBtn,
-			   c == sel ? ds->style.color.sele : ds->style.color.norm,
-			   ds->dc.w);
+				  c == sel ? ds->style.color.sele : ds->style.color.norm,
+				  ds->dc.w);
 		goto end;
 	}
 	/* Left */
-	ds->dc.x +=
-	    (ds->style.spacing >
-	     ds->style.border) ? ds->style.spacing - ds->style.border : 0;
+	ds->dc.x += (ds->style.spacing > ds->style.border) ?
+	    ds->style.spacing - ds->style.border : 0;
 	for (i = 0; i < strlen(ds->style.titlelayout); i++) {
 		if (ds->style.titlelayout[i] == ' ' || ds->style.titlelayout[i] == '-')
 			break;
@@ -963,9 +963,8 @@ ximage_drawnormal(AScreen *ds, Client *c)
 		goto end;
 	/* Right */
 	ds->dc.x = ds->dc.w;
-	ds->dc.x -=
-	    (ds->style.spacing >
-	     ds->style.border) ? ds->style.spacing - ds->style.border : 0;
+	ds->dc.x -= (ds->style.spacing > ds->style.border) ?
+	    ds->style.spacing - ds->style.border : 0;
 	for (i = strlen(ds->style.titlelayout); i--;) {
 		if (ds->style.titlelayout[i] == ' ' || ds->style.titlelayout[i] == '-')
 			break;
@@ -979,13 +978,13 @@ ximage_drawnormal(AScreen *ds, Client *c)
 			       c == sel ? ds->style.color.sele[ColBorder].pixel :
 			       ds->style.color.norm[ColBorder].pixel);
 		XPRINTF(__CFMTS(c) "drawing line from +%d+%d to +%d+%d\n", __CARGS(c),
-				0, ds->dc.h - 1, ds->dc.w, ds->dc.h - 1);
+			0, ds->dc.h - 1, ds->dc.w, ds->dc.h - 1);
 		XDrawLine(dpy, ds->dc.draw.pixmap, ds->dc.gc, 0, ds->dc.h - 1, ds->dc.w,
 			  ds->dc.h - 1);
 	}
 	if (c->title) {
-		XPRINTF(__CFMTS(c) "copying title pixmap to %dx%d+%d+%d to +%d+%d\n", __CARGS(c),
-				c->c.w, ds->dc.h, 0, 0, 0, 0);
+		XPRINTF(__CFMTS(c) "copying title pixmap to %dx%d+%d+%d to +%d+%d\n",
+			__CARGS(c), c->c.w, ds->dc.h, 0, 0, 0, 0);
 		XCopyArea(dpy, ds->dc.draw.pixmap, c->title, ds->dc.gc, 0, 0, c->c.w,
 			  ds->dc.h, 0, 0);
 	}
@@ -998,9 +997,8 @@ ximage_drawnormal(AScreen *ds, Client *c)
 	XSetLineAttributes(dpy, ds->dc.gc, ds->style.border, LineSolid, CapNotLast,
 			   JoinMiter);
 	XSetFillStyle(dpy, ds->dc.gc, FillSolid);
-	status =
-	    XFillRectangle(dpy, ds->dc.draw.pixmap, ds->dc.gc, ds->dc.x, ds->dc.y,
-			   ds->dc.w, ds->dc.h);
+	status = XFillRectangle(dpy, ds->dc.draw.pixmap, ds->dc.gc,
+				ds->dc.x, ds->dc.y, ds->dc.w, ds->dc.h);
 	if (!status)
 		XPRINTF("Could not fill rectangle, error %d\n", status);
 	if (ds->style.outline) {
@@ -1061,43 +1059,47 @@ xpm_status_string(int status)
 Bool
 ximage_initxpm(char *path, ButtonImage *bi)
 {
-	Pixmap draw = None, mask = None;
+	XImage *xdraw = NULL, *xmask = NULL, *ximage;
 	XpmAttributes xa = { 0, };
 	int status;
 
-	xa.visual = scr->visual;
+	xa.visual = DefaultVisual(dpy, scr->screen);
 	xa.valuemask |= XpmVisual;
-	xa.colormap = scr->colormap;
+	xa.colormap = DefaultColormap(dpy, scr->screen);
 	xa.valuemask |= XpmColormap;
-	xa.depth = scr->depth;
+	xa.depth = DefaultDepth(dpy, scr->screen);
 	xa.valuemask |= XpmDepth;
 
-	status = XpmReadFileToPixmap(dpy, scr->drawable, path, &draw, &mask, &xa);
-	if (status != XpmSuccess || !draw) {
+	status = XpmReadFileToImage(dpy, path, &xdraw, &xmask, &xa);
+	if (status != XpmSuccess || !xdraw) {
 		EPRINTF("could not load xpm file: %s on %s\n", xpm_status_string(status), path);
 		return False;
 	}
-	if (bi->pixmap.draw) {
-		XFreePixmap(dpy, bi->pixmap.draw);
-		bi->pixmap.draw = None;
+	ximage = combine_pixmap_and_mask(scr, xdraw, xmask);
+	if (!ximage) {
+		EPRINTF("could not combine images\n");
+		goto error;
 	}
-	if (bi->pixmap.mask) {
-		XFreePixmap(dpy, bi->pixmap.mask);
-		bi->pixmap.mask = None;
+	XDestroyImage(xdraw);
+	if (xmask)
+		XDestroyImage(xmask);
+
+	bi->x = bi->y = bi->b = 0;
+	bi->w = ximage->width;
+	bi->h = ximage->height;
+	bi->d = ximage->depth;
+	if (bi->pixmap.ximage) {
+		XDestroyImage(bi->pixmap.ximage);
+		bi->pixmap.ximage = NULL;
 	}
-	bi->pixmap.draw = draw;
-	bi->pixmap.mask = mask;
-	bi->w = xa.width;
-	bi->h = xa.height;
-	XPRINTF("%s pixmap geometry is %dx%dx%d+%d+%d\n", path, bi->w, bi->h, scr->depth, bi->x, bi->y);
-	if (bi->h > scr->style.titleheight) {
-		/* read lower down into image to clip top and bottom by same amount */
-		bi->y += (bi->h - scr->style.titleheight) / 2;
-		bi->h = scr->style.titleheight;
-		XPRINTF("%s pixmap clipped to %dx%dx%d+%d+%d\n", path, bi->w, bi->h, scr->depth, bi->x, bi->y);
-	}
-	free(path);
-	return True;
+	bi->pixmap.ximage = ximage;
+	bi->present = True;
+	return (True);
+      error:
+	XDestroyImage(xdraw);
+	if (xmask)
+		XDestroyImage(xmask);
+	return (False);
 }
 #else
 Bool
@@ -1110,29 +1112,38 @@ ximage_initxpm(char *path, ButtonImage *bi)
 Bool
 ximage_initxbm(char *path, ButtonImage *bi)
 {
-	Pixmap draw = None, mask = None;
+	XImage *xdraw = NULL, *ximage;
+	unsigned char *data = NULL;
 	int status;
 
-	status =
-	    XReadBitmapFile(dpy, scr->root, path, &bi->w, &bi->h, &draw, &bi->x, &bi->y);
-	if (status != BitmapSuccess || !draw) {
+	status = XReadBitmapFileData(path, &bi->w, &bi->h, &data, &bi->x, &bi->y);
+	if (status != BitmapSuccess || !data) {
 		EPRINTF("could not load xbm file %s\n", path);
-		return False;
+		return (False);
 	}
-	if (bi->bitmap.draw)
-		XFreePixmap(dpy, bi->bitmap.draw);
-	if (bi->bitmap.mask)
-		XFreePixmap(dpy, bi->bitmap.mask);
-	bi->bitmap.draw = draw;
-	bi->bitmap.mask = mask;
-	/* don't care about hostspot: not a cursor */
-	bi->x = bi->y = 0;
-	if (bi->h > scr->style.titleheight) {
-		/* read lower down into image to clip top and bottom by same amount */
-		bi->y += (bi->h - scr->style.titleheight) / 2;
-		bi->h = scr->style.titleheight;
+	if (!(xdraw = XCreateImage(dpy, scr->visual, 1, XYBitmap, 0, NULL, bi->w, bi->h, 8, 0))) {
+		EPRINTF("could not create image %ux%ux%u\n", bi->w, bi->h, 1);
+		XFree(data);
+		return (False);
 	}
-	free(path);
-	return True;
+	xdraw->data = (char *) data;
+	ximage = combine_pixmap_and_mask(scr, xdraw, xdraw);
+	if (!ximage) {
+		EPRINTF("could not combine images\n");
+		XDestroyImage(xdraw);
+		XFree(data);
+		return (False);
+	}
+	XDestroyImage(xdraw);
+	bi->x = bi->y = bi->b = 0;
+	bi->w = ximage->width;
+	bi->h = ximage->height;
+	bi->d = ximage->depth;
+	if (bi->bitmap.ximage) {
+		XDestroyImage(bi->bitmap.ximage);
+		bi->bitmap.ximage = NULL;
+	}
+	bi->bitmap.ximage = ximage;
+	bi->present = True;
+	return (True);
 }
-

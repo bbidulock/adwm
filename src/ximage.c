@@ -1032,6 +1032,27 @@ ximage_drawbutton(AScreen *ds, Client *c, ElementType type, XftColor *col, int x
 }
 
 int
+ximage_drawsep(AScreen *ds, const char *text, Drawable drawable, XftDraw *xftdraw,
+	       XftColor *col, int hilite, int x, int y, int mw)
+{
+	int th;
+	Geometry g;
+
+	th = ds->dc.h;
+	if (ds->style.outline)
+		th--;
+
+	g.x = x + th / 4;
+	g.y = 0;
+	g.w = th / 4 + th / 4;
+	g.h = th;
+
+	XSetForeground(dpy, ds->dc.gc, col->pixel);
+	XDrawLine(dpy, drawable, ds->dc.gc, g.x, g.y, g.x, g.y + g.h);
+	return (g.w);
+}
+
+int
 ximage_drawtext(AScreen *ds, const char *text, Drawable drawable, XftDraw *xftdraw,
 	 XftColor *col, int hilite, int x, int y, int mw)
 {
@@ -1104,26 +1125,6 @@ ximage_drawtext(AScreen *ds, const char *text, Drawable drawable, XftDraw *xftdr
 				  (unsigned char *) buf, len);
 	}
 	return w + gap * 2;
-}
-
-int
-ximage_drawsep(AScreen *ds, const char *text, Drawable drawable, XftDraw *xftdraw, XftColor *col, int hilite, int x, int y, int w)
-{
-	int th;
-	Geometry g;
-
-	th = ds->dc.h;
-	if (ds->style.outline)
-		th--;
-
-	g.x = x + th / 4;
-	g.y = 0;
-	g.w = th / 4 + th / 4;
-	g.h = th;
-
-	XSetForeground(dpy, ds->dc.gc, col->pixel);
-	XDrawLine(dpy, drawable, ds->dc.gc, g.x, g.y, g.x, g.y + g.h);
-	return (g.w);
 }
 
 void
@@ -1295,15 +1296,106 @@ ximage_initsvg(char *path, ButtonImage *bi)
 	return (False);
 }
 
+#ifdef XPM
+static const char *
+xpm_status_string(int status)
+{
+	static char buf[64] = { 0, };
+
+	switch (status) {
+	case XpmColorError:
+		return ("color error");
+	case XpmSuccess:
+		return ("success");
+	case XpmOpenFailed:
+		return ("open failed");
+	case XpmFileInvalid:
+		return ("file invalid");
+	case XpmNoMemory:
+		return ("no memory");
+	case XpmColorFailed:
+		return ("color failed");
+	default:
+		snprintf(buf, sizeof(buf), "unknown %d", status);
+		return (buf);
+	}
+}
+
 Bool
 ximage_initxpm(char *path, ButtonImage *bi)
 {
-	return ximage_initxpm(path, bi);
+	Pixmap draw = None, mask = None;
+	XpmAttributes xa = { 0, };
+	int status;
+
+	xa.visual = scr->visual;
+	xa.valuemask |= XpmVisual;
+	xa.colormap = scr->colormap;
+	xa.valuemask |= XpmColormap;
+	xa.depth = scr->depth;
+	xa.valuemask |= XpmDepth;
+
+	status = XpmReadFileToPixmap(dpy, scr->drawable, path, &draw, &mask, &xa);
+	if (status != XpmSuccess || !draw) {
+		EPRINTF("could not load xpm file: %s on %s\n", xpm_status_string(status), path);
+		return False;
+	}
+	if (bi->pixmap.draw) {
+		XFreePixmap(dpy, bi->pixmap.draw);
+		bi->pixmap.draw = None;
+	}
+	if (bi->pixmap.mask) {
+		XFreePixmap(dpy, bi->pixmap.mask);
+		bi->pixmap.mask = None;
+	}
+	bi->pixmap.draw = draw;
+	bi->pixmap.mask = mask;
+	bi->w = xa.width;
+	bi->h = xa.height;
+	XPRINTF("%s pixmap geometry is %dx%dx%d+%d+%d\n", path, bi->w, bi->h, scr->depth, bi->x, bi->y);
+	if (bi->h > scr->style.titleheight) {
+		/* read lower down into image to clip top and bottom by same amount */
+		bi->y += (bi->h - scr->style.titleheight) / 2;
+		bi->h = scr->style.titleheight;
+		XPRINTF("%s pixmap clipped to %dx%dx%d+%d+%d\n", path, bi->w, bi->h, scr->depth, bi->x, bi->y);
+	}
+	free(path);
+	return True;
 }
+#else
+Bool
+ximage_initxpm(char *path, ButtonImage *bi)
+{
+	return (False);
+}
+#endif				/* !XPM */
 
 Bool
 ximage_initxbm(char *path, ButtonImage *bi)
 {
-	return ximage_initxbm(path, bi);
+	Pixmap draw = None, mask = None;
+	int status;
+
+	status =
+	    XReadBitmapFile(dpy, scr->root, path, &bi->w, &bi->h, &draw, &bi->x, &bi->y);
+	if (status != BitmapSuccess || !draw) {
+		EPRINTF("could not load xbm file %s\n", path);
+		return False;
+	}
+	if (bi->bitmap.draw)
+		XFreePixmap(dpy, bi->bitmap.draw);
+	if (bi->bitmap.mask)
+		XFreePixmap(dpy, bi->bitmap.mask);
+	bi->bitmap.draw = draw;
+	bi->bitmap.mask = mask;
+	/* don't care about hostspot: not a cursor */
+	bi->x = bi->y = 0;
+	if (bi->h > scr->style.titleheight) {
+		/* read lower down into image to clip top and bottom by same amount */
+		bi->y += (bi->h - scr->style.titleheight) / 2;
+		bi->h = scr->style.titleheight;
+	}
+	free(path);
+	return True;
 }
 

@@ -11,8 +11,29 @@
 #include <X11/Xresource.h>
 #include <X11/Xft/Xft.h>
 #include <X11/extensions/Xfixes.h>
+#ifdef RENDER
+#include <X11/extensions/Xrender.h>
+#include <X11/extensions/render.h>
+#endif
+#ifdef XCOMPOSITE
+#include <X11/extensions/Xcomposite.h>
+#include <X11/extensions/composite.h>
+#endif
+#ifdef DAMAGE
+#include <X11/extensions/Xdamage.h>
+#endif
+#ifdef XRANDR
+#include <X11/extensions/Xrandr.h>
+#include <X11/extensions/randr.h>
+#endif
+#ifdef XINERAMA
+#include <X11/extensions/Xinerama.h>
+#endif
 #ifdef SYNC
 #include <X11/extensions/sync.h>
+#endif
+#ifdef SHAPE
+#include <X11/extensions/shape.h>
 #endif
 #ifdef IMLIB2
 #include <Imlib2.h>

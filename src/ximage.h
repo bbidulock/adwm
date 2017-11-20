@@ -10,6 +10,9 @@ Bool ximage_createpngicon(AScreen *ds, Client *c, const char *file);
 Bool ximage_createsvgicon(AScreen *ds, Client *c, const char *file);
 Bool ximage_createxpmicon(AScreen *ds, Client *c, const char *file);
 Bool ximage_createxbmicon(AScreen *ds, Client *c, const char *file);
+#ifdef DAMAGE
+Bool ximage_drawdamage(Client *c, XDamageNotifyEvent *ev);
+#endif
 int ximage_drawbutton(AScreen *ds, Client *c, ElementType type, XftColor *col, int x);
 int ximage_drawtext(AScreen *ds, const char *text, Drawable drawable, XftDraw *xftdraw, XftColor *col, int hilite, int x, int y, int mw);
 int ximage_drawsep(AScreen *ds, const char *text, Drawable drawable, XftDraw *xftdraw, XftColor *col, int hilite, int x, int y, int w);

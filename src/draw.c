@@ -127,6 +127,28 @@
 #endif				/* !defined PIXBUF || !defined USE_PIXBUF */
 #endif				/* !defined IMLIB2 || !defined USE_IMLIB2 */
 
+Bool
+drawdamage(Client *c, XDamageNotifyEvent *ev)
+{
+	Bool status = False;
+
+#if defined IMLIB2 && defined USE_IMLIB2
+	status |= imlib2_drawdamage(c, ev);
+#endif				/* defined IMLIB2 && defined USE_IMLIB2 */
+#if defined PIXBUF && defined USE_PIXBUF
+	status |= pixbuf_drawdamage(c, ev);
+#endif				/* defined PIXBUF && defined USE_PIXBUF */
+#if defined RENDER && defined USE_RENDER
+	status |= render_drawdamage(c, ev);
+#endif				/* defined RENDER && defined USE_RENDER */
+#if 1
+	status |= ximage_drawdamage(c, ev);
+#else
+	status |= xlib_drawdamage(c, ev);
+#endif
+	return (status);
+}
+
 void
 removebutton(ButtonImage *bi)
 {

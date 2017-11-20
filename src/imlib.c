@@ -439,6 +439,14 @@ imlib2_createxbmicon(AScreen *ds, Client *c, const char *file)
 	return (False);
 }
 
+#ifdef DAMAGE
+Bool
+imlib2_drawdamage(Client *c, XDamageNotifyEvent * ev)
+{
+	return (False);
+}
+#endif
+
 int
 imlib2_drawbutton(AScreen *ds, Client *c, ElementType type, XftColor *col, int x)
 {

@@ -280,6 +280,9 @@ static Bool initmonitors(XEvent *e);
 #ifdef SYNC
 static Bool alarmnotify(XEvent *e);
 #endif
+#ifdef DAMAGE
+static Bool damagenotify(XEvent *e);
+#endif
 #ifdef SHAPE
 static Bool shapenotify(XEvent *e);
 #endif
@@ -331,7 +334,7 @@ Bool (*handler[LASTEvent + (EXTRANGE * BaseLast)]) (XEvent *) = {
 	[XSyncAlarmNotify + LASTEvent + EXTRANGE * XsyncBase] = alarmnotify,
 #endif
 #ifdef DAMAGE
-	[XDamageNotify + LASTEvent + EXTRANGE * XdamageBase] = IGNOREEVENT,
+	[XDamageNotify + LASTEvent + EXTRANGE * XdamageBase] = damagenotify,
 #endif
 #ifdef SHAPE
 	[ShapeNotify + LASTEvent + EXTRANGE * XshapeBase] = shapenotify,
@@ -1305,11 +1308,29 @@ expose(XEvent *e)
 		XSync(dpy, False);
 		/* discard all exposures for the same window */
 		while (XCheckWindowEvent(dpy, ev->window, ExposureMask, &tmp)) ;
-		drawclient(c); /* just for exposure */
+		/* might not be necessary any more... */
+		/* maybe we should just watch for damage on the backing pixmap and render 
+		   only the damage region. */
+		drawclient(c);	/* just for exposure */
 		return True;
 	}
 	return False;
 }
+
+#ifdef DAMAGE
+static Bool
+damagenotify(XEvent *e)
+{
+	XDamageNotifyEvent *ev = (typeof(ev)) e;
+	Client *c;
+
+	if ((c = getmanaged(ev->drawable, ClientWindow))) {
+		XPRINTF(c, "Got damage notify, redrawing damage \n");
+		return drawdamage(c, ev);
+	}
+	return False;
+}
+#endif
 
 #ifdef SHAPE
 static Bool

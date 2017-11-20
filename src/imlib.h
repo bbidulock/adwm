@@ -12,6 +12,9 @@ Bool imlib2_createsvgicon(AScreen *ds, Client *c, const char *file);
 Bool imlib2_createxpmicon(AScreen *ds, Client *c, const char *file);
 Bool imlib2_createxbmicon(AScreen *ds, Client *c, const char *file);
 const char *imlib2_error_string(Imlib_Load_Error error);
+#ifdef DAMAGE
+Bool imlib2_drawdamage(Client *c, XDamageNotifyEvent *ev);
+#endif
 int imlib2_drawbutton(AScreen *ds, Client *c, ElementType type, XftColor *col, int x);
 int imlib2_drawtext(AScreen *ds, const char *text, Drawable drawable, XftDraw *xftdraw, XftColor *col, int hilite, int x, int y, int mw);
 int imlib2_drawsep(AScreen *ds, const char *text, Drawable drawable, XftDraw *xftdraw, XftColor *col, int hilite, int x, int y, int w);

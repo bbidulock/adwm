@@ -12,6 +12,9 @@ Bool createneticon(Client *c, long *data, unsigned long n);
 Bool createappicon(Client *c);
 void removebutton(ButtonImage *bi);
 void drawclient(Client *c);
+#ifdef DAMAGE
+Bool drawdamage(Client *c, XDamageNotifyEvent *ev);
+#endif
 int elementw(AScreen *ds, Client *c, char which);
 int drawelement(AScreen *ds, char which, int x, int position, Client *c);
 ButtonImage *buttonimage(AScreen *ds, Client *c, ElementType type);

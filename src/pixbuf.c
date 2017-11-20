@@ -166,6 +166,14 @@ pixbuf_createxbmicon(AScreen *ds, Client *c, const char *file)
 	return (False);
 }
 
+#ifdef DAMAGE
+Bool
+pixbuf_drawdamage(Client *c, XDamageNotifyEvent * ev)
+{
+	return (False);
+}
+#endif
+
 int
 pixbuf_drawbutton(AScreen *ds, Client *c, ElementType type, XftColor *col, int x)
 {

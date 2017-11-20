@@ -11,6 +11,9 @@ Bool pixbuf_createpngicon(AScreen *ds, Client *c, const char *file);
 Bool pixbuf_createsvgicon(AScreen *ds, Client *c, const char *file);
 Bool pixbuf_createxpmicon(AScreen *ds, Client *c, const char *file);
 Bool pixbuf_createxbmicon(AScreen *ds, Client *c, const char *file);
+#ifdef DAMAGE
+Bool pixbuf_drawdamage(Client *c, XDamageNotifyEvent *ev);
+#endif
 int pixbuf_drawbutton(AScreen *ds, Client *c, ElementType type, XftColor *col, int x);
 int pixbuf_drawtext(AScreen *ds, const char *text, Drawable drawable, XftDraw *xftdraw, XftColor *col, int hilite, int x, int y, int mw);
 int pixbuf_drawsep(AScreen *ds, const char *text, Drawable drawable, XftDraw *xftdraw, XftColor *col, int hilite, int x, int y, int w);

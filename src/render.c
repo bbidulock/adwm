@@ -310,6 +310,14 @@ render_createxbmicon(AScreen *ds, Client *c, const char *file)
 	return (False);
 }
 
+#ifdef DAMAGE
+Bool
+render_drawdamage(Client *c, XDamageNotifyEvent * ev)
+{
+	return (False);
+}
+#endif
+
 int
 render_drawbutton(AScreen *ds, Client *c, ElementType type, XftColor *col, int x)
 {

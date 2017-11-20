@@ -2884,24 +2884,29 @@ ewmh_process_net_window_icon(Client *c)
 	unsigned long n = 0;
 	long *card;
 	Pixmap *pixmap;
+	ButtonImage *bi;
 
 	/* better than scaling the crap we get below */
-	if (createappicon(c))
-		return;
-	if ((card = getcard(c->win, _XA_NET_WM_ICON, &n))) {
-		if (n < 2 || n < 2 + card[0] * card[1])
-			XFree(card);
-		else if (createneticon(c, card, n))
+	if (!(bi = getappbutton(c)) || !bi->present)
+		if (createappicon(c))
+			return;
+	if ((!(bi = getresbutton(c)) || !bi->present) &&
+	    (!(bi = getwinbutton(c)) || !bi->present)) {
+		if ((card = getcard(c->win, _XA_NET_WM_ICON, &n))) {
+			if (n < 2 || n < 2 + card[0] * card[1])
+				XFree(card);
+			else if (createneticon(c, card, n))
+				return;
+		}
+		if ((pixmap = getpixmaps(c->win, _XA_KWM_WIN_ICON, &n))) {
+			if (n < 2)
+				XFree(pixmap);
+			else if (createkwmicon(c, pixmap, n))
+				return;
+		}
+		if (createwmicon(c))
 			return;
 	}
-	if ((pixmap = getpixmaps(c->win, _XA_KWM_WIN_ICON, &n))) {
-		if (n < 2)
-			XFree(pixmap);
-		else if (createkwmicon(c, pixmap, n))
-			return;
-	}
-	if (createwmicon(c))
-		return;
 }
 
 void

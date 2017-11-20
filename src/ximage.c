@@ -20,6 +20,236 @@
 #include "draw.h"
 #include "ximage.h" /* verification */
 
+static Bool
+crop_pixmap_to_mask(AScreen *ds, XImage **xdraw, XImage **xmask)
+{
+	unsigned i, j;
+	unsigned xmin, xmax, ymin, ymax;
+	XRectangle box;
+	XImage *draw = NULL, *mask = NULL, *newdraw = NULL, *newmask = NULL;
+	Bool status = False;
+	unsigned long bits;
+
+	if (!xdraw || !(draw = *xdraw))
+		return (status);
+
+	Bool hasalpha = (draw->depth == 32) ? True : False;
+
+	if (!xmask && !hasalpha)
+		return (status);
+
+	mask = hasalpha ? draw : *xmask;
+	bits = hasalpha ? 0xFF000000 :0x00000001;
+
+	if (!mask)
+		return (status);
+
+	unsigned w = draw->width;
+	unsigned h = draw->height;
+
+	xmin = w; xmax = 0;
+	ymin = h; ymax = 0;
+	/* chromium and ROXTerm are placing too much space around icons */
+	for (j = 0; j < h; j++) {
+		for (i = 0; i < w; i++) {
+			if (XGetPixel(mask, i, j) & bits) {
+				if (i < xmin) xmin = i;
+				if (j < ymin) ymin = j;
+				if (i > xmax) xmax = i;
+				if (j > ymax) ymax = j;
+			}
+		}
+	}
+	box.x = xmin;
+	box.y = ymin;
+	box.width = xmax + 1 - xmin;
+	box.height = ymax + 1 - ymin;
+
+	if (box.x || box.y || box.width < w || box.height < h) {
+		XPRINTF("clipping to bounding box of %hux%hu+%hd+%hd from %ux%u+0+0\n",
+			box.width, box.height, box.x, box.y, w, h);
+		if (!(newdraw = XSubImage(draw, box.x, box.y, box.width, box.height)))
+			goto error;
+		if (xmask && !(newmask = XSubImage(mask, box.x, box.y, box.width, box.height)))
+			goto error;
+		*xdraw = newdraw; newdraw = draw;
+		if (xmask) {
+			*xmask = newmask; newmask = mask;
+		}
+		status = True;
+	}
+      error:
+	if (newdraw)
+		XDestroyImage(newdraw);
+	else
+		EPRINTF("could not alloc subimage %hux%hu+%hd+%d from %ux%u+0+0\n",
+			box.width, box.height, box.x, box.y, w, h);
+	if (newmask)
+		XDestroyImage(newmask);
+	else
+		EPRINTF("could not alloc subimage %hux%hu+%hd+%d from %ux%u+0+0\n",
+			box.width, box.height, box.x, box.y, w, h);
+	return (status);
+}
+
+static XImage *
+scale_pixmap_and_mask(AScreen *ds, XImage *xdraw, XImage *xmask, int newh)
+{
+	XImage *ximage = NULL, *mask;
+	unsigned w = xdraw->width;
+	unsigned h = xdraw->height;
+	unsigned long bits;
+
+	Bool ispixmap = (xdraw->depth > 1) ? True : False;
+	Bool hasalpha = (xdraw->depth == 32) ? True : False;
+
+	mask = hasalpha ? xdraw : xmask;
+	bits = hasalpha ? 0xFF000000 : 0x00000001;
+
+	unsigned i, j, k, l;
+	unsigned long pixel;
+	double *chanls = NULL; unsigned m;
+	double *counts = NULL; unsigned n;
+	double *colors = NULL;
+
+	double scale = (double) newh / (double) h;
+
+	unsigned sh = lround(h * scale);
+	unsigned sw = lround(w * scale);
+
+	XPRINTF("scaling bitmap from %ux%u to %ux%u\n", w, h, sw, sh);
+
+	if (!(ximage = XCreateImage(dpy, ds->visual, ds->depth, ZPixmap, 0, NULL, sw, sh, 8, 0))) {
+		EPRINTF("could not create image %ux%ux%u\n", sw, sh, ds->depth);
+		return (ximage);
+	}
+	ximage->data = emallocz(ximage->bytes_per_line * ximage->height);
+	chanls = ecalloc(ximage->bytes_per_line * ximage->height, 4 * sizeof(*chanls));
+	counts = ecalloc(ximage->bytes_per_line * ximage->height, sizeof(*counts));
+	colors = ecalloc(ximage->bytes_per_line * ximage->height, sizeof(*colors));
+
+	double pppx = (double) w / (double) sw;
+	double pppy = (double) h / (double) sh;
+
+	double lx, rx, ty, by, xf, yf, ff;
+
+	unsigned A, R, G, B;
+
+	for (ty = 0.0, by = pppy, l = 0; l < sh; l++, ty += pppy, by += pppy) {
+
+		for (j = floor(ty); j < by; j++) {
+
+			if (j < ty && j + 1 > ty) yf = ty - j;
+			else if (j < by && j + 1 > by) yf = by - j;
+			else yf = 1.0;
+
+			for (lx = 0.0, rx = pppx, k = 0; k < sw; k++, lx += pppx, rx += pppx) {
+
+				for (i = floor(lx); i < rx; i++) {
+
+					if (i < lx && i + 1 > lx) xf = lx - i;
+					else if (i < rx && i + 1 > rx) xf = rx - i;
+					else xf = 1.0;
+
+					ff = xf * yf;
+					m = l * sw + k;
+					n = m << 2;
+					counts[m] += ff;
+					if (!mask || (XGetPixel(mask, i, j) & bits)) {
+						pixel = XGetPixel(xdraw, i, j);
+						A = hasalpha ? (pixel >> 24) & 0xff : 255;
+						if (ispixmap) {
+							R = (pixel >> 16) & 0xff;
+							G = (pixel >>  8) & 0xff;
+							B = (pixel >>  0) & 0xff;
+							A = hasalpha ? A : 255;
+						} else if (pixel) {
+							R = G = B = 255;
+						} else
+							continue;
+						colors[m] += ff;
+						chanls[n+0] += A * ff;
+						chanls[n+1] += R * ff;
+						chanls[n+2] += G * ff;
+						chanls[n+3] += B * ff;
+					}
+				}
+			}
+		}
+	}
+	unsigned amax = 0;
+	for (l = 0; l < sh; l++) {
+		for (k = 0; k < sw; k++) {
+			n = l * sw + k;
+			m = n << 2;
+			pixel = 0;
+			if (counts[n]) {
+				pixel |= (lround(chanls[m+0] / counts[n]) & 0xff) << 24;
+			}
+			if (colors[n]) {
+				pixel |= (lround(chanls[m+1] / colors[n]) & 0xff) << 16;
+				pixel |= (lround(chanls[m+2] / colors[n]) & 0xff) <<  8;
+				pixel |= (lround(chanls[m+3] / colors[n]) & 0xff) <<  0;
+			}
+			XPutPixel(ximage, k, l, pixel);
+			amax = max(amax, ((pixel >> 24) & 0xff));
+		}
+	}
+	if (!amax) {
+		/* no opacity at all! */
+		for (l = 0; l < sh; l++) {
+			for (k = 0; k < sw; k++) {
+				XPutPixel(ximage, k, l, XGetPixel(ximage, k, l) | 0xff000000);
+			}
+		}
+	} else if (amax < 255) {
+		/* something has to be opaque, bump the ximage */
+		double bump = (double) 255 / (double) amax;
+		for (l = 0; l < sh; l++) {
+			for (k = 0; k < sw; k++) {
+				pixel = XGetPixel(ximage, k, l);
+				amax = (pixel >> 24) & 0xff;
+				amax = lround(amax * bump);
+				if (amax > 255)
+					amax = 255;
+				pixel = (pixel & 0x00ffffff) | (amax << 24);
+				XPutPixel(ximage, k, l, pixel);
+			}
+		}
+	}
+	free(chanls);
+	free(counts);
+	free(colors);
+	return (ximage);
+}
+
+static XImage *
+combine_pixmap_and_mask(AScreen *ds, XImage *xdraw, XImage *xmask)
+{
+	XImage *ximage = NULL;
+	unsigned i, j;
+	unsigned w = xdraw->width;
+	unsigned h = xdraw->height;
+
+	if (!(ximage = XCreateImage(dpy, ds->visual, ds->depth, ZPixmap, 0, NULL, w, h, 8, 0))) {
+		EPRINTF("could not create image %ux%ux%u\n", w, h, ds->depth);
+		return (ximage);
+	}
+	ximage->data = emallocz(ximage->bytes_per_line * ximage->height);
+	for (j = 0; j < h; j++) {
+		for (i = 0; i < w; i++) {
+			if (!xmask || XGetPixel(xmask, i, j)) {
+				XPutPixel(ximage, i, j,
+					  XGetPixel(xdraw, i, j) | 0xFF000000);
+			} else {
+				XPutPixel(ximage, i, j,
+					  XGetPixel(xdraw, i, j) & 0x00FFFFFF);
+			}
+		}
+	}
+	return (ximage);
+}
+
 void
 ximage_removebutton(ButtonImage *bi)
 {
@@ -50,15 +280,12 @@ ximage_removebutton(ButtonImage *bi)
 }
 
 Bool
-ximage_createbitmapicon(AScreen *ds, Client *c, Pixmap icon, Pixmap mask, unsigned w, unsigned h)
+ximage_createbitmapicon(AScreen *ds, Client *c, Pixmap icon, Pixmap mask, unsigned w,
+			unsigned h)
 {
 	XImage *xicon = NULL, *xmask = NULL, *ximage = NULL;
 	ButtonImage *bi, **bis;
-	unsigned i, j, k, l, d = ds->depth, th = ds->style.titleheight;
-	unsigned long pixel;
-	double *chanls = NULL; unsigned m; /* we all float down here... */
-	double *counts = NULL; unsigned n;
-	double *colors = NULL;
+	unsigned th = ds->style.titleheight;
 
 	if (ds->style.outline)
 		th--;
@@ -71,186 +298,21 @@ ximage_createbitmapicon(AScreen *ds, Client *c, Pixmap icon, Pixmap mask, unsign
 		EPRINTF("could not get bitmap 0x%lx %ux%u\n", mask, w, h);
 		goto error;
 	}
-	if (xmask) {
-		unsigned xmin, xmax, ymin, ymax;
-		XRectangle box;
-		XImage *newicon, *newmask;
-
-		xmin = w; xmax = 0;
-		ymin = h; ymax = 0;
-		/* chromium and ROXTerm are placing too much space around icons */
-		for (j = 0; j < h; j++) {
-			for (i = 0; i < w; i++) {
-				if (XGetPixel(xmask, i, j)) { /* not fully transparent */
-					if (i < xmin) xmin = i;
-					if (j < ymin) ymin = j;
-					if (i > xmax) xmax = i;
-					if (j > ymax) ymax = j;
-				}
-			}
-		}
-		box.x = xmin;
-		box.y = ymin;
-		box.width = xmax + 1 - xmin;
-		box.height = ymax + 1 - ymin;
-
-		if (box.x || box.y || box.width < w || box.height < h) {
-			XPRINTF(__CFMTS(c) "clipping to bounding box of %hux%hu+%hd+%hd from %ux%u+0+0\n",
-					__CARGS(c), box.width, box.height, box.x, box.y, w, h);
-			if (!(newicon = XSubImage(xicon, box.x, box.y, box.width, box.height))) {
-				EPRINTF("could not allocate subimage %hux%hu+%hd+%d from %ux%u+0+0\n",
-					box.width, box.height, box.x, box.y, w, h);
-				goto error;
-			}
-			if (!(newmask = XSubImage(xmask, box.x, box.y, box.width, box.height))) {
-				EPRINTF("could not allocate subimage %hux%hu+%hd+%d from %ux%u+0+0\n",
-					box.width, box.height, box.x, box.y, w, h);
-				XDestroyImage(newicon);
-				goto error;
-			}
-			XDestroyImage(xicon); xicon = newicon;
-			XDestroyImage(xmask); xmask = newmask;
-			w = box.width;
-			h = box.height;
-		}
+	if (h > th && xmask && crop_pixmap_to_mask(ds, &xicon, &xmask)) {
+		w = xicon->width;
+		h = xicon->height;
+		XPRINTF("cropped bitmap 0x%lx mask 0x%lx to %ux%u\n", icon, mask, w, h);
 	}
-	if (h > th) {
-		double scale = (double) th / (double) h;
-
-		unsigned sh = lround(h * scale);
-		unsigned sw = lround(w * scale);
-
-		XPRINTF(__CFMTS(c) "scaling bitmap 0x%lx from %ux%u to %ux%u\n", __CARGS(c), icon, w, h, sw, sh);
-
-		if (!(ximage = XCreateImage(dpy, ds->visual, d, ZPixmap, 0, NULL, sw, sh, 8, 0))) {
-			EPRINTF("could not create image %ux%ux%u\n", sw, sh, d);
-			goto error;
-		}
-		if (!(ximage->data = emallocz(ximage->bytes_per_line * ximage->height))) {
-			EPRINTF("could not allocate image data %ux%ux%u\n", sw, sh, d);
-			goto error;
-		}
-		if (!(chanls = ecalloc(ximage->bytes_per_line * ximage->height, 4 * sizeof(*chanls)))) {
-			EPRINTF("could not allocate chanls %ux%ux%u\n", sw, sh, d);
-			goto error;
-		}
-		if (!(counts = ecalloc(ximage->bytes_per_line * ximage->height, sizeof(*counts)))) {
-			EPRINTF("could not allocate counts %ux%ux%u\n", sw, sh, d);
-			goto error;
-		}
-		if (!(colors = ecalloc(ximage->bytes_per_line * ximage->height, sizeof(*colors)))) {
-			EPRINTF("could not allocate colors %ux%ux%u\n", sw, sh, d);
-			goto error;
-		}
-		double pppx = (double) w / (double) sw;
-		double pppy = (double) h / (double) sh;
-
-		double lx, rx, ty, by, xf, yf, ff;
-
-		for (ty = 0.0, by = pppy, l = 0; l < sh; l++, ty += pppy, by += pppy) {
-
-			for (j = floor(ty); j < by; j++) {
-
-				if (j < ty && j + 1 > ty) yf = ty - j;
-				else if (j < by && j + 1 > by) yf = by - j;
-				else yf = 1.0;
-
-				for (lx = 0.0, rx = pppx, k = 0; k < sw; k++, lx += pppx, rx += pppx) {
-
-					for (i = floor(lx); i < rx; i++) {
-
-						if (i < lx && i + 1 > lx) xf = lx - i;
-						else if (i < rx && i + 1 > rx) xf = rx - i;
-						else xf = 1.0;
-
-						ff = xf * yf;
-						m = l * sw + k;
-						n = m << 2;
-						counts[m] += ff;
-						if (!xmask || XGetPixel(xmask, i, j)) {
-							if (XGetPixel(xicon, i, j)) {
-								colors[m] += ff;
-								chanls[n+0] += 255 * ff;
-								chanls[n+1] += 255 * ff;
-								chanls[n+2] += 255 * ff;
-								chanls[n+3] += 255 * ff;
-							}
-						}
-					}
-				}
-			}
-		}
-		unsigned amax = 0;
-		for (l = 0; l < sh; l++) {
-			for (k = 0; k < sw; k++) {
-				n = l * sw + k;
-				m = n << 2;
-				pixel = 0;
-				if (counts[n]) {
-					pixel |= (lround(chanls[m+0] / counts[n]) & 0xff) << 24;
-				}
-				if (colors[n]) {
-					pixel |= (lround(chanls[m+1] / colors[n]) & 0xff) << 16;
-					pixel |= (lround(chanls[m+2] / colors[n]) & 0xff) <<  8;
-					pixel |= (lround(chanls[m+3] / colors[n]) & 0xff) <<  0;
-				}
-				XPutPixel(ximage, k, l, pixel);
-				amax = max(amax, ((pixel >> 24) & 0xff));
-			}
-		}
-		if (!amax) {
-			/* no opacity at all! */
-			for (l = 0; l < sh; l++) {
-				for (k = 0; k < sw; k++) {
-					XPutPixel(ximage, k, l, XGetPixel(ximage, k, l) | 0xff000000);
-				}
-			}
-		} else if (amax < 255) {
-			/* something has to be opaque, bump the ximage */
-			double bump = (double) 255 / (double) amax;
-			for (l = 0; l < sh; l++) {
-				for (k = 0; k < sw; k++) {
-					pixel = XGetPixel(ximage, k, l);
-					amax = (pixel >> 24) & 0xff;
-					amax = lround(amax * bump);
-					if (amax > 255)
-						amax = 255;
-					pixel = (pixel & 0x00ffffff) | (amax << 24);
-					XPutPixel(ximage, k, l, pixel);
-				}
-			}
-		}
-		w = sw;
-		h = sh;
-		free(chanls);
-		chanls = NULL;
-		free(counts);
-		counts = NULL;
-		free(colors);
-		colors = NULL;
-	} else {
-		if (!(ximage = XCreateImage(dpy, ds->visual, d, ZPixmap, 0, NULL, w, h, 8, 0))) {
-			EPRINTF("could not create image %ux%ux%u\n", w, h, d);
-			goto error;
-		}
-		if (!(ximage->data = emallocz(ximage->bytes_per_line * ximage->height))) {
-			EPRINTF("could not allocate image data %ux%ux%u\n", w, h, d);
-			goto error;
-		}
-		for (j = 0; j < h; j++) {
-			for (i = 0; i < w; i++) {
-				if (!xmask || XGetPixel(xmask, i, j)) {
-					if (XGetPixel(xicon, i, j)) {
-						XPutPixel(ximage, i, j, 0xFFFFFFFF);
-					} else {
-						XPutPixel(ximage, i, j, 0xFF000000);
-					}
-				} else {
-					XPutPixel(ximage, i, j, 0x00000000);
-				}
-			}
-		}
+	ximage = (h > th)
+	    ? scale_pixmap_and_mask(ds, xicon, xmask, th)
+	    : combine_pixmap_and_mask(ds, xicon, xmask);
+	if (!ximage) {
+		EPRINTF("could not scale or combine bitmap and mask\n");
+		goto error;
 	}
+	w = ximage->width;
+	h = ximage->height;
+	XPRINTF("scaled bitmap 0x%lx mask 0x%lx to %ux%u\n", icon, mask, w, h);
 	XDestroyImage(xicon);
 	if (xmask)
 		XDestroyImage(xmask);
@@ -259,42 +321,37 @@ ximage_createbitmapicon(AScreen *ds, Client *c, Pixmap icon, Pixmap mask, unsign
 		bi = *bis;
 		bi->x = bi->y = bi->b = 0;
 		bi->d = ds->depth;
-		bi->w = w;
-		bi->h = h;
+		bi->w = ximage->width;
+		bi->h = ximage->height;
 		if (bi->bitmap.ximage) {
 			XDestroyImage(bi->bitmap.ximage);
 			bi->bitmap.ximage = NULL;
 		}
 		XPRINTF(__CFMTS(c) "assigning ximage %p\n", __CARGS(c), ximage);
-		bi->bitmap.ximage = XSubImage(ximage, 0, 0, ximage->width, ximage->height);
+		bi->bitmap.ximage =
+		    XSubImage(ximage, 0, 0, ximage->width, ximage->height);
 		bi->present = True;
 	}
 	XDestroyImage(ximage);
 	return (True);
 
       error:
-	free(chanls);
-	free(counts);
-	free(colors);
 	if (ximage)
 		XDestroyImage(ximage);
 	if (xmask)
 		XDestroyImage(xmask);
 	if (xicon)
 		XDestroyImage(xicon);
-      return (False);
+	return (False);
 }
 
 Bool
-ximage_createpixmapicon(AScreen *ds, Client *c, Pixmap icon, Pixmap mask, unsigned w, unsigned h, unsigned d)
+ximage_createpixmapicon(AScreen *ds, Client *c, Pixmap icon, Pixmap mask, unsigned w,
+			unsigned h, unsigned d)
 {
 	XImage *xicon = NULL, *xmask = NULL, *ximage = NULL;
 	ButtonImage *bi, **bis;
-	unsigned i, j, k, l, th = ds->style.titleheight;
-	unsigned long pixel;
-	double *chanls = NULL; unsigned m;
-	double *counts = NULL; unsigned n;
-	double *colors = NULL;
+	unsigned th = ds->style.titleheight;
 
 	if (ds->style.outline)
 		th--;
@@ -307,187 +364,21 @@ ximage_createpixmapicon(AScreen *ds, Client *c, Pixmap icon, Pixmap mask, unsign
 		EPRINTF("could not get bitmap 0x%lx %ux%u\n", mask, w, h);
 		goto error;
 	}
-	if (xmask) {
-		unsigned xmin, xmax, ymin, ymax;
-		XRectangle box;
-		XImage *newicon, *newmask;
-
-		xmin = w; xmax = 0;
-		ymin = h; ymax = 0;
-		/* chromium and ROXTerm are placing too much space around icons */
-		for (j = 0; j < h; j++) {
-			for (i = 0; i < w; i++) {
-				if (XGetPixel(xmask, i, j)) { /* not fully transparent */
-					if (i < xmin) xmin = i;
-					if (j < ymin) ymin = j;
-					if (i > xmax) xmax = i;
-					if (j > ymax) ymax = j;
-				}
-			}
-		}
-		box.x = xmin;
-		box.y = ymin;
-		box.width = xmax + 1 - xmin;
-		box.height = ymax + 1 - ymin;
-
-		if (box.x || box.y || box.width < w || box.height < h) {
-			XPRINTF(__CFMTS(c) "clipping to bounding box of %hux%hu+%hd+%hd from %ux%u+0+0\n",
-					__CARGS(c), box.width, box.height, box.x, box.y, w, h);
-			if (!(newicon = XSubImage(xicon, box.x, box.y, box.width, box.height))) {
-				EPRINTF("could not allocate subimage %hux%hu+%hd+%d from %ux%u+0+0\n",
-					box.width, box.height, box.x, box.y, w, h);
-				goto error;
-			}
-			if (!(newmask = XSubImage(xmask, box.x, box.y, box.width, box.height))) {
-				EPRINTF("could not allocate subimage %hux%hu+%hd+%d from %ux%u+0+0\n",
-					box.width, box.height, box.x, box.y, w, h);
-				XDestroyImage(newicon);
-				goto error;
-			}
-			XDestroyImage(xicon); xicon = newicon;
-			XDestroyImage(xmask); xmask = newmask;
-			w = box.width;
-			h = box.height;
-		}
+	if (h > th && xmask && crop_pixmap_to_mask(ds, &xicon, &xmask)) {
+		w = xicon->width;
+		h = xicon->height;
+		XPRINTF("cropped pixmap 0x%lx mask 0x%lx to %ux%u\n", icon, mask, w, h);
 	}
-	d = ds->depth;
-	if (h > th) {
-		double scale = (double) th / (double) h;
-
-		unsigned sh = lround(h * scale);
-		unsigned sw = lround(w * scale);
-
-		XPRINTF(__CFMTS(c) "scaling pixmap 0x%lx from %ux%u to %ux%u\n", __CARGS(c), icon, w, h, sw, sh);
-
-		if (!(ximage = XCreateImage(dpy, ds->visual, d, ZPixmap, 0, NULL, sw, sh, 8, 0))) {
-			EPRINTF("could not create image %ux%ux%u\n", sw, sh, d);
-			goto error;
-		}
-		if (!(ximage->data = emallocz(ximage->bytes_per_line * ximage->height))) {
-			EPRINTF("could not allocate image data %ux%ux%u\n", sw, sh, d);
-			goto error;
-		}
-		if (!(chanls = ecalloc(ximage->bytes_per_line * ximage->height, 4 * sizeof(*chanls)))) {
-			EPRINTF("could not allocate chanls %ux%ux%u\n", sw, sh, d);
-			goto error;
-		}
-		if (!(counts = ecalloc(ximage->bytes_per_line * ximage->height, sizeof(*counts)))) {
-			EPRINTF("could not allocate counts %ux%ux%u\n", sw, sh, d);
-			goto error;
-		}
-		if (!(colors = ecalloc(ximage->bytes_per_line * ximage->height, sizeof(*colors)))) {
-			EPRINTF("could not allocate colors %ux%ux%u\n", sw, sh, d);
-			goto error;
-		}
-		double pppx = (double) w / (double) sw;
-		double pppy = (double) h / (double) sh;
-
-		double lx, rx, ty, by, xf, yf, ff;
-
-		unsigned R, G, B;
-
-		for (ty = 0.0, by = pppy, l = 0; l < sh; l++, ty += pppy, by += pppy) {
-
-			for (j = floor(ty); j < by; j++) {
-
-				if (j < ty && j + 1 > ty) yf = ty - j;
-				else if (j < by && j + 1 > by) yf = by - j;
-				else yf = 1.0;
-
-				for (lx = 0.0, rx = pppx, k = 0; k < sw; k++, lx += pppx, rx += pppx) {
-
-					for (i = floor(lx); i < rx; i++) {
-
-						if (i < lx && i + 1 > lx) xf = lx - i;
-						else if (i < rx && i + 1 > rx) xf = rx - i;
-						else xf = 1.0;
-
-						ff = xf * yf;
-						m = l * sw + k;
-						n = m << 2;
-						counts[m] += ff;
-						if (!xmask || XGetPixel(xmask, i, j)) {
-							colors[m] += ff;
-							pixel = XGetPixel(xicon, i, j);
-							R = (pixel >> 16) & 0xff;
-							G = (pixel >>  8) & 0xff;
-							B = (pixel >>  0) & 0xff;
-							chanls[n+0] += 255 * ff;
-							chanls[n+1] += R * ff;
-							chanls[n+2] += G * ff;
-							chanls[n+3] += B * ff;
-						}
-					}
-				}
-			}
-		}
-		unsigned amax = 0;
-		for (l = 0; l < sh; l++) {
-			for (k = 0; k < sw; k++) {
-				n = l * sw + k;
-				m = n << 2;
-				pixel = 0;
-				if (counts[n]) {
-					pixel |= (lround(chanls[m+0] / counts[n]) & 0xff) << 24;
-				}
-				if (colors[n]) {
-					pixel |= (lround(chanls[m+1] / colors[n]) & 0xff) << 16;
-					pixel |= (lround(chanls[m+2] / colors[n]) & 0xff) <<  8;
-					pixel |= (lround(chanls[m+3] / colors[n]) & 0xff) <<  0;
-				}
-				XPutPixel(ximage, k, l, pixel);
-				amax = max(amax, ((pixel >> 24) & 0xff));
-			}
-		}
-		if (!amax) {
-			/* no opacity at all! */
-			for (l = 0; l < sh; l++) {
-				for (k = 0; k < sw; k++) {
-					XPutPixel(ximage, k, l, XGetPixel(ximage, k, l) | 0xff000000);
-				}
-			}
-		} else if (amax < 255) {
-			/* something has to be opaque, bump the ximage */
-			double bump = (double) 255 / (double) amax;
-			for (l = 0; l < sh; l++) {
-				for (k = 0; k < sw; k++) {
-					pixel = XGetPixel(ximage, k, l);
-					amax = (pixel >> 24) & 0xff;
-					amax = lround(amax * bump);
-					if (amax > 255)
-						amax = 255;
-					pixel = (pixel & 0x00ffffff) | (amax << 24);
-					XPutPixel(ximage, k, l, pixel);
-				}
-			}
-		}
-		w = sw;
-		h = sh;
-		free(chanls);
-		chanls = NULL;
-		free(counts);
-		counts = NULL;
-		free(colors);
-		colors = NULL;
-	} else {
-		if (!(ximage = XCreateImage(dpy, ds->visual, d, ZPixmap, 0, NULL, w, h, 8, 0))) {
-			EPRINTF("could not create image %ux%ux%u\n", w, h, d);
-			goto error;
-		}
-		if (!(ximage->data = emallocz(ximage->bytes_per_line * ximage->height))) {
-			EPRINTF("could not allocate image data %ux%ux%u\n", w, h, d);
-			goto error;
-		}
-		for (j = 0; j < h; j++) {
-			for (i = 0; i < w; i++) {
-				if (!xmask || XGetPixel(xmask, i, j)) {
-					XPutPixel(ximage, i, j, XGetPixel(xicon, i, j) | 0xFF000000);
-				} else {
-					XPutPixel(ximage, i, j, XGetPixel(xicon, i, j) & 0x00FFFFFF);
-				}
-			}
-		}
+	ximage = (h > th)
+	    ? scale_pixmap_and_mask(ds, xicon, xmask, th)
+	    : combine_pixmap_and_mask(ds, xicon, xmask);
+	if (!ximage) {
+		EPRINTF("could not scale or combine pixmap and mask\n");
+		goto error;
 	}
+	w = ximage->width;
+	h = ximage->height;
+	XPRINTF("scaled pixmap 0x%lx mask 0x%lx to %ux%u\n", icon, mask, w, h);
 	XDestroyImage(xicon);
 	if (xmask)
 		XDestroyImage(xmask);
@@ -496,231 +387,71 @@ ximage_createpixmapicon(AScreen *ds, Client *c, Pixmap icon, Pixmap mask, unsign
 		bi = *bis;
 		bi->x = bi->y = bi->b = 0;
 		bi->d = ds->depth;
-		bi->w = w;
-		bi->h = h;
+		bi->w = ximage->width;
+		bi->h = ximage->height;
 		if (bi->pixmap.ximage) {
 			XDestroyImage(bi->pixmap.ximage);
 			bi->pixmap.ximage = NULL;
 		}
 		XPRINTF(__CFMTS(c) "assigning ximage %p\n", __CARGS(c), ximage);
-		bi->pixmap.ximage = XSubImage(ximage, 0, 0, ximage->width, ximage->height);
+		bi->pixmap.ximage =
+		    XSubImage(ximage, 0, 0, ximage->width, ximage->height);
 		bi->present = True;
 	}
 	XDestroyImage(ximage);
 	return (True);
 
       error:
-	free(chanls);
-	free(counts);
-	free(colors);
 	if (ximage)
 		XDestroyImage(ximage);
 	if (xmask)
 		XDestroyImage(xmask);
 	if (xicon)
 		XDestroyImage(xicon);
-      return (False);
+	return (False);
 }
 
 Bool
 ximage_createdataicon(AScreen *ds, Client *c, unsigned w, unsigned h, long *data)
 {
-	XImage *ximage = NULL;
+	XImage *ximage = NULL, *xicon;
 	ButtonImage *bi, **bis;
-	unsigned i, j, k, l, d = ds->depth, th = ds->style.titleheight;
-	unsigned long pixel;
-	double *chanls = NULL; unsigned m;
-	double *counts = NULL; unsigned n;
-	double *colors = NULL;
-	long *p, *copy = NULL;
+	unsigned i, j, th = ds->style.titleheight;
 
 	if (ds->style.outline)
 		th--;
 
-	{
-		unsigned xmin, xmax, ymin, ymax;
-		XRectangle box;
-		long *o;
-
-		xmin = w; xmax = 0;
-		ymin = h; ymax = 0;
-		/* chromium and ROXTerm are placing too much space around icons */
-		for (p = data, j = 0; j < h; j++) {
-			for (i = 0; i < w; i++, p++) {
-				if (*p & 0xFF000000) { /* not fully transparent */
-					if (i < xmin) xmin = i;
-					if (j < ymin) ymin = j;
-					if (i > xmax) xmax = i;
-					if (j > ymax) ymax = j;
-				}
-			}
-		}
-		box.x = xmin;
-		box.y = ymin;
-		box.width = xmax + 1 - xmin;
-		box.height = ymax + 1 - ymin;
-
-		if (box.x || box.y || box.width < w || box.height < h) {
-			XPRINTF(__CFMTS(c) "clipping to bounding box of %hux%hu+%hd+%hd from %ux%u+0+0\n",
-					__CARGS(c), box.width, box.height, box.x, box.y, w, h);
-			if (!(copy = ecalloc(box.width * box.height, sizeof(*copy)))) {
-				EPRINTF("could not allocate data copy %hux%hu\n", box.width, box.height);
-				goto error;
-			}
-			/* copy data for bounding box only */
-			for (p = data, o = copy, j = 0; j < h; j++, p += w)
-				if (ymin <= j && j <= ymax)
-					for (i = 0; i < w; i++)
-						if (xmin <= i && i <= xmax)
-							*o++ = p[i];
-			w = box.width;
-			h = box.height;
-			data = copy;
-		}
+	if (!(xicon = XCreateImage(dpy, ds->visual, 32, ZPixmap, 0, NULL, w, h, 8, 0))) {
+		EPRINTF("could not create image %ux%ux%u\n", w, h, 32);
+		return (False);
 	}
-	if (h > th) {
-		double scale = (double) th / (double) h;
-
-		unsigned sh = lround(h * scale);
-		unsigned sw = lround(w * scale);
-
-		XPRINTF(__CFMTS(c) "scaling data %p from %ux%u to %ux%u\n", __CARGS(c), data, w, h, sw, sh);
-
-		if (!(ximage = XCreateImage(dpy, ds->visual, d, ZPixmap, 0, NULL, sw, sh, 8, 0))) {
-			EPRINTF("could not create image %ux%ux%u\n", sw, sh, d);
-			goto error;
-		}
-		if (!(ximage->data = emallocz(ximage->bytes_per_line * ximage->height))) {
-			EPRINTF("could not allocate image data %ux%ux%u\n", sw, sh, d);
-			goto error;
-		}
-		if (!(chanls = ecalloc(ximage->bytes_per_line * ximage->height, 4 * sizeof(*chanls)))) {
-			EPRINTF("could not allocate chanls %ux%ux%u\n", sw, sh, d);
-			goto error;
-		}
-		if (!(counts = ecalloc(ximage->bytes_per_line * ximage->height, sizeof(*counts)))) {
-			EPRINTF("could not allocate counts %ux%ux%u\n", sw, sh, d);
-			goto error;
-		}
-		if (!(colors = ecalloc(ximage->bytes_per_line * ximage->height, sizeof(*colors)))) {
-			EPRINTF("could not allocate colors %ux%ux%u\n", sw, sh, d);
-			goto error;
-		}
-
-		double pppx = (double) w / (double) sw;
-		double pppy = (double) h / (double) sh;
-
-		double lx, rx, ty, by, xf, yf, ff;
-
-		unsigned A, R, G, B, o;
-
-		for (ty = 0.0, by = pppy, l = 0; l < sh; l++, ty += pppy, by += pppy) {
-
-			for (j = floor(ty); j < by; j++) {
-
-				if (j < ty && j + 1 > ty) yf = ty - j;
-				else if (j < by && j + 1 > by) yf = by - j;
-				else yf = 1.0;
-
-				for (lx = 0.0, rx = pppx, k = 0; k < sw; k++, lx += pppx, rx += pppx) {
-
-					for (i = floor(lx); i < rx; i++) {
-
-						if (i < lx && i + 1 > lx) xf = lx - i;
-						else if (i < rx && i + 1 > rx) xf = rx - i;
-						else xf = 1.0;
-
-						ff = xf * yf;
-						m = l * sw + k;
-						n = m << 2;
-						o = j * w + i;
-						pixel = data[o];
-						A = (pixel >> 24) & 0xff;
-						R = (pixel >> 16) & 0xff;
-						G = (pixel >>  8) & 0xff;
-						B = (pixel >>  0) & 0xff;
-						counts[m] += ff;
-						if (A) {
-							colors[m] += ff;
-							chanls[n+0] += A * ff;
-							chanls[n+1] += R * ff;
-							chanls[n+2] += G * ff;
-							chanls[n+3] += B * ff;
-						}
-					}
-				}
-			}
-		}
-		unsigned amax = 0;
-		for (l = 0; l < sh; l++) {
-			for (k = 0; k < sw; k++) {
-				n = l * sw + k;
-				m = n << 2;
-				pixel = 0;
-				if (counts[n]) {
-					pixel |= (lround(chanls[m+0] / counts[n]) & 0xff) << 24;
-				}
-				if (colors[n]) {
-					pixel |= (lround(chanls[m+1] / colors[n]) & 0xff) << 16;
-					pixel |= (lround(chanls[m+2] / colors[n]) & 0xff) <<  8;
-					pixel |= (lround(chanls[m+3] / colors[n]) & 0xff) <<  0;
-				}
-				XPutPixel(ximage, k, l, pixel);
-				amax = max(amax, ((pixel >> 24) & 0xff));
-			}
-		}
-		if (!amax) {
-			/* no opacity at all! */
-			for (l = 0; l < sh; l++) {
-				for (k = 0; k < sw; k++) {
-					XPutPixel(ximage, k, l, XGetPixel(ximage, k, l) | 0xff000000);
-				}
-			}
-		} else if (amax < 255) {
-			/* something has to be opaque, bump the alpha */
-			double bump = (double) 255 / (double) amax;
-			for (l = 0; l < sh; l++) {
-				for (k = 0; k < sw; k++) {
-					pixel = XGetPixel(ximage, k, l);
-					amax = (pixel >> 24) & 0xff;
-					amax = lround(amax * bump);
-					if (amax > 255)
-						amax = 255;
-					pixel = (pixel & 0x00ffffff) | (amax << 24);
-					XPutPixel(ximage, k, l, pixel);
-				}
-			}
-		}
-		w = sw;
-		h = sh;
-		free(chanls);
-		chanls = NULL;
-		free(counts);
-		counts = NULL;
-		free(colors);
-		colors = NULL;
-	} else {
-		if (!(ximage = XCreateImage(dpy, ds->visual, d, ZPixmap, 0, NULL, w, h, 8, 0))) {
-			EPRINTF("could not create image %ux%ux%u\n", w, h, d);
-			goto error;
-		}
-		if (!(ximage->data = emallocz(ximage->bytes_per_line * ximage->height))) {
-			EPRINTF("could not allocate image data %ux%ux%u\n", w, h, d);
-			goto error;
-		}
-		for (p = data, j = 0; j < h; j++) {
-			for (i = 0; i < w; i++, p++) {
-				XPutPixel(ximage, i, j, *p);
-			}
-		}
+	xicon->data = emallocz(xicon->bytes_per_line * xicon->height);
+	for (j = 0; j < h; j++)
+		for (i = 0; i < w; i++, data++)
+			XPutPixel(xicon, i, j, *data);
+	if (h > th && crop_pixmap_to_mask(ds, &xicon, NULL)) {
+		w = xicon->width;
+		h = xicon->height;
+		XPRINTF("cropped data %p to %ux%u\n", data, w, h);
 	}
+	ximage = (h > th)
+	    ? scale_pixmap_and_mask(ds, xicon, NULL, th)
+	    : XSubImage(xicon, 0, 0, w, h);
+	if (!ximage) {
+		EPRINTF("could not scale or combine data and mask\n");
+		goto error;
+	}
+	w = ximage->width;
+	h = ximage->height;
+	XPRINTF("scaled data %p to %ux%u\n", data, w, h);
+	XDestroyImage(xicon);
 
 	for (bis = getbuttons(c); bis && *bis; bis++) {
 		bi = *bis;
 		bi->x = bi->y = bi->b = 0;
-		bi->d = d;
-		bi->w = w;
-		bi->h = h;
+		bi->d = ds->depth;
+		bi->w = ximage->width;
+		bi->h = ximage->height;
 		if (bi->pixmap.ximage) {
 			XDestroyImage(bi->pixmap.ximage);
 			bi->pixmap.ximage = NULL;
@@ -734,12 +465,10 @@ ximage_createdataicon(AScreen *ds, Client *c, unsigned w, unsigned h, long *data
 	return (True);
 
       error:
-	free(copy);
-	free(chanls);
-	free(counts);
-	free(colors);
 	if (ximage)
 		XDestroyImage(ximage);
+	if (xicon)
+		XDestroyImage(xicon);
       return (False);
 }
 

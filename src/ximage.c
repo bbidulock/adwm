@@ -746,7 +746,7 @@ ximage_createdataicon(AScreen *ds, Client *c, unsigned w, unsigned h, long *data
 Bool
 ximage_createpngicon(AScreen *ds, Client *c, const char *file)
 {
-	EPRINTF("would use XIMAGE to create SVG icon %s\n", file);
+	EPRINTF("would use XIMAGE to create PNG icon %s\n", file);
 	/* for now */
 	return (False);
 }

@@ -281,7 +281,7 @@ render_createdataicon(AScreen *ds, Client *c, unsigned w, unsigned h, long *data
 Bool
 render_createpngicon(AScreen *ds, Client *c, const char *file)
 {
-	EPRINTF("would use RENDER to create SVG icon %s\n", file);
+	EPRINTF("would use RENDER to create PNG icon %s\n", file);
 	/* for now */
 	return (False);
 }

@@ -296,8 +296,10 @@ createappicon(Client *c)
 #if defined LIBPNG || defined IMLIB2 || defined PIXBUF
 	exts[j++] = "png";
 #endif
+#if 0
 #if defined IMLIB2 || defined PIXBUF
 	exts[j++] = "svg";
+#endif
 #endif
 #if defined XPM || defined IMLIB2 || defined PIXBUF
 	exts[j++] = "xpm";

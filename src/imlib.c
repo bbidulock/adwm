@@ -409,7 +409,7 @@ imlib2_createpngicon(AScreen *ds, Client *c, const char *file)
 		bi->w = w;
 	}
 #else
-	EPRINTF("would use IMLIB2 to create SVG icon %s\n", file);
+	EPRINTF("would use IMLIB2 to create PNG icon %s\n", file);
 	/* for now */
 	return (False);
 #endif

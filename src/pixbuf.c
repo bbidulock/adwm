@@ -137,7 +137,7 @@ pixbuf_createdataicon(AScreen *ds, Client *c, unsigned w, unsigned h, long *data
 Bool
 pixbuf_createpngicon(AScreen *ds, Client *c, const char *file)
 {
-	EPRINTF("would use PIXBUF to create SVG icon %s\n", file);
+	EPRINTF("would use PIXBUF to create PNG icon %s\n", file);
 	/* for now */
 	return (False);
 }

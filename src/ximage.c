@@ -11,52 +11,6 @@
 #include "image.h"
 #include "ximage.h" /* verification */
 
-static const char *
-xbm_status_string(int status)
-{
-	static char buf[64] = { 0, };
-
-	switch (status) {
-	case BitmapSuccess:
-		return ("success");
-	case BitmapOpenFailed:
-		return ("open failed");
-	case BitmapFileInvalid:
-		return ("file invalid");
-	case BitmapNoMemory:
-		return ("no memory");
-	default:
-		snprintf(buf, sizeof(buf), "unknown %d", status);
-		return (buf);
-	}
-}
-
-#ifdef XPM
-static const char *
-xpm_status_string(int status)
-{
-	static char buf[64] = { 0, };
-
-	switch (status) {
-	case XpmColorError:
-		return ("color error");
-	case XpmSuccess:
-		return ("success");
-	case XpmOpenFailed:
-		return ("open failed");
-	case XpmFileInvalid:
-		return ("file invalid");
-	case XpmNoMemory:
-		return ("no memory");
-	case XpmColorFailed:
-		return ("color failed");
-	default:
-		snprintf(buf, sizeof(buf), "unknown %d", status);
-		return (buf);
-	}
-}
-#endif
-
 static Bool
 crop_pixmap_to_mask(AScreen *ds, XImage **xdraw, XImage **xmask)
 {

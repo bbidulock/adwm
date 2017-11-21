@@ -8,6 +8,7 @@
 #include "config.h"
 #include "icons.h"
 #include "draw.h"
+#include "image.h"
 #include "xlib.h" /* verification */
 
 void
@@ -1297,30 +1298,6 @@ xlib_initsvg(char *path, ButtonImage *bi)
 }
 
 #ifdef XPM
-static const char *
-xpm_status_string(int status)
-{
-	static char buf[64] = { 0, };
-
-	switch (status) {
-	case XpmColorError:
-		return ("color error");
-	case XpmSuccess:
-		return ("success");
-	case XpmOpenFailed:
-		return ("open failed");
-	case XpmFileInvalid:
-		return ("file invalid");
-	case XpmNoMemory:
-		return ("no memory");
-	case XpmColorFailed:
-		return ("color failed");
-	default:
-		snprintf(buf, sizeof(buf), "unknown %d", status);
-		return (buf);
-	}
-}
-
 Bool
 xlib_initxpm(char *path, ButtonImage *bi)
 {

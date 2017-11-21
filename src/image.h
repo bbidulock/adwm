@@ -3,6 +3,11 @@
 #ifndef __LOCAL_IMAGE_H__
 #define __LOCAL_IMAGE_H__
 
+const char *xbm_status_string(int status);
+#ifdef XPM
+const char *xpm_status_string(int status);
+#endif
+
 int XReadBitmapFileImage(Display *display, Visual * visual, const char *file,
 			 unsigned *width, unsigned *height, XImage **image_return,
 			 int *x_hot, int *y_hot);

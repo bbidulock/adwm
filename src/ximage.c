@@ -20,6 +20,32 @@
 #include "draw.h"
 #include "ximage.h" /* verification */
 
+#ifdef XPM
+static const char *
+xpm_status_string(int status)
+{
+	static char buf[64] = { 0, };
+
+	switch (status) {
+	case XpmColorError:
+		return ("color error");
+	case XpmSuccess:
+		return ("success");
+	case XpmOpenFailed:
+		return ("open failed");
+	case XpmFileInvalid:
+		return ("file invalid");
+	case XpmNoMemory:
+		return ("no memory");
+	case XpmColorFailed:
+		return ("color failed");
+	default:
+		snprintf(buf, sizeof(buf), "unknown %d", status);
+		return (buf);
+	}
+}
+#endif
+
 static Bool
 crop_pixmap_to_mask(AScreen *ds, XImage **xdraw, XImage **xmask)
 {
@@ -27,22 +53,21 @@ crop_pixmap_to_mask(AScreen *ds, XImage **xdraw, XImage **xmask)
 	unsigned xmin, xmax, ymin, ymax;
 	XRectangle box;
 	XImage *draw = NULL, *mask = NULL, *newdraw = NULL, *newmask = NULL;
-	Bool status = False;
 	unsigned long bits;
 
 	if (!xdraw || !(draw = *xdraw))
-		return (status);
+		return (False);
 
 	Bool hasalpha = (draw->depth == 32) ? True : False;
 
 	if (!xmask && !hasalpha)
-		return (status);
+		return (False);
 
 	mask = hasalpha ? draw : *xmask;
 	bits = hasalpha ? 0xFF000000 :0x00000001;
 
 	if (!mask)
-		return (status);
+		return (False);
 
 	unsigned w = draw->width;
 	unsigned h = draw->height;
@@ -72,12 +97,16 @@ crop_pixmap_to_mask(AScreen *ds, XImage **xdraw, XImage **xmask)
 			goto error;
 		if (xmask && !(newmask = XSubImage(mask, box.x, box.y, box.width, box.height)))
 			goto error;
-		*xdraw = newdraw; newdraw = draw;
-		if (xmask) {
-			*xmask = newmask; newmask = mask;
-		}
-		status = True;
+		*xdraw = newdraw;
+		if (xmask)
+			*xmask = newmask;
+		XDestroyImage(draw);
+		if (mask && mask != draw)
+			XDestroyImage(mask);
+		return (True);
 	}
+	return (False);
+
       error:
 	if (newdraw)
 		XDestroyImage(newdraw);
@@ -89,7 +118,7 @@ crop_pixmap_to_mask(AScreen *ds, XImage **xdraw, XImage **xmask)
 	else
 		EPRINTF("could not alloc subimage %hux%hu+%hd+%d from %ux%u+0+0\n",
 			box.width, box.height, box.x, box.y, w, h);
-	return (status);
+	return (False);
 }
 
 static XImage *
@@ -279,16 +308,69 @@ ximage_removebutton(ButtonImage *bi)
 	}
 }
 
+static Bool
+ximage_createicon(AScreen *ds, Client *c, XImage **xicon, XImage **xmask)
+{
+	XImage *ximage = NULL;
+	ButtonImage *bi, **bis;
+	unsigned th = ds->style.titleheight;
+	Bool ispixmap = ((*xicon)->depth > 1) ? True : False;
+
+	if (ds->style.outline)
+		th--;
+
+	if ((*xicon)->height > th && crop_pixmap_to_mask(ds, xicon, xmask))
+		XPRINTF("cropped ximage to %ux%u\n", (*xicon)->width, (*xicon)->height);
+	ximage = ((*xicon)->height > th)
+	    ? scale_pixmap_and_mask(ds, (*xicon), xmask ? (*xmask) : NULL, th)
+	    : combine_pixmap_and_mask(ds, (*xicon), xmask ? (*xmask) : NULL);
+	if (!ximage) {
+		EPRINTF("could not scale or combine xicon and xmask\n");
+		goto error;
+	}
+	XPRINTF("scaled xicon to %ux%u\n", icon, mask, ximage->width, ximage->height);
+
+	for (bis = getbuttons(c); bis && *bis; bis++) {
+		bi = *bis;
+		bi->x = bi->y = bi->b = 0;
+		bi->d = ds->depth;
+		bi->w = ximage->width;
+		bi->h = ximage->height;
+		if (ispixmap) {
+			if (bi->pixmap.ximage) {
+				XDestroyImage(bi->pixmap.ximage);
+				bi->pixmap.ximage = NULL;
+			}
+			XPRINTF(__CFMTS(c) "assigning ximage %p\n", __CARGS(c), ximage);
+			if ((bi->pixmap.ximage = XSubImage(ximage, 0, 0,
+							   ximage->width, ximage->height)))
+				bi->present = True;
+		} else {
+			if (bi->bitmap.ximage) {
+				XDestroyImage(bi->bitmap.ximage);
+				bi->bitmap.ximage = NULL;
+			}
+			XPRINTF(__CFMTS(c) "assigning ximage %p\n", __CARGS(c), ximage);
+			if ((bi->bitmap.ximage = XSubImage(ximage, 0, 0,
+							   ximage->width, ximage->height)))
+				bi->present = True;
+		}
+	}
+	XDestroyImage(ximage);
+	return (True);
+
+      error:
+	if (ximage)
+		XDestroyImage(ximage);
+	return (False);
+}
+
 Bool
 ximage_createbitmapicon(AScreen *ds, Client *c, Pixmap icon, Pixmap mask, unsigned w,
 			unsigned h)
 {
-	XImage *xicon = NULL, *xmask = NULL, *ximage = NULL;
-	ButtonImage *bi, **bis;
-	unsigned th = ds->style.titleheight;
-
-	if (ds->style.outline)
-		th--;
+	XImage *xicon = NULL, *xmask = NULL;
+	Bool result = False;
 
 	if (!(xicon = XGetImage(dpy, icon, 0, 0, w, h, 0x1, XYPixmap))) {
 		EPRINTF("could not get bitmap 0x%lx %ux%u\n", icon, w, h);
@@ -298,63 +380,21 @@ ximage_createbitmapicon(AScreen *ds, Client *c, Pixmap icon, Pixmap mask, unsign
 		EPRINTF("could not get bitmap 0x%lx %ux%u\n", mask, w, h);
 		goto error;
 	}
-	if (h > th && xmask && crop_pixmap_to_mask(ds, &xicon, &xmask)) {
-		w = xicon->width;
-		h = xicon->height;
-		XPRINTF("cropped bitmap 0x%lx mask 0x%lx to %ux%u\n", icon, mask, w, h);
-	}
-	ximage = (h > th)
-	    ? scale_pixmap_and_mask(ds, xicon, xmask, th)
-	    : combine_pixmap_and_mask(ds, xicon, xmask);
-	if (!ximage) {
-		EPRINTF("could not scale or combine bitmap and mask\n");
-		goto error;
-	}
-	w = ximage->width;
-	h = ximage->height;
-	XPRINTF("scaled bitmap 0x%lx mask 0x%lx to %ux%u\n", icon, mask, w, h);
-	XDestroyImage(xicon);
-	if (xmask)
-		XDestroyImage(xmask);
-
-	for (bis = getbuttons(c); bis && *bis; bis++) {
-		bi = *bis;
-		bi->x = bi->y = bi->b = 0;
-		bi->d = ds->depth;
-		bi->w = ximage->width;
-		bi->h = ximage->height;
-		if (bi->bitmap.ximage) {
-			XDestroyImage(bi->bitmap.ximage);
-			bi->bitmap.ximage = NULL;
-		}
-		XPRINTF(__CFMTS(c) "assigning ximage %p\n", __CARGS(c), ximage);
-		bi->bitmap.ximage =
-		    XSubImage(ximage, 0, 0, ximage->width, ximage->height);
-		bi->present = True;
-	}
-	XDestroyImage(ximage);
-	return (True);
-
+	result = ximage_createicon(ds, c, &xicon, &xmask);
       error:
-	if (ximage)
-		XDestroyImage(ximage);
 	if (xmask)
 		XDestroyImage(xmask);
 	if (xicon)
 		XDestroyImage(xicon);
-	return (False);
+	return (result);
 }
 
 Bool
 ximage_createpixmapicon(AScreen *ds, Client *c, Pixmap icon, Pixmap mask, unsigned w,
 			unsigned h, unsigned d)
 {
-	XImage *xicon = NULL, *xmask = NULL, *ximage = NULL;
-	ButtonImage *bi, **bis;
-	unsigned th = ds->style.titleheight;
-
-	if (ds->style.outline)
-		th--;
+	XImage *xicon = NULL, *xmask = NULL;
+	Bool result = False;
 
 	if (!(xicon = XGetImage(dpy, icon, 0, 0, w, h, 0xffffffff, ZPixmap))) {
 		EPRINTF("could not get bitmap 0x%lx %ux%u\n", icon, w, h);
@@ -364,112 +404,38 @@ ximage_createpixmapicon(AScreen *ds, Client *c, Pixmap icon, Pixmap mask, unsign
 		EPRINTF("could not get bitmap 0x%lx %ux%u\n", mask, w, h);
 		goto error;
 	}
-	if (h > th && xmask && crop_pixmap_to_mask(ds, &xicon, &xmask)) {
-		w = xicon->width;
-		h = xicon->height;
-		XPRINTF("cropped pixmap 0x%lx mask 0x%lx to %ux%u\n", icon, mask, w, h);
-	}
-	ximage = (h > th)
-	    ? scale_pixmap_and_mask(ds, xicon, xmask, th)
-	    : combine_pixmap_and_mask(ds, xicon, xmask);
-	if (!ximage) {
-		EPRINTF("could not scale or combine pixmap and mask\n");
-		goto error;
-	}
-	w = ximage->width;
-	h = ximage->height;
-	XPRINTF("scaled pixmap 0x%lx mask 0x%lx to %ux%u\n", icon, mask, w, h);
-	XDestroyImage(xicon);
-	if (xmask)
-		XDestroyImage(xmask);
-
-	for (bis = getbuttons(c); bis && *bis; bis++) {
-		bi = *bis;
-		bi->x = bi->y = bi->b = 0;
-		bi->d = ds->depth;
-		bi->w = ximage->width;
-		bi->h = ximage->height;
-		if (bi->pixmap.ximage) {
-			XDestroyImage(bi->pixmap.ximage);
-			bi->pixmap.ximage = NULL;
-		}
-		XPRINTF(__CFMTS(c) "assigning ximage %p\n", __CARGS(c), ximage);
-		bi->pixmap.ximage =
-		    XSubImage(ximage, 0, 0, ximage->width, ximage->height);
-		bi->present = True;
-	}
-	XDestroyImage(ximage);
-	return (True);
-
+	result = ximage_createicon(ds, c, &xicon, &xmask);
       error:
-	if (ximage)
-		XDestroyImage(ximage);
 	if (xmask)
 		XDestroyImage(xmask);
 	if (xicon)
 		XDestroyImage(xicon);
-	return (False);
+	return (result);
 }
 
 Bool
 ximage_createdataicon(AScreen *ds, Client *c, unsigned w, unsigned h, long *data)
 {
-	XImage *ximage = NULL, *xicon;
-	ButtonImage *bi, **bis;
-	unsigned i, j, th = ds->style.titleheight;
-
-	if (ds->style.outline)
-		th--;
+	XImage *xicon = NULL;
+	unsigned i, j;
+	Bool result = False;
 
 	if (!(xicon = XCreateImage(dpy, ds->visual, 32, ZPixmap, 0, NULL, w, h, 8, 0))) {
 		EPRINTF("could not create image %ux%ux%u\n", w, h, 32);
-		return (False);
+		goto error;
 	}
 	xicon->data = emallocz(xicon->bytes_per_line * xicon->height);
 	for (j = 0; j < h; j++)
 		for (i = 0; i < w; i++, data++)
 			XPutPixel(xicon, i, j, *data);
-	if (h > th && crop_pixmap_to_mask(ds, &xicon, NULL)) {
-		w = xicon->width;
-		h = xicon->height;
-		XPRINTF("cropped data %p to %ux%u\n", data, w, h);
-	}
-	ximage = (h > th)
-	    ? scale_pixmap_and_mask(ds, xicon, NULL, th)
-	    : XSubImage(xicon, 0, 0, w, h);
-	if (!ximage) {
-		EPRINTF("could not scale or combine data and mask\n");
-		goto error;
-	}
-	w = ximage->width;
-	h = ximage->height;
-	XPRINTF("scaled data %p to %ux%u\n", data, w, h);
-	XDestroyImage(xicon);
-
-	for (bis = getbuttons(c); bis && *bis; bis++) {
-		bi = *bis;
-		bi->x = bi->y = bi->b = 0;
-		bi->d = ds->depth;
-		bi->w = ximage->width;
-		bi->h = ximage->height;
-		if (bi->pixmap.ximage) {
-			XDestroyImage(bi->pixmap.ximage);
-			bi->pixmap.ximage = NULL;
-		}
-		XPRINTF(__CFMTS(c) "assigning ximage %p (%dx%dx%d+%d+%d)\n", __CARGS(c), ximage,
-				bi->w, bi->h, bi->d, bi->x, bi->y);
-		bi->pixmap.ximage = XSubImage(ximage, 0, 0, ximage->width, ximage->height);
-		bi->present = True;
-	}
-	XDestroyImage(ximage);
-	return (True);
-
+	result = ximage_createicon(ds, c, &xicon, NULL);
       error:
-	if (ximage)
-		XDestroyImage(ximage);
-	if (xicon)
+	if (xicon) {
+		free(xicon->data);
+		xicon->data = NULL;
 		XDestroyImage(xicon);
-      return (False);
+	}
+	return (result);
 }
 
 Bool
@@ -491,17 +457,62 @@ ximage_createsvgicon(AScreen *ds, Client *c, const char *file)
 Bool
 ximage_createxpmicon(AScreen *ds, Client *c, const char *file)
 {
-	EPRINTF("would use XIMAGE to create XPM icon %s\n", file);
-	/* for now */
-	return (False);
+#ifdef XPM
+	XImage *xicon = NULL, *xmask = NULL;
+	XpmAttributes xa = { 0, };
+	int status;
+	Bool result = False;
+
+	xa.visual = DefaultVisual(dpy, scr->screen);
+	xa.valuemask |= XpmVisual;
+	xa.colormap = DefaultColormap(dpy, scr->screen);
+	xa.valuemask |= XpmColormap;
+	xa.depth = DefaultDepth(dpy, scr->screen);
+	xa.valuemask |= XpmDepth;
+
+	status = XpmReadFileToImage(dpy, file, &xicon, &xmask, &xa);
+	if (status != XpmSuccess || !xicon) {
+		EPRINTF("could not load xpm file: %s on %s\n", xpm_status_string(status), file);
+		goto error;
+	}
+	result = ximage_createicon(ds, c, &xicon, &xmask);
+      error:
+	if (xmask)
+		XDestroyImage(xmask);
+	if (xicon)
+		XDestroyImage(xicon);
+#endif				/* XPM */
+	return (result);
 }
 
 Bool
 ximage_createxbmicon(AScreen *ds, Client *c, const char *file)
 {
-	EPRINTF("would use XIMAGE to create XBM icon %s\n", file);
-	/* for now */
-	return (False);
+	XImage *xicon = NULL;
+	unsigned char *data = NULL;
+	unsigned w, h;
+	int x, y, status;
+	Bool result = False;
+
+	status = XReadBitmapFileData(file, &w, &h, &data, &x, &y);
+	if (status != BitmapSuccess || !data) {
+		EPRINTF("could not load xbm file %s\n", file);
+		goto error;
+	}
+	if (!(xicon = XCreateImage(dpy, scr->visual, 1, XYBitmap, 0, NULL, w, h, 8, 0))) {
+		EPRINTF("could not create image %ux%ux%u\n", w, h, 1);
+		goto error;
+	}
+	xicon->data = (char *) data;
+	result = ximage_createicon(ds, c, &xicon, &xicon);
+      error:
+	if (xicon) {
+		xicon->data = NULL;
+		XDestroyImage(xicon);
+	}
+	if (data)
+		XFree(data);
+	return (result);
 }
 
 #ifdef DAMAGE
@@ -1031,34 +1042,10 @@ ximage_initsvg(char *path, ButtonImage *bi)
 	return (False);
 }
 
-#ifdef XPM
-static const char *
-xpm_status_string(int status)
-{
-	static char buf[64] = { 0, };
-
-	switch (status) {
-	case XpmColorError:
-		return ("color error");
-	case XpmSuccess:
-		return ("success");
-	case XpmOpenFailed:
-		return ("open failed");
-	case XpmFileInvalid:
-		return ("file invalid");
-	case XpmNoMemory:
-		return ("no memory");
-	case XpmColorFailed:
-		return ("color failed");
-	default:
-		snprintf(buf, sizeof(buf), "unknown %d", status);
-		return (buf);
-	}
-}
-
 Bool
 ximage_initxpm(char *path, ButtonImage *bi)
 {
+#ifdef XPM
 	XImage *xdraw = NULL, *xmask = NULL, *ximage;
 	XpmAttributes xa = { 0, };
 	int status;
@@ -1099,40 +1086,31 @@ ximage_initxpm(char *path, ButtonImage *bi)
 	XDestroyImage(xdraw);
 	if (xmask)
 		XDestroyImage(xmask);
-	return (False);
-}
-#else
-Bool
-ximage_initxpm(char *path, ButtonImage *bi)
-{
-	return (False);
-}
 #endif				/* !XPM */
+	return (False);
+}
 
 Bool
 ximage_initxbm(char *path, ButtonImage *bi)
 {
-	XImage *xdraw = NULL, *ximage;
+	XImage *xdraw = NULL, *ximage = NULL;
 	unsigned char *data = NULL;
 	int status;
 
 	status = XReadBitmapFileData(path, &bi->w, &bi->h, &data, &bi->x, &bi->y);
 	if (status != BitmapSuccess || !data) {
 		EPRINTF("could not load xbm file %s\n", path);
-		return (False);
+		goto error;
 	}
 	if (!(xdraw = XCreateImage(dpy, scr->visual, 1, XYBitmap, 0, NULL, bi->w, bi->h, 8, 0))) {
 		EPRINTF("could not create image %ux%ux%u\n", bi->w, bi->h, 1);
-		XFree(data);
-		return (False);
+		goto error;
 	}
 	xdraw->data = (char *) data;
 	ximage = combine_pixmap_and_mask(scr, xdraw, xdraw);
 	if (!ximage) {
 		EPRINTF("could not combine images\n");
-		XDestroyImage(xdraw);
-		XFree(data);
-		return (False);
+		goto error;
 	}
 	XDestroyImage(xdraw);
 	bi->x = bi->y = bi->b = 0;
@@ -1146,4 +1124,15 @@ ximage_initxbm(char *path, ButtonImage *bi)
 	bi->bitmap.ximage = ximage;
 	bi->present = True;
 	return (True);
+
+      error:
+	if (ximage)
+		XDestroyImage(ximage);
+	if (xdraw) {
+		xdraw->data = NULL;
+		XDestroyImage(xdraw);
+	}
+	if (data)
+		XFree(data);
+	return (False);
 }

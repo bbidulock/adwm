@@ -881,7 +881,7 @@ ximage_drawdockapp(AScreen *ds, Client *c)
 	int status;
 	unsigned long pixel;
 
-	pixel = (c == sel) ? ds->style.color.sele[ColBG].pixel : ds->style.color.norm[ColBG].pixel;
+	pixel = getpixel(ds, c, ColBG);
 	/* to avoid clearing window, initiallly set to norm[ColBG] */
 	// XSetWindowBackground(dpy, c->frame, pixel);
 	// XClearArea(dpy, c->frame, 0, 0, 0, 0, True);
@@ -895,9 +895,8 @@ ximage_drawdockapp(AScreen *ds, Client *c)
 	XSetLineAttributes(dpy, ds->gc, ds->style.border, LineSolid, CapNotLast,
 			   JoinMiter);
 	XSetFillStyle(dpy, ds->gc, FillSolid);
-	status =
-	    XFillRectangle(dpy, c->frame, ds->gc, ds->dc.x, ds->dc.y, ds->dc.w,
-			   ds->dc.h);
+	status = XFillRectangle(dpy, c->frame, ds->gc,
+			ds->dc.x, ds->dc.y, ds->dc.w, ds->dc.h);
 	if (!status)
 		XPRINTF("Could not fill rectangle, error %d\n", status);
 	CPRINTF(c, "Filled dockapp frame %dx%d+%d+%d\n", ds->dc.w, ds->dc.h, ds->dc.x,
@@ -928,9 +927,7 @@ ximage_drawnormal(AScreen *ds, Client *c)
 						   ds->dc.draw.h, ds->depth);
 		XftDrawChange(ds->dc.draw.xft, ds->dc.draw.pixmap);
 	}
-	XSetForeground(dpy, ds->dc.gc, c == sel ?
-		       ds->style.color.sele[ColBG].pixel :
-		       ds->style.color.norm[ColBG].pixel);
+	XSetForeground(dpy, ds->dc.gc, getpixel(ds, c, ColBG));
 	XSetLineAttributes(dpy, ds->dc.gc, ds->style.border, LineSolid, CapNotLast,
 			   JoinMiter);
 	XSetFillStyle(dpy, ds->dc.gc, FillSolid);
@@ -939,15 +936,11 @@ ximage_drawnormal(AScreen *ds, Client *c)
 	if (!status)
 		XPRINTF("Could not fill rectangle, error %d\n", status);
 	/* Don't know about this... */
-	if (ds->dc.w < textw(ds, c->name, (c == sel) ?
-			     Selected : (c->is.focused ? Focused : Normal))) {
+	if (ds->dc.w < textw(ds, c->name, gethilite(c))) {
 		ds->dc.w -= elementw(ds, c, CloseBtn);
 		ximage_drawtext(ds, c->name, ds->dc.draw.pixmap, ds->dc.draw.xft,
-				c == sel ? ds->style.color.sele : ds->style.color.norm,
-				c == sel ? 1 : 0, ds->dc.x, ds->dc.y, ds->dc.w);
-		ximage_drawbutton(ds, c, CloseBtn,
-				  c == sel ? ds->style.color.sele : ds->style.color.norm,
-				  ds->dc.w);
+				gethues(ds, c), gethilite(c), ds->dc.x, ds->dc.y, ds->dc.w);
+		ximage_drawbutton(ds, c, CloseBtn, gethues(ds, c), ds->dc.w);
 		goto end;
 	}
 	/* Left */
@@ -985,9 +978,7 @@ ximage_drawnormal(AScreen *ds, Client *c)
 	}
       end:
 	if (ds->style.outline) {
-		XSetForeground(dpy, ds->dc.gc,
-			       c == sel ? ds->style.color.sele[ColBorder].pixel :
-			       ds->style.color.norm[ColBorder].pixel);
+		XSetForeground(dpy, ds->dc.gc, getpixel(ds, c, ColBorder));
 		XPRINTF(__CFMTS(c) "drawing line from +%d+%d to +%d+%d\n", __CARGS(c),
 			0, ds->dc.h - 1, ds->dc.w, ds->dc.h - 1);
 		XDrawLine(dpy, ds->dc.draw.pixmap, ds->dc.gc, 0, ds->dc.h - 1, ds->dc.w,
@@ -1002,9 +993,7 @@ ximage_drawnormal(AScreen *ds, Client *c)
 	ds->dc.x = ds->dc.y = 0;
 	ds->dc.w = c->c.w;
 	ds->dc.h = ds->style.gripsheight;
-	XSetForeground(dpy, ds->dc.gc,
-		       c == sel ? ds->style.color.sele[ColBG].pixel :
-		       ds->style.color.norm[ColBG].pixel);
+	XSetForeground(dpy, ds->dc.gc, getpixel(ds, c, ColBG));
 	XSetLineAttributes(dpy, ds->dc.gc, ds->style.border, LineSolid, CapNotLast,
 			   JoinMiter);
 	XSetFillStyle(dpy, ds->dc.gc, FillSolid);
@@ -1013,9 +1002,7 @@ ximage_drawnormal(AScreen *ds, Client *c)
 	if (!status)
 		XPRINTF("Could not fill rectangle, error %d\n", status);
 	if (ds->style.outline) {
-		XSetForeground(dpy, ds->dc.gc,
-			       c == sel ? ds->style.color.sele[ColBorder].pixel :
-			       ds->style.color.norm[ColBorder].pixel);
+		XSetForeground(dpy, ds->dc.gc, getpixel(ds, c, ColBorder));
 		XDrawLine(dpy, ds->dc.draw.pixmap, ds->dc.gc, 0, 0, ds->dc.w, 0);
 		/* needs to be adjusted to do ds->style.gripswidth instead */
 		ds->dc.x = ds->dc.w / 2 - ds->dc.w / 5;

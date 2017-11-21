@@ -346,6 +346,40 @@ createappicon(Client *c)
 	return (result);
 }
 
+int
+gethilite(Client *c)
+{
+	if (c == sel)
+		return Selected;
+	if (c == gave || c == took)
+		return Focused;
+	return Normal;
+}
+
+XftColor *
+gethues(AScreen *ds, Client *c)
+{
+	if (c == sel)
+		return ds->style.color.sele;
+	if (c == gave || c == took)
+		return ds->style.color.focu;
+	return ds->style.color.norm;
+}
+
+XftColor *
+getcolor(AScreen *ds, Client *c, int type)
+{
+	XftColor *col = gethues(ds, c);
+	return &col[type];
+}
+
+unsigned long
+getpixel(AScreen *ds, Client *c, int type)
+{
+	XftColor *col = getcolor(ds, c, type);
+	return col->pixel;
+}
+
 unsigned int
 textnw(AScreen *ds, const char *text, unsigned int len, int hilite)
 {

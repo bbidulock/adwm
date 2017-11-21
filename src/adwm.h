@@ -1,9 +1,35 @@
 #ifndef __LOCAL_ADWM_H__
 #define __LOCAL_ADWM_H__
 
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <sys/select.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <sys/poll.h>
+#include <sys/time.h>
+#include <assert.h>
+#include <ctype.h>
+#include <stdlib.h>
+#include <dirent.h>
+#include <fcntl.h>
+#include <errno.h>
+#include <locale.h>
+#include <stdarg.h>
+#include <stdio.h>
+#include <strings.h>
+#include <unistd.h>
+#include <regex.h>
+#include <wordexp.h>
+#include <signal.h>
+#include <math.h>
+#include <execinfo.h>
+#include <dlfcn.h>
+
 #include <X11/cursorfont.h>
 #include <X11/keysym.h>
 #include <X11/XKBlib.h>
+#include <X11/XF86keysym.h>
 #include <X11/Xatom.h>
 #include <X11/Xlib.h>
 #include <X11/Xproto.h>

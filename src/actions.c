@@ -1,14 +1,5 @@
-#include <regex.h>
-#include <ctype.h>
-#include <assert.h>
-#include <math.h>
-#include <X11/keysym.h>
-#include <X11/XKBlib.h>
-#include <X11/Xatom.h>
-#include <X11/Xlib.h>
-#include <X11/Xproto.h>
-#include <X11/Xutil.h>
-#include <X11/Xft/Xft.h>
+/* See COPYING file for copyright and license details. */
+
 #include "adwm.h"
 #include "layout.h"
 #include "tags.h"

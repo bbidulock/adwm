@@ -1,21 +1,5 @@
-#include <assert.h>
-#include <unistd.h>
-#include <regex.h>
-#include <X11/Xatom.h>
-#include <X11/Xlib.h>
-#include <X11/Xproto.h>
-#include <X11/Xutil.h>
-#include <X11/Xft/Xft.h>
-#ifdef XRANDR
-#include <X11/extensions/Xrandr.h>
-#include <X11/extensions/randr.h>
-#endif
-#ifdef XINERAMA
-#include <X11/extensions/Xinerama.h>
-#endif
-#ifdef SYNC
-#include <X11/extensions/sync.h>
-#endif
+/* See COPYING file for copyright and license details. */
+
 #include "adwm.h"
 #include "layout.h"
 #include "draw.h"

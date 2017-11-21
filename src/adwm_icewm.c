@@ -1,5 +1,7 @@
 /* See COPYING file for copyright and license details. */
 
+#include "adwm.h"
+
 /*
  * The purpose of this file is to provie a loadable module that provides
  * functions to mimic the behaviour and style of icewm.  This module reads the

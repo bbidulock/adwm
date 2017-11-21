@@ -167,6 +167,45 @@ png_read_file_to_ximage(AScreen *ds, const char *file)
 }
 #endif
 
+static int
+XReadBitmapFileImage(Display *display, Visual * visual, const char *file, unsigned *width,
+		     unsigned *height, XImage **image_return, int *x_hot, int *y_hot)
+{
+	XImage *ximage = NULL;
+	unsigned char *data = NULL;
+	unsigned w, h;
+	int x, y, status;
+
+	status = XReadBitmapFileData(file, &w, &h, &data, &x, &y);
+	if (status != BitmapSuccess || !data)
+		goto error;
+	if (!(ximage = XCreateImage(display, visual, 1, XYBitmap, 0, NULL, w, h, 8, 0))) {
+		status = BitmapNoMemory;
+		goto error;
+	}
+	ximage->data = (char *) data;
+	data = NULL;
+	if (width)
+		*width = w;
+	if (height)
+		*height = h;
+	if (image_return)
+		*image_return = ximage;
+	else {
+		free(ximage->data);
+		ximage->data = NULL;
+		XDestroyImage(ximage);
+	}
+	if (x_hot)
+		*x_hot = x;
+	if (y_hot)
+		*y_hot = y;
+      error:
+	if (data)
+		free(data);
+	return (status);
+}
+
 static Bool
 crop_pixmap_to_mask(AScreen *ds, XImage **xdraw, XImage **xmask)
 {
@@ -625,29 +664,19 @@ Bool
 ximage_createxbmicon(AScreen *ds, Client *c, const char *file)
 {
 	XImage *xicon = NULL;
-	unsigned char *data = NULL;
 	unsigned w, h;
 	int x, y, status;
 	Bool result = False;
 
-	status = XReadBitmapFileData(file, &w, &h, &data, &x, &y);
-	if (status != BitmapSuccess || !data) {
+	status = XReadBitmapFileImage(dpy, ds->visual, file, &w, &h, &xicon, &x, &y);
+	if (status != BitmapSuccess || !xicon) {
 		EPRINTF("could not load xbm file %s\n", file);
 		goto error;
 	}
-	if (!(xicon = XCreateImage(dpy, ds->visual, 1, XYBitmap, 0, NULL, w, h, 8, 0))) {
-		EPRINTF("could not create image %ux%ux%u\n", w, h, 1);
-		goto error;
-	}
-	xicon->data = (char *) data;
 	result = ximage_createicon(ds, c, &xicon, &xicon, True);
       error:
-	if (xicon) {
-		xicon->data = NULL;
+	if (xicon)
 		XDestroyImage(xicon);
-	}
-	if (data)
-		XFree(data);
 	return (result);
 }
 
@@ -1217,19 +1246,16 @@ Bool
 ximage_initxbm(char *path, ButtonImage *bi)
 {
 	XImage *xdraw = NULL, *ximage = NULL;
-	unsigned char *data = NULL;
 	int status;
 
-	status = XReadBitmapFileData(path, &bi->w, &bi->h, &data, &bi->x, &bi->y);
-	if (status != BitmapSuccess || !data) {
+	if (!(status = XReadBitmapFileImage(dpy, scr->visual, path, &bi->w, &bi->h, &xdraw, &bi->x, &bi->y))) {
 		EPRINTF("could not load xbm file %s\n", path);
 		goto error;
 	}
-	if (!(xdraw = XCreateImage(dpy, scr->visual, 1, XYBitmap, 0, NULL, bi->w, bi->h, 8, 0))) {
-		EPRINTF("could not create image %ux%ux%u\n", bi->w, bi->h, 1);
+	if (status != BitmapSuccess || !xdraw) {
+		EPRINTF("could not load xbm file %s\n", path);
 		goto error;
 	}
-	xdraw->data = (char *) data;
 	ximage = combine_pixmap_and_mask(scr, xdraw, xdraw);
 	if (!ximage) {
 		EPRINTF("could not combine images\n");
@@ -1251,11 +1277,7 @@ ximage_initxbm(char *path, ButtonImage *bi)
       error:
 	if (ximage)
 		XDestroyImage(ximage);
-	if (xdraw) {
-		xdraw->data = NULL;
+	if (xdraw)
 		XDestroyImage(xdraw);
-	}
-	if (data)
-		XFree(data);
 	return (False);
 }

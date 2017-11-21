@@ -44,6 +44,9 @@
 #ifdef XPM
 #include <X11/xpm.h>
 #endif
+#ifdef LIBPNG
+#include <png.h>
+#endif
 #ifdef STARTUP_NOTIFICATION
 #define SN_API_NOT_YET_FROZEN
 #include <libsn/sn.h>

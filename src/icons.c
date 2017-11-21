@@ -14,9 +14,6 @@
 #include <X11/Xutil.h>
 #include <X11/Xresource.h>
 #include <X11/Xft/Xft.h>
-#ifdef LIBPNG
-#include <png.h>
-#endif
 #include "adwm.h"
 #include "ewmh.h"
 #include "layout.h"

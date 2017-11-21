@@ -8,6 +8,7 @@
 #include "config.h"
 #include "icons.h"
 #include "draw.h"
+#include "image.h"
 #include "ximage.h" /* verification */
 
 #ifdef XPM
@@ -35,165 +36,6 @@ xpm_status_string(int status)
 	}
 }
 #endif
-
-#ifdef LIBPNG
-static XImage *
-png_read_file_to_ximage(AScreen *ds, const char *file)
-{
-	XImage *xicon = NULL;
-	volatile void *vol_png_pixels = NULL, *vol_row_pointers = NULL;
-	volatile void *vol_xicon = NULL;
-	png_structp png_ptr;
-	png_infop info_ptr;
-	png_byte buf[8];
-	int ret;
-	FILE *f;
-
-	if (!(f = fopen(file, "rb"))) {
-		EPRINTF("cannot open %s: %s\n", file, strerror(errno));
-		goto nofile;
-	}
-	if ((ret = fread(buf, 1, 8, f)) != 8)
-		goto noread;
-	if (png_sig_cmp(buf, 0, 8))
-		goto noread;
-
-	if (!(png_ptr = png_create_read_struct(png_get_libpng_ver(NULL), NULL, NULL, NULL)))
-		goto noread;
-	if (!(info_ptr = png_create_info_struct(png_ptr)))
-		goto noinfo;
-	if (setjmp(png_jmpbuf(png_ptr)))
-		goto pngerr;
-
-	png_uint_32 width, height, row_bytes;
-	png_byte *png_pixels = NULL, **row_pointers = NULL, *p;
-	int bit_depth, color_type, channels, i, j;
-	unsigned long pixel; unsigned long A, R, G, B;
-
-	png_init_io(png_ptr, f);
-	png_set_sig_bytes(png_ptr, 8);
-	png_read_info(png_ptr, info_ptr);
-	png_get_IHDR(png_ptr, info_ptr, &width, &height, &bit_depth, &color_type, NULL,
-		     NULL, NULL);
-	if (color_type == PNG_COLOR_TYPE_PALETTE)
-		png_set_palette_to_rgb(png_ptr);
-	if (color_type == PNG_COLOR_TYPE_GRAY && bit_depth < 8)
-		png_set_expand(png_ptr);
-	if (png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS))
-		png_set_expand(png_ptr);
-	if (bit_depth == 16)
-		png_set_strip_16(png_ptr);
-	if (color_type == PNG_COLOR_TYPE_GRAY || color_type == PNG_COLOR_TYPE_GRAY_ALPHA)
-		png_set_gray_to_rgb(png_ptr);
-	png_read_update_info(png_ptr, info_ptr);
-	png_get_IHDR(png_ptr, info_ptr, &width, &height, &bit_depth, &color_type, NULL,
-		     NULL, NULL);
-	if (color_type == PNG_COLOR_TYPE_GRAY)
-		channels = 1;
-	else if (color_type == PNG_COLOR_TYPE_GRAY_ALPHA)
-		channels = 2;
-	else if (color_type == PNG_COLOR_TYPE_RGB)
-		channels = 3;
-	else if (color_type == PNG_COLOR_TYPE_RGB_ALPHA)
-		channels = 4;
-	else
-		channels = 0;	/* should never happen */
-	row_bytes = png_get_rowbytes(png_ptr, info_ptr);
-	png_pixels = ecalloc(row_bytes * height, sizeof(*png_pixels));
-	vol_png_pixels = png_pixels;
-	row_pointers = ecalloc(height, sizeof(*row_pointers));
-	vol_row_pointers = row_pointers;
-	for (i = 0; i < ((int) height); i++)
-		row_pointers[i] = png_pixels + i * row_bytes;
-	png_read_image(png_ptr, row_pointers);
-	png_read_end(png_ptr, info_ptr);
-	if (!(xicon = XCreateImage(dpy, ds->visual, 32, ZPixmap, 0, NULL, width, height, 32, 0)))
-		goto pngerr;
-	vol_xicon = xicon;
-	xicon->data = ecalloc(width * height, sizeof(DATA32));
-	for (p = png_pixels, j = 0; j < height; j++) {
-		for (i = 0; i < width; i++, p += channels) {
-			switch(color_type) {
-			case PNG_COLOR_TYPE_GRAY:
-				R = G = B = p[0];
-				A = 255;
-				break;
-			case PNG_COLOR_TYPE_GRAY_ALPHA:
-				R = G = B = p[0];
-				A = p[1];
-				break;
-			case PNG_COLOR_TYPE_RGB:
-				R = p[0];
-				G = p[1];
-				B = p[2];
-				A = 255;
-				break;
-			case PNG_COLOR_TYPE_RGB_ALPHA:
-				R = p[0];
-				G = p[1];
-				B = p[2];
-				A = p[3];
-				break;
-			}
-			pixel = (A << 24)|(R <<16)|(G<<8)|(B<<0);
-			XPutPixel(xicon, i, j, pixel);
-		}
-	}
-      pngerr:
-	xicon = (typeof(xicon)) vol_xicon;
-	png_pixels = (typeof(png_pixels)) vol_png_pixels;
-	free(png_pixels);
-	row_pointers = (typeof(row_pointers)) vol_row_pointers;
-	free(row_pointers);
-	png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
-	goto noread;
-      noinfo:
-	png_destroy_read_struct(&png_ptr, NULL, NULL);
-      noread:
-	fclose(f);
-      nofile:
-	return (xicon);
-}
-#endif
-
-static int
-XReadBitmapFileImage(Display *display, Visual * visual, const char *file, unsigned *width,
-		     unsigned *height, XImage **image_return, int *x_hot, int *y_hot)
-{
-	XImage *ximage = NULL;
-	unsigned char *data = NULL;
-	unsigned w, h;
-	int x, y, status;
-
-	status = XReadBitmapFileData(file, &w, &h, &data, &x, &y);
-	if (status != BitmapSuccess || !data)
-		goto error;
-	if (!(ximage = XCreateImage(display, visual, 1, XYBitmap, 0, NULL, w, h, 8, 0))) {
-		status = BitmapNoMemory;
-		goto error;
-	}
-	ximage->data = (char *) data;
-	data = NULL;
-	if (width)
-		*width = w;
-	if (height)
-		*height = h;
-	if (image_return)
-		*image_return = ximage;
-	else {
-		free(ximage->data);
-		ximage->data = NULL;
-		XDestroyImage(ximage);
-	}
-	if (x_hot)
-		*x_hot = x;
-	if (y_hot)
-		*y_hot = y;
-      error:
-	if (data)
-		free(data);
-	return (status);
-}
 
 static Bool
 crop_pixmap_to_mask(AScreen *ds, XImage **xdraw, XImage **xmask)
@@ -595,7 +437,7 @@ ximage_createpngicon(AScreen *ds, Client *c, const char *file)
 #ifdef LIBPNG
 	XImage *xicon = NULL;
 
-	if (!(xicon = png_read_file_to_ximage(ds, file))) {
+	if (!(xicon = png_read_file_to_ximage(dpy, scr->visual, file))) {
 		EPRINTF("could not read png file %s\n", file);
 		goto error;
 	}

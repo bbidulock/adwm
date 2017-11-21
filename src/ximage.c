@@ -11,6 +11,26 @@
 #include "image.h"
 #include "ximage.h" /* verification */
 
+static const char *
+xbm_status_string(int status)
+{
+	static char buf[64] = { 0, };
+
+	switch (status) {
+	case BitmapSuccess:
+		return ("success");
+	case BitmapOpenFailed:
+		return ("open failed");
+	case BitmapFileInvalid:
+		return ("file invalid");
+	case BitmapNoMemory:
+		return ("no memory");
+	default:
+		snprintf(buf, sizeof(buf), "unknown %d", status);
+		return (buf);
+	}
+}
+
 #ifdef XPM
 static const char *
 xpm_status_string(int status)
@@ -501,7 +521,7 @@ ximage_createxbmicon(AScreen *ds, Client *c, const char *file)
 
 	status = XReadBitmapFileImage(dpy, ds->visual, file, &w, &h, &xicon, &x, &y);
 	if (status != BitmapSuccess || !xicon) {
-		EPRINTF("could not load xbm file %s\n", file);
+		EPRINTF("could not load xbm file: %s on %s\n", xbm_status_string(status), file);
 		goto error;
 	}
 	result = ximage_createicon(ds, c, &xicon, &xicon, True);
@@ -1079,12 +1099,9 @@ ximage_initxbm(char *path, ButtonImage *bi)
 	XImage *xdraw = NULL, *ximage = NULL;
 	int status;
 
-	if (!(status = XReadBitmapFileImage(dpy, scr->visual, path, &bi->w, &bi->h, &xdraw, &bi->x, &bi->y))) {
-		EPRINTF("could not load xbm file %s\n", path);
-		goto error;
-	}
+	status = XReadBitmapFileImage(dpy, scr->visual, path, &bi->w, &bi->h, &xdraw, &bi->x, &bi->y);
 	if (status != BitmapSuccess || !xdraw) {
-		EPRINTF("could not load xbm file %s\n", path);
+		EPRINTF("could not load xbm file: %s on %s\n", xbm_status_string(status), path);
 		goto error;
 	}
 	ximage = combine_pixmap_and_mask(scr, xdraw, xdraw);

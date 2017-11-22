@@ -142,19 +142,22 @@ drawdamage(Client *c, XDamageNotifyEvent *ev)
 void
 removebutton(ButtonImage *bi)
 {
+	free(bi->px.file);
+	bi->px.file = NULL;
+
 #if defined IMLIB2 && defined USE_IMLIB2
-	imlib2_removebutton(bi);
+	imlib2_removepixmap(&bi->px);
 #endif				/* defined IMLIB2 && defined USE_IMLIB2 */
 #if defined PIXBUF && defined USE_PIXBUF
-	pixbuf_removebutton(bi);
+	pixbuf_removepixmap(&bi->px);
 #endif				/* defined PIXBUF && defined USE_PIXBUF */
 #if defined RENDER && defined USE_RENDER
-	render_removebutton(bi);
+	render_removepixmap(&bi->px);
 #endif				/* defined RENDER && defined USE_RENDER */
 #if 1
-	ximage_removebutton(bi);
+	ximage_removepixmap(&bi->px);
 #else
-	xlib_removebutton(bi);
+	xlib_removepixmap(&bi->px);
 #endif
 	bi->present = False;
 }
@@ -573,7 +576,7 @@ buttonw(AScreen *ds, Client *c, ElementType type)
 
 	if (!(bi = buttonimage(ds, c, type)) || !bi->present)
 		return 0;
-	return bi->w + 2 * bi->b;
+	return bi->px.w + 2 * bi->px.b;
 }
 
 static ElementType
@@ -749,16 +752,16 @@ initpixmap(const char *file, ButtonImage *bi)
 	if (!file || !(path = findrcpath(file)))
 		return False;
 	if ((p = strstr(path, ".xpm")) && strlen(p) == 4)
-		if (initxpm(path, bi))
+		if ((bi->present = initxpm(path, &bi->px)))
 			return True;
 	if ((p = strstr(path, ".xbm")) && strlen(p) == 4)
-		if (initxbm(path, bi))
+		if ((bi->present = initxbm(path, &bi->px)))
 			return True;
 	if ((p = strstr(path, ".png")) && strlen(p) == 4)
-		if (initpng(path, bi))
+		if ((bi->present = initpng(path, &bi->px)))
 			return True;
 	if ((p = strstr(path, ".svg")) && strlen(p) == 4)
-		if (initpng(path, bi))
+		if ((bi->present = initsvg(path, &bi->px)))
 			return True;
 	EPRINTF("could not load button element from %s\n", path);
 	removebutton(bi);

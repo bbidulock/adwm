@@ -746,10 +746,23 @@ typedef struct {
 } Appearance;
 
 typedef struct {
-	const char *file;
-	Pixmap pixmap, mask;
+	char *file;
+	struct {
+		Pixmap draw, mask;
+		XImage *ximage;
+#if defined IMLIB2
+		Imlib_Image image;
+#endif
+#if defined RENDER
+		Picture pict;
+#endif
+	}
+#if defined IMLIB2 || defined PIXBUF || defined XPM || defined LIBPNG
+	pixmap,
+#endif
+	bitmap;
 	int x, y;
-	unsigned depth, width, height;
+	unsigned w, h, b, d;
 } AdwmPixmap;
 
 typedef struct {
@@ -793,10 +806,12 @@ typedef struct {
 	int offset;
 } TextShadow;
 
+#if 0
 typedef struct {
 	Pixmap pixmap;
 	int width, height;
 } AdwmBitmap;
+#endif
 
 #define GIVE_FOCUS (1<<0)
 #define TAKE_FOCUS (1<<1)
@@ -856,25 +871,9 @@ typedef struct {
 } Layout;
 
 typedef struct {
-	struct {
-		Pixmap draw, mask;
-		XImage *ximage;
-#if defined IMLIB2
-		Imlib_Image image;
-#endif
-#if defined RENDER
-		Picture pict;
-#endif
-	}
-#if defined IMLIB2 || defined XPM
-	pixmap,
-#endif
-	bitmap;
+	AdwmPixmap px;
 	XftColor bg;
 	Bool present;
-	int x, y;
-	unsigned w, h, b, d;
-
 } ButtonImage;
 
 typedef struct {

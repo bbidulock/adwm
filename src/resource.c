@@ -1,12 +1,27 @@
 /* See COPYING file for copyright and license details. */
 
 #include "adwm.h"
+#if defined IMLIB2 && defined USE_IMLIB2
+#include "imlib.h"
+#endif				/* defined IMLIB2 && defined USE_IMLIB2 */
+#if defined PIXBUF && defined USE_PIXBUF
+#include "pixbuf.h"
+#endif				/* defined PIXBUF && defined USE_PIXBUF */
+#if defined RENDER && defined USE_RENDER
+#include "render.h"
+#endif				/* defined RENDER && defined USE_RENDER */
+#if 1
+#include "ximage.h"
+#else
+#include "xlib.h"
+#endif
+#include "config.h"
 #include "resource.h" /* verification */
 
 XrmDatabase xresdb;
 
 const char *readres(const char *name, const char *clas, const char *defval);
-void getbitmap(const unsigned char *bits, int width, int height, AdwmBitmap * bitmap);
+void getbitmap(const unsigned char *bits, int width, int height, AdwmPixmap *bitmap);
 void getappearance(const char *descrip, Appearance *appear);
 void getxcolor(const char *color, const char *defcol, XColor *xcol);
 void getxftcolor(const char *color, const char *defcol, XftColor *xftcol);
@@ -18,8 +33,46 @@ void freefont(AdwmFont *afont);
 void readtexture(const char *name, const char *clas, Texture *t, const char *defcol,
 		 const char *oppcol);
 void freetexture(Texture *t);
-void getpixmap(const char *file, AdwmPixmap *p);
+void getpixmap(const char *file, AdwmPixmap *px);
 void getshadow(const char *descrip, TextShadow * shadow);
+
+#if defined IMLIB2 && defined USE_IMLIB2
+#define initpng(args...)	  imlib2_initpng(args)
+#define initsvg(args...)	  imlib2_initsvg(args)
+#define initxpm(args...)	  imlib2_initxpm(args)
+#define initxbm(args...)	  imlib2_initxbm(args)
+#define initxbmdata(args...)	  imlib2_initxbmdata(args)
+#else				/* !defined IMLIB2 || !defined USE_IMLIB2 */
+#if defined PIXBUF && defined USE_PIXBUF
+#define initpng(args...)	  pixbuf_initpng(args)
+#define initsvg(args...)	  pixbuf_initsvg(args)
+#define initxpm(args...)	  pixbuf_initxpm(args)
+#define initxbm(args...)	  pixbuf_initxbm(args)
+#define initxbmdata(args...)	  pixbuf_initxbmdata(args)
+#else				/* !defined PIXBUF || !defined USE_PIXBUF */
+#if defined RENDER && defined USE_RENDER
+#define initpng(args...)	  render_initpng(args)
+#define initsvg(args...)	  render_initsvg(args)
+#define initxpm(args...)	  render_initxpm(args)
+#define initxbm(args...)	  render_initxbm(args)
+#define initxbmdata(args...)	  render_initxbmdata(args)
+#else				/* !defined RENDER || !defined USE_RENDER */
+#if 1
+#define initpng(args...)	  ximage_initpng(args)
+#define initsvg(args...)	  ximage_initsvg(args)
+#define initxpm(args...)	  ximage_initxpm(args)
+#define initxbm(args...)	  ximage_initxbm(args)
+#define initxbmdata(args...)	  ximage_initxbmdata(args)
+#else
+#define initpng(args...)	  xlib_initpng(args)
+#define initsvg(args...)	  xlib_initsvg(args)
+#define initxpm(args...)	  xlib_initxpm(args)
+#define initxbm(args...)	  xlib_initxbm(args)
+#define initxbmdata(args...)	  xlib_initxbmdata(args)
+#endif
+#endif				/* !defined RENDER || !defined USE_RENDER */
+#endif				/* !defined PIXBUF || !defined USE_PIXBUF */
+#endif				/* !defined IMLIB2 || !defined USE_IMLIB2 */
 
 const char *
 readres(const char *name, const char *clas, const char *defval)
@@ -33,13 +86,9 @@ readres(const char *name, const char *clas, const char *defval)
 }
 
 void
-getbitmap(const unsigned char *bits, int width, int height, AdwmBitmap * bitmap)
+getbitmap(const unsigned char *bits, int width, int height, AdwmPixmap *px)
 {
-	bitmap->width = width;
-	bitmap->height = height;
-	bitmap->pixmap = XCreateBitmapFromData(dpy,
-					       scr->root, (char *) bits, width, height);
-	if (!bitmap->pixmap)
+	if (!initxbmdata(bits, width, height, px))
 		eprint("ERROR: cannot create bitmap\n");
 }
 
@@ -182,72 +231,27 @@ freefont(AdwmFont *afont)
 }
 
 void
-getpixmap(const char *file, AdwmPixmap *p)
+getpixmap(const char *file, AdwmPixmap *px)
 {
-	if (!file)
-		goto done;
-#ifdef XPM
-	else if (strstr(file, ".xpm") && strlen(strstr(file, ".xpm")) == 4) {
-		XpmAttributes xa = { 0, };
+	char *path, *p;
 
-		xa.visual = scr->visual;
-		xa.valuemask |= XpmVisual;
-		xa.colormap = scr->colormap;
-		xa.valuemask |= XpmColormap;
-		xa.depth = scr->depth;
-		xa.valuemask |= XpmDepth;
-
-		if (XpmReadFileToPixmap(dpy, scr->drawable, file, &p->pixmap, &p->mask, &xa)
-		    == Success) {
-			p->file = file;
-			p->depth = (xa.valuemask & XpmDepth) ? xa.depth : 0;
-			p->width = xa.width;
-			p->height = xa.height;
-			p->x = xa.x_hotspot;
-			p->y = xa.y_hotspot;
+	if (!file || !(path = findrcpath(file)))
+		return;
+	if ((p = strstr(path, ".xpm")) && strlen(p) == 4)
+		if (initxpm(path, px))
 			return;
-		}
-		DPRINTF("could not load pixmap file %s\n", file);
-		goto done;
-	}
-#endif
-#ifdef IMLIB2
-	else if (!strstr(file, ".xbm") || strlen(strstr(file, ".xbm")) != 4) {
-		Imlib_Image image;
-
-		imlib_context_push(scr->context);
-		imlib_context_set_mask(None);
-
-		if ((image = imlib_load_image(file))) {
-			imlib_context_set_image(image);
-			imlib_context_set_mask(None);
-			p->file = file;
-			p->width = imlib_image_get_width();
-			p->height = imlib_image_get_height();
-			p->x = p->y = 0;
-			imlib_render_pixmaps_for_whole_image(&p->pixmap, &p->mask);
+	if ((p = strstr(path, ".xbm")) && strlen(p) == 4)
+		if (initxbm(path, px))
 			return;
-		}
-		DPRINTF("could not load image file %s\n", file);
-		goto done;
-	}
-#endif
-	else if (strstr(file, ".xbm") && strlen(strstr(file, ".xbm")) == 4) {
-		if (BitmapSuccess == XReadBitmapFile(dpy, scr->root, file, &p->width,
-						     &p->height, &p->pixmap, &p->x,
-						     &p->y)) {
-			p->file = file;
-			p->depth = 2;
+	if ((p = strstr(path, ".png")) && strlen(p) == 4)
+		if (initpng(path, px))
 			return;
-		}
-		DPRINTF("could not load bitmap file %s\n", file);
-		goto done;
-	}
-      done:
-	p->file = NULL;
-	p->pixmap = p->mask = None;
-	p->depth = p->width = p->height = 0;
-	p->x = p->y = 0;
+	if ((p = strstr(path, ".svg")) && strlen(p) == 4)
+		if (initsvg(path, px))
+			return;
+	EPRINTF("could not load image from %s\n", path);
+	free(path);
+	return;
 }
 
 void

@@ -4,7 +4,7 @@
 #define __LOCAL_RESOURCE_H__
 
 const char *readres(const char *name, const char *clas, const char *defval);
-void getbitmap(const unsigned char *bits, int width, int height, AdwmBitmap * bitmap);
+void getbitmap(const unsigned char *bits, int width, int height, AdwmPixmap *bitmap);
 void getappearance(const char *descrip, Appearance *appear);
 void getxcolor(const char *color, const char *defcol, XColor *xcol);
 void getxftcolor(const char *color, const char *defcol, XftColor *xftcol);

@@ -19,7 +19,7 @@
 
 typedef struct {
 	struct {
-		AdwmBitmap iconify, maximize, restore, close;
+		AdwmPixmap iconify, maximize, restore, close;
 		struct {
 			Texture focus;	/* default white, opposite black */
 			Texture unfocus;	/* default black, opposite white */

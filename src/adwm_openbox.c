@@ -155,25 +155,25 @@ typedef struct {
 	} window;
 	struct {
 		struct {
-			AdwmBitmap xbm;
+			AdwmPixmap xbm;
 			struct {
-				AdwmBitmap xbm;
+				AdwmPixmap xbm;
 			} pressed, hover;
 			struct {
-				AdwmBitmap xbm;
+				AdwmPixmap xbm;
 				struct {
-					AdwmBitmap xbm;
+					AdwmPixmap xbm;
 				} pressed, hover;
 			} toggled;
 		} max, desk, shade;
 		struct {
-			AdwmBitmap xbm;
+			AdwmPixmap xbm;
 			struct {
-				AdwmBitmap xbm;
+				AdwmPixmap xbm;
 			} pressed, disabled, hover;
 		} iconify, close;
 		struct {
-			AdwmBitmap xbm;
+			AdwmPixmap xbm;
 		} bullet;
 	} image;
 } OpenboxStyle;

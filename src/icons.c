@@ -178,6 +178,7 @@ _FindAnyIconHelper(char **files, const char *iconname, int size, const char *ext
 						XDestroyImage(xicon);
 					if (xmask)
 						XDestroyImage(xmask);
+					XpmFreeAttributes(&xa);
 				}
 			}
 #endif

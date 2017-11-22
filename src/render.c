@@ -135,7 +135,7 @@ render_createpixmapicon(AScreen *ds, Client *c, Pixmap icon, Pixmap mask, unsign
 	Picture pict;
 	XRenderPictureAttributes pa = { 0, };
 
-	if (!(xicon = XGetImage(dpy, icon, 0, 0, w, h, DefaultDepth(dpy, ds->screen), ZPixmap))) {
+	if (!(xicon = XGetImage(dpy, icon, 0, 0, w, h, AllPlanes, ZPixmap))) {
 		EPRINTF("could not get pixmap 0x%lx %ux%u\n", icon, w, h);
 		return (False);
 	}

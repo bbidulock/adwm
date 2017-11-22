@@ -297,7 +297,7 @@ xlib_createpixmapicon(AScreen *ds, Client *c, Pixmap icon, Pixmap mask, unsigned
 	if (ds->style.outline)
 		th--;
 
-	if (!(xicon = XGetImage(dpy, icon, 0, 0, w, h, 0xffffffff, ZPixmap))) {
+	if (!(xicon = XGetImage(dpy, icon, 0, 0, w, h, AllPlanes, ZPixmap))) {
 		EPRINTF("could not get bitmap 0x%lx %ux%u\n", icon, w, h);
 		goto error;
 	}

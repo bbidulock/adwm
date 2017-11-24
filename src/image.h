@@ -11,6 +11,7 @@ const char *xpm_status_string(int status);
 int XReadBitmapFileImage(Display *display, Visual * visual, const char *file,
 			 unsigned *width, unsigned *height, XImage **image_return,
 			 int *x_hot, int *y_hot);
+XImage *combine_pixmap_and_mask(Display *display, Visual *visual, XImage *xdraw, XImage *xmask);
 #ifdef LIBPNG
 XImage *png_read_file_to_ximage(Display *display, Visual * visual, const char *file);
 #endif

@@ -94,6 +94,33 @@ XReadBitmapFileImage(Display *display, Visual * visual, const char *file, unsign
 	return (status);
 }
 
+XImage *
+combine_pixmap_and_mask(Display *display, Visual *visual, XImage *xdraw, XImage *xmask)
+{
+	XImage *ximage = NULL;
+	unsigned i, j;
+	unsigned w = xdraw->width;
+	unsigned h = xdraw->height;
+
+	if (!(ximage = XCreateImage(display, visual, 32, ZPixmap, 0, NULL, w, h, 8, 0))) {
+		EPRINTF("could not create image %ux%ux%u\n", w, h, 32);
+		return (ximage);
+	}
+	ximage->data = emallocz(ximage->bytes_per_line * ximage->height);
+	for (j = 0; j < h; j++) {
+		for (i = 0; i < w; i++) {
+			if (!xmask || XGetPixel(xmask, i, j)) {
+				XPutPixel(ximage, i, j,
+					  XGetPixel(xdraw, i, j) | 0xFF000000);
+			} else {
+				XPutPixel(ximage, i, j,
+					  XGetPixel(xdraw, i, j) & 0x00FFFFFF);
+			}
+		}
+	}
+	return (ximage);
+}
+
 #ifdef LIBPNG
 XImage *
 png_read_file_to_ximage(Display *display, Visual *visual, const char *file)

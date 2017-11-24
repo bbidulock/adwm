@@ -131,8 +131,7 @@ png_read_file_to_ximage(Display *display, Visual *visual, const char *file)
 	png_init_io(png_ptr, f);
 	png_set_sig_bytes(png_ptr, 8);
 	png_read_info(png_ptr, info_ptr);
-	png_get_IHDR(png_ptr, info_ptr, &width, &height, &bit_depth, &color_type, NULL,
-		     NULL, NULL);
+	png_get_IHDR(png_ptr, info_ptr, &width, &height, &bit_depth, &color_type, NULL, NULL, NULL);
 	if (color_type == PNG_COLOR_TYPE_PALETTE)
 		png_set_palette_to_rgb(png_ptr);
 	if (color_type == PNG_COLOR_TYPE_GRAY && bit_depth < 8)
@@ -144,8 +143,7 @@ png_read_file_to_ximage(Display *display, Visual *visual, const char *file)
 	if (color_type == PNG_COLOR_TYPE_GRAY || color_type == PNG_COLOR_TYPE_GRAY_ALPHA)
 		png_set_gray_to_rgb(png_ptr);
 	png_read_update_info(png_ptr, info_ptr);
-	png_get_IHDR(png_ptr, info_ptr, &width, &height, &bit_depth, &color_type, NULL,
-		     NULL, NULL);
+	png_get_IHDR(png_ptr, info_ptr, &width, &height, &bit_depth, &color_type, NULL, NULL, NULL);
 	if (color_type == PNG_COLOR_TYPE_GRAY)
 		channels = 1;
 	else if (color_type == PNG_COLOR_TYPE_GRAY_ALPHA)

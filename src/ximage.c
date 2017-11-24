@@ -86,6 +86,320 @@ crop_image_to_mask(XImage **xdraw, XImage **xmask)
 	return (False);
 }
 
+/* crop ARGB image down to non-transparent extents, consuming passed image */
+XImage *
+crop_image(AScreen *ds, XImage *ximage)
+{
+	XImage *xcrop;
+	unsigned i, j;
+	XRectangle r = { ximage->width, ximage->height, 0, 0 };
+	Bool opacity = False;
+
+	for (j = 0; j < ximage->height; j++) {
+		for (i = 0; i < ximage->width; i++) {
+			if (XGetPixel(ximage, i, j) & 0xff000000) {
+				if (r.x > (int)i) i = r.x;
+				if (r.y > (int)j) j = r.y;
+				if (r.width < i) r.width = i;
+				if (r.height < j) r.height = j;
+				opacity = True;
+			}
+		}
+	}
+	if (r.width <= r.x || r.height <= r.y)
+		opacity = False;
+	if (!opacity) {
+		for (j = 0; j < ximage->height; j++)
+			for (i = 0; i < ximage->width; i++)
+				XPutPixel(ximage, i, j, XGetPixel(ximage, i, j) | 0xff000000);
+		return (ximage);
+	}
+	r.width -= r.x;
+	r.height -= r.y;
+	xcrop = XSubImage(ximage, r.x, r.y, r.width, r.height);
+	if (xcrop) {
+		XDestroyImage(ximage);
+		return (xcrop);
+	}
+	return (ximage);
+}
+
+XImage *
+dn_scale_image(AScreen *ds, XImage *ximage, unsigned nw, unsigned nh, Bool bitmap)
+{
+	XImage *xscale = NULL;
+	size_t elements = nw * nh;
+
+	xscale = XCreateImage(dpy, ds->visual, 32, ZPixmap, 0, NULL, nw, nh, 8, 0);
+	if (!xscale)
+		return (ximage);
+	xscale->data = ecalloc(xscale->bytes_per_line, xscale->height);
+	if (!xscale->data) {
+		XDestroyImage(xscale);
+		return (ximage);
+	}
+	double *counts = ecalloc(elements, sizeof(*counts));
+	double *colors = ecalloc(elements, sizeof(*colors) << 2);
+
+	unsigned w = ximage->width;
+	unsigned h = ximage->height;
+	unsigned i, j, k, l, m, n;
+
+	double pppx = (double) nw / (double) w;
+	double pppy = (double) nh / (double) h;
+	double ty, by, lx, rx, xf, yf, ff;
+	unsigned long A, R, G, B, pixel;
+
+	for (ty = 0.0, by = pppy, l = 0; l < h; l++, ty = by, by = (l + 1) * pppy) {
+
+		for (j = floor(ty); j < by; j++) {
+
+			if (ty < (j + 1) && (j + 1) < by)
+				yf = (j + 1) - ty;
+			else if (ty < j && j < by)
+				yf = by - j;
+			else
+				yf = 1.0;
+
+			for (lx = 0.0, rx = pppx, k = 0; k < w; k++, lx = rx, rx = (k + 1) * pppx) {
+
+				for (i = floor(lx); i < rx; i++) {
+
+					if (lx < (i + 1) && (i + 1) < rx)
+						xf = (i + 1) - lx;
+					else if (lx < i && i < rx)
+						xf = rx - i;
+					else
+						xf = 1.0;
+
+					ff = xf * yf;
+
+					m = j * nw + i;
+					n = m << 2;
+					counts[m] += ff;
+					pixel = XGetPixel(ximage, i, j);
+					if (bitmap && (pixel & 0x00ffffff))
+						pixel |= 0x00ffffff;
+					A = (pixel >> 24) & 0xff;
+					R = (pixel >> 16) & 0xff;
+					G = (pixel >> 8) & 0xff;
+					B = (pixel >> 0) & 0xff;
+					colors[n + 0] += A * ff;
+					colors[n + 1] += R * ff;
+					colors[n + 2] += G * ff;
+					colors[n + 3] += B * ff;
+				}
+			}
+		}
+	}
+	unsigned long amax = 0;
+
+	for (j = 0; j < nh; j++) {
+		for (i = 0; i < nw; i++) {
+			m = j * nw + i;
+			n = m << 2;
+			if (counts[m]) {
+				pixel = ((A = min(255, lround(colors[n + 0] / counts[m]))) << 24) |
+					((R = min(255, lround(colors[n + 1] / counts[m]))) << 16) |
+					((G = min(255, lround(colors[n + 2] / counts[m]))) <<  8) |
+					((B = min(255, lround(colors[n + 3] / counts[m]))) <<  0);
+				XPutPixel(xscale, i, j, pixel);
+				amax = max(amax, A);
+			}
+		}
+	}
+	/* no opacity, add some */
+	if (!amax)
+		for (j = 0; j < nh; j++)
+			for (i = 0; i < nw; i++)
+				XPutPixel(xscale, i, j, XGetPixel(xscale, i, j) | 0xff000000);
+	else if (amax < 255UL) {
+		double bump = (double) 255 / (double) amax;
+
+		for (j = 0; j < nh; j++) {
+			for (i = 0; i < nw; i++) {
+				pixel = XGetPixel(xscale, i, j);
+				A = (pixel >> 24) & 0xff;
+				A = min(255, lround(A * bump));
+				pixel = (pixel & 0x00ffffff) | (A << 24);
+				XPutPixel(xscale, i, j, pixel);
+			}
+		}
+	}
+	free(counts);
+	free(colors);
+	XDestroyImage(ximage);
+	return (xscale);
+}
+
+XImage *
+up_scale_image(AScreen *ds, XImage *ximage, unsigned nw, unsigned nh, Bool bitmap)
+{
+	XImage *xscale = NULL;
+	size_t elements = nw * nh;
+
+	xscale = XCreateImage(dpy, ds->visual, 32, ZPixmap, 0, NULL, nw, nh, 8, 0);
+	if (!xscale)
+		return (ximage);
+	xscale->data = ecalloc(xscale->bytes_per_line, xscale->height);
+	if (!xscale->data) {
+		XDestroyImage(xscale);
+		return (ximage);
+	}
+	double *counts = ecalloc(elements, sizeof(*counts));
+	double *colors = ecalloc(elements, sizeof(*colors) << 2);
+
+	unsigned w = ximage->width;
+	unsigned h = ximage->height;
+	unsigned i, j, k, l, m, n;
+
+	double pppx = (double) w / (double) nw;
+	double pppy = (double) h / (double) nh;
+	double ty, by, lx, rx, xf, yf, ff;
+	unsigned long A, R, G, B, pixel;
+
+	for (ty = 0.0, by = pppy, l = 0; l < nh; l++, ty = by, by = (l + 1) *pppy) {
+
+		for (j = floor(ty); j < by; j++) {
+
+			if (ty < (j + 1) && (j + 1) < by)
+				yf = (j + 1) - ty;
+			else if (ty < j && j < by)
+				yf = by - j;
+			else
+				yf = 1.0;
+
+			for (lx = 0.0, rx = pppx, k = 0; k < nw; k++, lx = rx, rx = (k + 1) * pppx) {
+
+				for (i = floor(lx); i < rx; i++) {
+
+					if (lx < (i + 1) && (i + 1) < rx)
+						xf = (i + 1) - lx;
+					else if (lx < i && i < rx)
+						xf = rx - i;
+					else
+						xf = 1.0;
+
+					ff = xf * yf;
+
+					m = l * nw + k;
+					n = m << 2;
+					counts[m] += ff;
+					pixel = XGetPixel(ximage, i, j);
+					if (bitmap && (pixel & 0x00ffffff))
+						pixel |= 0x00ffffff;
+					A = (pixel >> 24) & 0xff;
+					R = (pixel >> 16) & 0xff;
+					G = (pixel >> 8) & 0xff;
+					B = (pixel >> 0) & 0xff;
+					colors[n + 0] += A * ff;
+					colors[n + 1] += R * ff;
+					colors[n + 2] += G * ff;
+					colors[n + 3] += B * ff;
+				}
+			}
+		}
+	}
+	unsigned long amax = 0;
+
+	for (j = 0; j < nh; j++) {
+		for (i = 0; i < nw; i++) {
+			m = j * nw + i;
+			n = m << 2;
+			if (counts[m]) {
+				pixel = ((A = min(255, lround(colors[n + 0] / counts[m]))) << 24) |
+					((R = min(255, lround(colors[n + 1] / counts[m]))) << 16) |
+					((G = min(255, lround(colors[n + 2] / counts[m]))) <<  8) |
+					((B = min(255, lround(colors[n + 3] / counts[m]))) <<  0);
+				XPutPixel(xscale, i, j, pixel);
+				amax = max(amax, A);
+			}
+		}
+	}
+	/* no opacity, add some */
+	if (!amax)
+		for (j = 0; j < nh; j++)
+			for (i = 0; i < nw; i++)
+				XPutPixel(xscale, i, j, XGetPixel(xscale, i, j) | 0xff000000);
+	else if (amax < 255UL) {
+		double bump = (double) 255 / (double) amax;
+
+		for (j = 0; j < nh; j++) {
+			for (i = 0; i < nw; i++) {
+				pixel = XGetPixel(xscale, i, j);
+				A = (pixel >> 24) & 0xff;
+				A = min(255, lround(A * bump));
+				pixel = (pixel & 0x00ffffff) | (A << 24);
+				XPutPixel(xscale, i, j, pixel);
+			}
+		}
+	}
+	free(counts);
+	free(colors);
+	XDestroyImage(ximage);
+	return (xscale);
+}
+
+XImage *
+wh_scale_image(AScreen *ds, XImage *ximage, unsigned nw, unsigned nh, Bool bitmap)
+{
+	XImage *xscale = NULL;
+
+	xscale = XCreateImage(dpy, ds->visual, 32, ZPixmap, 0, NULL, nw, nh, 8, 0);
+	if (!xscale)
+		return(ximage);
+	xscale->data = ecalloc(xscale->bytes_per_line, xscale->height);
+	if (!xscale->data) {
+		XDestroyImage(xscale);
+		return (ximage);
+	}
+	return (xscale);
+}
+
+XImage *
+hw_scale_image(AScreen *ds, XImage *ximage, unsigned nw, unsigned nh, Bool bitmap)
+{
+	XImage *xscale = NULL;
+
+	xscale = XCreateImage(dpy, ds->visual, 32, ZPixmap, 0, NULL, nw, nh, 8, 0);
+	if (!xscale)
+		return(ximage);
+	xscale->data = ecalloc(xscale->bytes_per_line, xscale->height);
+	if (!xscale->data) {
+		XDestroyImage(xscale);
+		return (ximage);
+	}
+	return (xscale);
+}
+
+/* scale image, consuming passed in image */
+XImage *
+scale_image(AScreen *ds, XImage *ximage, unsigned nw, unsigned nh, Bool bitmap, Bool crop)
+{
+	unsigned w, h;
+
+	if (crop)
+		ximage = crop_image(ds, ximage);
+
+	w = ximage->width;
+	h = ximage->height;
+
+	if (nw == w && nh == h) {
+		return (ximage);
+	} else if (nw <= w && nh <= h) {
+		return dn_scale_image(ds, ximage, nw, nh, bitmap);
+	} else if (nw >= w && nh >= h) {
+		return up_scale_image(ds, ximage, nw, nh, bitmap);
+	} else if (nw >= w && nh <= h) {
+		return wh_scale_image(ds, ximage, nw, nh, bitmap);
+	} else if (nw <= w && nh >= h) {
+		return hw_scale_image(ds, ximage, nw, nh, bitmap);
+	} else {
+		/* can't happen */
+		return (NULL);
+	}
+}
+
 static XImage *
 scale_pixmap_and_mask(AScreen *ds, XImage *xdraw, XImage *xmask, int newh)
 {
@@ -122,35 +436,35 @@ scale_pixmap_and_mask(AScreen *ds, XImage *xdraw, XImage *xmask, int newh)
 	counts = ecalloc(ximage->bytes_per_line * ximage->height, sizeof(*counts));
 	colors = ecalloc(ximage->bytes_per_line * ximage->height, sizeof(*colors));
 
-	double pppx = (double) w / (double) sw;
-	double pppy = (double) h / (double) sh;
+	double pppx = (double) sw / (double) w;
+	double pppy = (double) sh / (double) h;
 
 	double lx, rx, ty, by, xf, yf, ff;
 
 	unsigned A, R, G, B;
 
-	for (ty = 0.0, by = pppy, l = 0; l < sh; l++, ty += pppy, by += pppy) {
+	for (ty = 0.0, by = pppy, l = 0; l < h; l++, ty = by, by = (l + 1) * pppy) {
 
 		for (j = floor(ty); j < by; j++) {
 
-			if (j < ty && j + 1 > ty) yf = ty - j;
-			else if (j < by && j + 1 > by) yf = by - j;
+			if (ty < (j + 1) && (j + 1) < by) yf = (j + 1) - ty;
+			else if (ty < j && j < by) yf = by - j;
 			else yf = 1.0;
 
-			for (lx = 0.0, rx = pppx, k = 0; k < sw; k++, lx += pppx, rx += pppx) {
+			for (lx = 0.0, rx = pppx, k = 0; k < w; k++, lx = rx, rx = (k + 1) * pppx) {
 
 				for (i = floor(lx); i < rx; i++) {
 
-					if (i < lx && i + 1 > lx) xf = lx - i;
-					else if (i < rx && i + 1 > rx) xf = rx - i;
+					if (lx < (i + 1) && (i + 1) < rx) yf = (i + 1) - lx;
+					else if (lx < i && i < rx) yf = rx - i;
 					else xf = 1.0;
 
 					ff = xf * yf;
-					m = l * sw + k;
+					m = j * sw + i;
 					n = m << 2;
 					counts[m] += ff;
-					if (!mask || (XGetPixel(mask, i, j) & bits)) {
-						pixel = XGetPixel(xdraw, i, j);
+					if (!mask || (XGetPixel(mask, k, l) & bits)) {
+						pixel = XGetPixel(xdraw, k, l);
 						A = hasalpha ? (pixel >> 24) & 0xff : 255;
 						if (ispixmap) {
 							R = (pixel >> 16) & 0xff;
@@ -172,42 +486,40 @@ scale_pixmap_and_mask(AScreen *ds, XImage *xdraw, XImage *xmask, int newh)
 		}
 	}
 	unsigned amax = 0;
-	for (l = 0; l < sh; l++) {
-		for (k = 0; k < sw; k++) {
-			n = l * sw + k;
+	for (j = 0; j < sh; j++) {
+		for (i = 0; i < sw; i++) {
+			n = j * sw + i;
 			m = n << 2;
 			pixel = 0;
 			if (counts[n]) {
-				pixel |= (lround(chanls[m+0] / counts[n]) & 0xff) << 24;
+				pixel |= (min(255, lround(chanls[m+0] / counts[n])) & 0xff) << 24;
 			}
 			if (colors[n]) {
-				pixel |= (lround(chanls[m+1] / colors[n]) & 0xff) << 16;
-				pixel |= (lround(chanls[m+2] / colors[n]) & 0xff) <<  8;
-				pixel |= (lround(chanls[m+3] / colors[n]) & 0xff) <<  0;
+				pixel |= (min(255, lround(chanls[m+1] / colors[n])) & 0xff) << 16;
+				pixel |= (min(255, lround(chanls[m+2] / colors[n])) & 0xff) <<  8;
+				pixel |= (min(255, lround(chanls[m+3] / colors[n])) & 0xff) <<  0;
 			}
-			XPutPixel(ximage, k, l, pixel);
+			XPutPixel(ximage, i, j, pixel);
 			amax = max(amax, ((pixel >> 24) & 0xff));
 		}
 	}
 	if (!amax) {
 		/* no opacity at all! */
-		for (l = 0; l < sh; l++) {
-			for (k = 0; k < sw; k++) {
-				XPutPixel(ximage, k, l, XGetPixel(ximage, k, l) | 0xff000000);
+		for (j = 0; j < sh; j++) {
+			for (i = 0; i < sw; i++) {
+				XPutPixel(ximage, i, j, XGetPixel(ximage, i, j) | 0xff000000);
 			}
 		}
 	} else if (amax < 255) {
 		/* something has to be opaque, bump the ximage */
 		double bump = (double) 255 / (double) amax;
-		for (l = 0; l < sh; l++) {
-			for (k = 0; k < sw; k++) {
-				pixel = XGetPixel(ximage, k, l);
+		for (j = 0; j < sh; j++) {
+			for (i = 0; i < sw; i++) {
+				pixel = XGetPixel(ximage, i, j);
 				amax = (pixel >> 24) & 0xff;
-				amax = lround(amax * bump);
-				if (amax > 255)
-					amax = 255;
+				amax = min(255, lround(amax * bump));
 				pixel = (pixel & 0x00ffffff) | (amax << 24);
-				XPutPixel(ximage, k, l, pixel);
+				XPutPixel(ximage, i, j, pixel);
 			}
 		}
 	}
@@ -562,10 +874,11 @@ ximage_drawbutton(AScreen *ds, Client *c, ElementType type, XftColor *col, int x
 					G = (pixel >>  8) & 0xff;
 					B = (pixel >>  0) & 0xff;
 
-					R = ((A * rf) + ((255 - A) * rb)) / 255;
-					G = ((A * gf) + ((255 - A) * gb)) / 255;
-					B = ((A * bf) + ((255 - A) * bb)) / 255;
+					R = min(255, lround(((A * rf) + ((255 - A) * rb)) / 255));
+					G = min(255, lround(((A * gf) + ((255 - A) * gb)) / 255));
+					B = min(255, lround(((A * bf) + ((255 - A) * bb)) / 255));
 
+					A = 255;
 					pixel = (A << 24) | (R << 16) | (G << 8) | B;
 					XPutPixel(ximage, i, j, pixel);
 				}
@@ -612,10 +925,11 @@ ximage_drawbutton(AScreen *ds, Client *c, ElementType type, XftColor *col, int x
 					G = (pixel >>  8) & 0xff;
 					B = (pixel >>  0) & 0xff;
 
-					R = ((A * R) + ((255 - A) * rb)) / 255;
-					G = ((A * G) + ((255 - A) * gb)) / 255;
-					B = ((A * B) + ((255 - A) * bb)) / 255;
+					R = min(255, lround(((A * R) + ((255 - A) * rb)) / 255));
+					G = min(255, lround(((A * G) + ((255 - A) * gb)) / 255));
+					B = min(255, lround(((A * B) + ((255 - A) * bb)) / 255));
 
+					A = 255;
 					pixel = (A << 24) | (R << 16) | (G << 8) | B;
 					XPutPixel(ximage, i, j, pixel);
 				}
@@ -637,120 +951,6 @@ ximage_drawbutton(AScreen *ds, Client *c, ElementType type, XftColor *col, int x
 			XDestroyImage(ximage);
 			return g.w;
 		}
-	}
-#if defined RENDER && defined USE_RENDER
-	if (px->pixmap.pict) {
-		Picture dst = XftDrawPicture(ds->dc.draw.xft);
-
-		XRenderFillRectangle(dpy, PictOpOver, dst, &bg->color, g.x, g.y, g.w, g.h);
-		XRenderComposite(dpy, PictOpOver, px->pixmap.pict, None, dst,
-				0, 0, 0, 0, ec->eg.x, ec->eg.y, ec->eg.w, ec->eg.h);
-	} else
-#endif
-#if defined IMLIB2
-	if (px->pixmap.image) {
-		Imlib_Image image;
-
-		imlib_context_push(scr->context);
-		imlib_context_set_image(px->pixmap.image);
-		imlib_context_set_mask(None);
-		image = imlib_create_image(ec->eg.w, ec->eg.h);
-		imlib_context_set_image(image);
-		imlib_context_set_mask(None);
-		imlib_context_set_color(bg->color.red, bg->color.green, bg->color.blue, 255);
-		imlib_image_fill_rectangle(0, 0, ec->eg.w, ec->eg.h);
-		imlib_context_set_blend(0);
-		imlib_context_set_anti_alias(1);
-		imlib_blend_image_onto_image(px->pixmap.image, False,
-				0, 0, px->w, px->h,
-				0, 0, ec->eg.w, ec->eg.h);
-		imlib_context_set_drawable(d);
-		imlib_render_image_on_drawable(ec->eg.x, ec->eg.y);
-		imlib_free_image();
-		imlib_context_pop();
-		return g.w;
-	} else
-	if (px->bitmap.image) {
-		Imlib_Image image, mask;
-
-		imlib_context_push(scr->context);
-		imlib_context_set_image(px->bitmap.image);
-		imlib_context_set_mask(None);
-		image = imlib_create_image(ec->eg.w, ec->eg.h);
-		imlib_context_set_image(image);
-		imlib_context_set_mask(None);
-		imlib_context_set_color(bg->color.red, bg->color.green, bg->color.blue, 255);
-		imlib_image_fill_rectangle(0, 0, ec->eg.w, ec->eg.h);
-		mask = imlib_create_image(px->w, px->h);
-		imlib_context_set_image(mask);
-		imlib_context_set_mask(None);
-		imlib_context_set_color(fg->color.red, fg->color.green, fg->color.blue, 255);
-		imlib_image_fill_rectangle(0, 0, px->w, px->h);
-		imlib_image_copy_alpha_to_image(px->bitmap.image, 0, 0);
-		imlib_context_set_image(image);
-		imlib_context_set_mask(None);
-		imlib_context_set_blend(0);
-		imlib_context_set_anti_alias(1);
-		imlib_blend_image_onto_image(mask, False,
-				0, 0, px->w, px->h,
-				0, 0, ec->eg.w, ec->eg.h);
-		imlib_context_set_drawable(d);
-		imlib_render_image_on_drawable(ec->eg.x, ec->eg.y);
-		imlib_free_image();
-		imlib_context_set_image(mask);
-		imlib_context_set_mask(None);
-		imlib_free_image();
-		imlib_context_pop();
-		return g.w;
-	} else
-#endif
-	if (px->pixmap.draw) {
-		{
-			/* TODO: eventually this should be a texture */
-			/* always draw the element background */
-			XSetForeground(dpy, ds->dc.gc, bg->pixel);
-			XSetFillStyle(dpy, ds->dc.gc, FillSolid);
-			status = XFillRectangle(dpy, d, ds->dc.gc, ec->eg.x, ec->eg.y, ec->eg.w, ec->eg.h);
-			if (!status)
-				XPRINTF("Could not fill rectangle, error %d\n", status);
-			XSetForeground(dpy, ds->dc.gc, fg->pixel);
-			XSetBackground(dpy, ds->dc.gc, bg->pixel);
-		}
-		/* position clip mask over button image */
-		XSetClipOrigin(dpy, ds->dc.gc, ec->eg.x - px->x, ec->eg.y - px->y);
-
-		XPRINTF("Copying pixmap 0x%lx mask 0x%lx with geom %dx%d+%d+%d to drawable 0x%lx\n",
-		        px->pixmap.draw, px->pixmap.mask, ec->eg.w, ec->eg.h, ec->eg.x, ec->eg.y, d);
-		XSetClipMask(dpy, ds->dc.gc, px->pixmap.mask);
-		XPRINTF(__CFMTS(c) "copying pixmap %dx%dx%d+%d+%d to +%d+%d\n", __CARGS(c),
-				px->w, px->h, px->d, px->x, px->y, ec->eg.x, ec->eg.y);
-		XCopyArea(dpy, px->pixmap.draw, d, ds->dc.gc,
-			  px->x, px->y, px->w, px->h, ec->eg.x, ec->eg.y);
-		XSetClipMask(dpy, ds->dc.gc, None);
-		return g.w;
-	} else
-	if (px->bitmap.draw) {
-		{
-			/* TODO: eventually this should be a texture */
-			/* always draw the element background */
-			XSetForeground(dpy, ds->dc.gc, bg->pixel);
-			XSetFillStyle(dpy, ds->dc.gc, FillSolid);
-			status = XFillRectangle(dpy, d, ds->dc.gc, ec->eg.x, ec->eg.y, ec->eg.w, ec->eg.h);
-			if (!status)
-				XPRINTF("Could not fill rectangle, error %d\n", status);
-			XSetForeground(dpy, ds->dc.gc, fg->pixel);
-			XSetBackground(dpy, ds->dc.gc, bg->pixel);
-		}
-		/* position clip mask over button image */
-		XSetClipOrigin(dpy, ds->dc.gc, ec->eg.x - px->x, ec->eg.y - px->y);
-
-		XSetClipMask(dpy, ds->dc.gc, px->bitmap.mask ? : px->bitmap.draw);
-		XPRINTF(__CFMTS(c) "copying bitmap %dx%dx%d+%d+%d to +%d+%d\n", __CARGS(c),
-				px->w, px->h, px->d, px->x, px->y, ec->eg.x, ec->eg.y);
-		XCopyPlane(dpy, px->bitmap.draw, d, ds->dc.gc,
-			   px->x, px->y, px->w, px->h, ec->eg.x, ec->eg.y, 1);
-		XSetClipMask(dpy, ds->dc.gc, None);
-		return g.w;
 	}
 	XPRINTF("button %d has no pixmap or bitmap\n", type);
 	return 0;
@@ -779,7 +979,7 @@ ximage_drawsep(AScreen *ds, const char *text, Drawable drawable, XftDraw *xftdra
 
 int
 ximage_drawtext(AScreen *ds, const char *text, Drawable drawable, XftDraw *xftdraw,
-	 XftColor *col, int hilite, int x, int y, int mw)
+		XftColor *col, int hilite, int x, int y, int mw)
 {
 	int w, h;
 	char buf[256];
@@ -819,36 +1019,15 @@ ximage_drawtext(AScreen *ds, const char *text, Drawable drawable, XftDraw *xftdr
 	while (x <= 0)
 		x = ds->dc.x++;
 
-#if defined RENDER && defined USE_RENDER
-	Picture dst = XftDrawPicture(xftdraw);
-	Picture src = XftDrawSrcPicture(xftdraw, &fcol[ColFG]);
-	Picture shd = XftDrawSrcPicture(xftdraw, &fcol[ColShadow]);
-
-	if (dst && src) {
-		/* xrender */
-		XRenderFillRectangle(dpy, PictOpSrc, dst, &col[ColBG].color, x - gap, 0,
-				     w + gap * 2, h);
-		if (drop)
-			XftTextRenderUtf8(dpy, PictOpOver, shd, font, dst, 0, 0, x + drop,
-					  y + drop, (FcChar8 *) buf, len);
-		XftTextRenderUtf8(dpy, PictOpOver, src, font, dst, 0, 0, x + drop,
-				  y + drop, (FcChar8 *) buf, len);
-	} else
-#endif
-	{
-		/* non-xrender */
-		XSetForeground(dpy, ds->dc.gc, col[ColBG].pixel);
-		XSetFillStyle(dpy, ds->dc.gc, FillSolid);
-		status =
-		    XFillRectangle(dpy, drawable, ds->dc.gc, x - gap, 0, w + gap * 2, h);
-		if (!status)
-			XPRINTF("Could not fill rectangle, error %d\n", status);
-		if (drop)
-			XftDrawStringUtf8(xftdraw, &fcol[ColShadow], font, x + drop,
-					  y + drop, (unsigned char *) buf, len);
-		XftDrawStringUtf8(xftdraw, &fcol[ColFG], font, x, y,
-				  (unsigned char *) buf, len);
-	}
+	XSetForeground(dpy, ds->dc.gc, col[ColBG].pixel);
+	XSetFillStyle(dpy, ds->dc.gc, FillSolid);
+	status = XFillRectangle(dpy, drawable, ds->dc.gc, x - gap, 0, w + gap * 2, h);
+	if (!status)
+		XPRINTF("Could not fill rectangle, error %d\n", status);
+	if (drop)
+		XftDrawStringUtf8(xftdraw, &fcol[ColShadow], font, x + drop,
+				  y + drop, (unsigned char *) buf, len);
+	XftDrawStringUtf8(xftdraw, &fcol[ColFG], font, x, y, (unsigned char *) buf, len);
 	return w + gap * 2;
 }
 

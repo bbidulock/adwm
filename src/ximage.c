@@ -698,7 +698,7 @@ ximage_createpngicon(AScreen *ds, Client *c, const char *file)
 #ifdef LIBPNG
 	XImage *xicon = NULL;
 
-	if (!(xicon = png_read_file_to_ximage(dpy, scr->visual, file))) {
+	if (!(xicon = png_read_file_to_ximage(dpy, ds->visual, file))) {
 		EPRINTF("could not read png file %s\n", file);
 		goto error;
 	}
@@ -724,19 +724,19 @@ ximage_createsvgicon(AScreen *ds, Client *c, const char *file)
 Bool
 ximage_createxpmicon(AScreen *ds, Client *c, const char *file)
 {
+	Bool result = False;
 #ifdef XPM
 	XImage *xicon = NULL, *xmask = NULL;
 	int status;
-	Bool result = False;
 
 	{
 		XpmAttributes xa = { 0, };
 
-		xa.visual = DefaultVisual(dpy, scr->screen);
+		xa.visual = DefaultVisual(dpy, ds->screen);
 		xa.valuemask |= XpmVisual;
-		xa.colormap = DefaultColormap(dpy, scr->screen);
+		xa.colormap = DefaultColormap(dpy, ds->screen);
 		xa.valuemask |= XpmColormap;
-		xa.depth = DefaultDepth(dpy, scr->screen);
+		xa.depth = DefaultDepth(dpy, ds->screen);
 		xa.valuemask |= XpmDepth;
 
 		status = XpmReadFileToImage(dpy, file, &xicon, &xmask, &xa);
@@ -944,6 +944,9 @@ ximage_drawsep(AScreen *ds, const char *text, Drawable drawable, XftDraw *xftdra
 	g.y = 0;
 	g.w = th / 4 + th / 4;
 	g.h = th;
+
+	if (g.w > mw)
+		return (0);
 
 	XSetForeground(dpy, ds->dc.gc, col->pixel);
 	XDrawLine(dpy, drawable, ds->dc.gc, g.x, g.y, g.x, g.y + g.h);

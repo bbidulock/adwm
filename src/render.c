@@ -30,186 +30,247 @@ render_removepixmap(AdwmPixmap *p)
 	}
 }
 
-Bool
-render_createbitmapicon(AScreen *ds, Client *c, Pixmap icon, Pixmap mask, unsigned w, unsigned h)
+static Bool
+render_createicon(AScreen *ds, Client *c, XImage *xdraw, XImage *xmask, Bool cropscale)
 {
-	XImage *xdraw = NULL, *xmask = NULL, *ximage = NULL;
-	ButtonImage *bi, **bis;
+	XImage *ximage = NULL;
+	ButtonImage **bis, *bi;
 	AdwmPixmap *px;
-	unsigned i, j, d = ds->depth, th = ds->style.titleheight;
+	unsigned d = ds->depth, th = ds->style.titleheight;
 	unsigned long pamask = 0;
-	Pixmap pixmap;
-	Picture pict;
+	Pixmap draw = None;
+	Picture pict = None;
 	XRenderPictureAttributes pa = { 0, };
+	Bool ispixmap = (xdraw->depth > 1) ? True : False;
+	Bool result = False;
 
-	if (!(xdraw = XGetImage(dpy, icon, 0, 0, w, h, 0x1, XYPixmap))) {
-		EPRINTF("could not get bitmap 0x%lx %ux%u\n", icon, w, h);
-		return (False);
+	if (ds->style.outline)
+		th--;
+
+	if (!(ximage = combine_pixmap_and_mask(dpy, ds->visual, xdraw, xmask))) {
+		EPRINTF("could not combine draw and mask images\n");
+		goto error;
 	}
-	if (mask && !(xmask = XGetImage(dpy, mask, 0, 0, w, h, 0x1, XYPixmap))) {
-		EPRINTF("could not get bitmap 0x%lx %ux%u\n", mask, w, h);
-		XDestroyImage(xdraw);
-		return (False);
+	if (!(draw = XCreatePixmap(dpy, ds->drawable, ximage->width, ximage->height, d))) {
+		EPRINTF("could not create pixmap\n");
+		goto error;
 	}
-	if (mask && !(ximage = XCreateImage(dpy, ds->visual, d, ZPixmap, 0, NULL, w, h, 8, 0))) {
-		EPRINTF("could not create ximage %ux%ux%u\n", w, h, d);
-		XDestroyImage(xdraw);
-		XDestroyImage(xmask);
-		return (False);
-	}
-	if (ximage && !(ximage->data = emallocz(ximage->bytes_per_line * ximage->height))) {
-		EPRINTF("could not allocate ximage data %ux%ux%u\n", w, h, d);
-		XDestroyImage(xdraw);
-		XDestroyImage(xmask);
-		XDestroyImage(ximage);
-		return (False);
-	}
-	for (j = 0; j < h; j++) {
-		for (i = 0; i < w; i++) {
-			if (XGetPixel(xdraw, i, j)) {
-				XPutPixel(ximage, i, j, 0xffffffff);
-			} else {
-				XPutPixel(ximage, i, j, 0xff000000);
-			}
-			if (xmask && j < xmask->height && i < xmask->width && XGetPixel(xmask, i, j)) {
-				XPutPixel(ximage, i, j,
-					  XGetPixel(ximage, i, j) | 0xff000000);
-			} else {
-				XPutPixel(ximage, i, j,
-					  XGetPixel(ximage, i, j) & 0x00ffffff);
-			}
-		}
-	}
-	XDestroyImage(xdraw);
-	if (xmask)
-		XDestroyImage(xmask);
-	pixmap = XCreatePixmap(dpy, ds->drawable, w, h, d);
-	XPutImage(dpy, pixmap, ds->dc.gc, ximage, 0, 0, 0, 0, w, h);
-	XDestroyImage(ximage);
+	XPutImage(dpy, draw, ds->dc.gc, ximage, 0, 0, 0, 0, ximage->width, ximage->height);
 
 	pa.repeat = RepeatNone;
-	pamask |= CPRepeat;
 	pa.poly_edge = PolyEdgeSmooth;
-	pamask |= CPPolyEdge;
 	pa.component_alpha = True;
-	pamask |= CPComponentAlpha;
-	pict = XRenderCreatePicture(dpy, pixmap, ds->format, pamask, &pa);
+	pamask = CPRepeat | CPPolyEdge | CPComponentAlpha;
 
 	for (bis = getbuttons(c); bis && *bis; bis++) {
-		bi = *bis;
-		px = &bi->px;
-		px->x = px->y = px->b = 0;
-		px->d = d;
-		px->w = w;
-		px->h = h;
-		if (h > th) {
-			XDouble scale = (XDouble) th / (XDouble) h;
-			XTransform trans = {
-				{ { XDoubleToFixed(scale), 0, 0 },
-				  { 0, XDoubleToFixed(scale), 0 },
-				  { 0, 0, XDoubleToFixed(1.0)   } }
-			};
-			XRenderSetPictureTransform(dpy, pict, &trans);
-			XRenderSetPictureFilter(dpy, pict, FilterBilinear, NULL, 0);
-			px->w = w * scale;
-			px->h = h * scale;
-		}
-		if (px->bitmap.pict) {
-			XRenderFreePicture(dpy, px->bitmap.pict);
-			px->bitmap.pict = None;
-		}
-		px->bitmap.pict = pict;
-		bi->present = True;
+		if ((pict = XRenderCreatePicture(dpy, draw, ds->format, pamask, &pa))) {
+			bi = *bis;
+			px = &bi->px;
+			px->x = px->y = px->b = 0;
+			px->d = ds->depth;
+			px->w = ximage->width;
+			px->h = ximage->height;
+			if (ximage->height > th) {
+				XDouble scale = (XDouble) th / (XDouble) ximage->height;
+				/* *NO-INDENT* */
+				XTransform trans = {
+					{ { XDoubleToFixed(scale), 0, 0 },
+					  { 0, XDoubleToFixed(scale), 0 },
+					  { 0, 0, XDoubleToFixed(1.0)   } }
+				};
+				/* *NO-INDENT* */
+				XRenderSetPictureTransform(dpy, pict, &trans);
+				XRenderSetPictureFilter(dpy, pict, FilterBilinear, NULL, 0);
+				px->w = ximage->width * scale;
+				px->h = ximage->height * scale;
+			}
+			if (ispixmap) {
+				if (px->pixmap.pict) {
+					XRenderFreePicture(dpy, px->pixmap.pict);
+					px->pixmap.pict = None;
+				}
+				px->pixmap.pict = pict;
+			} else {
+				if (px->bitmap.pict) {
+					XRenderFreePicture(dpy, px->bitmap.pict);
+					px->bitmap.pict = None;
+				}
+				px->bitmap.pict = pict;
+			}
+			bi->present = True;
+			result = True;
+		} else
+			EPRINTF("could not create picture\n");
 	}
-	return (True);
+      error:
+	if (draw)
+		XFreePixmap(dpy, draw);
+	if (ximage)
+		XDestroyImage(ximage);
+	return (result);
 }
 
 Bool
-render_createpixmapicon(AScreen *ds, Client *c, Pixmap icon, Pixmap mask, unsigned w, unsigned h, unsigned d)
+render_createbitmapicon(AScreen *ds, Client *c, Pixmap icon, Pixmap mask, unsigned w,
+			unsigned h)
 {
 	XImage *xdraw = NULL, *xmask = NULL, *ximage = NULL;
 	ButtonImage *bi, **bis;
 	AdwmPixmap *px;
-	unsigned i, j, th = ds->style.titleheight;
-	unsigned long pamask = 0, pixel;
-	Pixmap draw;
-	Picture pict;
+	unsigned d = ds->depth, th = ds->style.titleheight;
+	unsigned long pamask = 0;
+	Pixmap draw = None;
+	Picture pict = None;
 	XRenderPictureAttributes pa = { 0, };
+	Bool result = False;
 
-	if (!(xdraw = XGetImage(dpy, icon, 0, 0, w, h, AllPlanes, ZPixmap))) {
-		EPRINTF("could not get pixmap 0x%lx %ux%u\n", icon, w, h);
-		return (False);
+	if (!(xdraw = XGetImage(dpy, icon, 0, 0, w, h, 0x1, XYPixmap))) {
+		EPRINTF("could not get bitmap 0x%lx %ux%u\n", icon, w, h);
+		goto error;
 	}
 	if (mask && !(xmask = XGetImage(dpy, mask, 0, 0, w, h, 0x1, XYPixmap))) {
 		EPRINTF("could not get bitmap 0x%lx %ux%u\n", mask, w, h);
-		return (False);
+		goto error;
 	}
-	if (mask && !(ximage = XCreateImage(dpy, ds->visual, d, ZPixmap, 0, NULL, w, h, 8, 0))) {
-		EPRINTF("could not create ximage %ux%ux%u\n", w, h, d);
-		XDestroyImage(xdraw);
-		XDestroyImage(xmask);
-		return (False);
+	if (!(ximage = combine_pixmap_and_mask(dpy, ds->visual, xdraw, xmask))) {
+		EPRINTF("could not combine draw and mask images\n");
+		goto error;
 	}
-	if (ximage && !(ximage->data = emallocz(ximage->bytes_per_line * ximage->height))) {
-		EPRINTF("could not allocate ximage data %ux%ux%u\n", w, h, d);
-		XDestroyImage(xdraw);
-		XDestroyImage(xmask);
-		XDestroyImage(ximage);
-		return (False);
+	if (!(draw = XCreatePixmap(dpy, ds->drawable, w, h, d))) {
+		EPRINTF("could not create pixmap\n");
+		goto error;
 	}
-	for (j = 0; j < h; j++) {
-		for (i = 0; i < w; i++) {
-			pixel = XGetPixel(xdraw, i, j);
-			if (xmask && j < xmask->height && i < xmask->width && XGetPixel(xmask, i, j)) {
-				XPutPixel(ximage, i, j, pixel | 0xff000000);
-			} else {
-				XPutPixel(ximage, i, j, pixel & 0x00ffffff);
-			}
-		}
-	}
-	XDestroyImage(xdraw);
-	if (xmask)
-		XDestroyImage(xmask);
-	draw = XCreatePixmap(dpy, ds->drawable, w, h, ds->depth);
 	XPutImage(dpy, draw, ds->dc.gc, ximage, 0, 0, 0, 0, w, h);
-	XDestroyImage(ximage);
 
 	pa.repeat = RepeatNone;
-	pamask |= CPRepeat;
 	pa.poly_edge = PolyEdgeSmooth;
-	pamask |= CPPolyEdge;
 	pa.component_alpha = True;
-	pamask |= CPComponentAlpha;
-	pict = XRenderCreatePicture(dpy, draw, ds->format, pamask, &pa);
+	pamask = CPRepeat | CPPolyEdge | CPComponentAlpha;
 
 	for (bis = getbuttons(c); bis && *bis; bis++) {
-		bi = *bis;
-		px = &bi->px;
-		px->x = px->y = px->b = 0;
-		px->d = ds->depth;
-		px->w = w;
-		px->h = h;
-		if (h > th) {
-			/* get XRender to scale the image for us */
-			XDouble scale = (XDouble) th / (XDouble) h;
-			XTransform trans = {
-				{ { XDoubleToFixed(scale), 0, 0 },
-				  { 0, XDoubleToFixed(scale), 0 },
-				  { 0, 0, XDoubleToFixed(1.0)   } }
-			};
-			XRenderSetPictureTransform(dpy, pict, &trans);
-			XRenderSetPictureFilter(dpy, pict, FilterBilinear, NULL, 0);
-			px->w = w * scale;
-			px->h = h * scale;
-		}
-		if (px->pixmap.pict) {
-			XRenderFreePicture(dpy, px->pixmap.pict);
-			px->pixmap.pict = None;
-		}
-		px->pixmap.pict = pict;
-		bi->present = True;
+		if ((pict = XRenderCreatePicture(dpy, draw, ds->format, pamask, &pa))) {
+			bi = *bis;
+			px = &bi->px;
+			px->x = px->y = px->b = 0;
+			px->d = d;
+			px->w = w;
+			px->h = h;
+			if (h > th) {
+				XDouble scale = (XDouble) th / (XDouble) h;
+				/* *NO-INDENT* */
+				XTransform trans = {
+					{ { XDoubleToFixed(scale), 0, 0 },
+					  { 0, XDoubleToFixed(scale), 0 },
+					  { 0, 0, XDoubleToFixed(1.0)   } }
+				};
+				/* *NO-INDENT* */
+				XRenderSetPictureTransform(dpy, pict, &trans);
+				XRenderSetPictureFilter(dpy, pict, FilterBilinear, NULL, 0);
+				px->w = w * scale;
+				px->h = h * scale;
+			}
+			if (px->bitmap.pict) {
+				XRenderFreePicture(dpy, px->bitmap.pict);
+				px->bitmap.pict = None;
+			}
+			px->bitmap.pict = pict;
+			bi->present = True;
+			result = True;
+		} else
+			EPRINTF("could not create picture\n");
 	}
-	return (True);
+      error:
+	if (draw)
+		XFreePixmap(dpy, draw);
+	if (xdraw)
+		XDestroyImage(xdraw);
+	if (xmask)
+		XDestroyImage(xmask);
+	if (ximage)
+		XDestroyImage(ximage);
+	return (result);
+}
+
+Bool
+render_createpixmapicon(AScreen *ds, Client *c, Pixmap icon, Pixmap mask, unsigned w,
+			unsigned h, unsigned d)
+{
+	XImage *xdraw = NULL, *xmask = NULL, *ximage = NULL;
+	ButtonImage *bi, **bis;
+	AdwmPixmap *px;
+	unsigned th = ds->style.titleheight;
+	unsigned long pamask = 0;
+	Pixmap draw = None;
+	Picture pict = None;
+	XRenderPictureAttributes pa = { 0, };
+	Bool result = False;
+
+	if (!(xdraw = XGetImage(dpy, icon, 0, 0, w, h, AllPlanes, ZPixmap))) {
+		EPRINTF("could not get pixmap 0x%lx %ux%u\n", icon, w, h);
+		goto error;
+	}
+	if (mask && !(xmask = XGetImage(dpy, mask, 0, 0, w, h, 0x1, XYPixmap))) {
+		EPRINTF("could not get bitmap 0x%lx %ux%u\n", mask, w, h);
+		goto error;
+	}
+	if (!(ximage = combine_pixmap_and_mask(dpy, ds->visual, xdraw, xmask))) {
+		EPRINTF("could not combine ximages\n");
+		goto error;
+	}
+	if (!(draw = XCreatePixmap(dpy, ds->drawable, w, h, ds->depth))) {
+		EPRINTF("could not create pixmap\n");
+		goto error;
+	}
+	XPutImage(dpy, draw, ds->dc.gc, ximage, 0, 0, 0, 0, w, h);
+
+	pa.repeat = RepeatNone;
+	pa.poly_edge = PolyEdgeSmooth;
+	pa.component_alpha = True;
+	pamask = CPRepeat | CPPolyEdge | CPComponentAlpha;
+
+	for (bis = getbuttons(c); bis && *bis; bis++) {
+		if ((pict = XRenderCreatePicture(dpy, draw, ds->format, pamask, &pa))) {
+			bi = *bis;
+			px = &bi->px;
+			px->x = px->y = px->b = 0;
+			px->d = ds->depth;
+			px->w = w;
+			px->h = h;
+			if (h > th) {
+				/* get XRender to scale the image for us */
+				XDouble scale = (XDouble) th / (XDouble) h;
+				/* *NO-INDENT* */
+				XTransform trans = {
+					{ { XDoubleToFixed(scale), 0, 0 },
+					  { 0, XDoubleToFixed(scale), 0 },
+					  { 0, 0, XDoubleToFixed(1.0)   } }
+				};
+				/* *NO-INDENT* */
+				XRenderSetPictureTransform(dpy, pict, &trans);
+				XRenderSetPictureFilter(dpy, pict, FilterBilinear, NULL, 0);
+				px->w = w * scale;
+				px->h = h * scale;
+			}
+			if (px->pixmap.pict) {
+				XRenderFreePicture(dpy, px->pixmap.pict);
+				px->pixmap.pict = None;
+			}
+			px->pixmap.pict = pict;
+			bi->present = True;
+			result = True;
+		} else
+			EPRINTF("could not create picture\n");
+	}
+      error:
+	if (draw)
+		XFreePixmap(dpy, draw);
+	if (xdraw)
+		XDestroyImage(xdraw);
+	if (xmask)
+		XDestroyImage(xmask);
+	if (ximage)
+		XDestroyImage(ximage);
+	return (result);
 }
 
 Bool
@@ -219,68 +280,88 @@ render_createdataicon(AScreen *ds, Client *c, unsigned w, unsigned h, long *data
 	ButtonImage *bi, **bis;
 	AdwmPixmap *px;
 	unsigned i, j, d = ds->depth, th = ds->style.titleheight;
-	unsigned long mask = 0;
+	unsigned long pamask = 0;
 	long *p;
-	Pixmap draw;
-	Picture pict;
+	Pixmap draw = None;
+	Picture pict = None;
 	XRenderPictureAttributes pa = { 0, };
+	Bool result = False;
 
 	if (!(ximage = XCreateImage(dpy, ds->visual, d, ZPixmap, 0, NULL, w, h, 8, 0))) {
 		EPRINTF("could not create ximage %ux%ux%u\n", w, h, d);
-		return (False);
+		goto error;
 	}
 	for (p = data, j = 0; j < h; j++)
 		for (i = 0; i < w; i++, p++)
 			XPutPixel(ximage, i, j, *p);
 
-	draw = XCreatePixmap(dpy, ds->drawable, w, h, d);
+	if (!(draw = XCreatePixmap(dpy, ds->drawable, w, h, d))) {
+		EPRINTF("could not create pixmap\n");
+		goto error;
+	}
 	XPutImage(dpy, draw, ds->dc.gc, ximage, 0, 0, 0, 0, w, h);
-	XDestroyImage(ximage);
 
 	pa.repeat = RepeatNone;
-	mask |= CPRepeat;
 	pa.poly_edge = PolyEdgeSmooth;
-	mask |= CPPolyEdge;
 	pa.component_alpha = True;
-	mask |= CPComponentAlpha;
-	pict = XRenderCreatePicture(dpy, draw, ds->format, mask, &pa);
+	pamask = CPRepeat | CPPolyEdge | CPComponentAlpha;
 
 	for (bis = getbuttons(c); bis && *bis; bis++) {
-		bi = *bis;
-		px = &bi->px;
-		px->x = px->y = px->b = 0;
-		px->d = d;
-		px->w = w;
-		px->h = h;
-		if (h > th) {
-			/* get XRender to scale the image for us */
-			XDouble scale = (XDouble) th / (XDouble) h;
-			XTransform trans = {
-				{ { XDoubleToFixed(scale), 0, 0 },
-				  { 0, XDoubleToFixed(scale), 0 },
-				  { 0, 0, XDoubleToFixed(1.0)   } }
-			};
-			XRenderSetPictureTransform(dpy, pict, &trans);
-			XRenderSetPictureFilter(dpy, pict, FilterBilinear, NULL, 0);
-			px->w = w * scale;
-			px->h = h * scale;
-		}
-		if (px->pixmap.pict) {
-			XRenderFreePicture(dpy, px->pixmap.pict);
-			px->pixmap.pict = None;
-		}
-		px->pixmap.pict = pict;
-		bi->present = True;
+		if ((pict = XRenderCreatePicture(dpy, draw, ds->format, pamask, &pa))) {
+			bi = *bis;
+			px = &bi->px;
+			px->x = px->y = px->b = 0;
+			px->d = d;
+			px->w = w;
+			px->h = h;
+			if (h > th) {
+				/* get XRender to scale the image for us */
+				XDouble scale = (XDouble) th / (XDouble) h;
+				/* *INDENT-OFF* */
+				XTransform trans = {
+					{ { XDoubleToFixed(scale), 0, 0 },
+					  { 0, XDoubleToFixed(scale), 0 },
+					  { 0, 0, XDoubleToFixed(1.0)   } }
+				};
+				/* *INDENT-ON* */
+
+				XRenderSetPictureTransform(dpy, pict, &trans);
+				XRenderSetPictureFilter(dpy, pict, FilterBilinear, NULL, 0);
+				px->w = w * scale;
+				px->h = h * scale;
+			}
+			if (px->pixmap.pict) {
+				XRenderFreePicture(dpy, px->pixmap.pict);
+				px->pixmap.pict = None;
+			}
+			px->pixmap.pict = pict;
+			bi->present = True;
+		} else
+			EPRINTF("could not create picture\n");
 	}
-	return (True);
+      error:
+	if (draw)
+		XFreePixmap(dpy, draw);
+	if (ximage)
+		XDestroyImage(ximage);
+	return (result);
 }
 
 Bool
 render_createpngicon(AScreen *ds, Client *c, const char *file)
 {
-	EPRINTF("would use RENDER to create PNG icon %s\n", file);
-	/* for now */
-	return (False);
+	Bool result = False;
+#ifdef LIBPNG
+	XImage *xdraw = NULL;
+
+	if (!(xdraw = png_read_file_to_ximage(dpy, ds->visual, file))) {
+		EPRINTF("could not read png file %s\n", file);
+		goto error;
+	}
+	result = render_createicon(ds, c, xdraw, NULL, True);
+      error:
+#endif				/* LIBPNG */
+	return (result);
 }
 
 Bool
@@ -294,17 +375,54 @@ render_createsvgicon(AScreen *ds, Client *c, const char *file)
 Bool
 render_createxpmicon(AScreen *ds, Client *c, const char *file)
 {
-	EPRINTF("would use RENDER to create XPM icon %s\n", file);
-	/* for now */
-	return (False);
+	Bool result = False;
+#ifdef XPM
+	XImage *xdraw = NULL, *xmask = NULL;
+	int status;
+
+	{
+		XpmAttributes xa = { 0, };
+
+		xa.visual = DefaultVisual(dpy, ds->screen);
+		xa.colormap = DefaultColormap(dpy, ds->screen);
+		xa.depth = DefaultDepth(dpy, ds->screen);
+		xa.valuemask = XpmDepth|XpmVisual|XpmColormap;
+
+		status = XpmReadFileToImage(dpy, file, &xdraw, &xmask, &xa);
+		if (status != XpmSuccess || !xdraw) {
+			EPRINTF("could not load xpm file: %s on %s\n", xpm_status_string(status), file);
+			goto error;
+		}
+		XpmFreeAttributes(&xa);
+	}
+	result = render_createicon(ds, c, xdraw, xmask, True);
+      error:
+	if (xmask)
+		XDestroyImage(xmask);
+	if (xdraw)
+		XDestroyImage(xdraw);
+#endif				/* XPM */
+	return (result);
 }
 
 Bool
 render_createxbmicon(AScreen *ds, Client *c, const char *file)
 {
-	EPRINTF("would use RENDER to create XBM icon %s\n", file);
-	/* for now */
-	return (False);
+	XImage *xdraw = NULL;
+	unsigned w, h;
+	int x, y, status;
+	Bool result = False;
+
+	status = XReadBitmapFileImage(dpy, ds->visual, file, &w, &h, &xdraw, &x, &y);
+	if (status != BitmapSuccess || !xdraw) {
+		EPRINTF("could not load xbm file: %s on %s\n", xbm_status_string(status), file);
+		goto error;
+	}
+	result = render_createicon(ds, c, xdraw, xdraw, True);
+      error:
+	if (xdraw)
+		XDestroyImage(xdraw);
+	return (result);
 }
 
 #ifdef DAMAGE
@@ -369,7 +487,7 @@ render_drawbutton(AScreen *ds, Client *c, ElementType type, XftColor *col, int x
 
 int
 render_drawtext(AScreen *ds, const char *text, Drawable drawable, XftDraw *xftdraw,
-	 XftColor *col, int hilite, int x, int y, int mw)
+		XftColor *col, int hilite, int x, int y, int mw)
 {
 	int w, h;
 	char buf[256];
@@ -379,6 +497,7 @@ render_drawtext(AScreen *ds, const char *text, Drawable drawable, XftDraw *xftdr
 	struct _FontInfo *info = &ds->dc.font[hilite];
 	XftColor *fcol = ds->style.color.hue[hilite];
 	int drop = ds->style.drop[hilite];
+	Picture dst, src;
 
 	if (!text)
 		return 0;
@@ -409,60 +528,68 @@ render_drawtext(AScreen *ds, const char *text, Drawable drawable, XftDraw *xftdr
 	while (x <= 0)
 		x = ds->dc.x++;
 
-	Picture dst = XftDrawPicture(xftdraw);
-	Picture src = XftDrawSrcPicture(xftdraw, &fcol[ColFG]);
-	Picture shd = XftDrawSrcPicture(xftdraw, &fcol[ColShadow]);
-
-	if (dst && src) {
-		XRenderFillRectangle(dpy, PictOpSrc, dst, &col[ColBG].color, x - gap, 0,
-				     w + gap * 2, h);
-		if (drop)
-			XftTextRenderUtf8(dpy, PictOpOver, shd, font, dst, 0, 0, x + drop,
-					  y + drop, (FcChar8 *) buf, len);
-		XftTextRenderUtf8(dpy, PictOpOver, src, font, dst, 0, 0, x + drop,
-				  y + drop, (FcChar8 *) buf, len);
+	dst = XftDrawPicture(xftdraw);
+	XRenderFillRectangle(dpy, PictOpSrc, dst, &col[ColBG].color, x - gap, 0,
+			     w + gap * 2, h);
+	if (drop) {
+		src = XftDrawSrcPicture(xftdraw, &fcol[ColShadow]);
+		XftTextRenderUtf8(dpy, PictOpOver, src, font, dst, 0, 0,
+				  x + drop, y + drop, (FcChar8 *) buf, len);
 	}
+	src = XftDrawSrcPicture(xftdraw, &fcol[ColFG]);
+	XftTextRenderUtf8(dpy, PictOpOver, src, font, dst, 0, 0,
+			  x + drop, y + drop, (FcChar8 *) buf, len);
 	return w + gap * 2;
 }
 
 int
-render_drawsep(AScreen *ds, const char *text, Drawable drawable, XftDraw *xftdraw, XftColor *col, int hilite, int x, int y, int mw)
+render_drawsep(AScreen *ds, const char *text, Drawable drawable, XftDraw *xftdraw,
+	       XftColor *col, int hilite, int x, int y, int mw)
 {
-	return ximage_drawsep(ds, text, drawable, xftdraw, col, hilite, x, y, mw);
+	int th, b;
+	Geometry g;
+	Picture dst;
+
+	th = ds->dc.h;
+	if (ds->style.outline)
+		th--;
+
+	g.x = x + th / 4;
+	g.y = 0;
+	g.w = th / 4 + th / 4;
+	g.h = th;
+
+	if (g.w > mw)
+		return (0);
+
+	b = ds->style.border;
+
+	if (b) {
+		dst = XftDrawPicture(ds->dc.draw.xft);
+		XRenderFillRectangle(dpy, PictOpSrc, dst, &col->color, g.x, g.y, b, g.h);
+	}
+	return (g.w);
 }
 
 void
 render_drawdockapp(AScreen *ds, Client *c)
 {
-	int status;
-	unsigned long pixel;
+	XftColor *col;
+	Picture dst;
 
-	pixel = getpixel(ds, c, ColBG);
-	/* to avoid clearing window, initiallly set to norm[ColBG] */
-	// XSetWindowBackground(dpy, c->frame, pixel);
-	// XClearArea(dpy, c->frame, 0, 0, 0, 0, True);
+	col = getcolor(ds, c, ColBG);
 
 	ds->dc.x = ds->dc.y = 0;
 	if (!(ds->dc.w = c->c.w))
 		return;
 	if (!(ds->dc.h = c->c.h))
 		return;
-	XSetForeground(dpy, ds->gc, pixel);
-	XSetLineAttributes(dpy, ds->gc, ds->style.border, LineSolid, CapNotLast,
-			   JoinMiter);
-	XSetFillStyle(dpy, ds->gc, FillSolid);
-	status = XFillRectangle(dpy, c->frame, ds->gc,
-			ds->dc.x, ds->dc.y, ds->dc.w, ds->dc.h);
-	if (!status)
-		XPRINTF("Could not fill rectangle, error %d\n", status);
-	CPRINTF(c, "Filled dockapp frame %dx%d+%d+%d\n", ds->dc.w, ds->dc.h, ds->dc.x,
-		ds->dc.y);
-	/* note that ParentRelative dockapps need the background set to the foregroudn */
-	XSetWindowBackground(dpy, c->frame, pixel);
-	/* following are quite disruptive - many dockapps ignore expose events and simply
-	   update on timer */
-	// XClearWindow(dpy, c->icon ? : c->win);
-	// XClearArea(dpy, c->icon ? : c->win, 0, 0, 0, 0, True);
+
+	/* FIXME: this won't work.... */
+	dst = XftDrawPicture(ds->dc.draw.xft);
+	XRenderFillRectangle(dpy, PictOpSrc, dst, &col->color, ds->dc.x, ds->dc.y, ds->dc.w, ds->dc.h);
+	/* note that ParentRelative dockapps need the background set to the foreground */
+	XSetWindowBackground(dpy, c->frame, col->pixel);
 }
 
 void
@@ -593,22 +720,18 @@ render_initpng(char *path, AdwmPixmap *px)
 	w = ximage->width;
 	h = ximage->height;
 
-	draw = XCreatePixmap(dpy, scr->drawable, w, h, d);
-	if (!draw) {
+	if (!(draw = XCreatePixmap(dpy, scr->drawable, w, h, d))) {
 		EPRINTF("could not create pixmap\n");
 		goto error;
 	}
 	XPutImage(dpy, draw, scr->dc.gc, ximage, 0, 0, 0, 0, w, h);
-	XDestroyImage(ximage);
-	ximage = NULL;
 
 	pa.repeat = RepeatNone;
 	pa.poly_edge = PolyEdgeSmooth;
 	pa.component_alpha = True;
 	pamask = CPRepeat | CPPolyEdge | CPComponentAlpha;
 
-	pict = XRenderCreatePicture(dpy, draw, scr->format, pamask, &pa);
-	if (!pict) {
+	if (!(pict = XRenderCreatePicture(dpy, draw, scr->format, pamask, &pa))) {
 		EPRINTF("could not create picture\n");
 		goto error;
 	}
@@ -616,23 +739,11 @@ render_initpng(char *path, AdwmPixmap *px)
 		XRenderFreePicture(dpy, px->pixmap.pict);
 		px->pixmap.pict = None;
 	}
-	if (px->pixmap.draw) {
-		XFreePixmap(dpy, px->pixmap.draw);
-		if (px->pixmap.mask == px->pixmap.draw)
-			px->pixmap.mask = None;
-		px->pixmap.draw = None;
-	}
-	if (px->pixmap.mask) {
-		XFreePixmap(dpy, px->pixmap.mask);
-		px->pixmap.mask = None;
-	}
 	if (px->file) {
 		free(px->file);
 		px->file = NULL;
 	}
 	px->pixmap.pict = pict;
-	px->pixmap.draw = draw;
-	px->pixmap.mask = None;
 	px->file = path;
 	px->x = px->y = px->b = 0;
 	px->w = w;
@@ -642,14 +753,15 @@ render_initpng(char *path, AdwmPixmap *px)
 		px->y += (px->h - scr->style.titleheight) / 2;
 		px->h = scr->style.titleheight;
 	}
-	return True;
-error:
+      error:
 	if (ximage)
 		XDestroyImage(ximage);
 	if (draw)
 		XFreePixmap(dpy, draw);
-#endif
+	return (pict ? True : False);
+#else
 	return (False);
+#endif
 }
 
 Bool
@@ -688,37 +800,25 @@ render_initxpm(char *path, AdwmPixmap *px)
 		}
 		XpmFreeAttributes(&xa);
 	}
-	ximage = combine_pixmap_and_mask(dpy, scr->visual, xdraw, xmask);
-	if (!ximage) {
+	if (!(ximage = combine_pixmap_and_mask(dpy, scr->visual, xdraw, xmask))) {
 		EPRINTF("could not combine images\n");
 		goto error;
 	}
 	w = ximage->width;
 	h = ximage->height;
 
-	XDestroyImage(xdraw);
-	xdraw = NULL;
-	if (xmask) {
-		XDestroyImage(xmask);
-		xmask = NULL;
-	}
-
-	draw = XCreatePixmap(dpy, scr->drawable, w, h, d);
-	if (!draw) {
+	if (!(draw = XCreatePixmap(dpy, scr->drawable, w, h, d))) {
 		EPRINTF("could not create pixmap\n");
 		goto error;
 	}
 	XPutImage(dpy, draw, scr->dc.gc, ximage, 0, 0, 0, 0, w, h);
-	XDestroyImage(ximage);
-	ximage = NULL;
 
 	pa.repeat = RepeatNone;
 	pa.poly_edge = PolyEdgeSmooth;
 	pa.component_alpha = True;
 	pamask = CPRepeat | CPPolyEdge | CPComponentAlpha;
 
-	pict = XRenderCreatePicture(dpy, draw, scr->format, pamask, &pa);
-	if (!pict) {
+	if (!(pict = XRenderCreatePicture(dpy, draw, scr->format, pamask, &pa))) {
 		EPRINTF("could not create picture\n");
 		goto error;
 	}
@@ -726,23 +826,11 @@ render_initxpm(char *path, AdwmPixmap *px)
 		XRenderFreePicture(dpy, px->pixmap.pict);
 		px->pixmap.pict = None;
 	}
-	if (px->pixmap.draw) {
-		XFreePixmap(dpy, px->pixmap.draw);
-		if (px->pixmap.mask == px->pixmap.draw)
-			px->pixmap.mask = None;
-		px->pixmap.draw = None;
-	}
-	if (px->pixmap.mask) {
-		XFreePixmap(dpy, px->pixmap.mask);
-		px->pixmap.mask = None;
-	}
 	if (px->file) {
 		free(px->file);
 		px->file = NULL;
 	}
 	px->pixmap.pict = pict;
-	px->pixmap.draw = draw;
-	px->pixmap.mask = None;
 	px->file = path;
 	px->x = px->y = px->b = 0;
 	px->w = w;
@@ -752,7 +840,6 @@ render_initxpm(char *path, AdwmPixmap *px)
 		px->y += (px->h - scr->style.titleheight) / 2;
 		px->h = scr->style.titleheight;
 	}
-	return True;
       error:
 	if (xdraw)
 		XDestroyImage(xdraw);
@@ -762,15 +849,17 @@ render_initxpm(char *path, AdwmPixmap *px)
 		XDestroyImage(ximage);
 	if (draw)
 		XFreePixmap(dpy, draw);
-#endif				/* !XPM */
+	return (pict ? True : False);
+#else
 	return (False);
+#endif				/* !XPM */
 }
 
 Bool
 render_initxbm(char *path, AdwmPixmap *px)
 {
 	Pixmap draw;
-	Picture pict;
+	Picture pict = None;
 	XRenderPictFormat *format;
 	XRenderPictureAttributes pa = { 0, };
 	unsigned long pamask = 0;
@@ -779,7 +868,7 @@ render_initxbm(char *path, AdwmPixmap *px)
 	status = XReadBitmapFile(dpy, scr->root, path, &px->w, &px->h, &draw, &px->x, &px->y);
 	if (status != BitmapSuccess || !draw) {
 		EPRINTF("could not load xbm file %s\n", path);
-		return False;
+		goto error;
 	}
 	format = XRenderFindStandardFormat(dpy, PictStandardA1);
 
@@ -787,53 +876,43 @@ render_initxbm(char *path, AdwmPixmap *px)
 	pa.graphics_exposures = False;
 	pa.poly_edge = PolyEdgeSharp;
 	pa.component_alpha = True;
-	pamask = CPRepeat|CPGraphicsExposure|CPPolyEdge|CPComponentAlpha;
+	pamask = CPRepeat | CPGraphicsExposure | CPPolyEdge | CPComponentAlpha;
 
-	pict = XRenderCreatePicture(dpy, draw, format, pamask, &pa);
-	if (!pict) {
-		XFreePixmap(dpy, draw);
-		return False;
+	if (!(pict = XRenderCreatePicture(dpy, draw, format, pamask, &pa))) {
+		EPRINTF("could not create picture\n");
+		goto error;
 	}
 	if (px->bitmap.pict) {
 		XRenderFreePicture(dpy, px->bitmap.pict);
 		px->bitmap.pict = None;
-	}
-	if (px->bitmap.draw) {
-		XFreePixmap(dpy, px->bitmap.draw);
-		if (px->bitmap.mask == px->pixmap.draw)
-			px->bitmap.mask = None;
-		px->bitmap.draw = None;
-	}
-	if (px->bitmap.mask) {
-		XFreePixmap(dpy, px->bitmap.mask);
-		px->bitmap.mask = None;
 	}
 	if (px->file) {
 		free(px->file);
 		px->file = NULL;
 	}
 	px->bitmap.pict = pict;
-	px->bitmap.draw = draw;
-	px->bitmap.mask = None;
 	px->file = path;
 	px->x = px->y = px->b = 0;
 	px->w = px->w;
 	px->h = px->h;
-	return (True);
+      error:
+	if (draw)
+		XFreePixmap(dpy, draw);
+	return (pict ? True : False);
 }
 
 Bool
 render_initxbmdata(const unsigned char *bits, int w, int h, AdwmPixmap *px)
 {
 	Pixmap draw;
-	Picture pict;
+	Picture pict = None;
 	XRenderPictFormat *format;
 	XRenderPictureAttributes pa = { 0, };
 	unsigned long pamask = 0;
 
-	if (!(draw = XCreateBitmapFromData(dpy, scr->drawable, (char *)bits, w, h))) {
+	if (!(draw = XCreateBitmapFromData(dpy, scr->drawable, (char *) bits, w, h))) {
 		EPRINTF("could not load xbm data\n");
-		return False;
+		goto error;
 	}
 	format = XRenderFindStandardFormat(dpy, PictStandardA1);
 
@@ -841,38 +920,28 @@ render_initxbmdata(const unsigned char *bits, int w, int h, AdwmPixmap *px)
 	pa.graphics_exposures = False;
 	pa.poly_edge = PolyEdgeSharp;
 	pa.component_alpha = True;
-	pamask = CPRepeat|CPGraphicsExposure|CPPolyEdge|CPComponentAlpha;
+	pamask = CPRepeat | CPGraphicsExposure | CPPolyEdge | CPComponentAlpha;
 
-	pict = XRenderCreatePicture(dpy, draw, format, pamask, &pa);
-	if (!pict) {
-		XFreePixmap(dpy, draw);
-		return False;
+	if (!(pict = XRenderCreatePicture(dpy, draw, format, pamask, &pa))) {
+		EPRINTF("could not create picture\n");
+		goto error;
 	}
 	if (px->bitmap.pict) {
 		XRenderFreePicture(dpy, px->bitmap.pict);
 		px->bitmap.pict = None;
-	}
-	if (px->bitmap.draw) {
-		XFreePixmap(dpy, px->bitmap.draw);
-		if (px->bitmap.mask == px->pixmap.draw)
-			px->bitmap.mask = None;
-		px->bitmap.draw = None;
-	}
-	if (px->bitmap.mask) {
-		XFreePixmap(dpy, px->bitmap.mask);
-		px->bitmap.mask = None;
 	}
 	if (px->file) {
 		free(px->file);
 		px->file = NULL;
 	}
 	px->bitmap.pict = pict;
-	px->bitmap.draw = draw;
-	px->bitmap.mask = None;
 	px->x = px->y = px->b = 0;
 	px->w = w;
 	px->h = h;
-	return (True);
+      error:
+	if (draw)
+		XFreePixmap(dpy, draw);
+	return (pict ? True : False);
 }
 
 #endif				/* defined RENDER */

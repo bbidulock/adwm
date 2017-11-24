@@ -306,15 +306,6 @@ pixbuf_drawbutton(AScreen *ds, Client *c, ElementType type, XftColor *col, int x
 			return g.w;
 		}
 	}
-#if defined RENDER && defined USE_RENDER
-	if (px->pixmap.pict) {
-		Picture dst = XftDrawPicture(ds->dc.draw.xft);
-
-		XRenderFillRectangle(dpy, PictOpOver, dst, &bg->color, g.x, g.y, g.w, g.h);
-		XRenderComposite(dpy, PictOpOver, px->pixmap.pict, None, dst,
-				0, 0, 0, 0, ec->eg.x, ec->eg.y, ec->eg.w, ec->eg.h);
-	} else
-#endif
 #if defined IMLIB2
 	if (px->pixmap.image) {
 		Imlib_Image image;
@@ -426,7 +417,7 @@ pixbuf_drawbutton(AScreen *ds, Client *c, ElementType type, XftColor *col, int x
 
 int
 pixbuf_drawtext(AScreen *ds, const char *text, Drawable drawable, XftDraw *xftdraw,
-	 XftColor *col, int hilite, int x, int y, int mw)
+		XftColor *col, int hilite, int x, int y, int mw)
 {
 	int w, h;
 	char buf[256];
@@ -466,36 +457,16 @@ pixbuf_drawtext(AScreen *ds, const char *text, Drawable drawable, XftDraw *xftdr
 	while (x <= 0)
 		x = ds->dc.x++;
 
-#if defined RENDER && defined USE_RENDER
-	Picture dst = XftDrawPicture(xftdraw);
-	Picture src = XftDrawSrcPicture(xftdraw, &fcol[ColFG]);
-	Picture shd = XftDrawSrcPicture(xftdraw, &fcol[ColShadow]);
-
-	if (dst && src) {
-		/* xrender */
-		XRenderFillRectangle(dpy, PictOpSrc, dst, &col[ColBG].color, x - gap, 0,
-				     w + gap * 2, h);
-		if (drop)
-			XftTextRenderUtf8(dpy, PictOpOver, shd, font, dst, 0, 0, x + drop,
-					  y + drop, (FcChar8 *) buf, len);
-		XftTextRenderUtf8(dpy, PictOpOver, src, font, dst, 0, 0, x + drop,
-				  y + drop, (FcChar8 *) buf, len);
-	} else
-#endif
-	{
-		/* non-xrender */
-		XSetForeground(dpy, ds->dc.gc, col[ColBG].pixel);
-		XSetFillStyle(dpy, ds->dc.gc, FillSolid);
-		status =
-		    XFillRectangle(dpy, drawable, ds->dc.gc, x - gap, 0, w + gap * 2, h);
-		if (!status)
-			XPRINTF("Could not fill rectangle, error %d\n", status);
-		if (drop)
-			XftDrawStringUtf8(xftdraw, &fcol[ColShadow], font, x + drop,
-					  y + drop, (unsigned char *) buf, len);
-		XftDrawStringUtf8(xftdraw, &fcol[ColFG], font, x, y,
+	/* non-xrender */
+	XSetForeground(dpy, ds->dc.gc, col[ColBG].pixel);
+	XSetFillStyle(dpy, ds->dc.gc, FillSolid);
+	status = XFillRectangle(dpy, drawable, ds->dc.gc, x - gap, 0, w + gap * 2, h);
+	if (!status)
+		XPRINTF("Could not fill rectangle, error %d\n", status);
+	if (drop)
+		XftDrawStringUtf8(xftdraw, &fcol[ColShadow], font, x + drop, y + drop,
 				  (unsigned char *) buf, len);
-	}
+	XftDrawStringUtf8(xftdraw, &fcol[ColFG], font, x, y, (unsigned char *) buf, len);
 	return w + gap * 2;
 }
 

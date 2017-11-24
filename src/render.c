@@ -380,21 +380,20 @@ render_createxpmicon(AScreen *ds, Client *c, const char *file)
 	XImage *xdraw = NULL, *xmask = NULL;
 	int status;
 
-	{
-		XpmAttributes xa = { 0, };
+	XpmAttributes xa = {
+		.visual = DefaultVisual(dpy, ds->screen),
+		.colormap = DefaultColormap(dpy, ds->screen),
+		.depth = DefaultDepth(dpy, ds->screen),
+		.valuemask = XpmDepth | XpmVisual | XpmColormap,
+	};
 
-		xa.visual = DefaultVisual(dpy, ds->screen);
-		xa.colormap = DefaultColormap(dpy, ds->screen);
-		xa.depth = DefaultDepth(dpy, ds->screen);
-		xa.valuemask = XpmDepth|XpmVisual|XpmColormap;
-
-		status = XpmReadFileToImage(dpy, file, &xdraw, &xmask, &xa);
-		if (status != XpmSuccess || !xdraw) {
-			EPRINTF("could not load xpm file: %s on %s\n", xpm_status_string(status), file);
-			goto error;
-		}
-		XpmFreeAttributes(&xa);
+	status = XpmReadFileToImage(dpy, file, &xdraw, &xmask, &xa);
+	if (status != XpmSuccess || !xdraw) {
+		EPRINTF("could not load xpm file: %s on %s\n",
+			xpm_status_string(status), file);
+		goto error;
 	}
+	XpmFreeAttributes(&xa);
 	result = render_createicon(ds, c, xdraw, xmask, True);
       error:
 	if (xmask)
@@ -783,23 +782,19 @@ render_initxpm(char *path, AdwmPixmap *px)
 	unsigned w, h, d = scr->depth;
 	int status;
 
-	{
-		XpmAttributes xa = { 0, };
+	XpmAttributes xa = {
+		.visual = scr->visual,
+		.colormap = scr->colormap,
+		.depth = scr->depth,
+		.valuemask = XpmVisual| XpmColormap| XpmDepth,
+	};
 
-		xa.visual = scr->visual;
-		xa.valuemask |= XpmVisual;
-		xa.colormap = scr->colormap;
-		xa.valuemask |= XpmColormap;
-		xa.depth = scr->depth;
-		xa.valuemask |= XpmDepth;
-
-		status = XpmReadFileToImage(dpy, path, &xdraw, &xmask, &xa);
-		if (status != XpmSuccess || !xdraw) {
-			EPRINTF("could not load xpm file %s\n", path);
-			goto error;
-		}
-		XpmFreeAttributes(&xa);
+	status = XpmReadFileToImage(dpy, path, &xdraw, &xmask, &xa);
+	if (status != XpmSuccess || !xdraw) {
+		EPRINTF("could not load xpm file %s\n", path);
+		goto error;
 	}
+	XpmFreeAttributes(&xa);
 	if (!(ximage = combine_pixmap_and_mask(dpy, scr->visual, xdraw, xmask))) {
 		EPRINTF("could not combine images\n");
 		goto error;

@@ -5413,7 +5413,28 @@ unmanage(Client *c, WithdrawCause cause)
 		c->sync.alarm = None;
 	}
 #endif
+#ifdef RENDER
+	if (c->pict_win) {
+		XRenderFreePicture(dpy, c->pict_win);
+		if (c->pict_icon) {
+			if (c->pict_icon != c->pict_win)
+				XRenderFreePicture(dpy, c->pict_icon);
+			c->pict_icon = None;
+		}
+		c->pict_win = None;
+	}
+	if (c->pict_icon) {
+		XRenderFreePicture(dpy, c->pict_icon);
+		c->pict_icon = None;
+	}
+#endif
 	if (c->title) {
+#ifdef RENDER
+		if (c->pict_title) {
+			XRenderFreePicture(dpy, c->pict_title);
+			c->pict_title = None;
+		}
+#endif
 		XDestroyWindow(dpy, c->title);
 		XDeleteContext(dpy, c->title, context[ClientTitle]);
 		XDeleteContext(dpy, c->title, context[ClientAny]);
@@ -5422,6 +5443,12 @@ unmanage(Client *c, WithdrawCause cause)
 		free(c->element);
 	}
 	if (c->grips) {
+#ifdef RENDER
+		if (c->pict_grips) {
+			XRenderFreePicture(dpy, c->pict_grips);
+			c->pict_grips = None;
+		}
+#endif
 		XDestroyWindow(dpy, c->grips);
 		XDeleteContext(dpy, c->grips, context[ClientGrips]);
 		XDeleteContext(dpy, c->grips, context[ClientAny]);
@@ -5429,6 +5456,12 @@ unmanage(Client *c, WithdrawCause cause)
 		c->grips = None;
 	}
 	if (c->tgrip) {
+#ifdef RENDER
+		if (c->pict_tgrip) {
+			XRenderFreePicture(dpy, c->pict_tgrip);
+			c->pict_tgrip = None;
+		}
+#endif
 		XDestroyWindow(dpy, c->tgrip);
 		XDeleteContext(dpy, c->tgrip, context[ClientGrips]);
 		XDeleteContext(dpy, c->tgrip, context[ClientAny]);
@@ -5436,6 +5469,12 @@ unmanage(Client *c, WithdrawCause cause)
 		c->tgrip = None;
 	}
 	if (c->lgrip) {
+#ifdef RENDER
+		if (c->pict_lgrip) {
+			XRenderFreePicture(dpy, c->pict_lgrip);
+			c->pict_lgrip = None;
+		}
+#endif
 		XDestroyWindow(dpy, c->lgrip);
 		XDeleteContext(dpy, c->lgrip, context[ClientGrips]);
 		XDeleteContext(dpy, c->lgrip, context[ClientAny]);
@@ -5443,6 +5482,12 @@ unmanage(Client *c, WithdrawCause cause)
 		c->lgrip = None;
 	}
 	if (c->rgrip) {
+#ifdef RENDER
+		if (c->pict_rgrip) {
+			XRenderFreePicture(dpy, c->pict_rgrip);
+			c->pict_rgrip = None;
+		}
+#endif
 		XDestroyWindow(dpy, c->rgrip);
 		XDeleteContext(dpy, c->rgrip, context[ClientGrips]);
 		XDeleteContext(dpy, c->rgrip, context[ClientAny]);

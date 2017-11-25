@@ -1061,6 +1061,16 @@ struct Client {
 	Window rgrip;
 	Window tgrip;
 	Window frame;
+#ifdef RENDER
+	Picture pict_win;
+	Picture pict_icon;
+	Picture pict_title;
+	Picture pict_grips;
+	Picture pict_lgrip;
+	Picture pict_rgrip;
+	Picture pict_tgrip;
+	Picture pict_frame;
+#endif
 	Window time_window;
 	Window leader;
 	Window transfor;
@@ -1229,6 +1239,9 @@ struct _FontInfo {
 };
 
 struct _DrawInfo {
+#ifdef RENDER
+	Picture pict;
+#endif
 	Pixmap pixmap;
 	XftDraw *xft;
 	int w;

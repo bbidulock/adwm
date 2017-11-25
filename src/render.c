@@ -574,20 +574,37 @@ void
 render_drawdockapp(AScreen *ds, Client *c)
 {
 	XftColor *col;
-	Picture dst;
+	Picture dst, src, fill;
+	XRenderPictFormat *format = XRenderFindStandardFormat(dpy, PictStandardRGB24);
+
+	XRenderPictureAttributes pa = {
+		.repeat = RepeatNone,
+		.poly_edge = PolyEdgeSmooth,
+		.component_alpha = True,
+		.subwindow_mode = IncludeInferiors,
+	};
+	unsigned long pamask = CPRepeat | CPPolyEdge | CPComponentAlpha | CPSubwindowMode;
 
 	col = getcolor(ds, c, ColBG);
 
 	ds->dc.x = ds->dc.y = 0;
 	if (!(ds->dc.w = c->c.w))
-		return;
+		goto error;
 	if (!(ds->dc.h = c->c.h))
-		return;
-
-	/* FIXME: this won't work.... */
-	dst = XftDrawPicture(ds->dc.draw.xft);
-	XRenderFillRectangle(dpy, PictOpSrc, dst, &col->color, ds->dc.x, ds->dc.y, ds->dc.w, ds->dc.h);
+		goto error;
+	if (!(dst = c->pict_frame)
+	    && !(dst = XRenderCreatePicture(dpy, c->frame, format, pamask, &pa)))
+		goto error;
+	c->pict_frame = dst;
+	if (!(src = c->pict_frame)
+	    && !(src = XRenderCreatePicture(dpy, c->icon, format, pamask, &pa)))
+		goto error;
+	c->pict_icon = src;
+	fill = XRenderCreateSolidFill(dpy, &col->color);
+	XRenderComposite(dpy, PictOpSrc, fill, None, dst, 0, 0, 0, 0, 0, 0, c->c.w, c->c.h);
+	XRenderComposite(dpy, PictOpOver, src, None, dst, 0, 0, 0, 0, c->r.x, c->r.y, c->r.w, c->r.h);
 	/* note that ParentRelative dockapps need the background set to the foreground */
+      error:
 	XSetWindowBackground(dpy, c->frame, col->pixel);
 }
 
@@ -600,7 +617,10 @@ render_drawnormal(AScreen *ds, Client *c)
 	ds->dc.x = ds->dc.y = 0;
 	ds->dc.w = c->c.w;
 	ds->dc.h = ds->style.titleheight;
+
 	if (ds->dc.draw.w < ds->dc.w) {
+		/* XXX: dont' do this every time, just create one with the maximum screen width
+		 * and render only the part necessary to the titlebar window. */
 		XFreePixmap(dpy, ds->dc.draw.pixmap);
 		ds->dc.draw.w = ds->dc.w;
 		XPRINTF(__CFMTS(c) "creating title pixmap %dx%dx%d\n", __CARGS(c),

@@ -792,13 +792,14 @@ ximage_drawbutton(AScreen *ds, Client *c, ElementType type, XftColor *col, int x
 	XftColor *fg, *bg;
 	Geometry g = { 0, };
 	ButtonImage *bi;
+	AdwmPixmap *px;
 	int status, th;
 
 	if (!(bi = buttonimage(ds, c, type)) || !bi->present) {
 		XPRINTF("button %d has no button image\n", type);
 		return 0;
 	}
-	AdwmPixmap *px = &bi->px;
+	px = &bi->px;
 
 	th = ds->dc.h;
 	if (ds->style.outline)

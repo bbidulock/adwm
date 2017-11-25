@@ -287,10 +287,15 @@ render_createdataicon(AScreen *ds, Client *c, unsigned w, unsigned h, long *data
 	XRenderPictureAttributes pa = { 0, };
 	Bool result = False;
 
+	if (!data) {
+		EPRINTF("ERROR: pass null pointer!\n");
+		return (False);
+	}
 	if (!(ximage = XCreateImage(dpy, ds->visual, d, ZPixmap, 0, NULL, w, h, 8, 0))) {
 		EPRINTF("could not create ximage %ux%ux%u\n", w, h, d);
 		goto error;
 	}
+	ximage->data = ecalloc(ximage->bytes_per_line, h);
 	for (p = data, j = 0; j < h; j++)
 		for (i = 0; i < w; i++, p++)
 			XPutPixel(ximage, i, j, *p);
@@ -436,6 +441,7 @@ int
 render_drawbutton(AScreen *ds, Client *c, ElementType type, XftColor *col, int x)
 {
 	ElementClient *ec = &c->element[type];
+	Picture dst = ds->dc.draw.pict;
 	XftColor *fg;
 	Geometry g = { 0, };
 	ButtonImage *bi;
@@ -467,22 +473,24 @@ render_drawbutton(AScreen *ds, Client *c, ElementType type, XftColor *col, int x
 	fg = ec->pressed ? &col[ColFG] : &col[ColButton];
 
 	if (px->pixmap.pict) {
-		XRenderComposite(dpy, PictOpOver, px->pixmap.pict, None, c->pict_title,
+		XRenderComposite(dpy, PictOpOver, px->pixmap.pict, None, dst,
 				0, 0, 0, 0, ec->eg.x, ec->eg.y, ec->eg.w, ec->eg.h);
+		return g.w;
 	} else
 	if (px->bitmap.pict) {
 		Picture fill = XRenderCreateSolidFill(dpy,  &fg->color);
 
-		XRenderComposite(dpy, PictOpOver, fill, px->bitmap.pict, c->pict_title,
+		XRenderComposite(dpy, PictOpOver, fill, px->bitmap.pict, dst,
 				0, 0, 0, 0, ec->eg.x, ec->eg.y, ec->eg.w, ec->eg.h);
 		XRenderFreePicture(dpy, fill);
+		return g.w;
 	}
 	XPRINTF("button %d has no pixmap or bitmap\n", type);
 	return 0;
 }
 
 int
-render_drawtext(AScreen *ds, const char *text, Picture pict, XftDraw *xftdraw,
+render_drawtext(AScreen *ds, const char *text, Drawable drawable, XftDraw *xftdraw,
 		XftColor *col, int hilite, int x, int y, int mw)
 {
 	int w, h;
@@ -493,7 +501,7 @@ render_drawtext(AScreen *ds, const char *text, Picture pict, XftDraw *xftdraw,
 	struct _FontInfo *info = &ds->dc.font[hilite];
 	XftColor *fcol = ds->style.color.hue[hilite];
 	int drop = ds->style.drop[hilite];
-	Picture src;
+	Picture src, dst;
 
 	if (!text)
 		return 0;
@@ -524,15 +532,18 @@ render_drawtext(AScreen *ds, const char *text, Picture pict, XftDraw *xftdraw,
 	while (x <= 0)
 		x = ds->dc.x++;
 
-	XRenderFillRectangle(dpy, PictOpSrc, pict, &col[ColBG].color, x - gap, 0,
+	dst = ds->dc.draw.pict;
+	xtrap_push(True,NULL);
+	XRenderFillRectangle(dpy, PictOpSrc, dst, &col[ColBG].color, x - gap, 0,
 			     w + gap * 2, h);
+	xtrap_pop();
 	if (drop) {
 		src = XftDrawSrcPicture(xftdraw, &fcol[ColShadow]);
-		XftTextRenderUtf8(dpy, PictOpOver, src, font, pict, 0, 0,
+		XftTextRenderUtf8(dpy, PictOpOver, src, font, dst, 0, 0,
 				  x + drop, y + drop, (FcChar8 *) buf, len);
 	}
 	src = XftDrawSrcPicture(xftdraw, &fcol[ColFG]);
-	XftTextRenderUtf8(dpy, PictOpOver, src, font, pict, 0, 0,
+	XftTextRenderUtf8(dpy, PictOpOver, src, font, dst, 0, 0,
 			  x + drop, y + drop, (FcChar8 *) buf, len);
 	return w + gap * 2;
 }
@@ -556,8 +567,11 @@ render_drawsep(AScreen *ds, const char *text, Drawable drawable, XftDraw *xftdra
 	if (g.w > mw)
 		return (0);
 
-	if ((b = ds->style.border))
+	if ((b = ds->style.border)) {
+		xtrap_push(True,NULL);
 		XRenderFillRectangle(dpy, PictOpOver, ds->dc.draw.pict, &col->color, g.x, g.y, b, g.h);
+		xtrap_pop();
+	}
 
 	return (g.w);
 }
@@ -623,7 +637,9 @@ render_drawnormal(AScreen *ds, Client *c)
 	ds->dc.x = ds->dc.y = 0;
 	ds->dc.w = c->c.w;
 	ds->dc.h = ds->style.titleheight;
-
+	if (ds->dc.draw.w < ds->dc.w) {
+		ds->dc.draw.w = ds->dc.w;
+	}
 	if (!(dst = XRenderCreatePicture(dpy, c->title, ds->format, pamask, &pa)))
 		return;
 	if (c->pict_title)
@@ -635,14 +651,18 @@ render_drawnormal(AScreen *ds, Client *c)
 	bg = &getcolor(ds, c, ColBG)->color;
 	bc = &getcolor(ds, c, ColBorder)->color;
 
+	{
+	xtrap_push(True,NULL);
 	XRenderFillRectangle(dpy, PictOpSrc, dst, bg, ds->dc.x, ds->dc.y, ds->dc.w, ds->dc.h);
+	xtrap_pop();
+	}
 
 	/* Don't know about this... */
 	if (ds->dc.w < textw(ds, c->name, gethilite(c))) {
 		ds->dc.w -= elementw(ds, c, CloseBtn);
-		render_drawtext(ds, c->name, dst, ds->dc.draw.xft,
-				gethues(ds, c), gethilite(c), ds->dc.x, ds->dc.y, ds->dc.w);
+		render_drawtext(ds, c->name, dst, ds->dc.draw.xft, gethues(ds, c), gethilite(c), ds->dc.x, ds->dc.y, ds->dc.w);
 		render_drawbutton(ds, c, CloseBtn, gethues(ds, c), ds->dc.w);
+		goto end;
 	}
 	/* Left */
 	ds->dc.x += (ds->style.spacing > ds->style.border) ?
@@ -650,8 +670,7 @@ render_drawnormal(AScreen *ds, Client *c)
 	for (i = 0; i < strlen(ds->style.titlelayout); i++) {
 		if (ds->style.titlelayout[i] == ' ' || ds->style.titlelayout[i] == '-')
 			break;
-		ds->dc.x +=
-		    drawelement(ds, ds->style.titlelayout[i], ds->dc.x, AlignLeft, c);
+		ds->dc.x += drawelement(ds, ds->style.titlelayout[i], ds->dc.x, AlignLeft, c);
 		ds->dc.x += ds->style.spacing;
 	}
 	if (i == strlen(ds->style.titlelayout) || ds->dc.x >= ds->dc.w)
@@ -680,7 +699,9 @@ render_drawnormal(AScreen *ds, Client *c)
       end:
 	if (ds->style.outline) {
 		XPRINTF(__CFMTS(c) "drawing line from +%d+%d to +%d+%d\n", __CARGS(c), 0, ds->dc.h - 1, ds->dc.w, ds->dc.h - 1);
-		XRenderFillRectangle(dpy, PictOpOver, dst, bc, 0, ds->dc.h - 1, ds->dc.w, ds->style.outline);
+		xtrap_push(True,NULL);
+		XRenderFillRectangle(dpy, PictOpOver, dst, bc, 0, ds->dc.h - ds->style.border, ds->dc.w, ds->style.border);
+		xtrap_pop();
 	}
 	if (!c->grips)
 		return;
@@ -694,15 +715,21 @@ render_drawnormal(AScreen *ds, Client *c)
 		XRenderFreePicture(dpy, c->pict_grips);
 	c->pict_grips = dst;
 
+	{
+	xtrap_push(True,NULL);
 	XRenderFillRectangle(dpy, PictOpSrc, dst, bg, ds->dc.x, ds->dc.y, ds->dc.w, ds->dc.h);
+	xtrap_pop();
+	}
 
 	if (ds->style.outline) {
-		XRenderFillRectangle(dpy, PictOpOver, dst, bc, 0, 0, ds->dc.w, ds->style.outline);
+		xtrap_push(True,NULL);
+		XRenderFillRectangle(dpy, PictOpOver, dst, bc, 0, 0, ds->dc.w, ds->style.border);
 		/* needs to be adjusted to do ds->style.gripswidth instead */
 		ds->dc.x = ds->dc.w / 2 - ds->dc.w / 5;
-		XRenderFillRectangle(dpy, PictOpOver, dst, bc, ds->dc.x, 0, ds->style.outline, ds->dc.h);
+		XRenderFillRectangle(dpy, PictOpOver, dst, bc, ds->dc.x, 0, ds->style.border, ds->dc.h);
 		ds->dc.x = ds->dc.w / 2 + ds->dc.w / 5;
-		XRenderFillRectangle(dpy, PictOpOver, dst, bc, ds->dc.x, 0, ds->style.outline, ds->dc.h);
+		XRenderFillRectangle(dpy, PictOpOver, dst, bc, ds->dc.x, 0, ds->style.border, ds->dc.h);
+		xtrap_pop();
 	}
 }
 

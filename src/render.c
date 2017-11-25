@@ -467,16 +467,13 @@ render_drawbutton(AScreen *ds, Client *c, ElementType type, XftColor *col, int x
 	fg = ec->pressed ? &col[ColFG] : &col[ColButton];
 
 	if (px->pixmap.pict) {
-		Picture dst = XftDrawPicture(ds->dc.draw.xft);
-
-		XRenderComposite(dpy, PictOpOver, px->pixmap.pict, None, dst,
+		XRenderComposite(dpy, PictOpOver, px->pixmap.pict, None, c->pict_title,
 				0, 0, 0, 0, ec->eg.x, ec->eg.y, ec->eg.w, ec->eg.h);
 	} else
 	if (px->bitmap.pict) {
-		Picture dst = XftDrawPicture(ds->dc.draw.xft);
 		Picture fill = XRenderCreateSolidFill(dpy,  &fg->color);
 
-		XRenderComposite(dpy, PictOpOver, fill, px->bitmap.pict, dst,
+		XRenderComposite(dpy, PictOpOver, fill, px->bitmap.pict, c->pict_title,
 				0, 0, 0, 0, ec->eg.x, ec->eg.y, ec->eg.w, ec->eg.h);
 		XRenderFreePicture(dpy, fill);
 	}
@@ -485,7 +482,7 @@ render_drawbutton(AScreen *ds, Client *c, ElementType type, XftColor *col, int x
 }
 
 int
-render_drawtext(AScreen *ds, const char *text, Drawable drawable, XftDraw *xftdraw,
+render_drawtext(AScreen *ds, const char *text, Picture pict, XftDraw *xftdraw,
 		XftColor *col, int hilite, int x, int y, int mw)
 {
 	int w, h;
@@ -496,7 +493,7 @@ render_drawtext(AScreen *ds, const char *text, Drawable drawable, XftDraw *xftdr
 	struct _FontInfo *info = &ds->dc.font[hilite];
 	XftColor *fcol = ds->style.color.hue[hilite];
 	int drop = ds->style.drop[hilite];
-	Picture dst, src;
+	Picture src;
 
 	if (!text)
 		return 0;
@@ -527,16 +524,15 @@ render_drawtext(AScreen *ds, const char *text, Drawable drawable, XftDraw *xftdr
 	while (x <= 0)
 		x = ds->dc.x++;
 
-	dst = XftDrawPicture(xftdraw);
-	XRenderFillRectangle(dpy, PictOpSrc, dst, &col[ColBG].color, x - gap, 0,
+	XRenderFillRectangle(dpy, PictOpSrc, pict, &col[ColBG].color, x - gap, 0,
 			     w + gap * 2, h);
 	if (drop) {
 		src = XftDrawSrcPicture(xftdraw, &fcol[ColShadow]);
-		XftTextRenderUtf8(dpy, PictOpOver, src, font, dst, 0, 0,
+		XftTextRenderUtf8(dpy, PictOpOver, src, font, pict, 0, 0,
 				  x + drop, y + drop, (FcChar8 *) buf, len);
 	}
 	src = XftDrawSrcPicture(xftdraw, &fcol[ColFG]);
-	XftTextRenderUtf8(dpy, PictOpOver, src, font, dst, 0, 0,
+	XftTextRenderUtf8(dpy, PictOpOver, src, font, pict, 0, 0,
 			  x + drop, y + drop, (FcChar8 *) buf, len);
 	return w + gap * 2;
 }
@@ -547,7 +543,6 @@ render_drawsep(AScreen *ds, const char *text, Drawable drawable, XftDraw *xftdra
 {
 	int th, b;
 	Geometry g;
-	Picture dst;
 
 	th = ds->dc.h;
 	if (ds->style.outline)
@@ -561,12 +556,9 @@ render_drawsep(AScreen *ds, const char *text, Drawable drawable, XftDraw *xftdra
 	if (g.w > mw)
 		return (0);
 
-	b = ds->style.border;
+	if ((b = ds->style.border))
+		XRenderFillRectangle(dpy, PictOpOver, ds->dc.draw.pict, &col->color, g.x, g.y, b, g.h);
 
-	if (b) {
-		dst = XftDrawPicture(ds->dc.draw.xft);
-		XRenderFillRectangle(dpy, PictOpSrc, dst, &col->color, g.x, g.y, b, g.h);
-	}
 	return (g.w);
 }
 
@@ -592,19 +584,21 @@ render_drawdockapp(AScreen *ds, Client *c)
 		goto error;
 	if (!(ds->dc.h = c->c.h))
 		goto error;
-	if (!(dst = c->pict_frame)
-	    && !(dst = XRenderCreatePicture(dpy, c->frame, format, pamask, &pa)))
+	/* create a new picture for the dock app each time */
+	if (!(dst = XRenderCreatePicture(dpy, c->frame, format, pamask, &pa)))
 		goto error;
+	if (c->pict_frame)
+		XRenderFreePicture(dpy, c->pict_frame);
 	c->pict_frame = dst;
-	if (!(src = c->pict_frame)
-	    && !(src = XRenderCreatePicture(dpy, c->icon, format, pamask, &pa)))
+	if (!(src = c->pict_frame) && !(src = XRenderCreatePicture(dpy, c->icon, format, pamask, &pa)))
 		goto error;
 	c->pict_icon = src;
 	fill = XRenderCreateSolidFill(dpy, &col->color);
 	XRenderComposite(dpy, PictOpSrc, fill, None, dst, 0, 0, 0, 0, 0, 0, c->c.w, c->c.h);
 	XRenderComposite(dpy, PictOpOver, src, None, dst, 0, 0, 0, 0, c->r.x, c->r.y, c->r.w, c->r.h);
-	/* note that ParentRelative dockapps need the background set to the foreground */
+	XRenderFreePicture(dpy, fill);
       error:
+	/* note that ParentRelative dockapps need the background set to the foreground */
 	XSetWindowBackground(dpy, c->frame, col->pixel);
 }
 
@@ -612,38 +606,43 @@ void
 render_drawnormal(AScreen *ds, Client *c)
 {
 	size_t i;
-	int status;
+	Picture dst;
+	XRenderColor *bg, *bc;
+
+	XRenderPictureAttributes pa = {
+		.repeat = RepeatNone,
+		.poly_edge = PolyEdgeSmooth,
+		.component_alpha = True,
+		.subwindow_mode = ClipByChildren,
+	};
+	unsigned long pamask = CPRepeat | CPPolyEdge | CPComponentAlpha | CPSubwindowMode;
+
+	if (!c->title)
+		return;
 
 	ds->dc.x = ds->dc.y = 0;
 	ds->dc.w = c->c.w;
 	ds->dc.h = ds->style.titleheight;
 
-	if (ds->dc.draw.w < ds->dc.w) {
-		/* XXX: dont' do this every time, just create one with the maximum screen width
-		 * and render only the part necessary to the titlebar window. */
-		XFreePixmap(dpy, ds->dc.draw.pixmap);
-		ds->dc.draw.w = ds->dc.w;
-		XPRINTF(__CFMTS(c) "creating title pixmap %dx%dx%d\n", __CARGS(c),
-				ds->dc.w, ds->dc.draw.h, ds->depth);
-		ds->dc.draw.pixmap = XCreatePixmap(dpy, ds->root, ds->dc.w,
-						   ds->dc.draw.h, ds->depth);
-		XftDrawChange(ds->dc.draw.xft, ds->dc.draw.pixmap);
-	}
-	XSetForeground(dpy, ds->dc.gc, getpixel(ds, c, ColBG));
-	XSetLineAttributes(dpy, ds->dc.gc, ds->style.border, LineSolid, CapNotLast,
-			   JoinMiter);
-	XSetFillStyle(dpy, ds->dc.gc, FillSolid);
-	status = XFillRectangle(dpy, ds->dc.draw.pixmap, ds->dc.gc,
-				ds->dc.x, ds->dc.y, ds->dc.w, ds->dc.h);
-	if (!status)
-		XPRINTF("Could not fill rectangle, error %d\n", status);
+	if (!(dst = XRenderCreatePicture(dpy, c->title, ds->format, pamask, &pa)))
+		return;
+	if (c->pict_title)
+		XRenderFreePicture(dpy, c->pict_title);
+	c->pict_title = dst;
+
+	ds->dc.draw.pict = dst;
+
+	bg = &getcolor(ds, c, ColBG)->color;
+	bc = &getcolor(ds, c, ColBorder)->color;
+
+	XRenderFillRectangle(dpy, PictOpSrc, dst, bg, ds->dc.x, ds->dc.y, ds->dc.w, ds->dc.h);
+
 	/* Don't know about this... */
 	if (ds->dc.w < textw(ds, c->name, gethilite(c))) {
 		ds->dc.w -= elementw(ds, c, CloseBtn);
-		render_drawtext(ds, c->name, ds->dc.draw.pixmap, ds->dc.draw.xft,
+		render_drawtext(ds, c->name, dst, ds->dc.draw.xft,
 				gethues(ds, c), gethilite(c), ds->dc.x, ds->dc.y, ds->dc.w);
 		render_drawbutton(ds, c, CloseBtn, gethues(ds, c), ds->dc.w);
-		goto end;
 	}
 	/* Left */
 	ds->dc.x += (ds->style.spacing > ds->style.border) ?
@@ -680,43 +679,31 @@ render_drawnormal(AScreen *ds, Client *c)
 	}
       end:
 	if (ds->style.outline) {
-		XSetForeground(dpy, ds->dc.gc, getpixel(ds, c, ColBorder));
-		XPRINTF(__CFMTS(c) "drawing line from +%d+%d to +%d+%d\n", __CARGS(c),
-				0, ds->dc.h - 1, ds->dc.w, ds->dc.h - 1);
-		XDrawLine(dpy, ds->dc.draw.pixmap, ds->dc.gc, 0, ds->dc.h - 1, ds->dc.w,
-			  ds->dc.h - 1);
+		XPRINTF(__CFMTS(c) "drawing line from +%d+%d to +%d+%d\n", __CARGS(c), 0, ds->dc.h - 1, ds->dc.w, ds->dc.h - 1);
+		XRenderFillRectangle(dpy, PictOpOver, dst, bc, 0, ds->dc.h - 1, ds->dc.w, ds->style.outline);
 	}
-	if (c->title) {
-		XPRINTF(__CFMTS(c) "copying title pixmap to %dx%d+%d+%d to +%d+%d\n",
-			__CARGS(c), c->c.w, ds->dc.h, 0, 0, 0, 0);
-		XCopyArea(dpy, ds->dc.draw.pixmap, c->title, ds->dc.gc, 0, 0, c->c.w,
-			  ds->dc.h, 0, 0);
-	}
+	if (!c->grips)
+		return;
+
 	ds->dc.x = ds->dc.y = 0;
 	ds->dc.w = c->c.w;
 	ds->dc.h = ds->style.gripsheight;
-	XSetForeground(dpy, ds->dc.gc, getpixel(ds, c, ColBG));
-	XSetLineAttributes(dpy, ds->dc.gc, ds->style.border, LineSolid, CapNotLast,
-			   JoinMiter);
-	XSetFillStyle(dpy, ds->dc.gc, FillSolid);
-	status = XFillRectangle(dpy, ds->dc.draw.pixmap, ds->dc.gc,
-				ds->dc.x, ds->dc.y, ds->dc.w, ds->dc.h);
-	if (!status)
-		XPRINTF("Could not fill rectangle, error %d\n", status);
+	if (!(dst = XRenderCreatePicture(dpy, c->grips, ds->format, pamask, &pa)))
+		return;
+	if (c->pict_grips)
+		XRenderFreePicture(dpy, c->pict_grips);
+	c->pict_grips = dst;
+
+	XRenderFillRectangle(dpy, PictOpSrc, dst, bg, ds->dc.x, ds->dc.y, ds->dc.w, ds->dc.h);
+
 	if (ds->style.outline) {
-		XSetForeground(dpy, ds->dc.gc, getpixel(ds, c, ColBorder));
-		XDrawLine(dpy, ds->dc.draw.pixmap, ds->dc.gc, 0, 0, ds->dc.w, 0);
+		XRenderFillRectangle(dpy, PictOpOver, dst, bc, 0, 0, ds->dc.w, ds->style.outline);
 		/* needs to be adjusted to do ds->style.gripswidth instead */
 		ds->dc.x = ds->dc.w / 2 - ds->dc.w / 5;
-		XDrawLine(dpy, ds->dc.draw.pixmap, ds->dc.gc, ds->dc.x, 0, ds->dc.x,
-			  ds->dc.h);
+		XRenderFillRectangle(dpy, PictOpOver, dst, bc, ds->dc.x, 0, ds->style.outline, ds->dc.h);
 		ds->dc.x = ds->dc.w / 2 + ds->dc.w / 5;
-		XDrawLine(dpy, ds->dc.draw.pixmap, ds->dc.gc, ds->dc.x, 0, ds->dc.x,
-			  ds->dc.h);
+		XRenderFillRectangle(dpy, PictOpOver, dst, bc, ds->dc.x, 0, ds->style.outline, ds->dc.h);
 	}
-	if (c->grips)
-		XCopyArea(dpy, ds->dc.draw.pixmap, c->grips, ds->dc.gc, 0, 0, c->c.w,
-			  ds->dc.h, 0, 0);
 }
 
 Bool

@@ -8,6 +8,9 @@ const char *xbm_status_string(int status);
 const char *xpm_status_string(int status);
 #endif
 
+XImage *dn_scale_image(AScreen *ds, XImage *ximage, double scalew, double scaleh, Bool bitmap);
+XImage *up_scale_image(AScreen *ds, XImage *ximage, double scalew, double scaleh, Bool bitmap);
+XImage *crop_image(AScreen *ds, XImage *ximage);
 XImage *scale_image(AScreen *ds, XImage *ximage, unsigned nw, unsigned nh, Bool bitmap, Bool crop);
 
 XImage *combine_bitmap_and_mask(AScreen *ds, XImage *xdraw, XImage *xmask);

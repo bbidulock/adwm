@@ -263,10 +263,12 @@ png_read_file_to_ximage(Display *display, Visual *visual, const char *file)
 }
 #endif
 
-static XImage *
-dn_scale_image(AScreen *ds, XImage *ximage, unsigned nw, unsigned nh, Bool bitmap)
+XImage *
+dn_scale_image(AScreen *ds, XImage *ximage, double scalew, double scaleh, Bool bitmap)
 {
 	XImage *xscale = NULL;
+	unsigned nw = lround(scalew * ximage->width);
+	unsigned nh = lround(scaleh * ximage->height);
 	size_t elements = nw * nh;
 
 	xscale = XCreateImage(dpy, ds->visual, 32, ZPixmap, 0, NULL, nw, nh, 8, 0);
@@ -371,10 +373,12 @@ dn_scale_image(AScreen *ds, XImage *ximage, unsigned nw, unsigned nh, Bool bitma
 	return (xscale);
 }
 
-static XImage *
-up_scale_image(AScreen *ds, XImage *ximage, unsigned nw, unsigned nh, Bool bitmap)
+XImage *
+up_scale_image(AScreen *ds, XImage *ximage, double scalew, double scaleh, Bool bitmap)
 {
 	XImage *xscale = NULL;
+	unsigned nw = lround(scalew * ximage->width);
+	unsigned nh = lround(scaleh * ximage->height);
 	size_t elements = nw * nh;
 
 	xscale = XCreateImage(dpy, ds->visual, 32, ZPixmap, 0, NULL, nw, nh, 8, 0);
@@ -479,10 +483,14 @@ up_scale_image(AScreen *ds, XImage *ximage, unsigned nw, unsigned nh, Bool bitma
 	return (xscale);
 }
 
+/* upscaling width, downscaling height */
 static XImage *
-wh_scale_image(AScreen *ds, XImage *ximage, unsigned nw, unsigned nh, Bool bitmap)
+wh_scale_image(AScreen *ds, XImage *ximage, double scalew, double scaleh, Bool bitmap)
 {
 	XImage *xscale = NULL;
+	unsigned nw = lround(scalew * ximage->width);
+	unsigned nh = lround(scaleh * ximage->height);
+	size_t elements = nw * nh;
 
 	xscale = XCreateImage(dpy, ds->visual, 32, ZPixmap, 0, NULL, nw, nh, 8, 0);
 	if (!xscale)
@@ -492,13 +500,108 @@ wh_scale_image(AScreen *ds, XImage *ximage, unsigned nw, unsigned nh, Bool bitma
 		XDestroyImage(xscale);
 		return (ximage);
 	}
+	double *counts = ecalloc(elements, sizeof(*counts));
+	double *colors = ecalloc(elements, sizeof(*colors) << 2);
+
+	unsigned w = ximage->width;
+	unsigned h = ximage->height;
+	unsigned i, j, k, l, m, n;
+
+	double pppx = (double) w / (double) nw;
+	double pppy = (double) nh / (double) h;
+	double ty, by, lx, rx, xf, yf, ff;
+	unsigned long A, R, G, B, pixel;
+
+	for (ty = 0.0, by = pppy, l = 0; l < h; l++, ty = by, by = (l + 1) * pppy) {
+
+		for (j = floor(ty); j < by; j++) {
+
+			if (ty < (j + 1) && (j + 1) < by)
+				yf = (j + 1) - ty;
+			else if (ty < j && j < by)
+				yf = by - j;
+			else
+				yf = 1.0;
+
+			for (lx = 0.0, rx = pppx, k = 0; k < nw; k++, lx = rx, rx = (k + 1) * pppx) {
+
+				for (i = floor(lx); i < rx; i++) {
+
+					if (lx < (i + 1) && (i + 1) < rx)
+						xf = (i + 1) - lx;
+					else if (lx < i && i < rx)
+						xf = rx - i;
+					else
+						xf = 1.0;
+
+					ff = xf * yf;
+
+					m = l * nw + k;
+					n = m << 2;
+					counts[m] += ff;
+					pixel = XGetPixel(ximage, i, j);
+					if (bitmap && (pixel & 0x00ffffff))
+						pixel |= 0x00ffffff;
+					A = (pixel >> 24) & 0xff;
+					R = (pixel >> 16) & 0xff;
+					G = (pixel >> 8) & 0xff;
+					B = (pixel >> 0) & 0xff;
+					colors[n + 0] += A * ff;
+					colors[n + 1] += R * ff;
+					colors[n + 2] += G * ff;
+					colors[n + 3] += B * ff;
+				}
+			}
+		}
+	}
+	unsigned long amax = 0;
+
+	for (j = 0; j < nh; j++) {
+		for (i = 0; i < nw; i++) {
+			m = j * nw + i;
+			n = m << 2;
+			if (counts[m]) {
+				pixel = ((A = min(255, lround(colors[n + 0] / counts[m]))) << 24) |
+					((R = min(255, lround(colors[n + 1] / counts[m]))) << 16) |
+					((G = min(255, lround(colors[n + 2] / counts[m]))) <<  8) |
+					((B = min(255, lround(colors[n + 3] / counts[m]))) <<  0);
+				XPutPixel(xscale, i, j, pixel);
+				amax = max(amax, A);
+			}
+		}
+	}
+	/* no opacity, add some */
+	if (!amax)
+		for (j = 0; j < nh; j++)
+			for (i = 0; i < nw; i++)
+				XPutPixel(xscale, i, j, XGetPixel(xscale, i, j) | 0xff000000);
+	else if (amax < 255UL) {
+		double bump = (double) 255 / (double) amax;
+
+		for (j = 0; j < nh; j++) {
+			for (i = 0; i < nw; i++) {
+				pixel = XGetPixel(xscale, i, j);
+				A = (pixel >> 24) & 0xff;
+				A = min(255, lround(A * bump));
+				pixel = (pixel & 0x00ffffff) | (A << 24);
+				XPutPixel(xscale, i, j, pixel);
+			}
+		}
+	}
+	free(counts);
+	free(colors);
+	XDestroyImage(ximage);
 	return (xscale);
 }
 
+/* downscaling width, upscaling height */
 static XImage *
-hw_scale_image(AScreen *ds, XImage *ximage, unsigned nw, unsigned nh, Bool bitmap)
+hw_scale_image(AScreen *ds, XImage *ximage, double scalew, double scaleh, Bool bitmap)
 {
 	XImage *xscale = NULL;
+	unsigned nw = lround(scalew * ximage->width);
+	unsigned nh = lround(scaleh * ximage->height);
+	size_t elements = nw * nh;
 
 	xscale = XCreateImage(dpy, ds->visual, 32, ZPixmap, 0, NULL, nw, nh, 8, 0);
 	if (!xscale)
@@ -508,11 +611,102 @@ hw_scale_image(AScreen *ds, XImage *ximage, unsigned nw, unsigned nh, Bool bitma
 		XDestroyImage(xscale);
 		return (ximage);
 	}
+	double *counts = ecalloc(elements, sizeof(*counts));
+	double *colors = ecalloc(elements, sizeof(*colors) << 2);
+
+	unsigned w = ximage->width;
+	unsigned h = ximage->height;
+	unsigned i, j, k, l, m, n;
+
+	double pppx = (double) nw / (double) w;
+	double pppy = (double) h / (double) nh;
+	double ty, by, lx, rx, xf, yf, ff;
+	unsigned long A, R, G, B, pixel;
+
+	for (ty = 0.0, by = pppy, l = 0; l < nh; l++, ty = by, by = (l + 1) *pppy) {
+
+		for (j = floor(ty); j < by; j++) {
+
+			if (ty < (j + 1) && (j + 1) < by)
+				yf = (j + 1) - ty;
+			else if (ty < j && j < by)
+				yf = by - j;
+			else
+				yf = 1.0;
+
+			for (lx = 0.0, rx = pppx, k = 0; k < w; k++, lx = rx, rx = (k + 1) * pppx) {
+
+				for (i = floor(lx); i < rx; i++) {
+
+					if (lx < (i + 1) && (i + 1) < rx)
+						xf = (i + 1) - lx;
+					else if (lx < i && i < rx)
+						xf = rx - i;
+					else
+						xf = 1.0;
+
+					ff = xf * yf;
+
+					m = j * nw + i;
+					n = m << 2;
+					counts[m] += ff;
+					pixel = XGetPixel(ximage, i, j);
+					if (bitmap && (pixel & 0x00ffffff))
+						pixel |= 0x00ffffff;
+					A = (pixel >> 24) & 0xff;
+					R = (pixel >> 16) & 0xff;
+					G = (pixel >> 8) & 0xff;
+					B = (pixel >> 0) & 0xff;
+					colors[n + 0] += A * ff;
+					colors[n + 1] += R * ff;
+					colors[n + 2] += G * ff;
+					colors[n + 3] += B * ff;
+				}
+			}
+		}
+	}
+	unsigned long amax = 0;
+
+	for (j = 0; j < nh; j++) {
+		for (i = 0; i < nw; i++) {
+			m = j * nw + i;
+			n = m << 2;
+			if (counts[m]) {
+				pixel = ((A = min(255, lround(colors[n + 0] / counts[m]))) << 24) |
+					((R = min(255, lround(colors[n + 1] / counts[m]))) << 16) |
+					((G = min(255, lround(colors[n + 2] / counts[m]))) <<  8) |
+					((B = min(255, lround(colors[n + 3] / counts[m]))) <<  0);
+				XPutPixel(xscale, i, j, pixel);
+				amax = max(amax, A);
+			}
+		}
+	}
+	/* no opacity, add some */
+	if (!amax)
+		for (j = 0; j < nh; j++)
+			for (i = 0; i < nw; i++)
+				XPutPixel(xscale, i, j, XGetPixel(xscale, i, j) | 0xff000000);
+	else if (amax < 255UL) {
+		double bump = (double) 255 / (double) amax;
+
+		for (j = 0; j < nh; j++) {
+			for (i = 0; i < nw; i++) {
+				pixel = XGetPixel(xscale, i, j);
+				A = (pixel >> 24) & 0xff;
+				A = min(255, lround(A * bump));
+				pixel = (pixel & 0x00ffffff) | (A << 24);
+				XPutPixel(xscale, i, j, pixel);
+			}
+		}
+	}
+	free(counts);
+	free(colors);
+	XDestroyImage(ximage);
 	return (xscale);
 }
 
 /* crop ARGB image down to non-transparent extents, consuming passed image */
-static XImage *
+XImage *
 crop_image(AScreen *ds, XImage *ximage)
 {
 	XImage *xcrop;
@@ -553,24 +747,22 @@ crop_image(AScreen *ds, XImage *ximage)
 XImage *
 scale_image(AScreen *ds, XImage *ximage, unsigned nw, unsigned nh, Bool bitmap, Bool crop)
 {
-	unsigned w, h;
-
 	if (crop)
 		ximage = crop_image(ds, ximage);
 
-	w = ximage->width;
-	h = ximage->height;
+	double scalew = (double) nw / (double) ximage->width;
+	double scaleh = (double) nh / (double) ximage->height;
 
-	if (nw == w && nh == h) {
+	if (scalew == 1.0 && scaleh == 1.0) {
 		return (ximage);
-	} else if (nw <= w && nh <= h) {
-		return dn_scale_image(ds, ximage, nw, nh, bitmap);
-	} else if (nw >= w && nh >= h) {
-		return up_scale_image(ds, ximage, nw, nh, bitmap);
-	} else if (nw >= w && nh <= h) {
-		return wh_scale_image(ds, ximage, nw, nh, bitmap);
-	} else if (nw <= w && nh >= h) {
-		return hw_scale_image(ds, ximage, nw, nh, bitmap);
+	} else if (scalew <= 1.0 && scaleh <= 1.0) {
+		return dn_scale_image(ds, ximage, scalew, scaleh, bitmap);
+	} else if (scalew >= 1.0 && scaleh >= 1.0) {
+		return up_scale_image(ds, ximage, scalew, scaleh, bitmap);
+	} else if (scalew >= 1.0 && scaleh <= 1.0) {
+		return wh_scale_image(ds, ximage, scalew, scaleh, bitmap);
+	} else if (scalew <= 1.0 && scaleh >= 1.0) {
+		return hw_scale_image(ds, ximage, scalew, scaleh, bitmap);
 	} else {
 		/* can't happen */
 		return (NULL);

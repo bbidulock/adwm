@@ -2884,10 +2884,9 @@ ewmh_process_net_window_icon(Client *c)
 		else if (createkwmicon(c, pixmap, n))
 			return;
 	}
-	/* better than scaling the crap we get below */
-	if (createappicon(c))
-		return;
 	if (createwmicon(c))
+		return;
+	if (createappicon(c))
 		return;
 }
 

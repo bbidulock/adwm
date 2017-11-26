@@ -311,10 +311,8 @@ createappicon(Client *c)
 #if defined LIBPNG || defined IMLIB2 || defined PIXBUF
 	exts[j++] = "png";
 #endif
-#if 0
-#if defined IMLIB2 || defined PIXBUF
+#if defined LIBRSVG
 	exts[j++] = "svg";
-#endif
 #endif
 #if defined XPM || defined IMLIB2 || defined PIXBUF
 	exts[j++] = "xpm";
@@ -326,14 +324,23 @@ createappicon(Client *c)
 		return (result);
 	if ((p = strrchr(file, '.'))) {
 		p++;
+		if (!strcmp(p, "xbm"))
+			result = createxbmicon(scr, c, file);
+#if defined XPM || defined IMLIB2 || defined PIXBUF
+		else
+		if (!strcmp(p, "xpm"))
+			result = createxpmicon(scr, c, file);
+#endif
+#if defined LIBPNG || defined IMLIB2 || defined PIXBUF
+		else
 		if (!strcmp(p, "png"))
 			result = createpngicon(scr, c, file);
-		else if (!strcmp(p, "svg"))
+#endif
+#if defined LIBRSVG
+		else
+		if (!strcmp(p, "svg"))
 			result = createsvgicon(scr, c, file);
-		else if (!strcmp(p, "xpm"))
-			result = createxpmicon(scr, c, file);
-		else if (!strcmp(p, "xbm"))
-			result = createxbmicon(scr, c, file);
+#endif
 	}
 	free(file);
 	return (result);

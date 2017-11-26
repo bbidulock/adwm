@@ -262,7 +262,7 @@ Bool (*handler[LASTEvent + (EXTRANGE * BaseLast)]) (XEvent *) = {
 	[MappingNotify] = mappingnotify,
 	[GenericEvent] = IGNOREEVENT,
 #if 1
-	[XFixesDisplayCursorNotify + LASTEvent + EXTRANGE * XfixesBase] = IGNOREEVENT,
+	[XFixesSelectionNotify + LASTEvent + EXTRANGE * XfixesBase] = IGNOREEVENT,
 	[XFixesCursorNotify + LASTEvent + EXTRANGE * XfixesBase] = IGNOREEVENT,
 #endif
 #ifdef XRANDR

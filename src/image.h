@@ -8,6 +8,8 @@ const char *xbm_status_string(int status);
 const char *xpm_status_string(int status);
 #endif
 
+XImage *scale_image(AScreen *ds, XImage *ximage, unsigned nw, unsigned nh, Bool bitmap, Bool crop);
+
 XImage *combine_bitmap_and_mask(AScreen *ds, XImage *xdraw, XImage *xmask);
 XImage *combine_pixmap_and_mask(AScreen *ds, XImage *xdraw, XImage *xmask);
 

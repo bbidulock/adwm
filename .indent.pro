@@ -24,6 +24,7 @@
 -ss
 -hnl
 -nbc
+-TVisual
 -TXImage
 -TIconTheme
 -TIconDirectory

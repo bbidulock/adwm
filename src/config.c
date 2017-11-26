@@ -336,7 +336,11 @@ initconfig(Bool reload)
 	options.prependdirs = getsessionres("icon.prependdirs", NULL);
 	options.appenddirs = getsessionres("icon.appenddirs", NULL);
 	options.icontheme = getsessionres("icon.theme", NULL);
+#if defined LIBRSVG
 	options.extensions = getsessionres("icon.extensions", "png,svg,xpm");
+#else
+	options.extensions = getsessionres("icon.extensions", "png,xpm");
+#endif
 }
 
 char *

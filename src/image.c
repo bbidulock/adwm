@@ -56,7 +56,7 @@ xpm_status_string(int status)
 #endif
 
 int
-XReadBitmapFileImage(Display *display, Visual * visual, const char *file, unsigned *width,
+XReadBitmapFileImage(Display *display, Visual *visual, const char *file, unsigned *width,
 		     unsigned *height, XImage **image_return, int *x_hot, int *y_hot)
 {
 	XImage *ximage = NULL;
@@ -95,29 +95,53 @@ XReadBitmapFileImage(Display *display, Visual * visual, const char *file, unsign
 }
 
 XImage *
-combine_pixmap_and_mask(Display *display, Visual *visual, XImage *xdraw, XImage *xmask)
+combine_bitmap_and_mask(AScreen *ds, XImage *xdraw, XImage *xmask)
 {
 	XImage *ximage = NULL;
 	unsigned i, j;
 	unsigned w = xdraw->width;
 	unsigned h = xdraw->height;
 
-	if (!(ximage = XCreateImage(display, visual, 32, ZPixmap, 0, NULL, w, h, 8, 0))) {
+	if (!(ximage = XCreateImage(dpy, ds->visual, 8, XYPixmap, 0, NULL, w, h, 8, 0))) {
 		EPRINTF("could not create image %ux%ux%u\n", w, h, 32);
-		return (ximage);
+		return (NULL);
 	}
-	ximage->data = emallocz(ximage->bytes_per_line * ximage->height);
-	for (j = 0; j < h; j++) {
-		for (i = 0; i < w; i++) {
-			if (!xmask || XGetPixel(xmask, i, j)) {
-				XPutPixel(ximage, i, j,
-					  XGetPixel(xdraw, i, j) | 0xFF000000);
-			} else {
-				XPutPixel(ximage, i, j,
-					  XGetPixel(xdraw, i, j) & 0x00FFFFFF);
-			}
-		}
+	if (!(ximage->data = calloc(ximage->bytes_per_line, ximage->height))) {
+		XDestroyImage(ximage);
+		return (NULL);
 	}
+	for (j = 0; j < h; j++)
+		for (i = 0; i < w; i++)
+			if (!xmask || XGetPixel(xmask, i, j))
+				XPutPixel(ximage, i, j, XGetPixel(xdraw, i, j) ? 255 : 0);
+			else
+				XPutPixel(ximage, i, j, 0);
+	return (ximage);
+}
+
+XImage *
+combine_pixmap_and_mask(AScreen *ds, XImage *xdraw, XImage *xmask)
+{
+	XImage *ximage = NULL;
+	unsigned i, j;
+	unsigned w = xdraw->width;
+	unsigned h = xdraw->height;
+	unsigned long bits = 0xff000000;
+
+	if (!(ximage = XCreateImage(dpy, ds->visual, ds->depth, ZPixmap, 0, NULL, w, h, 32, 0))) {
+		EPRINTF("could not create image %ux%ux%u\n", w, h, 32);
+		return (NULL);
+	}
+	if (!(ximage->data = calloc(ximage->bytes_per_line, ximage->height))) {
+		XDestroyImage(ximage);
+		return (NULL);
+	}
+	for (j = 0; j < h; j++)
+		for (i = 0; i < w; i++)
+			if (!xmask || XGetPixel(xmask, i, j))
+				XPutPixel(ximage, i, j, XGetPixel(xdraw, i, j) | bits);
+			else
+				XPutPixel(ximage, i, j, XGetPixel(xdraw, i, j) & ~bits);
 	return (ximage);
 }
 

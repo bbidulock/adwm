@@ -573,7 +573,7 @@ ximage_createicon(AScreen *ds, Client *c, XImage **xicon, XImage **xmask, Bool c
 		XPRINTF("cropped ximage to %ux%u\n", (*xicon)->width, (*xicon)->height);
 	ximage = ((*xicon)->height > th)
 	    ? scale_pixmap_and_mask(ds, (*xicon), xmask ? (*xmask) : NULL, th)
-	    : combine_pixmap_and_mask(dpy, ds->visual, (*xicon), xmask ? (*xmask) : NULL);
+	    : combine_pixmap_and_mask(ds, (*xicon), xmask ? (*xmask) : NULL);
 	if (!ximage) {
 		EPRINTF("could not scale or combine xicon and xmask\n");
 		goto error;
@@ -1186,7 +1186,7 @@ ximage_initxpm(char *path, AdwmPixmap *px)
 		}
 		XpmFreeAttributes(&xa);
 	}
-	ximage = combine_pixmap_and_mask(dpy, scr->visual, xdraw, xmask);
+	ximage = combine_pixmap_and_mask(scr, xdraw, xmask);
 	if (!ximage) {
 		EPRINTF("could not combine images\n");
 		goto error;
@@ -1225,7 +1225,7 @@ ximage_initxbm(char *path, AdwmPixmap *px)
 		EPRINTF("could not load xbm file: %s on %s\n", xbm_status_string(status), path);
 		goto error;
 	}
-	ximage = combine_pixmap_and_mask(dpy, scr->visual, xdraw, xdraw);
+	ximage = combine_pixmap_and_mask(scr, xdraw, xdraw);
 	if (!ximage) {
 		EPRINTF("could not combine images\n");
 		goto error;
@@ -1264,7 +1264,7 @@ ximage_initxbmdata(const unsigned char *bits, int w, int h, AdwmPixmap *px)
 	len = xdraw->bytes_per_line * h;
 	xdraw->data = emallocz(len);
 	memcpy(xdraw->data, bits, len);
-	ximage = combine_pixmap_and_mask(dpy, scr->visual, xdraw, xdraw);
+	ximage = combine_pixmap_and_mask(scr, xdraw, xdraw);
 	if (!ximage) {
 		EPRINTF("could not combine images\n");
 		goto error;

@@ -237,18 +237,24 @@ getpixmap(const char *file, AdwmPixmap *px)
 
 	if (!file || !(path = findrcpath(file)))
 		return;
-	if ((p = strstr(path, ".xpm")) && strlen(p) == 4)
-		if (initxpm(path, px))
-			return;
 	if ((p = strstr(path, ".xbm")) && strlen(p) == 4)
 		if (initxbm(path, px))
 			return;
+#if defined XPM || defined IMLIB || defined PIXBUF
+	if ((p = strstr(path, ".xpm")) && strlen(p) == 4)
+		if (initxpm(path, px))
+			return;
+#endif
+#if defined LIBPNG || defined IMLIB || defined PIXBUF
 	if ((p = strstr(path, ".png")) && strlen(p) == 4)
 		if (initpng(path, px))
 			return;
+#endif
+#if defined LIBRSVG
 	if ((p = strstr(path, ".svg")) && strlen(p) == 4)
 		if (initsvg(path, px))
 			return;
+#endif
 	EPRINTF("could not load image from %s\n", path);
 	free(path);
 	return;

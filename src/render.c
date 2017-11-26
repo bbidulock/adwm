@@ -16,6 +16,11 @@
 #endif
 #include "render.h" /* verification */
 
+#define CMPALPHA
+#define CROPSCALE
+#define FILTERPIC
+#undef DOWNSCALE
+
 #if defined RENDER
 void
 render_removepixmap(AdwmPixmap *p)
@@ -42,6 +47,14 @@ createicon_bitmap(AScreen *ds, Client *c, XImage *xdraw, XImage *xmask, Bool cro
 	Bool result = False;
 	XRenderPictFormat *format;
 	GC gc = None;
+	XRenderPictureAttributes pa = {
+#ifdef CMPALPHA
+		.component_alpha = True,
+#else				/* CMPALPHA */
+		.component_alpha = False,
+#endif				/* CMPALPHA */
+	};
+	unsigned long pamask = CPComponentAlpha;
 
 	if (ds->style.outline)
 		th--;
@@ -64,7 +77,7 @@ createicon_bitmap(AScreen *ds, Client *c, XImage *xdraw, XImage *xmask, Bool cro
 	format = XRenderFindStandardFormat(dpy, PictStandardA8);
 
 	for (bis = getbuttons(c); bis && *bis; bis++) {
-		if ((pict = XRenderCreatePicture(dpy, draw, format, 0UL, NULL))) {
+		if ((pict = XRenderCreatePicture(dpy, draw, format, pamask, &pa))) {
 			bi = *bis;
 			px = &bi->px;
 			px->x = px->y = px->b = 0;
@@ -72,6 +85,7 @@ createicon_bitmap(AScreen *ds, Client *c, XImage *xdraw, XImage *xmask, Bool cro
 			px->w = ximage->width;
 			px->h = ximage->height;
 			if (ximage->height > th) {
+				_DPRINTF("transforming image from h = %u to %u\n", ximage->height, th);
 				/* get XRender to scale the image for us */
 				XDouble scale = (XDouble) ximage->height / (XDouble) th;
 				/* *INDENT-OFF* */
@@ -83,8 +97,9 @@ createicon_bitmap(AScreen *ds, Client *c, XImage *xdraw, XImage *xmask, Bool cro
 				/* *INDENT-ON* */
 
 #if 0
-				XRenderSetPictureFilter(dpy, pict, FilterBilinear, NULL,
-							0);
+#ifdef FILTERPIC
+				XRenderSetPictureFilter(dpy, pict, FilterBilinear, NULL, 0);
+#endif				/* FILTERPIC */
 #endif
 				XRenderSetPictureTransform(dpy, pict, &trans);
 				px->w = floor(ximage->width / scale);
@@ -120,6 +135,14 @@ createicon_pixmap(AScreen *ds, Client *c, XImage *xdraw, XImage *xmask, Bool cro
 	Pixmap draw = None;
 	Picture pict = None;
 	Bool result = False;
+	XRenderPictureAttributes pa = {
+#ifdef CMPALPHA
+		.component_alpha = True,
+#else				/* CMPALPHA */
+		.component_alpha = False,
+#endif				/* CMPALPHA */
+	};
+	unsigned long pamask = CPComponentAlpha;
 
 	if (ds->style.outline)
 		th--;
@@ -128,6 +151,18 @@ createicon_pixmap(AScreen *ds, Client *c, XImage *xdraw, XImage *xmask, Bool cro
 		EPRINTF("could not combine draw and mask images\n");
 		goto error;
 	}
+#ifdef CROPSCALE
+	if (ximage->height > th)
+		ximage = crop_image(ds, ximage);
+#endif				/* CROPSCALE */
+#ifdef DOWNSCALE
+	if (ximage->height > th) {
+		unsigned tw = floor((double) ximage->width * (double) th / (double) ximage->height);
+		_DPRINTF("scaling image %ux%ux%u to %ux%u\n", ximage->width, ximage->height, ximage->depth, tw, th);
+		ximage = dn_scale_image(ds, ximage, tw, th, False);
+		_DPRINTF("scaled image to %ux%ux%u\n",  ximage->width, ximage->height, ximage->depth);
+	}
+#endif				/* DOWNSCALE */
 	if (!(draw = XCreatePixmap(dpy, ds->drawable, ximage->width, ximage->height, ximage->depth))) {
 		EPRINTF("could not create pixmap\n");
 		goto error;
@@ -135,7 +170,7 @@ createicon_pixmap(AScreen *ds, Client *c, XImage *xdraw, XImage *xmask, Bool cro
 	XPutImage(dpy, draw, ds->dc.gc, ximage, 0, 0, 0, 0, ximage->width, ximage->height);
 
 	for (bis = getbuttons(c); bis && *bis; bis++) {
-		if ((pict = XRenderCreatePicture(dpy, draw, ds->format, 0UL, NULL))) {
+		if ((pict = XRenderCreatePicture(dpy, draw, ds->format, pamask, &pa))) {
 			bi = *bis;
 			px = &bi->px;
 			px->x = px->y = px->b = 0;
@@ -143,6 +178,7 @@ createicon_pixmap(AScreen *ds, Client *c, XImage *xdraw, XImage *xmask, Bool cro
 			px->w = ximage->width;
 			px->h = ximage->height;
 			if (ximage->height > th) {
+				_DPRINTF("transforming image from h = %u to %u\n", ximage->height, th);
 				/* get XRender to scale the image for us */
 				XDouble scale =  (XDouble) ximage->height / (XDouble) th;
 				/* *INDENT-OFF* */
@@ -152,7 +188,9 @@ createicon_pixmap(AScreen *ds, Client *c, XImage *xdraw, XImage *xmask, Bool cro
 					  { 0, 0, XDoubleToFixed(1.0) } }
 				};
 				/* *INDENT-ON* */
+#ifdef FILTERPIC
 				XRenderSetPictureFilter(dpy, pict, FilterBilinear, NULL, 0);
+#endif				/* FILTERPIC */
 				XRenderSetPictureTransform(dpy, pict, &trans);
 				px->w = floor(ximage->width / scale);
 				px->h = th;
@@ -186,6 +224,14 @@ render_createbitmapicon(AScreen *ds, Client *c, Pixmap icon, Pixmap mask, unsign
 	Pixmap draw = None;
 	Picture pict = None;
 	Bool result = False;
+	XRenderPictureAttributes pa = {
+#ifdef CMPALPHA
+		.component_alpha = True,
+#else				/* CMPALPHA */
+		.component_alpha = False,
+#endif				/* CMPALPHA */
+	};
+	unsigned long pamask = CPComponentAlpha;
 
 	if (!(xdraw = XGetImage(dpy, icon, 0, 0, w, h, 0x1, XYPixmap))) {
 		EPRINTF("could not get bitmap 0x%lx %ux%u\n", icon, w, h);
@@ -206,7 +252,7 @@ render_createbitmapicon(AScreen *ds, Client *c, Pixmap icon, Pixmap mask, unsign
 	XPutImage(dpy, draw, ds->dc.gc, ximage, 0, 0, 0, 0, w, h);
 
 	for (bis = getbuttons(c); bis && *bis; bis++) {
-		if ((pict = XRenderCreatePicture(dpy, draw, ds->format, 0UL, NULL))) {
+		if ((pict = XRenderCreatePicture(dpy, draw, ds->format, pamask, &pa))) {
 			bi = *bis;
 			px = &bi->px;
 			px->x = px->y = px->b = 0;
@@ -214,6 +260,7 @@ render_createbitmapicon(AScreen *ds, Client *c, Pixmap icon, Pixmap mask, unsign
 			px->w = w;
 			px->h = h;
 			if (h > th) {
+				_DPRINTF("transforming image from h = %u to %u\n", ximage->height, th);
 				/* get XRender to scale the image for us */
 				XDouble scale = (XDouble) h / (XDouble) th;
 				/* *INDENT-OFF* */
@@ -223,7 +270,9 @@ render_createbitmapicon(AScreen *ds, Client *c, Pixmap icon, Pixmap mask, unsign
 					  { 0, 0, XDoubleToFixed(1.0) } }
 				};
 				/* *INDENT-ON* */
+#ifdef FILTERPIC
 				XRenderSetPictureFilter(dpy, pict, FilterBilinear, NULL, 0);
+#endif				/* FILTERPIC */
 				XRenderSetPictureTransform(dpy, pict, &trans);
 				px->w = floor(w / scale);
 				px->h = th;
@@ -261,6 +310,14 @@ render_createpixmapicon(AScreen *ds, Client *c, Pixmap icon, Pixmap mask, unsign
 	Pixmap draw = None;
 	Picture pict = None;
 	Bool result = False;
+	XRenderPictureAttributes pa = {
+#ifdef CMPALPHA
+		.component_alpha = True,
+#else				/* CMPALPHA */
+		.component_alpha = False,
+#endif				/* CMPALPHA */
+	};
+	unsigned long pamask = CPComponentAlpha;
 
 	if (!(xdraw = XGetImage(dpy, icon, 0, 0, w, h, AllPlanes, ZPixmap))) {
 		EPRINTF("could not get pixmap 0x%lx %ux%u\n", icon, w, h);
@@ -274,23 +331,36 @@ render_createpixmapicon(AScreen *ds, Client *c, Pixmap icon, Pixmap mask, unsign
 		EPRINTF("could not combine ximages\n");
 		goto error;
 	}
-	if (!(draw = XCreatePixmap(dpy, ds->drawable, w, h, ds->depth))) {
+#ifdef CROPSCALE
+	if (ximage->height > th)
+		ximage = crop_image(ds, ximage);
+#endif				/* CROPSCALE */
+#ifdef DOWNSCALE
+	if (ximage->height > th) {
+		unsigned tw = floor((double) ximage->width * (double) th / (double) ximage->height);
+		_DPRINTF("scaling image %ux%ux%u to %ux%u\n", ximage->width, ximage->height, ximage->depth, tw, th);
+		ximage = dn_scale_image(ds, ximage, tw, th, False);
+		_DPRINTF("scaled image to %ux%ux%u\n",  ximage->width, ximage->height, ximage->depth);
+	}
+#endif				/* DOWNSCALE */
+	if (!(draw = XCreatePixmap(dpy, ds->drawable, ximage->width, ximage->height, ximage->depth))) {
 		EPRINTF("could not create pixmap\n");
 		goto error;
 	}
-	XPutImage(dpy, draw, ds->dc.gc, ximage, 0, 0, 0, 0, w, h);
+	XPutImage(dpy, draw, ds->dc.gc, ximage, 0, 0, 0, 0, ximage->width, ximage->height);
 
 	for (bis = getbuttons(c); bis && *bis; bis++) {
-		if ((pict = XRenderCreatePicture(dpy, draw, ds->format, 0UL, NULL))) {
+		if ((pict = XRenderCreatePicture(dpy, draw, ds->format, pamask, &pa))) {
 			bi = *bis;
 			px = &bi->px;
 			px->x = px->y = px->b = 0;
-			px->d = ds->depth;
-			px->w = w;
-			px->h = h;
-			if (h > th) {
+			px->d = ximage->depth;
+			px->w = ximage->width;
+			px->h = ximage->height;
+			if (ximage->height > th) {
+				_DPRINTF("transforming image from h = %u to %u\n", ximage->height, th);
 				/* get XRender to scale the image for us */
-				XDouble scale = (XDouble) h / (XDouble) th;
+				XDouble scale = (XDouble) ximage->height / (XDouble) th;
 				/* *INDENT-OFF* */
 				XTransform trans = {
 					{ { XDoubleToFixed(scale), 0, 0 },
@@ -298,9 +368,11 @@ render_createpixmapicon(AScreen *ds, Client *c, Pixmap icon, Pixmap mask, unsign
 					  { 0, 0, XDoubleToFixed(1.0) } }
 				};
 				/* *INDENT-ON* */
+#ifdef FILTERPIC
 				XRenderSetPictureFilter(dpy, pict, FilterBilinear, NULL, 0);
+#endif				/* FILTERPIC */
 				XRenderSetPictureTransform(dpy, pict, &trans);
-				px->w = floor(w / scale);
+				px->w = floor(ximage->width / scale);
 				px->h = th;
 			}
 			if (px->pixmap.pict) {
@@ -331,42 +403,76 @@ render_createdataicon(AScreen *ds, Client *c, unsigned w, unsigned h, long *data
 	XImage *ximage = NULL;
 	ButtonImage *bi, **bis;
 	AdwmPixmap *px;
-	unsigned i, j, d = ds->depth, th = ds->style.titleheight;
+	unsigned i, j, th = ds->style.titleheight;
 	long *p;
 	Pixmap draw = None;
 	Picture pict = None;
 	Bool result = False;
+	XRenderPictureAttributes pa = {
+#ifdef CMPALPHA
+		.component_alpha = True,
+#else				/* CMPALPHA */
+		.component_alpha = False,
+#endif				/* CMPALPHA */
+	};
+	unsigned long pamask = CPComponentAlpha;
+	unsigned long alpha = 0;
 
 	if (!data) {
 		EPRINTF("ERROR: pass null pointer!\n");
 		return (False);
 	}
-	if (!(ximage = XCreateImage(dpy, ds->visual, d, ZPixmap, 0, NULL, w, h, 8, 0))) {
-		EPRINTF("could not create ximage %ux%ux%u\n", w, h, d);
+	if (!(ximage = XCreateImage(dpy, ds->visual, ds->depth, ZPixmap, 0, NULL, w, h, 8, 0))) {
+		EPRINTF("could not create ximage %ux%ux%u\n", w, h, ds->depth);
 		goto error;
 	}
-	ximage->data = ecalloc(ximage->bytes_per_line, h);
-	for (p = data, j = 0; j < h; j++)
-		for (i = 0; i < w; i++, p++)
-			XPutPixel(ximage, i, j, *p);
-
-	if (!(draw = XCreatePixmap(dpy, ds->drawable, w, h, d))) {
+	if (!(ximage->data = calloc(ximage->bytes_per_line, ximage->height))) {
+		EPRINTF("could not allocate data for ximage %ux%ux%u\n", w, h, ds->depth);
+		goto error;
+	}
+	for (p = data, j = 0; j < ximage->height; j++) {
+		for (i = 0; i < ximage->width; i++, p++) {
+			unsigned long pixel = *p & 0xffffffff;
+			alpha |= pixel & 0xff000000;
+			XPutPixel(ximage, i, j, pixel);
+		}
+	}
+	if (alpha == 0UL) {
+		_DPRINTF("data icon has no alpha!\n");
+		for (p = data, j = 0; j < ximage->height; j++)
+			for (i = 0; i < ximage->width; i++, p++)
+				XPutPixel(ximage, i, j, *p | 0xff000000);
+	}
+#ifdef CROPSCALE
+	if (ximage->height > th)
+		ximage = crop_image(ds, ximage);
+#endif				/* CROPSCALE */
+#ifdef DOWNSCALE
+	if (ximage->height > th) {
+		unsigned tw = floor((double) ximage->width * (double) th / (double) ximage->height);
+		_DPRINTF("scaling image %ux%ux%u to %ux%u\n", ximage->width, ximage->height, ximage->depth, tw, th);
+		ximage = dn_scale_image(ds, ximage, tw, th, False);
+		_DPRINTF("scaled image to %ux%ux%u\n",  ximage->width, ximage->height, ximage->depth);
+	}
+#endif				/* DOWNSCALE */
+	if (!(draw = XCreatePixmap(dpy, ds->drawable, ximage->width, ximage->height, ximage->depth))) {
 		EPRINTF("could not create pixmap\n");
 		goto error;
 	}
-	XPutImage(dpy, draw, ds->dc.gc, ximage, 0, 0, 0, 0, w, h);
+	XPutImage(dpy, draw, ds->dc.gc, ximage, 0, 0, 0, 0, ximage->width, ximage->height);
 
 	for (bis = getbuttons(c); bis && *bis; bis++) {
-		if ((pict = XRenderCreatePicture(dpy, draw, ds->format, 0UL, NULL))) {
+		if ((pict = XRenderCreatePicture(dpy, draw, ds->format, pamask, &pa))) {
 			bi = *bis;
 			px = &bi->px;
 			px->x = px->y = px->b = 0;
-			px->d = d;
-			px->w = w;
-			px->h = h;
-			if (h > th) {
+			px->d = ximage->depth;
+			px->w = ximage->width;
+			px->h = ximage->height;
+			if (ximage->height > th) {
+				_DPRINTF("transforming image from h = %u to %u\n", ximage->height, th);
 				/* get XRender to scale the image for us */
-				XDouble scale = (XDouble) h / (XDouble) th;
+				XDouble scale = (XDouble) ximage->height / (XDouble) th;
 				/* *INDENT-OFF* */
 				XTransform trans = {
 					{ { XDoubleToFixed(scale), 0, 0 },
@@ -374,10 +480,11 @@ render_createdataicon(AScreen *ds, Client *c, unsigned w, unsigned h, long *data
 					  { 0, 0, XDoubleToFixed(1.0) } }
 				};
 				/* *INDENT-ON* */
-
+#ifdef FILTERPIC
 				XRenderSetPictureFilter(dpy, pict, FilterBilinear, NULL, 0);
+#endif				/* FILTERPIC */
 				XRenderSetPictureTransform(dpy, pict, &trans);
-				px->w = floor(w / scale);
+				px->w = floor(ximage->width / scale);
 				px->h = th;
 			}
 			if (px->pixmap.pict) {
@@ -386,6 +493,7 @@ render_createdataicon(AScreen *ds, Client *c, unsigned w, unsigned h, long *data
 			}
 			px->pixmap.pict = pict;
 			bi->present = True;
+			result = True;
 		} else
 			EPRINTF("could not create picture\n");
 	}
@@ -409,7 +517,11 @@ render_createpngicon(AScreen *ds, Client *c, const char *file)
 		goto error;
 	}
 	result = createicon_pixmap(ds, c, xdraw, NULL, True);
+	if (result)
+		_DPRINTF("created icon from %s\n", file);
       error:
+	if (xdraw)
+		XDestroyImage(xdraw);
 #endif				/* LIBPNG */
 	return (result);
 }
@@ -445,6 +557,8 @@ render_createxpmicon(AScreen *ds, Client *c, const char *file)
 	}
 	XpmFreeAttributes(&xa);
 	result = createicon_pixmap(ds, c, xdraw, xmask, True);
+	if (result)
+		_DPRINTF("created icon from %s\n", file);
       error:
 	if (xmask)
 		XDestroyImage(xmask);
@@ -468,6 +582,8 @@ render_createxbmicon(AScreen *ds, Client *c, const char *file)
 		goto error;
 	}
 	result = createicon_bitmap(ds, c, xdraw, NULL, True);
+	if (result)
+		_DPRINTF("created icon from %s\n", file);
       error:
 	if (xdraw)
 		XDestroyImage(xdraw);
@@ -637,9 +753,14 @@ render_drawdockapp(AScreen *ds, Client *c)
 	XRenderPictFormat *format = XRenderFindStandardFormat(dpy, PictStandardRGB24);
 
 	XRenderPictureAttributes pa = {
+#ifdef CMPALPHA
+		.component_alpha = True,
+#else				/* CMPALPHA */
+		.component_alpha = False,
+#endif				/* CMPALPHA */
 		.subwindow_mode = IncludeInferiors,
 	};
-	unsigned long pamask = CPSubwindowMode;
+	unsigned long pamask = CPComponentAlpha | CPSubwindowMode;
 
 	col = getcolor(ds, c, ColBG);
 
@@ -672,6 +793,14 @@ render_drawnormal(AScreen *ds, Client *c)
 	size_t i;
 	Picture dst;
 	XRenderColor *bg, *bc;
+	XRenderPictureAttributes pa = {
+#ifdef CMPALPHA
+		.component_alpha = True,
+#else				/* CMPALPHA */
+		.component_alpha = False,
+#endif				/* CMPALPHA */
+	};
+	unsigned long pamask = CPComponentAlpha;
 
 	if (!c->title)
 		return;
@@ -682,7 +811,7 @@ render_drawnormal(AScreen *ds, Client *c)
 	if (ds->dc.draw.w < ds->dc.w) {
 		ds->dc.draw.w = ds->dc.w;
 	}
-	if (!(dst = XRenderCreatePicture(dpy, c->title, ds->format, 0UL, NULL)))
+	if (!(dst = XRenderCreatePicture(dpy, c->title, ds->format, pamask, &pa)))
 		return;
 	if (c->pict_title)
 		XRenderFreePicture(dpy, c->pict_title);
@@ -751,7 +880,7 @@ render_drawnormal(AScreen *ds, Client *c)
 	ds->dc.x = ds->dc.y = 0;
 	ds->dc.w = c->c.w;
 	ds->dc.h = ds->style.gripsheight;
-	if (!(dst = XRenderCreatePicture(dpy, c->grips, ds->format, 0UL, NULL)))
+	if (!(dst = XRenderCreatePicture(dpy, c->grips, ds->format, pamask, &pa)))
 		return;
 	if (c->pict_grips)
 		XRenderFreePicture(dpy, c->pict_grips);
@@ -781,6 +910,14 @@ render_initpng(char *path, AdwmPixmap *px)
 #ifdef LIBPNG
 	Pixmap draw = None;
 	Picture pict = None;
+	XRenderPictureAttributes pa = {
+#ifdef CMPALPHA
+		.component_alpha = True,
+#else				/* CMPALPHA */
+		.component_alpha = False,
+#endif				/* CMPALPHA */
+	};
+	unsigned long pamask = CPComponentAlpha;
 
 	XImage *ximage;
 	unsigned w, h, d = scr->depth;
@@ -799,7 +936,7 @@ render_initpng(char *path, AdwmPixmap *px)
 	}
 	XPutImage(dpy, draw, scr->dc.gc, ximage, 0, 0, 0, 0, w, h);
 
-	if (!(pict = XRenderCreatePicture(dpy, draw, scr->format, 0UL, NULL))) {
+	if (!(pict = XRenderCreatePicture(dpy, draw, scr->format, pamask, &pa))) {
 		EPRINTF("could not create picture\n");
 		goto error;
 	}
@@ -844,6 +981,14 @@ render_initxpm(char *path, AdwmPixmap *px)
 #ifdef XPM
 	Pixmap draw = None;
 	Picture pict = None;
+	XRenderPictureAttributes pa = {
+#ifdef CMPALPHA
+		.component_alpha = True,
+#else				/* CMPALPHA */
+		.component_alpha = False,
+#endif				/* CMPALPHA */
+	};
+	unsigned long pamask = CPComponentAlpha;
 
 	XImage *xdraw = NULL, *xmask = NULL, *ximage = NULL;
 	unsigned w, h, d = scr->depth;
@@ -875,7 +1020,7 @@ render_initxpm(char *path, AdwmPixmap *px)
 	}
 	XPutImage(dpy, draw, scr->dc.gc, ximage, 0, 0, 0, 0, w, h);
 
-	if (!(pict = XRenderCreatePicture(dpy, draw, scr->format, 0UL, NULL))) {
+	if (!(pict = XRenderCreatePicture(dpy, draw, scr->format, pamask, &pa))) {
 		EPRINTF("could not create picture\n");
 		goto error;
 	}
@@ -919,6 +1064,14 @@ render_initxbm(char *path, AdwmPixmap *px)
 	Picture pict = None;
 	XRenderPictFormat *format;
 	int status;
+	XRenderPictureAttributes pa = {
+#ifdef CMPALPHA
+		.component_alpha = True,
+#else				/* CMPALPHA */
+		.component_alpha = False,
+#endif				/* CMPALPHA */
+	};
+	unsigned long pamask = CPComponentAlpha;
 
 	status = XReadBitmapFile(dpy, scr->root, path, &px->w, &px->h, &draw, &px->x, &px->y);
 	if (status != BitmapSuccess || !draw) {
@@ -927,7 +1080,7 @@ render_initxbm(char *path, AdwmPixmap *px)
 	}
 	format = XRenderFindStandardFormat(dpy, PictStandardA1);
 
-	if (!(pict = XRenderCreatePicture(dpy, draw, format, 0UL, NULL))) {
+	if (!(pict = XRenderCreatePicture(dpy, draw, format, pamask, &pa))) {
 		EPRINTF("could not create picture\n");
 		goto error;
 	}
@@ -956,6 +1109,14 @@ render_initxbmdata(const unsigned char *bits, int w, int h, AdwmPixmap *px)
 	Pixmap draw;
 	Picture pict = None;
 	XRenderPictFormat *format;
+	XRenderPictureAttributes pa = {
+#ifdef CMPALPHA
+		.component_alpha = True,
+#else				/* CMPALPHA */
+		.component_alpha = False,
+#endif				/* CMPALPHA */
+	};
+	unsigned long pamask = CPComponentAlpha;
 
 	if (!(draw = XCreateBitmapFromData(dpy, scr->drawable, (char *) bits, w, h))) {
 		EPRINTF("could not load xbm data\n");
@@ -963,7 +1124,7 @@ render_initxbmdata(const unsigned char *bits, int w, int h, AdwmPixmap *px)
 	}
 	format = XRenderFindStandardFormat(dpy, PictStandardA1);
 
-	if (!(pict = XRenderCreatePicture(dpy, draw, format, 0UL, NULL))) {
+	if (!(pict = XRenderCreatePicture(dpy, draw, format, pamask, &pa))) {
 		EPRINTF("could not create picture\n");
 		goto error;
 	}

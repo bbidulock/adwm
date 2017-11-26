@@ -128,8 +128,8 @@ combine_pixmap_and_mask(AScreen *ds, XImage *xdraw, XImage *xmask)
 	unsigned h = xdraw->height;
 	unsigned long bits = 0xff000000;
 
-	if (!(ximage = XCreateImage(dpy, ds->visual, ds->depth, ZPixmap, 0, NULL, w, h, 32, 0))) {
-		EPRINTF("could not create image %ux%ux%u\n", w, h, 32);
+	if (!(ximage = XCreateImage(dpy, ds->visual, ds->depth, ZPixmap, 0, NULL, w, h, 8, 0))) {
+		EPRINTF("could not create image %ux%ux%u\n", w, h, ds->depth);
 		return (NULL);
 	}
 	if (!(ximage->data = calloc(ximage->bytes_per_line, ximage->height))) {
@@ -264,23 +264,29 @@ png_read_file_to_ximage(Display *display, Visual *visual, const char *file)
 #endif
 
 XImage *
-dn_scale_image(AScreen *ds, XImage *ximage, double scalew, double scaleh, Bool bitmap)
+dn_scale_image(AScreen *ds, XImage *ximage, unsigned nw, unsigned nh, Bool bitmap)
 {
 	XImage *xscale = NULL;
-	unsigned nw = lround(scalew * ximage->width);
-	unsigned nh = lround(scaleh * ximage->height);
 	size_t elements = nw * nh;
+	double *counts = NULL;
+	double *colors = NULL;
 
-	xscale = XCreateImage(dpy, ds->visual, 32, ZPixmap, 0, NULL, nw, nh, 8, 0);
-	if (!xscale)
-		return (ximage);
-	xscale->data = ecalloc(xscale->bytes_per_line, xscale->height);
-	if (!xscale->data) {
-		XDestroyImage(xscale);
-		return (ximage);
+	if (!(xscale = XCreateImage(dpy, ds->visual, 32, ZPixmap, 0, NULL, nw, nh, 8, 0))) {
+		EPRINTF("could not create ximage\n");
+		goto error;
 	}
-	double *counts = ecalloc(elements, sizeof(*counts));
-	double *colors = ecalloc(elements, sizeof(*colors) << 2);
+	if (!(xscale->data = calloc(xscale->bytes_per_line, xscale->height))) {
+		EPRINTF("could not allocate ximage data\n");
+		goto error;
+	}
+	if (!(counts = ecalloc(elements, sizeof(*counts)))) {
+		EPRINTF("could not allocate %zu counts\n", elements);
+		goto error;
+	}
+	if (!(colors = ecalloc(elements, sizeof(*colors) << 2))) {
+		EPRINTF("could not allocate %zu colors\n", elements<<2);
+		goto error;
+	}
 
 	unsigned w = ximage->width;
 	unsigned h = ximage->height;
@@ -288,37 +294,36 @@ dn_scale_image(AScreen *ds, XImage *ximage, double scalew, double scaleh, Bool b
 
 	double pppx = (double) nw / (double) w;
 	double pppy = (double) nh / (double) h;
+
 	double ty, by, lx, rx, xf, yf, ff;
+
 	unsigned long A, R, G, B, pixel;
+
+	_DPRINTF("downscaling image %ux%ux%u to %ux%ux%u\n",
+			ximage->width, ximage->height, ximage->depth,
+			xscale->width, xscale->height, xscale->depth);
 
 	for (ty = 0.0, by = pppy, l = 0; l < h; l++, ty = by, by = (l + 1) * pppy) {
 
 		for (j = floor(ty); j < by; j++) {
 
-			if (ty < (j + 1) && (j + 1) < by)
-				yf = (j + 1) - ty;
-			else if (ty < j && j < by)
-				yf = by - j;
-			else
-				yf = 1.0;
+			if (ty < (j + 1) && (j + 1) < by) yf = (j + 1) - ty;
+			else if (ty < j && j < by) yf = by - j;
+			else yf = 1.0;
 
 			for (lx = 0.0, rx = pppx, k = 0; k < w; k++, lx = rx, rx = (k + 1) * pppx) {
 
 				for (i = floor(lx); i < rx; i++) {
 
-					if (lx < (i + 1) && (i + 1) < rx)
-						xf = (i + 1) - lx;
-					else if (lx < i && i < rx)
-						xf = rx - i;
-					else
-						xf = 1.0;
+					if (lx < (i + 1) && (i + 1) < rx) xf = (i + 1) - lx;
+					else if (lx < i && i < rx) xf = rx - i;
+					else xf = 1.0;
 
 					ff = xf * yf;
-
 					m = j * nw + i;
 					n = m << 2;
 					counts[m] += ff;
-					pixel = XGetPixel(ximage, i, j);
+					pixel = XGetPixel(ximage, k, l);
 					if (bitmap && (pixel & 0x00ffffff))
 						pixel |= 0x00ffffff;
 					A = (pixel >> 24) & 0xff;
@@ -371,14 +376,20 @@ dn_scale_image(AScreen *ds, XImage *ximage, double scalew, double scaleh, Bool b
 	free(colors);
 	XDestroyImage(ximage);
 	return (xscale);
+      error:
+	if (xscale)
+		XDestroyImage(xscale);
+	if (counts)
+		free(counts);
+	if (colors)
+		free(colors);
+	return (ximage);
 }
 
 XImage *
-up_scale_image(AScreen *ds, XImage *ximage, double scalew, double scaleh, Bool bitmap)
+up_scale_image(AScreen *ds, XImage *ximage, unsigned nw, unsigned nh, Bool bitmap)
 {
 	XImage *xscale = NULL;
-	unsigned nw = lround(scalew * ximage->width);
-	unsigned nh = lround(scaleh * ximage->height);
 	size_t elements = nw * nh;
 
 	xscale = XCreateImage(dpy, ds->visual, 32, ZPixmap, 0, NULL, nw, nh, 8, 0);
@@ -485,11 +496,9 @@ up_scale_image(AScreen *ds, XImage *ximage, double scalew, double scaleh, Bool b
 
 /* upscaling width, downscaling height */
 static XImage *
-wh_scale_image(AScreen *ds, XImage *ximage, double scalew, double scaleh, Bool bitmap)
+wh_scale_image(AScreen *ds, XImage *ximage, unsigned nw, unsigned nh, Bool bitmap)
 {
 	XImage *xscale = NULL;
-	unsigned nw = lround(scalew * ximage->width);
-	unsigned nh = lround(scaleh * ximage->height);
 	size_t elements = nw * nh;
 
 	xscale = XCreateImage(dpy, ds->visual, 32, ZPixmap, 0, NULL, nw, nh, 8, 0);
@@ -596,11 +605,9 @@ wh_scale_image(AScreen *ds, XImage *ximage, double scalew, double scaleh, Bool b
 
 /* downscaling width, upscaling height */
 static XImage *
-hw_scale_image(AScreen *ds, XImage *ximage, double scalew, double scaleh, Bool bitmap)
+hw_scale_image(AScreen *ds, XImage *ximage, unsigned nw, unsigned nh, Bool bitmap)
 {
 	XImage *xscale = NULL;
-	unsigned nw = lround(scalew * ximage->width);
-	unsigned nh = lround(scaleh * ximage->height);
 	size_t elements = nw * nh;
 
 	xscale = XCreateImage(dpy, ds->visual, 32, ZPixmap, 0, NULL, nw, nh, 8, 0);
@@ -711,32 +718,42 @@ crop_image(AScreen *ds, XImage *ximage)
 {
 	XImage *xcrop;
 	unsigned i, j;
-	XRectangle r = { ximage->width, ximage->height, 0, 0 };
+	XRectangle r = { 0, };
 	Bool opacity = False;
+	unsigned xmin = ximage->width;
+	unsigned ymin = ximage->height;;
+	unsigned xmax = 0;
+	unsigned ymax = 0;
 
 	for (j = 0; j < ximage->height; j++) {
 		for (i = 0; i < ximage->width; i++) {
-			if (XGetPixel(ximage, i, j) & 0xff000000) {
-				if (r.x > (int)i) i = r.x;
-				if (r.y > (int)j) j = r.y;
-				if (r.width < i) r.width = i;
-				if (r.height < j) r.height = j;
+			if (XGetPixel(ximage, i, j) & 0xff000000UL) {
+				xmin = min(xmin, i);
+				xmax = max(xmax, i);
+				ymin = min(ymin, j);
+				ymax = max(ymax, j);
 				opacity = True;
 			}
 		}
 	}
-	if (r.width <= r.x || r.height <= r.y)
-		opacity = False;
-	if (!opacity) {
+	if (opacity) {
+		assert(xmin <= xmax && ymin <= ymax);
+		r.x = (int)xmin;
+		r.y = (int)ymin;
+		r.width = (int)xmax + 1 - (int)xmin;
+		r.height = (int)ymax + 1 - (int)ymin;
+	} else {
+		_DPRINTF("data icon has no alpha!\n");
 		for (j = 0; j < ximage->height; j++)
 			for (i = 0; i < ximage->width; i++)
 				XPutPixel(ximage, i, j, XGetPixel(ximage, i, j) | 0xff000000);
 		return (ximage);
 	}
-	r.width -= r.x;
-	r.height -= r.y;
 	xcrop = XSubImage(ximage, r.x, r.y, r.width, r.height);
 	if (xcrop) {
+		_DPRINTF("cropped image %ux%ux%u to %ux%u+%d+%d\n",
+				ximage->width, ximage->height, ximage->depth,
+				r.width, r.height, r.x, r.y);
 		XDestroyImage(ximage);
 		return (xcrop);
 	}
@@ -747,22 +764,22 @@ crop_image(AScreen *ds, XImage *ximage)
 XImage *
 scale_image(AScreen *ds, XImage *ximage, unsigned nw, unsigned nh, Bool bitmap, Bool crop)
 {
+	unsigned w = ximage->width;
+	unsigned h = ximage->height;
+
 	if (crop)
 		ximage = crop_image(ds, ximage);
 
-	double scalew = (double) nw / (double) ximage->width;
-	double scaleh = (double) nh / (double) ximage->height;
-
-	if (scalew == 1.0 && scaleh == 1.0) {
+	if (nw == w && nh == h) {
 		return (ximage);
-	} else if (scalew <= 1.0 && scaleh <= 1.0) {
-		return dn_scale_image(ds, ximage, scalew, scaleh, bitmap);
-	} else if (scalew >= 1.0 && scaleh >= 1.0) {
-		return up_scale_image(ds, ximage, scalew, scaleh, bitmap);
-	} else if (scalew >= 1.0 && scaleh <= 1.0) {
-		return wh_scale_image(ds, ximage, scalew, scaleh, bitmap);
-	} else if (scalew <= 1.0 && scaleh >= 1.0) {
-		return hw_scale_image(ds, ximage, scalew, scaleh, bitmap);
+	} else if (nw <= w && nh <= h) {
+		return dn_scale_image(ds, ximage, nw, nh, bitmap);
+	} else if (nw >= w && nh >= h) {
+		return up_scale_image(ds, ximage, nw, nh, bitmap);
+	} else if (nw >= w && nh <= h) {
+		return wh_scale_image(ds, ximage, nw, nh, bitmap);
+	} else if (nw <= w && nh >= h) {
+		return hw_scale_image(ds, ximage, nw, nh, bitmap);
 	} else {
 		/* can't happen */
 		return (NULL);

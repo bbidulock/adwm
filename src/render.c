@@ -45,6 +45,72 @@ titleheight(AScreen *ds)
 	return th;
 }
 
+#ifdef JUSTRENDER
+static Bool
+createicon_bitmap(AScreen *ds, Client *c, Pixmap draw, Pixmap mask, unsigned w, unsigned h, Bool cropscale)
+{
+	ButtonImage **bis, *bi;
+	AdwmPixmap *px;
+	Picture pict = None;
+	XRenderPictFormat *format;
+	XRenderPictureAttributes pa = {
+#ifdef CMPALPHA
+		.component_alpha = True,
+#else				/* CMPALPHA */
+		.component_alpha = False,
+#endif				/* CMPALPHA */
+	};
+	unsigned long pamask = CPComponentAlpha;
+	unsigned th = titleheight(ds);
+	Bool result = False;
+
+	if (mask) {
+		pa.clip_mask = mask;
+		pa.clip_x_origin = 0;
+		pa.clip_y_origin = 0;
+		pamask |= CPClipMask | CPClipXOrigin | CPClipYOrigin;
+	}
+	format = XRenderFindStandardFormat(dpy, PictStandardA1);
+
+	for (bis = getbuttons(c); bis && *bis; bis++) {
+		if ((pict = XRenderCreatePicture(dpy, draw, format, pamask, &pa))) {
+			bi = *bis;
+			px = &bi->px;
+			px->x = px->y = px->b = 0;
+			px->w = w;
+			px->h = h;
+			px->d = 1;
+			if (h > th) {
+				_DPRINTF("transforming image from h = %u to %u\n", h, th);
+				/* get XRender to scale the image for us */
+				XDouble scale = (XDouble) h / (XDouble) th;
+				/* *INDENT-OFF* */
+				XTransform trans = {
+					{ { XDoubleToFixed(scale), 0, 0 },
+					  { 0, XDoubleToFixed(scale), 0 },
+					  { 0, 0, XDoubleToFixed(1.0) } }
+				};
+				/* *INDENT-ON* */
+#ifdef FILTERPIC
+				XRenderSetPictureFilter(dpy, pict, FilterBilinear, NULL, 0);
+#endif				/* FILTERPIC */
+				XRenderSetPictureTransform(dpy, pict, &trans);
+				px->w = floor(w / scale);
+				px->h = th;
+			}
+			if (px->bitmap.pict) {
+				XRenderFreePicture(dpy, px->bitmap.pict);
+				px->bitmap.pict = None;
+			}
+			px->bitmap.pict = pict;
+			bi->present = True;
+			result = True;
+		} else
+			EPRINTF("could not create picture\n");
+	}
+	return (result);
+}
+#else				/* JUSTRENDER */
 static Bool
 createicon_bitmap(AScreen *ds, Client *c, XImage *xdraw, XImage *xmask, Bool cropscale)
 {
@@ -131,6 +197,7 @@ createicon_bitmap(AScreen *ds, Client *c, XImage *xdraw, XImage *xmask, Bool cro
 		XDestroyImage(ximage);
 	return (result);
 }
+#endif				/* JUSTRENDER */
 
 static Bool
 createicon_pixmap(AScreen *ds, Client *c, XImage *xdraw, XImage *xmask, Bool cropscale)
@@ -572,6 +639,29 @@ render_createxpmicon(AScreen *ds, Client *c, const char *file)
 	return (result);
 }
 
+#ifdef JUSTRENDER
+Bool
+render_createxbmicon(AScreen *ds, Client *c, const char *file)
+{
+	Pixmap draw = None;
+	int x, y, status;
+	unsigned w, h;
+	Bool result = False;
+
+	status = XReadBitmapFile(dpy, scr->root, file, &w, &h, &draw, &x, &y);
+	if (status != BitmapSuccess || !draw) {
+		EPRINTF("could not load xbm file %s\n", file);
+		goto error;
+	}
+	result = createicon_bitmap(ds, c, draw, None, w, h, True);
+	if (result)
+		_DPRINTF("created icon from %s\n", file);
+      error:
+	if (draw)
+		XFreePixmap(dpy, draw);
+	return (result);
+}
+#else				/* JUSTRENDER */
 Bool
 render_createxbmicon(AScreen *ds, Client *c, const char *file)
 {
@@ -593,6 +683,7 @@ render_createxbmicon(AScreen *ds, Client *c, const char *file)
 		XDestroyImage(xdraw);
 	return (result);
 }
+#endif				/* JUSTRENDER */
 
 #ifdef DAMAGE
 Bool

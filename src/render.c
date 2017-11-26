@@ -20,6 +20,7 @@
 #define CROPSCALE
 #define FILTERPIC
 #undef DOWNSCALE
+#define JUSTRENDER
 
 #if defined RENDER
 void
@@ -35,13 +36,22 @@ render_removepixmap(AdwmPixmap *p)
 	}
 }
 
+static unsigned
+titleheight(AScreen *ds)
+{
+	unsigned th = ds->style.titleheight;
+	if (ds->style.outline && ds->style.border < th)
+		th -= ds->style.border;
+	return th;
+}
+
 static Bool
 createicon_bitmap(AScreen *ds, Client *c, XImage *xdraw, XImage *xmask, Bool cropscale)
 {
 	XImage *ximage = NULL;
 	ButtonImage **bis, *bi;
 	AdwmPixmap *px;
-	unsigned th = ds->style.titleheight;
+	unsigned th = titleheight(ds);
 	Pixmap draw = None;
 	Picture pict = None;
 	Bool result = False;
@@ -55,9 +65,6 @@ createicon_bitmap(AScreen *ds, Client *c, XImage *xdraw, XImage *xmask, Bool cro
 #endif				/* CMPALPHA */
 	};
 	unsigned long pamask = CPComponentAlpha;
-
-	if (ds->style.outline)
-		th--;
 
 	if (!(ximage = combine_bitmap_and_mask(ds, xdraw, xmask))) {
 		EPRINTF("could not combine draw and mask images\n");
@@ -131,7 +138,7 @@ createicon_pixmap(AScreen *ds, Client *c, XImage *xdraw, XImage *xmask, Bool cro
 	XImage *ximage = NULL;
 	ButtonImage **bis, *bi;
 	AdwmPixmap *px;
-	unsigned th = ds->style.titleheight;
+	unsigned th = titleheight(ds);
 	Pixmap draw = None;
 	Picture pict = None;
 	Bool result = False;
@@ -143,9 +150,6 @@ createicon_pixmap(AScreen *ds, Client *c, XImage *xdraw, XImage *xmask, Bool cro
 #endif				/* CMPALPHA */
 	};
 	unsigned long pamask = CPComponentAlpha;
-
-	if (ds->style.outline)
-		th--;
 
 	if (!(ximage = combine_pixmap_and_mask(ds, xdraw, xmask))) {
 		EPRINTF("could not combine draw and mask images\n");
@@ -220,7 +224,7 @@ render_createbitmapicon(AScreen *ds, Client *c, Pixmap icon, Pixmap mask, unsign
 	XImage *xdraw = NULL, *xmask = NULL, *ximage = NULL;
 	ButtonImage *bi, **bis;
 	AdwmPixmap *px;
-	unsigned th = ds->style.titleheight;
+	unsigned th = titleheight(ds);
 	Pixmap draw = None;
 	Picture pict = None;
 	Bool result = False;
@@ -306,7 +310,7 @@ render_createpixmapicon(AScreen *ds, Client *c, Pixmap icon, Pixmap mask, unsign
 	XImage *xdraw = NULL, *xmask = NULL, *ximage = NULL;
 	ButtonImage *bi, **bis;
 	AdwmPixmap *px;
-	unsigned th = ds->style.titleheight;
+	unsigned th = titleheight(ds);
 	Pixmap draw = None;
 	Picture pict = None;
 	Bool result = False;
@@ -403,7 +407,7 @@ render_createdataicon(AScreen *ds, Client *c, unsigned w, unsigned h, long *data
 	XImage *ximage = NULL;
 	ButtonImage *bi, **bis;
 	AdwmPixmap *px;
-	unsigned i, j, th = ds->style.titleheight;
+	unsigned i, j, th = titleheight(ds);
 	long *p;
 	Pixmap draw = None;
 	Picture pict = None;
@@ -607,17 +611,13 @@ render_drawbutton(AScreen *ds, Client *c, ElementType type, XftColor *col, int x
 	Geometry g = { 0, };
 	ButtonImage *bi;
 	AdwmPixmap *px;
-	int th;
+	int th = titleheight(ds);
 
 	if (!(bi = buttonimage(ds, c, type)) || !bi->present) {
 		XPRINTF("button %d has no button image\n", type);
 		return 0;
 	}
 	px = &bi->px;
-
-	th = ds->dc.h;
-	if (ds->style.outline)
-		th--;
 
 	/* geometry of the container */
 	g.x = x;
@@ -721,12 +721,8 @@ int
 render_drawsep(AScreen *ds, const char *text, Drawable drawable, XftDraw *xftdraw,
 	       XftColor *col, int hilite, int x, int y, int mw)
 {
-	int th, b;
 	Geometry g;
-
-	th = ds->dc.h;
-	if (ds->style.outline)
-		th--;
+	int b, th = titleheight(ds);
 
 	g.x = x + th / 4;
 	g.y = 0;
@@ -975,6 +971,77 @@ render_initsvg(char *path, AdwmPixmap *px)
 	return (False);
 }
 
+#ifdef JUSTRENDER
+Bool
+render_initxpm(char *path, AdwmPixmap *px)
+{
+#ifdef XPM
+	Pixmap draw = None, mask = None;
+	Picture pict = None;
+	int status;
+	unsigned th = titleheight(scr);
+	XRenderPictFormat *format;
+	XpmAttributes xa = {
+		.visual = DefaultVisual(dpy, scr->screen),
+		.colormap = DefaultColormap(dpy, scr->screen),
+		.depth = DefaultDepth(dpy, scr->screen),
+		.valuemask = XpmVisual| XpmColormap| XpmDepth,
+	};
+	XRenderPictureAttributes pa = {
+#ifdef CMPALPHA
+		.component_alpha = True,
+#else				/* CMPALPHA */
+		.component_alpha = False,
+#endif				/* CMPALPHA */
+	};
+	unsigned long pamask = CPComponentAlpha;
+
+	status = XpmReadFileToPixmap(dpy, scr->drawable, path, &draw, &mask, &xa);
+	if (status != XpmSuccess || !draw) {
+		EPRINTF("could not load xpm file %s\n", path);
+		goto error;
+	}
+	XpmFreeAttributes(&xa);
+	if (mask) {
+		pa.clip_mask = mask;
+		pa.clip_x_origin = 0;
+		pa.clip_y_origin = 0;
+		pamask |= CPClipMask | CPClipXOrigin | CPClipYOrigin;
+	}
+	format = XRenderFindStandardFormat(dpy, PictStandardRGB24);
+	if (!(pict = XRenderCreatePicture(dpy, draw, format, pamask, &pa))) {
+		EPRINTF("could not create picture\n");
+		goto error;
+	}
+	if (px->pixmap.pict) {
+		XRenderFreePicture(dpy, px->pixmap.pict);
+		px->pixmap.pict = None;
+	}
+	if (px->file) {
+		free(px->file);
+		px->file = NULL;
+	}
+	px->pixmap.pict = pict;
+	px->file = path;
+	px->x = px->y = px->b = 0;
+	px->w = xa.width;
+	px->h = xa.height;
+	if (px->h > th) {
+		/* read lower down into image to clip top and bottom by same amount */
+		px->y += (px->h - th) / 2;
+		px->h = th;
+	}
+      error:
+	if (draw)
+		XFreePixmap(dpy, draw);
+	if (mask)
+		XFreePixmap(dpy, mask);
+	return (pict ? True : False);
+#else
+	return (False);
+#endif				/* !XPM */
+}
+#else				/* JUSTRENDER */
 Bool
 render_initxpm(char *path, AdwmPixmap *px)
 {
@@ -1056,6 +1123,7 @@ render_initxpm(char *path, AdwmPixmap *px)
 	return (False);
 #endif				/* !XPM */
 }
+#endif				/* JUSTRENDER */
 
 Bool
 render_initxbm(char *path, AdwmPixmap *px)

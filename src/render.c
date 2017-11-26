@@ -916,21 +916,18 @@ render_initpng(char *path, AdwmPixmap *px)
 	unsigned long pamask = CPComponentAlpha;
 
 	XImage *ximage;
-	unsigned w, h, d = scr->depth;
 
 	ximage = png_read_file_to_ximage(dpy, scr->visual, path);
 	if (!ximage) {
 		EPRINTF("could not read png file %s\n", path);
 		goto error;
 	}
-	w = ximage->width;
-	h = ximage->height;
 
-	if (!(draw = XCreatePixmap(dpy, scr->drawable, w, h, d))) {
+	if (!(draw = XCreatePixmap(dpy, scr->drawable, ximage->width, ximage->height, ximage->depth))) {
 		EPRINTF("could not create pixmap\n");
 		goto error;
 	}
-	XPutImage(dpy, draw, scr->dc.gc, ximage, 0, 0, 0, 0, w, h);
+	XPutImage(dpy, draw, scr->dc.gc, ximage, 0, 0, 0, 0, ximage->width, ximage->height);
 
 	if (!(pict = XRenderCreatePicture(dpy, draw, scr->format, pamask, &pa))) {
 		EPRINTF("could not create picture\n");
@@ -947,8 +944,9 @@ render_initpng(char *path, AdwmPixmap *px)
 	px->pixmap.pict = pict;
 	px->file = path;
 	px->x = px->y = px->b = 0;
-	px->w = w;
-	px->h = h;
+	px->w = ximage->width;
+	px->h = ximage->height;
+	px->d = ximage->depth;
 	if (px->h > scr->style.titleheight) {
 		/* read lower down into image to clip top and bottom by same amount */
 		px->y += (px->h - scr->style.titleheight) / 2;
@@ -1026,6 +1024,7 @@ render_initxpm(char *path, AdwmPixmap *px)
 	px->x = px->y = px->b = 0;
 	px->w = xa.width;
 	px->h = xa.height;
+	px->d = xa.depth;
 	if (px->h > th) {
 		/* read lower down into image to clip top and bottom by same amount */
 		px->y += (px->h - th) / 2;

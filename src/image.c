@@ -9,6 +9,8 @@
 #include "config.h"
 #include "image.h" /* verification */
 
+#define ALPHAMAX
+
 const char *
 xbm_status_string(int status)
 {
@@ -217,7 +219,7 @@ png_read_file_to_ximage(Display *display, Visual *visual, const char *file)
 	if (!(xicon = XCreateImage(display, visual, 32, ZPixmap, 0, NULL, width, height, 32, 0)))
 		goto pngerr;
 	vol_xicon = xicon;
-	xicon->data = ecalloc(width * height, sizeof(DATA32));
+	xicon->data = ecalloc(xicon->bytes_per_line, xicon->height);
 	for (p = png_pixels, j = 0; j < height; j++) {
 		for (i = 0; i < width; i++, p += channels) {
 			switch(color_type) {
@@ -242,6 +244,8 @@ png_read_file_to_ximage(Display *display, Visual *visual, const char *file)
 				A = p[3];
 				break;
 			}
+			if (!A)
+				R = G = B = 0;
 			pixel = (A << 24)|(R <<16)|(G<<8)|(B<<0);
 			XPutPixel(xicon, i, j, pixel);
 		}
@@ -359,6 +363,7 @@ dn_scale_image(AScreen *ds, XImage *ximage, unsigned nw, unsigned nh, Bool bitma
 		for (j = 0; j < nh; j++)
 			for (i = 0; i < nw; i++)
 				XPutPixel(xscale, i, j, XGetPixel(xscale, i, j) | 0xff000000);
+#ifdef ALPHAMAX
 	else if (amax < 255UL) {
 		double bump = (double) 255 / (double) amax;
 
@@ -372,6 +377,7 @@ dn_scale_image(AScreen *ds, XImage *ximage, unsigned nw, unsigned nh, Bool bitma
 			}
 		}
 	}
+#endif
 	free(counts);
 	free(colors);
 	XDestroyImage(ximage);
@@ -475,6 +481,7 @@ up_scale_image(AScreen *ds, XImage *ximage, unsigned nw, unsigned nh, Bool bitma
 		for (j = 0; j < nh; j++)
 			for (i = 0; i < nw; i++)
 				XPutPixel(xscale, i, j, XGetPixel(xscale, i, j) | 0xff000000);
+#ifdef ALPHAMAX
 	else if (amax < 255UL) {
 		double bump = (double) 255 / (double) amax;
 
@@ -488,6 +495,7 @@ up_scale_image(AScreen *ds, XImage *ximage, unsigned nw, unsigned nh, Bool bitma
 			}
 		}
 	}
+#endif
 	free(counts);
 	free(colors);
 	XDestroyImage(ximage);
@@ -584,6 +592,7 @@ wh_scale_image(AScreen *ds, XImage *ximage, unsigned nw, unsigned nh, Bool bitma
 		for (j = 0; j < nh; j++)
 			for (i = 0; i < nw; i++)
 				XPutPixel(xscale, i, j, XGetPixel(xscale, i, j) | 0xff000000);
+#ifdef ALPHAMAX
 	else if (amax < 255UL) {
 		double bump = (double) 255 / (double) amax;
 
@@ -597,6 +606,7 @@ wh_scale_image(AScreen *ds, XImage *ximage, unsigned nw, unsigned nh, Bool bitma
 			}
 		}
 	}
+#endif
 	free(counts);
 	free(colors);
 	XDestroyImage(ximage);
@@ -693,6 +703,7 @@ hw_scale_image(AScreen *ds, XImage *ximage, unsigned nw, unsigned nh, Bool bitma
 		for (j = 0; j < nh; j++)
 			for (i = 0; i < nw; i++)
 				XPutPixel(xscale, i, j, XGetPixel(xscale, i, j) | 0xff000000);
+#ifdef ALPHAMAX
 	else if (amax < 255UL) {
 		double bump = (double) 255 / (double) amax;
 
@@ -706,6 +717,7 @@ hw_scale_image(AScreen *ds, XImage *ximage, unsigned nw, unsigned nh, Bool bitma
 			}
 		}
 	}
+#endif
 	free(counts);
 	free(colors);
 	XDestroyImage(ximage);

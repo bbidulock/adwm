@@ -24,6 +24,7 @@
 -ss
 -hnl
 -nbc
+-TXRectangle
 -TVisual
 -TXImage
 -TIconTheme

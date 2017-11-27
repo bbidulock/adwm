@@ -16,9 +16,11 @@
 #endif
 #include "render.h" /* verification */
 
+#undef ALPHAW32
 #undef CMPALPHA
-#define CROPSCALE
+#undef CROPSCALE
 #define FILTERPIC
+#undef NEARESTFL
 #undef DOWNSCALE
 #define JUSTRENDER
 
@@ -91,13 +93,15 @@ createicon_bitmap(AScreen *ds, Client *c, Pixmap draw, Pixmap mask, unsigned w, 
 					  { 0, 0, XDoubleToFixed(1.0) } }
 				};
 				/* *INDENT-ON* */
-#if 0
 #ifdef FILTERPIC
+#ifdef NEARESTFL
+				XRenderSetPictureFilter(dpy, pict, FilterNearest, NULL, 0);
+#else
 				XRenderSetPictureFilter(dpy, pict, FilterBilinear, NULL, 0);
-#endif				/* FILTERPIC */
 #endif
+#endif				/* FILTERPIC */
 				XRenderSetPictureTransform(dpy, pict, &trans);
-				px->w = floor(w / scale);
+				px->w = lround(w / scale);
 				px->h = th;
 			}
 			if (px->bitmap.pict) {
@@ -171,13 +175,17 @@ createicon_bitmap(AScreen *ds, Client *c, XImage *xdraw, XImage *xmask, Bool cro
 				};
 				/* *INDENT-ON* */
 
-#if 0
+#if 1
 #ifdef FILTERPIC
+#ifdef NEARESTFL
+				XRenderSetPictureFilter(dpy, pict, FilterNearest, NULL, 0);
+#else
 				XRenderSetPictureFilter(dpy, pict, FilterBilinear, NULL, 0);
+#endif
 #endif				/* FILTERPIC */
 #endif
 				XRenderSetPictureTransform(dpy, pict, &trans);
-				px->w = floor(ximage->width / scale);
+				px->w = lround(ximage->width / scale);
 				px->h = th;
 			}
 			if (px->bitmap.pict) {
@@ -210,11 +218,15 @@ createicon_pixmap(AScreen *ds, Client *c, Pixmap draw, Pixmap mask, unsigned w, 
 	Picture pict = None, alph = None;
 	XRenderPictFormat *format;
 	XRenderPictureAttributes pa = {
+#ifdef ALPHAW32
+		.component_alpha = d == 32 ? True : False,
+#else				/* ALPHAW32 */
 #ifdef CMPALPHA
 		.component_alpha = True,
 #else				/* CMPALPHA */
 		.component_alpha = False,
 #endif				/* CMPALPHA */
+#endif				/* ALPHAW32 */
 	};
 	unsigned long pamask = CPComponentAlpha;
 	unsigned th = titleheight(ds);
@@ -260,10 +272,14 @@ createicon_pixmap(AScreen *ds, Client *c, Pixmap draw, Pixmap mask, unsigned w, 
 				};
 				/* *INDENT-ON* */
 #ifdef FILTERPIC
+#ifdef NEARESTFL
+				XRenderSetPictureFilter(dpy, pict, FilterNearest, NULL, 0);
+#else
 				XRenderSetPictureFilter(dpy, pict, FilterBilinear, NULL, 0);
+#endif
 #endif				/* FILTERPIC */
 				XRenderSetPictureTransform(dpy, pict, &trans);
-				px->w = floor(w / scale);
+				px->w = lround(w / scale);
 				px->h = th;
 			}
 			if (px->pixmap.pict) {
@@ -343,10 +359,14 @@ createicon_pixmap(AScreen *ds, Client *c, XImage *xdraw, XImage *xmask, Bool cro
 				};
 				/* *INDENT-ON* */
 #ifdef FILTERPIC
+#ifdef NEARESTFL
+				XRenderSetPictureFilter(dpy, pict, FilterNearest, NULL, 0);
+#else
 				XRenderSetPictureFilter(dpy, pict, FilterBilinear, NULL, 0);
+#endif
 #endif				/* FILTERPIC */
 				XRenderSetPictureTransform(dpy, pict, &trans);
-				px->w = floor(ximage->width / scale);
+				px->w = lround(ximage->width / scale);
 				px->h = th;
 			}
 			if (px->pixmap.pict) {
@@ -434,10 +454,14 @@ render_createbitmapicon(AScreen *ds, Client *c, Pixmap icon, Pixmap mask, unsign
 				};
 				/* *INDENT-ON* */
 #ifdef FILTERPIC
+#ifdef NEARESTFL
+				XRenderSetPictureFilter(dpy, pict, FilterNearest, NULL, 0);
+#else
 				XRenderSetPictureFilter(dpy, pict, FilterBilinear, NULL, 0);
+#endif
 #endif				/* FILTERPIC */
 				XRenderSetPictureTransform(dpy, pict, &trans);
-				px->w = floor(w / scale);
+				px->w = lround(w / scale);
 				px->h = th;
 			}
 			if (px->bitmap.pict) {
@@ -541,10 +565,14 @@ render_createpixmapicon(AScreen *ds, Client *c, Pixmap icon, Pixmap mask, unsign
 				};
 				/* *INDENT-ON* */
 #ifdef FILTERPIC
+#ifdef NEARESTFL
+				XRenderSetPictureFilter(dpy, pict, FilterNearest, NULL, 0);
+#else
 				XRenderSetPictureFilter(dpy, pict, FilterBilinear, NULL, 0);
+#endif
 #endif				/* FILTERPIC */
 				XRenderSetPictureTransform(dpy, pict, &trans);
-				px->w = floor(ximage->width / scale);
+				px->w = lround(ximage->width / scale);
 				px->h = th;
 			}
 			if (px->pixmap.pict) {
@@ -582,11 +610,15 @@ render_createdataicon(AScreen *ds, Client *c, unsigned w, unsigned h, long *data
 	Picture pict = None;
 	Bool result = False;
 	XRenderPictureAttributes pa = {
+#ifdef ALPHAW32
+		.component_alpha = True,
+#else				/* ALPHAW32 */
 #ifdef CMPALPHA
 		.component_alpha = True,
 #else				/* CMPALPHA */
 		.component_alpha = False,
 #endif				/* CMPALPHA */
+#endif				/* ALPHAW32 */
 	};
 	unsigned long pamask = CPComponentAlpha;
 	unsigned long alpha = 0;
@@ -595,7 +627,7 @@ render_createdataicon(AScreen *ds, Client *c, unsigned w, unsigned h, long *data
 		EPRINTF("ERROR: pass null pointer!\n");
 		return (False);
 	}
-	if (!(ximage = XCreateImage(dpy, ds->visual, ds->depth, ZPixmap, 0, NULL, w, h, 8, 0))) {
+	if (!(ximage = XCreateImage(dpy, ds->visual, ds->depth, ZPixmap, 0, NULL, w, h, 32, 0))) {
 		EPRINTF("could not create ximage %ux%ux%u\n", w, h, ds->depth);
 		goto error;
 	}
@@ -605,8 +637,12 @@ render_createdataicon(AScreen *ds, Client *c, unsigned w, unsigned h, long *data
 	}
 	for (p = data, j = 0; j < ximage->height; j++) {
 		for (i = 0; i < ximage->width; i++, p++) {
-			unsigned long pixel = *p & 0xffffffff;
-			alpha |= pixel & 0xff000000;
+			unsigned long pixel = *p & 0xffffffffUL;
+#if 0
+			if (!(pixel & 0xff000000))
+				pixel = 0;
+#endif
+			alpha |= pixel & 0xff000000UL;
 			XPutPixel(ximage, i, j, pixel);
 		}
 	}
@@ -614,7 +650,7 @@ render_createdataicon(AScreen *ds, Client *c, unsigned w, unsigned h, long *data
 		_DPRINTF("data icon has no alpha!\n");
 		for (p = data, j = 0; j < ximage->height; j++)
 			for (i = 0; i < ximage->width; i++, p++)
-				XPutPixel(ximage, i, j, *p | 0xff000000);
+				XPutPixel(ximage, i, j, *p | 0xff000000UL);
 	}
 #ifdef CROPSCALE
 	if (ximage->height > th)
@@ -654,10 +690,14 @@ render_createdataicon(AScreen *ds, Client *c, unsigned w, unsigned h, long *data
 				};
 				/* *INDENT-ON* */
 #ifdef FILTERPIC
+#ifdef NEARESTFL
+				XRenderSetPictureFilter(dpy, pict, FilterNearest, NULL, 0);
+#else
 				XRenderSetPictureFilter(dpy, pict, FilterBilinear, NULL, 0);
+#endif
 #endif				/* FILTERPIC */
 				XRenderSetPictureTransform(dpy, pict, &trans);
-				px->w = floor(ximage->width / scale);
+				px->w = lround(ximage->width / scale);
 				px->h = th;
 			}
 			if (px->pixmap.pict) {
@@ -686,12 +726,26 @@ render_createpngicon(AScreen *ds, Client *c, const char *file)
 #ifdef LIBPNG
 	Pixmap draw = None;
 	XImage *ximage;
+	unsigned th = titleheight(ds);
 
 	ximage = png_read_file_to_ximage(dpy, ds->visual, file);
 	if (!ximage) {
 		EPRINTF("could not read png file %s\n", file);
 		goto error;
 	}
+	(void) th;
+#ifdef CROPSCALE
+	if (ximage->height > th)
+		ximage = crop_image(ds, ximage);
+#endif				/* CROPSCALE */
+#ifdef DOWNSCALE
+	if (ximage->height > th) {
+		unsigned tw = floor((double) ximage->width * (double) th / (double) ximage->height);
+		_DPRINTF("scaling image %ux%ux%u to %ux%u\n", ximage->width, ximage->height, ximage->depth, tw, th);
+		ximage = dn_scale_image(ds, ximage, tw, th, False);
+		_DPRINTF("scaled image to %ux%ux%u\n",  ximage->width, ximage->height, ximage->depth);
+	}
+#endif				/* DOWNSCALE */
 	if (!(draw = XCreatePixmap(dpy, ds->drawable, ximage->width, ximage->height, ximage->depth))) {
 		EPRINTF("could not create pixmap\n");
 		goto error;
@@ -1210,11 +1264,14 @@ render_initpng(char *path, AdwmPixmap *px)
 	px->w = ximage->width;
 	px->h = ximage->height;
 	px->d = ximage->depth;
-	if (px->h > scr->style.titleheight) {
+#if 0
+	unsigned th = titleheight(scr);
+	if (px->h > th) {
 		/* read lower down into image to clip top and bottom by same amount */
-		px->y += (px->h - scr->style.titleheight) / 2;
-		px->h = scr->style.titleheight;
+		px->y += (px->h - th) / 2;
+		px->h = th;
 	}
+#endif
       error:
 	if (ximage)
 		XDestroyImage(ximage);
@@ -1240,7 +1297,6 @@ render_initxpm(char *path, AdwmPixmap *px)
 	Pixmap draw = None, mask = None;
 	Picture pict = None;
 	int status;
-	unsigned th = titleheight(scr);
 	XRenderPictFormat *format;
 	XpmAttributes xa = {
 		.visual = DefaultVisual(dpy, scr->screen),
@@ -1269,11 +1325,9 @@ render_initxpm(char *path, AdwmPixmap *px)
 		pa.clip_y_origin = 0;
 		pamask |= CPClipMask | CPClipXOrigin | CPClipYOrigin;
 	}
-#if 1
+
 	format = XRenderFindStandardFormat(dpy, PictStandardRGB24);
-#else
-	format = XRenderFindStandardFormat(dpy, PictStandardARGB32);
-#endif
+
 	if (!(pict = XRenderCreatePicture(dpy, draw, format, pamask, &pa))) {
 		EPRINTF("could not create picture\n");
 		goto error;
@@ -1292,11 +1346,14 @@ render_initxpm(char *path, AdwmPixmap *px)
 	px->w = xa.width;
 	px->h = xa.height;
 	px->d = xa.depth;
+#if 0
+	unsigned th = titleheight(scr);
 	if (px->h > th) {
 		/* read lower down into image to clip top and bottom by same amount */
 		px->y += (px->h - th) / 2;
 		px->h = th;
 	}
+#endif
       error:
 	if (draw)
 		XFreePixmap(dpy, draw);
@@ -1370,11 +1427,14 @@ render_initxpm(char *path, AdwmPixmap *px)
 	px->x = px->y = px->b = 0;
 	px->w = w;
 	px->h = h;
-	if (px->h > scr->style.titleheight) {
+#if 0
+	unsigned th = titleheight(scr);
+	if (px->h > th) {
 		/* read lower down into image to clip top and bottom by same amount */
-		px->y += (px->h - scr->style.titleheight) / 2;
-		px->h = scr->style.titleheight;
+		px->y += (px->h - th) / 2;
+		px->h = th;
 	}
+#endif
       error:
 	if (xdraw)
 		XDestroyImage(xdraw);

@@ -16,7 +16,7 @@
 #endif
 #include "render.h" /* verification */
 
-#define CMPALPHA
+#undef CMPALPHA
 #define CROPSCALE
 #define FILTERPIC
 #undef DOWNSCALE
@@ -91,9 +91,11 @@ createicon_bitmap(AScreen *ds, Client *c, Pixmap draw, Pixmap mask, unsigned w, 
 					  { 0, 0, XDoubleToFixed(1.0) } }
 				};
 				/* *INDENT-ON* */
+#if 0
 #ifdef FILTERPIC
 				XRenderSetPictureFilter(dpy, pict, FilterBilinear, NULL, 0);
 #endif				/* FILTERPIC */
+#endif
 				XRenderSetPictureTransform(dpy, pict, &trans);
 				px->w = floor(w / scale);
 				px->h = th;
@@ -199,6 +201,87 @@ createicon_bitmap(AScreen *ds, Client *c, XImage *xdraw, XImage *xmask, Bool cro
 }
 #endif				/* JUSTRENDER */
 
+#ifdef JUSTRENDER
+static Bool
+createicon_pixmap(AScreen *ds, Client *c, Pixmap draw, Pixmap mask, unsigned w, unsigned h, unsigned d, Bool cropscale)
+{
+	ButtonImage **bis, *bi;
+	AdwmPixmap *px;
+	Picture pict = None, alph = None;
+	XRenderPictFormat *format;
+	XRenderPictureAttributes pa = {
+#ifdef CMPALPHA
+		.component_alpha = True,
+#else				/* CMPALPHA */
+		.component_alpha = False,
+#endif				/* CMPALPHA */
+	};
+	unsigned long pamask = CPComponentAlpha;
+	unsigned th = titleheight(ds);
+	Bool result = False;
+
+	if (mask) {
+		format = XRenderFindStandardFormat(dpy, PictStandardA1);
+		if (!(alph = XRenderCreatePicture(dpy, mask, format, pamask, &pa))) {
+			EPRINTF("cannot create alpha picture\n");
+			goto error;
+		}
+		pa.alpha_map = alph;
+		pa.alpha_x_origin = 0;
+		pa.alpha_y_origin = 0;
+		pamask |= CPAlphaMap | CPAlphaXOrigin | CPAlphaYOrigin;
+	}
+#if 0
+	format = XRenderFindStandardFormat(dpy, PictStandardARGB32);
+#else
+	if (d == 32)
+		format = XRenderFindStandardFormat(dpy, PictStandardARGB32);
+	else
+		format = XRenderFindStandardFormat(dpy, PictStandardRGB24);
+#endif
+
+	for (bis = getbuttons(c); bis && *bis; bis++) {
+		if ((pict = XRenderCreatePicture(dpy, draw, format, pamask, &pa))) {
+			bi = *bis;
+			px = &bi->px;
+			px->x = px->y = px->b = 0;
+			px->w = w;
+			px->h = h;
+			px->d = d;
+			if (h > th) {
+				_DPRINTF("transforming image from h = %u to %u\n", h, th);
+				/* get XRender to scale the image for us */
+				XDouble scale = (XDouble) h / (XDouble) th;
+				/* *INDENT-OFF* */
+				XTransform trans = {
+					{ { XDoubleToFixed(scale), 0, 0 },
+					  { 0, XDoubleToFixed(scale), 0 },
+					  { 0, 0, XDoubleToFixed(1.0) } }
+				};
+				/* *INDENT-ON* */
+#ifdef FILTERPIC
+				XRenderSetPictureFilter(dpy, pict, FilterBilinear, NULL, 0);
+#endif				/* FILTERPIC */
+				XRenderSetPictureTransform(dpy, pict, &trans);
+				px->w = floor(w / scale);
+				px->h = th;
+			}
+			if (px->pixmap.pict) {
+				XRenderFreePicture(dpy, px->pixmap.pict);
+				px->pixmap.pict = None;
+			}
+			px->pixmap.pict = pict;
+			bi->present = True;
+			result = True;
+		} else
+			EPRINTF("could not create picture\n");
+	}
+      error:
+	if (alph)
+		XRenderFreePicture(dpy, alph);
+	return (result);
+}
+#else				/* JUSTRENDER */
 static Bool
 createicon_pixmap(AScreen *ds, Client *c, XImage *xdraw, XImage *xmask, Bool cropscale)
 {
@@ -283,7 +366,16 @@ createicon_pixmap(AScreen *ds, Client *c, XImage *xdraw, XImage *xmask, Bool cro
 		XDestroyImage(ximage);
 	return (result);
 }
+#endif				/* JUSTRENDER */
 
+#ifdef JUSTRENDER
+Bool
+render_createbitmapicon(AScreen *ds, Client *c, Pixmap icon, Pixmap mask, unsigned w,
+			unsigned h)
+{
+	return createicon_bitmap(ds, c, icon, mask, w, h, True);
+}
+#else				/* JUSTRENDER */
 Bool
 render_createbitmapicon(AScreen *ds, Client *c, Pixmap icon, Pixmap mask, unsigned w,
 			unsigned h)
@@ -369,7 +461,16 @@ render_createbitmapicon(AScreen *ds, Client *c, Pixmap icon, Pixmap mask, unsign
 		XDestroyImage(ximage);
 	return (result);
 }
+#endif				/* JUSTRENDER */
 
+#ifdef JUSTRENDER
+Bool
+render_createpixmapicon(AScreen *ds, Client *c, Pixmap icon, Pixmap mask, unsigned w,
+			unsigned h, unsigned d)
+{
+	return createicon_pixmap(ds, c, icon, mask, w, h, d, True);
+}
+#else				/* JUSTRENDER */
 Bool
 render_createpixmapicon(AScreen *ds, Client *c, Pixmap icon, Pixmap mask, unsigned w,
 			unsigned h, unsigned d)
@@ -467,6 +568,7 @@ render_createpixmapicon(AScreen *ds, Client *c, Pixmap icon, Pixmap mask, unsign
 		XDestroyImage(ximage);
 	return (result);
 }
+#endif				/* JUSTRENDER */
 
 Bool
 render_createdataicon(AScreen *ds, Client *c, unsigned w, unsigned h, long *data)
@@ -576,6 +678,37 @@ render_createdataicon(AScreen *ds, Client *c, unsigned w, unsigned h, long *data
 	return (result);
 }
 
+#ifdef JUSTRENDER
+Bool
+render_createpngicon(AScreen *ds, Client *c, const char *file)
+{
+	Bool result = False;
+#ifdef LIBPNG
+	Pixmap draw = None;
+	XImage *ximage;
+
+	ximage = png_read_file_to_ximage(dpy, ds->visual, file);
+	if (!ximage) {
+		EPRINTF("could not read png file %s\n", file);
+		goto error;
+	}
+	if (!(draw = XCreatePixmap(dpy, ds->drawable, ximage->width, ximage->height, ximage->depth))) {
+		EPRINTF("could not create pixmap\n");
+		goto error;
+	}
+	XPutImage(dpy, draw, ds->dc.gc, ximage, 0, 0, 0, 0, ximage->width, ximage->height);
+	result = createicon_pixmap(ds, c, draw, None, ximage->width, ximage->height, ximage->depth, True);
+	if (result)
+		_DPRINTF("created icon from %s\n", file);
+      error:
+	if (ximage)
+		XDestroyImage(ximage);
+	if (draw)
+		XFreePixmap(dpy, draw);
+#endif				/* LIBPNG */
+	return (result);
+}
+#else				/* JUSTRENDER */
 Bool
 render_createpngicon(AScreen *ds, Client *c, const char *file)
 {
@@ -596,6 +729,7 @@ render_createpngicon(AScreen *ds, Client *c, const char *file)
 #endif				/* LIBPNG */
 	return (result);
 }
+#endif				/* JUSTRENDER */
 
 Bool
 render_createsvgicon(AScreen *ds, Client *c, const char *file)
@@ -605,6 +739,39 @@ render_createsvgicon(AScreen *ds, Client *c, const char *file)
 	return (False);
 }
 
+#ifdef JUSTRENDER
+Bool
+render_createxpmicon(AScreen *ds, Client *c, const char *file)
+{
+	Bool result = False;
+#ifdef XPM
+	Pixmap draw = None, mask = None;
+	XpmAttributes xa = {
+		.visual = DefaultVisual(dpy, ds->screen),
+		.colormap = DefaultColormap(dpy, ds->screen),
+		.depth = DefaultDepth(dpy, ds->screen),
+		.valuemask = XpmDepth | XpmVisual | XpmColormap,
+	};
+	int status;
+
+	status = XpmReadFileToPixmap(dpy, ds->drawable, file, &draw, &mask, &xa);
+	if (status != XpmSuccess || !draw) {
+		EPRINTF("could not load xpm file %s\n", file);
+		goto error;
+	}
+	XpmFreeAttributes(&xa);
+	result = createicon_pixmap(ds, c, draw, mask, xa.width, xa.height, xa.depth, True);
+	if (result)
+		_DPRINTF("created icon from %s\n", file);
+      error:
+	if (mask)
+		XFreePixmap(dpy, mask);
+	if (draw)
+		XFreePixmap(dpy, draw);
+#endif				/* XPM */
+	return (result);
+}
+#else				/* JUSTRENDER */
 Bool
 render_createxpmicon(AScreen *ds, Client *c, const char *file)
 {
@@ -638,6 +805,7 @@ render_createxpmicon(AScreen *ds, Client *c, const char *file)
 #endif				/* XPM */
 	return (result);
 }
+#endif				/* JUSTRENDER */
 
 #ifdef JUSTRENDER
 Bool
@@ -837,7 +1005,11 @@ render_drawdockapp(AScreen *ds, Client *c)
 {
 	XftColor *col;
 	Picture dst, src, fill;
+#if 1
 	XRenderPictFormat *format = XRenderFindStandardFormat(dpy, PictStandardRGB24);
+#else
+	XRenderPictFormat *format = XRenderFindStandardFormat(dpy, PictStandardARGB32);
+#endif
 
 	XRenderPictureAttributes pa = {
 #ifdef CMPALPHA
@@ -1097,7 +1269,11 @@ render_initxpm(char *path, AdwmPixmap *px)
 		pa.clip_y_origin = 0;
 		pamask |= CPClipMask | CPClipXOrigin | CPClipYOrigin;
 	}
+#if 1
 	format = XRenderFindStandardFormat(dpy, PictStandardRGB24);
+#else
+	format = XRenderFindStandardFormat(dpy, PictStandardARGB32);
+#endif
 	if (!(pict = XRenderCreatePicture(dpy, draw, format, pamask, &pa))) {
 		EPRINTF("could not create picture\n");
 		goto error;

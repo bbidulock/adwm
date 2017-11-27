@@ -2875,19 +2875,27 @@ ewmh_process_net_window_icon(Client *c)
 	if ((card = getcard(c->win, _XA_NET_WM_ICON, &n))) {
 		if (n < 2 || n < 2 + card[0] * card[1])
 			XFree(card);
-		else if (createneticon(c, card, n))
+		else if (createneticon(c, card, n)) {
+			XPRINTF(c, "using _NET_WM_ICON for icon\n");
 			return;
+		}
 	}
 	if ((pixmap = getpixmaps(c->win, _XA_KWM_WIN_ICON, &n))) {
 		if (n < 2)
 			XFree(pixmap);
-		else if (createkwmicon(c, pixmap, n))
+		else if (createkwmicon(c, pixmap, n)) {
+			XPRINTF(c, "using KWM_WM_ICON for icon\n");
 			return;
+		}
 	}
-	if (createwmicon(c))
+	if (createwmicon(c)) {
+		XPRINTF(c, "using WM_HINTS icon for icon\n");
 		return;
-	if (createappicon(c))
+	}
+	if (createappicon(c)) {
+		XPRINTF(c, "using app icon for icon\n");
 		return;
+	}
 }
 
 void

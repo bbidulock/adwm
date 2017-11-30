@@ -85,12 +85,12 @@ createicon_bitmap(AScreen *ds, Client *c, Pixmap draw, Pixmap mask, unsigned w, 
 			if (h > th) {
 				_DPRINTF("transforming image from h = %u to %u\n", h, th);
 				/* get XRender to scale the image for us */
-				XDouble scale = (XDouble) h / (XDouble) th;
+				XDouble scale = (XDouble) th / (XDouble) h;
 				/* *INDENT-OFF* */
 				XTransform trans = {
-					{ { XDoubleToFixed(scale), 0, 0 },
-					  { 0, XDoubleToFixed(scale), 0 },
-					  { 0, 0, XDoubleToFixed(1.0) } }
+					{ { XDoubleToFixed(1.0), 0, 0 },
+					  { 0, XDoubleToFixed(1.0), 0 },
+					  { 0, 0, XDoubleToFixed(scale) } }
 				};
 				/* *INDENT-ON* */
 #ifdef FILTERPIC
@@ -101,7 +101,7 @@ createicon_bitmap(AScreen *ds, Client *c, Pixmap draw, Pixmap mask, unsigned w, 
 #endif
 #endif				/* FILTERPIC */
 				XRenderSetPictureTransform(dpy, pict, &trans);
-				px->w = lround(w / scale);
+				px->w = lround(w * scale);
 				px->h = th;
 			}
 			if (px->bitmap.pict) {
@@ -166,12 +166,12 @@ createicon_bitmap(AScreen *ds, Client *c, XImage *xdraw, XImage *xmask, Bool cro
 			if (ximage->height > th) {
 				_DPRINTF("transforming image from h = %u to %u\n", ximage->height, th);
 				/* get XRender to scale the image for us */
-				XDouble scale = (XDouble) ximage->height / (XDouble) th;
+				XDouble scale = (XDouble) th / (XDouble) ximage->height;
 				/* *INDENT-OFF* */
 				XTransform trans = {
-					{ { XDoubleToFixed(scale), 0, 0 },
-					  { 0, XDoubleToFixed(scale), 0 },
-					  { 0, 0, XDoubleToFixed(1.0) } }
+					{ { XDoubleToFixed(1.0), 0, 0 },
+					  { 0, XDoubleToFixed(1.0), 0 },
+					  { 0, 0, XDoubleToFixed(scale) } }
 				};
 				/* *INDENT-ON* */
 
@@ -185,7 +185,7 @@ createicon_bitmap(AScreen *ds, Client *c, XImage *xdraw, XImage *xmask, Bool cro
 #endif				/* FILTERPIC */
 #endif
 				XRenderSetPictureTransform(dpy, pict, &trans);
-				px->w = lround(ximage->width / scale);
+				px->w = lround(ximage->width * scale);
 				px->h = th;
 			}
 			if (px->bitmap.pict) {
@@ -263,12 +263,12 @@ createicon_pixmap(AScreen *ds, Client *c, Pixmap draw, Pixmap mask, unsigned w, 
 			if (h > th) {
 				_DPRINTF("transforming image from h = %u to %u\n", h, th);
 				/* get XRender to scale the image for us */
-				XDouble scale = (XDouble) h / (XDouble) th;
+				XDouble scale = (XDouble) th / (XDouble) h;
 				/* *INDENT-OFF* */
 				XTransform trans = {
-					{ { XDoubleToFixed(scale), 0, 0 },
-					  { 0, XDoubleToFixed(scale), 0 },
-					  { 0, 0, XDoubleToFixed(1.0) } }
+					{ { XDoubleToFixed(1.0), 0, 0 },
+					  { 0, XDoubleToFixed(1.0), 0 },
+					  { 0, 0, XDoubleToFixed(scale) } }
 				};
 				/* *INDENT-ON* */
 #ifdef FILTERPIC
@@ -279,7 +279,7 @@ createicon_pixmap(AScreen *ds, Client *c, Pixmap draw, Pixmap mask, unsigned w, 
 #endif
 #endif				/* FILTERPIC */
 				XRenderSetPictureTransform(dpy, pict, &trans);
-				px->w = lround(w / scale);
+				px->w = lround(w * scale);
 				px->h = th;
 			}
 			if (px->pixmap.pict) {
@@ -350,12 +350,12 @@ createicon_pixmap(AScreen *ds, Client *c, XImage *xdraw, XImage *xmask, Bool cro
 			if (ximage->height > th) {
 				_DPRINTF("transforming image from h = %u to %u\n", ximage->height, th);
 				/* get XRender to scale the image for us */
-				XDouble scale =  (XDouble) ximage->height / (XDouble) th;
+				XDouble scale =  (XDouble) th / (XDouble) ximage->height;
 				/* *INDENT-OFF* */
 				XTransform trans = {
-					{ { XDoubleToFixed(scale), 0, 0 },
-					  { 0, XDoubleToFixed(scale), 0 },
-					  { 0, 0, XDoubleToFixed(1.0) } }
+					{ { XDoubleToFixed(1.0), 0, 0 },
+					  { 0, XDoubleToFixed(1.0), 0 },
+					  { 0, 0, XDoubleToFixed(scale) } }
 				};
 				/* *INDENT-ON* */
 #ifdef FILTERPIC
@@ -366,7 +366,7 @@ createicon_pixmap(AScreen *ds, Client *c, XImage *xdraw, XImage *xmask, Bool cro
 #endif
 #endif				/* FILTERPIC */
 				XRenderSetPictureTransform(dpy, pict, &trans);
-				px->w = lround(ximage->width / scale);
+				px->w = lround(ximage->width * scale);
 				px->h = th;
 			}
 			if (px->pixmap.pict) {
@@ -445,12 +445,12 @@ render_createbitmapicon(AScreen *ds, Client *c, Pixmap icon, Pixmap mask, unsign
 			if (h > th) {
 				_DPRINTF("transforming image from h = %u to %u\n", ximage->height, th);
 				/* get XRender to scale the image for us */
-				XDouble scale = (XDouble) h / (XDouble) th;
+				XDouble scale = (XDouble) th / (XDouble) h;
 				/* *INDENT-OFF* */
 				XTransform trans = {
-					{ { XDoubleToFixed(scale), 0, 0 },
-					  { 0, XDoubleToFixed(scale), 0 },
-					  { 0, 0, XDoubleToFixed(1.0) } }
+					{ { XDoubleToFixed(1.0), 0, 0 },
+					  { 0, XDoubleToFixed(1.0), 0 },
+					  { 0, 0, XDoubleToFixed(scale) } }
 				};
 				/* *INDENT-ON* */
 #ifdef FILTERPIC
@@ -461,7 +461,7 @@ render_createbitmapicon(AScreen *ds, Client *c, Pixmap icon, Pixmap mask, unsign
 #endif
 #endif				/* FILTERPIC */
 				XRenderSetPictureTransform(dpy, pict, &trans);
-				px->w = lround(w / scale);
+				px->w = lround(w * scale);
 				px->h = th;
 			}
 			if (px->bitmap.pict) {
@@ -556,12 +556,12 @@ render_createpixmapicon(AScreen *ds, Client *c, Pixmap icon, Pixmap mask, unsign
 			if (ximage->height > th) {
 				_DPRINTF("transforming image from h = %u to %u\n", ximage->height, th);
 				/* get XRender to scale the image for us */
-				XDouble scale = (XDouble) ximage->height / (XDouble) th;
+				XDouble scale = (XDouble) th / (XDouble) ximage->height;
 				/* *INDENT-OFF* */
 				XTransform trans = {
-					{ { XDoubleToFixed(scale), 0, 0 },
-					  { 0, XDoubleToFixed(scale), 0 },
-					  { 0, 0, XDoubleToFixed(1.0) } }
+					{ { XDoubleToFixed(1.0), 0, 0 },
+					  { 0, XDoubleToFixed(1.0), 0 },
+					  { 0, 0, XDoubleToFixed(scale) } }
 				};
 				/* *INDENT-ON* */
 #ifdef FILTERPIC
@@ -572,7 +572,7 @@ render_createpixmapicon(AScreen *ds, Client *c, Pixmap icon, Pixmap mask, unsign
 #endif
 #endif				/* FILTERPIC */
 				XRenderSetPictureTransform(dpy, pict, &trans);
-				px->w = lround(ximage->width / scale);
+				px->w = lround(ximage->width * scale);
 				px->h = th;
 			}
 			if (px->pixmap.pict) {
@@ -681,12 +681,12 @@ render_createdataicon(AScreen *ds, Client *c, unsigned w, unsigned h, long *data
 			if (ximage->height > th) {
 				_DPRINTF("transforming image from h = %u to %u\n", ximage->height, th);
 				/* get XRender to scale the image for us */
-				XDouble scale = (XDouble) ximage->height / (XDouble) th;
+				XDouble scale = (XDouble) th / (XDouble) ximage->height;
 				/* *INDENT-OFF* */
 				XTransform trans = {
-					{ { XDoubleToFixed(scale), 0, 0 },
-					  { 0, XDoubleToFixed(scale), 0 },
-					  { 0, 0, XDoubleToFixed(1.0) } }
+					{ { XDoubleToFixed(1.0), 0, 0 },
+					  { 0, XDoubleToFixed(1.0), 0 },
+					  { 0, 0, XDoubleToFixed(scale) } }
 				};
 				/* *INDENT-ON* */
 #ifdef FILTERPIC
@@ -697,7 +697,7 @@ render_createdataicon(AScreen *ds, Client *c, unsigned w, unsigned h, long *data
 #endif
 #endif				/* FILTERPIC */
 				XRenderSetPictureTransform(dpy, pict, &trans);
-				px->w = lround(ximage->width / scale);
+				px->w = lround(ximage->width * scale);
 				px->h = th;
 			}
 			if (px->pixmap.pict) {

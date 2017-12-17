@@ -174,7 +174,6 @@ createicon_bitmap(AScreen *ds, Client *c, XImage *xdraw, XImage *xmask, Bool cro
 					  { 0, 0, XDoubleToFixed(scale) } }
 				};
 				/* *INDENT-ON* */
-
 #if 1
 #ifdef FILTERPIC
 #ifdef NEARESTFL

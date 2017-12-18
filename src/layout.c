@@ -4677,70 +4677,92 @@ mouseresize(Client *c, XEvent *e, Bool toggle)
  * request for a new position.
  */
 static void
-getreference(int *xr, int *yr, Geometry *g, int gravity)
+getreference(int *xr, int *yr, Geometry *g, ClientGeometry *n, int gravity)
 {
 	switch (gravity) {
 	case UnmapGravity:
 	case NorthWestGravity:
 	default:
-		*xr = g->x;
-		*yr = g->y;
+		*xr = n->x;
+		*yr = n->y;
+		g->x = *xr;
+		g->y = *yr;
 		break;
 	case NorthGravity:
-		*xr = g->x + g->b + g->w / 2;
-		*yr = g->y;
+		*xr = n->x + n->b + n->w / 2;
+		*yr = n->y;
+		g->x = *xr - g->b + g->w / 2;
+		g->y = *yr;
 		break;
 	case NorthEastGravity:
-		*xr = g->x + g->b + g->w + g->b;
-		*yr = g->y;
+		*xr = n->x + n->b + n->w + n->b;
+		*yr = n->y;
+		g->x = *xr - g->b - g->w - g->b;
+		g->y = *yr;
 		break;
 	case WestGravity:
-		*xr = g->x;
-		*yr = g->y + g->b + g->h / 2;
+		*xr = n->x;
+		*yr = n->y + n->b + n->h / 2;
+		g->x = *xr;
+		g->y = *yr - g->b - g->h / 2;
 		break;
 	case CenterGravity:
-		*xr = g->x + g->b + g->w / 2;
-		*yr = g->y + g->b + g->h / 2;
+		*xr = n->x + n->b + n->w / 2;
+		*yr = n->y + n->b + n->h / 2;
+		g->x = *xr - g->b - g->w / 2;
+		g->y = *yr - g->b - g->h / 2;
 		break;
 	case EastGravity:
-		*xr = g->x + g->b + g->w + g->b;
-		*yr = g->y + g->b + g->h / 2;
+		*xr = n->x + n->b + n->w + n->b;
+		*yr = n->y + n->b + n->h / 2;
+		g->x = *xr - g->b - g->w - g->b;
+		g->y = *yr - g->b - g->h / 2;
 		break;
 	case SouthWestGravity:
-		*xr = g->x;
-		*yr = g->y + g->b + g->h + g->b;
+		*xr = n->x;
+		*yr = n->y + n->b + n->h + n->b;
+		g->x = *xr;
+		g->y = *yr - g->b - g->h - g->b;
 		break;
 	case SouthGravity:
-		*xr = g->x + g->b + g->w / 2;
-		*yr = g->y + g->b + g->h + g->b;
+		*xr = n->x + n->b + n->w / 2;
+		*yr = n->y + n->b + n->h + n->b;
+		g->x = *xr - g->b - g->w / 2;
+		g->y = *yr - g->b - g->h - g->b;
 		break;
 	case SouthEastGravity:
-		*xr = g->x + g->b + g->w + g->b;
-		*yr = g->y + g->b + g->h + g->b;
+		*xr = n->x + n->b + n->w + n->b;
+		*yr = n->y + n->b + n->h + n->b;
+		g->x = *xr - g->b - g->w - g->b;
+		g->y = *yr - g->b - g->h - g->b;
 		break;
 	case StaticGravity:
-		*xr = g->x + g->b;
-		*yr = g->y + g->b;
+		*xr = n->x + n->v + n->b;
+		*yr = n->y + n->v + n->t + n->b;
+		g->x = *xr - g->b;
+		g->y = *yr - g->b;
 		break;
 	}
 }
 
 static void
-getclientreference(Client *c, int *xr, int *yr, Geometry *g, int gravity)
+getframereference(Client *c, int *xr, int *yr, Geometry *g, int gravity)
 {
 	if (gravity == 0)
 		gravity = c->sh.win_gravity;
 
 	/* border that client expects */
 	g->b = c->s.b;
+#if 0
 	/* top left outer corner of client */
 	g->x = c->c.x + c->c.b + c->c.v - g->b;
 	g->y = c->c.y + c->c.b + c->c.v + c->c.t - g->b;
+#endif
 	/* client inner width and height from frame */
 	g->w = c->c.w - c->c.v - c->c.v;
 	g->h = c->c.h - c->c.v - c->c.t - c->c.g;
 
-	getreference(xr, yr, g, gravity);
+	getreference(xr, yr, g, &c->c, gravity);
 }
 
 static void
@@ -4793,7 +4815,7 @@ putreference(int xr, int yr, ClientGeometry *g, int gravity)
 }
 
 static void
-setclientreference(Client *c, int xr, int yr, Geometry *g, ClientGeometry *n, int gravity)
+putframereference(Client *c, int xr, int yr, Geometry *g, ClientGeometry *n, int gravity)
 {
 	if (gravity == 0)
 		gravity = c->sh.win_gravity;
@@ -4806,7 +4828,95 @@ setclientreference(Client *c, int xr, int yr, Geometry *g, ClientGeometry *n, in
 	n->w = n->v + g->w + n->v;
 	n->h = n->v + n->t + g->h + n->g;
 
+	/* no move, size change only, reference point stays the same */
 	putreference(xr, yr, n, gravity);
+}
+
+static void
+setreference(int xr, int yr, Geometry *g, ClientGeometry *n, int gravity)
+{
+	switch (gravity) {
+	case UnmapGravity:
+	case NorthWestGravity:
+	default:
+		xr = g->x;
+		yr = g->y;
+		n->x = xr;
+		n->y = yr;
+		break;
+	case NorthGravity:
+		xr = g->x + g->b + g->w / 2;
+		yr = g->y;
+		n->x = xr - n->b + n->w / 2;
+		n->y = yr;
+		break;
+	case NorthEastGravity:
+		xr = g->x + g->b + g->w + g->b;
+		yr = g->y;
+		n->x = xr - n->b - n->w - n->b;
+		n->y = yr;
+		break;
+	case WestGravity:
+		xr = g->x;
+		yr = g->y + g->b + g->h / 2;
+		n->x = xr;
+		n->y = yr - n->b - n->h / 2;
+		break;
+	case CenterGravity:
+		xr = g->x + g->b + g->w / 2;
+		yr = g->y + g->b + g->h / 2;
+		n->x = xr - n->b - n->w / 2;
+		n->y = yr - n->b - n->h / 2;
+		break;
+	case EastGravity:
+		xr = g->x + g->b + g->w + g->b;
+		yr = g->y + g->b + g->h / 2;
+		n->x = xr - n->b - n->w - n->b;
+		n->y = yr - n->b - n->h / 2;
+		break;
+	case SouthWestGravity:
+		xr = g->x;
+		yr = g->y + g->b + g->h + g->b;
+		n->x = xr;
+		n->y = yr - n->b - n->h - n->b;
+		break;
+	case SouthGravity:
+		xr = g->x + g->b + g->w / 2;
+		yr = g->y + g->b + g->h + g->b;
+		n->x = xr - n->b - n->w / 2;
+		n->y = yr - n->b - n->h - n->b;
+		break;
+	case SouthEastGravity:
+		xr = g->x + g->b + g->w + g->b;
+		yr = g->y + g->b + g->h + g->b;
+		n->x = xr - n->b - n->w - n->b;
+		n->y = yr - n->b - n->h - n->b;
+		break;
+	case StaticGravity:
+		xr = g->x + g->b;
+		yr = g->y + g->b;
+		n->x = xr - n->v - n->b;
+		n->y = yr - n->v - n->t - n->b;
+		break;
+	}
+}
+
+static void
+setframereference(Client *c, int xr, int yr, Geometry *g, ClientGeometry *n, int gravity)
+{
+	if (gravity == 0)
+		gravity = c->sh.win_gravity;
+
+	/* border that client expects */
+	c->s.b = g->b;
+
+	*n = c->c;
+	/* frame inner width and height from client */
+	n->w = n->v + g->w + n->v;
+	n->h = n->v + n->t + g->h + n->g;
+
+	/* move and possibly size change, reference point moves */
+	setreference(xr, yr, g, n, gravity);
 }
 
 static void
@@ -4875,6 +4985,19 @@ configureclient(Client *c, XEvent *e, int gravity)
 	    restack = False;
 	View *v;
 
+	CPRINTF(c, "request to configure client\n");
+	if (ev->value_mask & CWX)
+		DPRINTF("x = %d\n", ev->x);
+	if (ev->value_mask & CWY)
+		DPRINTF("y = %d\n", ev->y);
+	if (ev->value_mask & CWWidth)
+		DPRINTF("w = %d\n", ev->width);
+	if (ev->value_mask & CWHeight)
+		DPRINTF("h = %d\n", ev->height);
+	if (ev->value_mask & CWBorderWidth)
+		DPRINTF("b = %d\n", ev->border_width);
+	if (ev->value_mask & CWStackMode)
+		DPRINTF("above = 0x%lx\n", (ev->value_mask & CWSibling) ? ev->above : 0UL);
 	if (!(v = c->cview ? : selview())) {
 		EPRINTF(__CFMTS(c) "refusing to reconfigure client\n", __CARGS(c));
 		notify = True;
@@ -4905,7 +5028,7 @@ configureclient(Client *c, XEvent *e, int gravity)
 		will = ev->value_mask & may;
 
 		/* get current client geometry as seen by client */
-		getclientreference(c, &xr, &yr, &g, gravity);
+		getframereference(c, &xr, &yr, &g, gravity);
 
 		if (will & CWX) {
 			g.x = ev->x;
@@ -4947,9 +5070,19 @@ configureclient(Client *c, XEvent *e, int gravity)
 
 		if (restack)
 			restack_client(c, stack_mode, o);
-		setclientreference(c, xr, yr, &g, &n, gravity);
-		reconfigure(c, &n, notify);
-		return True;
+		if (move) {
+			GPRINTF(&c->c, "before setframereference\n");
+			setframereference(c, xr, yr, &g, &n, gravity);
+			GPRINTF(&n, "after setframereference\n");
+			reconfigure(c, &n, notify);
+			return True;
+		} else {
+			GPRINTF(&c->c, "before putframereference\n");
+			putframereference(c, xr, yr, &g, &n, gravity);
+			GPRINTF(&n, "after putframereference\n");
+			reconfigure(c, &n, notify);
+			return True;
+		}
 	}
 	if (notify) {
 		if (ev->value_mask & CWBorderWidth)
@@ -4993,6 +5126,7 @@ moveresizeclient(Client *c, int dx, int dy, int dw, int dh, int gravity)
 		cev.value_mask |= CWY;
 		cev.y = c->s.y + dy;
 	}
+	DPRINTF("calling configureclient for moveresizeclient action\n");
 	configureclient(c, (XEvent *) &cev, gravity);
 }
 

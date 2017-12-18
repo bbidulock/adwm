@@ -960,9 +960,10 @@ configurerequest(XEvent *e)
 	Client *c;
 	XConfigureRequestEvent *ev = &e->xconfigurerequest;
 
-	if ((c = getmanaged(ev->window, ClientWindow)))
+	if ((c = getmanaged(ev->window, ClientWindow))) {
+		DPRINTF("calling configureclient for ConfigureReqeust event\n");
 		configureclient(c, e, c->sh.win_gravity);
-	else
+	} else
 	if ((c = getmanaged(ev->window, ClientAny)))
 		EPRINTF(__CFMTS(c) "trying to change config of non-client window 0x%lx\n", __CARGS(c), ev->window);
 	if (!c) {

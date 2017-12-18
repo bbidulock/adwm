@@ -1961,7 +1961,7 @@ k_toggletag(XEvent *e, Key *k)
 	if (sel)
 		toggletag(sel, idxoftag(sel->cview, k));
 	else
-		DPRINTF("WARNING: no selected client\n");
+		XPRINTF("WARNING: no selected client\n");
 }
 
 void
@@ -1970,7 +1970,7 @@ k_tag(XEvent *e, Key *k)
 	if (sel)
 		tag(sel, idxoftag(sel->cview, k));
 	else
-		DPRINTF("WARNING: no selected client\n");
+		XPRINTF("WARNING: no selected client\n");
 }
 
 void
@@ -1981,7 +1981,7 @@ k_focusview(XEvent *e, Key *k)
 	if ((v = selview()))
 		focusview(v, idxoftag(v, k));
 	else
-		DPRINTF("WARNING: no selected view\n");
+		XPRINTF("WARNING: no selected view\n");
 }
 
 void
@@ -1992,7 +1992,7 @@ k_toggleview(XEvent *e, Key *k)
 	if ((v = selview()))
 		toggleview(v, idxoftag(v, k));
 	else
-		DPRINTF("WARNING: no selected view\n");
+		XPRINTF("WARNING: no selected view\n");
 }
 
 void
@@ -2003,7 +2003,7 @@ k_view(XEvent *e, Key *k)
 	if ((v = selview()))
 		view(v, idxoftag(v, k));
 	else
-		DPRINTF("WARNING: no selected view\n");
+		XPRINTF("WARNING: no selected view\n");
 }
 
 void

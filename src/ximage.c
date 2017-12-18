@@ -718,7 +718,7 @@ ximage_drawdockapp(AScreen *ds, Client *c)
 			ds->dc.x, ds->dc.y, ds->dc.w, ds->dc.h);
 	if (!status)
 		XPRINTF("Could not fill rectangle, error %d\n", status);
-	CPRINTF(c, "Filled dockapp frame %dx%d+%d+%d\n", ds->dc.w, ds->dc.h, ds->dc.x,
+	XPRINTF(c, "Filled dockapp frame %dx%d+%d+%d\n", ds->dc.w, ds->dc.h, ds->dc.x,
 		ds->dc.y);
 	/* note that ParentRelative dockapps need the background set to the foregroudn */
 	XSetWindowBackground(dpy, c->frame, pixel);

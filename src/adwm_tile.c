@@ -438,8 +438,8 @@ arrange_TILE(Monitor *cm)
 	/* master & slave number */
 	ma.n = (wa.n > v->nmaster) ? v->nmaster : wa.n;
 	sa.n = (ma.n < wa.n) ? wa.n - ma.n : 0;
-	DPRINTF("there are %d masters\n", ma.n);
-	DPRINTF("there are %d slaves\n", sa.n);
+	XPRINTF("there are %d masters\n", ma.n);
+	XPRINTF("there are %d slaves\n", sa.n);
 
 	/* at least one unshaded */
 	ma.s = (ma.s && ma.s == ma.n) ? ma.n - 1 : ma.s;
@@ -482,12 +482,12 @@ arrange_TILE(Monitor *cm)
 	sa.th = th + 2 * (sa.b + sa.g);
 
 	overlap = (sa.n > 0) ? ma.b : 0;
-	DPRINTF("overlap is %d\n", overlap);
+	XPRINTF("overlap is %d\n", overlap);
 
 	/* master and slave work area position */
 	switch (v->major) {
 	case OrientBottom:
-		DPRINTF("major orientation is masters bottom(%d)\n", v->major);
+		XPRINTF("major orientation is masters bottom(%d)\n", v->major);
 		ma.x = wa.x;
 		ma.y = wa.y + sa.h;
 		sa.x = wa.x;
@@ -497,7 +497,7 @@ arrange_TILE(Monitor *cm)
 		break;
 	case OrientRight:
 	default:
-		DPRINTF("major orientation is masters right(%d)\n", v->major);
+		XPRINTF("major orientation is masters right(%d)\n", v->major);
 		ma.x = wa.x + sa.w;
 		ma.y = wa.y;
 		sa.x = wa.x;
@@ -506,7 +506,7 @@ arrange_TILE(Monitor *cm)
 		ma.w += overlap;
 		break;
 	case OrientLeft:
-		DPRINTF("major orientation is masters left(%d)\n", v->major);
+		XPRINTF("major orientation is masters left(%d)\n", v->major);
 		ma.x = wa.x;
 		ma.y = wa.y;
 		sa.x = wa.x + ma.w;
@@ -514,7 +514,7 @@ arrange_TILE(Monitor *cm)
 		ma.w += overlap;
 		break;
 	case OrientTop:
-		DPRINTF("major orientation is masters top(%d)\n", v->major);
+		XPRINTF("major orientation is masters top(%d)\n", v->major);
 		ma.x = wa.x;
 		ma.y = wa.y;
 		sa.x = wa.x;
@@ -522,8 +522,8 @@ arrange_TILE(Monitor *cm)
 		ma.h += overlap;
 		break;
 	}
-	DPRINTF("master work area %dx%d+%d+%d:%d\n", ma.w, ma.h, ma.x, ma.y, ma.b);
-	DPRINTF("slave  work area %dx%d+%d+%d:%d\n", sa.w, sa.h, sa.x, sa.y, sa.b);
+	XPRINTF("master work area %dx%d+%d+%d:%d\n", ma.w, ma.h, ma.x, ma.y, ma.b);
+	XPRINTF("slave  work area %dx%d+%d+%d:%d\n", sa.w, sa.h, sa.x, sa.y, sa.b);
 
 	/* master tile dimensions */
 	switch (v->minor) {
@@ -564,28 +564,28 @@ arrange_TILE(Monitor *cm)
 	/* position of first master */
 	switch (v->minor) {
 	case OrientTop:
-		DPRINTF("minor orientation is top to bottom(%d)\n", v->minor);
+		XPRINTF("minor orientation is top to bottom(%d)\n", v->minor);
 		m.x = ma.x;
 		m.y = ma.y;
 		break;
 	case OrientBottom:
-		DPRINTF("minor orientation is bottom to top(%d)\n", v->minor);
+		XPRINTF("minor orientation is bottom to top(%d)\n", v->minor);
 		m.x = ma.x;
 		m.y = ma.y + ma.h - m.h;
 		break;
 	case OrientLeft:
-		DPRINTF("minor orientation is left to right(%d)\n", v->minor);
+		XPRINTF("minor orientation is left to right(%d)\n", v->minor);
 		m.x = ma.x;
 		m.y = ma.y;
 		break;
 	case OrientRight:
 	default:
-		DPRINTF("minor orientation is right to left(%d)\n", v->minor);
+		XPRINTF("minor orientation is right to left(%d)\n", v->minor);
 		m.x = ma.x + ma.w - m.w;
 		m.y = ma.y;
 		break;
 	}
-	DPRINTF("initial master %dx%d+%d+%d:%d\n", m.w, m.h, m.x, m.y, m.b);
+	XPRINTF("initial master %dx%d+%d+%d:%d\n", m.w, m.h, m.x, m.y, m.b);
 
 	i = 0;
 	c = mc = nexttiled(scr->clients, cm);
@@ -609,7 +609,7 @@ arrange_TILE(Monitor *cm)
 		g.w -= 2 * (ma.g + g.b);
 		g.h -= 2 * (ma.g + g.b);
 		if (!c->is.moveresize) {
-			DPRINTF("CALLING reconfigure()\n");
+			XPRINTF("CALLING reconfigure()\n");
 			reconfigure(c, &g);
 		} else {
 			ClientGeometry C = g;
@@ -617,7 +617,7 @@ arrange_TILE(Monitor *cm)
 			/* center it where it was before */
 			C.x = (c->c.x + c->c.w / 2) - C.w / 2;
 			C.y = (c->c.y + c->c.h / 2) - C.h / 2;
-			DPRINTF("CALLING reconfigure()\n");
+			XPRINTF("CALLING reconfigure()\n");
 			reconfigure(c, &C);
 		}
 		if (c->is.shaded && (c != sel || !options.autoroll))
@@ -661,28 +661,28 @@ arrange_TILE(Monitor *cm)
 	/* position of first slave */
 	switch (v->major) {
 	case OrientRight:
-		DPRINTF("slave orientation is top to bottom(%d)\n", v->major);
+		XPRINTF("slave orientation is top to bottom(%d)\n", v->major);
 		s.x = sa.x;
 		s.y = sa.y;
 		break;
 	case OrientLeft:
-		DPRINTF("slave orientation is bottom to top(%d)\n", v->major);
+		XPRINTF("slave orientation is bottom to top(%d)\n", v->major);
 		s.x = sa.x;
 		s.y = sa.y + sa.h - s.h;
 		break;
 	case OrientTop:
-		DPRINTF("slave orientation is left to right(%d)\n", v->major);
+		XPRINTF("slave orientation is left to right(%d)\n", v->major);
 		s.x = sa.x;
 		s.y = sa.y;
 		break;
 	case OrientBottom:
 	default:
-		DPRINTF("slave orientation is right to left(%d)\n", v->major);
+		XPRINTF("slave orientation is right to left(%d)\n", v->major);
 		s.x = sa.x + sa.w - s.w;
 		s.y = sa.y;
 		break;
 	}
-	DPRINTF("initial slave  %dx%d+%d+%d:%d\n", s.w, s.h, s.x, s.y, s.b);
+	XPRINTF("initial slave  %dx%d+%d+%d:%d\n", s.w, s.h, s.x, s.y, s.b);
 
 	/* lay out the slave area - always top->bot, left->right */
 	n = s;
@@ -703,7 +703,7 @@ arrange_TILE(Monitor *cm)
 		g.w -= 2 * (sa.g + g.b);
 		g.h -= 2 * (sa.g + g.b);
 		if (!c->is.moveresize) {
-			DPRINTF("CALLING reconfigure()\n");
+			XPRINTF("CALLING reconfigure()\n");
 			reconfigure(c, &g);
 		} else {
 			ClientGeometry C = g;
@@ -711,7 +711,7 @@ arrange_TILE(Monitor *cm)
 			/* center it where it was before */
 			C.x = (c->c.x + c->c.w / 2) - C.w / 2;
 			C.y = (c->c.y + c->c.h / 2) - C.h / 2;
-			DPRINTF("CALLING reconfigure()\n");
+			XPRINTF("CALLING reconfigure()\n");
 			reconfigure(c, &C);
 		}
 		if (c->is.shaded && (c != sel || !options.autoroll))

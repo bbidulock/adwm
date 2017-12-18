@@ -526,22 +526,22 @@ initstyles(const char *stylename)
 		strcat(path, stylename);
 		strcat(path, suffix);
 		if (stat(path, &st)) {
-			DPRINTF("%s: %s\n", strerror(errno), path);
+			XPRINTF("%s: %s\n", strerror(errno), path);
 			free(path);
 			continue;
 		}
 		if (!S_ISREG(st.st_mode)) {
-			DPRINTF("not regular file: %s\n", path);
+			XPRINTF("not regular file: %s\n", path);
 			free(path);
 			continue;
 		}
 		if (access(path, R_OK)) {
-			DPRINTF("cannot access: %s\n", path);
+			XPRINTF("cannot access: %s\n", path);
 			free(path);
 			continue;
 		}
 		if (!(xresdb = XrmGetFileDatabase(path))) {
-			DPRINTF("cannot get file database: %s\n", path);
+			XPRINTF("cannot get file database: %s\n", path);
 			free(path);
 			continue;
 		}

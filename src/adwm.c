@@ -961,7 +961,7 @@ configurerequest(XEvent *e)
 	XConfigureRequestEvent *ev = &e->xconfigurerequest;
 
 	if ((c = getmanaged(ev->window, ClientWindow))) {
-		DPRINTF("calling configureclient for ConfigureReqeust event\n");
+		XPRINTF("calling configureclient for ConfigureReqeust event\n");
 		configureclient(c, e, c->sh.win_gravity);
 	} else
 	if ((c = getmanaged(ev->window, ClientAny)))
@@ -3763,7 +3763,7 @@ updateclientprop(Client *c, Atom prop, int state)
 	}
 	return True;
       bad:
-	CPRINTF(c, "bad attempt to change client %s\n", (name = XGetAtomName(dpy, prop)));
+	XPRINTF(c, "bad attempt to change client %s\n", (name = XGetAtomName(dpy, prop)));
 	if (name)
 		XFree(name);
 	return False;
@@ -3957,7 +3957,7 @@ handle_event(XEvent *ev)
 					return (handler[slot]) (ev);
 			}
 		}
-	DPRINTF("WARNING: No handler for event type %d\n", ev->type);
+	XPRINTF("WARNING: No handler for event type %d\n", ev->type);
 	return False;
 }
 
@@ -5184,7 +5184,7 @@ initialize(const char *conf, AdwmOperations * ops, Bool reload)
 
 	if (owd) {
 		if (chdir(owd))
-			DPRINTF("Could not change directory to %s: %s\n", owd,
+			XPRINTF("Could not change directory to %s: %s\n", owd,
 				strerror(errno));
 		free(owd);
 	}
@@ -6518,15 +6518,15 @@ get_adwm_ops(const char *name)
 	AdwmOperations *ops = NULL;
 
 	snprintf(dlfile, sizeof(dlfile), "adwm-%s.so", name);
-	DPRINTF("attempting to dlopen %s\n", dlfile);
+	XPRINTF("attempting to dlopen %s\n", dlfile);
 	if ((handle = dlopen(dlfile, RTLD_NOW | RTLD_LOCAL))) {
-		DPRINTF("dlopen of %s succeeded\n", dlfile);
+		XPRINTF("dlopen of %s succeeded\n", dlfile);
 		if ((ops = dlsym(handle, "adwm_ops")))
 			ops->handle = handle;
 		else
-			DPRINTF("could not find symbol adwm_ops");
+			XPRINTF("could not find symbol adwm_ops");
 	} else
-		DPRINTF("dlopen of %s failed: %s\n", dlfile, dlerror());
+		XPRINTF("dlopen of %s failed: %s\n", dlfile, dlerror());
 	return ops;
 }
 

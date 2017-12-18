@@ -107,7 +107,7 @@ initkeysfile_ADWM(void)
 	}
 	xkeysdb = XrmGetFileDatabase(config.keysfile);
 	if (!xkeysdb) {
-		DPRINTF("Could not find database file '%s'\n", config.keysfile);
+		XPRINTF("Could not find database file '%s'\n", config.keysfile);
 		return;
 	}
 	XrmMergeDatabases(xkeysdb, &xconfigdb);
@@ -148,7 +148,7 @@ initstylefile_ADWM(void)
 	}
 	xstyledb = XrmGetFileDatabase(config.stylefile);
 	if (!xstyledb) {
-		DPRINTF("Could not find database file '%s'\n", config.stylefile);
+		XPRINTF("Could not find database file '%s'\n", config.stylefile);
 		return;
 	}
 	XrmMergeDatabases(xstyledb, &xconfigdb);
@@ -189,7 +189,7 @@ initthemefile_ADWM(void)
 	}
 	xthemedb = XrmGetFileDatabase(config.themefile);
 	if (!xthemedb) {
-		DPRINTF("Could not find database file '%s'\n", config.themefile);
+		XPRINTF("Could not find database file '%s'\n", config.themefile);
 		return;
 	}
 	XrmMergeDatabases(xthemedb, &xconfigdb);
@@ -305,13 +305,13 @@ initrcfile_ADWM(const char *conf, Bool reload)
 		if (strrchr(dir, '/'))
 			*strrchr(dir, '/') = '\0';
 		if (chdir(dir))
-			DPRINTF("Could not change directory to %s: %s\n", dir, strerror(errno));
+			XPRINTF("Could not change directory to %s: %s\n", dir, strerror(errno));
 		free(dir);
 	} else {
-		DPRINTF("Couldn't find database file '%s'\n", config.rcfile);
+		XPRINTF("Couldn't find database file '%s'\n", config.rcfile);
 		EPRINTF("Could not find usable database, using defaults\n");
 		if (chdir(config.udir))
-			DPRINTF("Could not change directory to %s: %s\n", config.udir, strerror(errno));
+			XPRINTF("Could not change directory to %s: %s\n", config.udir, strerror(errno));
 	}
 	initkeysfile_ADWM();
 	initstylefile_ADWM();
@@ -894,7 +894,7 @@ initkeys_ADWM(Bool reload)
 
 		snprintf(name, sizeof(name), "%s", KeyItems[i].name);
 		snprintf(clas, sizeof(clas), "%s", KeyItems[i].name);
-		DPRINTF("Check for key item '%s'\n", name);
+		XPRINTF("Check for key item '%s'\n", name);
 		if (!(res = readres(name, capclass(clas), NULL)))
 			continue;
 		key.func = KeyItems[i].action;
@@ -910,7 +910,7 @@ initkeys_ADWM(Bool reload)
 				 KeyItemsByAmt[j].name);
 			snprintf(clas, sizeof(clas), "%s%s", inc_prefix[i].prefix,
 				 KeyItemsByAmt[j].name);
-			DPRINTF("Check for key item '%s'\n", name);
+			XPRINTF("Check for key item '%s'\n", name);
 			if (!(res = readres(name, capclass(clas), NULL)))
 				continue;
 			key.func = KeyItemsByAmt[j].action;
@@ -931,7 +931,7 @@ initkeys_ADWM(Bool reload)
 				snprintf(clas, sizeof(clas), "%s%s%s",
 					 set_prefix[i].prefix, KeyItemsByState[j].name,
 					 set_suffix[l].suffix);
-				DPRINTF("Check for key item '%s'\n", name);
+				XPRINTF("Check for key item '%s'\n", name);
 				if (!(res = readres(name, capclass(clas), NULL)))
 					continue;
 				key.func = KeyItemsByState[j].action;
@@ -951,7 +951,7 @@ initkeys_ADWM(Bool reload)
 				 rel_suffix[i].suffix);
 			snprintf(clas, sizeof(clas), "%s%s", KeyItemsByDir[j].name,
 				 rel_suffix[i].suffix);
-			DPRINTF("Check for key item '%s'\n", name);
+			XPRINTF("Check for key item '%s'\n", name);
 			if (!(res = readres(name, capclass(clas), NULL)))
 				continue;
 			key.func = KeyItemsByDir[j].action;
@@ -967,7 +967,7 @@ initkeys_ADWM(Bool reload)
 
 			snprintf(name, sizeof(name), "%s%d", KeyItemsByTag[j].name, i);
 			snprintf(clas, sizeof(clas), "%s%d", KeyItemsByTag[j].name, i);
-			DPRINTF("Check for key item '%s'\n", name);
+			XPRINTF("Check for key item '%s'\n", name);
 			if (!(res = readres(name, capclass(clas), NULL)))
 				continue;
 			key.func = KeyItemsByTag[j].action;
@@ -983,7 +983,7 @@ initkeys_ADWM(Bool reload)
 				 tag_suffix[i].suffix);
 			snprintf(clas, sizeof(clas), "%s%s", KeyItemsByTag[j].name,
 				 tag_suffix[i].suffix);
-			DPRINTF("Check for key item '%s'\n", name);
+			XPRINTF("Check for key item '%s'\n", name);
 			if (!(res = readres(name, capclass(clas), NULL)))
 				continue;
 			key.func = KeyItemsByTag[j].action;
@@ -1001,7 +1001,7 @@ initkeys_ADWM(Bool reload)
 
 			snprintf(name, sizeof(name), "%s%d", KeyItemsByList[j].name, i);
 			snprintf(clas, sizeof(clas), "%s%d", KeyItemsByList[j].name, i);
-			DPRINTF("Check for key item '%s'\n", name);
+			XPRINTF("Check for key item '%s'\n", name);
 			if (!(res = readres(name, capclass(clas), NULL)))
 				continue;
 			key.func = KeyItemsByList[j].action;
@@ -1022,7 +1022,7 @@ initkeys_ADWM(Bool reload)
 				snprintf(clas, sizeof(clas), "%s%s%s",
 					 KeyItemsByList[j].name, lst_suffix[i].suffix,
 					 list_which[l].which);
-				DPRINTF("Check for key item '%s'\n", name);
+				XPRINTF("Check for key item '%s'\n", name);
 				if (!(res = readres(name, capclass(clas), NULL)))
 					continue;
 				key.func = KeyItemsByList[j].action;
@@ -1044,7 +1044,7 @@ initkeys_ADWM(Bool reload)
 				snprintf(clas, sizeof(clas), "cycle%s%s%s",
 					 KeyItemsByList[j].name, cyc_suffix[i].suffix,
 					 list_which[l].which);
-				DPRINTF("Check for key item '%s'\n", name);
+				XPRINTF("Check for key item '%s'\n", name);
 				if (!(res = readres(name, capclass(clas), NULL)))
 					continue;
 				key.func = KeyItemsByList[j].action;
@@ -1063,7 +1063,7 @@ initkeys_ADWM(Bool reload)
 
 		snprintf(name, sizeof(name), "setlayout%c", layouts[i].symbol);
 		snprintf(clas, sizeof(clas), "setlayout%c", layouts[i].symbol);
-		DPRINTF("Check for key item '%s'\n", name);
+		XPRINTF("Check for key item '%s'\n", name);
 		if (!(res = readres(name, capclass(clas), NULL)))
 			continue;
 		key.func = k_setlayout;
@@ -1076,7 +1076,7 @@ initkeys_ADWM(Bool reload)
 
 		snprintf(name, sizeof(name), "spawn%d", i);
 		snprintf(clas, sizeof(clas), "spawn%d", i);
-		DPRINTF("Check for key item '%s'\n", name);
+		XPRINTF("Check for key item '%s'\n", name);
 		if (!(res = readres(name, capclass(clas), NULL)))
 			continue;
 		key.func = k_spawn;

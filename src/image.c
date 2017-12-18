@@ -303,7 +303,7 @@ dn_scale_image(AScreen *ds, XImage *ximage, unsigned nw, unsigned nh, Bool bitma
 
 	unsigned long A, R, G, B, pixel;
 
-	_DPRINTF("downscaling image %ux%ux%u to %ux%ux%u\n",
+	XPRINTF("downscaling image %ux%ux%u to %ux%ux%u\n",
 			ximage->width, ximage->height, ximage->depth,
 			xscale->width, xscale->height, xscale->depth);
 
@@ -755,7 +755,7 @@ crop_image(AScreen *ds, XImage *ximage)
 		r.width = (int)xmax + 1 - (int)xmin;
 		r.height = (int)ymax + 1 - (int)ymin;
 	} else {
-		_DPRINTF("data icon has no alpha!\n");
+		XPRINTF("data icon has no alpha!\n");
 		for (j = 0; j < ximage->height; j++)
 			for (i = 0; i < ximage->width; i++)
 				XPutPixel(ximage, i, j, XGetPixel(ximage, i, j) | 0xff000000);
@@ -763,7 +763,7 @@ crop_image(AScreen *ds, XImage *ximage)
 	}
 	xcrop = XSubImage(ximage, r.x, r.y, r.width, r.height);
 	if (xcrop) {
-		_DPRINTF("cropped image %ux%ux%u to %ux%u+%d+%d\n",
+		XPRINTF("cropped image %ux%ux%u to %ux%u+%d+%d\n",
 				ximage->width, ximage->height, ximage->depth,
 				r.width, r.height, r.x, r.y);
 		XDestroyImage(ximage);
@@ -829,7 +829,7 @@ renderimage(AScreen *ds, const ARGB *argb, const unsigned width, const unsigned 
 
 	image = XCreateImage(dpy, ds->visual, ds->bpp, ZPixmap, 0, NULL, width, height, 32, 0);
 	if (!image) {
-		DPRINTF("Could not create image\n");
+		XPRINTF("Could not create image\n");
 		return;
 	}
 	image->data = NULL;
@@ -912,7 +912,7 @@ renderimage(AScreen *ds, const ARGB *argb, const unsigned width, const unsigned 
 		}
 		break;
 	default:
-		DPRINTF("Unsupported visual class\n");
+		XPRINTF("Unsupported visual class\n");
 		free(data);
 		XDestroyImage(image);
 		return;
@@ -1078,7 +1078,7 @@ initimage(void)
 			scr->ncolors = scr->cpc * scr->cpc * scr->cpc;
 		}
 		if (scr->cpc < 2 || scr->ncolors > (1 << scr->depth)) {
-			DPRINTF("invalid color map size\n");
+			XPRINTF("invalid color map size\n");
 			scr->cpc = (1 << scr->depth) / 3;
 		}
 		scr->colors = calloc(scr->ncolors, sizeof(*scr->colors));
@@ -1108,7 +1108,7 @@ initimage(void)
 		{
 			for (i = 0; i < scr->ncolors; i++) {
 				if (!XAllocColor(dpy, scr->colormap, &scr->colors[i])) {
-					DPRINTF("could not allocate color\n");
+					XPRINTF("could not allocate color\n");
 					scr->colors[i].flags = 0;
 				} else
 					scr->colors[i].flags = DoRed | DoGreen | DoBlue;
@@ -1174,7 +1174,7 @@ initimage(void)
 			}
 		}
 		if (scr->cpc < 2 || scr->ncolors > (1 << scr->depth)) {
-			DPRINTF("invalid colormap size\n");
+			XPRINTF("invalid colormap size\n");
 			scr->cpc = (1 << scr->depth) / 3;
 		}
 		scr->colors = ecalloc(scr->ncolors, sizeof(*scr->colors));
@@ -1197,7 +1197,7 @@ initimage(void)
 				scr->colors[i].flags = DoRed | DoGreen | DoBlue;
 			}
 			if (!XAllocColor(dpy, scr->colormap, &scr->colors[i])) {
-				DPRINTF("could not allocate color\n");
+				XPRINTF("could not allocate color\n");
 				scr->colors[i].flags = 0;
 			} else
 				scr->colors[i].flags = DoRed | DoGreen | DoBlue;

@@ -72,7 +72,7 @@ delleaf(Leaf *l, Bool active)
 		assert(l->type == TreeTypeLeaf);
 	}
 	if (!(t = l->parent)) {
-		DPRINTF("WARNING: attempting to delete detached leaf\n");
+		XPRINTF("WARNING: attempting to delete detached leaf\n");
 		return;
 	}
 	l->parent = NULL;
@@ -108,7 +108,7 @@ appleaf(Container *cp, Leaf *l, Bool active)
 		assert(l->type == TreeTypeLeaf);
 	}
 	if (l->parent) {
-		DPRINTF("WARNING: attempting to append attached leaf\n");
+		XPRINTF("WARNING: attempting to append attached leaf\n");
 		delleaf(l, active);
 	}
 	if (cp && cp->type == TreeTypeLeaf) {
@@ -159,7 +159,7 @@ insleaf(Container *cp, Leaf *l, Bool active)
 		assert(l->type == TreeTypeLeaf);
 	}
 	if (l->parent) {
-		DPRINTF("WARNING: attempting to insert attached leaf\n");
+		XPRINTF("WARNING: attempting to insert attached leaf\n");
 		delleaf(l, active);
 	}
 	if (cp && cp->type == TreeTypeLeaf) {
@@ -208,7 +208,7 @@ delnode(Container *cc)
 		assert(cc->type == TreeTypeNode);
 	}
 	if (!(cp = cc->parent)) {
-		DPRINTF("WARNING: attempting to delete detached node\n");
+		XPRINTF("WARNING: attempting to delete detached node\n");
 		return;
 	}
 	cc->parent = NULL;
@@ -236,7 +236,7 @@ appnode(Container *cp, Container *cc)
 {
 	/* append Container cc into container cp, cc must be extracted from tree */
 	if (cc->parent) {
-		DPRINTF("WARNING: attempting to append attached node\n");
+		XPRINTF("WARNING: attempting to append attached node\n");
 		delnode(cc);
 	}
 	cc->next = cc->prev = NULL;	/* safety */
@@ -257,7 +257,7 @@ insnode(Container *cp, Container *cc)
 {
 	/* insert Container cc into container cp, cc must be extracted from tree */
 	if (cc->parent) {
-		DPRINTF("WARNING: attempting to append attached node\n");
+		XPRINTF("WARNING: attempting to append attached node\n");
 		delnode(cc);
 	}
 	cc->next = cc->prev = NULL;	/* safety */
@@ -547,11 +547,11 @@ Bool
 enterclient(XEvent *e, Client *c)
 {
 	if (!c || !canselect(c)) {
-		CPRINTF(c, "FOCUS: cannot select client.\n");
+		XPRINTF(c, "FOCUS: cannot select client.\n");
 		return True;
 	}
 	if (c->skip.focus) {
-		CPRINTF(c, "FOCUS: should not focus (nor casually select) client.\n");
+		XPRINTF(c, "FOCUS: should not focus (nor casually select) client.\n");
 		return True;
 	}
 	/* NOTE: this is where we can delay entering docks when theay are autoraised.  We 
@@ -1325,7 +1325,7 @@ updatefloat(Client *c, View *v)
 	}
 	if (!c->is.max && !c->is.full) {
 		/* TODO: more than just northwest gravity */
-		DPRINTF("CALLING: constrain()\n");
+		XPRINTF("CALLING: constrain()\n");
 		constrain(c, &g);
 	}
 	reconfigure(c, &g, False);
@@ -4999,19 +4999,19 @@ configureclient(Client *c, XEvent *e, int gravity)
 	    restack = False;
 	View *v;
 
-	CPRINTF(c, "request to configure client\n");
+	XPRINTF(c, "request to configure client\n");
 	if (ev->value_mask & CWX)
-		DPRINTF("x = %d\n", ev->x);
+		XPRINTF("x = %d\n", ev->x);
 	if (ev->value_mask & CWY)
-		DPRINTF("y = %d\n", ev->y);
+		XPRINTF("y = %d\n", ev->y);
 	if (ev->value_mask & CWWidth)
-		DPRINTF("w = %d\n", ev->width);
+		XPRINTF("w = %d\n", ev->width);
 	if (ev->value_mask & CWHeight)
-		DPRINTF("h = %d\n", ev->height);
+		XPRINTF("h = %d\n", ev->height);
 	if (ev->value_mask & CWBorderWidth)
-		DPRINTF("b = %d\n", ev->border_width);
+		XPRINTF("b = %d\n", ev->border_width);
 	if (ev->value_mask & CWStackMode)
-		DPRINTF("above = 0x%lx\n", (ev->value_mask & CWSibling) ? ev->above : 0UL);
+		XPRINTF("above = 0x%lx\n", (ev->value_mask & CWSibling) ? ev->above : 0UL);
 	if (!(v = c->cview ? : selview())) {
 		EPRINTF(__CFMTS(c) "refusing to reconfigure client\n", __CARGS(c));
 		notify = True;
@@ -5085,15 +5085,15 @@ configureclient(Client *c, XEvent *e, int gravity)
 		if (restack)
 			restack_client(c, stack_mode, o);
 		if (move) {
-			GPRINTF(&c->c, "before setframereference\n");
+			XPRINTF(&c->c, "before setframereference\n");
 			setframereference(c, xr, yr, &g, &n, gravity);
-			GPRINTF(&n, "after setframereference\n");
+			XPRINTF(&n, "after setframereference\n");
 			reconfigure(c, &n, notify);
 			return True;
 		} else {
-			GPRINTF(&c->c, "before putframereference\n");
+			XPRINTF(&c->c, "before putframereference\n");
 			putframereference(c, xr, yr, &g, &n, gravity);
-			GPRINTF(&n, "after putframereference\n");
+			XPRINTF(&n, "after putframereference\n");
 			reconfigure(c, &n, notify);
 			return True;
 		}
@@ -5140,7 +5140,7 @@ moveresizeclient(Client *c, int dx, int dy, int dw, int dh, int gravity)
 		cev.value_mask |= CWY;
 		cev.y = c->s.y + dy;
 	}
-	DPRINTF("calling configureclient for moveresizeclient action\n");
+	XPRINTF("calling configureclient for moveresizeclient action\n");
 	configureclient(c, (XEvent *) &cev, gravity);
 }
 
@@ -5739,12 +5739,12 @@ adddockapp(Client *c, Bool choseme, Bool focusme, Bool raiseme)
 	char *name = NULL, *clas = NULL, *cmd = NULL;
 
 	if (!(t = scr->dock.tree)) {
-		DPRINTF("WARNING: no dock tree!\n");
+		XPRINTF("WARNING: no dock tree!\n");
 		return;
 	}
 
 	if (!(n = (Container *) t->node.children.tail)) {
-		DPRINTF("WARNING: no dock node!\n");
+		XPRINTF("WARNING: no dock node!\n");
 		n = adddocknode(t);
 	}
 

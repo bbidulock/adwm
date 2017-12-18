@@ -21,7 +21,7 @@ monocle(Monitor *m)
 		g.w -= 2 * g.b;
 		g.h -= 2 * g.b;
 
-		DPRINTF("CALLING reconfigure()\n");
+		XPRINTF("CALLING reconfigure()\n");
 		reconfigure(c, &g);
 	}
 }

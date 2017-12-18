@@ -2012,7 +2012,7 @@ p_sym(const char **b, const char *e)
 
 	for (p = *b; p < e && *p && isblank(*p); p++) ;
 	for (f = p; f < e && *f && !isblank(*f); f++) ;
-	DPRINTF("Parsing keysym from '%s'\n", p);
+	XPRINTF("Parsing keysym from '%s'\n", p);
 	if (p < f && (t = strndup(p, f - p))) {
 		sym = XStringToKeysym(t);
 		free(t);
@@ -2032,10 +2032,10 @@ p_key(const char *keys)
 	Key *k, *chain = NULL, *leaf = NULL;
 
 	while (p < e) {
-		DPRINTF("Parsing key from '%s'\n", keys);
+		XPRINTF("Parsing key from '%s'\n", keys);
 		mod = p_mod(&p, e);
 		if ((sym = p_sym(&p, e)) == NoSymbol) {
-			DPRINTF("Failed to parse symbol from '%s'\n", keys);
+			XPRINTF("Failed to parse symbol from '%s'\n", keys);
 			if (chain)
 				freechain(chain);
 			return NULL;
@@ -2135,7 +2135,7 @@ initkeys_FLUXBOX(Bool reload)
 			strcpy(file, home);
 			strcat(file, keyFile + 1);
 			if (!(ctx.f = fopen(file, "r"))) {
-				DPRINTF("%s: %s\n", file, strerror(errno));
+				XPRINTF("%s: %s\n", file, strerror(errno));
 				free(file);
 				file = NULL;
 			}
@@ -2147,7 +2147,7 @@ initkeys_FLUXBOX(Bool reload)
 			file = ecalloc(len, sizeof(*file));
 			strcpy(file, keyFile);
 			if (!(ctx.f = fopen(file, "r"))) {
-				DPRINTF("%s: %s\n", file, strerror(errno));
+				XPRINTF("%s: %s\n", file, strerror(errno));
 				free(file);
 				file = NULL;
 			}
@@ -2160,7 +2160,7 @@ initkeys_FLUXBOX(Bool reload)
 		strcat(file, "/");
 		strcat(file, keyFile);
 		if (!(ctx.f = fopen(file, "r"))) {
-			DPRINTF("%s: %s\n", file, strerror(errno));
+			XPRINTF("%s: %s\n", file, strerror(errno));
 			free(file);
 			file = NULL;
 		}
@@ -2173,7 +2173,7 @@ initkeys_FLUXBOX(Bool reload)
 		strcat(file, "/");
 		strcat(file, keyFile);
 		if (!(ctx.f = fopen(file, "r"))) {
-			DPRINTF("%s: %s\n", file, strerror(errno));
+			XPRINTF("%s: %s\n", file, strerror(errno));
 			free(file);
 			file = NULL;
 		}
@@ -2185,7 +2185,7 @@ initkeys_FLUXBOX(Bool reload)
 		strcat(file, "/");
 		strcat(file, keyFile);
 		if (!(ctx.f = fopen(file, "r"))) {
-			DPRINTF("%s: %s\n", file, strerror(errno));
+			XPRINTF("%s: %s\n", file, strerror(errno));
 			free(file);
 			return;
 		}

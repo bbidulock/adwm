@@ -622,7 +622,7 @@ p_sym(const char *keys)
 		p++;
 	else
 		p = keys;
-	DPRINTF("Parsing keysym from '%s'\n", p);
+	XPRINTF("Parsing keysym from '%s'\n", p);
 	if (strlen(p))
 		sym = XStringToKeysym(p);
 	return sym;
@@ -635,10 +635,10 @@ p_key(const char *keys)
 	KeySym sym;
 	Key *k;
 
-	DPRINTF("Parsing key from '%s'\n", keys);
+	XPRINTF("Parsing key from '%s'\n", keys);
 	mod = p_mod(keys);
 	if ((sym = p_sym(keys)) == NoSymbol) {
-		DPRINTF("Failed to parse symbol from '%s'\n", keys);
+		XPRINTF("Failed to parse symbol from '%s'\n", keys);
 		return NULL;
 	}
 	k = ecalloc(1, sizeof(*k));
@@ -1179,7 +1179,7 @@ initkeys_BLACKBOX(Bool reload)
 	strcpy(file, home);
 	strcat(file, "/.bbkeysrc");
 	if (!(ctx.f = fopen(file, "r"))) {
-		DPRINTF("%s: %s\n", file, strerror(errno));
+		XPRINTF("%s: %s\n", file, strerror(errno));
 		free(file);
 		return;
 	}

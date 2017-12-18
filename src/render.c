@@ -83,7 +83,7 @@ createicon_bitmap(AScreen *ds, Client *c, Pixmap draw, Pixmap mask, unsigned w, 
 			px->h = h;
 			px->d = 1;
 			if (h > th) {
-				_DPRINTF("transforming image from h = %u to %u\n", h, th);
+				XPRINTF("transforming image from h = %u to %u\n", h, th);
 				/* get XRender to scale the image for us */
 				XDouble scale = (XDouble) th / (XDouble) h;
 				/* *INDENT-OFF* */
@@ -164,7 +164,7 @@ createicon_bitmap(AScreen *ds, Client *c, XImage *xdraw, XImage *xmask, Bool cro
 			px->w = ximage->width;
 			px->h = ximage->height;
 			if (ximage->height > th) {
-				_DPRINTF("transforming image from h = %u to %u\n", ximage->height, th);
+				XPRINTF("transforming image from h = %u to %u\n", ximage->height, th);
 				/* get XRender to scale the image for us */
 				XDouble scale = (XDouble) th / (XDouble) ximage->height;
 				/* *INDENT-OFF* */
@@ -260,7 +260,7 @@ createicon_pixmap(AScreen *ds, Client *c, Pixmap draw, Pixmap mask, unsigned w, 
 			px->h = h;
 			px->d = d;
 			if (h > th) {
-				_DPRINTF("transforming image from h = %u to %u\n", h, th);
+				XPRINTF("transforming image from h = %u to %u\n", h, th);
 				/* get XRender to scale the image for us */
 				XDouble scale = (XDouble) th / (XDouble) h;
 				/* *INDENT-OFF* */
@@ -327,9 +327,9 @@ createicon_pixmap(AScreen *ds, Client *c, XImage *xdraw, XImage *xmask, Bool cro
 #ifdef DOWNSCALE
 	if (ximage->height > th) {
 		unsigned tw = floor((double) ximage->width * (double) th / (double) ximage->height);
-		_DPRINTF("scaling image %ux%ux%u to %ux%u\n", ximage->width, ximage->height, ximage->depth, tw, th);
+		XPRINTF("scaling image %ux%ux%u to %ux%u\n", ximage->width, ximage->height, ximage->depth, tw, th);
 		ximage = dn_scale_image(ds, ximage, tw, th, False);
-		_DPRINTF("scaled image to %ux%ux%u\n",  ximage->width, ximage->height, ximage->depth);
+		XPRINTF("scaled image to %ux%ux%u\n",  ximage->width, ximage->height, ximage->depth);
 	}
 #endif				/* DOWNSCALE */
 	if (!(draw = XCreatePixmap(dpy, ds->drawable, ximage->width, ximage->height, ximage->depth))) {
@@ -347,7 +347,7 @@ createicon_pixmap(AScreen *ds, Client *c, XImage *xdraw, XImage *xmask, Bool cro
 			px->w = ximage->width;
 			px->h = ximage->height;
 			if (ximage->height > th) {
-				_DPRINTF("transforming image from h = %u to %u\n", ximage->height, th);
+				XPRINTF("transforming image from h = %u to %u\n", ximage->height, th);
 				/* get XRender to scale the image for us */
 				XDouble scale =  (XDouble) th / (XDouble) ximage->height;
 				/* *INDENT-OFF* */
@@ -442,7 +442,7 @@ render_createbitmapicon(AScreen *ds, Client *c, Pixmap icon, Pixmap mask, unsign
 			px->w = w;
 			px->h = h;
 			if (h > th) {
-				_DPRINTF("transforming image from h = %u to %u\n", ximage->height, th);
+				XPRINTF("transforming image from h = %u to %u\n", ximage->height, th);
 				/* get XRender to scale the image for us */
 				XDouble scale = (XDouble) th / (XDouble) h;
 				/* *INDENT-OFF* */
@@ -533,9 +533,9 @@ render_createpixmapicon(AScreen *ds, Client *c, Pixmap icon, Pixmap mask, unsign
 #ifdef DOWNSCALE
 	if (ximage->height > th) {
 		unsigned tw = floor((double) ximage->width * (double) th / (double) ximage->height);
-		_DPRINTF("scaling image %ux%ux%u to %ux%u\n", ximage->width, ximage->height, ximage->depth, tw, th);
+		XPRINTF("scaling image %ux%ux%u to %ux%u\n", ximage->width, ximage->height, ximage->depth, tw, th);
 		ximage = dn_scale_image(ds, ximage, tw, th, False);
-		_DPRINTF("scaled image to %ux%ux%u\n",  ximage->width, ximage->height, ximage->depth);
+		XPRINTF("scaled image to %ux%ux%u\n",  ximage->width, ximage->height, ximage->depth);
 	}
 #endif				/* DOWNSCALE */
 	if (!(draw = XCreatePixmap(dpy, ds->drawable, ximage->width, ximage->height, ximage->depth))) {
@@ -553,7 +553,7 @@ render_createpixmapicon(AScreen *ds, Client *c, Pixmap icon, Pixmap mask, unsign
 			px->w = ximage->width;
 			px->h = ximage->height;
 			if (ximage->height > th) {
-				_DPRINTF("transforming image from h = %u to %u\n", ximage->height, th);
+				XPRINTF("transforming image from h = %u to %u\n", ximage->height, th);
 				/* get XRender to scale the image for us */
 				XDouble scale = (XDouble) th / (XDouble) ximage->height;
 				/* *INDENT-OFF* */
@@ -646,7 +646,7 @@ render_createdataicon(AScreen *ds, Client *c, unsigned w, unsigned h, long *data
 		}
 	}
 	if (alpha == 0UL) {
-		_DPRINTF("data icon has no alpha!\n");
+		XPRINTF("data icon has no alpha!\n");
 		for (p = data, j = 0; j < ximage->height; j++)
 			for (i = 0; i < ximage->width; i++, p++)
 				XPutPixel(ximage, i, j, *p | 0xff000000UL);
@@ -658,9 +658,9 @@ render_createdataicon(AScreen *ds, Client *c, unsigned w, unsigned h, long *data
 #ifdef DOWNSCALE
 	if (ximage->height > th) {
 		unsigned tw = floor((double) ximage->width * (double) th / (double) ximage->height);
-		_DPRINTF("scaling image %ux%ux%u to %ux%u\n", ximage->width, ximage->height, ximage->depth, tw, th);
+		XPRINTF("scaling image %ux%ux%u to %ux%u\n", ximage->width, ximage->height, ximage->depth, tw, th);
 		ximage = dn_scale_image(ds, ximage, tw, th, False);
-		_DPRINTF("scaled image to %ux%ux%u\n",  ximage->width, ximage->height, ximage->depth);
+		XPRINTF("scaled image to %ux%ux%u\n",  ximage->width, ximage->height, ximage->depth);
 	}
 #endif				/* DOWNSCALE */
 	if (!(draw = XCreatePixmap(dpy, ds->drawable, ximage->width, ximage->height, ximage->depth))) {
@@ -678,7 +678,7 @@ render_createdataicon(AScreen *ds, Client *c, unsigned w, unsigned h, long *data
 			px->w = ximage->width;
 			px->h = ximage->height;
 			if (ximage->height > th) {
-				_DPRINTF("transforming image from h = %u to %u\n", ximage->height, th);
+				XPRINTF("transforming image from h = %u to %u\n", ximage->height, th);
 				/* get XRender to scale the image for us */
 				XDouble scale = (XDouble) th / (XDouble) ximage->height;
 				/* *INDENT-OFF* */
@@ -740,9 +740,9 @@ render_createpngicon(AScreen *ds, Client *c, const char *file)
 #ifdef DOWNSCALE
 	if (ximage->height > th) {
 		unsigned tw = floor((double) ximage->width * (double) th / (double) ximage->height);
-		_DPRINTF("scaling image %ux%ux%u to %ux%u\n", ximage->width, ximage->height, ximage->depth, tw, th);
+		XPRINTF("scaling image %ux%ux%u to %ux%u\n", ximage->width, ximage->height, ximage->depth, tw, th);
 		ximage = dn_scale_image(ds, ximage, tw, th, False);
-		_DPRINTF("scaled image to %ux%ux%u\n",  ximage->width, ximage->height, ximage->depth);
+		XPRINTF("scaled image to %ux%ux%u\n",  ximage->width, ximage->height, ximage->depth);
 	}
 #endif				/* DOWNSCALE */
 	if (!(draw = XCreatePixmap(dpy, ds->drawable, ximage->width, ximage->height, ximage->depth))) {
@@ -752,7 +752,7 @@ render_createpngicon(AScreen *ds, Client *c, const char *file)
 	XPutImage(dpy, draw, ds->dc.gc, ximage, 0, 0, 0, 0, ximage->width, ximage->height);
 	result = createicon_pixmap(ds, c, draw, None, ximage->width, ximage->height, ximage->depth, True);
 	if (result)
-		_DPRINTF("created icon from %s\n", file);
+		XPRINTF("created icon from %s\n", file);
       error:
 	if (ximage)
 		XDestroyImage(ximage);
@@ -775,7 +775,7 @@ render_createpngicon(AScreen *ds, Client *c, const char *file)
 	}
 	result = createicon_pixmap(ds, c, xdraw, NULL, True);
 	if (result)
-		_DPRINTF("created icon from %s\n", file);
+		XPRINTF("created icon from %s\n", file);
       error:
 	if (xdraw)
 		XDestroyImage(xdraw);
@@ -815,7 +815,7 @@ render_createxpmicon(AScreen *ds, Client *c, const char *file)
 	XpmFreeAttributes(&xa);
 	result = createicon_pixmap(ds, c, draw, mask, xa.width, xa.height, xa.depth, True);
 	if (result)
-		_DPRINTF("created icon from %s\n", file);
+		XPRINTF("created icon from %s\n", file);
       error:
 	if (mask)
 		XFreePixmap(dpy, mask);
@@ -849,7 +849,7 @@ render_createxpmicon(AScreen *ds, Client *c, const char *file)
 	XpmFreeAttributes(&xa);
 	result = createicon_pixmap(ds, c, xdraw, xmask, True);
 	if (result)
-		_DPRINTF("created icon from %s\n", file);
+		XPRINTF("created icon from %s\n", file);
       error:
 	if (xmask)
 		XDestroyImage(xmask);
@@ -876,7 +876,7 @@ render_createxbmicon(AScreen *ds, Client *c, const char *file)
 	}
 	result = createicon_bitmap(ds, c, draw, None, w, h, True);
 	if (result)
-		_DPRINTF("created icon from %s\n", file);
+		XPRINTF("created icon from %s\n", file);
       error:
 	if (draw)
 		XFreePixmap(dpy, draw);
@@ -898,7 +898,7 @@ render_createxbmicon(AScreen *ds, Client *c, const char *file)
 	}
 	result = createicon_bitmap(ds, c, xdraw, NULL, True);
 	if (result)
-		_DPRINTF("created icon from %s\n", file);
+		XPRINTF("created icon from %s\n", file);
       error:
 	if (xdraw)
 		XDestroyImage(xdraw);

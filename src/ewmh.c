@@ -3300,7 +3300,7 @@ clientmessage(XEvent *e)
 			}
 			if (gravity == 0)
 				gravity = c->sh.win_gravity;
-			DPRINTF("calling configureclient for _NET_WM_MOVERESIZE_WINDOW message\n");
+			XPRINTF("calling configureclient for _NET_WM_MOVERESIZE_WINDOW message\n");
 			configureclient(c, (XEvent *) &cev, gravity);
 		} else if (message_type == _XA_NET_WM_MOVERESIZE) {
 			int x_root = (int) ev->data.l[0];
@@ -3379,7 +3379,7 @@ clientmessage(XEvent *e)
 			cev.above = sibling;
 			cev.value_mask |= CWStackMode;
 			cev.detail = detail;
-			DPRINTF("calling configureclient for _NET_RESTACK_WINDOW message\n");
+			XPRINTF("calling configureclient for _NET_RESTACK_WINDOW message\n");
 			configureclient(c, (XEvent *) &cev, c->sh.win_gravity);
 		} else if (message_type == _XA_NET_REQUEST_FRAME_EXTENTS) {
 			ewmh_update_net_window_extents(c);

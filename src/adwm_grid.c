@@ -73,7 +73,7 @@ arrange_GRID(Monitor *m)
 		n.t = (v->dectiled && c->has.title) ? scr->style.titleheight : 0;
 		n.g = (v->dectiled && c->has.grips) ? scr->style.gripsheight : 0;
 		if (!c->is.moveresize) {
-			DPRINTF("CALLING reconfigure()\n");
+			XPRINTF("CALLING reconfigure()\n");
 			reconfigure(c, &n);
 		} else {
 			ClientGeometry C = n;
@@ -81,7 +81,7 @@ arrange_GRID(Monitor *m)
 			/* center it where it was before */
 			C.x = (c->c.x + c->c.w / 2) - C.w / 2;
 			C.y = (c->c.y + c->c.h / 2) - C.h / 2;
-			DPRINTF("CALLING reconfigure()\n");
+			XPRINTF("CALLING reconfigure()\n");
 			reconfigure(c, &C);
 		}
 	}

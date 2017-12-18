@@ -1378,7 +1378,7 @@ setfocus(Client *c)
 			ce.xclient.data.l[4] = 0l;
 			XSendEvent(dpy, c->win, False, NoEventMask, &ce);
 		}
-		gave = c;
+		gavefocus(c);
 	} else if (!c) {
 		Window win = None;
 		int revert = RevertToPointerRoot;

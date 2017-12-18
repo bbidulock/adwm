@@ -466,6 +466,20 @@ reattachalist(Client *c, Bool front)
 }
 
 void
+gavefocus(Client *next)
+{
+	Client *last = gave;
+
+	gave = next;
+	if (next && next != last) {
+		reattachalist(next, True);
+		reattachflist(next, True);
+	}
+	if (gave == took)
+		gave = NULL;
+}
+
+void
 tookfocus(Client *next)
 {
 	Client *last = took;

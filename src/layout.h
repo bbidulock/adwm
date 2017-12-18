@@ -57,6 +57,7 @@ void addclient(Client *c, Bool choseme, Bool focusme, Bool raiseme);
 void delclient(Client *c);
 void setfocused(Client *c);
 void setselected(Client *c);
+void gavefocus(Client *c);
 void tookfocus(Client *c);
 void tookselect(Client *c);
 void send_configurenotify(Client *c);

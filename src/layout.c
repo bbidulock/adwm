@@ -4669,11 +4669,20 @@ mouseresize(Client *c, XEvent *e, Bool toggle)
 	return mouseresize_from(c, from, e, toggle);
 }
 
+/* Notes from wm-spec-1.5:  If the Application requests a new position (x, y)
+ * (and possibly also a new size), the Window Manager calculates a new reference
+ * point (ref_x, ref_y), based on the client window's (possibly new) size
+ * (width, height), border width (bw) and win_gravity as explained in the table
+ * below.  The Window Manager will use the new reference point until the next
+ * request for a new position.
+ */
 static void
 getreference(int *xr, int *yr, Geometry *g, int gravity)
 {
 	switch (gravity) {
+	case UnmapGravity:
 	case NorthWestGravity:
+	default:
 		*xr = g->x;
 		*yr = g->y;
 		break;
@@ -4717,7 +4726,25 @@ getreference(int *xr, int *yr, Geometry *g, int gravity)
 }
 
 static void
-putreference(int xr, int yr, Geometry *g, int gravity)
+getclientreference(Client *c, int *xr, int *yr, Geometry *g, int gravity)
+{
+	if (gravity == 0)
+		gravity = c->sh.win_gravity;
+
+	/* border that client expects */
+	g->b = c->s.b;
+	/* top left outer corner of client */
+	g->x = c->c.x + c->c.b + c->c.v - g->b;
+	g->y = c->c.y + c->c.b + c->c.v + c->c.t - g->b;
+	/* client inner width and height from frame */
+	g->w = c->c.w - c->c.v - c->c.v;
+	g->h = c->c.h - c->c.v - c->c.t - c->c.g;
+
+	getreference(xr, yr, g, gravity);
+}
+
+static void
+putreference(int xr, int yr, ClientGeometry *g, int gravity)
 {
 	switch (gravity) {
 	case UnmapGravity:
@@ -4759,63 +4786,56 @@ putreference(int xr, int yr, Geometry *g, int gravity)
 		g->y = yr - g->b - g->h - g->b;
 		break;
 	case StaticGravity:
-		g->x = xr - g->b;
-		g->y = yr - g->b;
+		g->x = xr - g->v - g->b;
+		g->y = yr - g->v - g->t - g->b;
 		break;
 	}
 }
 
 static void
-putgeometry(int xr, int yr, Geometry *g, int gravity, ClientGeometry *n)
+setclientreference(Client *c, int xr, int yr, Geometry *g, ClientGeometry *n, int gravity)
 {
+	if (gravity == 0)
+		gravity = c->sh.win_gravity;
+
+	/* border that client expects */
+	c->s.b = g->b;
+
+	*n = c->c;
+	/* frame inner width and height from client */
 	n->w = n->v + g->w + n->v;
 	n->h = n->v + n->t + g->h + n->g;
-	putreference(xr, yr, (Geometry *) n, gravity);
-	if (gravity == StaticGravity) {
-		n->x -= n->v;
-		n->y -= n->v + n->t;
-	}
-}
 
-static void
-resizeclient(Client *c, Geometry *g, int gravity, ClientGeometry *n)
-{
-	int xr, yr;
-
-	getreference(&xr, &yr, &c->s, gravity);
-	c->s = *g;
-	putreference(xr, yr, &c->s, gravity);
-	*n = c->c;
-	putgeometry(xr, yr, g, gravity, n);
-}
-
-static void
-moveclient(Client *c, Geometry *g, int gravity, ClientGeometry *n)
-{
-	int xr, yr;
-
-	c->s = *g;
-	getreference(&xr, &yr, &c->s, gravity);
-	*n = c->c;
-	putgeometry(xr, yr, g, gravity, n);
+	putreference(xr, yr, n, gravity);
 }
 
 static void
 getnotifygeometry(Client *c, Geometry *g)
 {
 	if (c->is.dockapp) {
-		/* dock apps should not be configuring their icon windows,
-		 * unless they are also their top-level window */
+		/* dock apps should not be configuring their icon windows, unless they
+		   are also their top-level window */
 		g->x = c->r.x + c->c.x - c->s.b;
 		g->y = c->r.y + c->c.y - c->s.b;
 		g->w = c->r.w;
 		g->h = c->r.h;
 		g->b = c->r.b;
 	} else {
+		/* Notes from wm-spec-1.5: When generating synthetic ConfigureNotify
+		   events, the position given MUST be the [outer?] top-left corner of the 
+		   client window in relation to the origin of the root window (i.e.,
+		   ignoring win_gravity) (ICCCM Version 2.0 §4.2.3) */
+		/* x position of frame plus frame border plus frame grip minus client
+		   border (saved static border) */
 		g->x = c->c.x + c->c.b + c->c.v - c->s.b;
+		/* y position of frame plus frame border plus frame grip plus frame
+		   titlebar minus client border (saved static border). */
 		g->y = c->c.y + c->c.b + c->c.v + c->c.t - c->s.b;
+		/* inner width of frame minus two grip widths */
 		g->w = c->c.w - c->c.v - c->c.v;
+		/* inner height of frame minus two grips minus titlebar height */
 		g->h = c->c.h - c->c.v - c->c.t - c->c.g;
+		/* saved static border */
 		g->b = c->s.b;	/* client expected border */
 	}
 }
@@ -4867,6 +4887,7 @@ configureclient(Client *c, XEvent *e, int gravity)
 		ClientGeometry n = { 0, };
 		unsigned may, will;
 		int stack_mode = Above;
+		int xr, yr;
 
 		may = CWX | CWY | CWWidth | CWHeight | CWBorderWidth | CWSibling |
 		    CWStackMode;
@@ -4883,7 +4904,8 @@ configureclient(Client *c, XEvent *e, int gravity)
 
 		will = ev->value_mask & may;
 
-		g = c->s;	/* get current client geometry */
+		/* get current client geometry as seen by client */
+		getclientreference(c, &xr, &yr, &g, gravity);
 
 		if (will & CWX) {
 			g.x = ev->x;
@@ -4925,15 +4947,9 @@ configureclient(Client *c, XEvent *e, int gravity)
 
 		if (restack)
 			restack_client(c, stack_mode, o);
-		if (move) {
-			moveclient(c, &g, gravity, &n);
-			reconfigure(c, &n, notify);
-			return True;
-		} else if (resize || border) {
-			resizeclient(c, &g, gravity, &n);
-			reconfigure(c, &n, notify);
-			return True;
-		}
+		setclientreference(c, xr, yr, &g, &n, gravity);
+		reconfigure(c, &n, notify);
+		return True;
 	}
 	if (notify) {
 		if (ev->value_mask & CWBorderWidth)
@@ -5306,7 +5322,7 @@ place_undermouse(Client *c, WindowPlacement p, ClientGeometry *g, View *v, Worka
 	}
 	getworkarea(v->curmon, w);
 
-	putreference(g->x, g->y, (Geometry *) g, c->sh.win_gravity);
+	putreference(g->x, g->y, g, c->sh.win_gravity);
 
 	/* keep center of window inside work area, otherwise wnck task bars figure its on
 	   a different monitor */

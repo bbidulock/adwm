@@ -1,4 +1,4 @@
-adwm -- todo file.  2017-10-17
+adwm -- todo file.  2017-12-19
 
 General tasks:
 
@@ -13,26 +13,27 @@ Window resize grips:
 
 * [x] remove need for title and grips sub-windows and just draw these on
       the frame window. (Can't do this and support 32 deep visuals.)
-* [ ] add ability to have resize grips all the way around the window in
+* [x] add ability to have resize grips all the way around the window in
       DTWM/MWM/TWM/CTWM/VTWM fashion
+* [ ] test resize grips all the way around
 
 Decoration styles:
 
-* [ ] use imlib2 to draw title and resize grips
-* [ ] use imlib2 to optimally update exposures on the frame
-* [ ] convert as many gradients as possible to use imlib2
-* [ ] make imlib2 a prerequisite
-* [ ] display icons in title bar
+* [x] use ximage/xrender to draw title and resize grips
+* [x] use ximage/xrender to optimally update exposures on the frame
+* [ ] convert as many gradients as possible to use ximage/xrender
+* [x] make xrender a prerequisite
+* [x] display icons in title bar
 * [x] provide a different button pressed pixmap for each mouse button.
 * [x] handle colormaps correctly
 * [ ] provide transparency management model for instructing compositors
 * [ ] add full composite manager function to window manager
 * [x] support shaped windows
 * [ ] add shaped borders to shaped windows
-* [ ] undecorate shaped windows with reduced extents by default
-* [ ] used 32-deep ARGB visuals for all frame components when available
+* [x] undecorate shaped windows with reduced extents by default
+* [x] used 32-deep ARGB visuals for all frame components when available
 * [ ] render client and frame elements on frame
-* [ ] load themerc file in addition to stylerc file
+* [x] load themerc file in addition to stylerc file
 
 Internal layout mechanism:
 
@@ -57,7 +58,7 @@ User feedback:
 
 Session control:
 
-* [ ] fixup restart behaviour
+* [x] fixup restart behaviour
 * [ ] add session management
 * [ ] implement separate file for dock app list.
 * [ ] implement function to save dock app list.

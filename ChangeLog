@@ -1,5 +1,28 @@
 # created with git log --stat=76 -M -C -500|fmt -sct -w80
 
+commit 667376ca90359dda0ece440355c51c6a2efde2aa
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Dec 19 02:11:08 2017 -0700
+
+    update release files
+
+ AUTHORS      |    2 +-
+ ChangeLog    | 7344 +++++++++++++++++++++++++-----------------------------
+ NEWS         |  258 +-
+ README       |   20 +-
+ README.md    |   20 +-
+ configure.ac |   10 +-
+ 6 files changed, 3711 insertions(+), 3943 deletions(-)
+
+commit ea552748ec45627d4eb7b4d2f82594aeaa4a7924
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Dec 19 02:09:27 2017 -0700
+
+    update TODO
+
+ TODO | 23 ++++++++++++-----------
+ 1 file changed, 12 insertions(+), 11 deletions(-)
+
 commit 4423b751eee49dd9a0eed036bbbd91c47b319db8
 Author: Brian Bidulock <bidulock@openss7.org>
 Date:   Mon Dec 18 13:21:40 2017 -0700
@@ -5339,27 +5362,3 @@ Date:   Fri Sep 5 18:24:22 2014 -0600
  doc/adwm.1      | 211 ++++++++++++++++++++++++++++++++++++++++++----------
  src/adwm.c      |  20 ++---
  3 files changed, 221 insertions(+), 71 deletions(-)
-
-commit f31c92660b9468c476d2cd3d1079d809166fae52
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Fri Sep 5 15:57:42 2014 -0600
-
-    another ignore
-
- .gitignore | 1 +
- 1 file changed, 1 insertion(+)
-
-commit 6142a928d2ceaf7297f8f8c7edcc3111120bc362
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Fri Sep 5 15:57:08 2014 -0600
-
-    change _NET_WM_DESKTOP message behaviour
-
- doc/adwm-keys.1 |  8 ++++++--
- src/actions.c   |  7 +++++++
- src/actions.h   |  1 +
- src/ewmh.c      |  2 +-
- src/parse.c     |  3 ++-
- src/tags.c      | 41 ++++++++++++++++++++++++++++++++++++++++-
- src/tags.h      |  1 +
- 7 files changed, 58 insertions(+), 5 deletions(-)

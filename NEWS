@@ -1,11 +1,11 @@
-adwm -- history of user-visible changes.  2017-12-18
+adwm -- history of user-visible changes.  2017-12-19
 
-Release adwm-0.7.1 released 2017-12-18
+Release adwm-0.7.1 released 2017-12-19
 --------------------------------------
 
 git shortlog -e -n -w80,6,8 0.7.0...0.7.1
 
-Brian Bidulock <bidulock@openss7.org> (217):
+Brian Bidulock <bidulock@openss7.org> (219):
       m_spawn on button press instead of release
       prepare for drag-click separation of mouse actions
       reset pid after reload
@@ -223,6 +223,8 @@ Brian Bidulock <bidulock@openss7.org> (217):
       better handlingh of configure requests
       reorder when focus given
       suppress some debugs
+      update TODO
+      update release files
 
 
 Release adwm-0.7.0 released 2017-10-11

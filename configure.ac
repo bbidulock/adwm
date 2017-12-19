@@ -218,7 +218,7 @@ fi
 AC_ARG_ENABLE([gdk-pixbuf],
 	AC_HELP_STRING([--disable-gdk-pixbuf],
 		[Disable gdk-pixbuf library @<:@default=auto@:>@]))
-if test "x$enable_gdk_pixbur" != xno ; then
+if test "x$enable_gdk_pixbuf" != xno ; then
 	PKG_CHECK_MODULES([PIXBUF],[gdk-pixbuf-xlib-2.0],
 		[AC_DEFINE([PIXBUF],[1],[Define to 1 to support GDK PIXBUF X11 graphics support.])],
 		[enable_gdk_pixbuf=no])

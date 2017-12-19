@@ -1,5 +1,2438 @@
 # created with git log --stat=76 -M -C -500|fmt -sct -w80
 
+commit 4423b751eee49dd9a0eed036bbbd91c47b319db8
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Dec 18 13:21:40 2017 -0700
+
+    suppress some debugs
+
+ src/actions.c       | 10 +++++-----
+ src/adwm.c          | 16 ++++++++--------
+ src/adwm_adwm.c     | 34 +++++++++++++++++-----------------
+ src/adwm_blackbox.c |  8 ++++----
+ src/adwm_fluxbox.c  | 16 ++++++++--------
+ src/adwm_grid.c     |  4 ++--
+ src/adwm_monocle.c  |  2 +-
+ src/adwm_openbox.c  |  8 ++++----
+ src/adwm_tile.c     | 46 +++++++++++++++++++++++-----------------------
+ src/ewmh.c          |  4 ++--
+ src/image.c         | 18 +++++++++---------
+ src/imlib.c         |  2 +-
+ src/layout.c        | 46 +++++++++++++++++++++++-----------------------
+ src/pixbuf.c        |  2 +-
+ src/render.c        | 44 ++++++++++++++++++++++----------------------
+ src/ximage.c        |  2 +-
+ src/xlib.c          |  2 +-
+ 17 files changed, 132 insertions(+), 132 deletions(-)
+
+commit 591c6331639aeef84b4eb3d2fe2f4e56bf3cefc9
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Dec 18 13:10:57 2017 -0700
+
+    reorder when focus given
+
+ src/adwm.c   |  2 +-
+ src/layout.c | 14 ++++++++++++++
+ src/layout.h |  1 +
+ 3 files changed, 16 insertions(+), 1 deletion(-)
+
+commit 75277aad29221195620e34c004adab0f7f24307d
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Dec 18 10:53:45 2017 -0700
+
+    better handlingh of configure requests
+
+ src/adwm.c   |   5 +-
+ src/ewmh.c   |   2 +
+ src/layout.c | 190 +++++++++++++++++++++++++++++++++++++++++++++++--------
+ 3 files changed, 167 insertions(+), 30 deletions(-)
+
+commit 054c2cf9307da51d83ddce649cf1ef8f0cdc2fd3
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Dec 18 04:55:37 2017 -0700
+
+    rework configurerequest response
+
+ src/layout.c | 102 ++++++++++++++++++++++++++++++++-----------------------
+ 1 file changed, 59 insertions(+), 43 deletions(-)
+
+commit 5ff96a0f6d90b536657c70bb61171520fdc923c0
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Dec 16 18:31:12 2017 -0700
+
+    have to stick with ximage
+
+ src/render.c | 1 -
+ 1 file changed, 1 deletion(-)
+
+commit 29d81f364143659f2f54f721ea0db1362b5646ea
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu Nov 30 02:07:58 2017 -0700
+
+    specify scale the other way
+
+ src/render.c | 70 ++++++++++++++++++++++++++++----------------------------
+ 1 file changed, 35 insertions(+), 35 deletions(-)
+
+commit e215d7e6638527cf3e6aaa1b9f1deeef652365a5
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Nov 27 01:10:05 2017 -0700
+
+    a fairly workable xrender-only arrangement
+
+ src/render.c | 112 ++++++++++++++++++++++++++++++++++++++++++-------------
+ 1 file changed, 86 insertions(+), 26 deletions(-)
+
+commit ee52244d1a7b6b09f225fd58bda4bfc9f4cb20f2
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Nov 27 01:09:14 2017 -0700
+
+    a few (suppressed) debugs
+
+ src/ewmh.c | 16 ++++++++++++----
+ 1 file changed, 12 insertions(+), 4 deletions(-)
+
+commit 8b4654dd8af874703af305b05118b5c61e4c18a1
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Nov 27 00:20:58 2017 -0700
+
+    add a type
+
+ .indent.pro | 1 +
+ 1 file changed, 1 insertion(+)
+
+commit aa7a8b2b1fdd9aee1eeaddba5bbf3f1cc4b29a65
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Nov 27 00:20:24 2017 -0700
+
+    some pngs (firefox) are sticking garbage in RBG when transparent
+
+ src/image.c | 14 +++++++++++++-
+ 1 file changed, 13 insertions(+), 1 deletion(-)
+
+commit 1a128b6dbfda03257079a07124a85763c9479748
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Nov 26 18:10:52 2017 -0700
+
+    just xrender works well, just need cropping
+
+ src/render.c | 178 ++++++++++++++++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 177 insertions(+), 1 deletion(-)
+
+commit 9b178e50590b78da4160fdb5f6741bed5306a41b
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Nov 26 16:04:22 2017 -0700
+
+    working up just xrender
+
+ src/render.c | 91 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 91 insertions(+)
+
+commit e5e61cf1578fab0659bd3b720ec744761b9debaa
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Nov 26 15:48:10 2017 -0700
+
+    working up xrender only
+
+ src/render.c | 13 ++++++-------
+ 1 file changed, 6 insertions(+), 7 deletions(-)
+
+commit b4b03bd16b2e125f2bc8bbb5cf50102f5e7eab73
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Nov 26 15:44:51 2017 -0700
+
+    start using just xrender
+
+ src/render.c | 110 ++++++++++++++++++++++++++++++++++++++++++++-----------
+ 1 file changed, 89 insertions(+), 21 deletions(-)
+
+commit 78961f0a6c529c60d0ddd610b0a400c35cea89e4
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Nov 26 06:05:47 2017 -0700
+
+    corrections to image croppning and scaling
+
+ src/image.c  | 137 +++++++++++++++++--------------
+ src/image.h  |   4 +-
+ src/render.c | 239 ++++++++++++++++++++++++++++++++++++++++++++++---------
+ 3 files changed, 279 insertions(+), 101 deletions(-)
+
+commit 839fd6630fe11efc2bf4648eb33642e4924aeaf5
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Nov 26 06:05:00 2017 -0700
+
+    use app icon last
+
+ src/ewmh.c | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
+
+commit 62696b74808c57e3376874a39fdb5e22a3a6f5d1
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Nov 26 00:19:44 2017 -0700
+
+    scale with doubles
+
+ src/image.c | 232 +++++++++++++++++++++++++++++++++++++++++++++++++++-----
+ src/image.h |   3 +
+ 2 files changed, 215 insertions(+), 20 deletions(-)
+
+commit ff99582f0035ea9c8319e28a29198f1b67b39cbc
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Nov 25 23:52:09 2017 -0700
+
+    move scaling functions to image.c
+
+ src/image.c  | 314 +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ src/image.h  |   2 +
+ src/ximage.c | 314 -------------------------------------------------------
+ 3 files changed, 316 insertions(+), 314 deletions(-)
+
+commit 1df64840835fbbf048ddbd75eacfafae1d1e02ca
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Nov 25 23:39:09 2017 -0700
+
+    handle bitmaps a bit better
+
+ src/image.c    |  54 +++++++---
+ src/image.h    |   6 +-
+ src/render.c   | 290 ++++++++++++++++++++++++++++-------------------------
+ src/resource.c |  12 ++-
+ src/ximage.c   |   8 +-
+ 5 files changed, 207 insertions(+), 163 deletions(-)
+
+commit ad4c912ec1c57e2bff9aa693d780e9ed1eb6ed27
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Nov 25 23:37:58 2017 -0700
+
+    more svg suppression
+
+ src/draw.c | 23 +++++++++++++++--------
+ 1 file changed, 15 insertions(+), 8 deletions(-)
+
+commit d9036c1ba66f3b68f76448e280ae7218906497ed
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Nov 25 23:36:52 2017 -0700
+
+    do not default to svg without capability
+
+ src/config.c | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+commit 73ac352b46152cf2d1b9de53731647c43621a291
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Nov 25 23:36:15 2017 -0700
+
+    proper xfixes events
+
+ src/adwm.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+commit 41eb7fbec679cf19d7f91d94e57f13cc59cc7a26
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Nov 25 23:35:51 2017 -0700
+
+    add a type
+
+ .indent.pro | 1 +
+ 1 file changed, 1 insertion(+)
+
+commit 8edd4f86f12c77ff6736ba6bb877b6e37435dce0
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri Nov 24 23:30:04 2017 -0700
+
+    a little cleanup, starting to work
+
+ src/render.c | 61 ++++++++++++++++++++++++++++++++++++++++----------------
+ src/ximage.c |  3 ++-
+ 2 files changed, 46 insertions(+), 18 deletions(-)
+
+commit 9ed66c95b80a94b7097e53846d495a3d5d99acfc
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri Nov 24 21:37:22 2017 -0700
+
+    first xrender full rendering attempt
+
+ src/render.c | 131 +++++++++++++++++++++++++------------------------------
+ 1 file changed, 59 insertions(+), 72 deletions(-)
+
+commit b68b2509fe559100c2a62de8f3b3fdca12e46dc7
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri Nov 24 19:51:21 2017 -0700
+
+    allow for creating pictures for various windows
+
+ src/adwm.c   | 45 +++++++++++++++++++++++++++++++++++++++++++++
+ src/adwm.h   | 13 +++++++++++++
+ src/render.c | 34 +++++++++++++++++++++++++++-------
+ 3 files changed, 85 insertions(+), 7 deletions(-)
+
+commit 70f12f009dd31864980038df989c53fe68611079
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri Nov 24 16:51:15 2017 -0700
+
+    compact a bit
+
+ src/render.c | 53 ++++++++++++++++++++++++-----------------------------
+ 1 file changed, 24 insertions(+), 29 deletions(-)
+
+commit a42b289fb3287bab340cf1f6a14028f8b6c076a9
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri Nov 24 16:47:27 2017 -0700
+
+    all button picture handling except drawnormal and drawdockapp
+
+ src/render.c | 681 ++++++++++++++++++++++++++++++-------------------------
+ src/ximage.c |  13 +-
+ 2 files changed, 383 insertions(+), 311 deletions(-)
+
+commit 8fd7da1f29278a5ee63cbd8037d09a4a28f29c07
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri Nov 24 14:26:59 2017 -0700
+
+    rename stuff, cut out non-xrender code
+
+ src/render.c | 347 ++++++++++---------------------------------------------
+ 1 file changed, 62 insertions(+), 285 deletions(-)
+
+commit 363363a9ffbab22d68233509fa5b3294c0210759
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri Nov 24 14:07:48 2017 -0700
+
+    working up xrender rendering
+
+ src/image.c  |  27 ++++++
+ src/image.h  |   1 +
+ src/render.c | 273 +++++++++++++++++++++++++++++++++++++++++++++++--------
+ src/ximage.c |  27 ------
+ 4 files changed, 264 insertions(+), 64 deletions(-)
+
+commit 9342d142395df872e4cd93e2ed1322dca7bda92f
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri Nov 24 12:39:35 2017 -0700
+
+    remove unused code paths
+
+ src/imlib.c  | 50 ++++++++++----------------------------------------
+ src/pixbuf.c | 49 ++++++++++---------------------------------------
+ src/xlib.c   | 48 +++++++++---------------------------------------
+ 3 files changed, 29 insertions(+), 118 deletions(-)
+
+commit 425868084e36a60fe53e09e4f08df8c089270759
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri Nov 24 12:35:56 2017 -0700
+
+    some better ximage scaling
+
+ src/ximage.c | 539 ++++++++++++++++++++++++++++++++++++-------------------
+ 1 file changed, 359 insertions(+), 180 deletions(-)
+
+commit bd76dc28967a2255305f490cfd6a541a565b56b8
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri Nov 24 02:50:40 2017 -0700
+
+    formatting
+
+ src/image.c | 6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
+
+commit 7b019ef0f41b2ea9ee747f8d83d09d8c770f4967
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Nov 21 19:59:25 2017 -0700
+
+    use AllPlanes constant
+
+ src/render.c | 2 +-
+ src/xlib.c   | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+commit cb0e08ef0e2dd1abedc052f26c5ad653fc512e4b
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Nov 21 19:56:42 2017 -0700
+
+    comibine ButtonImage, AdwmPixmap and AdwmBitmap
+
+ src/adwm.h          |  39 +++---
+ src/adwm_blackbox.c |   2 +-
+ src/adwm_openbox.c  |  14 +-
+ src/draw.c          |  23 ++--
+ src/icons.c         |   1 +
+ src/imlib.c         | 273 ++++++++++++++++++++------------------
+ src/imlib.h         |  16 ++-
+ src/pixbuf.c        | 140 +++++++++++---------
+ src/pixbuf.h        |  16 ++-
+ src/render.c        | 238 +++++++++++++++++----------------
+ src/render.h        |  16 ++-
+ src/resource.c      | 144 ++++++++++----------
+ src/resource.h      |   2 +-
+ src/ximage.c        | 313 +++++++++++++++++++++++++------------------
+ src/ximage.h        |  16 ++-
+ src/xlib.c          | 343 +++++++++++++++++++++++++++---------------------
+ src/xlib.h          |  16 ++-
+ 17 files changed, 884 insertions(+), 728 deletions(-)
+
+commit bbee3596771eafae2df99584a8363e725e495981
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Nov 21 11:41:44 2017 -0700
+
+    move error status functions to image.c
+
+ src/image.c  | 46 ++++++++++++++++++++++++++++++++++++++++++++++
+ src/image.h  |  5 +++++
+ src/ximage.c | 46 ----------------------------------------------
+ src/xlib.c   | 25 +------------------------
+ 4 files changed, 52 insertions(+), 70 deletions(-)
+
+commit 44ec05789a5216acdca40d7bc0bcf90c78eab1bf
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Nov 21 11:38:08 2017 -0700
+
+    minor corrections to bitmap file loading
+
+ src/ximage.c | 29 +++++++++++++++++++++++------
+ 1 file changed, 23 insertions(+), 6 deletions(-)
+
+commit 1bbb0e9d7e7bb3634b21ec303393b2917c542ae6
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Nov 21 11:27:00 2017 -0700
+
+    move file reading functions to image.c
+
+ src/image.c  | 159 ++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ src/image.h  |   9 +++-
+ src/ximage.c | 162 +------------------------------------------------------
+ 3 files changed, 169 insertions(+), 161 deletions(-)
+
+commit 1878cd23268ffc13862f6f5a5ab7b5bf938b8b21
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Nov 21 11:19:55 2017 -0700
+
+    factor include files
+
+ src/actions.c       | 13 ++--------
+ src/adwm.c          | 63 +------------------------------------------------
+ src/adwm.h          | 26 ++++++++++++++++++++
+ src/adwm_adwm.c     | 16 +------------
+ src/adwm_blackbox.c | 16 +------------
+ src/adwm_bsp.c      | 16 +------------
+ src/adwm_float.c    | 16 +------------
+ src/adwm_fluxbox.c  | 16 +------------
+ src/adwm_grid.c     | 16 +------------
+ src/adwm_icewm.c    |  2 ++
+ src/adwm_metacity.c |  3 +++
+ src/adwm_monocle.c  | 16 +------------
+ src/adwm_mutter.c   |  3 +++
+ src/adwm_openbox.c  | 18 +-------------
+ src/adwm_pekwm.c    |  3 +++
+ src/adwm_tile.c     | 16 +------------
+ src/adwm_tree.c     | 16 +------------
+ src/adwm_waimea.c   | 16 +------------
+ src/adwm_wmaker.c   |  4 ++++
+ src/config.c        | 16 ++-----------
+ src/draw.c          | 14 ++---------
+ src/ewmh.c          | 20 ++--------------
+ src/icons.c         | 18 ++------------
+ src/image.c         | 62 +-----------------------------------------------
+ src/imlib.c         | 14 ++---------
+ src/layout.c        | 63 ++-----------------------------------------------
+ src/parse.c         | 13 ++--------
+ src/pixbuf.c        | 14 ++---------
+ src/render.c        | 14 ++---------
+ src/resource.c      | 14 +----------
+ src/tags.c          | 48 ++-----------------------------------
+ src/texture.c       | 14 +----------
+ src/ximage.c        | 15 ++----------
+ src/xlib.c          | 14 ++---------
+ 34 files changed, 82 insertions(+), 566 deletions(-)
+
+commit 4e5dfae427fa9a6e5d0f3ff2a80e53d317f82fbc
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Nov 21 11:04:42 2017 -0700
+
+    factor bitmap image reading
+
+ src/ximage.c | 70 +++++++++++++++++++++++++++++++++++++-------------------
+ 1 file changed, 46 insertions(+), 24 deletions(-)
+
+commit 842112ec8f3830c440119bc31e83ce183e2eb323
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Nov 21 10:20:46 2017 -0700
+
+    _NET_WM_ICONs scale a bit better than app icons
+
+ src/ewmh.c | 34 ++++++++++++++++------------------
+ 1 file changed, 16 insertions(+), 18 deletions(-)
+
+commit 2e5c29f760e7c416cc7157e79eae167d9fcc8b72
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Nov 21 10:12:23 2017 -0700
+
+    factor reading of png files
+
+ src/ximage.c | 259 +++++++++++++++++++++++++++++--------------------------
+ 1 file changed, 137 insertions(+), 122 deletions(-)
+
+commit 3f82c1b4a2eafc1942c22c0a0c177c9ad7edef0e
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Nov 21 09:39:56 2017 -0700
+
+    read and create png icons using libpng
+
+ src/adwm.h   |   3 ++
+ src/icons.c  |   3 --
+ src/ximage.c | 129 +++++++++++++++++++++++++++++++++++++++++++++++++++++--
+ 3 files changed, 128 insertions(+), 7 deletions(-)
+
+commit 69ae5b58659a0250324159861c448299cf873ff3
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Nov 20 18:22:26 2017 -0700
+
+    factor sele focu norm
+
+ src/draw.c   | 34 ++++++++++++++++++++++++++++++++
+ src/draw.h   |  4 ++++
+ src/imlib.c  | 59 +++++++++++++++++++++-----------------------------------
+ src/pixbuf.c | 59 +++++++++++++++++++++-----------------------------------
+ src/render.c | 55 +++++++++++++++++++---------------------------------
+ src/ximage.c | 33 ++++++++++---------------------
+ src/xlib.c   | 55 +++++++++++++++++++---------------------------------
+ 7 files changed, 132 insertions(+), 167 deletions(-)
+
+commit 4bfc81ead8dd7869fb6783353a2873a76c5c15e0
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Nov 20 17:14:36 2017 -0700
+
+    factor icon creation code some more
+
+ src/ximage.c | 353 +++++++++++++++++++++++++++----------------------------
+ 1 file changed, 171 insertions(+), 182 deletions(-)
+
+commit 9808401ddddd22146511019246009dd1b9de0d65
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Nov 20 18:37:45 2017 +0000
+
+    read bitmaps and pixmaps as ximages
+
+ src/ximage.c | 147 ++++++++++++++++++++++++++++++-------------------------
+ 1 file changed, 79 insertions(+), 68 deletions(-)
+
+commit a42c84c89b02805a05dd5ecf8078c7903c32948e
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Nov 20 03:46:43 2017 -0700
+
+    do not try to create unnecessary icons
+
+ src/ewmh.c | 31 ++++++++++++++++++-------------
+ 1 file changed, 18 insertions(+), 13 deletions(-)
+
+commit e4e5a1676ac6ffe1c6a37f53cfaa52d5cfa8ab25
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Nov 20 03:33:49 2017 -0700
+
+    specific functions for finding app icons
+
+ src/adwm.c | 45 ++++++++++++++++++++++++++++++++++-----------
+ src/adwm.h |  3 +++
+ 2 files changed, 37 insertions(+), 11 deletions(-)
+
+commit 0692ceb26ed533e3a456aa3688e1bf87b780c9e1
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Nov 20 01:56:16 2017 -0700
+
+    refactor ximage drawing
+
+ .indent.pro  |   1 +
+ src/ximage.c | 873 +++++++++++++++++++------------------------------------
+ 2 files changed, 302 insertions(+), 572 deletions(-)
+
+commit c44d66b1b5bf7f93ac8cdd8eadd233a94a96c2bc
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Nov 19 22:02:20 2017 -0700
+
+    add capability to handle damage notify events
+
+ src/adwm.c   | 25 +++++++++++++++++++++++--
+ src/adwm.h   | 21 +++++++++++++++++++++
+ src/draw.c   | 22 ++++++++++++++++++++++
+ src/draw.h   |  3 +++
+ src/imlib.c  |  8 ++++++++
+ src/imlib.h  |  3 +++
+ src/pixbuf.c |  8 ++++++++
+ src/pixbuf.h |  3 +++
+ src/render.c |  8 ++++++++
+ src/render.h |  3 +++
+ src/ximage.c |  8 ++++++++
+ src/ximage.h |  3 +++
+ src/xlib.c   |  8 ++++++++
+ src/xlib.h   |  3 +++
+ 14 files changed, 124 insertions(+), 2 deletions(-)
+
+commit 2ca5c73d1d88b8b1824eecd9da35e54134c3604a
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Nov 19 21:36:57 2017 -0700
+
+    spelling
+
+ src/draw.c   | 2 ++
+ src/imlib.c  | 2 +-
+ src/pixbuf.c | 2 +-
+ src/render.c | 2 +-
+ src/ximage.c | 2 +-
+ src/xlib.c   | 2 +-
+ 6 files changed, 7 insertions(+), 5 deletions(-)
+
+commit 121971585dcdea89035de37c2f39542d6a2137fd
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Nov 19 20:40:19 2017 -0700
+
+    rationalize ximage and xlib use
+
+ src/ximage.c | 136 ++++++++++++++---
+ src/xlib.c   | 439 +++++++++++++++++++++++++++++++++++++++----------------
+ 2 files changed, 429 insertions(+), 146 deletions(-)
+
+commit c54eaca8e374a2cd8fc3d83ff0dc92b0b4389c70
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Nov 19 20:25:10 2017 -0700
+
+    split out library-specific drawing functions
+
+ src/Makefile.am |    6 +-
+ src/draw.c      | 2931 +++------------------------------------------------
+ src/draw.h      |    9 +
+ src/imlib.c     | 1066 +++++++++++++++++++
+ src/imlib.h     |   27 +
+ src/pixbuf.c    |  688 ++++++++++++
+ src/pixbuf.h    |   26 +
+ src/render.c    |  902 ++++++++++++++++
+ src/render.h    |   26 +
+ src/ximage.c    | 1309 +++++++++++++++++++++++
+ src/ximage.h    |   25 +
+ src/xlib.c      | 1227 +++++++++++++++++++++
+ src/xlib.h      |   25 +
+ 13 files changed, 5467 insertions(+), 2800 deletions(-)
+
+commit e87cd240c2e8d1cb98d4461c3ad3311192b58384
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Nov 19 07:05:45 2017 -0700
+
+    set properties at the right point
+
+ src/config.c | 49 ++++++++++++++++++--------------------
+ src/config.h | 34 +++++++++++++++++++++++++++
+ src/ewmh.c   | 71 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ src/icons.c  | 14 +++++++++++
+ 4 files changed, 142 insertions(+), 26 deletions(-)
+
+commit df47e8d0e6a125654d7a2b97752f033dc12e0a75
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Nov 19 02:29:58 2017 -0700
+
+    add some ADWM-specific properties
+
+ src/adwm.h  | 18 ++++++++++++++++++
+ src/ewmh.c  | 15 +++++++++++++++
+ src/icons.c | 29 +++++++++++++++--------------
+ 3 files changed, 48 insertions(+), 14 deletions(-)
+
+commit 657dc27dcd7a335737d3d7a8c6543ed0dd5a34f1
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Nov 19 01:55:20 2017 -0700
+
+    remove unused code path
+
+ src/icons.c | 32 --------------------------------
+ 1 file changed, 32 deletions(-)
+
+commit aa90be661158b3d93119c0c9e03554467c291931
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Nov 19 01:54:46 2017 -0700
+
+    do not duplicate directories in search paths
+
+ src/icons.c | 38 +++++++++++++++++++++++++++-----------
+ 1 file changed, 27 insertions(+), 11 deletions(-)
+
+commit 9453309f38e3866165734fddc0dbb119beeb60e1
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Nov 18 17:48:18 2017 -0700
+
+    need to include dirent
+
+ src/icons.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+commit 308b0079e89df113d4aa9c0c422d5b27f533c07f
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Nov 18 13:31:35 2017 -0700
+
+    stop after normal fallbacks
+
+ src/icons.c | 10 ++++++++--
+ 1 file changed, 8 insertions(+), 2 deletions(-)
+
+commit 4342800c82beb214594b9f4802d5f5f2cd61a07b
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Nov 18 05:20:26 2017 -0700
+
+    only add necessary directories and themes
+
+ src/icons.c | 99 +++++++++++++++++++++++++++++++++++++++++++++++++++++----
+ 1 file changed, 93 insertions(+), 6 deletions(-)
+
+commit 5aa784a8afd3f16fe17e3faf6d1b05423cfd2484
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Nov 18 00:16:44 2017 -0700
+
+    do not add missing directories to search list
+
+ src/icons.c | 59 +++++++++++++++++++++++++++++++++++++++++----------------
+ 1 file changed, 43 insertions(+), 16 deletions(-)
+
+commit 9dd0665791e07c809529802c751a6f9164ce5604
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri Nov 17 20:18:53 2017 -0700
+
+    keep track of appids in preparation for clip
+
+ src/adwm.c | 145 ++++++++++++++-
+ src/adwm.h |  25 ++-
+ src/draw.c | 548 ++++++++++++++++++++++++++++++++-------------------------
+ src/draw.h |   1 +
+ src/ewmh.c |   1 +
+ 5 files changed, 478 insertions(+), 242 deletions(-)
+
+commit 84d670331ec8e44f36aecf59e76ac369253efb0c
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri Nov 17 18:21:38 2017 -0700
+
+    prepare to create app icons
+
+ src/draw.c  | 81 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ src/draw.h  |  1 +
+ src/ewmh.c  |  3 +++
+ src/icons.c | 28 +++++++++++---------
+ src/icons.h |  4 +--
+ 5 files changed, 102 insertions(+), 15 deletions(-)
+
+commit 4edc4a1ea83a4b860263217c29e3c295dbe9ca0a
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri Nov 17 17:11:08 2017 -0700
+
+    lookup icons using XDG icon themes
+
+ configure.ac    |  14 +-
+ src/Makefile.am |   2 +
+ src/adwm.c      |   2 +
+ src/icons.c     | 580 ++++++++++++++++++++++++++++++++++++++++++----------
+ src/icons.h     |   2 +-
+ 5 files changed, 485 insertions(+), 115 deletions(-)
+
+commit 6893e1107cda859d4c4d03de07db8a634c67f9d9
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu Nov 16 21:50:02 2017 -0700
+
+    add code for searching for application icons
+
+ .indent.pro     |   2 +
+ src/Makefile.am |   4 +-
+ src/adwm.h      |   5 +
+ src/config.c    |   4 +
+ src/icons.c     | 599 ++++++++++++++++++++++++++++++++++++++++++++++++++++
+ src/icons.h     |  10 +
+ 6 files changed, 622 insertions(+), 2 deletions(-)
+
+commit 1fb94ac06f054f42bad1d06285428f467746fdae
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu Nov 16 01:07:25 2017 -0700
+
+    remove some unused code
+
+ src/adwm.c   | 130 +----------------------------------------------
+ src/draw.c   | 151 -------------------------------------------------------
+ src/ewmh.c   |  19 -------
+ src/layout.c |  48 +++---------------
+ 4 files changed, 7 insertions(+), 341 deletions(-)
+
+commit ed7c68c2278acead4305600dfa9e4046b07d7959
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu Nov 16 00:59:00 2017 -0700
+
+    excellent scaling of icons now
+
+ configure.ac |   27 +-
+ src/adwm.c   |   46 +-
+ src/adwm.h   |   15 +-
+ src/draw.c   | 1883 +++++++++++++++++++++++++++++++++++++++++++++++-------
+ src/ewmh.c   |   12 +-
+ src/layout.c |   10 +-
+ 6 files changed, 1705 insertions(+), 288 deletions(-)
+
+commit 1c12daf925547fef815999a7a57b0c08475528b7
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Nov 14 17:26:16 2017 -0700
+
+    start strapping in XRender solution
+
+ src/adwm.h   |   6 ++
+ src/config.c |  10 +-
+ src/draw.c   | 321 ++++++++++++++++++++++++++++++++++++++++++++++++++++++-
+ src/image.c  |   5 +-
+ 4 files changed, 332 insertions(+), 10 deletions(-)
+
+commit 1b4f0886a71c963e3a24a216df4aa8dce39c2e81
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Nov 14 15:00:47 2017 -0700
+
+    getting a null pointer here sometimes
+
+ src/tags.c | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+commit 4798c42f3ee2ba0ee160e8440e2f2f109ccb1b61
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Nov 14 05:47:06 2017 -0700
+
+    better tearouts of maximized/tiled windows at move
+
+ src/layout.c | 32 +++++++++++++++++++++-----------
+ 1 file changed, 21 insertions(+), 11 deletions(-)
+
+commit 353d60fd534274deca44fac26c3fcd1a98a1d3a4
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Nov 14 05:07:34 2017 -0700
+
+    correct client placement
+
+ src/adwm.h   |  2 +-
+ src/layout.c | 12 ++++++------
+ 2 files changed, 7 insertions(+), 7 deletions(-)
+
+commit d94b1255a877cbc38789350ec8d986498c40c42d
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Nov 14 03:52:37 2017 -0700
+
+    even better configure request handling
+
+ src/adwm.c   |   2 +-
+ src/adwm.h   |   5 +-
+ src/ewmh.c   |  18 +-
+ src/layout.c | 577 ++++++++++++++++++++++---------------------------------
+ 4 files changed, 240 insertions(+), 362 deletions(-)
+
+commit b87c2e5233d826cd23dd24afd6a6851f54d86cbb
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Nov 13 18:52:05 2017 -0700
+
+    beef up ICCCM 2.0/4.1.5 configuration compliance
+
+ src/adwm.c   | 189 ++++++++++-------
+ src/adwm.h   |   6 +-
+ src/ewmh.c   |   6 +-
+ src/layout.c | 617 ++++++++++++++++++++++++++++++++++++++++---------------
+ src/layout.h |   3 +-
+ 5 files changed, 577 insertions(+), 244 deletions(-)
+
+commit d4f6e6f6a8de148dbc086fa10d48ca3b7e8a0953
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Nov 13 09:17:54 2017 -0700
+
+    trap XConfigureWindow errors better
+
+ src/adwm.c   | 63 ++++++++++++++++++++++++++------------------------------
+ src/adwm.h   | 20 +++++++++++++++---
+ src/layout.c | 25 ++++++++--------------
+ 3 files changed, 55 insertions(+), 53 deletions(-)
+
+commit d226d19808a4197e5f12211f6650193ae047d968
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Nov 12 18:37:18 2017 -0700
+
+    start working in use of render for titlebars
+
+ src/draw.c | 57 ++++++++++++++++++++++++++++++++++++++++-----------------
+ 1 file changed, 40 insertions(+), 17 deletions(-)
+
+commit 95e861c87dcd744f3bf4cf417d3ec53a697adf40
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Nov 12 18:30:36 2017 -0700
+
+    make some anonymous structures visible
+
+ src/adwm.h | 30 +++++++++++++++++-------------
+ 1 file changed, 17 insertions(+), 13 deletions(-)
+
+commit e1f5ab15a9d34c37b99a9b82c53490a7675a9e1c
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Nov 12 18:30:17 2017 -0700
+
+    add some types to indent
+
+ .indent.pro | 3 +++
+ 1 file changed, 3 insertions(+)
+
+commit 0bd84abd67c3bfaca14f8c29a8e2dbf573f58e3b
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Nov 12 15:35:18 2017 -0700
+
+    show extensions at startup
+
+ src/adwm.c | 2 +-
+ src/draw.c | 7 +++++++
+ 2 files changed, 8 insertions(+), 1 deletion(-)
+
+commit 9f6c44c6d0b7f0de13689a7ddaf0b1959119afc9
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Nov 12 10:14:41 2017 -0700
+
+    supress a bunch more unnecessary debugs
+
+ src/actions.c |  20 +--
+ src/adwm.c    | 427 +++++++++++++++++++++++++++---------------------------
+ src/config.c  | 116 +++++++--------
+ src/ewmh.c    |  86 +++++------
+ src/parse.c   |  64 ++++----
+ 5 files changed, 354 insertions(+), 359 deletions(-)
+
+commit ac51d096c3f433579b9d5c489f067e8efcaabea4
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Nov 12 09:47:54 2017 -0700
+
+    suppress some unnecessary debugs
+
+ src/layout.c | 361 +++++++++++++++++++++++++++----------------------------
+ 1 file changed, 178 insertions(+), 183 deletions(-)
+
+commit b1203eccf9e310b91aac335ef1174fc16a663b02
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Nov 12 05:31:52 2017 -0700
+
+    draws icons well but not best yet
+
+ src/draw.c | 72 ++++++++++++++++++++++++++++++++++------------------------
+ 1 file changed, 42 insertions(+), 30 deletions(-)
+
+commit d948638a8c2f69668fc33d44bb526f819b0e0acd
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Nov 12 02:19:18 2017 -0700
+
+    update size hints propertly
+
+ src/actions.c |   2 +-
+ src/adwm.c    | 213 +++++++++++++++++++-----------------------------------
+ src/adwm.h    |   6 +-
+ src/ewmh.c    |   2 +-
+ src/layout.c  |  72 +++++++++---------
+ 5 files changed, 114 insertions(+), 181 deletions(-)
+
+commit aa4eb78d24f081d8d89f04ff85d8e953f703a88e
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Nov 12 01:51:23 2017 -0700
+
+    do not looke for properties on icon windows
+
+ src/adwm.c   | 300 ++++++++++++++++++++++++++++++-------------------------
+ src/adwm.h   |   9 +-
+ src/ewmh.c   |  62 +++++-------
+ src/layout.c |  39 ++++----
+ 4 files changed, 213 insertions(+), 197 deletions(-)
+
+commit 229e622c8bc41b6742b5db4f6311b2f677959cfa
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Nov 11 19:12:39 2017 -0700
+
+    iterate once
+
+ src/draw.c | 165 +++++++++++++++++----------------------------------------
+ 1 file changed, 50 insertions(+), 115 deletions(-)
+
+commit d28b654f19328c510ae2179761ecf7683b44261f
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Nov 11 18:51:07 2017 -0700
+
+    try treading bitmaps
+
+ src/adwm.h |   2 -
+ src/draw.c | 285 ++++++++++++++++++++++++++++++++++++++++++++++-----------
+ src/ewmh.c | 104 +++++++++++++++++----
+ 3 files changed, 319 insertions(+), 72 deletions(-)
+
+commit b268beea29bdb55fdd5c4451cb727febfb8a0f97
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Nov 11 15:12:49 2017 -0700
+
+    get rid of startup-notification extensions
+
+ src/ewmh.c | 49 +------------------------------------------------
+ 1 file changed, 1 insertion(+), 48 deletions(-)
+
+commit 85950b48232c3f03a6657035447bda1d9a1ca278
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Nov 11 14:40:16 2017 -0700
+
+    watch out for invalid WM_ICON_SIZE values
+
+ src/adwm.c | 19 +++++++++++++++----
+ 1 file changed, 15 insertions(+), 4 deletions(-)
+
+commit 5715b6a3366a39d58c973339182a10aee1c68083
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Nov 11 14:36:06 2017 -0700
+
+    change property direction (does xlib have a bug?)
+
+ src/adwm.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+commit 3326074e1e862a3b287e7e1b7eb34275a24e60e5
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Nov 11 14:16:51 2017 -0700
+
+    delete some more properties when quiting
+
+ src/ewmh.c | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
+
+commit 872d824e44487520a8bc64e9c6219119b4da2ba3
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Nov 11 14:06:07 2017 -0700
+
+    startupid after managed
+
+ src/adwm.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+commit f2ff25f7241ebdf345427b3b2fd01d2ded14fab4
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Nov 11 14:04:46 2017 -0700
+
+    handle ch.res_name and ch.res_class better
+
+ src/adwm.c   |  8 ++++++++
+ src/ewmh.c   | 49 ++++++++++++++++++++-----------------------------
+ src/layout.c | 15 +++++----------
+ 3 files changed, 33 insertions(+), 39 deletions(-)
+
+commit 8087a57f64d0e581f92ab23350a58409b66c9b8d
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Nov 11 11:59:57 2017 -0700
+
+    process startup id way later in manage
+
+ src/adwm.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+commit ebf834f439af855ae59a417cf693cf3bef333d96
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Nov 11 11:55:50 2017 -0700
+
+    handle focus lock better
+
+ src/adwm.c   | 66 ++++++++++++++++++++------------------------------------
+ src/adwm.h   |  3 ++-
+ src/layout.c | 45 ++++++++++++++++++++------------------
+ src/tags.c   |  4 ++--
+ 4 files changed, 51 insertions(+), 67 deletions(-)
+
+commit 6ace07c7fe0b3633c52960dd8b21ad714164a67e
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Nov 11 11:04:21 2017 -0700
+
+    put messages in trap functions
+
+ src/adwm.c  | 62 ++++++++++++++++++++++++++++++++++++---------------------
+ src/adwm.h  |  7 ++++---
+ src/draw.c  | 18 ++++++++---------
+ src/image.c |  2 +-
+ 4 files changed, 53 insertions(+), 36 deletions(-)
+
+commit 86fe851ac7aefb9f03fa76a6c25209e8a46b2889
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Nov 11 09:38:26 2017 -0700
+
+    logic error
+
+ src/adwm.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+commit b42d49f55e1df96ddfa3b6a1e69589323dcca885
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Nov 11 09:34:48 2017 -0700
+
+    more error checking, ensure client managed
+
+ src/adwm.c  | 58 +++++++++++++++++++++++++++++++++------------------------
+ src/adwm.h  |  2 ++
+ src/draw.c  | 32 ++++++++++++++++++++++++++++---
+ src/ewmh.c  |  4 ++--
+ src/image.c | 14 ++++++++++----
+ 5 files changed, 77 insertions(+), 33 deletions(-)
+
+commit c7447fe39486f2a63eb32dfaa13494bd370ccb6b
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Nov 11 08:04:50 2017 -0700
+
+    put icon create way lower in manage
+
+ src/adwm.c | 36 ++++++------------------------------
+ src/ewmh.c | 23 +++++++++++++++++++++++
+ src/ewmh.h |  1 +
+ 3 files changed, 30 insertions(+), 30 deletions(-)
+
+commit abe100ee00ddce78974b690925a5f863f001da09
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Nov 11 07:02:44 2017 -0700
+
+    sync before and after trap push/pop inside
+
+ src/adwm.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+commit b34c5fe987ae5bd6effa360a4154f12c8a3c4538
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Nov 11 06:53:34 2017 -0700
+
+    whoops
+
+ src/adwm.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+commit e73cac59e52b049174027ecd8ed67e1b4db70978
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Nov 11 06:45:59 2017 -0700
+
+    add some proper xerror handling
+
+ src/adwm.c | 98 ++++++++++++++++++++++++++++++++++++++++++++++------------
+ src/adwm.h | 19 +++++++++++-
+ src/draw.c | 63 +++++++++++++++++++++++++++++++------
+ 3 files changed, 151 insertions(+), 29 deletions(-)
+
+commit a503c3804fc0832ee99132da3931455740c355b2
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Nov 11 01:12:32 2017 -0700
+
+    forgot to install window.xbm
+
+ data/Makefile.am | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+commit ebe61973aac4c711952d3057ddfc8535ab37667b
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri Nov 10 23:39:26 2017 -0700
+
+    update icons better, be sure to update extents
+
+ src/Makefile.am |   2 +
+ src/adwm.c      |  95 ++++++----
+ src/adwm.h      |  11 +-
+ src/draw.c      | 534 ++++++++++++++++++++++++++++++----------------------
+ src/draw.h      |   2 +-
+ src/ewmh.c      | 102 ++++++----
+ src/ewmh.h      |   3 +-
+ src/image.c     |  16 ++
+ src/layout.c    |  11 +-
+ src/tags.c      |   3 +
+ 10 files changed, 472 insertions(+), 307 deletions(-)
+
+commit 1f15d3e6f136c2b7fbf8a0d300d4646f7d3942f9
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri Nov 10 12:27:35 2017 -0700
+
+    struts should not have a border
+
+ src/adwm.c | 12 +++++++++---
+ 1 file changed, 9 insertions(+), 3 deletions(-)
+
+commit edcf7847408fd8ee10cddc18873d3626473ba8f0
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri Nov 10 12:11:01 2017 -0700
+
+    need to redraw clients when updating title
+
+ src/adwm.c | 3 +++
+ 1 file changed, 3 insertions(+)
+
+commit 737e2fa836520afc0e6746ebaa55d9c09ca019a9
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri Nov 10 12:03:17 2017 -0700
+
+    little correction to multiple icons
+
+ src/draw.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+commit 334f6c28544715b5a9cfe78c2ef1006e08633540
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri Nov 10 11:53:46 2017 -0700
+
+    handle multiple _NET_WM_ICON icons
+
+ src/draw.c | 123 +++++++++++++++++++++++++++++++++++++--------------------
+ 1 file changed, 80 insertions(+), 43 deletions(-)
+
+commit 2adca0cd0d3fe6b7f5873ef0a8c1f7bbda7cd4a8
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri Nov 10 11:11:21 2017 -0700
+
+    check for gdk-pixbuf too
+
+ configure.ac | 73 ++++++++++++++++++++++++++++++++++++++++----------------
+ 1 file changed, 53 insertions(+), 20 deletions(-)
+
+commit a0bbe558c68ab727f0fd67db95d2cc982288fb69
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri Nov 10 10:43:46 2017 -0700
+
+    full support for icons now
+
+ COMPLIANCE | 8 +-------
+ 1 file changed, 1 insertion(+), 7 deletions(-)
+
+commit c1aef7ac3ddf39be2dacf2aff7a26738e730217d
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri Nov 10 10:42:41 2017 -0700
+
+    full support for KWM_WIN_ICON and _NET_WM_ICON
+
+ COMPLIANCE |   4 +-
+ src/adwm.c |   3 ++
+ src/draw.c | 128 +++++++++++++++++++++++++++++++++++++++++++++++++++++++--
+ src/draw.h |   3 +-
+ src/ewmh.c |   8 ++++
+ src/ewmh.h |   1 +
+ 6 files changed, 141 insertions(+), 6 deletions(-)
+
+commit 11aeb78a9a45ed97ecae08de5741bfdae3451f10
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri Nov 10 10:07:52 2017 -0700
+
+    add KWM_WIN_ICON in prep for reading/setting it
+
+ src/adwm.h | 2 ++
+ src/ewmh.c | 6 ++++++
+ 2 files changed, 8 insertions(+)
+
+commit 7e02931dff3b93929a521476ff29b9bac1d6b8b3
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri Nov 10 09:47:38 2017 -0700
+
+    visible name should appear in titlebar too
+
+ src/adwm.c | 29 +++++++++++++++++++++++++++++
+ src/ewmh.c | 44 +++-----------------------------------------
+ 2 files changed, 32 insertions(+), 41 deletions(-)
+
+commit db429c5cf1e19ef926e0f4545f2e55502a61799c
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri Nov 10 09:23:36 2017 -0700
+
+    fully support _NET_WM_VISIBLE{,_ICON}_NAME
+
+    - added a instance in class prefix to visible name
+    - makes panels and pagers identify duplicates of
+      the same res_class and res_name with the same
+      name easier to identify
+
+ COMPLIANCE |   4 +-
+ src/adwm.c | 165 +++++++++++++++++++++++++++++++++++++++++++++++++++++----
+ src/adwm.h |  12 +++++
+ src/ewmh.c |  55 +++++++++++++++----
+ 4 files changed, 214 insertions(+), 22 deletions(-)
+
+commit ed9d30af20536c845e1a4919ce905885dbfea595
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri Nov 10 07:11:47 2017 -0700
+
+    working up drawing routines
+
+ data/window.xbm |   2 +-
+ src/adwm.h      |   3 +
+ src/config.c    |  46 +++--
+ src/draw.c      | 579 +++++++++++++++++++++++++++++++++++++++-------------
+ src/image.c     |   2 +-
+ 5 files changed, 465 insertions(+), 167 deletions(-)
+
+commit 5603e5121703068b4250475eaf220a986be6b8ba
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu Nov 9 06:33:17 2017 -0700
+
+    draw buttons with clip masks better
+
+ src/adwm.c |   9 +--
+ src/adwm.h |   5 +-
+ src/draw.c | 180 ++++++++++++++++++++++++++++++---------------------------
+ src/ewmh.c |  45 +++++++--------
+ src/ewmh.h |   2 +-
+ 5 files changed, 125 insertions(+), 116 deletions(-)
+
+commit 4e0ce96dce40a683bbe25e8b87dee0f29db7c8f0
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Nov 8 21:44:37 2017 -0700
+
+    set WM_STATE icon to frame for dock apps
+
+ src/adwm.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+commit 685e51cb9da346cda9235d4cfc38ccb0231839d5
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Nov 8 20:27:36 2017 -0700
+
+    rework drawing of buttons for adding icons
+
+ configure.ac    |   1 +
+ data/window.xbm |   4 +
+ src/adwm.c      |  85 ++++++---
+ src/adwm.h      |  63 ++++---
+ src/adwm_adwm.c |   1 +
+ src/draw.c      | 517 ++++++++++++++++++++++++++++++++--------------------
+ src/draw.h      |   2 +
+ src/ewmh.c      |  85 ++++++++-
+ src/ewmh.h      |   1 +
+ src/image.c     |   1 +
+ src/layout.c    |   4 +-
+ 11 files changed, 498 insertions(+), 266 deletions(-)
+
+commit 188d41df7356cbfc95c1017e2a4bc87ee50554d1
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Nov 8 06:32:43 2017 -0700
+
+    oops
+
+ src/ewmh.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+commit a8cc024f96403532088206e7f8abb529fbad0309
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Nov 8 06:32:07 2017 -0700
+
+    or maybe this way cause we want them square
+
+ src/ewmh.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+commit 31d1bfc8ace4f7ef61510a6cd5bfbe8b42ff6df4
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Nov 8 06:31:41 2017 -0700
+
+    set icon sizes a little different
+
+ src/ewmh.c | 17 +++++++++++++++--
+ 1 file changed, 15 insertions(+), 2 deletions(-)
+
+commit 67e8486f8791472de9b13742220170eaa2927029
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Nov 8 06:28:20 2017 -0700
+
+    rename _NET_SN_ props to _NET_APP_
+
+ COMPLIANCE | 15 +++++++++++++++
+ src/adwm.h | 28 ++++++++++++++--------------
+ src/ewmh.c | 57 ++++++++++++++++++++++++++++-----------------------------
+ 3 files changed, 57 insertions(+), 43 deletions(-)
+
+commit d5de5a968d7345ff72fa9c93410b3a7d3787b282
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Nov 8 05:58:58 2017 -0700
+
+    support _OB_CONTROL message
+
+ COMPLIANCE |  8 ++++----
+ src/ewmh.c | 13 +++++++++++++
+ 2 files changed, 17 insertions(+), 4 deletions(-)
+
+commit 9fae361e06b20bf804f60d5ccb6d26f5fd0b5d68
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Nov 7 18:14:28 2017 -0700
+
+    must detach from alist when deleting (crash fix)
+
+ src/layout.c | 5 +----
+ 1 file changed, 1 insertion(+), 4 deletions(-)
+
+commit c929142fa0242fd2fb8e41244f75304017ad8ed1
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Nov 7 17:22:56 2017 -0700
+
+    add some more assertions
+
+ src/adwm.c   | 3 +--
+ src/layout.c | 6 +++++-
+ 2 files changed, 6 insertions(+), 3 deletions(-)
+
+commit 54d015f1185c79785237f22238dc8bba4fb18afc
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Nov 7 16:04:04 2017 -0700
+
+    place some assertions in startup notification handling
+
+ src/ewmh.c | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
+
+commit ebc7ba36cb82adaf408dc6554915f4759781460e
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Nov 7 08:24:43 2017 -0700
+
+    provide full backtrace on SIGSEGV or SIGBUS
+
+ src/adwm.c  | 13 +++++++------
+ src/image.c |  1 -
+ 2 files changed, 7 insertions(+), 7 deletions(-)
+
+commit fc6b20081cd20f3b08e54463b9039a467cb067c5
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Nov 7 05:55:53 2017 -0700
+
+    fix assertion error
+
+ src/layout.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+commit 269a30472ebf70f9dc331640dd563674f474dbf8
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Nov 6 16:03:25 2017 -0700
+
+    expand tags for new tag theme elements
+
+ src/adwm.h | 14 ++++++++++++++
+ 1 file changed, 14 insertions(+)
+
+commit 970092dda3134d5dcd8f910dcb371a37f8dfa991
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Nov 6 16:02:53 2017 -0700
+
+    more documentation updates
+
+ doc/adwm-dock.5.in  |  31 +++--
+ doc/adwm-keys.5.in  |  34 +++++-
+ doc/adwm-style.5.in |  62 +++++++---
+ doc/adwm-theme.5.in | 294 ++++++++++++++++++++++++++++++++----------------
+ 4 files changed, 293 insertions(+), 128 deletions(-)
+
+commit 217662e4c959311be79b9c1c20eeda45b8ca9025
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Nov 6 12:49:53 2017 -0700
+
+    styles are screen-based resources
+
+ src/draw.c | 66 +++++++++++++++++++++++++++++-----------------------------
+ 1 file changed, 33 insertions(+), 33 deletions(-)
+
+commit 8a0207442638ce7467cab7eeb68d031e44bcb678
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Nov 6 12:28:07 2017 -0700
+
+    simplify screen-based resource lookups
+
+ src/adwm.c     |  35 ++++++--
+ src/adwm.h     |   2 +
+ src/config.c   | 245 +++++++++++++----------------------------------------
+ src/resource.c |   7 +-
+ 4 files changed, 92 insertions(+), 197 deletions(-)
+
+commit e266d8a4eb6ad5dc63feb0bfcabaf1ad97edb8d6
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Nov 6 11:43:32 2017 -0700
+
+    straighten out configuration file paths and search
+
+ src/adwm.c   |  19 +-
+ src/config.c | 692 +++++++++++++++++++++++++++++++++++++------------------
+ 2 files changed, 474 insertions(+), 237 deletions(-)
+
+commit 0eee6af7525fed1adfcbd91970ff06ad2e2d91a2
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Nov 6 05:15:01 2017 -0700
+
+    load HOME and XDG directories
+
+ src/adwm.c | 63 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ src/adwm.h | 11 ++++++++++
+ 2 files changed, 74 insertions(+)
+
+commit 2262abfeb60c0bd6e26a9d1635038486fd3a0975
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Nov 6 04:30:04 2017 -0700
+
+    add a default theme
+
+ data/Makefile.am                                |   5 +++
+ data/themes/Default/images/antartica.jpg        | Bin 0 -> 267951 bytes
+ data/themes/Default/images/penguin_inflight.jpg | Bin 0 -> 402362 bytes
+ data/themes/Default/images/penguins_busy.jpg    | Bin 0 -> 274882 bytes
+ data/themes/Default/images/penguins_drifts.jpg  | Bin 0 -> 473674 bytes
+ data/themes/Default/images/penguins_inarow2.jpg | Bin 0 -> 382578 bytes
+ data/themes/Default/images/penguins_jumping.jpg | Bin 0 -> 547565 bytes
+ data/themes/Default/images/penguins_pair.jpg    | Bin 0 -> 235728 bytes
+ data/themes/Default/themerc                     |  41 ++++++++++++++++++++
+ 9 files changed, 46 insertions(+)
+
+commit 859c9583a411ffd89c121ea0a333077ac6c6f1c3
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Nov 6 04:29:11 2017 -0700
+
+    more documentation update
+
+ doc/adwm-dock.5.in | 70 ++++++++++++++++++++++++++++++++++++++------------
+ 1 file changed, 53 insertions(+), 17 deletions(-)
+
+commit 240715707be97b32ae5e32b6d926109440baaf09
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Nov 5 15:49:49 2017 -0700
+
+    add focused to default style
+
+ data/styles/Default/stylerc | 14 ++++++++++++++
+ 1 file changed, 14 insertions(+)
+
+commit ef9508880feea359a7b56e99c9821cc94f1f5bd9
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Nov 5 15:49:32 2017 -0700
+
+    update documentation
+
+ .gitignore           |   2 +
+ configure.ac         |   1 +
+ doc/Makefile.am      |   1 +
+ doc/adwm-config.5.in | 230 ++++++++++++++++++-
+ doc/adwm-dock.5.in   | 481 ++++++++++++++++++++++++++++++++++++++
+ doc/adwm-style.5.in  |  13 +-
+ doc/adwm-theme.5.in  | 584 ++++++++++++++++++++++++++++++++++++++++++++++-
+ 7 files changed, 1293 insertions(+), 19 deletions(-)
+
+commit 68e94e5f2aba5b04b2791af78e3428484e065a79
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Nov 5 01:10:09 2017 -0600
+
+    update adwm manual page for new titlebar styles and theme file
+
+ doc/adwm.1.in | 31 +++++++++++++++++++++++++++++--
+ 1 file changed, 29 insertions(+), 2 deletions(-)
+
+commit de2864c6f0c455b65cbafcdfaf37f38631ec53e1
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Nov 5 00:52:13 2017 -0600
+
+    add documentation for new titlebar style and theme file
+
+ .gitignore          |   2 +
+ doc/Makefile.am     |  11 ++++-
+ doc/adwm-style.5.in |  26 +++++++++--
+ doc/adwm-theme.5.in | 120 ++++++++++++++++++++++++++++++++++++++++++++++++
+ doc/adwm.1.in       |  60 ++++++++++++++++++------
+ 5 files changed, 197 insertions(+), 22 deletions(-)
+
+commit c8ac6309e455d01199b4fdfa2ccebbb861381f71
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Nov 5 00:50:38 2017 -0600
+
+    defaults for new focused titlebar style
+
+ configure.ac | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+commit 6cc7de85e28a7e83213ea8b4b594aebb747b69ea
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Nov 5 00:49:31 2017 -0600
+
+    redraw when focus gained or lost
+
+    - also have a "focused" style for the title bar and borders so
+      that we can tell which window is focused as well as which is
+      selected (active).
+
+ src/adwm.h   | 11 +++++-----
+ src/draw.c   | 66 ++++++++++++++++++++++++++++++++++++++++++++------------
+ src/layout.c |  6 ++++++
+ 3 files changed, 64 insertions(+), 19 deletions(-)
+
+commit 42324f16cf26858cab524430974f1580fbb3c2c5
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Nov 5 00:38:43 2017 -0600
+
+    get focus stack functioning
+
+ src/adwm.c | 18 +++++++++++++-----
+ 1 file changed, 13 insertions(+), 5 deletions(-)
+
+commit 8dcf7c31c4dc75e9da890ee19e99d9f151dcef27
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Nov 4 16:34:37 2017 -0600
+
+    handle startup sequence integers better
+
+ src/ewmh.c | 70 +++++++++++++++++++++++++++++++++++++++-------------------
+ 1 file changed, 47 insertions(+), 23 deletions(-)
+
+commit 2e2d7978ed0edee98c69557162d9f1f512e00d4e
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Nov 4 15:47:51 2017 -0600
+
+    seems to fix foxus reversion problems
+
+ src/adwm.c   | 54 +++++++++++++++++------------------------
+ src/adwm.h   |  9 +++++--
+ src/ewmh.c   |  7 ++++--
+ src/layout.c | 74 ++++++++++++++++++++++++++++++++++++++++++++++++++------
+ src/layout.h |  5 ++--
+ 5 files changed, 103 insertions(+), 46 deletions(-)
+
+commit 9afeee45c5c4b91139d8cc192c940da552a7cf28
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri Nov 3 07:27:48 2017 -0600
+
+    handle popups that grab focus before window activated
+
+    - vim is doing this: grabbing the keyboard before the new
+      window takes focus.  It is reverting back to the window
+      that was focused when it was launched instead of its
+      window that was given focus.  Putting 'gave' back should
+      solve this: if focus was given and not taken, revert back
+      to that, otherwise, revert to the last one that actually
+      took focus when it was given it.
+
+ src/adwm.c   | 19 ++++++++++---------
+ src/adwm.h   |  1 +
+ src/layout.c |  2 ++
+ 3 files changed, 13 insertions(+), 9 deletions(-)
+
+commit 5f231a17d5e09f17ff133c6d8c17902233628580
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri Nov 3 07:15:42 2017 -0600
+
+    still working up startup notification changes
+
+ src/adwm.h |  2 +-
+ src/ewmh.c | 64 +++++++++++++++++++++++++++++++++-------------------------
+ 2 files changed, 38 insertions(+), 28 deletions(-)
+
+commit c6b42464ec3119edf09fe23ad4c2cb982eb61b35
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri Nov 3 00:40:52 2017 -0600
+
+    more startup notification improvements
+
+ src/actions.c   |   2 +-
+ src/adwm.c      |  42 ++++++++++----------
+ src/adwm.h      |   2 +
+ src/adwm_adwm.c |   2 +-
+ src/config.c    |   2 +-
+ src/ewmh.c      | 111 +++++++++++++++++++++++++++++++++++++++++-----------
+ src/ewmh.h      |   1 +
+ src/parse.c     |   4 +-
+ 8 files changed, 117 insertions(+), 49 deletions(-)
+
+commit 82c3bf5a67883905aa9383db9994ba4b4f571ccd
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu Nov 2 20:00:16 2017 -0600
+
+    make startup notification work better
+
+    - we were removing startup sequences when they were complete,
+      but this means they were not around to check if the application
+      completed the sequence before mapping a window (it has to create
+      a window to send the "end"  message).  Also, if a startup
+      notification assist is running, it might complete the sequence
+      before we see the mapped windows.  So, now we keep it around
+      until it is assigned and complete, and only send our own completion
+      when assinged and incomplete.
+
+      Still need to go through and remove the ones that never get
+      assigned to anything but are complete.
+
+ .indent.pro |   1 +
+ src/adwm.c  |   4 +-
+ src/adwm.h  |   3 +
+ src/ewmh.c  | 179 ++++++++++++++++++++++++++++++++++++--------------------
+ 4 files changed, 124 insertions(+), 63 deletions(-)
+
+commit 4592fef7043b3cc6e8b89abe7c0e772bed9c6619
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu Nov 2 12:21:33 2017 -0600
+
+    I think this corrects focus reversion after popup
+
+ src/adwm.c | 21 +++++++++++++++------
+ 1 file changed, 15 insertions(+), 6 deletions(-)
+
+commit 46fe77a1b8e224e1fb932f0f57a89bb4e86c693c
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu Nov 2 08:55:47 2017 -0600
+
+    improve debugging and add _NET_SN_* properties
+
+ .indent.pro  |   3 ++
+ src/adwm.c   |  30 ++++++++---
+ src/adwm.h   |  88 ++++++++++++++++++++++++------
+ src/config.c |   4 ++
+ src/ewmh.c   | 162 ++++++++++++++++++++++++++++++++++++++++++++-----------
+ 5 files changed, 232 insertions(+), 55 deletions(-)
+
+commit 763c798d73a0a0630558b16f4629b8873eb3e1cb
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Nov 1 06:45:47 2017 -0600
+
+    better focus handling yet
+
+ src/adwm.c   | 92 +++++++++++++++++++++++++++-----------------------------
+ src/adwm.h   |  1 -
+ src/layout.c | 36 +++++++++++++---------
+ 3 files changed, 66 insertions(+), 63 deletions(-)
+
+commit 57c827cfe80180f29141900134960edf04982c71
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Nov 1 03:54:02 2017 -0600
+
+    ignore focus grab and non-inferior events
+
+ src/adwm.c | 10 +++++++++-
+ 1 file changed, 9 insertions(+), 1 deletion(-)
+
+commit ea59eb4391af62b61a9238011089953fb65b1557
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Nov 1 01:50:02 2017 -0600
+
+    better focus stealing handling
+
+ src/adwm.c | 9 +++++----
+ 1 file changed, 5 insertions(+), 4 deletions(-)
+
+commit 342023c9ea7467101062e6a36ec756b1c91d77f9
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Nov 1 01:42:28 2017 -0600
+
+    simple giving back of stolen focus
+
+ src/adwm.c | 32 ++++++++++++--------------------
+ 1 file changed, 12 insertions(+), 20 deletions(-)
+
+commit 5781267a553de0c258b7e2303dd5f4d366644705
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Nov 1 00:40:46 2017 -0600
+
+    assume dockapps do not take focus update only if managed
+
+ src/adwm.c | 8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
+
+commit 3af589186d58fc2da6c0c3631b34439bd562e04d
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Nov 1 00:34:59 2017 -0600
+
+    set openbox application properties
+
+ COMPLIANCE |  38 ++++++---
+ src/adwm.c |   1 +
+ src/adwm.h |  30 +++++--
+ src/ewmh.c | 245 +++++++++++++++++++++++++++++++++++++++++++++++----------
+ src/ewmh.h |   2 +
+ 5 files changed, 256 insertions(+), 60 deletions(-)
+
+commit c1be94fd3ba87633b06dd61ad71444f9a9558bfd
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Oct 31 21:04:17 2017 -0600
+
+    send messages to correct window
+
+ src/adwm.c | 14 ++++++++------
+ 1 file changed, 8 insertions(+), 6 deletions(-)
+
+commit 02e2ec064064d8040550f2efd19b7e5f74aaf742
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Oct 31 20:14:00 2017 -0600
+
+    careful: some dockapps put basic props only on icon window
+
+ src/adwm.c | 62 ++++++++++++++++++++++++++--------------------------------
+ src/ewmh.c |  3 ++-
+ 2 files changed, 30 insertions(+), 35 deletions(-)
+
+commit 0d5e2f7dadc634f64a2456c939a457ff255b9766
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Oct 31 19:24:09 2017 -0600
+
+    can focus and select dockapps
+
+ src/adwm.c | 2 ++
+ src/ewmh.c | 5 +++--
+ 2 files changed, 5 insertions(+), 2 deletions(-)
+
+commit b3c3d01937faea13ae2c426aec29ab5a562373ba
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Oct 31 19:11:52 2017 -0600
+
+    get rid of difference between prog and user capabilities
+
+ src/actions.c |   6 +-
+ src/adwm.c    | 168 +++++++++++++++++++++---------------------------------
+ src/adwm.h    |   2 +-
+ src/draw.c    |  42 +++++++-------
+ src/ewmh.c    | 166 ++++++++++++++++++++++++++---------------------------
+ src/layout.c  |  82 +++++++++++++-------------
+ src/tags.c    |  10 ++--
+ 7 files changed, 219 insertions(+), 257 deletions(-)
+
+commit e87c5a868ec7151aa9543ab6a2f1dee44d2daffc
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Oct 31 18:54:07 2017 -0600
+
+    support more states, hints and actions
+
+ COMPLIANCE | 118 +++++++++++++++++++++++++++++++++++-----
+ TODO       |   4 +-
+ src/adwm.h |  26 ++++-----
+ src/ewmh.c | 167 +++++++++++++++++++++++++++++++++++++++++++++++++++------
+ 4 files changed, 272 insertions(+), 43 deletions(-)
+
+commit d47fe55be08fbae65f4f881372cd479cf34ef540
+Merge: c450d75 b3c284a
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Oct 31 08:33:22 2017 -0600
+
+    Merge branch 'split_sel'
+
+commit b3c284af550c0baaf4ea6fdda116ad1d6b0ca1d8
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Oct 31 08:32:15 2017 -0600
+
+    handle active/focus split for window cycling too
+
+ src/actions.c | 14 ++++++++------
+ src/adwm.c    | 18 +++++++++++-------
+ src/adwm.h    |  3 ++-
+ src/ewmh.c    |  3 ++-
+ src/layout.c  | 16 ++++++++++++++--
+ 5 files changed, 37 insertions(+), 17 deletions(-)
+
+commit c450d7580e05a6cfcdd005cf336abf89f26f3b7d
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Oct 31 05:08:11 2017 -0600
+
+    add some more compliance items
+
+ COMPLIANCE | 49 +++++++++++++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 47 insertions(+), 2 deletions(-)
+
+commit d1eff2d4f475053757ec7602dafe078fff83adf7
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Oct 31 11:05:49 2017 +0000
+
+    try to split active and focus windows
+
+ src/adwm.c   | 64 +++++++++++++++++++++++++++++++++++++++++++-------------
+ src/adwm.h   |  3 ++-
+ src/draw.c   | 28 +++++++++++--------------
+ src/ewmh.c   | 18 +++++++++-------
+ src/layout.c |  2 +-
+ 5 files changed, 76 insertions(+), 39 deletions(-)
+
+commit 0f141056767ee01376a661e3e7c0b516a0832b81
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Oct 30 19:18:20 2017 -0600
+
+    prepare to manage override windows
+
+ src/adwm.c | 11 ++++++++++-
+ 1 file changed, 10 insertions(+), 1 deletion(-)
+
+commit b87651892cbc70adc353b320f207f747d7a65328
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Oct 30 18:32:04 2017 -0600
+
+    draw background on dock app tiles for ParentRelative ones
+
+ src/draw.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+commit 6602b5e86ab67ff5521d3535403e1025f0cd36eb
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Oct 30 18:22:42 2017 -0600
+
+    do not try to focus docapp window (focus icon instead)
+
+ src/adwm.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+commit cbf79fb1c72f90f59810552949c52841d9a90e55
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Oct 30 18:02:36 2017 -0600
+
+    dock apps must be default visual and use separate GC
+
+ src/adwm.c | 38 ++++++++++++++++++++------------------
+ src/adwm.h |  3 ++-
+ src/draw.c | 12 +++++++-----
+ 3 files changed, 29 insertions(+), 24 deletions(-)
+
+commit 0c6bb54067c81f55dae8a250798703187e410fd8
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Oct 30 17:46:27 2017 -0600
+
+    do not play with the shape of dock apps
+
+ src/adwm.c   | 12 +++++++++---
+ src/layout.c |  3 ++-
+ 2 files changed, 11 insertions(+), 4 deletions(-)
+
+commit 0c90181de44d855ef28b91fa782ee5207c6f6096
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Oct 30 16:06:55 2017 -0600
+
+    document compliance for _OB_WM_{ACTION,STATE}_UNDECORATE[D]
+
+ COMPLIANCE | 2 ++
+ 1 file changed, 2 insertions(+)
+
+commit 356a70f98d671e4f09116efef0b3e6e54a5ce4b2
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Oct 30 15:30:47 2017 -0600
+
+    remove trailing spaces
+
+ src/actions.c       |  4 ++--
+ src/adwm.c          | 52 ++++++++++++++++++++++++-------------------------
+ src/adwm_blackbox.c |  8 ++++----
+ src/adwm_fluxbox.c  | 10 +++++-----
+ src/draw.c          |  2 +-
+ src/ewmh.c          |  4 ++--
+ src/layout.c        | 24 +++++++++++------------
+ src/parse.c         |  2 +-
+ src/tags.c          |  2 +-
+ 9 files changed, 54 insertions(+), 54 deletions(-)
+
+commit 989e072627d202cffe27049e951a39cc82e65d28
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Oct 30 15:28:35 2017 -0600
+
+    always used 32-deep ARGB visuals when available
+
+ src/adwm.c     | 41 ++++++++++--------------------------
+ src/adwm.h     |  1 +
+ src/draw.c     | 11 ++++++++--
+ src/image.c    | 61 +++++++++++++++++++++++++++++++++++++++++++++++++-----
+ src/image.h    |  2 +-
+ src/resource.c |  9 +++++++-
+ 6 files changed, 86 insertions(+), 39 deletions(-)
+
+commit 3de5868e20627d7bf72254ec210b81fb9f264ed1
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Oct 30 10:29:21 2017 -0600
+
+    expand compliance
+
+ COMPLIANCE | 94 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 91 insertions(+), 3 deletions(-)
+
+commit eb114f767bec9d17267f76c1d9e15badb96da6a8
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Oct 30 10:28:57 2017 -0600
+
+    change default visual depth and colormap
+
+ src/adwm.c     |  22 ++++++-----
+ src/adwm.h     |   3 +-
+ src/draw.c     |  44 ++++++++++-----------
+ src/image.c    | 110 +++++++++++++++++++++++++++++++++++++++--------------
+ src/image.h    |   2 +-
+ src/resource.c |  16 ++++----
+ 6 files changed, 125 insertions(+), 72 deletions(-)
+
+commit 0cd549ad8c02403ddda843557adcd7153433e505
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri Oct 27 03:16:36 2017 -0600
+
+    a bit better shaping, rest of cleanup
+
+ src/adwm.c   | 161 +++++++++++++++++++++++++++++++++++++++++++------------
+ src/adwm.h   |  15 +++++-
+ src/layout.c | 158 +++++++++++++++++++++++++++--------------------------
+ 3 files changed, 218 insertions(+), 116 deletions(-)
+
+commit c194ac5f0dab8ee29d131f1827b46d86025c9fca
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri Oct 27 03:15:51 2017 -0600
+
+    distinguish has from needs
+
+ src/ewmh.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+commit e3c7135357b161ce83b17361cfd5e8b0b53e1194
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri Oct 27 03:15:25 2017 -0600
+
+    quiet down logs
+
+ src/actions.c | 4 ++--
+ src/draw.c    | 2 +-
+ 2 files changed, 3 insertions(+), 3 deletions(-)
+
+commit efca57f5de88ed4b5d9d89007e90d4b7e61b147a
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu Oct 26 08:17:24 2017 -0600
+
+    update TODO file
+
+ TODO | 19 ++++++++++++++++++-
+ 1 file changed, 18 insertions(+), 1 deletion(-)
+
+commit 2c3122bc4c001ab32c6bf88f2384475ec30207eb
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu Oct 26 07:53:33 2017 -0600
+
+    simplify check function
+
+ src/adwm.c   | 43 ++++++++++++++++++-------------------------
+ src/adwm.h   |  2 +-
+ src/layout.c |  2 +-
+ 3 files changed, 20 insertions(+), 27 deletions(-)
+
+commit 34aeceb002b6293653ef25660e2bd30feddfd2c9
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu Oct 26 07:35:19 2017 -0600
+
+    rename drawshapes to configureshapes and move
+
+ src/adwm.c   |  5 ++--
+ src/draw.c   | 84 -----------------------------------------------------
+ src/draw.h   |  1 -
+ src/layout.c | 88 +++++++++++++++++++++++++++++++++++++++++++++++++++++++-
+ src/layout.h |  1 +
+ 5 files changed, 90 insertions(+), 89 deletions(-)
+
+commit b420f26899536821511e13dd7f6614304ac033dd
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu Oct 26 07:29:21 2017 -0600
+
+    first working version of shaped windows
+
+ src/adwm.c   |  29 ++++++---------
+ src/draw.c   |  84 +++++++++++++++++++++++++++++++++++++++++++
+ src/draw.h   |   1 +
+ src/layout.c | 108 ++++++++++++++++++++++++++++++-------------------------
+ src/layout.h |   1 -
+ src/tags.c   |  11 ------
+ 6 files changed, 156 insertions(+), 78 deletions(-)
+
+commit 0083cfe313bc390891df0c719b8964f4d1a94165
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Oct 25 16:36:06 2017 -0600
+
+    shape frame to match shaped clients
+
+ src/adwm.c   | 73 +++++++++++++++++++++++++++++++++++++++++++++++++++++---
+ src/adwm.h   |  1 +
+ src/draw.c   |  3 +++
+ src/layout.c | 52 ++++++++++++++++++++++++++++++++++++----
+ src/layout.h |  1 +
+ 5 files changed, 122 insertions(+), 8 deletions(-)
+
+commit 170e6b78f6feb0c4ab86fff76721f096d2a86c78
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Oct 25 05:24:53 2017 -0600
+
+    handle _OB_WM_{ACTION,STATE} props for undec
+
+ src/adwm.c   | 141 ++++++++++++++++++++++++++++++++++++++++++++++++++-----
+ src/adwm.h   |  13 +++--
+ src/ewmh.c   |  43 +++++++++++++++++
+ src/ewmh.h   |   1 +
+ src/layout.c |  38 ++++++++++++---
+ src/layout.h |   2 +
+ 6 files changed, 216 insertions(+), 22 deletions(-)
+
+commit 0de335f679e5c353142f014f32ccad4fb49982f6
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Oct 25 05:23:35 2017 -0600
+
+    better resource parsing and add themeFile resource
+
+ src/adwm_adwm.c | 430 ++++++++++++++++++++++++++++++++++++++--------------
+ src/config.c    | 185 ++++++++++++----------
+ src/parse.c     |  70 ++++-----
+ 3 files changed, 450 insertions(+), 235 deletions(-)
+
+commit 9d8bd5a37b9daba4bfb0ced6010084e980807bf7
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Oct 25 05:20:29 2017 -0600
+
+    add image.[ch] to compile
+
+ src/Makefile.am |  4 ++--
+ src/image.c     | 64 ++++++++++++++++++++---------------------------------
+ src/image.h     |  9 ++++++++
+ 3 files changed, 35 insertions(+), 42 deletions(-)
+
+commit dc990d1b54c99d12cf7e194181d89c4b013d5dc2
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Oct 21 15:59:42 2017 -0600
+
+    only build requested modules
+
+ configure.ac    | 55 +++++++++++++++++++++++++++++++++++++++++++++++++++++
+ src/Makefile.am | 47 +++++++++++++++++++++++++++++++++++----------
+ 2 files changed, 92 insertions(+), 10 deletions(-)
+
+commit d6276d02b4052415db08235f8f0279dd727b8676
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Oct 21 15:59:29 2017 -0600
+
+    new install file
+
+ INSTALL | 320 ++++++++++++++++++++++++++++++------------------------------
+ 1 file changed, 159 insertions(+), 161 deletions(-)
+
+commit 903338575afb39bd96d8f050deca2147c7bc14ea
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Oct 21 15:34:35 2017 -0600
+
+    make loadable modules do same config
+
+ src/adwm.h          | 15 ++++++++-------
+ src/adwm_adwm.c     | 14 +++++++-------
+ src/adwm_blackbox.c |  8 ++++----
+ src/adwm_fluxbox.c  |  8 ++++----
+ src/adwm_openbox.c  |  8 ++++----
+ src/adwm_waimea.c   |  8 ++++----
+ 6 files changed, 31 insertions(+), 30 deletions(-)
+
+commit c52ba4c953a5173d3a5205da860c6dbe38803b20
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Oct 21 15:25:33 2017 -0600
+
+    rework configuration for reload
+
+ src/adwm.c   | 258 +++++++++++++++++++++++++------------------------------
+ src/config.c |  46 ++++++++--
+ src/config.h |  12 +--
+ src/draw.c   |   2 +-
+ src/draw.h   |   2 +-
+ src/ewmh.c   |   6 +-
+ src/parse.c  |   4 +-
+ src/parse.h  |   4 +-
+ 8 files changed, 172 insertions(+), 162 deletions(-)
+
+commit bede3e25b544cf90d0241bbd3761c4da3f346397
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Oct 21 09:04:14 2017 -0600
+
+    fix last selected behaviour
+
+ src/adwm.c   | 48 ++++++++++++++++++++++++++++++++++++------------
+ src/adwm.h   |  1 +
+ src/layout.c |  3 +++
+ src/tags.c   |  4 ++++
+ 4 files changed, 44 insertions(+), 12 deletions(-)
+
+commit 2ffae153db832885d8704bfb12cf066b488b3ab3
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Oct 21 07:01:18 2017 -0600
+
+    always resize from current geometry
+
+ src/layout.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+commit 6534957aa68bbec195b61fd812392e83c65713a2
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Oct 21 06:52:09 2017 -0600
+
+    view the last selected client when changing views
+
+ src/adwm.c   | 37 +++++++++++++++++++++++++++++++------
+ src/adwm.h   |  1 +
+ src/layout.c | 41 ++++++++++++++++++-----------------------
+ src/tags.c   | 23 +++++++++++++++++++++--
+ 4 files changed, 71 insertions(+), 31 deletions(-)
+
+commit 350333e4499860f17bd49f96c52b5df6653eb93b
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Oct 21 03:58:30 2017 -0600
+
+    prepare to use imlib2 for everything
+
+ configure.ac | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
+
+commit 2b8a6d47753a2f820253e6151f3f73df09a212ec
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Oct 21 03:58:02 2017 -0600
+
+    move image library includes to adwm.h
+
+ src/adwm.h          | 10 ++++++----
+ src/adwm_adwm.c     |  6 ------
+ src/adwm_blackbox.c |  6 ------
+ src/adwm_bsp.c      |  6 ------
+ src/adwm_float.c    |  6 ------
+ src/adwm_fluxbox.c  |  6 ------
+ src/adwm_grid.c     |  6 ------
+ src/adwm_monocle.c  |  6 ------
+ src/adwm_openbox.c  |  6 ------
+ src/adwm_tile.c     |  6 ------
+ src/adwm_tree.c     |  6 ------
+ src/adwm_waimea.c   |  6 ------
+ src/config.c        |  6 ------
+ src/draw.c          |  6 ------
+ src/image.c         |  6 ------
+ src/resource.c      | 13 +------------
+ src/texture.c       |  6 ------
+ 17 files changed, 7 insertions(+), 106 deletions(-)
+
+commit 30ac6dd44787c0a7d8de68ae1c3462fd23e653c9
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu Oct 19 03:54:04 2017 -0600
+
+    even better extension handling
+
+ src/adwm.c | 119 +++++++++++++++++++++++----------------------------------
+ src/adwm.h |  33 ++++++++++++----
+ src/ewmh.c |   2 +-
+ 3 files changed, 74 insertions(+), 80 deletions(-)
+
+commit 70cb2dcf316510a93a73829963430a7c1d5d714b
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu Oct 19 02:55:48 2017 -0600
+
+    extend X11 extension mechanism
+
+ src/adwm.c   | 39 +++++++++++++++++++--------------------
+ src/adwm.h   |  9 ++++++++-
+ src/layout.c |  4 ++--
+ 3 files changed, 29 insertions(+), 23 deletions(-)
+
+commit 219481a38e09148063d1f9c267814f3636896602
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Oct 18 22:39:55 2017 -0600
+
+    added 5 new extension notification events
+
+ src/adwm.c | 80 +++++++++++++++++++++++++++++++++-------------------------
+ 1 file changed, 46 insertions(+), 34 deletions(-)
+
+commit e3e09290d033099f5a47353b1545487b18a53f6b
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Oct 17 14:34:34 2017 -0600
+
+    document supported properties
+
+ COMPLIANCE | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+commit 35563507f3d58934ec192234a8608281d9779cb0
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Oct 17 11:31:55 2017 -0600
+
+    support WM_ICON_SIZE
+
+ COMPLIANCE | 7 ++++---
+ src/ewmh.c | 6 +++++-
+ 2 files changed, 9 insertions(+), 4 deletions(-)
+
+commit 7eb9910eebbc41167ce4ba4cd74aba1345bc5e55
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Oct 17 11:13:28 2017 -0600
+
+    handle _NET_WM_WINDOW_OPACITY correctly
+
+ COMPLIANCE |  2 +-
+ src/adwm.c |  3 ++-
+ src/adwm.h |  1 +
+ src/draw.c |  3 +--
+ src/ewmh.c | 44 +++++++++++++++++++++++++++-----------------
+ src/ewmh.h |  1 +
+ 6 files changed, 33 insertions(+), 21 deletions(-)
+
+commit fae77939fe7798326bd4f7ea37edf29a5b8491bf
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Oct 17 10:41:38 2017 -0600
+
+    change property change reporting
+
+ src/adwm.c | 226 +++++++++++++++++++++++++++++++++------------------------
+ src/adwm.h |  16 ++--
+ src/draw.c |   2 +-
+ 3 files changed, 139 insertions(+), 105 deletions(-)
+
+commit 41e949a221799cea48d4dde73dd198e6e82715be
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Oct 17 06:57:04 2017 -0600
+
+    redate TODO file
+
+ TODO | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+commit 6d8499967afa023d5962c9dd0655999cb7f8fa80
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Oct 17 06:56:35 2017 -0600
+
+    update TODO
+
+ TODO | 9 ++++++---
+ 1 file changed, 6 insertions(+), 3 deletions(-)
+
+commit 85255267d2816a7be8a4108b56fa8a30138c5bb1
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Oct 17 06:47:52 2017 -0600
+
+    simplify colormap installation
+
+ src/adwm.c | 56 ++++++++++++++++++++++----------------------------------
+ 1 file changed, 22 insertions(+), 34 deletions(-)
+
+commit 95afb63a74f39320cc9f7defb59a41239c3d124e
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Oct 17 06:39:20 2017 -0600
+
+    install colormap of window under pointer
+
+ src/adwm.c | 98 ++++++++++++++++++++++++++++++++++++----------------------
+ 1 file changed, 61 insertions(+), 37 deletions(-)
+
+commit f6c8005c9f90d6ff421ac6afe4fc0a0ae5b9e124
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Oct 17 06:29:47 2017 -0600
+
+    install colormaps better
+
+ src/adwm.c | 22 ++++++++++++++++------
+ src/adwm.h |  3 +++
+ src/draw.c | 37 +------------------------------------
+ 3 files changed, 20 insertions(+), 42 deletions(-)
+
+commit 201b831bb98034e8fd5ecf79bae1f6f5238dac14
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Oct 17 06:20:51 2017 -0600
+
+    install new colormaps for focused windows
+
+ src/adwm.c | 29 +++++++++++++++++++++++++++++
+ 1 file changed, 29 insertions(+)
+
+commit b60749b2052f081058cd2ef2e5f3b5a8fd9b9b4d
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Oct 16 11:34:47 2017 -0600
+
+    add support for more X extensions
+
+ configure.ac    | 47 +++++++++++++++++++++++++++++++++++++++++++++
+ src/Makefile.am | 31 ++++++++++++++++++++++++++++--
+ src/adwm.c      | 55 ++++++++++++++++++++++++++++++++++++++++++++++++-----
+ src/adwm.h      |  4 ++++
+ 4 files changed, 130 insertions(+), 7 deletions(-)
+
+commit 98be2b717358c806e5b6f67aa50edb576e629df7
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Oct 15 15:45:27 2017 -0600
+
+    show color map notifies
+
+ doc/adwm-style.5.in | 11 +++++++++++
+ src/adwm.c          | 35 +++++++++++++++++++++++++++++++++--
+ src/adwm.h          |  1 +
+ src/draw.c          | 41 ++++++++++++++++++++++++++++++-----------
+ 4 files changed, 75 insertions(+), 13 deletions(-)
+
+commit d494d9f826e7c79cf53ddbc26195d8744041c149
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Oct 14 16:35:19 2017 -0600
+
+    indicate colormap support
+
+ COMPLIANCE | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+commit f49572756cf2664fcf73a14169042da6ed304013
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Oct 14 16:34:46 2017 -0600
+
+    install colormaps
+
+ src/draw.c | 18 ++++++++++++++++++
+ 1 file changed, 18 insertions(+)
+
+commit 09d29f63c5c9be7658e1f4ae180a88f6f5fb4f1e
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Oct 14 16:15:29 2017 -0600
+
+    initial support for WM_COLORMAP_WINDOWS
+
+ src/adwm.c | 60 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++-
+ src/adwm.h |  4 +++-
+ src/ewmh.h |  1 +
+ 3 files changed, 63 insertions(+), 2 deletions(-)
+
+commit f8dff6082ceb30cc71b12c81031fdf014ce1468f
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Oct 14 15:06:53 2017 -0600
+
+    support WM_COLORMAP_NOTIFY
+
+ src/adwm.h | 3 ++-
+ src/ewmh.c | 7 +++++++
+ 2 files changed, 9 insertions(+), 1 deletion(-)
+
+commit ee29412e7d3a87d948c4805c2d128c5faed91da9
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Oct 14 14:53:30 2017 -0600
+
+    add WM_COLORMAP_{WINDOWS,NOTIFY}
+
+ src/adwm.h | 6 +++++-
+ src/ewmh.c | 2 ++
+ 2 files changed, 7 insertions(+), 1 deletion(-)
+
+commit cd07f5b4c5c4d219453816861443b764435347aa
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu Oct 12 06:42:01 2017 -0600
+
+    reset pid after reload
+
+ src/adwm.c | 8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+commit fb157243c62df0a3f96fa7dc48243835fd16db6b
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Oct 11 22:48:31 2017 -0600
+
+    prepare for drag-click separation of mouse actions
+
+    - this will eventually make mouse actions more configurable
+      and possibly allow mouse actions to be configured similiar to
+      key bindings
+
+ src/actions.c | 29 ++++++++++-------
+ src/actions.h | 18 +++++------
+ src/adwm.c    |  4 +--
+ src/adwm.h    |  4 +--
+ src/draw.c    | 97 ++++++++++++++++++++++++++++++++-----------------------
+ 5 files changed, 88 insertions(+), 64 deletions(-)
+
+commit afa8984e32ca5af29fcb09dd96e89d23a5e0d270
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Oct 11 16:37:09 2017 -0600
+
+    m_spawn on button press instead of release
+
+ data/keysrc |  2 +-
+ src/adwm.c  | 18 +++++++++---------
+ 2 files changed, 10 insertions(+), 10 deletions(-)
+
+commit 5b3a8f3f9b2f658dd6e953aa222b5de5bc7248a8
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Oct 11 05:51:43 2017 -0600
+
+    update release files
+
+ AUTHORS      |     2 +-
+ ChangeLog    | 14638 +++++++++++++++--------------------------------------
+ NEWS         |   135 +-
+ README       |   107 +-
+ README.md    |    22 +-
+ configure.ac |    10 +-
+ 6 files changed, 4209 insertions(+), 10705 deletions(-)
+
 commit acce7e53d3ce14a8a99ec297f20bed81d7ea9192
 Author: Brian Bidulock <bidulock@openss7.org>
 Date:   Sat Oct 7 01:27:52 2017 -0600
@@ -2930,2868 +5363,3 @@ Date:   Fri Sep 5 15:57:08 2014 -0600
  src/tags.c      | 41 ++++++++++++++++++++++++++++++++++++++++-
  src/tags.h      |  1 +
  7 files changed, 58 insertions(+), 5 deletions(-)
-
-commit fd8e783325af7e429f1d1fac4e15fc2896575384
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Fri Sep 5 15:54:30 2014 -0600
-
-    not so many configure messages (causes flashing)
-
- src/layout.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
-
-commit d69d1dd64a04a981c49da52931dbe0027bedf43a
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Fri Sep 5 06:49:06 2014 -0600
-
-    better window cycling
-
-    - raise floaters before passing them the focus
-    - do not call focus() from discard enter: it
-      is not safe from recursion.
-
- src/actions.c |  2 ++
- src/layout.c  | 12 ++++++++++--
- src/layout.h  |  1 +
- 3 files changed, 13 insertions(+), 2 deletions(-)
-
-commit 6b6beb193795c48a5fdaf15c4b0af455a9f4b5d7
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Fri Sep 5 06:12:26 2014 -0600
-
-    only set focus after done restacking
-
- src/adwm.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-commit 725938c19e0a65460328b945a8d0f9b9f888ca91
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Fri Sep 5 05:49:57 2014 -0600
-
-    fixed bug in floating placement
-
- src/layout.c | 35 +++++++++++++++++------------------
- 1 file changed, 17 insertions(+), 18 deletions(-)
-
-commit 6291d7d76636e8d6196c3052f1089e449da10dd5
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Fri Sep 5 05:01:42 2014 -0600
-
-    always consider tile as floaters when restacking overlay
-
- src/layout.c | 19 +++++++++++++++----
- src/layout.h |  1 -
- 2 files changed, 15 insertions(+), 5 deletions(-)
-
-commit 2546ea0ebf11d34e4f0c01db914a3b68d42c292e
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Fri Sep 5 04:43:10 2014 -0600
-
-    correct raiselower behaviour
-
- rebuild.sh   | 5 ++++-
- src/layout.c | 8 +++++++-
- 2 files changed, 11 insertions(+), 2 deletions(-)
-
-commit e62cdd810c232edc1d10268e7433a11d78df2fa5
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Thu Sep 4 05:32:44 2014 -0600
-
-    tweak cross-references on manual page
-
- README     | 6 +++---
- doc/adwm.1 | 4 ++--
- 2 files changed, 5 insertions(+), 5 deletions(-)
-
-commit 759a9fb049d3d558424069d6eeb641d6274b4313
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Thu Sep 4 05:29:01 2014 -0600
-
-    update NEWS for release
-
- NEWS.in | 25 ++++++++++++++++++++++++-
- 1 file changed, 24 insertions(+), 1 deletion(-)
-
-commit 9715b0a3b3207f6163a3aed0b4222ed0d893c4dd
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Thu Sep 4 05:22:14 2014 -0600
-
-    spelling
-
- doc/adwm-keys.1 | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
-
-commit a801f8efb4f2e4331c0fa644e37ad4c0a2c5303e
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Wed Sep 3 23:13:11 2014 -0600
-
-    updating manual pages
-
- doc/Makefile.am     |  13 +-
- doc/adwm-keys.1     | 826 +++++++++++++++++++++++++++++++++++++-----------
- doc/adwm-keys.1.pod | 189 +++++++++++
- src/parse.c         |   4 +
- 4 files changed, 845 insertions(+), 187 deletions(-)
-
-commit 3cbd9f2e15ee4d3cad8cac7e22240b8507decc4a
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Sun Aug 24 22:33:26 2014 -0600
-
-    let regular clients specify backing store if they want to
-
- src/adwm.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-commit 927f57073cc543583c07d260cfb6fc2793b07ce1
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Sun Aug 24 22:29:07 2014 -0600
-
-    fix veil and flittering of dockapps
-
- src/adwm.c   | 67 +++++++++++++++++++++++++++++++++++++++++++-------------
- src/layout.c |  7 +++++-
- 2 files changed, 58 insertions(+), 16 deletions(-)
-
-commit 8f4719c51fcc98735fbd0eb0f3b12e43804da856
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Sun Aug 24 18:44:00 2014 -0600
-
-    Revert "veil was a bad idea"
-
-    This reverts commit 908d9dea1e59892fae1b8fcf99df3139d89eaa73.
-
-    its keeps flashing during reconfigs down; however, it needs not
-    to overlap the work area on the borders.
-
- README       |  6 +++---
- src/adwm.c   | 32 ++++++++++++++++++++++++++++++++
- src/adwm.h   |  1 +
- src/layout.c |  2 ++
- 4 files changed, 38 insertions(+), 3 deletions(-)
-
-commit 908d9dea1e59892fae1b8fcf99df3139d89eaa73
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Sun Aug 24 16:00:13 2014 -0600
-
-    veil was a bad idea
-
- README       |  6 +++---
- src/adwm.c   | 32 --------------------------------
- src/adwm.h   |  1 -
- src/layout.c |  2 --
- 4 files changed, 3 insertions(+), 38 deletions(-)
-
-commit 529e7d829ad0f8a9c7cdd8c786ac0a3617beed98
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Sun Aug 24 06:17:15 2014 -0600
-
-    reap children properly
-
- README     |  6 +++---
- src/adwm.c | 66 +++++++++++++++++++++++++++++++++++-----------------------
- 2 files changed, 43 insertions(+), 29 deletions(-)
-
-commit bf0f64f4e2a0945b97af1b03c058882fbd1ba5ee
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Sun Aug 24 06:02:37 2014 -0600
-
-    add maintainer script
-
- rebuild.sh | 6 ++++++
- 1 file changed, 6 insertions(+)
-
-commit 4378a13621b414c80556e32b4335264116978a5e
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Wed Aug 20 10:11:12 2014 -0600
-
-    zero barrier members on initialization of monitor
-
- src/adwm.c | 6 ++++++
- 1 file changed, 6 insertions(+)
-
-commit 716a7839c8ad5f8e537421daaf62f499b620e912
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Tue Aug 19 12:13:14 2014 -0600
-
-    handle toolkits that indicate both give and take focus
-
- README     | 6 +++---
- src/adwm.c | 5 +++--
- 2 files changed, 6 insertions(+), 5 deletions(-)
-
-commit 3c8512b5583fac5b9e02715959ada33ff010dfd0
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Mon Jul 21 23:16:16 2014 -0600
-
-    use XFixes to cure a few problems
-
-     - use XFixesChangeSaveSet to keep dockapp windows and
-       icons from being reparented and remapped incorrectly if we
-       exit abruptly
-
-     - use XCreatePointerBarrier on multi-head setups to create
-       barrier corners 1/20th of the screen dimensions in each
-       corner of each monitor on each screen.
-
- README             |  6 ++--
- configure.template |  1 +
- src/Makefile.am    |  4 +--
- src/adwm.c         | 80 ++++++++++++++++++++++++++++++++++++++++++++++++--
- src/adwm.h         |  4 +++
- 5 files changed, 88 insertions(+), 7 deletions(-)
-
-commit 636b2e57299206dea1c99f8daf830c6dcc5c3345
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Mon Jul 14 09:46:19 2014 -0600
-
-    a few focus regressions and tweaks
-
- src/adwm.c | 49 +++++++++++++++++++++++++++++++++++--------------
- 1 file changed, 35 insertions(+), 14 deletions(-)
-
-commit d365030905ea030624697bd1faa62828e504eef3
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Mon Jul 14 08:37:27 2014 -0600
-
-    better focus behaviour
-
-    - only focus oddballs explicitly and not automatically
-
- src/adwm.c | 16 ++--------------
- 1 file changed, 2 insertions(+), 14 deletions(-)
-
-commit 09b51f5df01657b559c5b0e907704f8f3afa477d
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Mon Jul 14 08:13:28 2014 -0600
-
-    better focus handling on some events
-
-    - when a client is unmanaged
-    - when a client is iconified or deiconified
-    - when a client is hidden or shown
-    - when a client is tagged
-
- .indent.pro  |   1 +
- src/adwm.c   | 205 ++++++++++++++++++++++++++++++++++++-------------------
- src/adwm.h   |   3 +-
- src/layout.c |  26 +++++++
- src/layout.h |   2 +
- src/tags.c   |  34 +++++++--
- 6 files changed, 194 insertions(+), 77 deletions(-)
-
-commit cb1614d4d13734e077a06436b83e383e16a8bb79
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Mon Jul 14 05:03:14 2014 -0600
-
-    try to correct focus handling a bit
-
-    - always complain about focus stealing
-    - the logic isn't quite right in focuschange yet... (grabs)
-    - when focus client is not specified or invalid, always
-      skip dock type windows on first pass and then only consider
-      them when there is no other alternative.
-
- src/actions.c |  6 ++--
- src/adwm.c    | 92 ++++++++++++++++++++++++++++++++++++-------------------
- src/adwm.h    |  2 +-
- src/ewmh.c    |  4 +--
- src/layout.c  | 16 +++++-----
- src/tags.c    |  8 ++---
- 6 files changed, 79 insertions(+), 49 deletions(-)
-
-commit 7509a4209bafd88fdb6d886c46678be1a571ec4b
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Wed Jul 2 00:53:36 2014 -0600
-
-    updated REAME for release
-
- README | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-commit 043a6b6c139818abac04bbf16df0506a588cc91c
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Wed Jul 2 00:49:08 2014 -0600
-
-    add missing header files to pass distcheck
-
- README          | 6 +++---
- src/Makefile.am | 3 ++-
- 2 files changed, 5 insertions(+), 4 deletions(-)
-
-commit 479b597d338a3f423f5d877847c463d39231890b
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Wed Jul 2 00:40:05 2014 -0600
-
-    add debug flags to maintainer script
-
- configure.sh | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-commit 96e218af5850b2bcef73a1ec0567ee62b97351f8
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Wed Jul 2 00:38:31 2014 -0600
-
-    added NOTES.html
-
- .gitignore | 1 +
- 1 file changed, 1 insertion(+)
-
-commit 1544f5385d9a3d4062aa547f9c458f32608cd88a
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Mon Jun 23 20:03:56 2014 -0600
-
-    try to correct focus loss when changing views
-
- src/actions.c |  6 +++---
- src/adwm.c    | 36 ++++++++++++++++++------------------
- src/adwm.h    |  2 +-
- src/ewmh.c    |  4 ++--
- src/layout.c  | 16 ++++++++--------
- src/tags.c    |  8 ++++----
- 6 files changed, 36 insertions(+), 36 deletions(-)
-
-commit 1d4fedc4ae3dd05213035559afaae5c31b9aaee8
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Mon Jun 23 19:15:31 2014 -0600
-
-    add a couple of maintainer tools
-
- configure.sh      |  38 +++++++++
- src/adwm.valgrind | 228 ++++++++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 266 insertions(+)
-
-commit b5504a13076dafe991fadff7be4be4c5b77e9bec
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Mon Jun 23 19:14:25 2014 -0600
-
-    correct parsing of startup notification ids
-
- README     |  6 +++---
- src/ewmh.c | 14 +++++++++-----
- 2 files changed, 12 insertions(+), 8 deletions(-)
-
-commit 88cad8dbdad26a9789cac371a603ebb1beddd944
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Thu May 15 07:02:57 2014 -0600
-
-    in case of stupid client
-
-     - set backing store to NotUseful
-     - set win gravity to NorthWestGravity
-
-     before reparenting client window into frame
-
- src/adwm.c | 48 +++++++++++++++++++++++-------------------------
- 1 file changed, 23 insertions(+), 25 deletions(-)
-
-commit 9344f08a959a06191bdd0b72358985d158af5e4f
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Tue Apr 29 20:19:31 2014 -0600
-
-    correct button actions on root window
-
- src/actions.c |   2 -
- src/adwm.c    | 167 ++++++++++++++++++++++++++++++++----------------------
- src/adwm.h    |  15 +++--
- src/draw.c    | 134 +++++++++++++++++++++----------------------
- 4 files changed, 175 insertions(+), 143 deletions(-)
-
-commit 4e6955dba9125e7dd7e47697209b2d2b3d8da9ae
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Tue Apr 29 17:39:58 2014 -0600
-
-    debug scrollwheel on desktop
-
- src/actions.c | 2 ++
- src/adwm.c    | 2 +-
- src/adwm.h    | 5 +++++
- 3 files changed, 8 insertions(+), 1 deletion(-)
-
-commit c60c3a9484f9faf158e68e7b9eab25edb0757064
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Mon Apr 21 13:53:04 2014 -0600
-
-    improve focus behaviour, remove some old cruft
-
- src/adwm.c   | 73 ++++++++++++++++----------------------------------------
- src/adwm.h   |  1 +
- src/layout.c | 12 ++++++----
- 3 files changed, 30 insertions(+), 56 deletions(-)
-
-commit 66fb5a92b6528c6bdfecb11e26344a9bb7964e79
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Sat Apr 19 23:27:30 2014 -0600
-
-    used valgrind to remove some memory leaks
-
- src/adwm.c | 48 +++++++++++++++++++++++++++++++++---------------
- src/ewmh.c |  3 ++-
- 2 files changed, 35 insertions(+), 16 deletions(-)
-
-commit de77a23a48013378e05b41f184a91ee1c06ed545
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Thu Apr 17 14:30:48 2014 -0600
-
-    bug discovered by valgrind
-
- src/adwm.c | 10 +++++++++-
- 1 file changed, 9 insertions(+), 1 deletion(-)
-
-commit cd8cc4bcd31449bf36416a969704fc7ae8aa3799
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Mon Apr 14 23:04:52 2014 -0600
-
-    still trying to find strange memory corruption bug
-
- src/adwm.c   | 10 +++++-----
- src/ewmh.c   | 15 ++++++++-------
- src/layout.c |  2 ++
- 3 files changed, 15 insertions(+), 12 deletions(-)
-
-commit 60eb9131d07e7cbf206c3a47e8c1c96a149afd73
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Fri Mar 21 00:50:49 2014 -0600
-
-    simple corrections
-
- COMPLIANCE   | 4 ++--
- src/adwm.c   | 2 +-
- src/layout.c | 4 ++++
- 3 files changed, 7 insertions(+), 3 deletions(-)
-
-commit 6e62d64092d2cb6394f21e2a14c66bf43463f811
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Mon Mar 17 17:41:54 2014 -0600
-
-    initialize some structures
-
- src/adwm.c | 24 ++++++++++++------------
- 1 file changed, 12 insertions(+), 12 deletions(-)
-
-commit 94d548e24af6368fd623453750978e723aceff59
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Sun Mar 16 21:33:57 2014 -0600
-
-    checking in working copy
-
- src/adwm.c      | 127 ++++++++---
- src/adwm.h      |   5 +-
- src/draw.c      |  48 ++++-
- src/ewmh.c      |  15 +-
- src/ewmhpanel.c |   6 +-
- src/layout.c    | 594 +++++++++++++++++-----------------------------------
- 6 files changed, 355 insertions(+), 440 deletions(-)
-
-commit c75d7077170ce2816b41461883e86b9fda2dd26f
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Mon Mar 10 06:39:59 2014 -0600
-
-    removed unused dockapp management code
-
- src/layout.c | 494 +------------------------------------------------------
- 1 file changed, 2 insertions(+), 492 deletions(-)
-
-commit 292e3e148e20fcaf0eb8f0abbfcd2b1848091dcb
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Mon Mar 10 06:37:37 2014 -0600
-
-    managed dock apps with trees
-
- src/actions.c |    1 -
- src/adwm.c    |  142 +++----
- src/adwm.h    |  164 ++++----
- src/config.c  |   74 +++-
- src/layout.c  | 1097 ++++++++++++++++++++++++++++++++++++++++++-----------
- src/layout.h  |    8 +
- 6 files changed, 1083 insertions(+), 403 deletions(-)
-
-commit f5d87101c7c0c9c0d34840b7bc46850f8fe86fc9
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Sat Mar 8 18:00:10 2014 -0700
-
-    integrate client geometry, dockapp layout using trees
-
- .indent.pro     |    4 +
- src/actions.c   |   13 +-
- src/adwm.c      |  182 ++++++--
- src/adwm.h      |   26 +-
- src/adwm_adwm.c |    8 +
- src/adwm_tile.c |   94 +++-
- src/config.c    |   86 ++++
- src/config.h    |    1 +
- src/ewmh.c      |   21 +-
- src/layout.c    | 1183 +++++++++++++++++++++++++++++++++++++++------------
- src/layout.h    |    8 +-
- src/tags.c      |   27 +-
- 12 files changed, 1297 insertions(+), 356 deletions(-)
-
-commit 7b2db54bc237565d0e175140e832884d51fd3848
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Fri Mar 7 12:46:14 2014 -0700
-
-    correct working directory issues
-
- src/adwm.c   | 11 +++++++++++
- src/config.c | 10 ----------
- 2 files changed, 11 insertions(+), 10 deletions(-)
-
-commit 4d271063173ac8ae9bf2269e27fe94a8cda661fa
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Fri Mar 7 12:37:21 2014 -0700
-
-    add handle height to style, remove was structure
-
- .indent.pro     |   1 +
- src/actions.c   |  15 ++--
- src/adwm.c      |  32 +++++--
- src/adwm.h      |  28 +++---
- src/adwm_tile.c | 241 ++++++++++++++++++++++++++++++++++++++++++++-----
- src/ewmh.c      |  19 ++--
- src/layout.c    | 255 +++++++++++++++++++++++++++++-----------------------
- src/layout.h    |   9 +-
- 8 files changed, 422 insertions(+), 178 deletions(-)
-
-commit b8e0c5f4dda3655b62bb49fe99c0fa3bb042d2c1
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Thu Mar 6 11:36:01 2014 -0700
-
-    try to avoid weird memory corruption
-
- src/adwm.c |  9 +++++----
- src/ewmh.c | 15 ++++++++++-----
- src/util.c |  7 ++++---
- 3 files changed, 19 insertions(+), 12 deletions(-)
-
-commit bf38798eb0d443881706d4815c77d39ade4ca60c
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Thu Mar 6 02:45:25 2014 -0700
-
-    more information to changelog
-
- README     | 4 ++--
- autogen.sh | 4 ++--
- 2 files changed, 4 insertions(+), 4 deletions(-)
-
-commit 6125ff976891de692fb8dcda4a97babe0212c6e0
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Thu Mar 6 02:36:39 2014 -0700
-
-    split actions into actions.c
-
- README                     |    6 +-
- src/Makefile.am            |    2 +-
- src/{parse.c => actions.c} |  897 +++---------------
- src/{parse.h => actions.h} |   21 +-
- src/adwm.c                 |   66 +-
- src/adwm.h                 |    2 -
- src/adwm_adwm.c            |    1 +
- src/adwm_blackbox.c        |    1 +
- src/adwm_fluxbox.c         |    1 +
- src/draw.c                 |    1 +
- src/parse.c                | 2008 +++-------------------------------------
- src/parse.h                |   61 --
- 12 files changed, 260 insertions(+), 2807 deletions(-)
-
-commit ce20e9a46e4d82af4a2f8e6c351d58f377d437e9
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Thu Mar 6 02:12:03 2014 -0700
-
-    start tree integration
-
- src/adwm.c   |   1 +
- src/adwm.h   | 317 ++++++++++++++++++++++++++++++++++++-------------------
- src/layout.c |  94 +++++++++++++----
- src/layout.h |  46 ++++++++
- src/tags.c   |  22 ++--
- 5 files changed, 340 insertions(+), 140 deletions(-)
-
-commit 63028230cee73d7b13b9b34da846ee6d5d5f684d
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Wed Mar 5 16:51:10 2014 -0700
-
-    convert from monitors to views
-
- src/adwm.c     | 252 +++++++-----------
- src/adwm.h     |  35 ++-
- src/config.c   |   7 +-
- src/draw.c     |   1 +
- src/ewmh.c     | 101 +++----
- src/layout.c   | 753 +++++++++++++++++++++++++++++------------------------
- src/layout.h   |  23 +-
- src/parse.c    | 248 ++++++++----------
- src/resource.c |   1 +
- src/tags.c     | 205 ++++++++-------
- src/tags.h     |   6 +-
- src/texture.c  |   1 +
- 12 files changed, 803 insertions(+), 830 deletions(-)
-
-commit 320bf76b349e028894f36b55161a01ce91d9a79f
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Tue Mar 4 02:21:46 2014 -0700
-
-    convert to different resource function
-
- src/config.c | 207 +++++++++++++++++++++++++++++++++++++++++--------------
- 1 file changed, 157 insertions(+), 50 deletions(-)
-
-commit fb20a3f021c1d9842eee43cece1867978ee3bce0
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Tue Mar 4 00:40:54 2014 -0700
-
-    more modularized loading of configuration files
-
- src/adwm.c      |  68 +++------
- src/adwm.h      |  17 ++-
- src/adwm_adwm.c | 394 ++++++++++++++++++++++++++++++++++++----------------
- src/config.c    | 129 ++++++++++++++++-
- src/config.h    |   1 +
- src/ewmh.c      |  45 ++++--
- src/ewmh.h      |   2 +-
- 7 files changed, 468 insertions(+), 188 deletions(-)
-
-commit f665a3370b0ac37dcb9ca515b80bf4fce54cee56
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Mon Mar 3 22:08:09 2014 -0700
-
-    more configure modularization, move sn into ewmh.c
-
- src/adwm.c   |  53 ++------------
- src/adwm.h   |  15 ++--
- src/config.c | 216 +++++++++++++++++++++++++++++++++++--------------------
- src/config.h |   3 +
- src/ewmh.c   |  46 ++++++++++++
- src/tags.c   |  89 -----------------------
- src/tags.h   |   2 -
- 7 files changed, 203 insertions(+), 221 deletions(-)
-
-commit 3256c3df58ad10ec3a2187ac87a0e04006ae4f49
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Mon Mar 3 08:22:31 2014 -0700
-
-    correct several regressions
-
- src/adwm.c   | 3 ++-
- src/ewmh.c   | 5 +++--
- src/layout.c | 3 ++-
- src/parse.c  | 2 ++
- src/tags.c   | 6 ++++--
- 5 files changed, 13 insertions(+), 6 deletions(-)
-
-commit cf5a193044210c7dfbeb339cab2ba051f12a6cc5
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Mon Mar 3 07:44:29 2014 -0700
-
-    split ewmh.h, move tagging to view from monitors
-
- README          |   4 +-
- src/Makefile.am |  24 +++----
- src/adwm.c      | 171 +++++++++++++++++--------------------------
- src/adwm.h      |  90 +++++++----------------
- src/draw.c      |   6 +-
- src/ewmh.c      |  35 +++++----
- src/ewmh.h      |  56 +++++++++++++++
- src/layout.c    | 126 ++++++++++++++++----------------
- src/parse.c     |  44 ++++++------
- src/tags.c      | 204 ++++++++++++++++++++++------------------------------
- src/tags.h      |   4 +-
- 11 files changed, 360 insertions(+), 404 deletions(-)
-
-commit e06e2ce6c3e40e90740c7b3e6996fa8f5b86cbf2
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Mon Mar 3 01:06:09 2014 -0700
-
-    coordinate maximum number of tags
-
- README              |  6 +++---
- configure.template  |  2 +-
- src/adwm_adwm.c     | 12 ++++--------
- src/adwm_blackbox.c |  4 ++--
- src/config.c        |  2 +-
- src/ewmh.c          |  2 +-
- src/parse.c         |  2 +-
- src/tags.c          |  2 +-
- 8 files changed, 14 insertions(+), 18 deletions(-)
-
-commit 41e599b8108d86b1174c91a52cdfe7a45cbcfde7
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Mon Mar 3 00:57:28 2014 -0700
-
-    options per screen, cleaner build
-
- README             |   4 +-
- configure.template |  12 ++++--
- src/Makefile.am    |  13 +-----
- src/adwm.c         |  23 +++++------
- src/adwm.h         |  21 ++++++++++
- src/config.c       | 109 +++++++++++++++++++++++++++++++++++++++++++++++--
- src/config.h       |  15 -------
- src/layout.c       |  52 +++++++++++------------
- src/tags.c         |  51 ++++++-----------------
- 9 files changed, 188 insertions(+), 112 deletions(-)
-
-commit 1fae7275c764ff7785902f1415c4a07bb0496b9a
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Sun Mar 2 23:39:02 2014 -0700
-
-    split out configuration
-
- README          |  4 ++--
- src/Makefile.am |  2 +-
- src/adwm.c      | 18 ++----------------
- src/adwm.h      | 21 +++++----------------
- src/config.c    | 36 ++++++++++++++++++++++++++++++++++++
- src/config.h    | 23 +++++++++++++++++++++++
- src/draw.h      |  6 ++++++
- src/ewmh.c      |  5 ++---
- src/layout.c    |  1 +
- src/layout.h    |  6 ++++++
- src/parse.h     |  6 ++++++
- src/resource.h  |  6 ++++++
- src/tags.c      |  2 ++
- src/tags.h      |  6 ++++++
- src/texture.h   |  5 +++++
- src/util.h      |  5 +++++
- 16 files changed, 114 insertions(+), 38 deletions(-)
-
-commit a7ebefab1efec3aa0f671377d0f415a00896f4cc
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Sun Mar 2 23:12:03 2014 -0700
-
-    separate tag and view functions
-
- README          |   4 +-
- src/Makefile.am |   2 +-
- src/adwm.c      | 500 +-----------------------------------------------
- src/adwm.h      |  18 +-
- src/draw.c      |   1 +
- src/ewmh.c      |  10 +-
- src/layout.c    |  18 +-
- src/layout.h    |   1 +
- src/parse.c     |   1 +
- src/tags.c      | 537 ++++++++++++++++++++++++++++++++++++++++++++++++++++
- src/tags.h      |  19 ++
- 11 files changed, 580 insertions(+), 531 deletions(-)
-
-commit 8db78af1b2aec906aaf2bcb312253bb539a62cdd
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Sun Mar 2 22:26:16 2014 -0700
-
-    complete removal of config.h
-
- README          |  4 ++--
- src/Makefile.am | 22 +++++++++++-----------
- 2 files changed, 13 insertions(+), 13 deletions(-)
-
-commit 76b9d9c79e091d35c9fdd8251a34ae08fff802fd
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Sun Mar 2 21:14:24 2014 -0700
-
-    remove old config header
-
- src/config.h | 35 -----------------------------------
- 1 file changed, 35 deletions(-)
-
-commit 135a4fe1438e219fc6d52b7161bdcabd5e310769
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Sun Mar 2 21:13:54 2014 -0700
-
-    single configuration mechanism and header
-
- README              |  4 ++--
- configure.template  | 36 ++++++++++++++++++++++++++++++++++++
- src/adwm.c          |  1 -
- src/adwm_adwm.c     |  1 -
- src/adwm_blackbox.c |  1 -
- src/adwm_bsp.c      |  1 -
- src/adwm_float.c    |  1 -
- src/adwm_fluxbox.c  |  1 -
- src/adwm_grid.c     |  1 -
- src/adwm_monocle.c  |  1 -
- src/adwm_openbox.c  |  1 -
- src/adwm_tile.c     |  1 -
- src/adwm_tree.c     |  1 -
- src/adwm_waimea.c   |  1 -
- src/draw.c          |  1 -
- src/ewmh.c          |  1 -
- src/image.c         |  1 -
- src/layout.c        |  1 -
- src/parse.c         |  1 -
- src/resource.c      |  1 -
- src/texture.c       |  1 -
- 21 files changed, 38 insertions(+), 21 deletions(-)
-
-commit ede648531652941951d283ac5b925d12c9e792b6
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Sun Mar 2 20:59:20 2014 -0700
-
-    header file and indentation cleanup
-
- .indent.pro         |   1 +
- README              |   6 +-
- src/Makefile.am     |  22 +-
- src/adwm.c          | 716 ++++++++++++++++++++++++++++--------------------
- src/adwm.h          | 571 ++++++++++++++++++++++----------------
- src/adwm_adwm.c     |  52 ++--
- src/adwm_blackbox.c |   6 +-
- src/adwm_fluxbox.c  |   9 +-
- src/adwm_grid.c     |  11 +-
- src/adwm_monocle.c  |   3 +-
- src/adwm_openbox.c  |  10 +-
- src/adwm_tile.c     |  26 +-
- src/adwm_waimea.c   |  20 +-
- src/draw.c          | 306 ++++++++++++++-------
- src/draw.h          |   4 +
- src/ewmh.c          | 443 +++++++++++++++++-------------
- src/ewmhpanel.c     | 118 ++++----
- src/image.c         |  30 +-
- src/layout.c        | 110 +++++---
- src/layout.h        |  49 ++++
- src/parse.c         |   4 +-
- src/parse.h         |  67 +++++
- src/resource.h      |  16 ++
- src/texture.h       |   2 +
- src/util.c          | 161 ++++++-----
- src/util.h          |  10 +-
- 26 files changed, 1696 insertions(+), 1077 deletions(-)
-
-commit 8df51ab32d25b134a84277ef671abb5008968731
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Sun Mar 2 01:07:51 2014 -0700
-
-    integrate tag fields
-
- src/adwm.c | 49 +++++++++++++++++++++++--------------------------
- src/adwm.h |  8 ++++++--
- src/draw.c |  4 ++--
- src/ewmh.c | 31 +++++++++++++------------------
- 4 files changed, 44 insertions(+), 48 deletions(-)
-
-commit e593feee2df8d6da23848d14c673d3f3cb9c1bdf
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Sun Mar 2 00:05:44 2014 -0700
-
-    hide layout specifics in layout.c
-
- src/adwm.c   |  15 -----
- src/adwm.h   |  13 +----
- src/layout.c |  58 ++++++++++++++++++-
- src/parse.c  | 172 ++++---------------------------------------------------
- 4 files changed, 67 insertions(+), 191 deletions(-)
-
-commit ed1053b1c383d5ea56d948c5af64843bc47d2485
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Sat Mar 1 22:53:55 2014 -0700
-
-    more preparation for layout modules
-
-    - split restacking into layout.c
-    - split layouts array into layout.c
-
- src/adwm.c   | 526 +-----------------------------------------------------
- src/adwm.h   |  23 +--
- src/layout.c | 531 ++++++++++++++++++++++++++++++++++++++++++++++++++++++-
- 3 files changed, 542 insertions(+), 538 deletions(-)
-
-commit d32a0efe39ebeb2f77935dc6efe98bf0fb3dfaaa
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Sat Mar 1 16:51:55 2014 -0700
-
-    more preparation for layout modularization
-
- README       |   4 +-
- src/adwm.c   | 400 ++++-----------------------------------
- src/adwm.h   |  10 +-
- src/ewmh.c   |  60 +++---
- src/layout.c | 566 ++++++++++++++++++++++++++++++++++++++++++++++++-------
- 5 files changed, 556 insertions(+), 484 deletions(-)
-
-commit acce97c39c21db7106255151b76bf85369de39d7
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Sat Mar 1 13:05:23 2014 -0700
-
-    split layout functions into own file
-
-    - preparation for layouts as loadable modules
-
- src/Makefile.am    |    2 +-
- src/adwm.c         | 4325 +++---------------------------------------------
- src/adwm.h         |  132 +-
- src/adwm_bsp.c     |   30 +
- src/adwm_float.c   |   40 +
- src/adwm_grid.c    |  119 ++
- src/adwm_monocle.c |   57 +
- src/adwm_tile.c    |  726 ++++++++
- src/adwm_tree.c    |   31 +
- src/draw.c         |    2 +-
- src/ewmh.c         |   18 +-
- src/layout.c       | 3631 ++++++++++++++++++++++++++++++++++++++++
- src/parse.c        |    2 +-
- 13 files changed, 4949 insertions(+), 4166 deletions(-)
-
-commit 4672e074b9c33059ac6adc54d69ca872f5cb8f2d
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Fri Feb 28 18:54:13 2014 -0700
-
-    prepare for module loading
-
- README             |  6 +++---
- configure.template |  2 +-
- src/Makefile.am    | 28 ++++++++++++++--------------
- src/adwm.c         | 28 ++++++++++++++++++++++++++++
- src/adwm.h         |  1 +
- src/resource.c     |  8 ++++----
- 6 files changed, 51 insertions(+), 22 deletions(-)
-
-commit 14d1228ba2b7535770e76f43ccf928d9671cdb97
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Fri Feb 28 13:53:21 2014 -0700
-
-    adding fluxbox keybinding definitions
-
- TODO                |   3 +
- src/adwm.h          |   2 +
- src/adwm_blackbox.c |   2 +-
- src/adwm_fluxbox.c  | 401 ++++++++++++++++++++++++++++++++++++++++++++++--
- src/parse.c         | 146 ++++++++++++++----
- 5 files changed, 509 insertions(+), 45 deletions(-)
-
-commit 5b508ec3b533bc9bd94a5ccd25a050ab9d7f93d8
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Thu Feb 27 18:20:25 2014 -0700
-
-    better blackbox initkeys and start of fluxbox one
-
- src/adwm_blackbox.c | 895 ++++++++++++++++++------------------------------
- src/adwm_fluxbox.c  | 756 +++++++++++++++++++++++++++++++++++++++-
- 2 files changed, 1080 insertions(+), 571 deletions(-)
-
-commit 1d0909378982fed02ed66cd5dc700b02e4aab5ef
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Thu Feb 27 14:13:20 2014 -0700
-
-    key parsing for bbkeys
-
- .indent.pro         |    1 +
- src/adwm.c          |    5 +-
- src/adwm.h          |    3 +
- src/adwm_blackbox.c | 1041 ++++++++++++++++++++++++++++++++++++++++++++++-
- src/parse.c         |   20 +-
- 5 files changed, 1059 insertions(+), 11 deletions(-)
-
-commit d9b0f208f6301626c9a0ce16decb19972db2fa05
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Thu Feb 27 02:06:14 2014 -0700
-
-    working up modules
-
- src/adwm.h      |  65 ++++++-
- src/adwm_adwm.c | 522 +++++++++++++++++++++++++++++++++++++++++++++++-----
- src/parse.c     | 329 +++++++++++++++------------------
- 3 files changed, 691 insertions(+), 225 deletions(-)
-
-commit 65582e355b94d16c0d2c01181096fcee341e58ec
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Thu Feb 27 01:01:09 2014 -0700
-
-    working up modules
-
- src/adwm.h         |  15 +-
- src/adwm_fluxbox.c |   9 --
- src/adwm_waimea.c  | 403 +++++++++++++++++++++++++++++++++++++++++++++++++
- src/draw.c         |   2 +-
- src/resource.c     |  84 ++++++++---
- src/texture.c      |  12 +-
- 6 files changed, 489 insertions(+), 36 deletions(-)
-
-commit d20dc04392af50a6ef5c1bb0d30ef0438f6618ef
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Wed Feb 26 21:12:37 2014 -0700
-
-    modularizing config and style load
-
- README          |   6 +-
- src/Makefile.am |   6 +
- src/adwm_adwm.c | 507 ++++++++++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 516 insertions(+), 3 deletions(-)
-
-commit 6f46cd5a70a820114928d30968c05966640fd06d
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Wed Feb 26 16:23:55 2014 -0700
-
-    working up texture rendering
-
- .indent.pro     |    1 +
- README          |    6 +-
- TODO            |   22 +
- src/Makefile.am |    2 +-
- src/adwm.c      |    5 +-
- src/adwm.h      |   26 +-
- src/draw.c      |  246 +++---
- src/image.c     |  407 +++++++++
- src/texture.c   | 2373 ++++++++++++++++++++++++++++++++++-----------------
- 9 files changed, 2159 insertions(+), 929 deletions(-)
-
-commit d6342335959d982d51a50d261aa363d90e4e2424
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Mon Feb 24 10:42:05 2014 -0700
-
-    working up modules
-
- src/adwm.h          |    2 +
- src/adwm_blackbox.c |   82 ++++
- src/adwm_fluxbox.c  | 1020 ++++++++++++++++++++++++++++++++++++++++++++++-
- src/adwm_openbox.c  |    9 +-
- 4 files changed, 1110 insertions(+), 3 deletions(-)
-
-commit b5301ce38524c9b79ed8730f49dfd5294223f689
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Sun Feb 23 12:59:05 2014 -0700
-
-    working up modules
-
- .indent.pro         |   1 +
- src/adwm.h          |  20 +-
- src/adwm_blackbox.c |  10 +-
- src/adwm_fluxbox.c  | 174 +++++++++--
- src/adwm_openbox.c  | 796 +++++++++++++++++++++++++++++++++++++++++++-----
- src/resource.c      |  43 ++-
- 6 files changed, 934 insertions(+), 110 deletions(-)
-
-commit 0ab544812188da5ea3d693bc779270d783a1ab61
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Sat Feb 22 20:30:32 2014 -0700
-
-    working up modules
-
- .indent.pro         |   13 +-
- README              |    4 +-
- src/Makefile.am     |   46 +-
- src/adwm.c          |    4 +
- src/adwm.h          |  103 +++++
- src/adwm_blackbox.c |  772 ++++++++++++++++++++++++++++++++
- src/adwm_fluxbox.c  |  166 +++++++
- src/adwm_icewm.c    |   17 +
- src/adwm_openbox.c  |  168 +++++++
- src/draw.c          |   35 +-
- src/resource.c      |  343 +++++++++++++++
- src/texture.c       | 1111 +++++++++++++++++++++++++++++++++++++++++++++++
- 12 files changed, 2749 insertions(+), 33 deletions(-)
-
-commit 5c54fc9d38d472623d2e86227d9120d6cef5b125
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Wed Feb 19 19:05:09 2014 -0700
-
-    prepare to mimic other window managers
-
- .gitignore          |  5 +++++
- Makefile.am         |  2 ++
- README              |  4 ++--
- autogen.sh          |  2 ++
- configure.template  | 22 ++++++++++++++++++-
- src/Makefile.am     | 58 +++++++++++++++++++++++++++++++++++++++++++++++++
- src/adwm_blackbox.c |  0
- src/adwm_fluxbox.c  |  0
- src/adwm_icewm.c    |  0
- src/adwm_metacity.c |  0
- src/adwm_mutter.c   |  0
- src/adwm_openbox.c  |  0
- src/adwm_pekwm.c    |  0
- src/adwm_waimea.c   |  0
- src/adwm_wmaker.c   |  0
- 15 files changed, 90 insertions(+), 3 deletions(-)
-
-commit ecd5d1121a53719140bdfb13be470bac40b7d25e
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Wed Feb 19 18:11:35 2014 -0700
-
-    removed tests subdirectory
-
- .gitignore                 |  2 +-
- Makefile.am                |  2 +-
- README                     |  4 ++--
- configure.template         |  1 -
- src/Makefile.am            | 11 ++++++++---
- {tests => src}/ewmhpanel.c |  0
- {tests => src}/util.c      |  0
- {tests => src}/util.h      |  0
- tests/Makefile.am          |  8 --------
- 9 files changed, 12 insertions(+), 16 deletions(-)
-
-commit 85dd9a1af099bfc62cd3546de5ce5e93fc6a2f59
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Wed Feb 19 18:03:06 2014 -0700
-
-    moved source files into own directory
-
- Makefile.am                    | 10 +---------
- README                         |  4 ++--
- configure.template             |  5 +++--
- Makefile.am => src/Makefile.am |  4 ----
- adwm.c => src/adwm.c           |  0
- adwm.h => src/adwm.h           |  0
- config.h => src/config.h       |  0
- draw.c => src/draw.c           |  0
- ewmh.c => src/ewmh.c           |  0
- parse.c => src/parse.c         |  0
- tests/Makefile.am              |  2 +-
- 11 files changed, 7 insertions(+), 18 deletions(-)
-
-commit 85d7f967702f63aeef8dbb89f1471686bafcf8f2
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Wed Feb 19 17:52:00 2014 -0700
-
-    moved data and doc into own directories
-
- .gitignore                                       |   1 +
- Makefile.am                                      |  94 +----
- README                                           |   4 +-
- configure.template                               |   4 +-
- Makefile.am => data/Makefile.am                  |  39 --
- adwmrc => data/adwmrc                            |   0
- close.xbm => data/close.xbm                      |   0
- iconify.xbm => data/iconify.xbm                  |   0
- max.xbm => data/max.xbm                          |   0
- {styles => data/styles}/Default/keysrc           |   0
- .../styles}/Default/pixmaps/close_focused.xpm    |   0
- .../styles}/Default/pixmaps/close_hovered.xpm    |   0
- .../styles}/Default/pixmaps/close_pressed.xpm    |   0
- .../styles}/Default/pixmaps/close_unfocus.xpm    |   0
- .../styles}/Default/pixmaps/float_focused.xpm    |   0
- .../styles}/Default/pixmaps/float_hovered.xpm    |   0
- .../styles}/Default/pixmaps/float_pressed.xpm    |   0
- .../styles}/Default/pixmaps/float_unfocus.xpm    |   0
- .../styles}/Default/pixmaps/max_focused.xpm      |   0
- .../styles}/Default/pixmaps/max_hovered.xpm      |   0
- .../styles}/Default/pixmaps/max_pressed.xpm      |   0
- .../styles}/Default/pixmaps/max_unfocus.xpm      |   0
- .../styles}/Default/pixmaps/menu_focused.xpm     |   0
- .../styles}/Default/pixmaps/menu_hovered.xpm     |   0
- .../styles}/Default/pixmaps/menu_pressed.xpm     |   0
- .../styles}/Default/pixmaps/menu_unfocus.xpm     |   0
- .../styles}/Default/pixmaps/min_focused.xpm      |   0
- .../styles}/Default/pixmaps/min_hovered.xpm      |   0
- .../styles}/Default/pixmaps/min_pressed.xpm      |   0
- .../styles}/Default/pixmaps/min_unfocus.xpm      |   0
- .../styles}/Default/pixmaps/shade_focused.xpm    |   0
- .../styles}/Default/pixmaps/shade_hovered.xpm    |   0
- .../styles}/Default/pixmaps/shade_pressed.xpm    |   0
- .../styles}/Default/pixmaps/shade_unfocus.xpm    |   0
- .../styles}/Default/pixmaps/stick_focused.xpm    |   0
- .../styles}/Default/pixmaps/stick_hovered.xpm    |   0
- .../styles}/Default/pixmaps/stick_pressed.xpm    |   0
- .../styles}/Default/pixmaps/stick_unfocus.xpm    |   0
- .../styles}/Default/pixmaps/stuck_focused.xpm    |   0
- .../styles}/Default/pixmaps/stuck_hovered.xpm    |   0
- .../styles}/Default/pixmaps/stuck_pressed.xpm    |   0
- .../styles}/Default/pixmaps/stuck_unfocus.xpm    |   0
- .../styles}/Default/pixmaps/tile_focused.xpm     |   0
- .../styles}/Default/pixmaps/tile_hovered.xpm     |   0
- .../styles}/Default/pixmaps/tile_pressed.xpm     |   0
- .../styles}/Default/pixmaps/tile_unfocus.xpm     |   0
- .../styles}/Default/pixmaps/unmax_focused.xpm    |   0
- .../styles}/Default/pixmaps/unmax_hovered.xpm    |   0
- .../styles}/Default/pixmaps/unmax_pressed.xpm    |   0
- .../styles}/Default/pixmaps/unmax_unfocus.xpm    |   0
- .../styles}/Default/pixmaps/unshade_focused.xpm  |   0
- .../styles}/Default/pixmaps/unshade_hovered.xpm  |   0
- .../styles}/Default/pixmaps/unshade_pressed.xpm  |   0
- .../styles}/Default/pixmaps/unshade_unfocus.xpm  |   0
- {styles => data/styles}/Default/stylerc          |   0
- {xsessions => data/xsessions}/adwm.desktop       |   0
- doc/Makefile.am                                  |  29 ++
- doc/adwm-keys.1                                  | 414 +++++++++++++++++++
- adwm.1 => doc/adwm.1                             |   0
- adwm.1.pod => doc/adwm.1.pod                     |   0
- 60 files changed, 451 insertions(+), 134 deletions(-)
-
-commit 8266d5508a679b8bd46a5cc77e449faf7f530c94
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Wed Feb 19 15:50:41 2014 -0700
-
-    change tags to bitmask from array for speed
-
- adwm.c                | 205 ++++++++++++++++++++--------------------------
- adwm.h                |  41 +---------
- adwmrc                |   2 +-
- draw.c                |   4 +-
- ewmh.c                | 103 ++++++++++-------------
- parse.c               | 102 ++++++++++++++---------
- styles/Default/keysrc |  48 +++++++----
- 7 files changed, 239 insertions(+), 266 deletions(-)
-
-commit abf7fb6bd44aeb420057dc2138492aafd572cdfb
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Wed Feb 19 13:54:03 2014 -0700
-
-    mwfactor was backwards
-
- Makefile.am | 5 ++++-
- README      | 6 +++---
- parse.c     | 8 ++++----
- 3 files changed, 11 insertions(+), 8 deletions(-)
-
-commit f25bb839292dea5f6bcb2b9f50d0af00997e4b67
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Wed Feb 19 09:19:07 2014 -0700
-
-    working key chains and window cycling
-
- .indent.pro |   1 +
- NOTES       |  14 +-
- adwm.c      | 172 ++++++++--
- adwm.h      |  21 +-
- parse.c     | 970 +++++++++++++++++++++++++++++++++++++++++++++++++++++---
- 5 files changed, 1095 insertions(+), 83 deletions(-)
-
-commit 94129e6aa95fcabba2ee4693449078c74bda4538
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Mon Feb 17 20:10:35 2014 -0700
-
-    better fullscreen and key items by tag
-
- adwm.c   | 118 +++++++++++++++++++++++++++++++++++++++++++----------------
- adwm.h   |   6 ++-
- config.h |   1 +
- draw.c   |   4 +-
- ewmh.c   |  29 ++++++---------
- parse.c  |  33 +++++++++++++++--
- 6 files changed, 134 insertions(+), 57 deletions(-)
-
-commit 1366ffcda4d9c896a6952f56e4c88d79e48653c5
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Mon Feb 17 14:08:38 2014 -0700
-
-    better keybindings, and layouts
-
- .indent.pro |    2 +
- Makefile.am |    2 +-
- NOTES       | 1605 +++++++++++++++++++++++++++++++++++++++++++++++++++++-
- README      |    6 +-
- adwm.1      |   46 +-
- adwm.c      | 1022 +++++++++++++++++++++++++++++------
- adwm.h      |   67 ++-
- ewmh.c      |   62 +++
- parse.c     | 1612 +++++++++++++++++++++++++++++++++++++++++++++++++------
- 9 files changed, 4040 insertions(+), 384 deletions(-)
-
-commit a0d5ed1d60e89fd336ae7ed8d08073b099e0be4f
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Tue Feb 11 10:33:02 2014 -0700
-
-    working controlled move of tiled or dockapp windows
-
- adwm.c | 313 +++++++++++++++++++++++++++++++++++++++++++++++++------------
- adwm.h |   4 +-
- 2 files changed, 256 insertions(+), 61 deletions(-)
-
-commit 62c653f8ab8036de6ae304a66690c20cedfc8473
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Tue Feb 11 06:05:27 2014 -0700
-
-    do not apply decor that does not exist
-
- adwm.c | 12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
-
-commit 8be7bebe28f230b496b2decf06557d2e52a966a1
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Tue Feb 11 05:47:36 2014 -0700
-
-    better move and resize, corrected assertion failure
-
- NOTES      |  17 ++
- adwm.1.pod | 689 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- adwm.c     | 507 +++++++++++++++++++++++++++++-------------
- adwm.h     |   7 +-
- ewmh.c     |   4 +-
- 5 files changed, 1070 insertions(+), 154 deletions(-)
-
-commit 208e628984c64d35ccd9f4fbf49698ef4cbd4613
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Mon Feb 10 09:09:29 2014 -0700
-
-    better dock handling
-
- adwm.c | 58 ++++++++++++++++++++++++++++++++++++++--------------------
- adwm.h |  2 +-
- 2 files changed, 39 insertions(+), 21 deletions(-)
-
-commit 03a487e27ac84df33a852c13f468d47ee5b3e2ed
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Mon Feb 10 07:18:54 2014 -0700
-
-    get buttons working on dockapps
-
- adwm.c | 25 ++++++++++++++++---------
- adwm.h |  2 +-
- draw.c |  1 -
- 3 files changed, 17 insertions(+), 11 deletions(-)
-
-commit 001f222d23907486347882fb68a80ce91791b353
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Mon Feb 10 06:57:50 2014 -0700
-
-    better smart placement algorithm
-
- adwm.c | 286 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++---
- 1 file changed, 276 insertions(+), 10 deletions(-)
-
-commit 9c474707bf47c02f1d195ef63f70b3e3d8011f0f
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Mon Feb 10 02:06:00 2014 -0700
-
-    working windowmaker dock
-
- adwm.c | 578 ++++++++++++++++++++++++++++++++++++++++++++-----------------
- adwm.h |  13 +-
- draw.c |  17 ++
- 3 files changed, 440 insertions(+), 168 deletions(-)
-
-commit a9994701f1c5098c10f0a234f5e7dda0692e2fea
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Sun Feb 9 07:50:10 2014 -0700
-
-    started dock
-
- README |   6 +-
- adwm.c | 403 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++---
- adwm.h | 201 +++++++++++++++---------------
- 3 files changed, 495 insertions(+), 115 deletions(-)
-
-commit d3063259c9bd7023ee32e06204f3758b18668e35
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Sat Feb 8 03:57:39 2014 -0700
-
-    better placement, unmap win when shaded
-
- .gitignore  |   1 +
- Makefile.am |  17 ++++++++
- README      |   6 +--
- adwm.1.pod  | 118 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- adwm.c      |  86 ++++++++++++++++++++++-------------------
- adwm.h      |   2 +-
- ewmh.c      |   4 +-
- 7 files changed, 188 insertions(+), 46 deletions(-)
-
-commit 3e6ff1c13f339cad9c5308b0c1f6f5ec9889f1e7
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Fri Feb 7 22:10:14 2014 -0700
-
-    rework of resizing
-
- adwm.c | 1026 ++++++++++++++++++++++++++++++++----------------------------
- adwm.h |   35 ++-
- draw.c |   70 +++--
- ewmh.c |   27 +-
- 4 files changed, 631 insertions(+), 527 deletions(-)
-
-commit afb9666f918b8b24e084bc52a95790da02efa208
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Fri Feb 7 07:13:35 2014 -0700
-
-    synchronize all window resize events
-
- .indent.pro |   2 +
- adwm.c      | 811 +++++++++++++++++++++++++++++++++-----------------------
- adwm.h      |  39 ++-
- ewmh.c      |  68 +++--
- 4 files changed, 564 insertions(+), 356 deletions(-)
-
-commit 18520907d8e89508e33702b1d1bafb994abfcfef
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Thu Feb 6 08:26:09 2014 -0700
-
-    more left or right according to key
-
- adwm.c | 16 +++++++++++++---
- 1 file changed, 13 insertions(+), 3 deletions(-)
-
-commit 266b391376af416cafe62e1dcc912a88e3cff216
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Thu Feb 6 07:33:07 2014 -0700
-
-    monitor selection cleanup
-
- adwm.c  | 835 +++++++++++++++++++++++++++++++++++++-----------------------
- adwm.h  |   6 +-
- ewmh.c  |  11 +-
- parse.c |   1 +
- 4 files changed, 537 insertions(+), 316 deletions(-)
-
-commit d338f76664f030b1e4e60a6a7c2f611fe9a84f08
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Wed Feb 5 20:17:37 2014 -0700
-
-    added some funky look and feel files
-
- Makefile.am                                |  71 ++++++++++--
- README                                     |   4 +-
- adwmrc                                     |  98 ++---------------
- styles/Default/keysrc                      |  98 +++++++++++++++++
- styles/Default/pixmaps/close_focused.xpm   |  22 ++++
- styles/Default/pixmaps/close_hovered.xpm   |  22 ++++
- styles/Default/pixmaps/close_pressed.xpm   |  22 ++++
- styles/Default/pixmaps/close_unfocus.xpm   |  22 ++++
- styles/Default/pixmaps/float_focused.xpm   |  18 ++++
- styles/Default/pixmaps/float_hovered.xpm   |  18 ++++
- styles/Default/pixmaps/float_pressed.xpm   |  18 ++++
- styles/Default/pixmaps/float_unfocus.xpm   |  18 ++++
- styles/Default/pixmaps/max_focused.xpm     |  18 ++++
- styles/Default/pixmaps/max_hovered.xpm     |  18 ++++
- styles/Default/pixmaps/max_pressed.xpm     |  18 ++++
- styles/Default/pixmaps/max_unfocus.xpm     |  17 +++
- styles/Default/pixmaps/menu_focused.xpm    |  18 ++++
- styles/Default/pixmaps/menu_hovered.xpm    |  18 ++++
- styles/Default/pixmaps/menu_pressed.xpm    |  18 ++++
- styles/Default/pixmaps/menu_unfocus.xpm    |  18 ++++
- styles/Default/pixmaps/min_focused.xpm     |  18 ++++
- styles/Default/pixmaps/min_hovered.xpm     |  18 ++++
- styles/Default/pixmaps/min_pressed.xpm     |  18 ++++
- styles/Default/pixmaps/min_unfocus.xpm     |  18 ++++
- styles/Default/pixmaps/shade_focused.xpm   |  18 ++++
- styles/Default/pixmaps/shade_hovered.xpm   |  18 ++++
- styles/Default/pixmaps/shade_pressed.xpm   |  18 ++++
- styles/Default/pixmaps/shade_unfocus.xpm   |  18 ++++
- styles/Default/pixmaps/stick_focused.xpm   |  18 ++++
- styles/Default/pixmaps/stick_hovered.xpm   |  18 ++++
- styles/Default/pixmaps/stick_pressed.xpm   |  18 ++++
- styles/Default/pixmaps/stick_unfocus.xpm   |  18 ++++
- styles/Default/pixmaps/stuck_focused.xpm   |  18 ++++
- styles/Default/pixmaps/stuck_hovered.xpm   |  18 ++++
- styles/Default/pixmaps/stuck_pressed.xpm   |  18 ++++
- styles/Default/pixmaps/stuck_unfocus.xpm   |  18 ++++
- styles/Default/pixmaps/tile_focused.xpm    |  18 ++++
- styles/Default/pixmaps/tile_hovered.xpm    |  18 ++++
- styles/Default/pixmaps/tile_pressed.xpm    |  18 ++++
- styles/Default/pixmaps/tile_unfocus.xpm    |  18 ++++
- styles/Default/pixmaps/unmax_focused.xpm   |  18 ++++
- styles/Default/pixmaps/unmax_hovered.xpm   |  18 ++++
- styles/Default/pixmaps/unmax_pressed.xpm   |  18 ++++
- styles/Default/pixmaps/unmax_unfocus.xpm   |  17 +++
- styles/Default/pixmaps/unshade_focused.xpm |  18 ++++
- styles/Default/pixmaps/unshade_hovered.xpm |  18 ++++
- styles/Default/pixmaps/unshade_pressed.xpm |  18 ++++
- styles/Default/pixmaps/unshade_unfocus.xpm |  18 ++++
- styles/Default/stylerc                     | 143 +++++++++++++++++++++++++
- xsessions/adwm.desktop                     |  12 +++
- 50 files changed, 1130 insertions(+), 102 deletions(-)
-
-commit 55643979101150653d8c2b1a8a2953961eca9da5
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Wed Feb 5 19:49:36 2014 -0700
-
-    big rename
-
- .gitignore               |  12 +-
- AUTHORS.in               |  13 ++
- COMPLIANCE               |   2 +-
- LICENSE                  |   1 +
- Makefile.am              |  20 ++-
- NEWS.in                  |   9 ++
- README                   | 319 +++++++------------------------------------
- README => README.echinus |   0
- README.in                |  75 ++++++++++
- THANKS                   |   7 +
- echinus.1 => adwm.1      |  25 ++--
- echinus.c => adwm.c      |  54 +++-----
- echinus.h => adwm.h      |   4 +-
- adwmrc                   | 111 +++++++++++++++
- autogen.sh               |  25 +++-
- configure.template       |  17 +--
- debian/changelog         |   5 -
- debian/compat            |   1 -
- debian/control           |  26 ----
- debian/copyright         |  63 ---------
- debian/docs              |   1 -
- debian/menu              |   2 -
- debian/rules             |  13 --
- debian/watch             |  23 ----
- draw.c                   |   6 +-
- echinusrc                | 111 ---------------
- ewmh.c                   |  15 +-
- parse.c                  |   6 +-
- 28 files changed, 352 insertions(+), 614 deletions(-)
-
-commit d37ad0f416c49027e3912c4ebd1bfe3d0085e5fb
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Wed Feb 5 16:45:05 2014 -0700
-
-    fixed focus bust on unmanage
-
- echinus.c | 23 ++++++++++++++++++++++-
- 1 file changed, 22 insertions(+), 1 deletion(-)
-
-commit 73421657cb0a0b4e9091a1564642db3627cef59a
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Wed Feb 5 15:36:52 2014 -0700
-
-    added autorolldown of focused shaded windows
-
- echinus.c | 84 ++++++++++++++++++++++++++++++++++++++++-------------------
- echinus.h |  2 +-
- 2 files changed, 58 insertions(+), 28 deletions(-)
-
-commit 895d6ba99345d50b389b924b0e2174d334cc490f
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Wed Feb 5 14:39:53 2014 -0700
-
-    added resize handles
-
- config.h  |   1 +
- draw.c    |  29 +++++++++--
- echinus.c | 155 +++++++++++++++++++++++++++++++++++++++++++---------------
- echinus.h |  15 +++---
- ewmh.c    |  23 +++++----
- 5 files changed, 164 insertions(+), 59 deletions(-)
-
-commit c86c8d233b906db7fd07db89a924969cb0224e33
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Wed Feb 5 10:50:23 2014 -0700
-
-    proper stacking and focus behavior
-
-    - reduced number of debug prints with XPRINTF
-
- draw.c    |  36 ++---
- echinus.c | 446 +++++++++++++++++++++++++++++++++++++---------------------
- echinus.h |  12 +-
- ewmh.c    |  50 +++----
- 4 files changed, 340 insertions(+), 204 deletions(-)
-
-commit 8abdd35304c4c3992228ff18dd7ef3bd30ff8d28
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Tue Feb 4 05:19:06 2014 -0700
-
-    added style features
-
-    - different fonts for normal and selected windows
-    - drop shadow offset and color for normal and selected windows
-    - spacing of titlebar elements
-
- draw.c    | 123 ++++++++++++++++++++++++++++++++++++++--------------------
- echinus.1 |  68 +++++++++++++++++++++++++++++---
- echinus.h |   7 +++-
- 3 files changed, 148 insertions(+), 50 deletions(-)
-
-commit e69472cb768d461bf9d4b318040dbeb55b41f45d
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Tue Feb 4 02:37:34 2014 -0700
-
-    button and mouse action cleanup
-
- draw.c    | 210 ++++++++++++++++++++++++--------
- echinus.c | 385 +++++++++++++++++++++++++++++++++++-----------------------
- echinus.h |  23 ++--
- ewmh.c    |  22 +++-
- 4 files changed, 424 insertions(+), 216 deletions(-)
-
-commit 994396115ffe38a4810ed8393613d707fe53d433
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Mon Feb 3 09:09:02 2014 -0700
-
-    support wide range of buttons and mouse bindings
-
- .indent.pro |   2 +
- config.h    |   7 +
- draw.c      | 527 ++++++++++++++++++++++++++++++++++++++++++++------------
- echinus.1   |  66 ++++++-
- echinus.c   | 231 ++++++++++++++++---------
- echinus.h   |  59 +++++--
- parse.c     | 183 ++++++++++++--------
- 7 files changed, 787 insertions(+), 288 deletions(-)
-
-commit 1b4ea0bde2b633290e18f3c46f7b3ba971a335df
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Sun Feb 2 05:31:37 2014 -0700
-
-    support libxpm as alternate to imlib2
-
- Makefile.am        |  4 ++--
- configure.template | 14 ++++++++++++--
- draw.c             | 45 ++++++++++++++++++++++-----------------------
- echinus.h          |  4 ++--
- 4 files changed, 38 insertions(+), 29 deletions(-)
-
-commit b6a7993ee3ded9101f5613f56a3670bc4c100c69
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Sun Feb 2 04:56:37 2014 -0700
-
-    handle xpm buttons with imlib2
-
- Makefile.am        |   4 +-
- configure.template |  12 ++++++
- draw.c             | 105 ++++++++++++++++++++++++++++++++++++++++---------
- echinus.c          |  10 +++++
- echinus.h          |  13 +++++-
- 5 files changed, 123 insertions(+), 21 deletions(-)
-
-commit 6a97fc933763f00793a0783ad1652b8aa993a245
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Sat Feb 1 20:17:04 2014 -0700
-
-    switch dectiled on the fly
-
- echinus.c | 99 +++++++++++++++++++++++++++++++++--------------------------
- echinus.h | 12 +++++---
- parse.c   |  1 +
- 3 files changed, 64 insertions(+), 48 deletions(-)
-
-commit b3d9b9897d71001b043d8bb9c18bed252e5bacec
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Sat Feb 1 18:55:28 2014 -0700
-
-    add rotations for layouts
-
- echinus.c | 43 +++++++++++++++++++++++++++++++++++++++++++
- echinus.h |  2 ++
- parse.c   | 12 ++++++++++++
- 3 files changed, 57 insertions(+)
-
-commit 050f9838083222934f9cf2a6632759f5b9f5cdbc
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Sat Feb 1 15:41:42 2014 -0700
-
-    add ability to rotate layouts and masters
-
- echinus.c | 81 +++++++++++++++++++++++++++++++++++++++++++++++++++++++----
- echinus.h | 18 +++++++------
- parse.c   | 24 ++++++++++++++++++
- 3 files changed, 111 insertions(+), 12 deletions(-)
-
-commit 649abbe246ad63b70b587317fe6783513a8ab557
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Sat Feb 1 14:51:00 2014 -0700
-
-    tiled layout with orientation
-
- echinus.c | 586 ++++++++++++++++++++++++----------------------------------
- echinus.h |   2 +-
- 2 files changed, 238 insertions(+), 350 deletions(-)
-
-commit 09464eab697a384b14f0c309b10bbc0e70cf48d9
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Sat Feb 1 06:39:21 2014 -0700
-
-    more geometries in structures
-
- echinus.c | 382 +++++++++++++++++++++++++++++-----------------------------
- 1 file changed, 190 insertions(+), 192 deletions(-)
-
-commit 91c9606d26be0a2ae1f5cde955a9d3f024c38f29
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Sat Feb 1 06:22:51 2014 -0700
-
-    put geometries in structures
-
- config.h  |   3 +-
- draw.c    |   4 +-
- echinus.c | 865 +++++++++++++++++++++++++++++++---------------------------
- echinus.h |  43 +--
- ewmh.c    |  64 ++---
- 5 files changed, 519 insertions(+), 460 deletions(-)
-
-commit d5fae6e9e57306c9b7c909ca08c11329d48506fb
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Sat Feb 1 01:05:22 2014 -0700
-
-    better multihead support
-
- draw.c    | 184 ++++++++++++++++++++++++++++++----------------------------
- echinus.c |  81 +++++++++++++++++---------
- echinus.h |   1 +
- 3 files changed, 151 insertions(+), 115 deletions(-)
-
-commit b985f0ba170e7d93231e136ab0469816f2206d8e
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Fri Jan 31 16:16:35 2014 -0700
-
-    all styles are screen specific
-
- draw.c    | 132 +++++++++++++++++++++++++++++-----------------------------
- echinus.c |  94 ++++++++++++++++++++---------------------
- echinus.h |  13 +++---
- ewmh.c    |   6 +--
- 4 files changed, 123 insertions(+), 122 deletions(-)
-
-commit ce6dd87e57bd8039ecdc75e02a4e348aa8acd3f3
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Fri Jan 31 11:50:18 2014 -0700
-
-    colors are screen-specific resources
-
- draw.c    | 50 +++++++++++++++++++++++++-------------------------
- echinus.c | 24 ++++++++++++++++++------
- echinus.h | 10 +++++-----
- 3 files changed, 48 insertions(+), 36 deletions(-)
-
-commit 476a2fc487526144b3bec1b2124f019a939238cf
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Fri Jan 31 11:00:35 2014 -0700
-
-    full multi-head support
-
- .indent.pro |   2 +
- draw.c      | 172 ++++++++++++-------------
- echinus.c   | 386 +++++++++++++++++++++++++++++++++++++++++---------------
- echinus.h   |  62 +++++----
- ewmh.c      |   6 +-
- parse.c     |  48 +++----
- 6 files changed, 434 insertions(+), 242 deletions(-)
-
-commit e4b8fc06298ab64d26fb7913bf97ed00d1cb297f
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Fri Jan 31 03:33:13 2014 -0700
-
-    prepare for full multihead support
-
- draw.c    |  36 ++--
- echinus.c | 653 +++++++++++++++++++++++++++++-----------------------------
- echinus.h |  52 +++--
- ewmh.c    | 314 ++++++++++++++--------------
- parse.c   |   8 +-
- 5 files changed, 543 insertions(+), 520 deletions(-)
-
-commit bb57cdeec1001dc0f6a9df226d196bd89c582aca
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Thu Jan 30 19:59:57 2014 -0700
-
-    better focus handling
-
- echinus.c | 405 +++++++++++++++++++++++++++++++++++++++++++++++-----------
- echinus.h |  17 ++-
- ewmh.c    |   5 +-
- 3 files changed, 345 insertions(+), 82 deletions(-)
-
-commit f9d44ba776ea9a262008796a6b8ab4453faf1297
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Thu Jan 30 05:16:34 2014 -0700
-
-    added grid layout
-
- config.h  |   1 +
- echinus.c | 195 +++++++++++++++++++++++++++++++++++++++++++++++++++-------
- echinus.h |  12 ++--
- 3 files changed, 181 insertions(+), 27 deletions(-)
-
-commit 2e1d32c484b854296fb46daf1e52fba0dbfbf046
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Wed Jan 29 02:44:42 2014 -0700
-
-    better focus and window state tracking
-
- echinus.c | 177 ++++++++++++++++++++++++++++++----------------------------
- echinus.h |   3 +
- ewmh.c    | 176 +++++++++++++++++++++++++++++++++++----------------------
- 3 files changed, 205 insertions(+), 151 deletions(-)
-
-commit dc9ebf98a316e21387b0eb0a8f005a44d464e462
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Tue Jan 28 18:19:19 2014 -0700
-
-    make sure tiled title height is set correctly before resize
-
- echinus.c | 20 +++++++++++---------
- 1 file changed, 11 insertions(+), 9 deletions(-)
-
-commit 8eb78fc92a7534dd79ab592a1ad4df30eed0a163
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Tue Jan 28 16:34:35 2014 -0700
-
-    more support for window manager hints
-
- echinus.c | 105 ++++++++++++++++++++++++++++++++++------------------------
- echinus.h |  11 ++++--
- ewmh.c    |  55 ++++++++++++++----------------
- 3 files changed, 94 insertions(+), 77 deletions(-)
-
-commit d4688936fa193ea540a85e8443414413380ed394
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Tue Jan 28 14:46:51 2014 -0700
-
-    correct modality, rearrange many flags
-
- echinus.c | 638 ++++++++++++++++++++++++++++++++++++++--------------------
- echinus.h |  43 +++-
- ewmh.c    | 264 ++++++++++++++----------
- 3 files changed, 611 insertions(+), 334 deletions(-)
-
-commit dd29f86c9b7e71fb7d21c28a63fdd3967d452c44
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Mon Jan 27 23:19:00 2014 -0700
-
-    start adding in MWM/DTWM compatability
-
- COMPLIANCE |  35 ++++
- echinus.c  | 308 +++++++++++++++++----------------
- echinus.h  | 111 +++++++++++-
- ewmh.c     | 535 ++++++++++++++++++++++++++++++++++++++++-----------------
- 4 files changed, 672 insertions(+), 317 deletions(-)
-
-commit 3925225cdd60a280f8b1f385ab9206abf521089d
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Sun Jan 19 14:30:09 2014 -0700
-
-    raise window when moving or resizing
-
- echinus.c | 3 +++
- 1 file changed, 3 insertions(+)
-
-commit bf1003e4730a17c0387f454753ec583962cfccdf
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Fri Jan 17 20:51:32 2014 -0700
-
-    add ability to margin windows in layouts
-
- config.h  |  1 +
- draw.c    |  1 +
- echinus.c | 29 +++++++++++++++++++++--------
- echinus.h |  1 +
- ewmh.c    | 31 +++++++++++++++++++++++--------
- 5 files changed, 47 insertions(+), 16 deletions(-)
-
-commit 84b5c73e82afac9ae998ff3ae8f0f7ff4600c81c
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Fri Jan 17 18:17:39 2014 -0700
-
-    avoid unnecessary exposures during rearrangement
-
- echinus.c | 80 +++++++++++++++++++++++++++++++++++++++++++++++++++--------
- echinus.h |  1 +
- 2 files changed, 70 insertions(+), 11 deletions(-)
-
-commit d07fb1066d2a056cde7076a5f994d423a46ce756
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Thu Jan 16 15:26:34 2014 -0700
-
-    placement and cleanup
-
-     - remove error prone updateatom[] array references to
-       direct function calls
-
-     - convert error prone atom[] references to _XA_ macros
-
-     - added placement strategries
-
-       - column and row smart placement
-       - old random placement
-
- .indent.pro | 230 ++++++++++++++++++
- Makefile.am |   2 +-
- echinus.c   | 707 +++++++++++++++++++++++++++++++++++---------------------
- echinus.h   |  40 +++-
- ewmh.c      | 680 ++++++++++++++++++++++++++---------------------------
- 5 files changed, 1037 insertions(+), 622 deletions(-)
-
-commit 865d7f62cb24c9aa18a82b3b29ca21cd84469c10
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Wed Jan 15 11:14:31 2014 -0700
-
-    prepare for full restart continuity
-
- echinus.c |  65 +++++++++++++++----------
- echinus.h |   5 ++
- ewmh.c    | 152 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- parse.c   |   2 +-
- 4 files changed, 199 insertions(+), 25 deletions(-)
-
-commit ce1ceefeba4edfde8ccbbe7dab38304f831c3965
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Wed Jan 15 00:59:38 2014 -0700
-
-    full GNOME/WinWM support
-
- COMPLIANCE         |  63 +++++-
- configure.template |   2 +-
- echinus.c          |  68 +++++--
- echinus.h          |  33 +++-
- ewmh.c             | 514 ++++++++++++++++++++++++++++++++++++++++++++-----
- 5 files changed, 619 insertions(+), 61 deletions(-)
-
-commit 967ad17f12552ca6407afe613745dca404cb3865
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Sat Jan 11 23:48:36 2014 -0700
-
-    better _NET_CLIENT_LIST handling
-
- echinus.c | 23 +++++++++++++++++++++--
- echinus.h |  2 ++
- ewmh.c    |  4 ++--
- 3 files changed, 25 insertions(+), 4 deletions(-)
-
-commit 19796051dec4ba2d7bca7b6d4581e243abb2fe07
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Sat Jan 11 23:25:30 2014 -0700
-
-    full support for _NET_WM_FULLSCREEN_MONITORS
-
- COMPLIANCE |   2 +-
- echinus.c  | 618 ++++++++++++++++++++++++++++-----------------------------
- echinus.h  |  16 +-
- ewmh.c     |  55 ++++-
- 4 files changed, 368 insertions(+), 323 deletions(-)
-
-commit 3e24775db0bebc30801d2698c79129b6b6ad7403
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Sat Jan 11 10:50:25 2014 -0700
-
-    full Xinerama and XRANDR update support
-
- echinus.c | 353 ++++++++++++++++++++++++++++++++++++++++------------------
- echinus.h |   1 +
- 2 files changed, 247 insertions(+), 107 deletions(-)
-
-commit 96de27eebbc0547e36dd8d673e8801860f04e9aa
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Fri Jan 10 19:45:53 2014 -0700
-
-    full support for _NET_WM_PING
-
- COMPLIANCE |  2 +-
- echinus.c  | 91 +++++++++++++++++++++++++++++++++++++++++++++++++---------
- echinus.h  | 13 +++++----
- ewmh.c     | 13 +++++++--
- 4 files changed, 98 insertions(+), 21 deletions(-)
-
-commit 14d12f988b9def1df2fdb3d630a010d10511d96d
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Fri Jan 10 17:36:33 2014 -0700
-
-    full support for startup notification
-
- COMPLIANCE         |   4 +-
- Makefile.am        |   4 +-
- configure.template |  11 +++
- echinus.c          | 166 +++++++++++++++++++++++++++++++------
- echinus.h          |  22 +++++
- ewmh.c             | 216 ++++++++++++++++++++++++++++++++++++++++++++-----
- 6 files changed, 378 insertions(+), 45 deletions(-)
-
-commit abf20af8b02268b955d9e91b68a7dcab45c0bbb2
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Fri Jan 10 09:11:04 2014 -0700
-
-    synchronize with client when moving
-
-     - full support for _NET_WM_SYNC_REQUEST
-     - full support for _NET_WM_SYNC_REQUEST_COUNTER
-
- COMPLIANCE         |   4 +-
- Makefile.am        |   4 +-
- configure.template |  22 ++++++
- echinus.c          | 184 ++++++++++++++++++++++++++++++++++++++++++-------
- echinus.h          |   6 +-
- ewmh.c             |  40 ++++++++++-
- 6 files changed, 228 insertions(+), 32 deletions(-)
-
-commit 26bcfeb179a1dab0c40dfca2b76e7597d0e317d9
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Thu Jan 9 19:28:56 2014 -0700
-
-    snap to windows when resizing
-
-     - hold down Control key while resizing or moving
-       to disable snapping
-
- echinus.c | 177 +++++++++++++++++++++++++++++++---------------------------
- 1 file changed, 95 insertions(+), 82 deletions(-)
-
-commit 3524a62533ef419942680ad762e995c910592247
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Thu Jan 9 17:24:04 2014 -0700
-
-    snap to other window boundaries when moving
-
- echinus.c | 53 +++++++++++++++++++++++++++++++++++++++++++----------
- 1 file changed, 43 insertions(+), 10 deletions(-)
-
-commit 63d69fdd7a1f6666c405dcc3cfa617e35f6f62b3
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Thu Jan 9 16:57:08 2014 -0700
-
-    proper mouse floating window moving and resizing
-
- echinus.c | 165 +++++++++++++++++++++++++++++++++++++++++++++-------------
- echinus.h |   5 +-
- ewmh.c    |  31 ++++++-----
- 3 files changed, 145 insertions(+), 56 deletions(-)
-
-commit 839922ce5e2d4afc9a60cd0d26e0deeacbe1cc43
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Thu Jan 9 14:38:13 2014 -0700
-
-    full _NET_WM_MOVERESIZE support
-
- COMPLIANCE |   5 +-
- echinus.c  | 190 +++++++++++++++++++++++++++++++++++++++++++++++++++------
- echinus.h  |   1 +
- ewmh.c     |   5 +-
- 4 files changed, 175 insertions(+), 26 deletions(-)
-
-commit fd713e2b9c73e5f9b49e8c008714ac404926eab3
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Thu Jan 9 13:04:55 2014 -0700
-
-    full support for _NET_RESTACK_WINDOW
-
- COMPLIANCE |   2 +-
- echinus.c  | 404 +++++++++++++++++++++++++++++++++++++++++----------------
- echinus.h  |   9 +-
- ewmh.c     | 105 +++------------
- 4 files changed, 317 insertions(+), 203 deletions(-)
-
-commit 4d461e972b2fb097bc39fc2d78650d8a9f0d0b08
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Wed Jan 8 15:49:48 2014 -0700
-
-    added KDE NET WM support
-
-     - full support for _KDE_NET_SYSTEM_TRAY_WINDOWS
-     - full support for _KDE_NET_WM_FRAME_STRUT
-     - full support for _KDE_NET_WM_SYSTEM_TRAY_WINDOW_FOR
-     - full support for _KDE_NET_WM_WINDOW_TYPE_OVERRIDE
-     - full support for _KDE_SPLASH_PROGRESS
-     - full support fro _KDE_WM_CHANGE_STATE
-
-     - support for WindowMaker dockapps
-
- COMPLIANCE |  10 +++++
- echinus.c  | 126 ++++++++++++++++++++++++++++++++++++++++++++++++++++-----
- echinus.h  |  15 +++++--
- ewmh.c     |  54 ++++++++++++++++++++++---
- 4 files changed, 185 insertions(+), 20 deletions(-)
-
-commit a0980b0b6c9b1b81c2bbca17a8e28c6435b1037e
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Wed Jan 8 10:39:26 2014 -0700
-
-    more ICCCM and EWMH support
-
-    - full support for _NET_STARTUP_ID
-    - full support for _NET_WM_USER_TIME
-    - full support for _NET_WM_USER_TIME_WINDOW
-    - new windows with an old user time will not steal focus
-    - full support for WM_TRANSIENT_FOR
-    - full support for WindowGroupHint in WM_HINTS
-    - iconifying, activating, hiding and showing  a window performs
-      the same actions on its transients
-
- COMPLIANCE |   6 +-
- echinus.c  | 292 ++++++++++++++++++++++++++++++++++++++++++++++-----------
- echinus.h  |  30 ++++--
- ewmh.c     | 135 +++++++++++++++++++++++++-
- 4 files changed, 391 insertions(+), 72 deletions(-)
-
-commit c878749efb42586d6d04bf55d8c688684f52c44c
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Wed Jan 8 05:30:43 2014 -0700
-
-    full support for _NET_DESKTOP_GEOMETRY
-
- COMPLIANCE |  2 +-
- echinus.c  |  2 ++
- echinus.h  |  6 +++---
- ewmh.c     | 20 ++++++++++++++++++--
- 4 files changed, 24 insertions(+), 6 deletions(-)
-
-commit cea201e0003c6e3f7b6feaad4555894d2be7c321
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Wed Jan 8 05:17:30 2014 -0700
-
-    support for _NET_SHOWING_DESKTOP
-
-     - also ensure that c->name is never null
-
- COMPLIANCE |   2 +-
- echinus.c  | 139 +++++++++++++++++++++++++++++++++++++++++++++------------
- echinus.h  |  14 +++---
- ewmh.c     |  56 ++++++++++++++++-------
- parse.c    |   6 +++
- 5 files changed, 168 insertions(+), 49 deletions(-)
-
-commit 5f3b4240000333a492e8bdea2b0821fdee983428
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Tue Jan 7 21:19:04 2014 -0700
-
-    full support for shading
-
-     - full support for _NET_WM_ACTION_SHADE
-     - full support for _NET_WM_STATE_SHADED
-     - added action toggleshade
-     - moving and resizing shaded windows
-
- COMPLIANCE |   4 +-
- echinus.c  | 265 +++++++++++++++++++++++++++++++++++++++++----------------
- echinus.h  |  12 +--
- ewmh.c     |  20 +++--
- parse.c    |   6 ++
- 5 files changed, 217 insertions(+), 90 deletions(-)
-
-commit becc63cfe26329c27e9b624e24cabff2003e1be0
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Tue Jan 7 17:34:15 2014 -0700
-
-    support for EWMH visible names
-
-     - full support for _NET_WM_NAME and _NET_WM_VISIBLE_NAME
-     - full support for _NET_WM_ICON_NAME and _NET_WM_VISIBLE_ICON_NAME
-     - removed 256 byte limit on name size
-
- COMPLIANCE |  14 +++----
- echinus.c  | 129 +++++++++++++++++++++++++++++++++------------------------
- echinus.h  |  17 ++++----
- ewmh.c     |  22 +++++++---
- 4 files changed, 108 insertions(+), 74 deletions(-)
-
-commit 0c68ba3eb1129d3cf1505bbaddf02038527de96d
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Tue Jan 7 16:26:26 2014 -0700
-
-    support for _NET_WM_VISIBLE_NAME
-
- COMPLIANCE |  2 +-
- echinus.c  |  1 +
- echinus.h  |  6 +++---
- ewmh.c     | 15 ++++++++++++++-
- 4 files changed, 19 insertions(+), 5 deletions(-)
-
-commit 96696ebb8d73659b7938b80a3a8a4dd94d728d5b
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Tue Jan 7 16:05:35 2014 -0700
-
-    added support for _NET_VIRTUAL_ROOTS
-
- COMPLIANCE | 2 +-
- echinus.c  | 1 +
- echinus.h  | 3 ++-
- ewmh.c     | 7 +++++++
- 4 files changed, 11 insertions(+), 2 deletions(-)
-
-commit c618431fd0528857ce9c34e35db8860226e2e6f4
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Tue Jan 7 15:47:55 2014 -0700
-
-    full support for _NET_REQUEST_FRAME_EXTENTS
-
- COMPLIANCE |  2 +-
- echinus.h  |  9 +++++----
- ewmh.c     | 54 +++++++++++++++++++++++++++++++++++++++++++++++-------
- 3 files changed, 53 insertions(+), 12 deletions(-)
-
-commit c35d47d6107047624760c054182539e9ff81de59
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Tue Jan 7 13:54:02 2014 -0700
-
-    correct error in constraints calculation
-
- echinus.c | 13 +++++++++----
- 1 file changed, 9 insertions(+), 4 deletions(-)
-
-commit 09d2ce75c279969335c65a6fb1baec7cc05c6a6c
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Tue Jan 7 13:48:17 2014 -0700
-
-    revert loss of border when monocle and back
-
- echinus.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-commit a2dfd6d4851384815825679fb7cc3fe9ccf5f2bf
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Tue Jan 7 13:16:29 2014 -0700
-
-    revert change to updateframe from previous commit
-
- echinus.c | 20 ++++++++------------
- 1 file changed, 8 insertions(+), 12 deletions(-)
-
-commit e2a3e7c5a7df4a6226c76e19d0ffe9d11e453da7
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Tue Jan 7 13:08:41 2014 -0700
-
-    maximization and work area support
-
-     - full _NET_WM_STATE_MAXIMIZED_HORZ support
-     - full _NET_WM_STATE_MAXIMIZED_VERT support
-     - additional key functions togglemaxv and togglemaxh
-     - corrections to _NET_WORKAREA and per-monitor work areas
-     - full _NET_WM_STRUT_PARTIAL support (partial struts
-       only affect the work area of the monitors on which they
-       appear)
-     - better updating of _NET_FRAME_EXTENTS
-     - restack when changing _NET_WM_STATE_ABOVE
-     - restack when changing _NET_WM_STATE_BELOW
-
- echinus.c | 384 ++++++++++++++++++++++++++++++++++++----------------------
- echinus.h |   5 +-
- ewmh.c    | 120 +++++++++++++-----
- parse.c   |  12 ++
- 4 files changed, 345 insertions(+), 176 deletions(-)
-
-commit 7b8822584425b90906a732b4eb5e74c32509310b
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Tue Jan 7 06:44:48 2014 -0700
-
-    EWMH desktop workup
-
-     - add ability to appendtag and rmlasttag
-     - full support for _NET_NUMBER_OF_DESKTOPS
-     - full support for _NET_DESKTOP_NAMES
-
- echinus.c | 239 +++++++++++++++++++++++++++++++++++++++++++++++++++-------
- echinus.h |   8 +-
- ewmh.c    | 142 ++++++++++++++++++++++------------
- parse.c   |   2 +
- 4 files changed, 316 insertions(+), 75 deletions(-)
-
-commit b62d22837f39f6bfbae0e0f5013bf9dffe556b36
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Mon Jan 6 13:36:21 2014 -0700
-
-    refuse but respond to _NET_DESKTOP_VIEWPORT messages
-
- ewmh.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
-
-commit 9ddd82c89d997cf3dfaa42ada4b36ec2e3d7c8bc
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Mon Jan 6 13:34:02 2014 -0700
-
-    add trivial support for _NET_DESKTOP_VIEWPORT
-
- COMPLIANCE |  2 +-
- echinus.c  |  1 +
- echinus.h  |  6 +++---
- ewmh.c     | 12 +++++++++++-
- 4 files changed, 16 insertions(+), 5 deletions(-)
-
-commit e4aefb7f0da83df22d5f86f920502b4ddeca51b7
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Mon Jan 6 13:26:22 2014 -0700
-
-    trivial support for _NET_WM_HANDLED_ICONS
-
- echinus.h | 6 +++---
- ewmh.c    | 2 +-
- 2 files changed, 4 insertions(+), 4 deletions(-)
-
-commit 95f4c9a91f6e8c29d2ae3f4a7e3b540421bb81ee
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Mon Jan 6 13:20:59 2014 -0700
-
-    overlap tile and master borders as much as possible
-
- echinus.c | 165 +++++++++++++++++++++++++++++++++++++---------------------
- 1 file changed, 106 insertions(+), 59 deletions(-)
-
-commit 2566d1e30b115ed6be6f0b2018edea140623ae8d
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Mon Jan 6 10:10:06 2014 -0700
-
-    constant time window lookups using contexts
-
- echinus.c | 65 ++++++++++++++++++++++++++++++++++-------------------------
- echinus.h |  4 ++--
- ewmh.c    |  4 +---
- 3 files changed, 41 insertions(+), 32 deletions(-)
-
-commit db905c3bf3f17d258a7744d3e79dd86397a44609
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Mon Jan 6 07:43:14 2014 -0700
-
-    full _NET_MOVERESIZE_WINDOW support
-
- COMPLIANCE |  3 +--
- echinus.c  |  5 +++++
- echinus.h  |  5 +++++
- ewmh.c     | 56 ++++++++++++++++++++++++++++----------------------------
- 4 files changed, 39 insertions(+), 30 deletions(-)
-
-commit 9a252808291ebecf473be5817e6d6abb17980eff
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Mon Jan 6 06:52:22 2014 -0700
-
-    proper ICCCM 2.0 section 4.1.5 compliance
-
- echinus.c | 440 ++++++++++++++++++++++++++++++++++++++--------------------
- echinus.h |   4 +-
- 2 files changed, 293 insertions(+), 151 deletions(-)
-
-commit ad103e7c7b0b772f50706e1bed6bac4cd057bbbc
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Sun Jan 5 21:26:03 2014 -0700
-
-    leave one pixel desktop around layout at edge of screen
-
-     - tiling modes leave 1 pixel of space on non-strut edges at the
-       edge of each monitor.  This allows one to place the pointer
-       at the edge and use the scroll wheel to change desktops or
-       launch menus, etc.
-
- echinus.c | 116 ++++++++++++++++++++++++++++++++++++----------------------
- 1 file changed, 72 insertions(+), 44 deletions(-)
-
-commit c2fc0109875305ae6b923e2e48846df59b23b38b
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Sun Jan 5 21:05:06 2014 -0700
-
-    add top-tiling 'u' and left tiling 'l' modes
-
-     - clean up tiling logic
-
- echinus.c | 371 +++++++++++++++++++++++++++++++++++++++++++++-------------
- ewmh.c    |   4 +-
- 2 files changed, 290 insertions(+), 85 deletions(-)
-
-commit 599777c6735c34035e66c2c9fd009bdc5b8e0c5e
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Sun Jan 5 02:06:10 2014 -0700
-
-    get stacking and (un)managing correct
-
- echinus.c |  77 +++++++++++++++++++++++--------------
- ewmh.c    | 121 +++++++++++++++++++++++++++++++++++++++++++++++++---------
- 2 files changed, 151 insertions(+), 47 deletions(-)
-
-commit e0548796604f21d4f598f01dca24ab15b3be0978
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Sat Jan 4 13:48:31 2014 -0700
-
-    make it clear this is a long * too
-
- ewmh.c | 15 +++++++--------
- 1 file changed, 7 insertions(+), 8 deletions(-)
-
-commit 4d424124fc5d0fef8036834d91c87e3f06cd60b5
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Sat Jan 4 13:43:03 2014 -0700
-
-    correct some errors and inefficiencies
-
-     - more efficient memory allocation using calloc directly
-       when a number of members is specified
-
-     - correct a bunch more 64 bit errors in XChangeProperty: these
-       take long pointers (not int pointers) when format is 32.
-
- echinus.c |  45 +++++++++-----
- echinus.h |  50 ++++++++-------
- ewmh.c    | 193 +++++++++++++++++++++++++++++++++-------------------------
- parse.c   |   2 +-
- 4 files changed, 164 insertions(+), 126 deletions(-)
-
-commit d21d55f47622eea672364d92cb82a93143aab4b8
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Fri Jan 3 10:43:27 2014 -0700
-
-    full support for Above, Below, Desk and Dock
-
-     - full support for _NET_WM_STATE_ABOVE, _NET_WM_ACTION_ABOVE
-     - full support for _NET_WM_STATE_BELOW, _NET_WM_ACTION_BELOW
-     - full support for _NET_WM_WINDOW_TYPE_DOCK
-     - full support for _NET_WM_WINDOW_TYPE_DESKTOP
-
- COMPLIANCE |   8 ++--
- echinus.c  | 117 ++++++++++++++++++++++++++++++++++++++++++++-------------
- ewmh.c     |   4 +-
- 3 files changed, 97 insertions(+), 32 deletions(-)
-
-commit 902df867c6282ce08d662f6ba6120a6fef8eaf95
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Fri Jan 3 09:44:11 2014 -0700
-
-    faster window type checks
-
- echinus.c | 39 ++++++++++++++++++++++-----------------
- echinus.h | 16 +++++++++++++---
- ewmh.c    | 54 ++++++++++++++++++++++++++++++++++++++----------------
- 3 files changed, 73 insertions(+), 36 deletions(-)
-
-commit fdbbe72900ba9b561cf6164e5cd0170b0f07b201
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Fri Jan 3 09:32:54 2014 -0700
-
-    add EWMH compliance statement
-
- COMPLIANCE | 182 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 182 insertions(+)
-
-commit 0b7f237e2450f007ed3d9ba233d6146d97d5a7df
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Thu Jan 2 19:50:44 2014 -0700
-
-    full support for _NET_FRAME_EXTENTS
-
- echinus.c |  1 +
- echinus.h |  4 +++-
- ewmh.c    | 15 +++++++++++++++
- 3 files changed, 19 insertions(+), 1 deletion(-)
-
-commit 7f267234c82b66ea9abad3242be08676aa5518bb
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Thu Jan 2 14:47:33 2014 -0700
-
-    support more EWMH states and EWMH moving and resizing
-
- echinus.c |   8 ++-
- echinus.h |  14 ++--
- ewmh.c    | 224 ++++++++++++++++++++++++++++++++++++++++++++++------------
- 3 files changed, 195 insertions(+), 51 deletions(-)
-
-commit f9380b88f9b7ee6de23437270d6e8a9dfb9020fc
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Thu Jan 2 11:46:41 2014 -0700
-
-    complete support for _NET_WM_DESKTOP and _MASK
-
- echinus.c |   8 ++++-
- ewmh.c    | 112 +++++++++++++++++++++++++++++++++++++++++++++++++++++++---
- 2 files changed, 114 insertions(+), 6 deletions(-)
-
-commit 7d8f53ffe9724bfc68cc78dedc93e93f4e407def
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Thu Jan 2 09:04:43 2014 -0700
-
-    prepare to perform actions on non-focussed windows
-
-     Many of the actions that are activatable by keypress only
-     acted on the focused window in the global "sel" variable.
-     Other actions only acted on a tag argument (which is a
-     string converted to an index using idxoftag()).
-
-     This commit converts "sel" actions to act on a specified
-     client window instead, and converts the "idxoftag" actions
-     to take an integer index instead.
-
-     This commit also provides preliminary support for all
-     _NET_WINDOW_TYPE types as well as providing
-     _NET_WM_ALLOWED_ACTIONS on client windows.  It also prepares
-     to process more _NET_WM_STATE atoms, both on initially
-     managing and window as well as when repporting.
-
- draw.c    |  19 +++-
- echinus.c | 294 +++++++++++++++++++++++++++++-----------------------------
- echinus.h |  39 ++++----
- ewmh.c    | 170 ++++++++++++++++++++++++++-------
- parse.c   | 120 ++++++++++++++++++++----
- 5 files changed, 423 insertions(+), 219 deletions(-)
-
-commit 937379d532a265dec7a8c3b0a152dbf6f7ed4ab7
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Thu Jan 2 06:04:29 2014 -0700
-
-    prepare for full EWMH window types, states and actions
-
-     prepare to support all _NET_WM_WINDOW_TYPE types, all
-     _NET_WM_STATE states, and all _NET_WM_ALLOWED_ACTIONS
-     plus: _NET_WM_ACTION_FLOAT and _NET_WM_STATE_FLOATING
-
- echinus.h | 78 +++++++++++++++++++++++++++++++++++++++++------------------
- ewmh.c    | 56 ++++++++++++++++++++++++++++++------------
- 2 files changed, 96 insertions(+), 38 deletions(-)
-
-commit 1cfa872befe9268f80909808c52dfad303a545f5
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Thu Jan 2 05:39:09 2014 -0700
-
-    stong type updateatom[] approach
-
- echinus.c | 22 +++++++++++-----------
- echinus.h |  3 +--
- ewmh.c    | 29 +++++++++++++----------------
- 3 files changed, 25 insertions(+), 29 deletions(-)
-
-commit 0b0c4a9a415750fab0cdbad6d2aaee6de4b86427
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Thu Jan 2 05:01:54 2014 -0700
-
-    track modes and correct togglemax togglefill logic
-
-     track fixed and floating state for windows
-     track desktop modes
-     fix logic error in togglemax and togglefill logic
-     prepare for EWMH allowed actions support
-
- echinus.c |  7 +++++--
- echinus.h | 32 +++++++++++++++++++++++++++++-
- ewmh.c    | 62 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++--
- 3 files changed, 96 insertions(+), 5 deletions(-)
-
-commit c3e53ca77aca2dda0247ebc5281f5afa4f637c48
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Thu Jan 2 03:03:50 2014 -0700
-
-    correction in printf for debug mode
-
- echinus.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-commit c851e4fc746861d459219ff1d54640e20a33b486
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Thu Jan 2 01:39:36 2014 -0700
-
-    one more _NET_WM_STATE update
-
- ewmh.c | 5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
-
-commit 338ff5c2a00cb9778111b30bdc48457f80ff7cd5
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Thu Jan 2 01:23:55 2014 -0700
-
-    properly update _NET_WM_STATE for a window
-
- echinus.c | 42 ++++++++++++++++++++++++++++--------------
- echinus.h |  1 +
- ewmh.c    | 15 +++++++++++++++
- 3 files changed, 44 insertions(+), 14 deletions(-)
-
-commit 00d6410756adb981984b6536e87e0d66a572468f
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Thu Jan 2 00:56:07 2014 -0700
-
-    bug fix: properties require long data not CARD32
-
- ewmh.c | 9 +++++----
- 1 file changed, 5 insertions(+), 4 deletions(-)
-
-commit 14441faa3691427feeea69bebf767894b8d96345
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Thu Jan 2 00:47:44 2014 -0700
-
-    do not delete _NET_WM_STATE, just empty it
-
-     _NET_WM_STATE must be set on all managed windows whether
-     it contains any atoms or not.
-
- echinus.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
-
-commit a87b4474daff59147931d162033f21ba634ead99
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Thu Jan 2 00:34:27 2014 -0700
-
-    missed one property in last commit
-
- echinus.c | 2 ++
- 1 file changed, 2 insertions(+)
-
-commit 4440df26a8cdfccd8bc137f2894c610e08f5b551
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Thu Jan 2 00:31:27 2014 -0700
-
-    prepare for full EWMH property notificiations
-
- echinus.c |  30 ++++++++++++-----
- echinus.h | 103 +++++++++++++++++++++++++++++++---------------------------
- ewmh.c    |   8 ++++-
- 3 files changed, 84 insertions(+), 57 deletions(-)
-
-commit 8ebecf5931d52702a1c514d2ea7b9a949e730cf0
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Wed Jan 1 22:23:30 2014 -0700
-
-    more preparation for full EWMH support
-
- echinus.c | 18 +++++++++---------
- echinus.h | 24 +++++++++++++++++++++---
- ewmh.c    | 45 +++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 75 insertions(+), 12 deletions(-)
-
-commit d5ccfc3a26cf6c9c0c90b228427b9e6817e2ce53
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Wed Jan 1 21:52:13 2014 -0700
-
-    prepare to add new client messages
-
- ewmh.c | 39 ++++++++++++++++++++-------------------
- 1 file changed, 20 insertions(+), 19 deletions(-)
-
-commit c9ec4f7a5f5174200d4ad3c05b5c37a575e95c64
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Wed Jan 1 21:41:05 2014 -0700
-
-    remove unnecessary atoms from _NET_SUPPORTED
-
- .gitignore |  5 +++--
- echinus.h  | 55 ++++++++++++++++++++++++++++++++++++++++++++++---------
- ewmh.c     | 29 +++++++++++++++--------------
- 3 files changed, 64 insertions(+), 25 deletions(-)
-
-commit 02254f78e9276b4684b94d70692e25e0898f59cf
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Wed Jan 1 04:10:37 2014 -0700
-
-    add full ICCCM 2.0 startup compliance
-
-     On startup, ICCCM 2.0 compliant window managers must take ownership
-     the of the WM_S%d MANAGER selection, where %d is the screen number,
-     for each screen that it manages.  The selection owner window should
-     be reused for the _NET_SUPPORTING_WM_CHECK window, and additional
-     information should be set on that window as thought the WM was a
-     normal application and this was its client leader/session leader
-     window.  Information to set is:
-
-     WM_NAME, WM_CLASS, WM_CLIENT_MACHINE, WM_COMMAND, WM_ICON_NAME,
-     WM_LOCALE_NAME, WM_PROTOCOLS, _NET_SUPPORTING_WM_CHECK,
-     _NET_WM_NAME, _NET_WM_PID
-
- echinus.c | 115 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++-
- echinus.h |   5 ++-
- ewmh.c    |  82 +++++++++++++++++++----------------------
- 3 files changed, 154 insertions(+), 48 deletions(-)
-
-commit 12117699c2a0624eeeaacecd21dd7d34ddbb4919
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Tue Dec 31 23:43:26 2013 -0700
-
-    populate _NET_WM_PID on check window
-
- echinus.h | 2 +-
- ewmh.c    | 6 ++++++
- 2 files changed, 7 insertions(+), 1 deletion(-)
-
-commit c0001499378169238e90c62f8412985bf478bfd2
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Tue Dec 31 23:21:29 2013 -0700
-
-    correct _NET_SUPPORTING_WM_CHECK
-
-     _NET_SUPPORTING_WM_CHECK is a recursive property and must
-     be set both on the root window and the window to which it
-     refers
-
- ewmh.c | 2 ++
- 1 file changed, 2 insertions(+)
-
-commit da772ba5ca2cf6febbd3fc9b973deb6f901855d0
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Tue Dec 31 19:40:33 2013 -0700
-
-    remove compiler warnings under _FORTIFY_SOURCE=2
-
- .gitignore        |  1 +
- echinus.c         | 31 ++++++++++++++++---------------
- ewmh.c            |  9 ++++++---
- tests/ewmhpanel.c |  3 ++-
- tests/util.h      |  1 +
- 5 files changed, 26 insertions(+), 19 deletions(-)
-
-commit 6b4802766f0be531ae374a95e630918b506a6493
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Tue Dec 31 07:48:51 2013 -0700
-
-    more ignores
-
- .gitignore | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-commit 48df9e2632b1b7817fb89adea4e8305d9aee3b53
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Tue Dec 31 07:21:50 2013 -0700
-
-    mention using ./autogen.sh with git
-
- README | 1 +
- 1 file changed, 1 insertion(+)
-
-commit 90a8d65167215c5c561f12e44ceda3c60c51a1b4
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Tue Dec 31 07:20:03 2013 -0700
-
-    add some files missing from distrbution
-
- Makefile.am | 10 +++++++++-
- 1 file changed, 9 insertions(+), 1 deletion(-)
-
-commit 29cc69960b5f0b8ddc0918caa4593900a62c7792
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Tue Dec 31 07:17:05 2013 -0700
-
-    remove unnecessary files
-
- config.mk       | 47 -----------------------------------------------
- tests/config.mk | 38 --------------------------------------
- 2 files changed, 85 deletions(-)
-
-commit de45435555e295ff653f1c0a61eb6aa095a3eb5b
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Tue Dec 31 07:14:34 2013 -0700
-
-    autoconf/automake build system
-
- .gitignore         | 27 +++++++++++++++++++
- Makefile           | 67 ----------------------------------------------
- Makefile.am        | 26 ++++++++++++++++++
- README             |  5 ++--
- autogen.sh         | 20 ++++++++++++++
- configure.template | 72 ++++++++++++++++++++++++++++++++++++++++++++++++++
- debian/rules       |  7 -----
- tests/Makefile     | 31 ----------------------
- tests/Makefile.am  |  8 ++++++
- 9 files changed, 156 insertions(+), 107 deletions(-)
-
-commit 2acd233ec0bcdac03b758c256ed9d651b13eb71e
-Merge: 46ed9bf 940e702
-Author: Alexander Polakov <plhk@sdf.org>
-Date:   Sat Jan 26 03:23:36 2013 -0800
-
-    Merge pull request #8 from bananagranola/master
-
-    attachaside: option for new windows to be slave windows instead of master
-
-commit 940e702272b888abbe52bd66723e07b93c15f840
-Author: bananagranola <amezster@gmail.com>
-Date:   Fri Jan 25 21:21:07 2013 -0800
-
-    attachaside: new windows can be slave, not master
-
- echinus.1 |  7 +++++++
- echinus.c | 31 +++++++++++++++++++++++--------
- echinusrc |  1 +
- 3 files changed, 31 insertions(+), 8 deletions(-)
-
-commit 46ed9bf0b8d574bbfaf50c5a9cb6830a046656a9
-Author: Alexander Polakov <plhk@sdf.org>
-Date:   Sat Nov 24 23:12:25 2012 +0400
-
-    Add _NET_CLOSE_WINDOW atom support
-
- echinus.h | 2 +-
- ewmh.c    | 7 ++++++-
- 2 files changed, 7 insertions(+), 2 deletions(-)
-
-commit 43c01838c52a391361be9f225f1f68af9de7fce0
-Author: Alexander Polakov <plhk@sdf.org>
-Date:   Tue Jul 3 02:45:55 2012 +0400
-
-    Fix SPARC64 bus error
-
-     Committed from Ultra 5.
-
- ewmh.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-commit fe8cce0bfe1b3a6281461cb7e82702b5f48b5e46
-Author: Alexander Polakov <polachok@gmail.com>
-Date:   Sat May 26 21:35:34 2012 +0400
-
-    Revert "Simplify run(): kill select"
-
-    This reverts commit f5c259885455e7ba47ab05b66888ebbc7b9a73a9.
-    It delays signal handling, this is unacceptable.
-
- echinus.c | 20 +++++++++++++++++---
- 1 file changed, 17 insertions(+), 3 deletions(-)
-
-commit 89276468ad625904dfa6147eb3775a0897e50a0f
-Author: Alexander Polakov <polachok@gmail.com>
-Date:   Sat May 26 18:00:11 2012 +0400
-
-    buttonpress(): do full restack
-
-     From Yorick Hardy
-
- echinus.c | 6 ++----
- 1 file changed, 2 insertions(+), 4 deletions(-)
-
-commit e1805c81a10107d696ed9bedf1e421c07b346689
-Author: Alexander Polakov <polachok@gmail.com>
-Date:   Sat May 26 15:48:24 2012 +0400
-
-    applyatoms(): restore client state from NETWM atoms on restart
-
-     Only _NET_WM_DESKTOP atm
-
- echinus.c | 18 ++++++++++++++++++
- 1 file changed, 18 insertions(+)
-
-commit f5c259885455e7ba47ab05b66888ebbc7b9a73a9
-Author: Alexander Polakov <polachok@gmail.com>
-Date:   Sat May 26 15:05:31 2012 +0400
-
-    Simplify run(): kill select
-
-    From Yorick Hardy
-
- echinus.c | 20 +++-----------------
- 1 file changed, 3 insertions(+), 17 deletions(-)
-
-commit b695e3d90b04e0c15e6853928ea37ed3c09bd174
-Author: Alexander Polakov <polachok@gmail.com>
-Date:   Sat May 26 15:01:54 2012 +0400
-
-    Call drawclient only once instead of LastBtn times
-
-    From Yorick Hardy
-
- echinus.c | 5 ++---
- 1 file changed, 2 insertions(+), 3 deletions(-)
-
-commit c25f1f93fc7c726b71f45d50299bb272af87d672
-Author: Alexander Polakov <polachok@gmail.com>
-Date:   Sat May 26 14:42:47 2012 +0400
-
-    Add support for _NET_WM_STATE_{REMOVE,ADD,TOGGLE}
-
-    From Yorick Hardy
-
- ewmh.c | 10 ++++++++--
- 1 file changed, 8 insertions(+), 2 deletions(-)
-
-commit 96f366bdb0e27ea8bc5767393fae442d764ebec3
-Author: Alexander Polakov <polachok@gmail.com>
-Date:   Thu Dec 22 15:25:41 2011 +0400
-
-    Revert to using togglefloating() while processing EWMH fullscreen
-
- ewmh.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
-
-commit a44fc6b949805cd181ba37e1fbf7e8049f20b444
-Author: Alexander Polakov <polachok@gmail.com>
-Date:   Fri Dec 16 22:14:48 2011 +0400
-
-    Turn save() into a function
-
- echinus.c | 14 +++++++++-----
- 1 file changed, 9 insertions(+), 5 deletions(-)
-
-commit 77eb16e933a2fd1fb0a7a2bea0e29946bce89808
-Author: Alexander Polakov <polachok@gmail.com>
-Date:   Fri Dec 16 22:02:19 2011 +0400
-
-    Better EWMH fullscreen support for tiled windows
-
- echinus.h |  1 +
- ewmh.c    | 10 ++++++----
- 2 files changed, 7 insertions(+), 4 deletions(-)
-
-commit a9f23b8e062a9f5e26bc33237b855cdba6ca5b0b
-Author: Alexander Polakov <polachok@gmail.com>
-Date:   Fri Dec 16 21:57:55 2011 +0400
-
-    Disable togglemax() & togglefill() for non-floating windows & layouts
-
- echinus.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-commit 7c847e4e8d9ead2b245a9b9d2aa739d3c31ba986
-Author: Alexander Polakov <polachok@gmail.com>
-Date:   Fri Dec 16 21:51:50 2011 +0400
-
-    configurerequest(): a little cleanup
-
-     * don't mess with c->ismax
-     * save() after resize
-
- echinus.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-commit f612f8587e9eba5eabfeb0646411b9c25128cdd8
-Author: Alexander Polakov <polachok@gmail.com>
-Date:   Sun Dec 4 03:17:12 2011 +0400
-
-    restack: put floating non-panels on the top
-
- echinus.c | 9 ++++-----
- 1 file changed, 4 insertions(+), 5 deletions(-)

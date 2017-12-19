@@ -1214,6 +1214,10 @@ sunken(const Texture *t, const unsigned width, const unsigned height, ARGB *data
 }
 #endif				/* !defined(IMLIB2) || !defined(USE_IMLIB2) */
 
+#ifdef IMLIB2
+
+#ifdef USE_IMLIB2
+
 void
 rendertodrawable(AScreen *ds, Drawable d, int x, int y, unsigned width, unsigned height,
 		 ARGB *data)
@@ -1234,10 +1238,6 @@ rendertodrawable(AScreen *ds, Drawable d, int x, int y, unsigned width, unsigned
 
 	imlib_context_pop();
 }
-
-#ifdef IMLIB2
-
-#ifdef USE_IMLIB2
 
 static void
 drawsolid(const Texture *t, const unsigned width, const unsigned height,

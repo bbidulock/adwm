@@ -19,12 +19,83 @@
 #ifdef XCAIRO
 
 Bool
+xcairo_initxpm(char *path, AdwmPixmap *px)
+{
+	Pixmap draw = None, mask = None;
+	Screen *screen;
+	cairo_surface_t *surf = NULL, *clip = NULL;
+	int status;
+	XRenderPictFormat *format;
+	XpmAttributes xa = {
+		.visual = DefaultVisual(dpy, scr->screen),
+		.colormap = DefaultColormap(dpy, scr->screen),
+		.depth = DefaultDepth(dpy, scr->screen),
+		.valuemask = XpmVisual| XpmColormap| XpmDepth,
+	};
+
+	status = XpmReadFileToPixmap(dpy, scr->drawable, path, &draw, &mask, &xa);
+	if (status != XpmSuccess || !draw) {
+		EPRINTF("could not load xpm file %s\n", path);
+		goto error;
+	}
+	XpmFreeAttributes(&xa);
+	format = XRenderFindStandardFormat(dpy, PictStandardRGB24);
+	screen = ScreenOfDisplay(dpy, scr->screen);
+#if 1
+	surf = cairo_xlib_surface_create_with_xrender_format(dpy, draw, screen, format, xa.width, xa.height);
+#else
+	surf = cairo_xlib_surface_create(dpy, draw, xa.visual, xa.width, xa.height);
+#endif
+	if (!surf) {
+		EPRINTF("could not create surface\n");
+		goto error;
+	}
+	if (mask) {
+		format = XRenderFindStandardFormat(dpy, PictStandardA1);
+#if 1
+		clip = cairo_xlib_surface_create_with_xrender_format(dpy, mask, screen, format, xa.width, xa.height);
+#else
+		clip = cairo_xlib_surface_create_for_bitmap(dpy, mask, screen, xa.width, xa.height);
+#endif
+		if (!clip) {
+			EPRINTF("could not create surface\n");
+			goto error;
+		}
+	}
+	if (px->bitmap.surf) {
+		cairo_surface_destroy(px->bitmap.surf);
+		px->bitmap.surf = NULL;
+	}
+	if (px->bitmap.clip) {
+		cairo_surface_destroy(px->bitmap.clip);
+		px->bitmap.clip = NULL;
+	}
+	if (px->file) {
+		free(px->file);
+		px->file = NULL;
+	}
+	px->pixmap.surf = surf;
+	px->pixmap.clip = clip;
+	px->file = path;
+	px->x = px->y = px->b = 0;
+	px->w = xa.width;
+	px->h = xa.height;
+	px->d = xa.depth;
+      error:
+	if (draw)
+		XFreePixmap(dpy, draw);
+	if (mask)
+		XFreePixmap(dpy, mask);
+	return (surf ? True : False);
+}
+
+Bool
 xcairo_initxbm(char *path, AdwmPixmap *px)
 {
 	Pixmap draw;
 	Screen *screen;
 	XRenderPictFormat *format;
-	cairo_surface_t *surface = NULL;
+	cairo_surface_t *surf = NULL;
 	int status;
 
 	status = XReadBitmapFile(dpy, scr->root, path, &px->w, &px->h, &draw, &px->x, &px->y);
@@ -35,23 +106,27 @@ xcairo_initxbm(char *path, AdwmPixmap *px)
 	format = XRenderFindStandardFormat(dpy, PictStandardA1);
 	screen = ScreenOfDisplay(dpy, scr->screen);
 #if 1
-	surface = cairo_xlib_surface_create_with_xrender_format(dpy, draw, screen, format, px->w, px->h);
+	surf = cairo_xlib_surface_create_with_xrender_format(dpy, draw, screen, format, px->w, px->h);
 #else
-	surface = cairo_xlib_surface_create_for_bitmap(dpy, draw, screen, px->w, px->h);
+	surf = cairo_xlib_surface_create_for_bitmap(dpy, draw, screen, px->w, px->h);
 #endif
-	if (!surface) {
+	if (!surf) {
 		EPRINTF("could not create surface\n");
 		goto error;
 	}
-	if (px->bitmap.surface) {
-		cairo_surface_destroy(px->bitmap.surface);
-		px->bitmap.surface = NULL;
+	if (px->bitmap.surf) {
+		cairo_surface_destroy(px->bitmap.surf);
+		px->bitmap.surf = NULL;
+	}
+	if (px->bitmap.clip) {
+		cairo_surface_destroy(px->bitmap.clip);
+		px->bitmap.clip = NULL;
 	}
 	if (px->file) {
 		free(px->file);
 		px->file = NULL;
 	}
-	px->bitmap.surface = surface;
+	px->bitmap.surf = surf;
 	px->file = path;
 	px->x = px->y = px->b = 0;
 	px->w = px->w;
@@ -59,7 +134,7 @@ xcairo_initxbm(char *path, AdwmPixmap *px)
 error:
 	if (draw)
 		XFreePixmap(dpy, draw);
-	return (surface ? True : False);
+	return (surf ? True : False);
 }
 
 Bool
@@ -68,7 +143,7 @@ xcairo_initxbmdata(const unsigned char *bits, int w, int h, AdwmPixmap *px)
 	Pixmap draw;
 	Screen *screen;
 	XRenderPictFormat *format;
-	cairo_surface_t *surface = NULL;
+	cairo_surface_t *surf = NULL;
 
 	if (!(draw = XCreateBitmapFromData(dpy, scr->drawable, (char *) bits, w, h))) {
 		EPRINTF("could not load xbm data\n");
@@ -77,30 +152,34 @@ xcairo_initxbmdata(const unsigned char *bits, int w, int h, AdwmPixmap *px)
 	format = XRenderFindStandardFormat(dpy, PictStandardA1);
 	screen = ScreenOfDisplay(dpy, scr->screen);
 #if 1
-	surface = cairo_xlib_surface_create_with_xrender_format(dpy, draw, screen, format, w, h);
+	surf = cairo_xlib_surface_create_with_xrender_format(dpy, draw, screen, format, w, h);
 #else
-	surface = cairo_xlib_surface_create_for_bitmap(dpy, draw, screen, w, h);
+	surf = cairo_xlib_surface_create_for_bitmap(dpy, draw, screen, w, h);
 #endif
-	if (!surface) {
+	if (!surf) {
 		EPRINTF("could not create surface\n");
 		goto error;
 	}
-	if (px->bitmap.surface) {
-		cairo_surface_destroy(px->bitmap.surface);
-		px->bitmap.surface = NULL;
+	if (px->bitmap.surf) {
+		cairo_surface_destroy(px->bitmap.surf);
+		px->bitmap.surf = NULL;
+	}
+	if (px->bitmap.clip) {
+		cairo_surface_destroy(px->bitmap.clip);
+		px->bitmap.clip = NULL;
 	}
 	if (px->file) {
 		free(px->file);
 		px->file = NULL;
 	}
-	px->bitmap.surface = surface;
+	px->bitmap.surf = surf;
 	px->x = px->y = px->b = 0;
 	px->w = w;
 	px->h = h;
 error:
 	if (draw)
 		XFreePixmap(dpy, draw);
-	return (surface ? True : False);
+	return (surf ? True : False);
 }
 
 #endif				/* XCAIRO */

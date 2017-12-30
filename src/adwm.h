@@ -767,7 +767,7 @@ typedef struct {
 		Picture pict;
 #endif
 #if defined XCAIRO
-		cairo_surface_t *surface;
+		cairo_surface_t *surf, *clip;
 #endif
 	}
 #if defined IMLIB2 || defined PIXBUF || defined XPM || defined LIBPNG

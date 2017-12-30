@@ -308,6 +308,18 @@ else
 	AC_MSG_RESULT([disabled])
 fi
 
+AC_ARG_ENABLE([libjpeg],
+	AC_HELP_STRING([--disable-libjpeg],
+		[Disable jpeg library @<:@default=auto@:>@]))
+if test "x$enable_libjpeg" != xno; then
+	PKG_CHECK_MODULES([LIBJPEG],[libjpeg >= 1.5],
+		[AC_DEFINE([LIBJPEG],[1],[Define to 1 for LIBJPEG library support.])],
+		[enable_libjpeg=no])
+else
+	AC_MSG_CHECKING([for libjpeg])
+	AC_MSG_RESULT([disabled])
+fi
+
 AC_ARG_ENABLE([libsvg],
 	AC_HELP_STRING([--disable-libsvg],
 		[Disable svg library @<:@default=auto@:>@]))

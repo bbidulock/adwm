@@ -766,6 +766,9 @@ typedef struct {
 #if defined RENDER
 		Picture pict;
 #endif
+#if defined XCAIRO
+		cairo_surface_t *surface;
+#endif
 	}
 #if defined IMLIB2 || defined PIXBUF || defined XPM || defined LIBPNG
 	pixmap,

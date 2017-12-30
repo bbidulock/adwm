@@ -77,6 +77,9 @@
 #ifdef LIBPNG
 #include <png.h>
 #endif
+#ifdef LIBJPEG
+#include <jpeglib.h>
+#endif
 #ifdef LIBSVG
 #include <svg-cairo.h>
 #endif

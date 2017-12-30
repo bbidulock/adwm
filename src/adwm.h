@@ -67,11 +67,18 @@
 #ifdef PIXBUF
 #include <gdk-pixbuf-xlib/gdk-pixbuf-xlib.h>
 #endif
+#ifdef XCAIRO
+#include <cairo-xlib.h>
+#include <cairo-xlib-xrender.h>
+#endif
 #ifdef XPM
 #include <X11/xpm.h>
 #endif
 #ifdef LIBPNG
 #include <png.h>
+#endif
+#ifdef LIBSVG
+#include <svg-cairo.h>
 #endif
 #ifdef STARTUP_NOTIFICATION
 #define SN_API_NOT_YET_FROZEN

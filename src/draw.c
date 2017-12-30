@@ -78,6 +78,23 @@
 #define initxpm(args...)	  render_initxpm(args)
 #define initxbm(args...)	  render_initxbm(args)
 #else				/* !defined RENDER || !defined USE_RENDER */
+#if defined XCAIRO && defined USE_XCAIRO
+#define createpixmapicon(args...) xcairo_createpixmapicon(args)
+#define createdataicon(args...)   xcairo_createdataicon(args)
+#define createpngicon(args...)	  xcairo_createpngicon(args)
+#define createsvgicon(args...)	  xcairo_createsvgicon(args)
+#define createxpmicon(args...)	  xcairo_createxpmicon(args)
+#define createxbmicon(args...)	  xcairo_createxbmicon(args)
+#define drawbutton(args...)	  xcairo_drawbutton(args)
+#define drawtext(args...)	  xcairo_drawtext(args)
+#define drawsep(args...)	  xcairo_drawsep(args)
+#define drawdockapp(args...)	  xcairo_drawdockapp(args)
+#define drawnormal(args...)	  xcairo_drawnormal(args)
+#define initpng(args...)	  xcairo_initpng(args)
+#define initsvg(args...)	  xcairo_initsvg(args)
+#define initxpm(args...)	  xcairo_initxpm(args)
+#define initxbm(args...)	  xcairo_initxbm(args)
+#else				/* !defined XCAIRO || !defined USE_XCAIRO */
 #if 1
 #define createbitmapicon(args...) ximage_createbitmapicon(args)
 #define createpixmapicon(args...) ximage_createpixmapicon(args)
@@ -113,6 +130,7 @@
 #define initxpm(args...)	  xlib_initxpm(args)
 #define initxbm(args...)	  xlib_initxbm(args)
 #endif
+#endif				/* !defined XCAIRO || !defined USE_XCAIRO */
 #endif				/* !defined RENDER || !defined USE_RENDER */
 #endif				/* !defined PIXBUF || !defined USE_PIXBUF */
 #endif				/* !defined IMLIB2 || !defined USE_IMLIB2 */

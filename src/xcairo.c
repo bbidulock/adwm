@@ -16,9 +16,7 @@
 #endif
 #include "xcairo.h" /* verification */
 
-Bool
-xcairo_initxbmdata(const unsigned char *bits, int w, int h, AdwmPixmap *px)
-{
+#ifdef XCAIRO
 
-}
+#endif				/* XCAIRO */
 

@@ -261,6 +261,29 @@ fi
 AC_MSG_CHECKING([for imlib2 use])
 AC_MSG_RESULT([${enable_use_imlib2:-no}])
 
+AC_ARG_ENABLE([xcairo],
+	AC_HELP_STRING([--disable-xcairo],
+		[Disable cairo-xlib-xrender library @<:@default=auto@:>@]))
+if test "x$enable_xcairo" != xno ; then
+	PKG_CHECK_MODULES([XCAIRO],[cairo-xlib-xrender],
+		[AC_DEFINE([XCAIRO],[1],[Define to 1 to support CAIRO XLIB XRENDER graphics support.])],
+		[enable_xcairo=no])
+else
+	AC_MSG_CHECKING([for xcairo])
+	AC_MSG_RESULT([disabled])
+fi
+
+AC_ARG_ENABLE([use-xcairo],
+	AC_HELP_STRING([--enable-use-xcairo],
+		[Enable use of cairo-xlib-xrender to drawing @<:@default=no@:>@]))
+if test "x$enable_xcairo" != xno -a "x$enable_use_xcairo" = xyes ; then
+	AC_DEFINE([USE_XCAIRO],[1],[Define to 1 to use CAIRO XLIB XRENDER for rendering pixmaps.])
+else
+	enable_use_xcairo=no
+fi
+AC_MSG_CHECKING([for xcairo use])
+AC_MSG_RESULT([${enable_use_xcairo:-no}])
+
 AC_ARG_ENABLE([xpm],
 	AC_HELP_STRING([--disable-libxpm],
 		[Disable xpm library @<:@default=auto@:>@]))
@@ -282,6 +305,18 @@ if test "x$enable_libpng" != xno; then
 		[enable_libpng=no])
 else
 	AC_MSG_CHECKING([for libpng])
+	AC_MSG_RESULT([disabled])
+fi
+
+AC_ARG_ENABLE([libsvg],
+	AC_HELP_STRING([--disable-libsvg],
+		[Disable svg library @<:@default=auto@:>@]))
+if test "x$enable_svg" != xno; then
+	PKG_CHECK_MODULES([LIBSVG],[libsvg-cairo],
+		[AC_DEFINE([LIBSVG],[1],[Define to 1 for LIBSVG library support.])],
+		[enable_libsvg=no])
+else
+	AC_MSG_CHECKING([for libsvg])
 	AC_MSG_RESULT([disabled])
 fi
 

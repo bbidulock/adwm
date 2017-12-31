@@ -8,6 +8,7 @@ Bool render_createbitmapicon(AScreen *ds, Client *c, Pixmap icon, Pixmap mask, u
 Bool render_createpixmapicon(AScreen *ds, Client *c, Pixmap icon, Pixmap mask, unsigned w, unsigned h, unsigned d);
 Bool render_createdataicon(AScreen *ds, Client *c, unsigned w, unsigned h, long *data);
 Bool render_createpngicon(AScreen *ds, Client *c, const char *file);
+Bool render_createjpgicon(AScreen *ds, Client *c, const char *file);
 Bool render_createsvgicon(AScreen *ds, Client *c, const char *file);
 Bool render_createxpmicon(AScreen *ds, Client *c, const char *file);
 Bool render_createxbmicon(AScreen *ds, Client *c, const char *file);
@@ -20,6 +21,7 @@ int render_drawsep(AScreen *ds, const char *text, Drawable drawable, XftDraw *xf
 void render_drawdockapp(AScreen *ds, Client *c);
 void render_drawnormal(AScreen *ds, Client *c);
 Bool render_initpng(char *path, AdwmPixmap *p);
+Bool render_initjpg(char *path, AdwmPixmap *p);
 Bool render_initsvg(char *path, AdwmPixmap *p);
 Bool render_initxpm(char *path, AdwmPixmap *p);
 Bool render_initxbm(char *path, AdwmPixmap *p);

@@ -785,6 +785,14 @@ render_createpngicon(AScreen *ds, Client *c, const char *file)
 #endif				/* JUSTRENDER */
 
 Bool
+render_createjpgicon(AScreen *ds, Client *c, const char *file)
+{
+	EPRINTF("would use RENDER to create JPG icon %s\n", file);
+	/* for now */
+	return (False);
+}
+
+Bool
 render_createsvgicon(AScreen *ds, Client *c, const char *file)
 {
 	EPRINTF("would use RENDER to create SVG icon %s\n", file);
@@ -1280,6 +1288,12 @@ render_initpng(char *path, AdwmPixmap *px)
 #else
 	return (False);
 #endif
+}
+
+Bool
+render_initjpg(char *path, AdwmPixmap *px)
+{
+	return (False);
 }
 
 Bool

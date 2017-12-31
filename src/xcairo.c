@@ -18,6 +18,120 @@
 
 #ifdef XCAIRO
 
+void
+xcairo_removepixmap(AdwmPixmap *p)
+{
+	if (p->pixmap.surf) {
+		cairo_surface_destroy(p->pixmap.surf);
+		p->pixmap.surf = NULL;
+	}
+	if (p->pixmap.clip) {
+		cairo_surface_destroy(p->pixmap.clip);
+		p->pixmap.clip = NULL;
+	}
+	if (p->bitmap.surf) {
+		cairo_surface_destroy(p->bitmap.surf);
+		p->bitmap.surf = NULL;
+	}
+	if (p->bitmap.clip) {
+		cairo_surface_destroy(p->bitmap.clip);
+		p->bitmap.clip = NULL;
+	}
+}
+
+static Bool
+xcairo_createicon(AScreen *ds, Client *c, cairo_surface_t **surf, cairo_surface_t **clip, Bool cropscale)
+{
+	/* for now */
+	return (False);
+}
+
+Bool
+xcairo_createbitmapicon(AScreen *ds, Client *c, Pixmap icon, Pixmap mask, unsigned w, unsigned h)
+{
+	Screen *screen;
+	XRenderPictFormat *format;
+	cairo_surface_t *surf = NULL, *clip = NULL;
+	Bool result = False;
+
+	format = XRenderFindStandardFormat(dpy, PictStandardA1);
+	screen = ScreenOfDisplay(dpy, scr->screen);
+#if 1
+	surf = cairo_xlib_surface_create_with_xrender_format(dpy, icon, screen, format, w, h);
+#else
+	surf = cairo_xlib_surface_create_for_bitmap(dpy, icon, screen, w, h);
+#endif
+	if (!surf) {
+		EPRINTF("could not create surface\n");
+		goto error;
+	}
+	if (mask) {
+#if 1
+		clip = cairo_xlib_surface_create_with_xrender_format(dpy, mask, screen, format, w, h);
+#else
+		clip = cairo_xlib_surface_create_for_bitmap(dpy, mask, screen, format, w, h);
+#endif
+		if (!clip) {
+			EPRINTF("could not create surface\n");
+			goto error;
+		}
+	}
+	result = xcairo_createicon(ds, c, &surf, &clip, False);
+      error:
+	if (surf)
+		cairo_surface_destroy(surf);
+	if (clip)
+		cairo_surface_destroy(clip);
+	return (result);
+}
+
+Bool
+xcairo_createpixmapicon(AScreen *ds, Client *c, Pixmap icon, Pixmap mask, unsigned w, unsigned h, unsigned d)
+{
+	Screen *screen;
+	XRenderPictFormat *format;
+	cairo_surface_t *surf = NULL, *clip = NULL;
+	Bool result = False;
+
+	format = XRenderFindStandardFormat(dpy, PictStandardRGB24);
+	screen = ScreenOfDisplay(dpy, scr->screen);
+#if 1
+	surf = cairo_xlib_surface_create_with_xrender_format(dpy, icon, screen, format, w, h);
+#else
+	surf = cairo_xlib_surface_create_for_bitmap(dpy, icon, screen, w, h);
+#endif
+	if (!surf) {
+		EPRINTF("could not create surface\n");
+		goto error;
+	}
+	if (mask) {
+		format = XRenderFindStandardFormat(dpy, PictStandardA1);
+#if 1
+		clip = cairo_xlib_surface_create_with_xrender_format(dpy, mask, screen, format, w, h);
+#else
+		clip = cairo_xlib_surface_create_for_bitmap(dpy, mask, screen, format, w, h);
+#endif
+		if (!clip) {
+			EPRINTF("could not create surface\n");
+			goto error;
+		}
+	}
+	result = xcairo_createicon(ds, c, &surf, &clip, False);
+      error:
+	if (surf)
+		cairo_surface_destroy(surf);
+	if (clip)
+		cairo_surface_destroy(clip);
+	return (result);
+}
+
+Bool
+xcairo_createdataicon(AScreen *ds, Client *c, unsigned w, unsigned h, long *data)
+{
+	/* for now */
+	return (False);
+}
+
 Bool
 xcairo_initpng(char *path, AdwmPixmap *px)
 {

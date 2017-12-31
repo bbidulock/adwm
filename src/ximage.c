@@ -400,6 +400,14 @@ ximage_createpngicon(AScreen *ds, Client *c, const char *file)
 }
 
 Bool
+ximage_createjpgicon(AScreen *ds, Client *c, const char *file)
+{
+	EPRINTF("would use XIMAGE to create JPG icon %s\n", file);
+	/* for now */
+	return (False);
+}
+
+Bool
 ximage_createsvgicon(AScreen *ds, Client *c, const char *file)
 {
 	EPRINTF("would use XIMAGE to create SVG icon %s\n", file);
@@ -839,7 +847,23 @@ ximage_drawnormal(AScreen *ds, Client *c)
 Bool
 ximage_initpng(char *path, AdwmPixmap *px)
 {
+#ifdef LIBPNG
+	/* for now */
 	return (False);
+#else				/* LIBPNG */
+	return (False);
+#endif				/* LIBPNG */
+}
+
+Bool
+ximage_initjpg(char *path, AdwmPixmap *px)
+{
+#ifdef LIBJPEG
+	/* for now */
+	return (False);
+#else				/* LIBJPEG */
+	return (False);
+#endif				/* LIBJPEG */
 }
 
 Bool

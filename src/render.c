@@ -38,15 +38,6 @@ render_removepixmap(AdwmPixmap *p)
 	}
 }
 
-static unsigned
-titleheight(AScreen *ds)
-{
-	unsigned th = ds->style.titleheight;
-	if (ds->style.outline && ds->style.border < th)
-		th -= ds->style.border;
-	return th;
-}
-
 #ifdef JUSTRENDER
 static Bool
 createicon_bitmap(AScreen *ds, Client *c, Pixmap draw, Pixmap mask, unsigned w, unsigned h, Bool cropscale)

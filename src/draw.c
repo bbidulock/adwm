@@ -688,6 +688,15 @@ elementw(AScreen *ds, Client *c, char which)
 	return w;
 }
 
+unsigned
+titleheight(AScreen *ds)
+{
+	unsigned th = ds->style.titleheight;
+	if (ds->style.outline && ds->style.border < th)
+		th -= ds->style.border;
+	return th;
+}
+
 int
 drawelement(AScreen *ds, char which, int x, int position, Client *c)
 {

@@ -15,6 +15,7 @@ void drawclient(Client *c);
 #ifdef DAMAGE
 Bool drawdamage(Client *c, XDamageNotifyEvent *ev);
 #endif
+unsigned titleheight(AScreen *ds);
 int elementw(AScreen *ds, Client *c, char which);
 int drawelement(AScreen *ds, char which, int x, int position, Client *c);
 ButtonImage *buttonimage(AScreen *ds, Client *c, ElementType type);

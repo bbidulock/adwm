@@ -415,6 +415,14 @@ imlib2_createpngicon(AScreen *ds, Client *c, const char *file)
 }
 
 Bool
+imlib2_createjpgicon(AScreen *ds, Client *c, const char *file)
+{
+	EPRINTF("would use IMLIB2 to create JPG icon %s\n", file);
+	/* for now */
+	return (False);
+}
+
+Bool
 imlib2_createsvgicon(AScreen *ds, Client *c, const char *file)
 {
 	EPRINTF("would use IMLIB2 to create SVG icon %s\n", file);
@@ -933,6 +941,12 @@ imlib2_initext(char *path, AdwmPixmap *px)
 
 Bool
 imlib2_initpng(char *path, AdwmPixmap *px)
+{
+	return imlib2_initext(path, px);
+}
+
+Bool
+imlib2_initjpg(char *path, AdwmPixmap *px)
 {
 	return imlib2_initext(path, px);
 }

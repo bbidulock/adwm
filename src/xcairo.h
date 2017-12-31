@@ -8,6 +8,7 @@ Bool xcairo_createbitmapicon(AScreen *ds, Client *c, Pixmap icon, Pixmap mask, u
 Bool xcairo_createpixmapicon(AScreen *ds, Client *c, Pixmap icon, Pixmap mask, unsigned w, unsigned h, unsigned d);
 Bool xcairo_createdataicon(AScreen *ds, Client *c, unsigned w, unsigned h, long *data);
 Bool xcairo_createpngicon(AScreen *ds, Client *c, const char *file);
+Bool xcairo_createjpgicon(AScreen *ds, Client *c, const char *file);
 Bool xcairo_createsvgicon(AScreen *ds, Client *c, const char *file);
 Bool xcairo_createxpmicon(AScreen *ds, Client *c, const char *file);
 Bool xcairo_createxbmicon(AScreen *ds, Client *c, const char *file);
@@ -20,6 +21,7 @@ int xcairo_drawsep(AScreen *ds, const char *text, Drawable drawable, XftDraw *xf
 void xcairo_drawdockapp(AScreen *ds, Client *c);
 void xcairo_drawnormal(AScreen *ds, Client *c);
 Bool xcairo_initpng(char *path, AdwmPixmap *p);
+Bool xcairo_initjpg(char *path, AdwmPixmap *p);
 Bool xcairo_initsvg(char *path, AdwmPixmap *p);
 Bool xcairo_initxpm(char *path, AdwmPixmap *p);
 Bool xcairo_initxbm(char *path, AdwmPixmap *p);

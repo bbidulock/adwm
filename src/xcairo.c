@@ -19,6 +19,39 @@
 #ifdef XCAIRO
 
 Bool
+xcairo_initpng(char *path, AdwmPixmap *px)
+{
+#ifdef LIBPNG
+	/* for now */
+	return (False);
+#else				/* LIBPNG */
+	return (False);
+#endif				/* LIBPNG */
+}
+
+Bool
+xcairo_initjpg(char *path, AdwmPixmap *px)
+{
+#ifdef LIBJPEG
+	/* for now */
+	return (False);
+#else				/* LIBJPEG */
+	return (False);
+#endif				/* LIBJPEG */
+}
+
+Bool
+xcairo_initsvg(char *path, AdwmPixmap *px)
+{
+#ifdef LIBSVG
+	/* for now */
+	return (False);
+#else				/* LIBSVG */
+	return (False);
+#endif				/* LIBSVG */
+}
+
+Bool
 xcairo_initxpm(char *path, AdwmPixmap *px)
 {
 	Pixmap draw = None, mask = None;

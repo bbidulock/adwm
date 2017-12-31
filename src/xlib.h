@@ -7,6 +7,7 @@ Bool xlib_createbitmapicon(AScreen *ds, Client *c, Pixmap icon, Pixmap mask, uns
 Bool xlib_createpixmapicon(AScreen *ds, Client *c, Pixmap icon, Pixmap mask, unsigned w, unsigned h, unsigned d);
 Bool xlib_createdataicon(AScreen *ds, Client *c, unsigned w, unsigned h, long *data);
 Bool xlib_createpngicon(AScreen *ds, Client *c, const char *file);
+Bool xlib_createjpgicon(AScreen *ds, Client *c, const char *file);
 Bool xlib_createsvgicon(AScreen *ds, Client *c, const char *file);
 Bool xlib_createxpmicon(AScreen *ds, Client *c, const char *file);
 Bool xlib_createxbmicon(AScreen *ds, Client *c, const char *file);
@@ -19,6 +20,7 @@ int xlib_drawsep(AScreen *ds, const char *text, Drawable drawable, XftDraw *xftd
 void xlib_drawdockapp(AScreen *ds, Client *c);
 void xlib_drawnormal(AScreen *ds, Client *c);
 Bool xlib_initpng(char *path, AdwmPixmap *p);
+Bool xlib_initjpg(char *path, AdwmPixmap *p);
 Bool xlib_initsvg(char *path, AdwmPixmap *p);
 Bool xlib_initxpm(char *path, AdwmPixmap *p);
 Bool xlib_initxbm(char *path, AdwmPixmap *p);

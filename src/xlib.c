@@ -766,6 +766,14 @@ xlib_createpngicon(AScreen *ds, Client *c, const char *file)
 }
 
 Bool
+xlib_createjpgicon(AScreen *ds, Client *c, const char *file)
+{
+	EPRINTF("would use XLIB to create JPG icon %s\n", file);
+	/* for now */
+	return (False);
+}
+
+Bool
 xlib_createsvgicon(AScreen *ds, Client *c, const char *file)
 {
 	EPRINTF("would use XLIB to create SVG icon %s\n", file);
@@ -1264,6 +1272,12 @@ xlib_drawnormal(AScreen *ds, Client *c)
 
 Bool
 xlib_initpng(char *path, AdwmPixmap *px)
+{
+	return (False);
+}
+
+Bool
+xlib_initjpg(char *path, AdwmPixmap *px)
 {
 	return (False);
 }

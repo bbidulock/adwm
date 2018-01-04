@@ -487,17 +487,13 @@ ximage_drawbutton(AScreen *ds, Client *c, ElementType type, XftColor *col, int x
 	Geometry g = { 0, };
 	ButtonImage *bi;
 	AdwmPixmap *px;
-	int status, th;
+	int status, th = titleheight(ds);
 
 	if (!(bi = buttonimage(ds, c, type)) || !bi->present) {
 		XPRINTF("button %d has no button image\n", type);
 		return 0;
 	}
 	px = &bi->px;
-
-	th = ds->dc.h;
-	if (ds->style.outline)
-		th--;
 
 	/* geometry of the container */
 	g.x = x;
@@ -741,6 +737,10 @@ ximage_drawnormal(AScreen *ds, Client *c)
 {
 	size_t i;
 	int status;
+	unsigned long bg, bc;
+
+	if (!c->title)
+		return;
 
 	ds->dc.x = ds->dc.y = 0;
 	ds->dc.w = c->c.w;
@@ -754,19 +754,25 @@ ximage_drawnormal(AScreen *ds, Client *c)
 						   ds->dc.draw.h, ds->depth);
 		XftDrawChange(ds->dc.draw.xft, ds->dc.draw.pixmap);
 	}
-	XSetForeground(dpy, ds->dc.gc, getpixel(ds, c, ColBG));
-	XSetLineAttributes(dpy, ds->dc.gc, ds->style.border, LineSolid, CapNotLast,
-			   JoinMiter);
+
+	bg = getpixel(ds, c, ColBG);
+	bc = getpixel(ds, c, ColBorder);
+
+	{
+	xtrap_push(True,NULL);
+	XSetForeground(dpy, ds->dc.gc, bg);
+	XSetLineAttributes(dpy, ds->dc.gc, ds->style.border, LineSolid, CapNotLast, JoinMiter);
 	XSetFillStyle(dpy, ds->dc.gc, FillSolid);
-	status = XFillRectangle(dpy, ds->dc.draw.pixmap, ds->dc.gc,
-				ds->dc.x, ds->dc.y, ds->dc.w, ds->dc.h);
+	status = XFillRectangle(dpy, ds->dc.draw.pixmap, ds->dc.gc, ds->dc.x, ds->dc.y, ds->dc.w, ds->dc.h);
 	if (!status)
 		XPRINTF("Could not fill rectangle, error %d\n", status);
+	xtrap_pop();
+	}
+
 	/* Don't know about this... */
 	if (ds->dc.w < textw(ds, c->name, gethilite(c))) {
 		ds->dc.w -= elementw(ds, c, CloseBtn);
-		ximage_drawtext(ds, c->name, ds->dc.draw.pixmap, ds->dc.draw.xft,
-				gethues(ds, c), gethilite(c), ds->dc.x, ds->dc.y, ds->dc.w);
+		ximage_drawtext(ds, c->name, ds->dc.draw.pixmap, ds->dc.draw.xft, gethues(ds, c), gethilite(c), ds->dc.x, ds->dc.y, ds->dc.w);
 		ximage_drawbutton(ds, c, CloseBtn, gethues(ds, c), ds->dc.w);
 		goto end;
 	}
@@ -776,8 +782,7 @@ ximage_drawnormal(AScreen *ds, Client *c)
 	for (i = 0; i < strlen(ds->style.titlelayout); i++) {
 		if (ds->style.titlelayout[i] == ' ' || ds->style.titlelayout[i] == '-')
 			break;
-		ds->dc.x +=
-		    drawelement(ds, ds->style.titlelayout[i], ds->dc.x, AlignLeft, c);
+		ds->dc.x += drawelement(ds, ds->style.titlelayout[i], ds->dc.x, AlignLeft, c);
 		ds->dc.x += ds->style.spacing;
 	}
 	if (i == strlen(ds->style.titlelayout) || ds->dc.x >= ds->dc.w)
@@ -805,43 +810,43 @@ ximage_drawnormal(AScreen *ds, Client *c)
 	}
       end:
 	if (ds->style.outline) {
-		XSetForeground(dpy, ds->dc.gc, getpixel(ds, c, ColBorder));
-		XPRINTF(__CFMTS(c) "drawing line from +%d+%d to +%d+%d\n", __CARGS(c),
-			0, ds->dc.h - 1, ds->dc.w, ds->dc.h - 1);
-		XDrawLine(dpy, ds->dc.draw.pixmap, ds->dc.gc, 0, ds->dc.h - 1, ds->dc.w,
-			  ds->dc.h - 1);
+		XSetForeground(dpy, ds->dc.gc, bc);
+		XPRINTF(__CFMTS(c) "drawing line from +%d+%d to +%d+%d\n", __CARGS(c), 0, ds->dc.h - 1, ds->dc.w, ds->dc.h - 1);
+		xtrap_push(True,NULL);
+		XDrawLine(dpy, ds->dc.draw.pixmap, ds->dc.gc, 0, ds->dc.h - 1, ds->dc.w, ds->dc.h - 1);
+		xtrap_pop();
 	}
-	if (c->title) {
-		XPRINTF(__CFMTS(c) "copying title pixmap to %dx%d+%d+%d to +%d+%d\n",
-			__CARGS(c), c->c.w, ds->dc.h, 0, 0, 0, 0);
-		XCopyArea(dpy, ds->dc.draw.pixmap, c->title, ds->dc.gc, 0, 0, c->c.w,
-			  ds->dc.h, 0, 0);
-	}
+	XPRINTF(__CFMTS(c) "copying title pixmap to %dx%d+%d+%d to +%d+%d\n", __CARGS(c), c->c.w, ds->dc.h, 0, 0, 0, 0);
+	XCopyArea(dpy, ds->dc.draw.pixmap, c->title, ds->dc.gc, 0, 0, c->c.w, ds->dc.h, 0, 0);
+
+	if (!c->grips)
+		return;
+
 	ds->dc.x = ds->dc.y = 0;
 	ds->dc.w = c->c.w;
 	ds->dc.h = ds->style.gripsheight;
-	XSetForeground(dpy, ds->dc.gc, getpixel(ds, c, ColBG));
-	XSetLineAttributes(dpy, ds->dc.gc, ds->style.border, LineSolid, CapNotLast,
-			   JoinMiter);
+
+	{
+	xtrap_push(True,NULL);
+	XSetForeground(dpy, ds->dc.gc, bg);
+	XSetLineAttributes(dpy, ds->dc.gc, ds->style.border, LineSolid, CapNotLast, JoinMiter);
 	XSetFillStyle(dpy, ds->dc.gc, FillSolid);
-	status = XFillRectangle(dpy, ds->dc.draw.pixmap, ds->dc.gc,
-				ds->dc.x, ds->dc.y, ds->dc.w, ds->dc.h);
+	status = XFillRectangle(dpy, ds->dc.draw.pixmap, ds->dc.gc, ds->dc.x, ds->dc.y, ds->dc.w, ds->dc.h);
 	if (!status)
 		XPRINTF("Could not fill rectangle, error %d\n", status);
+	xtrap_pop();
+	}
+
 	if (ds->style.outline) {
-		XSetForeground(dpy, ds->dc.gc, getpixel(ds, c, ColBorder));
+		XSetForeground(dpy, ds->dc.gc, bc);
 		XDrawLine(dpy, ds->dc.draw.pixmap, ds->dc.gc, 0, 0, ds->dc.w, 0);
 		/* needs to be adjusted to do ds->style.gripswidth instead */
 		ds->dc.x = ds->dc.w / 2 - ds->dc.w / 5;
-		XDrawLine(dpy, ds->dc.draw.pixmap, ds->dc.gc, ds->dc.x, 0, ds->dc.x,
-			  ds->dc.h);
+		XDrawLine(dpy, ds->dc.draw.pixmap, ds->dc.gc, ds->dc.x, 0, ds->dc.x, ds->dc.h);
 		ds->dc.x = ds->dc.w / 2 + ds->dc.w / 5;
-		XDrawLine(dpy, ds->dc.draw.pixmap, ds->dc.gc, ds->dc.x, 0, ds->dc.x,
-			  ds->dc.h);
+		XDrawLine(dpy, ds->dc.draw.pixmap, ds->dc.gc, ds->dc.x, 0, ds->dc.x, ds->dc.h);
 	}
-	if (c->grips)
-		XCopyArea(dpy, ds->dc.draw.pixmap, c->grips, ds->dc.gc, 0, 0, c->c.w,
-			  ds->dc.h, 0, 0);
+	XCopyArea(dpy, ds->dc.draw.pixmap, c->grips, ds->dc.gc, 0, 0, c->c.w, ds->dc.h, 0, 0);
 }
 
 Bool

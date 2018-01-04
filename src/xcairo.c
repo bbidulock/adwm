@@ -132,6 +132,32 @@ xcairo_createdataicon(AScreen *ds, Client *c, unsigned w, unsigned h, long *data
 	return (False);
 }
 
+void
+xcairo_drawnormal(AScreen *ds, Client *c)
+{
+	Screen *screen;
+	cairo_surface_t *surf;
+
+	ds->dc.x = ds->dc.y = 0;
+	ds->dc.w = c->c.w;
+	ds->dc.h = ds->style.titleheight;
+	if (ds->dc.draw.w < ds->dc.w) {
+		ds->dc.draw.w = ds->dc.w;
+	}
+	if (c->surf.title) {
+		cairo_surface_destroy(c->surf.title);
+		c->surf.title = NULL;
+	}
+	screen = ScreenOfDisplay(dpy, ds->screen);
+	if (!(surf = cairo_xlib_surface_create_with_xrender_format(dpy, c->title, screen, ds->format, ds->dc.draw.w, ds->dc.draw.h))) {
+		EPRINTF("could not create surface\n");
+		return;
+	}
+	c->surf.title = surf;
+	ds->dc.draw.surf = surf;
+
+}
+
 Bool
 xcairo_initpng(char *path, AdwmPixmap *px)
 {

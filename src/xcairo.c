@@ -132,12 +132,27 @@ xcairo_createdataicon(AScreen *ds, Client *c, unsigned w, unsigned h, long *data
 	return (False);
 }
 
+static cairo_t *
+xcairo_create_context(AScreen *ds, Window win, int w, int h)
+{
+	cairo_t *cr = NULL;
+	Screen *screen;
+	cairo_surface_t *surf;
+	
+	screen = ScreenOfDisplay(dpy, ds->screen);
+	if (!(surf = cairo_xlib_surface_create_with_xrender_format(dpy, win, screen, ds->format, w, h))) {
+		EPRINTF("could not create surface\n");
+	} else if (!(cr = cairo_create(surf))) {
+		cairo_surface_destroy(surf);
+		EPRINTF("could not create context\n");
+	}
+	return (cr);
+}
+
 void
 xcairo_drawnormal(AScreen *ds, Client *c)
 {
-	Screen *screen;
 	cairo_t *cctx;
-	cairo_surface_t *surf;
 
 	ds->dc.x = ds->dc.y = 0;
 	ds->dc.w = c->c.w;
@@ -145,19 +160,8 @@ xcairo_drawnormal(AScreen *ds, Client *c)
 	if (ds->dc.draw.w < ds->dc.w) {
 		ds->dc.draw.w = ds->dc.w;
 	}
-	if (c->cctx.title) {
-		cairo_destroy(c->cctx.title);
-		c->cctx.title = NULL;
-	}
-	screen = ScreenOfDisplay(dpy, ds->screen);
-	if (!(surf = cairo_xlib_surface_create_with_xrender_format(dpy, c->title, screen, ds->format, ds->dc.draw.w, ds->dc.draw.h))) {
-		EPRINTF("could not create surface\n");
+	if (!(cctx = c->cctx.title) && !(cctx = xcairo_create_context(ds, c->title, ds->dc.draw.w, ds->dc.draw.h)))
 		return;
-	}
-	if (!(cctx = cairo_create(surf))) {
-		EPRINTF("could not create context\n");
-		return;
-	}
 	c->cctx.title = cctx;
 	ds->dc.draw.cctx = cctx;
 

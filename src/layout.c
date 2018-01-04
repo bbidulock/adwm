@@ -683,6 +683,25 @@ getdockappgeometry(Client *c, ClientGeometry *n)
 	c->s.h = n->h;
 }
 
+#ifdef USE_XCAIRO
+static void
+reconfigure_cairo(cairo_t *cr, XWindowChanges *wc, unsigned mask)
+{
+	if ((mask & CWWidth) && (mask & CWHeight))
+		cairo_xlib_surface_set_size(cairo_get_target(cr), wc->width, wc->height);
+	else if (mask & CWWidth)
+		cairo_xlib_surface_set_width(cairo_get_target(cr), wc->width);
+	else if (mask & CWHeight)
+		cairo_xlib_surface_set_height(cairo_get_target(cr), wc->height);
+}
+
+static void
+resize_cairo(cairo_t *cr, int w, int h)
+{
+	cairo_xlib_surface_set_size(cairo_get_target(cr), w, h);
+}
+#endif				/* USE_XCAIRO */
+
 static void
 reconfigure_dockapp(Client *c, const ClientGeometry *n, Bool force)
 {
@@ -727,11 +746,17 @@ reconfigure_dockapp(Client *c, const ClientGeometry *n, Bool force)
 		xtrap_push(1,_WCFMTS(fwc, fmask), _WCARGS(fwc, fmask));
 		XConfigureWindow(dpy, c->frame, fmask, &fwc);
 		xtrap_pop();
+#ifdef USE_XCAIRO
+		reconfigure_cairo(c->cctx.frame, &fwc, fmask);
+#endif
 	}
 	if (wmask) {
 		xtrap_push(1,_WCFMTS(wwc, wmask), _WCARGS(wwc, wmask));
 		XConfigureWindow(dpy, c->icon, wmask, &wwc);
 		xtrap_pop();
+#ifdef USE_XCAIRO
+		reconfigure_cairo(c->cctx.icon, &wwc, wmask);
+#endif
 	}
 	if (force || ((fmask | wmask) && !(wmask & (CWWidth | CWHeight))))
 		send_configurenotify(c);
@@ -864,6 +889,9 @@ reconfigure(Client *c, const ClientGeometry *n, Bool force)
 		xtrap_push(1, _WCFMTS(fwc, fmask), _WCARGS(fwc, fmask));
 		XConfigureWindow(dpy, c->frame, fmask, &fwc);
 		xtrap_pop();
+#ifdef USE_XCAIRO
+		reconfigure_cairo(c->cctx.frame, &fwc, fmask);
+#endif
 	}
 	getclientgeometry(c, &c->c);
 	/* do we send sync request _before_ configure? */
@@ -882,6 +910,9 @@ reconfigure(Client *c, const ClientGeometry *n, Bool force)
 		xtrap_push(1, _WCFMTS(wwc, wmask | CWBorderWidth), _WCARGS(wwc, wmask | CWBorderWidth));
 		XConfigureWindow(dpy, c->win, wmask | CWBorderWidth, &wwc);
 		xtrap_pop();
+#ifdef USE_XCAIRO
+		reconfigure_cairo(c->cctx.win, &wwc, wmask);
+#endif
 	}
 	/* ICCCM Version 2.0, §4.1.5 */
 	if (force || ((fmask | wmask) && !(wmask & (CWWidth | CWHeight))))
@@ -899,6 +930,9 @@ reconfigure(Client *c, const ClientGeometry *n, Bool force)
 			XRectangle r = { v, v, wwc.width, t };
 
 			XMoveResizeWindow(dpy, c->title, r.x, r.y, r.width, r.height);
+#ifdef USE_XCAIRO
+			resize_cairo(c->cctx.title, r.width, r.height);
+#endif
 		}
 	}
 	if (c->tgrip && (vchange || ((wmask | fmask) & (CWWidth|CWHeight)))) {
@@ -921,6 +955,11 @@ reconfigure(Client *c, const ClientGeometry *n, Bool force)
 			XMoveResizeWindow(dpy, c->tgrip, tr.x, tr.y, tr.width, tr.height);
 			XMoveResizeWindow(dpy, c->lgrip, lr.x, lr.y, lr.width, lr.height);
 			XMoveResizeWindow(dpy, c->rgrip, rr.x, rr.y, rr.width, rr.height);
+#ifdef USE_XCAIRO
+			resize_cairo(c->cctx.tgrip, tr.width, tr.height);
+			resize_cairo(c->cctx.lgrip, lr.width, lr.height);
+			resize_cairo(c->cctx.rgrip, rr.width, rr.height);
+#endif
 		}
 
 	}
@@ -933,6 +972,9 @@ reconfigure(Client *c, const ClientGeometry *n, Bool force)
 			XRectangle r = { 0, n->h - g, wwc.width, g };
 
 			XMoveResizeWindow(dpy, c->grips, r.x, r.y, r.width, r.height);
+#ifdef USE_XCAIRO
+			resize_cairo(c->cctx.grips, r.width, r.height);
+#endif
 		}
 	}
 	if (((c->title && t) || (c->grips && g) || (c->grips && v)) &&

@@ -370,12 +370,16 @@ fi
 AC_MSG_CHECKING([for xft use])
 AC_MSG_RESULT([${enable_use_xft:-no}])
 
+AH_TEMPLATE([PANGO],[Define to 1 when PANGO is supported.])
+AH_TEMPLATE([USE_PANGO],[Define to 1 to use PANGO for rendering glyphs.])
+
 AC_ARG_ENABLE([pango-xft],
 	AC_HELP_STRING([--disable-pango-xft],
 		[Disable PANGO XFT support @<:@default=auto@:>@]))
 if test "x$enable_pango_xft" != xno ; then
 	PKG_CHECK_MODULES([PANGOXFT],[pangoxft],
-		[AC_DEFINE([PANGOXFT],[1],[Define to 1 to support PANGO-XFT.])],
+		[AC_DEFINE([PANGO],[1])
+		 AC_DEFINE([PANGOXFT],[1],[Define to 1 to support PANGO-XFT.])],
 		[enable_pango_xft=no])
 else
 	AC_MSG_CHECKING([for pango xft])
@@ -386,6 +390,7 @@ AC_ARG_ENABLE([use-pango-xft],
 	AC_HELP_STRING([--enable-use-pango-xft],
 		[Enable use of PANGO-XFT for drawing glyphs @<:@default=false@:>@]))
 if test "x$enable_pango_xft" = xyes -a "x$enable_use_pango_xft" = xyes ; then
+	AC_DEFINE([USE_PANGO],[1])
 	AC_DEFINE([USE_PANGO_XFT],[1],[Define to 1 to use PANGO XFT backend for rendering glyphs.])
 else
 	enable_use_pango_xft=no
@@ -398,7 +403,8 @@ AC_ARG_ENABLE([pango-cairo],
 		[Disable PANGO CAIRO support @<:@default=auto@:>@]))
 if test "x$enable_pango_cairo" != xno ; then
 	PKG_CHECK_MODULES([PANGOCAIRO],[pangocairo],
-		[AC_DEFINE([PANGOCAIRO],[1],[Define to 1 to support PANGO-CAIRO.])],
+		[AC_DEFINE([PANGO],[1])
+		 AC_DEFINE([PANGOCAIRO],[1],[Define to 1 to support PANGO-CAIRO.])],
 		[enable_pango_cairo=no])
 else
 	AC_MSG_CHECKING([for pango cairo])
@@ -409,6 +415,7 @@ AC_ARG_ENABLE([use-pango-cairo],
 	AC_HELP_STRING([--enable-use-pango-cairo],
 		[Enable use of PANGO-CAIRO for drawing glyphs @<:@default=false@:>@]))
 if test "x$enable_pango_cairo" = xyes -a "x$enable_use_pango_cairo" = xyes ; then
+	AC_DEFINE([USE_PANGO],[1])
 	AC_DEFINE([USE_PANGO_CAIRO],[1],[Define to 1 to use PANGO CAIRO backend for rendering glyphs.])
 else
 	if test "x$enable_use_pango_cairo" = xyes ; then

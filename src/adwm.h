@@ -35,7 +35,6 @@
 #include <X11/Xproto.h>
 #include <X11/Xutil.h>
 #include <X11/Xresource.h>
-#include <X11/Xft/Xft.h>
 #include <X11/extensions/Xfixes.h>
 #ifdef RENDER
 #include <X11/extensions/Xrender.h>
@@ -82,6 +81,15 @@
 #endif
 #ifdef LIBSVG
 #include <svg-cairo.h>
+#endif
+#ifdef XFT
+#include <X11/Xft/Xft.h>
+#endif
+#ifdef PANGOXFT
+#include <pango/pangoxft.h>
+#endif
+#ifdef PANGOCAIRO
+#include <pango/pangocairo.h>
 #endif
 #ifdef STARTUP_NOTIFICATION
 #define SN_API_NOT_YET_FROZEN

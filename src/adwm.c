@@ -5415,25 +5415,25 @@ unmanage(Client *c, WithdrawCause cause)
 	}
 #endif
 #ifdef RENDER
-	if (c->pict_win) {
-		XRenderFreePicture(dpy, c->pict_win);
-		if (c->pict_icon) {
-			if (c->pict_icon != c->pict_win)
-				XRenderFreePicture(dpy, c->pict_icon);
-			c->pict_icon = None;
+	if (c->pict.win) {
+		XRenderFreePicture(dpy, c->pict.win);
+		if (c->pict.icon) {
+			if (c->pict.icon != c->pict.win)
+				XRenderFreePicture(dpy, c->pict.icon);
+			c->pict.icon = None;
 		}
-		c->pict_win = None;
+		c->pict.win = None;
 	}
-	if (c->pict_icon) {
-		XRenderFreePicture(dpy, c->pict_icon);
-		c->pict_icon = None;
+	if (c->pict.icon) {
+		XRenderFreePicture(dpy, c->pict.icon);
+		c->pict.icon = None;
 	}
 #endif
 	if (c->title) {
 #ifdef RENDER
-		if (c->pict_title) {
-			XRenderFreePicture(dpy, c->pict_title);
-			c->pict_title = None;
+		if (c->pict.title) {
+			XRenderFreePicture(dpy, c->pict.title);
+			c->pict.title = None;
 		}
 #endif
 		XDestroyWindow(dpy, c->title);
@@ -5445,9 +5445,9 @@ unmanage(Client *c, WithdrawCause cause)
 	}
 	if (c->grips) {
 #ifdef RENDER
-		if (c->pict_grips) {
-			XRenderFreePicture(dpy, c->pict_grips);
-			c->pict_grips = None;
+		if (c->pict.grips) {
+			XRenderFreePicture(dpy, c->pict.grips);
+			c->pict.grips = None;
 		}
 #endif
 		XDestroyWindow(dpy, c->grips);
@@ -5458,9 +5458,9 @@ unmanage(Client *c, WithdrawCause cause)
 	}
 	if (c->tgrip) {
 #ifdef RENDER
-		if (c->pict_tgrip) {
-			XRenderFreePicture(dpy, c->pict_tgrip);
-			c->pict_tgrip = None;
+		if (c->pict.tgrip) {
+			XRenderFreePicture(dpy, c->pict.tgrip);
+			c->pict.tgrip = None;
 		}
 #endif
 		XDestroyWindow(dpy, c->tgrip);
@@ -5471,9 +5471,9 @@ unmanage(Client *c, WithdrawCause cause)
 	}
 	if (c->lgrip) {
 #ifdef RENDER
-		if (c->pict_lgrip) {
-			XRenderFreePicture(dpy, c->pict_lgrip);
-			c->pict_lgrip = None;
+		if (c->pict.lgrip) {
+			XRenderFreePicture(dpy, c->pict.lgrip);
+			c->pict.lgrip = None;
 		}
 #endif
 		XDestroyWindow(dpy, c->lgrip);
@@ -5484,9 +5484,9 @@ unmanage(Client *c, WithdrawCause cause)
 	}
 	if (c->rgrip) {
 #ifdef RENDER
-		if (c->pict_rgrip) {
-			XRenderFreePicture(dpy, c->pict_rgrip);
-			c->pict_rgrip = None;
+		if (c->pict.rgrip) {
+			XRenderFreePicture(dpy, c->pict.rgrip);
+			c->pict.rgrip = None;
 		}
 #endif
 		XDestroyWindow(dpy, c->rgrip);

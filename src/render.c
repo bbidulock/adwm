@@ -205,7 +205,10 @@ createicon_pixmap(AScreen *ds, Client *c, Pixmap draw, Pixmap mask, unsigned w, 
 {
 	ButtonImage **bis, *bi;
 	AdwmPixmap *px;
-	Picture pict = None, alph = None;
+	Picture pict = None;
+#if 0
+	Picture alph = None;
+#endif
 	XRenderPictFormat *format;
 	XRenderPictureAttributes pa = {
 #ifdef ALPHAW32
@@ -223,6 +226,7 @@ createicon_pixmap(AScreen *ds, Client *c, Pixmap draw, Pixmap mask, unsigned w, 
 	Bool result = False;
 
 	if (mask) {
+#if 0
 		format = XRenderFindStandardFormat(dpy, PictStandardA1);
 		if (!(alph = XRenderCreatePicture(dpy, mask, format, pamask, &pa))) {
 			EPRINTF("cannot create alpha picture\n");
@@ -232,6 +236,12 @@ createicon_pixmap(AScreen *ds, Client *c, Pixmap draw, Pixmap mask, unsigned w, 
 		pa.alpha_x_origin = 0;
 		pa.alpha_y_origin = 0;
 		pamask |= CPAlphaMap | CPAlphaXOrigin | CPAlphaYOrigin;
+#else
+		pa.clip_mask = mask;
+		pa.clip_x_origin = 0;
+		pa.clip_y_origin = 0;
+		pamask |= CPClipMask | CPClipXOrigin | CPClipYOrigin;
+#endif
 	}
 #if 0
 	format = XRenderFindStandardFormat(dpy, PictStandardARGB32);
@@ -282,9 +292,11 @@ createicon_pixmap(AScreen *ds, Client *c, Pixmap draw, Pixmap mask, unsigned w, 
 		} else
 			EPRINTF("could not create picture\n");
 	}
+#if 0
       error:
 	if (alph)
 		XRenderFreePicture(dpy, alph);
+#endif
 	return (result);
 }
 #else				/* JUSTRENDER */
@@ -918,7 +930,7 @@ render_drawbutton(AScreen *ds, Client *c, ElementType type, XftColor *col, int x
 {
 	ElementClient *ec = &c->element[type];
 	Picture dst = ds->dc.draw.pict;
-	XftColor *fg;
+	XftColor *fg, *bg;
 	Geometry g = { 0, };
 	ButtonImage *bi;
 	AdwmPixmap *px;
@@ -943,9 +955,11 @@ render_drawbutton(AScreen *ds, Client *c, ElementType type, XftColor *col, int x
 	ec->eg.h = px->h;
 
 	fg = ec->pressed ? &col[ColFG] : &col[ColButton];
+	bg = bi->bg.pixel ? &bi->bg : &col[ColBG];
+	(void) bg;
 
 	if (px->pixmap.pict) {
-		XRenderComposite(dpy, PictOpOver, px->pixmap.pict, None, dst,
+		XRenderComposite(dpy, PictOpOver, px->pixmap.pict, px->pixmap.alph, dst,
 				 0, 0, 0, 0, ec->eg.x, ec->eg.y, ec->eg.w, ec->eg.h);
 		return g.w;
 	} else if (px->bitmap.pict) {
@@ -1083,12 +1097,12 @@ render_drawdockapp(AScreen *ds, Client *c)
 	/* create a new picture for the dock app each time */
 	if (!(dst = XRenderCreatePicture(dpy, c->frame, format, pamask, &pa)))
 		goto error;
-	if (c->pict_frame)
-		XRenderFreePicture(dpy, c->pict_frame);
-	c->pict_frame = dst;
-	if (!(src = c->pict_frame) && !(src = XRenderCreatePicture(dpy, c->icon, format, pamask, &pa)))
+	if (c->pict.frame)
+		XRenderFreePicture(dpy, c->pict.frame);
+	c->pict.frame = dst;
+	if (!(src = c->pict.frame) && !(src = XRenderCreatePicture(dpy, c->icon, format, pamask, &pa)))
 		goto error;
-	c->pict_icon = src;
+	c->pict.icon = src;
 	fill = XRenderCreateSolidFill(dpy, &col->color);
 	XRenderComposite(dpy, PictOpSrc, fill, None, dst, 0, 0, 0, 0, 0, 0, c->c.w, c->c.h);
 	XRenderComposite(dpy, PictOpOver, src, None, dst, 0, 0, 0, 0, c->r.x, c->r.y, c->r.w, c->r.h);
@@ -1122,12 +1136,16 @@ render_drawnormal(AScreen *ds, Client *c)
 	if (ds->dc.draw.w < ds->dc.w) {
 		ds->dc.draw.w = ds->dc.w;
 	}
-	if (!(dst = XRenderCreatePicture(dpy, c->title, ds->format, pamask, &pa)))
+	/* try freeing the old picture before creating the new one! */
+	if (c->pict.title) {
+		XRenderFreePicture(dpy, c->pict.title);
+		c->pict.title = None;
+	}
+	if (!(dst = XRenderCreatePicture(dpy, c->title, ds->format, pamask, &pa))) {
+		EPRINTF("could not create title picture\n");
 		return;
-	if (c->pict_title)
-		XRenderFreePicture(dpy, c->pict_title);
-	c->pict_title = dst;
-
+	}
+	c->pict.title = dst;
 	ds->dc.draw.pict = dst;
 
 	bg = &getcolor(ds, c, ColBG)->color;
@@ -1191,11 +1209,16 @@ render_drawnormal(AScreen *ds, Client *c)
 	ds->dc.x = ds->dc.y = 0;
 	ds->dc.w = c->c.w;
 	ds->dc.h = ds->style.gripsheight;
-	if (!(dst = XRenderCreatePicture(dpy, c->grips, ds->format, pamask, &pa)))
+	/* try freeing the old picture before creating the new one! */
+	if (c->pict.grips) {
+		XRenderFreePicture(dpy, c->pict.grips);
+		c->pict.grips = None;
+	}
+	if (!(dst = XRenderCreatePicture(dpy, c->grips, ds->format, pamask, &pa))) {
+		EPRINTF("could not create grips picture\n");
 		return;
-	if (c->pict_grips)
-		XRenderFreePicture(dpy, c->pict_grips);
-	c->pict_grips = dst;
+	}
+	c->pict.grips = dst;
 
 	{
 	xtrap_push(True,NULL);

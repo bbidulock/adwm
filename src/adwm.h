@@ -764,7 +764,7 @@ typedef struct {
 		Imlib_Image image;
 #endif
 #if defined RENDER
-		Picture pict;
+		Picture pict, alph;
 #endif
 #if defined XCAIRO
 		cairo_surface_t *surf, *clip;
@@ -1075,14 +1075,28 @@ struct Client {
 	Window tgrip;
 	Window frame;
 #ifdef RENDER
-	Picture pict_win;
-	Picture pict_icon;
-	Picture pict_title;
-	Picture pict_grips;
-	Picture pict_lgrip;
-	Picture pict_rgrip;
-	Picture pict_tgrip;
-	Picture pict_frame;
+	struct {
+		Picture win;
+		Picture icon;
+		Picture title;
+		Picture grips;
+		Picture lgrip;
+		Picture rgrip;
+		Picture tgrip;
+		Picture frame;
+	} pict;
+#endif
+#ifdef XCAIRO
+	struct {
+		cairo_surface_t *win;
+		cairo_surface_t *icon;
+		cairo_surface_t *title;
+		cairo_surface_t *grips;
+		cairo_surface_t *lgrip;
+		cairo_surface_t *rgrip;
+		cairo_surface_t *tgrip;
+		cairo_surface_t *frame;
+	} surf;
 #endif
 	Window time_window;
 	Window leader;
@@ -1252,6 +1266,9 @@ struct _FontInfo {
 };
 
 struct _DrawInfo {
+#ifdef XCAIRO
+	cairo_surface_t *surf;
+#endif
 #ifdef RENDER
 	Picture pict;
 #endif

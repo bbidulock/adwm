@@ -99,33 +99,10 @@ AC_FUNC_MALLOC
 AC_FUNC_REALLOC
 AC_CHECK_FUNCS([getcwd memmove regcomp select setlocale strchr strdup strerror strrchr])
 
+AS_BOX([X11 Extension Libraries])
+
 PKG_CHECK_MODULES([X11],[x11])
-PKG_CHECK_MODULES([XFT],[xft])
 PKG_CHECK_MODULES([XFIXES],[xfixes])
-
-AC_ARG_ENABLE([xrender],
-	AC_HELP_STRING([--disable-xrender],
-		[Disable RENDER support @<:@default=auto@:>@]))
-if test "x$enable_xrender" != xno ; then
-	PKG_CHECK_MODULES([XRENDER],[xrender],
-		[AC_DEFINE([RENDER],[1], [Define to 1 to support RENDER extension.])],
-		[enable_xrender=no])
-else
-	AC_MSG_CHECKING([for xrender])
-	AC_MSG_RESULT([disabled])
-fi
-AM_CONDITIONAL([HAVE_RENDER],[test  "x$enable_xrender" != "xno"])
-
-AC_ARG_ENABLE([use-xrender],
-	AC_HELP_STRING([--enable-use-xrender],
-		[Enable use of xrenderfor drawing @<:@default=auto@:>@]))
-if test "x$enable_xrender" != xno -a "x$enable_use_xrender" = xyes ; then
-	AC_DEFINE([USE_RENDER],[1],[Define to 1 to use RENDER for rendering pixmaps.])
-else
-	enable_use_xrender=no
-fi
-AC_MSG_CHECKING([for xrender use])
-AC_MSG_RESULT([${enable_use_xrender:-no}])
 
 AC_ARG_ENABLE([xdamage],
 	AC_HELP_STRING([--disable-xdamage],
@@ -215,6 +192,33 @@ else
 	AC_MSG_RESULT([disabled])
 fi
 
+AS_BOX([Rendering Libraries])
+
+AC_ARG_ENABLE([xrender],
+	AC_HELP_STRING([--disable-xrender],
+		[Disable RENDER support @<:@default=auto@:>@]))
+if test "x$enable_xrender" != xno ; then
+	PKG_CHECK_MODULES([XRENDER],[xrender],
+		[AC_DEFINE([RENDER],[1], [Define to 1 to support RENDER extension.])],
+		[enable_xrender=no])
+else
+	AC_MSG_CHECKING([for xrender])
+	AC_MSG_RESULT([disabled])
+fi
+AM_CONDITIONAL([HAVE_RENDER],[test  "x$enable_xrender" != "xno"])
+
+AC_ARG_ENABLE([use-xrender],
+	AC_HELP_STRING([--enable-use-xrender],
+		[Enable use of xrender for drawing @<:@default=auto@:>@]))
+if test "x$enable_xrender" != xno -a "x$enable_use_xrender" = xyes ; then
+	AC_DEFINE([USE_RENDER],[1],[Define to 1 to use RENDER for rendering pixmaps.])
+	enable_use_pango_cairo=no
+else
+	enable_use_xrender=no
+fi
+AC_MSG_CHECKING([for xrender use])
+AC_MSG_RESULT([${enable_use_xrender:-no}])
+
 AC_ARG_ENABLE([gdk-pixbuf],
 	AC_HELP_STRING([--disable-gdk-pixbuf],
 		[Disable gdk-pixbuf library @<:@default=auto@:>@]))
@@ -277,12 +281,17 @@ AC_ARG_ENABLE([use-xcairo],
 	AC_HELP_STRING([--enable-use-xcairo],
 		[Enable use of cairo-xlib-xrender to drawing @<:@default=no@:>@]))
 if test "x$enable_xcairo" != xno -a "x$enable_use_xcairo" = xyes ; then
-	AC_DEFINE([USE_XCAIRO],[1],[Define to 1 to use CAIRO XLIB XRENDER for rendering pixmaps.])
+	AC_DEFINE([USE_XCAIRO],[1],[Define to 1 to use CAIRO for rendering pixmaps.])
+	enable_use_xft=no
+	enable_use_pango_xft=no
+	enable_use_pango_cairo=yes
 else
 	enable_use_xcairo=no
 fi
 AC_MSG_CHECKING([for xcairo use])
 AC_MSG_RESULT([${enable_use_xcairo:-no}])
+
+AS_BOX([Image Loading Libraries])
 
 AC_ARG_ENABLE([xpm],
 	AC_HELP_STRING([--disable-libxpm],
@@ -332,6 +341,85 @@ else
 	AC_MSG_RESULT([disabled])
 fi
 
+AS_BOX([Font Rendering])
+
+AC_ARG_ENABLE([xft],
+	AC_HELP_STRING([--disable-xft],
+		[Disable XFT support @<:@default=auto@:>@]))
+if test "x$enable_xft" != xno ; then
+	PKG_CHECK_MODULES([XFT],[xft],
+		[AC_DEFINE([XFT],[1],[Define to 1 to support XFT.])],
+		[enable_xft=no])
+else
+	AC_MSG_CHECKING([for xft])
+	AC_MSG_RESULT([disabled])
+fi
+
+AC_ARG_ENABLE([use-xft],
+	AC_HELP_STRING([--disable-use-xft],
+		[Disable use of XFT for drawing glyphs @<:@default=true@:>@]))
+if test "x$enable_xft" != xno -a "x$enable_use_xft" != xno ; then
+	AC_DEFINE([USE_XFT],[1],[Define to 1 to use XFT for rendering glyphs.])
+else
+	if test "x$enable_use_xft" = xyes ; then
+		AC_MSG_ERROR([xft unavailable])
+	else
+		enable_use_xft=no
+	fi
+fi
+AC_MSG_CHECKING([for xft use])
+AC_MSG_RESULT([${enable_use_xft:-no}])
+
+AC_ARG_ENABLE([pango-xft],
+	AC_HELP_STRING([--disable-pango-xft],
+		[Disable PANGO XFT support @<:@default=auto@:>@]))
+if test "x$enable_pango_xft" != xno ; then
+	PKG_CHECK_MODULES([PANGOXFT],[pangoxft],
+		[AC_DEFINE([PANGOXFT],[1],[Define to 1 to support PANGO-XFT.])],
+		[enable_pango_xft=no])
+else
+	AC_MSG_CHECKING([for pango xft])
+	AC_MSG_RESULT([disabled])
+fi
+
+AC_ARG_ENABLE([use-pango-xft],
+	AC_HELP_STRING([--enable-use-pango-xft],
+		[Enable use of PANGO-XFT for drawing glyphs @<:@default=false@:>@]))
+if test "x$enable_pango_xft" = xyes -a "x$enable_use_pango_xft" = xyes ; then
+	AC_DEFINE([USE_PANGO_XFT],[1],[Define to 1 to use PANGO XFT backend for rendering glyphs.])
+else
+	enable_use_pango_xft=no
+fi
+AC_MSG_CHECKING([for pango xft use])
+AC_MSG_RESULT([${enable_use_pango_xft:-no}])
+
+AC_ARG_ENABLE([pango-cairo],
+	AC_HELP_STRING([--disable-pango-cairo],
+		[Disable PANGO CAIRO support @<:@default=auto@:>@]))
+if test "x$enable_pango_cairo" != xno ; then
+	PKG_CHECK_MODULES([PANGOCAIRO],[pangocairo],
+		[AC_DEFINE([PANGOCAIRO],[1],[Define to 1 to support PANGO-CAIRO.])],
+		[enable_pango_cairo=no])
+else
+	AC_MSG_CHECKING([for pango cairo])
+	AC_MSG_RESULT([disabled])
+fi
+
+AC_ARG_ENABLE([use-pango-cairo],
+	AC_HELP_STRING([--enable-use-pango-cairo],
+		[Enable use of PANGO-CAIRO for drawing glyphs @<:@default=false@:>@]))
+if test "x$enable_pango_cairo" = xyes -a "x$enable_use_pango_cairo" = xyes ; then
+	AC_DEFINE([USE_PANGO_CAIRO],[1],[Define to 1 to use PANGO CAIRO backend for rendering glyphs.])
+else
+	if test "x$enable_use_pango_cairo" = xyes ; then
+		AC_MSG_ERROR([pango cairo unavailable.])
+	else
+		enable_use_pango_cairo=no
+	fi
+fi
+AC_MSG_CHECKING([for pango cairo use])
+AC_MSG_RESULT([${enable_use_pango_cairo:-no}])
+
 AC_ARG_ENABLE([debug],
 	AC_HELP_STRING([--enable-debug],
 		[Enable debugging support @<:@default=disabled@:>@]))
@@ -340,6 +428,8 @@ if test "x$enable_debug" = xyes ; then
 fi
 AC_MSG_CHECKING([for debug support])
 AC_MSG_RESULT([${enable_debug:-no}])
+
+AS_BOX([Foreign Window Manager Support])
 
 AC_ARG_WITH([blackbox],
 	AC_HELP_STRING([--with-blackbox],

@@ -1088,15 +1088,15 @@ struct Client {
 #endif
 #ifdef XCAIRO
 	struct {
-		cairo_surface_t *win;
-		cairo_surface_t *icon;
-		cairo_surface_t *title;
-		cairo_surface_t *grips;
-		cairo_surface_t *lgrip;
-		cairo_surface_t *rgrip;
-		cairo_surface_t *tgrip;
-		cairo_surface_t *frame;
-	} surf;
+		cairo_t *win;
+		cairo_t *icon;
+		cairo_t *title;
+		cairo_t *grips;
+		cairo_t *lgrip;
+		cairo_t *rgrip;
+		cairo_t *tgrip;
+		cairo_t *frame;
+	} cctx;
 #endif
 	Window time_window;
 	Window leader;
@@ -1267,7 +1267,7 @@ struct _FontInfo {
 
 struct _DrawInfo {
 #ifdef XCAIRO
-	cairo_surface_t *surf;
+	cairo_t *cctx;
 #endif
 #ifdef RENDER
 	Picture pict;

@@ -17,7 +17,9 @@ AM_CFLAGS = \
 	$(LIBSVG_CFLAGS) \
 	$(PIXBUF_CFLAGS) \
 	$(IMLIB2_CFLAGS) \
-	$(XCAIRO_CFLAGS)
+	$(XCAIRO_CFLAGS) \
+	$(PANGOXFT_CFLAGS) \
+	$(PANGOCAIRO_CFLAGS)
 AM_CPPFLAGS = -include autoconf.h
 
 bin_PROGRAMS = adwm
@@ -29,6 +31,8 @@ adwm_SOURCES = adwm.h actions.h config.h draw.h imlib.h pixbuf.h xcairo.h render
 	       adwm.c actions.c config.c draw.c imlib.c pixbuf.c xcairo.c render.c ximage.c xlib.c \
 	       ewmh.c image.c layout.c parse.c resource.c tags.c texture.c icons.c
 adwm_LDADD = \
+	$(PANGOCAIRO_LIBS) \
+	$(PANGOXFT_LIBS) \
 	$(XCAIRO_LIBS) \
 	$(IMLIB2_LIBS) \
 	$(PIXBUF_LIBS) \

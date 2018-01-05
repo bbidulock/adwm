@@ -62,6 +62,7 @@ void tookfocus(Client *c);
 void tookselect(Client *c);
 void send_configurenotify(Client *c);
 Bool enterclient(XEvent *e, Client *c);
+Bool motionclient(XEvent *e, Client *c);
 Bool configureclient(Client *c, XEvent *e, int gravity);
 Bool configureshapes(Client *c);
 Bool configuremonitors(XEvent *e, Client *c);

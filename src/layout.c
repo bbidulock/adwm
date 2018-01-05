@@ -543,50 +543,117 @@ isfloating(Client *c, View *v)
 	return False;
 }
 
-Bool
-enterclient(XEvent *e, Client *c)
+static void
+sloppyfocus(Client *c)
 {
-	if (!c || !canselect(c)) {
-		XPRINTF(c, "FOCUS: cannot select client.\n");
-		return True;
-	}
-	if (c->skip.focus) {
-		XPRINTF(c, "FOCUS: should not focus (nor casually select) client.\n");
-		return True;
-	}
-	/* NOTE: this is where we can delay entering docks when theay are autoraised.  We 
-	   can use motion later to set the focus Need the timestamp from the Event,
-	   however.  Or we can select them here, but let the autoraise function delay
-	   until some time after the selected/focus time.  */
-
 	switch (scr->options.focus) {
 	case Clk2Focus:
 		break;
 	case SloppyFloat:
-		/* FIXME: incorporate isfloating() check into skip.sloppy setting */
-		if (!c->skip.sloppy && isfloating(c, c->cview)) {
-			XPRINTF(c, "FOCUS: sloppy focus\n");
-			if (!checkfocuslock(c, e->xany.serial))
-				focus(c);
-		}
+		XPRINTF(c, "FOCUS: sloppy focus\n");
+		focus(c);
 		break;
 	case AllSloppy:
-		if (!c->skip.sloppy) {
-			XPRINTF(c, "FOCUS: sloppy focus\n");
-			if (!checkfocuslock(c, e->xany.serial))
-				focus(c);
-		}
+		XPRINTF(c, "FOCUS: sloppy focus\n");
+		focus(c);
 		break;
 	case SloppyRaise:
-		if (!c->skip.sloppy) {
-			XPRINTF(c, "FOCUS: sloppy focus\n");
-			if (!checkfocuslock(c, e->xany.serial)) {
-				focus(c);
-				raiseclient(c); /* probably should not do this here */
-			}
-		}
+		XPRINTF(c, "FOCUS: sloppy focus\n");
+		focus(c);
+		raiseclient(c);	/* probably should not do this here */
 		break;
 	}
+}
+
+/* NOTE: this is where we can delay entering docks when they are autoraised.  We
+ * can use motion later to set the focus: need the timestamp from the Event,
+ * however.  Or we can select them here, but let the autoraise function delay
+ * until some time after the selected/focus time.  */
+
+static Bool
+delayfocus(Client *c, Time t)
+{
+	View *v;
+
+	if (!(v = c->cview))
+		return False;
+	if (!c->with.struts && !c->is.dockapp)
+		goto cancel_delay;
+	if (sel && (sel->with.struts || sel->is.dockapp))
+		goto cancel_delay;
+	switch (v->barpos) {
+	case StrutsDown:
+		if (VFEATURES(v, OVERLAP))
+			break;
+	case StrutsHide:
+		if (v->strut_time || (v->strut_time = t)) {
+			/* FIXME: config setting for strut delay */
+			if (t >= v->strut_time + 200) {
+				sloppyfocus(c);
+				v->strut_time = None;
+			}
+		}
+		return True;
+	case StrutsOff:
+	case StrutsOn:
+	default:
+		break;
+	}
+      cancel_delay:
+	v->strut_time = None;
+	return False;
+}
+
+static Bool
+wouldfocus(XEvent *e, Client *c)
+{
+	if (!c || !canselect(c)) {
+		XPRINTF(c, "FOCUS: cannot select client.\n");
+		return False;
+	}
+	if (c->skip.focus) {
+		XPRINTF(c, "FOCUS: should not focus (nor casually select) client.\n");
+		return False;
+	}
+	if (c->skip.sloppy || scr->options.focus == Clk2Focus) {
+		XPRINTF(c, "FOCUS: will not sloppy-focus client.\n");
+		return False;
+	}
+	if (scr->options.focus == SloppyFloat && !isfloating(c, c->cview)) {
+		XPRINTF(c, "FOCUS: will not sloppy-focus tiled client.\n");
+		return False;
+	}
+	if (checkfocuslock(c, e->xany.serial)) {
+		XPRINTF(c, "FOCUS: cannot focus while focus locked.\n");
+		return False;
+	}
+	return True;
+}
+
+Bool
+enterclient(XEvent *e, Client *c)
+{
+	XCrossingEvent *ev = &e->xcrossing;
+
+	if (!wouldfocus(e, c)) {
+		XPRINTF(c, "FOCUS: cannot autofocus client.\n");
+		return True;
+	}
+	if (delayfocus(c, ev->time)) {
+		XPRINTF(c, "FOCUS: delaying focus that would raise struts.\n");
+		return True;
+	}
+	sloppyfocus(c);
+	return True;
+}
+
+Bool
+motionclient(XEvent *e, Client *c)
+{
+	XMotionEvent *ev = &e->xmotion;
+
+	if (wouldfocus(e, c))
+		delayfocus(c, ev->time);
 	return True;
 }
 
@@ -687,6 +754,8 @@ getdockappgeometry(Client *c, ClientGeometry *n)
 static void
 reconfigure_cairo(cairo_t *cr, XWindowChanges *wc, unsigned mask)
 {
+	if (!cr)
+		return;
 	if ((mask & CWWidth) && (mask & CWHeight))
 		cairo_xlib_surface_set_size(cairo_get_target(cr), wc->width, wc->height);
 	else if (mask & CWWidth)
@@ -698,6 +767,8 @@ reconfigure_cairo(cairo_t *cr, XWindowChanges *wc, unsigned mask)
 static void
 resize_cairo(cairo_t *cr, int w, int h)
 {
+	if (!cr)
+		return;
 	cairo_xlib_surface_set_size(cairo_get_target(cr), w, h);
 }
 #endif				/* USE_XCAIRO */

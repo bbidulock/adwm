@@ -157,10 +157,11 @@ xcairo_drawnormal(AScreen *ds, Client *c)
 	ds->dc.x = ds->dc.y = 0;
 	ds->dc.w = c->c.w;
 	ds->dc.h = ds->style.titleheight;
-	if (ds->dc.draw.w < ds->dc.w) {
+	if (ds->dc.draw.w < ds->dc.w)
 		ds->dc.draw.w = ds->dc.w;
-	}
-	if (!(cctx = c->cctx.title) && !(cctx = xcairo_create_context(ds, c->title, ds->dc.draw.w, ds->dc.draw.h)))
+
+	if (!(cctx = c->cctx.title) &&
+	    !(cctx = xcairo_create_context(ds, c->title, ds->dc.draw.w, ds->dc.draw.h)))
 		return;
 	c->cctx.title = cctx;
 	ds->dc.draw.cctx = cctx;

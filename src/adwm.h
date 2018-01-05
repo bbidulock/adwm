@@ -1161,6 +1161,7 @@ struct View {
 	int row, col;			/* row and column in desktop layout */
 	Bool needarrange;		/* need to be rearranged */
 	Client *lastsel;		/* last selected client for view */
+	Time strut_time;		/* time that we entered a strut */
 };					/* per-tag settings */
 
 typedef enum {
@@ -1304,7 +1305,13 @@ typedef struct {
 	Bool fullgrips;
 	int opacity;
 	char titlelayout[32];
+#if defined USE_PANGO
+	PangoFontDescription *font[3];
+#elif defined USE_XFT
 	XftFont *font[3];
+#else
+#error No font description format defined.
+#endif
 	int drop[3];
 	union {
 		struct {

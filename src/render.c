@@ -1133,9 +1133,9 @@ render_drawnormal(AScreen *ds, Client *c)
 	ds->dc.x = ds->dc.y = 0;
 	ds->dc.w = c->c.w;
 	ds->dc.h = ds->style.titleheight;
-	if (ds->dc.draw.w < ds->dc.w) {
+	if (ds->dc.draw.w < ds->dc.w)
 		ds->dc.draw.w = ds->dc.w;
-	}
+
 	/* try freeing the old picture before creating the new one! */
 	if (c->pict.title) {
 		XRenderFreePicture(dpy, c->pict.title);

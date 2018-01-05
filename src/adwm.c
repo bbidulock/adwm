@@ -1070,7 +1070,10 @@ motionnotify(XEvent *e)
 		}
 		if (needdraw)
 			drawclient(c); /* just for button */
-		return True;
+	}
+	if (c || (c = findmanaged(ev->window))) {
+		if (c->cview && c->cview->strut_time)
+			motionclient(e, c);
 	}
 	return False;
 }

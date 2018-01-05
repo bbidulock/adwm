@@ -1362,6 +1362,7 @@ typedef struct {
 	Bool hidebastards;
 	Bool strutsactive;
 	Bool autoroll;
+	Time strutsdelay;
 	int focus;
 	int snap;
 	const char *command;

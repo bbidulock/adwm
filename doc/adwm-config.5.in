@@ -512,6 +512,21 @@ setting for a particular view can be altered using the
 .Cm struts
 key binding as described in
 .Xr @PACKAGE@-keys 5 .
+.It Li [ Ns Cm screen<s>. Ns Li ] Ns Cm strutsdelay Ar <milliseconds>
+Specifies the delay for exposing struts (panels and dock) when the
+pointer enters them and they are lowered or marginalized.  The default
+value is zero (0): no delay.  Usable values other than zero are between
+about 500 and 1000 milliseconds.
+.Pp
+Default:
+.Li Adwm* Ns Cm strutsdelay Ns Li : Ar 0
+.Pp
+.Sy Note:
+Setting a non-zero struts delay has the advantage that, when the
+pointer bounces off the edge of the monitor in tiled layouts, the layout
+is not instantly changed (which would make it necessary to move the
+pointer off of the dock or panel before continuing).  The zero (0)
+behaviour is quite annoying.
 .It Li [ Ns Cm screen<s>. Ns Li ] Ns Cm autoroll Ar <bool>
 Specifies whether shaded windows (window that are rolled up inside
 their title bars) should automatically be unshaded when the window

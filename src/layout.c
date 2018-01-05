@@ -543,6 +543,19 @@ isfloating(Client *c, View *v)
 	return False;
 }
 
+static Bool
+isdock(Client *c)
+{
+	return (c && (c->with.struts || c->is.dockapp)) ? True : False;
+}
+
+static Bool
+isbar(Client *c)
+{
+	return (c && (isdock(c) || WTCHECK(c, WindowTypeDock))) ? True : False;
+}
+
+
 static void
 sloppyfocus(Client *c)
 {
@@ -571,27 +584,27 @@ sloppyfocus(Client *c)
  * until some time after the selected/focus time.  */
 
 static Bool
-delayfocus(Client *c, Time t)
+delayedfocus(Client *c, Time t)
 {
 	View *v;
 
 	if (!(v = c->cview))
 		return False;
-	if (!c->with.struts && !c->is.dockapp)
+	if (!isdock(c))
 		goto cancel_delay;
-	if (sel && (sel->with.struts || sel->is.dockapp))
+	if (isdock(sel))
 		goto cancel_delay;
 	switch (v->barpos) {
 	case StrutsDown:
 		if (VFEATURES(v, OVERLAP))
 			break;
 	case StrutsHide:
-		if (v->strut_time || (v->strut_time = t)) {
-			/* FIXME: config setting for strut delay */
-			if (t >= v->strut_time + 200) {
-				sloppyfocus(c);
-				v->strut_time = None;
-			}
+		if (!v->strut_time)
+			v->strut_time = t;
+		/* FIXME: config setting for strut delay */
+		if (t >= v->strut_time + scr->options.strutsdelay) {
+			v->strut_time = None;
+			sloppyfocus(c);
 		}
 		return True;
 	case StrutsOff:
@@ -639,7 +652,7 @@ enterclient(XEvent *e, Client *c)
 		XPRINTF(c, "FOCUS: cannot autofocus client.\n");
 		return True;
 	}
-	if (delayfocus(c, ev->time)) {
+	if (delayedfocus(c, ev->time)) {
 		XPRINTF(c, "FOCUS: delaying focus that would raise struts.\n");
 		return True;
 	}
@@ -653,7 +666,7 @@ motionclient(XEvent *e, Client *c)
 	XMotionEvent *ev = &e->xmotion;
 
 	if (wouldfocus(e, c))
-		delayfocus(c, ev->time);
+		delayedfocus(c, ev->time);
 	return True;
 }
 
@@ -1383,7 +1396,7 @@ getworkarea(Monitor *m, Workarea *w)
 		break;
 	case StrutsDown:
 		if (!VFEATURES(v, OVERLAP)) {
-			if (sel && (sel->with.struts || sel->is.dockapp)) {
+			if (isdock(sel)) {
 				if (m->dock.position != DockNone)
 					wa = &m->dock.wa;
 				else
@@ -2661,11 +2674,11 @@ restack()
 			stack_clients(&s, c);
 	}
 	/* 3. Dockapps when a dockapp is selected and docks when selected. */
-	if (sel && (sel->with.struts || sel->is.dockapp)) {
+	if (isdock(sel)) {
 		for (s.i = 0; s.i < s.n; s.i++) {
 			if (!(c = s.cl[s.i]))
 				continue;
-			if (c->with.struts || c->is.dockapp)
+			if (isdock(c))
 				stack_clients(&s, c);
 		}
 	}
@@ -2675,7 +2688,7 @@ restack()
 			continue;
 		if (WTCHECK(c, WindowTypeDesk))
 			continue;
-		if (c->is.dockapp || c->with.struts || c->is.below)
+		if (isdock(c) || c->is.below)
 			continue;
 		if (WTCHECK(c, WindowTypeDock) || WTCHECK(c, WindowTypeSplash)
 		    || c->is.above)
@@ -2714,8 +2727,7 @@ restack()
 			continue;
 		if (WTCHECK(c, WindowTypeDesk))
 			continue;
-		if ((WTCHECK(c, WindowTypeDock) || c->is.dockapp || c->with.struts)
-		    || c->is.below)
+		if (isbar(c) || c->is.below)
 			stack_clients(&s, c);
 	}
 	/** 7. Windows with type Desk. **/

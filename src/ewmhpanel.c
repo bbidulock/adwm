@@ -76,7 +76,11 @@ setup()
 		}
 	XFreeModifiermap(modmap);
 	wa.override_redirect = 0;
+#if 0
 	wa.background_pixmap = ParentRelative;
+#else
+	wa.background_pixmap = None;
+#endif
 	wa.event_mask = ExposureMask | ButtonPressMask | KeyPressMask;
 	mw = DisplayWidth(dpy, screen) - mx;
 	my = bottom ? DisplayHeight(dpy, screen) - mh : 0;

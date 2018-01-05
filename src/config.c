@@ -309,7 +309,7 @@ initconfig(Bool reload)
 	options.hidebastards = atoi(getsessionres("hidebastards", "0"));
 	options.strutsactive = atoi(getsessionres("strutsactive", "1")) ? True : False;
 	options.autoroll = atoi(getsessionres("autoroll", "0")) ? True : False;
-	options.strutsdelay = atoi(getsessionres("strutsdelay", "0")); /* XXX: default for testing */
+	options.strutsdelay = atoi(getsessionres("strutsdelay", "500"));
 	options.focus = atoi(getsessionres("sloppy", "0"));
 	options.snap = atoi(getsessionres("snap", STR(SNAP)));
 	options.dockpos = atoi(getsessionres("dock.position", "1"));

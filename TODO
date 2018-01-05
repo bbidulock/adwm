@@ -87,6 +87,7 @@ Behaviour:
 * [ ] fix broken rollup function (maybe using XShape).
 * [x] fix broken key chains.
 * [x] fix auto-hide struts behavior
+* [x] add delay to auto-hide struts exposures
 * [x] add support for _OB_WM_{ACTION,STATE}_UNDECORATE
 * [x] always focus last selected window per view when possible
 * [x] fix resizing from maximized

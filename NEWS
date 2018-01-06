@@ -1,11 +1,60 @@
-adwm -- history of user-visible changes.  2017-12-19
+adwm -- history of user-visible changes.  2018-01-06
+
+Release adwm-0.7.2 released 2018-01-06
+--------------------------------------
+
+git shortlog -e -n -w80,6,8 0.7.2...HEAD
+
+
+
+
+Release adwm-0.7.2 released 2018-01-06
+--------------------------------------
+
+git shortlog -e -n -w80,6,8 0.7.1...0.7.2
+
+Brian Bidulock <bidulock@openss7.org> (33):
+      prepare for use of cairo and libsvg
+      prepare to use cairo and libsvg
+      prepare to use cairo and libsvg
+      start xcairo drawing files
+      prepare to use libjpeg
+      prepare to use libjpeg
+      libjpeg includes
+      start strapping in cairo
+      start building cairo draw functions
+      strap in more bitmap for xcairo
+      read xpm files to cairo surface
+      add JPG routines
+      add JPG stub routines
+      add JPG stub routines
+      add JPG stub routines
+      add JPG stub routines
+      building up cairo routines
+      move titleheight to where used by all
+      working up cairo draw routines
+      indentation
+      reorganize structures
+      working up cairo rendering
+      prepare to use pango for font rendering
+      more pango preparations
+      more cairo workup
+      causes problems
+      preliminary autohide delay implementation
+      provide and document strutsdelay option
+      works good with PointerMotionMask on client window
+      set strutsdelay default to 500 milliseconds
+      completed TODO item
+      add release notes
+      distribute release notes
+
 
 Release adwm-0.7.1 released 2017-12-19
 --------------------------------------
 
 git shortlog -e -n -w80,6,8 0.7.0...0.7.1
 
-Brian Bidulock <bidulock@openss7.org> (219):
+Brian Bidulock <bidulock@openss7.org> (223):
       m_spawn on button press instead of release
       prepare for drag-click separation of mouse actions
       reset pid after reload
@@ -225,6 +274,10 @@ Brian Bidulock <bidulock@openss7.org> (219):
       suppress some debugs
       update TODO
       update release files
+      further update release files
+      typo in configure.ac
+      allow build without imlib2
+      want to build without imlib2 or gdk-pixbuf
 
 
 Release adwm-0.7.0 released 2017-10-11
@@ -476,21 +529,5 @@ git shortlog -e -n -w80,6,8 0.6.1...0.6.2
 
 Brian Bidulock <bidulock@openss7.org> (2):
       fool: you did not remove previous pointer
-      update release files
-
-
-Release adwm-0.6.1 released 2016-07-08
---------------------------------------
-
-git shortlog -e -n -w80,6,8 0.6.0...0.6.1
-
-Brian Bidulock <bidulock@openss7.org> (8):
-      update TODO file
-      remove complete sequences from list
-      really remove assigned flag
-      remove another assigned flag
-      autogenerate GNU NEWS file
-      oops: lost autconf from autogen.sh
-      remove missing files
       update release files
 

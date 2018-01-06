@@ -1,5 +1,372 @@
 # created with git log --stat=76 -M -C -500|fmt -sct -w80
 
+commit eda0b96f26c1153ff248459e74ac6d4cec664eee
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Jan 6 09:14:41 2018 -0700
+
+    distribute release notes
+
+ Makefile.am | 11 ++++++++++-
+ RELEASE.md  | 23 ++++++++++++-----------
+ 2 files changed, 22 insertions(+), 12 deletions(-)
+
+commit f02a20a8ffdb8220976e1c60279f8c378141e83e
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Jan 6 09:09:24 2018 -0700
+
+    add release notes
+
+ RELEASE.md | 22 ++++++++++++++++++++++
+ 1 file changed, 22 insertions(+)
+
+commit 4928a732d3c26fbde8ca119437d87af4d15059b8
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri Jan 5 09:04:12 2018 -0700
+
+    completed TODO item
+
+ TODO | 1 +
+ 1 file changed, 1 insertion(+)
+
+commit 99acb8ce1d2b34d78be77fede3c9bf1388eedbcd
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri Jan 5 09:03:00 2018 -0700
+
+    set strutsdelay default to 500 milliseconds
+
+ doc/adwm-config.5.in | 16 ++++++++--------
+ src/config.c         |  2 +-
+ 2 files changed, 9 insertions(+), 9 deletions(-)
+
+commit 7ef4a3ba332b152f1222e3bf82e761170c314589
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri Jan 5 08:59:56 2018 -0700
+
+    works good with PointerMotionMask on client window
+
+ src/adwm.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+commit 8f19729b4936bcafdcdd3a121f8c1aaac2b3d2ea
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri Jan 5 08:17:55 2018 -0700
+
+    provide and document strutsdelay option
+
+ doc/adwm-config.5.in | 15 +++++++++++++++
+ src/adwm.h           |  1 +
+ src/config.c         |  3 +++
+ src/layout.c         | 46 +++++++++++++++++++++++++++++-----------------
+ 4 files changed, 48 insertions(+), 17 deletions(-)
+
+commit 3d903ce20cab5bdc14ba895928245fbe2f8d1c82
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri Jan 5 07:18:44 2018 -0700
+
+    preliminary autohide delay implementation
+
+ src/adwm.c   |   5 ++-
+ src/adwm.h   |   7 +++
+ src/layout.c | 133 ++++++++++++++++++++++++++++++++++++++++++-------------
+ src/layout.h |   1 +
+ src/render.c |   4 +-
+ src/xcairo.c |   7 +--
+ 6 files changed, 120 insertions(+), 37 deletions(-)
+
+commit 884a0a056de771c4899dbedf1330ff020d6c2572
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu Jan 4 20:36:05 2018 -0700
+
+    causes problems
+
+ src/ewmhpanel.c | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+commit 321973be8d722d855786ad17b9e39aac0b0e3663
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu Jan 4 21:03:01 2018 +0000
+
+    more cairo workup
+
+ src/layout.c | 42 ++++++++++++++++++++++++++++++++++++++++++
+ src/xcairo.c | 32 ++++++++++++++++++--------------
+ 2 files changed, 60 insertions(+), 14 deletions(-)
+
+commit 976f9f707f8bec7a5397cde23692183bf759c462
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu Jan 4 00:32:37 2018 -0700
+
+    more pango preparations
+
+ configure.ac | 11 +++++++++--
+ src/adwm.h   | 10 +++++++++-
+ 2 files changed, 18 insertions(+), 3 deletions(-)
+
+commit d10e805bc38d89a40db954127ac8d1082434eb1d
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Jan 3 23:59:36 2018 -0700
+
+    prepare to use pango for font rendering
+
+ configure.ac    | 142 ++++++++++++++++++++++++++++++++++++++++++----------
+ src/Makefile.am |   6 ++-
+ src/adwm.h      |  20 ++++----
+ src/xcairo.c    |  15 ++++--
+ 4 files changed, 141 insertions(+), 42 deletions(-)
+
+commit 2c3fa9f426e4639f573498e5961eadbc25bd8824
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Jan 3 21:01:16 2018 -0700
+
+    working up cairo rendering
+
+ src/xcairo.c | 26 ++++++++++++++++++++++++++
+ 1 file changed, 26 insertions(+)
+
+commit 975a009056aad221c8b222f5c63ebcd8b34c8bd7
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Jan 3 21:00:53 2018 -0700
+
+    reorganize structures
+
+ src/adwm.c   | 50 ++++++++++++++++++++++++-------------------------
+ src/adwm.h   | 35 +++++++++++++++++++++++++---------
+ src/render.c | 57 +++++++++++++++++++++++++++++++++++++++-----------------
+ 3 files changed, 91 insertions(+), 51 deletions(-)
+
+commit 8cbb0a3e87f69f5ba46e0dbb428554fc0cfe0786
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Jan 3 21:00:05 2018 -0700
+
+    indentation
+
+ src/ximage.c | 81 ++++++++++++++++++++++++++++++--------------------------
+ 1 file changed, 43 insertions(+), 38 deletions(-)
+
+commit 3cb1c5d61205d4c1b5e97d2621b84f0410869781
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Dec 31 08:43:18 2017 -0700
+
+    working up cairo draw routines
+
+ src/xcairo.c | 114 +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 114 insertions(+)
+
+commit 7a0123b3b749d1ba91f03fa047b5556ab4996812
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Dec 31 08:42:53 2017 -0700
+
+    move titleheight to where used by all
+
+ src/draw.c   | 9 +++++++++
+ src/draw.h   | 1 +
+ src/render.c | 9 ---------
+ 3 files changed, 10 insertions(+), 9 deletions(-)
+
+commit d925c8df8a09a9b67708ad252e9707038a441e72
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Dec 31 00:34:31 2017 -0700
+
+    building up cairo routines
+
+ src/xcairo.c | 33 +++++++++++++++++++++++++++++++++
+ src/xcairo.h |  2 ++
+ 2 files changed, 35 insertions(+)
+
+commit 188a1feb9c7605a7b03cb319afa365957dfa663b
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Dec 31 00:34:01 2017 -0700
+
+    add JPG stub routines
+
+ src/xlib.c | 14 ++++++++++++++
+ src/xlib.h |  2 ++
+ 2 files changed, 16 insertions(+)
+
+commit 8f2e947d5a25f2b3f3b5539741a9c4371ab0feee
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Dec 31 00:33:45 2017 -0700
+
+    add JPG stub routines
+
+ src/ximage.c | 24 ++++++++++++++++++++++++
+ src/ximage.h |  2 ++
+ 2 files changed, 26 insertions(+)
+
+commit 832aa01291dd7b855df0ce7fa6c6dcd45270dcd1
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Dec 31 00:33:07 2017 -0700
+
+    add JPG stub routines
+
+ src/render.c | 14 ++++++++++++++
+ src/render.h |  2 ++
+ 2 files changed, 16 insertions(+)
+
+commit 7fa4db71497b85a18224426504f9d93ee84d9da4
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Dec 31 00:32:43 2017 -0700
+
+    add JPG stub routines
+
+ src/imlib.c | 14 ++++++++++++++
+ src/imlib.h |  2 ++
+ 2 files changed, 16 insertions(+)
+
+commit 4a6a184851301b0a5e3579afa556a3c0d9cf7f61
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Dec 31 00:32:00 2017 -0700
+
+    add JPG routines
+
+ src/draw.c | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
+
+commit 24002a1472d62b3e3101f56348ab1e88b1f23da0
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Dec 30 11:05:00 2017 -0700
+
+    read xpm files to cairo surface
+
+ src/adwm.h   |   2 +-
+ src/xcairo.c | 115 ++++++++++++++++++++++++++++++++++++++++++++++---------
+ 2 files changed, 98 insertions(+), 19 deletions(-)
+
+commit 631721b2bce807f86f03bb86af1a52c8f36c1e42
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Dec 30 10:35:42 2017 -0700
+
+    strap in more bitmap for xcairo
+
+ src/xcairo.c | 48 ++++++++++++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 46 insertions(+), 2 deletions(-)
+
+commit 8bf2fb2730acb367fb05042a5f5ad906d5f91936
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Dec 30 10:28:40 2017 -0700
+
+    start building cairo draw functions
+
+ src/adwm.h   |  3 +++
+ src/xcairo.c | 41 +++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 44 insertions(+)
+
+commit 78b8de46f8968460d430be57845374f2564a7cc8
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Dec 30 09:57:27 2017 -0700
+
+    start strapping in cairo
+
+ src/Makefile.am |  4 ++--
+ src/draw.c      | 18 ++++++++++++++++++
+ src/xcairo.c    |  6 ++----
+ 3 files changed, 22 insertions(+), 6 deletions(-)
+
+commit e0e433f329e53eaee53f6fdb5e1a6f7864ab02d1
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Dec 30 07:34:15 2017 -0700
+
+    libjpeg includes
+
+ src/adwm.h | 3 +++
+ 1 file changed, 3 insertions(+)
+
+commit 166518501cb02b379b06195bd9ed859b5188a883
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Dec 30 07:33:59 2017 -0700
+
+    prepare to use libjpeg
+
+ src/Makefile.am | 2 ++
+ 1 file changed, 2 insertions(+)
+
+commit 63340a5ffcdffc757eb3e8c61c8e94f8dde520b6
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Dec 30 07:33:25 2017 -0700
+
+    prepare to use libjpeg
+
+ configure.ac | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
+
+commit 36bd43582a781132770fd1e655ae479611edc59d
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Dec 30 06:50:42 2017 -0700
+
+    start xcairo drawing files
+
+ src/xcairo.c | 24 ++++++++++++++++++++++++
+ src/xcairo.h | 31 +++++++++++++++++++++++++++++++
+ 2 files changed, 55 insertions(+)
+
+commit 44eebb6942edd8df914ca33fea34f4c5d7690523
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Dec 30 06:49:45 2017 -0700
+
+    prepare to use cairo and libsvg
+
+ src/adwm.h | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+commit 5c57010800f44de9e62d4eaaec69da104e0f6649
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Dec 30 06:44:05 2017 -0700
+
+    prepare to use cairo and libsvg
+
+ src/Makefile.am | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
+
+commit 67990315628ecc5dd1ab7fd789c9d46dc1002769
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Dec 30 06:14:37 2017 -0700
+
+    prepare for use of cairo and libsvg
+
+ configure.ac | 35 +++++++++++++++++++++++++++++++++++
+ 1 file changed, 35 insertions(+)
+
+commit 1f257c74897f29aa1745ce952d5e6118e3dc840d
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Dec 19 02:45:05 2017 -0700
+
+    want to build without imlib2 or gdk-pixbuf
+
+ configure.sh | 2 ++
+ 1 file changed, 2 insertions(+)
+
+commit 5c5bb0d5b62e85b132b70f2d4e520469ca5ea096
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Dec 19 02:44:40 2017 -0700
+
+    allow build without imlib2
+
+ src/texture.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+commit 7ae6dbde0e599faf9798df059d3de9856e833e5d
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Dec 19 02:44:29 2017 -0700
+
+    typo in configure.ac
+
+ configure.ac | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+commit 64e89d7a67f1efc05269d873a31440d94085d553
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Dec 19 02:13:06 2017 -0700
+
+    further update release files
+
+ AUTHORS      |  2 +-
+ ChangeLog    | 47 +++++++++++++++++++++++------------------------
+ NEWS         |  8 +++++---
+ README       |  6 +++---
+ README.md    |  6 +++---
+ configure.ac |  4 ++--
+ 6 files changed, 37 insertions(+), 36 deletions(-)
+
 commit 667376ca90359dda0ece440355c51c6a2efde2aa
 Author: Brian Bidulock <bidulock@openss7.org>
 Date:   Tue Dec 19 02:11:08 2017 -0700
@@ -4888,477 +5255,3 @@ Date:   Fri Oct 3 05:20:58 2014 -0600
 
  src/adwm.c | 32 ++++++++++++++++++++++++++++----
  1 file changed, 28 insertions(+), 4 deletions(-)
-
-commit 4895a76b09deee7702dd90221c1a307f00f03d9b
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Sun Sep 21 15:07:53 2014 -0600
-
-    updated NEWS file for release
-
- NEWS.in | 57 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 57 insertions(+)
-
-commit d78d0e2a4a3e9885e0026dd4f660332944300db2
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Sun Sep 21 15:01:46 2014 -0600
-
-    0.5.2 release
-
- README | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
-
-commit 140af72b7503b5f0516b778a7aaa041de48c98a5
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Sun Sep 21 14:17:29 2014 -0600
-
-    updated readme
-
- README    | 16 ++++++++--------
- README.in | 12 ++++++------
- 2 files changed, 14 insertions(+), 14 deletions(-)
-
-commit 184b3ca249417425f46e8a79c3177cc970832e75
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Fri Sep 19 07:35:19 2014 -0600
-
-    make sure titles generate enter and leave events
-
- README     | 6 +++---
- src/adwm.c | 2 +-
- 2 files changed, 4 insertions(+), 4 deletions(-)
-
-commit d4db65da88a118ef12d82581b416d5aac1a3a2ea
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Fri Sep 19 00:38:48 2014 -0600
-
-    get button hovering working correctly
-
- src/adwm.c | 63 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 62 insertions(+), 1 deletion(-)
-
-commit 60063945e7c1e515afccf70b7801d75def54ce6f
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Fri Sep 19 00:03:42 2014 -0600
-
-    correct button logic error
-
- src/adwm.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-commit 1614c588cd03b18b6a783e0de936202a52d44f65
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Fri Sep 19 00:00:51 2014 -0600
-
-    better focus behaviour for buttons
-
- src/draw.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-commit 9dbf5dc324548eb8327f8569b59a69357c8866f5
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Thu Sep 18 23:45:36 2014 -0600
-
-    fix some button behaviour
-
- README             |  4 ++--
- configure.template |  2 ++
- data/Makefile.am   | 14 +++++++++++++-
- data/close.xbm     |  4 ++--
- data/fill.xbm      |  4 ++++
- data/float.xbm     |  4 ++++
- data/iconify.xbm   |  4 ++--
- data/lhalf.xbm     |  4 ++++
- data/max.xbm       |  4 ++--
- data/menu.xbm      |  4 ++++
- data/resize.xbm    |  4 ++++
- data/rhalf.xbm     |  4 ++++
- data/shade.xbm     |  4 ++++
- data/stick.xbm     |  4 ++++
- doc/adwm.1         |  4 +++-
- src/actions.c      | 26 ++++++++++++++++++++++++++
- src/actions.h      |  1 +
- src/adwm.c         |  1 +
- src/adwm.h         |  3 +++
- src/adwm_adwm.c    |  8 ++++++++
- src/config.c       |  7 +++++++
- src/draw.c         | 28 ++++++++++++++++++++++++----
- src/ewmh.c         |  1 +
- src/parse.c        |  3 ++-
- src/tags.c         | 13 ++++---------
- 25 files changed, 135 insertions(+), 24 deletions(-)
-
-commit c7cc20a2197d6c3033df3a8e82e18ab6a9dd6268
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Wed Sep 17 23:13:36 2014 -0600
-
-    force configure in response to configure-request
-
- src/adwm.c   |  2 +-
- src/layout.c | 61 ++++++++++++++++++++++++++++++--------------------------
- 2 files changed, 34 insertions(+), 29 deletions(-)
-
-commit cad8a4501c5f037abc2e1db51372516c92af3ff1
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Wed Sep 17 17:40:03 2014 -0600
-
-    split nmaster from ncolumns
-
- src/actions.c |  33 ++++++++++++
- src/actions.h |   1 +
- src/layout.c  | 149 +++++++++++++++++++++++++++++-------------------------
- src/layout.h  |   4 ++
- src/parse.c   |   2 +-
- 5 files changed, 118 insertions(+), 71 deletions(-)
-
-commit 5fc1ee48afbae247ddc5ef192829e9443cd930a2
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Wed Sep 17 17:17:57 2014 -0600
-
-    process the desktop layout when add or del views
-
- src/tags.c | 9 ++++++---
- 1 file changed, 6 insertions(+), 3 deletions(-)
-
-commit 2f55cbeafa40d6c444acb4739e283b0b8657fba9
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Wed Sep 17 03:46:04 2014 -0600
-
-    handle some key binding defaults better
-
- README                     |   6 +-
- data/bykeys.adwm           | 126 ++++++++++++++++++++---------------------
- data/keysrc                |  36 ++++++------
- data/styles/Default/keysrc |  36 ++++++------
- src/parse.c                |  65 ++++++++++-----------
- 5 files changed, 133 insertions(+), 136 deletions(-)
-
-commit b711ad650e59a7b31b7f350a7ef50dda2f7b5562
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Wed Sep 17 01:54:57 2014 -0600
-
-    update default style
-
- data/styles/Default/stylerc | 280 ++++++++++++++++++++--------------------
- 1 file changed, 140 insertions(+), 140 deletions(-)
-
-commit eca2a9b0beab169fbf0448f9fcf22ee3085aa36d
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Wed Sep 17 01:52:09 2014 -0600
-
-    update default keys
-
- data/keysrc                |  18 +--
- data/styles/Default/keysrc | 311 +++++++++++++++++++++++++++++++----------
- 2 files changed, 245 insertions(+), 84 deletions(-)
-
-commit 1413be1ae682cb9f12216473655319be3de22472
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Wed Sep 17 01:04:59 2014 -0600
-
-    reduce verbosity
-
- src/parse.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-commit ded2e86b6456ebcb61e4498fd4b59b70cf6fc09e
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Wed Sep 17 00:29:14 2014 -0600
-
-    no double free on key args
-
- src/parse.c | 20 ++++++++++----------
- 1 file changed, 10 insertions(+), 10 deletions(-)
-
-commit 85c8a8e3d34aa57b486d660e07502efbfab6d825
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Tue Sep 16 12:54:37 2014 -0600
-
-    convert key arrays to lists
-
- src/adwm.c        |  25 +++++-----
- src/adwm.h        |   3 +-
- src/adwm.valgrind |   2 +-
- src/adwm_adwm.c   |   2 +
- src/parse.c       | 132 +++++++++++++++++++++++++++++++++++++++-----------
- src/parse.h       |   1 +
- 6 files changed, 121 insertions(+), 44 deletions(-)
-
-commit 7fd323fa479687ea0b43fc71f1ffc1904bc0fcf5
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Mon Sep 15 09:28:09 2014 -0600
-
-    respond to hup better, another segfault
-
- src/adwm.c  | 2 +-
- src/parse.c | 2 ++
- 2 files changed, 3 insertions(+), 1 deletion(-)
-
-commit 2da25af942be2708e86209da809f197218c8d6d0
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Mon Sep 15 08:52:56 2014 -0600
-
-    fix null pointer dereference
-
- README     | 6 +++---
- src/draw.c | 2 +-
- 2 files changed, 4 insertions(+), 4 deletions(-)
-
-commit f96c83439d5074bb4115e8c2bc9f4ddf723acca4
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Mon Sep 15 08:25:02 2014 -0600
-
-    support style reload
-
- README        |   6 +--
- src/actions.c |   6 +++
- src/actions.h |   1 +
- src/adwm.c    |  66 +++++++++++++++++++++++-
- src/adwm.h    |   1 +
- src/config.c  |  58 ++++++++++++---------
- src/draw.c    | 151 +++++++++++++++++++++++++++++++++++++++---------------
- src/draw.h    |   2 +-
- src/ewmh.c    |  14 ++---
- src/parse.c   |  43 +++++++++++++++-
- src/tags.c    |   8 +--
- src/tags.h    |   2 +
- 12 files changed, 273 insertions(+), 85 deletions(-)
-
-commit af4e6ea84095a537fff7ef78b78d8b3bbb6895fc
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Sat Sep 13 21:22:23 2014 -0600
-
-    search for pixmaps in various proper directories
-
- README                     |   6 +-
- data/Makefile.am           |   9 +-
- data/adwmrc                |   3 -
- data/styles/Default/keysrc | 309 ++++++++++-------------------------------
- src/adwm.h                 |   3 +-
- src/adwm_adwm.c            |   2 +-
- src/config.c               | 151 +++++++++++++++++++-
- src/config.h               |   1 +
- src/draw.c                 |  31 +++--
- src/ewmh.c                 |   3 +
- 10 files changed, 255 insertions(+), 263 deletions(-)
-
-commit 922ca819b6ecc81db3314943fb62064347bff6d1
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Fri Sep 12 07:52:18 2014 -0600
-
-    updated default keys
-
- NOTES                            | 469 ++++++++++---------
- data/{bykeys.old => bykeys.adwm} | 274 +++++++-----
- data/bykeys.awesome              | 134 +++---
- data/bykeys.blackbox             | 136 +++---
- data/bykeys.dwm                  | 102 ++---
- data/bykeys.echinus              | 156 +++----
- data/bykeys.fluxbox              | 219 ++++-----
- data/bykeys.icewm                | 168 +++----
- data/bykeys.metacity             | 142 +++---
- data/bykeys.old                  | 846 +++++++++++++++++------------------
- data/bykeys.openbox              |  69 +--
- data/bykeys.pekwm                | 266 ++++++-----
- data/bykeys.spectrwm             | 233 +++++-----
- data/bykeys.velox                |  72 +--
- data/bykeys.wmaker               | 143 +++---
- data/keysrc                      | 744 +++++++++++++++---------------
- data/keysrc.adwm                 | 278 ++++++++++++
- data/keysrc.old                  | 292 +++++-------
- data/styles/Default/keysrc       | 488 +++++++++++++++-----
- 19 files changed, 2941 insertions(+), 2290 deletions(-)
-
-commit 3e1a539dbea7aa5baae7fbb449e49fe9c850a020
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Tue Sep 9 00:26:20 2014 -0600
-
-    working up default keys
-
- NOTES                | 506 ++++++++++++++++++++----------------
- data/adwm.keysrc     | 656 +++++++++++++++++++++++++++--------------------
- data/bykeys          | 423 ++++++++++++++++++++++++++++++
- data/bykeys.awesome  |  67 +++++
- data/bykeys.blackbox |  56 ++++
- data/bykeys.dwm      |  51 ++++
- data/bykeys.echinus  |  75 ++++++
- data/bykeys.fluxbox  | 102 ++++++++
- data/bykeys.icewm    |  84 ++++++
- data/bykeys.metacity |  65 +++++
- data/bykeys.old      | 423 ++++++++++++++++++++++++++++++
- data/bykeys.openbox  |  33 +++
- data/bykeys.pekwm    | 103 ++++++++
- data/bykeys.spectrwm | 115 +++++++++
- data/bykeys.velox    |  36 +++
- data/bykeys.wmaker   |  70 +++++
- data/keysrc          | 434 +++++++++++++++++++++----------
- data/keysrc.awesome  | 134 +++++-----
- data/keysrc.dwm      | 103 ++++----
- data/keysrc.echinus  | 152 ++++++-----
- data/keysrc.old      | 202 +++++++++++++++
- data/keysrc.openbox  |  66 ++---
- data/keysrc.spectrwm | 230 ++++++++---------
- data/keysrc.velox    |  72 +++---
- data/keysrc.wmaker   |  20 +-
- 25 files changed, 3253 insertions(+), 1025 deletions(-)
-
-commit ff4af873840b6c01064af11b19b25ae980d9c989
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Sun Sep 7 15:18:40 2014 -0600
-
-    document focusmain and focusurgent
-
- doc/adwm-keys.1 | 6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
-
-commit 70ffc8829ef52ad222171936bd5b47494c8e3d7f
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Sun Sep 7 15:13:57 2014 -0600
-
-    add focusmain and focusurgent
-
- src/actions.c | 14 ++++++++++++++
- src/actions.h |  2 ++
- src/adwm.c    | 48 ++++++++++++++++++++++++++++++++++++++++++++++++
- src/adwm.h    |  2 ++
- src/parse.c   |  2 ++
- 5 files changed, 68 insertions(+)
-
-commit 3b6538883eff4bbe39ee78791be9de28fa1113b8
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Sun Sep 7 13:50:41 2014 -0600
-
-    add flipview, flipzone, flipwins
-
- src/actions.c | 18 ++++++++++++++++++
- src/actions.h |  3 +++
- src/layout.c  | 33 +++++++++++++++++++++++++++++++++
- src/layout.h  |  3 +++
- src/parse.c   |  3 +++
- 5 files changed, 60 insertions(+)
-
-commit c81eb8590184e195bba373e0b1d3e3f0a716a8fa
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Sun Sep 7 13:33:33 2014 -0600
-
-    limite client list updates
-
- README       |  6 +++---
- src/ewmh.c   | 11 +++++++++--
- src/ewmh.h   |  2 ++
- src/layout.c | 39 ++++++++++++++++++++++++++++-----------
- 4 files changed, 42 insertions(+), 16 deletions(-)
-
-commit e67c6ea516993499d40f1bbc21a717d4f86e4d77
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Sun Sep 7 08:59:22 2014 -0600
-
-    do not multiple set PointerRoot
-
- src/adwm.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-commit dcde3c0cd7d65cf1d04784e386737c994cfaad8d
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Sun Sep 7 08:57:33 2014 -0600
-
-    do not attempt to refocus last focusable window
-
- src/adwm.c | 5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
-
-commit 024b87b2309c684ffc113a0d8e431bb555b89f78
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Sun Sep 7 08:53:14 2014 -0600
-
-    do not attempt to refocus destroyed clients
-
- src/adwm.c | 93 ++++++++++++++++++++++++++++++++--------------------------
- 1 file changed, 51 insertions(+), 42 deletions(-)
-
-commit d846adbc070a43a63ac8d36ce6f3f76ef3cf7a88
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Sun Sep 7 07:55:22 2014 -0600
-
-    even better focus behavior
-
- README       |  6 +++---
- configure.sh |  8 ++++----
- src/adwm.c   | 60 +++++++++++++++++++++++++++-----------------------------
- src/adwm.h   | 13 ++++++++++++
- src/layout.c | 17 ++--------------
- src/layout.h |  1 -
- 6 files changed, 51 insertions(+), 54 deletions(-)
-
-commit 4ba70766648e6eb80b381b0f451bf880de651fea
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Sat Sep 6 19:44:56 2014 -0600
-
-    fix tearout on move when floating layout
-
- src/layout.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
-
-commit 09e8d4c15153aa372152787e551a8706decb25d4
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Sat Sep 6 19:30:27 2014 -0600
-
-    correct logic error reconfiguring floating windows
-
- src/layout.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-commit 634068c9136eee64a01a4cb9e723d7ed9719ef57
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Sat Sep 6 19:27:49 2014 -0600
-
-    working up common key bindings
-
- NOTES                | 350 ++++++++++++++++---------
- data/adwm.keysrc     | 283 +++++++++++++++++++++
- data/keyscr          | 648 +++++++++++++++++++++++++++++++++++++++++++++++
- data/keysrc          | 222 ++++++++++++++++
- data/keysrc.fluxbox  |   4 +-
- data/keysrc.pekwm    | 156 ++++++------
- data/keysrc.spectrwm |  44 ++--
- doc/adwm-keys.1      |   2 +
- 8 files changed, 1489 insertions(+), 220 deletions(-)
-
-commit dd91573bd0fea99dcc94432c9d8d48243c686291
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Sat Sep 6 04:19:44 2014 -0600
-
-    more keybinding mimics
-
- data/keysrc.awesome  |  72 +++++++++++++++++++++++++++++
- data/keysrc.dwm      |  57 +++++++++++++++++++++++
- data/keysrc.echinus  |  82 +++++++++++++++++++++++++++++++++
- data/keysrc.spectrwm | 117 +++++++++++++++++++++++++++++++++++++++++++++++
- data/keysrc.velox    |  40 ++++++++++++++++
- 5 files changed, 368 insertions(+)
-
-commit 981820bf9ddc25d37258c91e71cabaebb7853f86
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Sat Sep 6 03:13:03 2014 -0600
-
-    mimic key bindings
-
- data/keysrc.blackbox |  60 +++++++++++++++++++++++++
- data/keysrc.fluxbox  | 105 ++++++++++++++++++++++++++++++++++++++++++++
- data/keysrc.icewm    |  88 +++++++++++++++++++++++++++++++++++++
- data/keysrc.metacity |  75 +++++++++++++++++++++++++++++++
- data/keysrc.openbox  |  37 ++++++++++++++++
- data/keysrc.pekwm    | 112 +++++++++++++++++++++++++++++++++++++++++++++++
- data/keysrc.spectrwm |   2 +
- data/keysrc.wmaker   |  75 +++++++++++++++++++++++++++++++
- 8 files changed, 554 insertions(+)
-
-commit cdbfefe3ce0cd7797b29cdbffb73cfba35086dfc
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Fri Sep 5 18:24:22 2014 -0600
-
-    some support documentation for spectrwm
-
- doc/adwm-keys.1 |  61 +++++++++------
- doc/adwm.1      | 211 ++++++++++++++++++++++++++++++++++++++++++----------
- src/adwm.c      |  20 ++---
- 3 files changed, 221 insertions(+), 71 deletions(-)

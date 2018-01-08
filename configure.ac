@@ -184,11 +184,11 @@ else
 	AC_MSG_RESULT([disabled])
 fi
 
-AC_ARG_ENABLE([smlib],
-	AC_HELP_STRING([--disable-smlib],
+AC_ARG_ENABLE([sm],
+	AC_HELP_STRING([--disable-sm],
 		[Disable session management support @<:@default=auto@:>@]))
 if test "x$enable_sm" != xno ; then
-	PKG_CHECK_MODULES([SMLIB],[sm],
+	PKG_CHECK_MODULES([SMLIB],[ice sm],
 		[AC_DEFINE([SMLIB],[1],[Default to 1 to support SM library.])],
 		[enable_smlib=no])
 else

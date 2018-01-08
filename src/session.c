@@ -72,25 +72,63 @@ init_sm_manager(void)
 	atexit(close_listeners);
 }
 
+#if 0
+static void
+save_wmstate(void)
+{
+	/* Note: it is easiest for us to save the information as an X Resource
+	   file because that is what we use to save the information; however,
+	   the X resource database must be updated before writing it.  xrdb is
+	   the name of our resource database. */
+}
+#endif
+
+static void
+save_client(AScreen *s, Client *c)
+{
+}
+
+/** @brief save yourself phase 2 callback
+  *
+  * This is where all the work is donw in saving the state of the windows.  It
+  * is not done in phase 1 because phase 1 is used for the other clients to make
+  * sure that all the property information on their windows is correct and up to
+  * date.
+  */
 static void
 save_yourself_phase2_cb(SmcConn conn, SmPointer data)
 {
+	AScreen *save_screen = scr;
+	Client *c;
+
+	/* Step 1: set all the of the WM's session management client properties */
+
+	/* Step 2: find out where to save, check SM_SAVE_DIR environment variable */
+
+	/* Step 3: figure out he save file name */
+
+	/* Step 4: write the file header */
+
+	/* Step 5: write window configuration entries for each client */
+
+
+	for (scr = screens; scr < screens + nscr; scr++)
+		for (c = scr->clients; c; c = c->next)
+			save_client(scr, c);
+
+	scr = save_screen;
+
+	/* Step 6: add -clientId and -restore options to our command line */
+
+	/* Step 7: set the command line property, dicsarding previous */
+
+	/* Step 8: send save yourself done */
 	SmcSaveYourselfDone(conn, True);
 }
 
 static Bool sent_save_done = False;
 
-static void
-request_save_yourself_phase2(SmcConn conn, SmPointer data)
-{
-	if (!SmcRequestSaveYourselfPhase2(conn, save_yourself_phase2_cb, NULL)) {
-		SmcSaveYourselfDone(conn, False);
-		sent_save_done = True;
-	} else
-		sent_save_done = False;
-}
-
-static void
+void
 send_save_yourself(Client *c)
 {
 	XEvent ev;
@@ -161,7 +199,7 @@ send_save_yourself(Client *c)
   * protocol, so there should be no problem with unwanted user interaction
   * occurring.
   */
-static void
+void
 save_yourself_cb(SmcConn conn, SmPointer data, int saveType, Bool shutdown, int interactStyle, Bool fast)
 {
 	AScreen *s;
@@ -190,8 +228,14 @@ save_yourself_cb(SmcConn conn, SmPointer data, int saveType, Bool shutdown, int 
 			}
 		}
 	}
-	if (!saving_clients)
-		request_save_yourself_phase2(conn, NULL);
+	if (saving_clients) {
+		/* FIXME: wait for clients to update WM_COMMAND. */
+	}
+	if (!SmcRequestSaveYourselfPhase2(conn, save_yourself_phase2_cb, NULL)) {
+		SmcSaveYourselfDone(conn, False);
+		sent_save_done = True;
+	} else
+		sent_save_done = False;
 }
 
 /** @brief die callback
@@ -201,22 +245,26 @@ save_yourself_cb(SmcConn conn, SmPointer data, int saveType, Bool shutdown, int 
   * manager that behaves properly will send a SaveYourself message before a Die
   * message.
   */
-static void
+void
 die_cb(SmcConn conn, SmPointer data)
 {
 	SmcCloseConnection(conn, 0, NULL);
 	exit(EXIT_SUCCESS);
 }
 
-static void
+void
 save_complete_cb(SmcConn conn, SmPointer data)
 {
 	/* doesn't really do anything */
 }
 
-static void
+void
 shutdown_cancelled_cb(SmcConn conn, SmPointer data)
 {
+	if (!sent_save_done) {
+		SmcSaveYourselfDone(conn, False);
+		sent_save_done = True;
+	}
 }
 
 static unsigned long cb_mask =
@@ -225,10 +273,10 @@ static unsigned long cb_mask =
 
 static SmcCallbacks cb = {
 	/* *INDENT-OFF* */
-	.save_yourself		= { .callback = &save_yourself_cb,	.client_data = NULL, },
-	.die			= { .callback = &die_cb,		.client_data = NULL, },
-	.save_complete		= { .callback = &save_complete_cb,	.client_data = NULL, },
-	.shutdown_cancelled	= { .callback = &shutdown_cancelled_cb,	.client_data = NULL, },
+	.save_yourself		= { .callback = save_yourself_cb,	.client_data = NULL, },
+	.die			= { .callback = die_cb,			.client_data = NULL, },
+	.save_complete		= { .callback = save_complete_cb,	.client_data = NULL, },
+	.shutdown_cancelled	= { .callback = shutdown_cancelled_cb,	.client_data = NULL, },
 	/* *INDENT-ON* */
 };
 
@@ -237,7 +285,6 @@ init_sm_client(void)
 {
 	char *env;
 	char err[256] = { 0, };
-
 	if (smcConn) {
 		DPRINTF("already connected\n");
 		return;

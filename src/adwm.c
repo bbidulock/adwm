@@ -74,7 +74,8 @@ XdgDirs xdgdirs = { NULL, };
 SnDisplay *sn_dpy;
 #endif
 XErrorTrap *traps = NULL;
-XrmDatabase xrdb;
+XrmDatabase xrdb = NULL;
+XrmDatabase srdb = NULL;
 Bool otherwm;
 Bool running = True;
 Bool lockfocus = False;
@@ -2066,6 +2067,33 @@ getsessionres(const char *resource, const char *defval)
 	if (XrmGetResource(xrdb, name, clas, &type, &value) && value.addr)
 		return value.addr;
 	return defval;
+}
+
+void
+putresource(const char *resource, const char *value)
+{
+	static char clas[256] = { 0, };
+
+	snprintf(clas, sizeof(clas), "%s.%s", RESCLASS, resource);
+	XrmPutStringResource(&srdb, clas, value);
+}
+
+void
+putscreenresource(const char *resource, const char *value)
+{
+	static char clas[256] = { 0, };
+
+	snprintf(clas, sizeof(clas), "%s.screen%d.%s", RESCLASS, scr->screen, resource);
+	XrmPutStringResource(&srdb, clas, value);
+}
+
+void
+putsessionresource(const char *resource, const char *value)
+{
+	static char clas[256] = { 0, };
+
+	snprintf(clas, sizeof(clas), "%s.session.%s", RESCLASS, resource);
+	XrmPutStringResource(&srdb, clas, value);
 }
 
 Bool

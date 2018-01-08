@@ -422,9 +422,9 @@ initconfig_ADWM(Bool reload)
 	strncpy(c, "Deflayout", clen);
 	res = readres(name, clas, "i");
 	if (strlen(res) == 1)
-		options.deflayout = res;
+		options.deflayout = res[0];
 	else
-		options.deflayout = "i";
+		options.deflayout = 'i';
 
 	strncpy(n, "tags.number", nlen);
 	strncpy(c, "Tags.Number", clen);
@@ -554,7 +554,9 @@ initscreen_ADWM(Bool reload)
 	strncpy(c, "Deflayout", clen);
 	if ((res = readres(name, clas, NULL))) {
 		if (strnlen(res, 2) == 1)
-			scr->options.deflayout = res;
+			scr->options.deflayout = res[0];
+		else
+			scr->options.deflayout = 'i';
 	}
 }
 /** @} */
@@ -1097,13 +1099,14 @@ initlayouts_ADWM(Bool reload)
 
 	for (i = 0; i < MAXTAGS; i++) {
 		const char *res;
-		char name[256], clas[256];
+		char name[256], clas[256], defl[2];
 		Layout *l;
 		View *v = scr->views + i;
 
 		snprintf(name, sizeof(name), "adwm.screen%u.tags.layout%u", s, i);
 		snprintf(clas, sizeof(clas), "Adwm.Screen%u.Tags.Layout%u", s, i);
-		res = readres(name, clas, scr->options.deflayout);
+		defl[0] = scr->options.deflayout; defl[1] = 0;
+		res = readres(name, clas, defl);
 		v->layout = layouts;
 		for (l = layouts; l->symbol; l++)
 			if (l->symbol == *res) {

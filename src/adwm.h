@@ -1383,7 +1383,7 @@ typedef struct {
 	double mhfact;
 	int nmaster;
 	int ncolumns;
-	const char *deflayout;
+	char deflayout;
 	int ntags;
 	/* the following should probably be in theme file */
 	const char *prependdirs; /* directories to prepend to icon search paths */
@@ -1511,6 +1511,9 @@ Client *findmanaged(Window w);
 const char *getresource(const char *resource, const char *defval);
 const char *getscreenres(const char *resource, const char *defval);
 const char *getsessionres(const char *resource, const char *defval);
+void putresource(const char *resource, const char *value);
+void putscreenres(const char *resource, const char *value);
+void putsessionres(const char *resource, const char *value);
 Client *getclient(Window w, int part);
 Client *getmanaged(Window w, int part);
 View *getview(int x, int y);
@@ -1735,7 +1738,7 @@ const char *_timestamp(void);
 void dumpstack(const char *file, const int line, const char *func);
 void ignorenext(void);
 
-extern XrmDatabase xresdb, xrdb;
+extern XrmDatabase xresdb, xrdb, srdb;
 extern int cargc;
 extern char **cargv;
 #ifdef STARTUP_NOTIFICATION

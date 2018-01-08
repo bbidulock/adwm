@@ -168,12 +168,13 @@ initlayouts(Bool reload)
 
 	for (i = 0; i < MAXTAGS; i++) {
 		const char *res;
-		char resource[256];
+		char resource[256], defl[2];
 		Layout *l;
 		View *v = scr->views + i;
 
 		snprintf(resource, sizeof(resource), "taqs.layout%u", i);
-		res = getscreenres(resource, scr->options.deflayout);
+		defl[0] = scr->options.deflayout; defl[1] = '\0';
+		res = getscreenres(resource, defl);
 		v->layout = layouts;
 		for (l = layouts; l->symbol; l++)
 			if (l->symbol == *res) {
@@ -286,7 +287,9 @@ initscreen(Bool reload)
 	}
 	if ((res = getscreenres("deflayout", NULL))) {
 		if (strnlen(res, 2) == 1)
-			scr->options.deflayout = res;
+			scr->options.deflayout = res[0];
+		else
+			scr->options.deflayout = 'i';
 	}
 }
 
@@ -330,9 +333,9 @@ initconfig(Bool reload)
 		options.ncolumns = DEFNCOLUMNS;
 	res = getsessionres("deflayout", "i");
 	if (strlen(res) == 1)
-		options.deflayout = res;
+		options.deflayout = res[0];
 	else
-		options.deflayout = "i";
+		options.deflayout = 'i';
 	options.ntags = strtoul(getsessionres("tags.number", "5"), NULL, 0);
 	if (options.ntags < 1 || options.ntags > MAXTAGS)
 		options.ntags = 5;

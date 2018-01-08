@@ -60,6 +60,10 @@
 #ifdef SHAPE
 #include <X11/extensions/shape.h>
 #endif
+#ifdef SMLIB
+#include <X11/ICE/ICEutil.h>
+#include <X11/SM/SMlib.h>
+#endif
 #ifdef IMLIB2
 #include <Imlib2.h>
 #endif

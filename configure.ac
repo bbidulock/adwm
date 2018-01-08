@@ -85,15 +85,18 @@ PKG_PROG_PKG_CONFIG([0.14.0])
 # Checks for libraries.
 
 # Checks for header files.
+AS_BOX([Header Files])
 AC_HEADER_STDC
 AC_PATH_X
 AC_PATH_XTRA
 AC_CHECK_HEADERS([fcntl.h locale.h malloc.h stdlib.h string.h strings.h unistd.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
+AS_BOX([Typedefs, Structures, Compiler])
 AC_TYPE_SIZE_T
 
 # Checks for library functions.
+AS_BOX([Library Functions])
 AC_FUNC_FORK
 AC_FUNC_MALLOC
 AC_FUNC_REALLOC
@@ -103,6 +106,7 @@ AS_BOX([X11 Extension Libraries])
 
 PKG_CHECK_MODULES([X11],[x11])
 PKG_CHECK_MODULES([XFIXES],[xfixes])
+dnl PKG_CHECK_MODULES([SYSTEMD],[libsystemd])
 
 AC_ARG_ENABLE([xdamage],
 	AC_HELP_STRING([--disable-xdamage],
@@ -177,6 +181,18 @@ if test "x$enable_xshape" != xno ; then
 		[enable_xshape=no])
 else
 	AC_MSG_CHECKING([for xshape])
+	AC_MSG_RESULT([disabled])
+fi
+
+AC_ARG_ENABLE([smlib],
+	AC_HELP_STRING([--disable-smlib],
+		[Disable session management support @<:@default=auto@:>@]))
+if test "x$enable_sm" != xno ; then
+	PKG_CHECK_MODULES([SMLIB],[sm],
+		[AC_DEFINE([SMLIB],[1],[Default to 1 to support SM library.])],
+		[enable_smlib=no])
+else
+	AC_MSG_CHECKING([for smlib])
 	AC_MSG_RESULT([disabled])
 fi
 

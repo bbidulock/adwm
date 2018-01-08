@@ -977,6 +977,7 @@ typedef union {
 		unsigned dockapp:1;
 		unsigned moveresize:1;
 		unsigned managed:1;
+		unsigned saving:1;
 	};
 	unsigned is;
 } IsUnion;
@@ -1119,6 +1120,7 @@ struct Client {
 	ButtonImage button;
 	ElementClient *element;
 	Time user_time;
+	Time save_time;
 #ifdef SYNC
 	struct {
 		XID counter;
@@ -1725,6 +1727,8 @@ extern unsigned numlockmask;
 extern unsigned scrlockmask;
 extern XContext context[];
 extern Time user_time;
+
+extern char *clientId;
 
 /* for debugging and error handling */
 const char *_timestamp(void);

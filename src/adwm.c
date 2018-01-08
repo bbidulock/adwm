@@ -99,6 +99,8 @@ Time give_time;
 Time take_time;
 Group systray = { NULL, 0, 0 };
 
+char *clientId = NULL;
+
 ExtensionInfo einfo[BaseLast] = {
 	/* *INDENT-OFF* */
 #if 1

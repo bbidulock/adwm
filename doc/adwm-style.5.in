@@ -164,6 +164,13 @@ Typically set to one (1).
 .Pp
 Example:
 .Li Adwm* Ns Cm border Ns Li : Ar 1
+.Pp
+.Sy Note:
+This directive only affects the default setting for the style.  The
+actual setting for the session can be changed by the user with the
+.Cm border
+key binding described in
+.Xr @PACKAGE@-keys 5 .
 .It Cm margin Ar <pixels>
 Specifies the number of pixels,
 .Ar <pixels> ,
@@ -173,6 +180,13 @@ Typically set to zero (0) to conserve screen real estate.
 .Pp
 Example:
 .Li Adwm* Ns Cm margin Ns Li : Ar 0
+.Pp
+.Sy Note:
+This directive only affects the default setting for the style.  The
+actual setting for the session can be changed by the user with the
+.Cm margin
+key binding described in
+.Xr @PACKAGE@-keys 5 .
 .It Cm outline Ar <pixels>
 Specifies the number of pixels,
 .Ar <pixels> ,

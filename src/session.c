@@ -71,3 +71,10 @@ void
 init_sm_client(void)
 {
 }
+
+void
+init_sm(void)
+{
+	init_sm_manager();
+	init_sm_client();
+}

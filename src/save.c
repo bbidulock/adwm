@@ -13,9 +13,14 @@ void
 save(void)
 {
 	AScreen *save_screen = scr;
-	char value[256] = { 0, };
+	char resource[256] = { 0, }, value[256] = { 0, };
+
+	snprintf(value, sizeof(value), "%u", options.ntags);
+	putsessionres("tags.number", value);
 
 	for (scr = screens; scr < screens + nscr; scr++) {
+		unsigned i;
+
 		if (!scr->managed)
 			continue;
 		putscreenres("attachaside", scr->options.attachaside ? "1" : "0");
@@ -50,6 +55,25 @@ save(void)
 		putscreenres("mwfact", value);
 		snprintf(value, sizeof(value), "%f", scr->options.mhfact);
 		putscreenres("mhfact", value);
+		snprintf(value, sizeof(value), "%d", scr->options.nmaster);
+		putscreenres("nmaster", value);
+		snprintf(value, sizeof(value), "%d", scr->options.ncolumns);
+		putscreenres("ncolumns", value);
+		snprintf(value, sizeof(value), "%c", scr->options.deflayout);
+		putscreenres("ncolumns", value);
+
+		for (i = 0; i < MAXTAGS; i++) {
+			Tag *t = scr->tags + i;
+
+			if (t->name) {
+				snprintf(resource, sizeof(resource), "tags.name%u", i);
+				putscreenreset(resource, t->name);
+			}
+		}
+		for (i = 0; i < MAXTAGS; i++) {
+			View *v = scr->views + i;
+			Layout *l;
+		}
 
 	}
 	scr = save_screen;

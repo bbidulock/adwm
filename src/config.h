@@ -39,7 +39,7 @@ typedef struct {
 
 void inittags(Bool reload);
 void initdock(Bool reload);
-void initlayouts(Bool reload);
+void initviews(Bool reload);
 void initscreen(Bool reload);
 void initconfig(Bool reload);
 void initrcfile(const char *file, Bool reload);

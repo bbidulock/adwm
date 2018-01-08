@@ -5204,7 +5204,7 @@ initialize(const char *conf, AdwmOperations * ops, Bool reload)
 
 		initkeys(reload);	/* init key bindings */
 		initdock(reload);	/* initialize dock */
-		initlayouts(reload);	/* initialize layouts */
+		initviews(reload);	/* initialize layouts */
 
 		grabkeys();
 

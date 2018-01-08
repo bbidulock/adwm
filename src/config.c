@@ -162,7 +162,7 @@ initdock(Bool reload)
 }
 
 void
-initlayouts(Bool reload)
+initviews(Bool reload)
 {
 	unsigned i;
 
@@ -171,6 +171,7 @@ initlayouts(Bool reload)
 		char resource[256], defl[2];
 		Layout *l;
 		View *v = scr->views + i;
+		int strutsactive;
 
 		snprintf(resource, sizeof(resource), "taqs.layout%u", i);
 		defl[0] = scr->options.deflayout; defl[1] = '\0';
@@ -182,7 +183,10 @@ initlayouts(Bool reload)
 				break;
 			}
 		l = v->layout;
-		if (scr->options.strutsactive)
+		snprintf(resource, sizeof(resource), "view%u.strutsactive", i);
+		strutsactive = (res = getscreenres(resource, NULL))
+			? atoi(res) : scr->options.strutsactive;
+		if (strutsactive)
 			v->barpos = StrutsOn;
 		else {
 			if (scr->options.hidebastards == 2)
@@ -192,11 +196,21 @@ initlayouts(Bool reload)
 			else
 				v->barpos = StrutsOff;
 		}
-		v->dectiled = scr->options.dectiled;
-		v->nmaster = scr->options.nmaster;
-		v->ncolumns = scr->options.ncolumns;
-		v->mwfact = scr->options.mwfact;
-		v->mhfact = scr->options.mhfact;
+		snprintf(resource, sizeof(resource), "view%u.decoratetiled", i);
+		v->dectiled = (res = getscreenres(resource, NULL))
+			?  atoi(res) : scr->options.dectiled;
+		snprintf(resource, sizeof(resource), "view%u.nmaster", i);
+		v->nmaster = (res = getscreenres(resource, NULL))
+			? atoi(res) : scr->options.nmaster;
+		snprintf(resource, sizeof(resource), "view%u.ncolumns", i);
+		v->ncolumns = (res = getscreenres(resource, NULL))
+			? atoi(res) : scr->options.ncolumns;
+		snprintf(resource, sizeof(resource), "view%u.mwfact", i);
+		v->mwfact = (res = getscreenres(resource, NULL))
+			? atof(res) : scr->options.mwfact;
+		snprintf(resource, sizeof(resource), "view%u.mhfact", i);
+		v->mhfact = (res = getscreenres(resource, NULL))
+			? atof(res) : scr->options.mhfact;
 		v->major = l->major;
 		v->minor = l->minor;
 		v->placement = l->placement;

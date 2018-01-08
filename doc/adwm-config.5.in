@@ -363,13 +363,13 @@ General directives affect primarily the general look and feel of the
 window manager.
 With the exception of
 .Cm useveil ,
-general directives can be applied to all screens, or to a specific
-screen using the
-.Li [ Ns Cm screen<s>. Ns Li ]
+general directives can be applied to all screens (entire session) or
+a specific screen, using the
+.Li [ Ns Li { Ns Cm session Ns Li | Ns Cm screen<s> Ns Li } Ns Li . Ns Li ]
 syntax, where
 .Cm <s>
-is the number of the screen, indexed from zero, to which to apply the
-directive.
+is the number of the screen, indexed from zero,
+to which to apply the directive.
 The general directives are as follows:
 .Bl -tag -width "XX"
 .It Cm useveil Ar <bool>
@@ -393,7 +393,7 @@ default.
 .Pp
 Default:
 .Li Adwm* Ns Cm useveil Ns Li : Ar 0
-.It Li [ Ns Cm screen<s>. Ns Li ] Ns Cm attachaside Ar <bool>
+.It Li [ Ns Li { Ns Cm session Ns Li | Ns Cm screen<s> Ns Li } Ns Li . Ns Li ] Ns Cm attachaside Ar <bool>
 Specifies whether newly created windows are attached on the
 master or slave side of the layout.
 The
@@ -408,31 +408,7 @@ I normally like attaching new windows as master
 .Pp
 Default:
 .Li Adwm* Ns Cm attachaside Ns Li : Ar 0
-.It Li [ Ns Cm screen<s>. Ns Li ] Ns Cm decoratetiled Ar <bool>
-Specifies whether to decorate tiled windows (by default) in
-tiled layouts.  Normally, tiled windows are not decorated with
-a title bar and resize grips.
-The
-.Ar <bool>
-value can be zero (0), indicating false, or non-zero (1),
-indicating true.
-When true, tiled windows are decorated by default; when false,
-they are not.
-The default value is zero (0): that is, tiled windows are not
-decorated by default.
-.Pp
-Default:
-.Li Adwm* Ns Cm decoratetiled Ns Li : Ar 0
-.Pp
-.Sy Note:
-the setting of this directive can be changed on a view-by-view
-basis using the 
-.Cm dectiled
-key binding described in
-.Xr @PACKAGE@-keys 5 .
-The setting of this directive merely sets the defaults for all
-views on the specified screen at startup.
-.It Li [ Ns Cm screen<s>. Ns Li ] Ns Cm decoratemax Ar <bool>
+.It Li [ Ns Li { Ns Cm session Ns Li | Ns Cm screen<s> Ns Li } Ns Li . Ns Li ] Ns Cm decoratemax Ar <bool>
 Specifies whether to decorate maximized windows (by default).
 Normally, maximized windows are decorated when they are
 floaters, or in floating layouts.  However, when windows are
@@ -454,7 +430,7 @@ Default:
 windows that fill the available work area in tiled
 layouts (including \(lqmonacle\(rq mode) are not maximized
 windows.
-.It Li [ Ns Cm screen<s>. Ns Li ] Ns Cm hidebastards Ar <number>
+.It Li [ Ns Li { Ns Cm session Ns Li | Ns Cm screen<s> Ns Li } Ns Li . Ns Li ] Ns Cm hidebastards Ar <number>
 Specifies whether to lower bastards, hide bastards (remove struts) or
 turn struts off when struts are toggled.  This is only in effect when
 struts are disabled.
@@ -493,26 +469,7 @@ exposing and hiding struts.
 .Pp
 Default:
 .Li Adwm* Ns Cm hidebastards Ns Li : Ar 2
-.It Li [ Ns Cm screen<s>. Ns Li ] Ns Cm strutsactive Ar <bool>
-Specifies whether struts (panels and dock) should default to
-shown or hidden.
-The
-.Ar <bool>
-value can be zero (0), indicating false, or non-zero (1),
-indicating true.
-When true, struts default to shown; false, hidden.
-The default value is one (1): that is, struts are shown by default.
-.Pp
-Default:
-.Li Adwm* Ns Cm strutsactive Ns Li : Ar 0
-.Pp
-.Sy Note:
-this setting only affects the default for views.  The actual
-setting for a particular view can be altered using the
-.Cm struts
-key binding as described in
-.Xr @PACKAGE@-keys 5 .
-.It Li [ Ns Cm screen<s>. Ns Li ] Ns Cm strutsdelay Ar <milliseconds>
+.It Li [ Ns Li { Ns Cm session Ns Li | Ns Cm screen<s> Ns Li } Ns Li . Ns Li ] Ns Cm strutsdelay Ar <milliseconds>
 Specifies the delay for exposing struts (panels and dock) when the
 pointer enters them and they are lowered or marginalized.  The default
 value is five hundred (500) milliseconds.  Usable values are between
@@ -527,7 +484,7 @@ bounces off the edge of the monitor in tiled layouts, the layout is not
 instantly changed (which would make it necessary to move the pointer off
 of the dock or panel before continuing).  The former zero (0) behaviour
 is quite annoying.
-.It Li [ Ns Cm screen<s>. Ns Li ] Ns Cm autoroll Ar <bool>
+.It Li [ Ns Li { Ns Cm session Ns Li | Ns Cm screen<s> Ns Li } Ns Li . Ns Li ] Ns Cm autoroll Ar <bool>
 Specifies whether shaded windows (window that are rolled up inside
 their title bars) should automatically be unshaded when the window
 takes focus (is selected).
@@ -541,7 +498,7 @@ automatically unshaded on being selected.
 .Pp
 Default:
 .Li Adwm* Ns Cm autoroll Ns Li : Ar 1
-.It Li [ Ns Cm screen<s>. Ns Li ] Ns Cm sloppy Ar <model>
+.It Li [ Ns Li { Ns Cm session Ns Li | Ns Cm screen<s> Ns Li } Ns Li . Ns Li ] Ns Cm sloppy Ar <model>
 The default value is zero (0): that is, click to focus.
 The argument,
 .Ar <model> ,
@@ -567,7 +524,7 @@ Default:
 the most tested focus model is
 .Ar AllSloppy(2) .
 This is primarly because it is the model that I use every day.
-.It Li [ Ns Cm screen<s>. Ns Li ] Ns Cm snap Ar <pixels>
+.It Li [ Ns Li { Ns Cm session Ns Li | Ns Cm screen<s> Ns Li } Ns Li . Ns Li ] Ns Cm snap Ar <pixels>
 Specifies the snap distance in pixels to be used when moving
 floating windows.  When moving windows, when a window edge
 come within
@@ -579,7 +536,7 @@ The default value is five (5) pixels.
 .Pp
 Default:
 .Li Adwm* Ns Cm snap Ns Li : Ar 5
-.It Li [ Ns Cm screen<s>. Ns Li ] Ns Cm dragdistance Ar <pixels>
+.It Li [ Ns Li { Ns Cm session Ns Li | Ns Cm screen<s> Ns Li } Ns Li . Ns Li ] Ns Cm dragdistance Ar <pixels>
 When
 .Nm @PACKAGE_NAME@
 receives a click on a title bar or resize grip, the action
@@ -595,7 +552,73 @@ value is five (5) pixels.
 .Pp
 Default:
 .Li Adwm* Ns Cm dragdistance Ns Li : Ar 5
-.It Li [ Ns Cm screen<s>. Ns Li ] Ns Cm mwfact Ar <float>
+.El
+.Pp
+Example:
+.Dl Adwm* Ns Cm useveil Ns Li : Ar 0
+.Dl Adwm* Ns Cm attachaside Ns Li : Ar 0
+.Dl Adwm* Ns Cm decoratemax Ns Li : Ar 1
+.Dl Adwm* Ns Cm hidebastards Ns Li : Ar 2
+.Dl Adwm* Ns Cm strutsdelay Ns Li : Ar 500
+.Dl Adwm* Ns Cm autoroll Ns Li : Ar 1
+.Dl Adwm* Ns Cm sloppy Ns Li : Ar 2
+.Dl Adwm* Ns Cm snap Ns Li : Ar 5
+.Dl Adwm* Ns Cm dragdistance Ns Li : Ar 5
+.Ss VIEW DIRECTIVES
+View directives affect primarily the look and feel of a view.  View
+directives can be applied to all screens (entire session),
+a specific screen, or view, using the
+.Li [ Ns Li { Ns Cm session Ns Li | Ns Cm screen<s> Ns Li [ Ns Li . Ns Cm view<n> Ns Li ] Ns Li } Ns Li . Ns Li ]
+syntax, where
+.Cm <s>
+is the number of the screen, indexed from zero; and,
+.Cm <n>
+the number of the view, indexed from zero; to which to apply the directive.
+.Pp
+All view directives only affect the value for the view at session
+startup.  Each value can be changed during the session using the key
+binding specified in the detail, below.
+.Pp
+The view directives are as follows:
+.Bl -tag -width "XX"
+.It Li [ Ns Li { Ns Cm session Ns Li | Ns Cm screen<s> Ns Li [ Ns Li . Ns Cm view<n> Ns Li ] Ns Li } Ns Li . Ns Li ] Ns Cm decoratetiled Ar <bool>
+Specifies whether to decorate tiled windows (by default) in
+tiled layouts.  Normally, tiled windows are not decorated with
+a title bar and resize grips.
+The
+.Ar <bool>
+value can be zero (0), indicating false, or non-zero (1),
+indicating true.
+When true, tiled windows are decorated by default; when false,
+they are not.
+The default value is zero (0): that is, tiled windows are not
+decorated by default.
+This is the default value for new layouts; the value for specific view
+can be changed using the
+.Cm dectiled
+key binding described in
+.Xr @PACKAGE@-keys 5 .
+.Pp
+Default:
+.Li Adwm* Ns Cm decoratetiled Ns Li : Ar 0
+.It Li [ Ns Li { Ns Cm session Ns Li | Ns Cm screen<s> Ns Li [ Ns Li . Ns Cm view<n> Ns Li ] Ns Li } Ns Li . Ns Li ] Ns Cm strutsactive Ar <bool>
+Specifies whether struts (panels and dock) should default to
+shown or hidden.
+The
+.Ar <bool>
+value can be zero (0), indicating false, or non-zero (1),
+indicating true.
+When true, struts default to shown; false, hidden.
+The default value is one (1): that is, struts are shown by default.
+This is the default value for new layouts; the value for specific view
+can be changed using the
+.Cm struts
+key binding defined in
+.Xr @PACKAGE@-keys 5 .
+.Pp
+Default:
+.Li Adwm* Ns Cm strutsactive Ns Li : Ar 0
+.It Li [ Ns Li { Ns Cm session Ns Li | Ns Cm screen<s> Ns Li [ Ns Li . Ns Cm view<n> Ns Li ] Ns Li } Ns Li . Ns Li ] Ns Cm mwfact Ar <float>
 Specifies the factor for the width of the master area in
 tiled layouts.  The argument is a floating point number
 between 0.1 and 0.9 (inclusive) that specifies the proportion
@@ -610,19 +633,24 @@ key binding defined in
 .Pp
 Default:
 .Li Adwm* Ns Cm mwfact Ns Li : Ar 0.6
-.It Li [ Ns Cm screen<s>. Ns Li ] Ns Cm mhfact Ar <float>
+.It Li [ Ns Li { Ns Cm session Ns Li | Ns Cm screen<s> Ns Li [ Ns Li . Ns Cm view<n> Ns Li ] Ns Li } Ns Li . Ns Li ] Ns Cm mhfact Ar <float>
 Specifies the factor for the height of the master area in
 tiled layouts.  The argument is a floating point number
 between 0.1 and 0.9 (inclusive) that specifies the proportion
 of the height of the work area allocated to the master.  The
 default is 1.0 (100% of the height of the work area).
 This is
-the default value for new layouts; nevertheless the value is
+the default value for new layouts; the value for specific
+views can be changed using the
+.Cm mwfact
+key binding defined in
+.Xr @PACKAGE@-keys 5 .
+Nevertheless, the value is
 not currently used.
 .Pp
 Default:
 .Li Adwm* Ns Cm mhfact Ns Li : Ar 1.0
-.It Li [ Ns Cm screen<s>. Ns Li ] Ns Cm nmaster Ar <number>
+.It Li [ Ns Li { Ns Cm session Ns Li | Ns Cm screen<s> Ns Li [ Ns Li . Ns Cm view<n> Ns Li ] Ns Li } Ns Li . Ns Li ] Ns Cm nmaster Ar <number>
 Specifies the default number of master windows in master/slave
 tiled layouts.  Tiled layouts have a fixed number of masters
 and a variable number of slaves.  This directive sets the
@@ -636,7 +664,7 @@ The default number is one (1).  Only values between 1 and 10
 .Pp
 Default:
 .Li Adwm* Ns Cm nmaster Ns Li : Ar 1
-.It Li [ Ns Cm screen<s>. Ns Li ] Ns Cm ncolumns Ar <number>
+.It Li [ Ns Li { Ns Cm session Ns Li | Ns Cm screen<s> Ns Li [ Ns Li . Ns Cm view<n> Ns Li ] Ns Li } Ns Li . Ns Li ] Ns Cm ncolumns Ar <number>
 Specifies the default number of columns (rows) in grid tiled
 layouts.  Grid layouts have a fixed number of rows or columns
 over which viewed windows are distributed.  This directive
@@ -651,6 +679,14 @@ The default number is three (3).  Only values between 1 and 10
 Default:
 .Li Adwm* Ns Cm ncolumns Ns Li : Ar 3
 .El
+.Pp
+Example:
+.Dl Adwm* Ns Cm decoratetiled Ns Li : Ar 0
+.Dl Adwm* Ns Cm strutsactive Ns Li : Ar 0
+.Dl Adwm* Ns Cm mwfact Ns Li : Ar 0.6
+.Dl Adwm* Ns Cm mhfact Ns Li : Ar 1.0
+.Dl Adwm* Ns Cm nmaster Ns Li : Ar 1
+.Dl Adwm* Ns Cm ncolumns Ns Li : Ar 3
 .Ss TAG DIRECTIVES
 Tag directives affect the number of views (desktops) presented
 by the window manager and names and layouts associated with
@@ -668,7 +704,7 @@ The default number is five (5).
 .Pp
 Default:
 .Li Adwm* Ns Cm tags.number Ns Li : Ar 7
-.It Li [ Ns Cm screen<s>. Ns Li ] Ns Cm tags.name<n> Ar <string>
+.It Li [ Ns Li { Ns Cm session Ns Li | Ns Cm screen<s> Ns Li } Ns Li . Ns Li ] Ns Cm tags.name<n> Ar <string>
 Specifies the name associated with each tag (i.e. desktop),
 for a specific screen,
 .Cm <s> ,
@@ -684,7 +720,7 @@ Default:
 .Dl Adwm* Ns Cm tags.name4 Ns Li : Ar scr
 .Dl Adwm* Ns Cm tags.name5 Ns Li : Ar gfx
 .Dl Adwm* Ns Cm tags.name6 Ns Li : Ar misc
-.It Li [ Ns Cm screen<s>. Ns Li ] Ns Cm deflayout Ar <layout>
+.It Li [ Ns Li { Ns Cm session Ns Li | Ns Cm screen<s> Ns Li } Ns Li . Ns Li ] Ns Cm deflayout Ar <layout>
 Specifies the default layout for views that have no layout defined for
 them.
 The argument,
@@ -717,7 +753,7 @@ that is, stacking window arrangement.
 .Pp
 Default:
 .Li Adwm* Ns Cm deflayout Ns Li : Ar l
-.It Li [ Ns Cm screen<s>. Ns Li ] Ns Cm tags.layout<n> Ar <layout>
+.It Li [ Ns Li { Ns Cm session Ns Li | Ns Cm screen<s> Ns Li } Ns Li . Ns Li ] Ns Cm tags.layout<n> Ar <layout>
 Specifies the layout for a single view (optionally on a given screen).
 When unspecified for a view, defaults to the setting of the
 .Cm deflayout
@@ -752,13 +788,26 @@ Default:
 .Dl Adwm* Ns Cm tags.layout1 Ns Li : Ar m
 .Dl Adwm* Ns Cm tags.layout3 Ns Li : Ar b
 .El
+.Pp
+Example:
+.Dl Adwm* Ns Cm tags.number Ns Li : Ar 7
+.Dl Adwm* Ns Cm tags.name0 Ns Li : Ar main
+.Dl Adwm* Ns Cm tags.name1 Ns Li : Ar web
+.Dl Adwm* Ns Cm tags.name2 Ns Li : Ar doc
+.Dl Adwm* Ns Cm tags.name3 Ns Li : Ar dev
+.Dl Adwm* Ns Cm tags.name4 Ns Li : Ar scr
+.Dl Adwm* Ns Cm tags.name5 Ns Li : Ar gfx
+.Dl Adwm* Ns Cm tags.name6 Ns Li : Ar misc
+.Dl Adwm* Ns Cm deflayout Ns Li : Ar l
+.Dl Adwm* Ns Cm tags.layout1 Ns Li : Ar m
+.Dl Adwm* Ns Cm tags.layout3 Ns Li : Ar b
 .Ss DOCK DIRECTIVES
 The dock is an area that contains Window Maker dock
 applications.
 The following directives specify the position and orientation
 of the dock.
 .Bl -tag -width "XX"
-.It Li [ Ns Cm screen<s>. Ns Li ] Ns Cm dock.position Ar <position>
+.It Li [ Ns Li { Ns Cm session Ns Li | Ns Cm screen<s> Ns Li } Ns Li . Ns Li ] Ns Cm dock.position Ar <position>
 Specifies the position of the dock on the screen.
 The argument,
 .Ar <position> ,
@@ -792,7 +841,7 @@ that is, the dock is centered on the right of the screen.
 .Pp
 Default:
 .Li Adwm* Ns Cm dock.position Ns Li : Ar 0
-.It Li [ Ns Cm screen<s>. Ns Li ] Ns Cm dock.orient Ar <orientation>
+.It Li [ Ns Li { Ns Cm session Ns Li | Ns Cm screen<s> Ns Li } Ns Li . Ns Li ] Ns Cm dock.orient Ar <orientation>
 Specifies the orientation of the dock on the screen.
 The argument,
 .Ar "<orientation>" ,
@@ -812,7 +861,7 @@ screen.
 .Pp
 Default:
 .Li Adwm* Ns Cm dock.orient Ns Li : Ar 1
-.It Li [ Ns Cm screen<s>. Ns Li ] Ns Cm dock.monitor Ar <monitor>
+.It Li [ Ns Li { Ns Cm session Ns Li | Ns Cm screen<s> Ns Li } Ns Li . Ns Li ] Ns Cm dock.monitor Ar <monitor>
 Specifies the monitor (in a multi-head setup) that will be
 used to contain the dock.  The argument,
 .Ar <monitor> ,
@@ -833,7 +882,7 @@ chosen automatically.
 .Pp
 Default:
 .Li Adwm* Ns Cm dock.monitor Ns Li : Ar 0
-.It Li [ Ns Cm screen<s>. Ns Li ] Ns Cm dock.app<n> Ar "<res_name> <res_class> <wm_command>"
+.It Li [ Ns Li { Ns Cm session Ns Li | Ns Cm screen<s> Ns Li } Ns Li . Ns Li ] Ns Cm dock.app<n> Ar "<res_name> <res_class> <wm_command>"
 Specifies the relative position of dock applications in the
 dock.
 Dock applications with a value of
@@ -877,12 +926,12 @@ No defaults are provided in the default
 .Pa @PACKAGE@rc
 file.  These resources, if defined at all, should likely be defined in the
 .Pa styleFile
-associated with the current style, as it is a themeable item.
+associated with the current style, as it is a themed item.
 .El
 .Ss MOUSE DIRECTIVES
 Mouse directives affect the actions of button clicks on the
 root window, or on the menu button in the title bar of client
-windows.  These directivees are normally specified in the
+windows.  These directives are normally specified in the
 .Pa keysFile
 instead of the main configuration file: see
 .Xr @PACKAGE@-keys 5 ;
@@ -892,12 +941,13 @@ Mouse directive apply to button pressed on the root window or
 menu button on a client window title bar.  It is possible to
 specify different commands to execute based upon the screen on
 which the button is clicked by using the
-.Li [ Ns Cm screen<s>. Ns Li ]
+.Li [ Ns Li { Ns Cm session Ns Li | Ns Cm screen<s> Ns Li } Ns Li . Ns Li ]
 syntax (where
 .Cm <s>
 is the number of the screen indexed from zero).
+It is, however, typical to set them the same for all screens.
 .Bl -tag -width "XX"
-.It Li [ Ns Cm screen<s>. Ns Li ] Ns Cm command Ar <shell-command>
+.It Li [ Ns Li { Ns Cm session Ns Li | Ns Cm screen<s> Ns Li } Ns Li . Ns Li ] Ns Cm command Ar <shell-command>
 Specifies the shell command to execute when button 3 (right
 button) is pressed on the root window.
 The default, when unspecified, is
@@ -912,7 +962,7 @@ for a suitable root window menu for
 .Pp
 Default:
 .Li Adwm* Ns Cm command Ns Li : Ar "xde-menu -P -b 3"
-.It Li [ Ns Cm screen<s>. Ns Li ] Ns Cm command2 Ar <shell-command>
+.It Li [ Ns Li { Ns Cm session Ns Li | Ns Cm screen<s> Ns Li } Ns Li . Ns Li ] Ns Cm command2 Ar <shell-command>
 Specifies the shell command to execute when button 2 (middle
 button) is pressed on the root window.
 The default is to not execute a shell command.
@@ -923,7 +973,7 @@ for a suitable workspace menu for
 .Pp
 Default:
 .Li Adwm* Ns Cm command2 Ns Li : Ar "xde-wkspmenu -p -b 2"
-.It Li [ Ns Cm screen<s>. Ns Li ] Ns Cm command3 Ar <shell-command>
+.It Li [ Ns Li { Ns Cm session Ns Li | Ns Cm screen<s> Ns Li } Ns Li . Ns Li ] Ns Cm command3 Ar <shell-command>
 Specifies the shell command to execute when button 1 (left
 button) is pressed on the root window.
 The default is to not execute a shell command.
@@ -939,7 +989,7 @@ Default:
 This command is commented out in the default
 .Pa keysFile
 because it can be quite annoying to bind button 1 on the root window.
-.It Li [ Ns Cm screen<s>. Ns Li ] Ns Cm menucommand Ar <shell-command>
+.It Li [ Ns Li { Ns Cm session Ns Li | Ns Cm screen<s> Ns Li } Ns Li . Ns Li ] Ns Cm menucommand Ar <shell-command>
 Specifies the shell command to execute when a button is
 pressed on the \(lqmenu\(rq button in the title bar.
 The default is to not execute a shell command.

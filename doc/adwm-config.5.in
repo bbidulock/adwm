@@ -32,7 +32,7 @@ well, and pointer actions are supported on decorative borders.
 Customization of configuration is defined in an X Resource
 formatted configuration file.  Configuration is part of a main
 configuration file.  It is typical to place the configuration
-file an a file named
+file in a file named
 .Pa @PACKAGE@rc
 in the main directory (e.g. in the
 .Pa ~/.@PACKAGE@/@PACKAGE@rc
@@ -123,7 +123,7 @@ File directives specify where to find other configuration
 files.  Although all directives, key bindings and style
 elements can be located in a single configuration file, it is
 convenient to separate key bindings and style elements into
-seprate files.  The main configuration file is loaded first,
+separate files.  The main configuration file is loaded first,
 then the key bindings file, and lastly the style elements
 file.  The file directives specifying the location of the last
 two files are as follows:
@@ -376,7 +376,7 @@ The general directives are as follows:
 .Nm @PACKAGE_NAME@
 has the ability to raise a parent-relative window (veil) over
 the desktop work area before reconfiguring windows and then
-dropping the veil after windows are recofigured.  This serves
+dropping the veil after windows are reconfigured.  This serves
 to avoid unnecessary exposure events and to speed
 reconfiguration of the layout.  On some versions of the X
 server, this has the reverse effect and causes flickering and
@@ -732,7 +732,7 @@ can be one of the following:
 .It Cm 'i'
 stacking window arrangement;
 .It Cm 't'
-tile arrangment with master on left;
+tile arrangement with master on left;
 .It Cm 'b'
 tiled arrangement with mast on bottom;
 .It Cm 'u'
@@ -769,7 +769,7 @@ can be one of the following:
 .It Cm 'i'
 stacking window arrangement;
 .It Cm 't'
-tile arrangment with master on left;
+tile arrangement with master on left;
 .It Cm 'b'
 tiled arrangement with mast on bottom;
 .It Cm 'u'

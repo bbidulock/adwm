@@ -44,11 +44,15 @@ Configuration directives (some of which are compatible with
 are described below under
 .Sx DIRECTIVES .
 .Pp
-Key bindings are typically placed in a separate file, as
+Key and button bindings are typically placed in a separate file, as
 described in
 .Xr @PACKAGE@-keys 5 .
-Style elements (for decorative borders and the dock) are
-normally placed in a separate file, also, as described in
+Theme elements (for backgrounds), dock applications (dock apps), and
+style elements (for decorative borders and the dock) are normally placed
+in separate files, also, as described in
+.Xr @PACKAGE@-theme 5 ,
+.Xr @PACKAGE@-dock 5
+and
 .Xr @PACKAGE@-style 5 .
 .Sh SYNTAX
 The general syntax of configuration directives, as specified directly in
@@ -579,6 +583,11 @@ All view directives only affect the value for the view at session
 startup.  Each value can be changed during the session using the key
 binding specified in the detail, below.
 .Pp
+These directives should normally be specified in the
+.Pa styleFile
+instead of the main configuration file: see
+.Xr @PACKAGE@-style 5 ;
+however, they are also addressed here.
 The view directives are as follows:
 .Bl -tag -width "XX"
 .It Li [ Ns Li { Ns Cm session Ns Li | Ns Cm screen<s> Ns Li [ Ns Li . Ns Cm view<n> Ns Li ] Ns Li } Ns Li . Ns Li ] Ns Cm decoratetiled Ar <bool>
@@ -1069,10 +1078,10 @@ The location of the system default themed style file.
 .Sh SEE ALSO
 .Rs
 .Xr echinus 1 ,
-.Xr @PACKAGE@-theme 5 ,
 .Xr @PACKAGE@-keys 5 ,
-.Xr @PACKAGE@-style 5 ,
+.Xr @PACKAGE@-theme 5 ,
 .Xr @PACKAGE@-dock 5 ,
+.Xr @PACKAGE@-style 5 ,
 .Xr FcParseName 3 ,
 .Xr xft 3 ,
 .Xr XParseColor 3 ,

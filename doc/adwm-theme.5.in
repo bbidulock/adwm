@@ -28,7 +28,7 @@ Window Maker dock application dock.
 These aspects of the window manager can be managed using theme elements.
 .Pp
 Theme elements differ from style style elements (see
-.Xr adwm-style 1 Ns ).
+.Xr adwm-style 5 Ns ).
 Style elements apply to the windows on the desktop, whereas theme
 elements apply to the desktop itself and the struts around it.
 To control theme elements,

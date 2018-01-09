@@ -28,9 +28,9 @@ bin_PROGRAMS = adwm
 AM_INSTALLCHECK_STD_OPTIONS_EXEMPT = adwm
 
 adwm_SOURCES = adwm.h actions.h config.h draw.h imlib.h pixbuf.h xcairo.h render.h ximage.h xlib.h \
-	       ewmh.h image.h layout.h parse.h resource.h tags.h texture.h icons.h util.h session.h \
+	       ewmh.h image.h layout.h parse.h resource.h tags.h texture.h icons.h util.h session.h save.h \
 	       adwm.c actions.c config.c draw.c imlib.c pixbuf.c xcairo.c render.c ximage.c xlib.c \
-	       ewmh.c image.c layout.c parse.c resource.c tags.c texture.c icons.c session.c
+	       ewmh.c image.c layout.c parse.c resource.c tags.c texture.c icons.c session.c save.c
 adwm_LDADD = \
 	$(SMLIB_LIBS) \
 	$(PANGOCAIRO_LIBS) \

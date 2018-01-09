@@ -166,6 +166,8 @@ initviews(Bool reload)
 {
 	unsigned i;
 
+	if (reload)
+		return;
 	for (i = 0; i < MAXTAGS; i++) {
 		const char *res;
 		char resource[256], defl[2];

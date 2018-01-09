@@ -2079,7 +2079,7 @@ putresource(const char *resource, const char *value)
 }
 
 void
-putscreenresource(const char *resource, const char *value)
+putscreenres(const char *resource, const char *value)
 {
 	static char clas[256] = { 0, };
 
@@ -2088,7 +2088,7 @@ putscreenresource(const char *resource, const char *value)
 }
 
 void
-putsessionresource(const char *resource, const char *value)
+putsessionres(const char *resource, const char *value)
 {
 	static char clas[256] = { 0, };
 

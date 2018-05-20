@@ -3939,13 +3939,10 @@ quit(const char *arg)
 {
 	running = False;
 	if (arg) {
-		char cmd[BUFSIZ] = { 0, };
-
-		snprintf(cmd, sizeof(cmd) - 1, "exec %s", arg);
 		XPRINTF("cleanup switching\n");
 		cleanup(CauseSwitching);
-		execlp("sh", "sh", "-c", cmd, NULL);
-		eprint("Can't exec sh -c \"%s\": %s\n", cmd, strerror(errno));
+		execlp("sh", "sh", "-c", arg, NULL);
+		eprint("Can't exec sh -c \"%s\": %s\n", arg, strerror(errno));
 	}
 }
 
@@ -3954,13 +3951,10 @@ restart(const char *arg)
 {
 	running = False;
 	if (arg) {
-		char cmd[BUFSIZ] = { 0, };
-
-		snprintf(cmd, sizeof(cmd) - 1, "exec %s", arg);
 		XPRINTF("cleanup switching\n");
 		cleanup(CauseSwitching);
-		execlp("sh", "sh", "-c", cmd, NULL);
-		eprint("Can't exec sh -c \"%s\": %s\n", cmd, strerror(errno));
+		execlp("sh", "sh", "-c", arg, NULL);
+		eprint("Can't exec sh -c \"%s\": %s\n", arg, strerror(errno));
 	} else {
 		char **argv;
 		int i;
@@ -5249,7 +5243,6 @@ spawn(const char *arg)
 
 
 	if (fork() == 0) {
-		char cmd[BUFSIZ] = { 0, };
 		char *d, *p;
 
 		if (dpy)
@@ -5264,9 +5257,8 @@ spawn(const char *arg)
 			snprintf(s, len, "%s.%d", d, scr->screen);
 			setenv("DISPLAY", s, 1);
 		}
-		snprintf(cmd, sizeof(cmd) - 1, "exec %s", arg);
-		execlp("sh", "sh", "-c", cmd, NULL);
-		eprint("Can't exec sh -c \"%s\": %s\n", cmd, strerror(errno));
+		execlp("sh", "sh", "-c", arg, NULL);
+		eprint("Can't exec sh -c \"%s\": %s\n", arg, strerror(errno));
 	}
 }
 

@@ -5243,6 +5243,7 @@ spawn(const char *arg)
 
 	if (!arg)
 		return;
+	/* instead of using wordexp here we could just execlp("sh","sh","-c",arg,NULL) */
 	if ((status = wordexp(arg, &we, 0)) != 0 || we.we_wordc < 1) {
 		switch(status) {
 		case WRDE_BADCHAR:

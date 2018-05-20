@@ -3939,10 +3939,13 @@ quit(const char *arg)
 {
 	running = False;
 	if (arg) {
+		char cmd[BUFSIZ] = { 0, };
+
+		snprintf(cmd, sizeof(cmd) - 1, "exec %s", arg);
 		XPRINTF("cleanup switching\n");
 		cleanup(CauseSwitching);
-		execlp("sh", "sh", "-c", arg, NULL);
-		eprint("Can't exec '%s': %s\n", arg, strerror(errno));
+		execlp("sh", "sh", "-c", cmd, NULL);
+		eprint("Can't exec sh -c \"%s\": %s\n", cmd, strerror(errno));
 	}
 }
 
@@ -3951,10 +3954,13 @@ restart(const char *arg)
 {
 	running = False;
 	if (arg) {
+		char cmd[BUFSIZ] = { 0, };
+
+		snprintf(cmd, sizeof(cmd) - 1, "exec %s", arg);
 		XPRINTF("cleanup switching\n");
 		cleanup(CauseSwitching);
-		execlp("sh", "sh", "-c", arg, NULL);
-		eprint("Can't exec '%s': %s\n", arg, strerror(errno));
+		execlp("sh", "sh", "-c", cmd, NULL);
+		eprint("Can't exec sh -c \"%s\": %s\n", cmd, strerror(errno));
 	} else {
 		char **argv;
 		int i;
@@ -5238,37 +5244,12 @@ setup(char *conf, AdwmOperations *ops)
 void
 spawn(const char *arg)
 {
-	wordexp_t we = { 0, };
-	int status;
-
 	if (!arg)
 		return;
-	/* instead of using wordexp here we could just execlp("sh","sh","-c",arg,NULL) */
-	if ((status = wordexp(arg, &we, 0)) != 0 || we.we_wordc < 1) {
-		switch(status) {
-		case WRDE_BADCHAR:
-			EPRINTF("bad character in command string: %s\n", arg);
-			break;
-		case WRDE_BADVAL:
-			EPRINTF("undefined variable substitution in command string: %s\n", arg);
-			break;
-		case WRDE_CMDSUB:
-			EPRINTF("command substitution in command string: %s\n", arg);
-			break;
-		case WRDE_NOSPACE:
-			EPRINTF("out of memory processing command string: %s\n", arg);
-			break;
-		case WRDE_SYNTAX:
-			EPRINTF("syntax error in command string: %s\n", arg);
-			break;
-		default:
-			EPRINTF("unknown error processing command string: %s\n", arg);
-			break;
-		}
-		wordfree(&we); /* necessary ??? */
-		return;
-	}
+
+
 	if (fork() == 0) {
+		char cmd[BUFSIZ] = { 0, };
 		char *d, *p;
 
 		if (dpy)
@@ -5283,11 +5264,9 @@ spawn(const char *arg)
 			snprintf(s, len, "%s.%d", d, scr->screen);
 			setenv("DISPLAY", s, 1);
 		}
-		execvp(we.we_wordv[0], we.we_wordv);
-		EPRINTF("execvp %s (%s) failed: %s\n", we.we_wordv[0], arg, strerror(errno));
-		abort();
-	} else {
-		wordfree(&we);
+		snprintf(cmd, sizeof(cmd) - 1, "exec %s", arg);
+		execlp("sh", "sh", "-c", cmd, NULL);
+		eprint("Can't exec sh -c \"%s\": %s\n", cmd, strerror(errno));
 	}
 }
 

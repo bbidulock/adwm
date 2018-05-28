@@ -1,5 +1,211 @@
 # created with git log --stat=76 -M -C -500|fmt -sct -w80
 
+commit f32eaf6ee2344b5630d94dd1c7da03d0e7f57b8f
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun May 27 22:36:44 2018 -0600
+
+    more output, better process handling
+
+ src/adwm.c | 105 ++++++++++++++++++++++++++++++++++++---------------------
+ src/adwm.h |   1 +
+ 2 files changed, 67 insertions(+), 39 deletions(-)
+
+commit a1fc633eac4be37a217442d3e5ac2b2628b84a40
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun May 27 22:35:25 2018 -0600
+
+    enable debug
+
+ configure.sh | 1 +
+ 1 file changed, 1 insertion(+)
+
+commit 7cefc64bfb651cdf82d1c24722b1a28c5bb06e50
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat May 19 23:40:15 2018 -0600
+
+    no exec in sh -c
+
+ src/adwm.c | 20 ++++++--------------
+ 1 file changed, 6 insertions(+), 14 deletions(-)
+
+commit f6d7d7a401eafdef4752cb0a149ac26097e7b5f1
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat May 19 23:25:32 2018 -0600
+
+    use execlp and shell instead of wordexp and execvp
+
+ src/adwm.c | 53 ++++++++++++++++-------------------------------------
+ 1 file changed, 16 insertions(+), 37 deletions(-)
+
+commit df5e13bd27a706e2ff23c523fdd7cb0c695d4227
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat May 19 23:13:08 2018 -0600
+
+    use execlp instead of wordexp execvp
+
+ src/adwm.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+commit 3ed9091a37682279ca3d98f3bfcfcbcc004aaba3
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Jan 10 19:30:27 2018 -0700
+
+    additions to save routines
+
+ src/save.c | 221 ++++++++++++++++++++++++++++++++++++++++++++-------------
+ 1 file changed, 172 insertions(+), 49 deletions(-)
+
+commit 088353214e3c1aada0de4d9f13d33f1a2172fb82
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Jan 9 03:21:37 2018 -0700
+
+    compile session save
+
+ src/Makefile.am |  4 ++--
+ src/adwm.c      |  4 ++--
+ src/config.c    |  2 ++
+ src/save.c      | 63 +++++++++++++++++++++++++++++++++++++++++++++++------
+ src/save.h      |  8 +++++++
+ 5 files changed, 70 insertions(+), 11 deletions(-)
+
+commit b1c495db5659efd81b26d780f63a78b203c15a65
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Jan 9 03:20:48 2018 -0700
+
+    update documentation
+
+ doc/adwm-config.5.in | 19 ++++++++++++++-----
+ doc/adwm-theme.5.in  |  2 +-
+ 2 files changed, 15 insertions(+), 6 deletions(-)
+
+commit d168b43ae774a6f7f049bb3a5467d2fdaf7b6292
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Jan 8 17:00:40 2018 -0700
+
+    spelling
+
+ doc/adwm-config.5.in | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
+
+commit 055c61b61849d1d66389203c4d9817995737d501
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Jan 8 11:44:07 2018 -0700
+
+    start writing session state
+
+ src/save.c | 26 +++++++++++++++++++++++++-
+ 1 file changed, 25 insertions(+), 1 deletion(-)
+
+commit 7e6d17f54d5703f43443690cf1431e6cc0cfaa5c
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Jan 8 11:43:52 2018 -0700
+
+    handle per-view settings
+
+ src/adwm.c   |  2 +-
+ src/config.c | 28 +++++++++++++++++++++-------
+ src/config.h |  2 +-
+ 3 files changed, 23 insertions(+), 9 deletions(-)
+
+commit d59d330e1cc07e8955fb028b33b645fe3c0859a7
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Jan 8 11:42:52 2018 -0700
+
+    add several key binding notes
+
+ doc/adwm-style.5.in | 14 ++++++++++++++
+ 1 file changed, 14 insertions(+)
+
+commit 65a39f61163a0aa817759ec9220f737b7a756452
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Jan 8 11:42:17 2018 -0700
+
+    update view directive manual page
+
+ doc/adwm-config.5.in | 200 +++++++++++++++++++++++++++++------------------
+ 1 file changed, 125 insertions(+), 75 deletions(-)
+
+commit 0c6774bd090741ab68215ca2b0ec34b810c3aa5d
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Jan 8 00:44:37 2018 -0700
+
+    working up session management
+
+ src/adwm.c      | 30 +++++++++++++++++-
+ src/adwm.h      |  7 +++--
+ src/adwm_adwm.c | 13 +++++---
+ src/config.c    | 13 +++++---
+ src/save.c      | 57 ++++++++++++++++++++++++++++++++++
+ src/session.c   | 89 ++++++++++++++++++++++++++++++++++++++++-------------
+ 6 files changed, 175 insertions(+), 34 deletions(-)
+
+commit 3bbbbae23447f6e83ebfb7b08ea3d23f76ac51cd
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Jan 7 19:34:57 2018 -0700
+
+    working up session management
+
+ src/adwm.c    |   2 +
+ src/adwm.h    |   4 ++
+ src/session.c | 185 ++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 191 insertions(+)
+
+commit 7ae14918a6b6ad59aba772b8a6d4622d97815516
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Jan 7 18:43:48 2018 -0700
+
+    more session work
+
+ src/session.c |  7 +++++++
+ src/session.h | 11 +++++++++++
+ 2 files changed, 18 insertions(+)
+
+commit 4bec4a0bf68df22d76a0a96e830e41d58ba73019
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Jan 7 18:40:44 2018 -0700
+
+    start building up session management
+
+ configure.ac  |  6 ++---
+ src/session.c | 73 +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 76 insertions(+), 3 deletions(-)
+
+commit 395cf0958c9cbf756a4d35b258818cc95c2c3615
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Jan 7 18:15:07 2018 -0700
+
+    prepare to add X11R6 session management
+
+ configure.ac    | 16 ++++++++++++++++
+ src/Makefile.am |  8 +++++---
+ src/adwm.h      |  4 ++++
+ src/session.c   |  0
+ src/session.h   |  0
+ 5 files changed, 25 insertions(+), 3 deletions(-)
+
+commit 33f248552e5e66f01b4df31f7867f5bf543f3db2
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Jan 6 09:18:31 2018 -0700
+
+    add ignores
+
+ .gitignore | 3 +++
+ 1 file changed, 3 insertions(+)
+
+commit 35b281f27d17fd5fec7266cf29db1453605dd537
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Jan 6 09:18:03 2018 -0700
+
+    update release files
+
+ AUTHORS      |   2 +-
+ ChangeLog    | 841 ++++++++++++++++++++++++-------------------------------
+ NEWS         |  73 +++--
+ README       |  20 +-
+ README.md    |  20 +-
+ configure.ac |  10 +-
+ 6 files changed, 448 insertions(+), 518 deletions(-)
+
 commit eda0b96f26c1153ff248459e74ac6d4cec664eee
 Author: Brian Bidulock <bidulock@openss7.org>
 Date:   Sat Jan 6 09:14:41 2018 -0700
@@ -5048,210 +5254,3 @@ Date:   Thu Feb 11 04:40:51 2016 -0700
 
  README | 6 +++---
  1 file changed, 3 insertions(+), 3 deletions(-)
-
-commit 874be67714114ce2625d73e91170bc4081848286
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Thu Feb 11 04:29:26 2016 -0700
-
-    logic error
-
- src/parse.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-commit 6fe5005e8a31645a1fa8bdb03ff4bff9253a658a
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Thu Feb 11 04:23:09 2016 -0700
-
-    more debugs
-
- src/parse.c | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
-
-commit 9b500724c7546f1a5589dd7e06c7fc29a50fa1ea
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Thu Feb 11 03:37:38 2016 -0700
-
-    better key parsing
-
- src/parse.c | 25 +++++++++++++++++--------
- 1 file changed, 17 insertions(+), 8 deletions(-)
-
-commit b95f1b1152737a708798dc49daed736bf0aae5fa
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Thu Feb 11 03:36:49 2016 -0700
-
-    silent make
-
- rebuild.sh | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-commit 825953c65979b096a185e036ad84b8e3c052878a
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Thu Feb 11 03:36:28 2016 -0700
-
-    avoid error statement
-
- autogen.sh | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-commit 0a4ad37f43adceb04b3f4c6f447da0ae0e187fbf
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Thu Feb 11 01:09:36 2016 -0700
-
-    don't know why compiler missed this error
-
- src/adwm_adwm.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-commit 7e65dab0af45adc3717a1829ecf2ce2518a03c51
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Wed Jan 27 12:29:22 2016 -0700
-
-    release 0.5.5
-
- NEWS.in | 30 ++++++++++++++++++++++++++++++
- README  |  6 +++---
- 2 files changed, 33 insertions(+), 3 deletions(-)
-
-commit b7069f599d2882d640d22056661dc086747da172
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Wed Jan 27 09:58:42 2016 -0700
-
-    add missing pixmaps, fix default style
-
- data/Makefile.am                              | 10 ++++++++
- data/keysrc                                   | 18 ++++++++++----
- data/styles/Default/keysrc                    | 18 ++++++++++----
- data/styles/Default/pixmaps/lhalf_focused.xpm | 20 ++++++++++++++++
- data/styles/Default/pixmaps/lhalf_hovered.xpm | 20 ++++++++++++++++
- data/styles/Default/pixmaps/lhalf_pressed.xpm | 20 ++++++++++++++++
- data/styles/Default/pixmaps/lhalf_unfocus.xpm | 20 ++++++++++++++++
- data/styles/Default/pixmaps/rhalf_focused.xpm | 20 ++++++++++++++++
- data/styles/Default/pixmaps/rhalf_hovered.xpm | 20 ++++++++++++++++
- data/styles/Default/pixmaps/rhalf_pressed.xpm | 20 ++++++++++++++++
- data/styles/Default/pixmaps/rhalf_unfocus.xpm | 20 ++++++++++++++++
- data/styles/Default/stylerc                   | 29 ++++++++++++++++-------
- 12 files changed, 216 insertions(+), 19 deletions(-)
-
-commit ffbd1b72ec2056cf55eeb31e4a0183c38b935f71
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Sun Jan 24 21:40:03 2016 -0700
-
-    handle more buttons on root
-
- configure.template |  4 +++-
- src/actions.c      | 12 ++++++++++++
- src/actions.h      |  2 ++
- src/adwm.c         |  4 ++--
- src/adwm.h         |  2 ++
- src/adwm_adwm.c    | 14 ++++++++++++++
- src/config.c       | 14 ++++++++++++++
- 7 files changed, 49 insertions(+), 3 deletions(-)
-
-commit 1bdd0237353e42d876345682cb5d7ba968f3fc87
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Mon Dec 21 11:20:51 2015 -0700
-
-    let popups recommend save-unders
-
- src/adwm.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-commit 80933e14352c67e8f62b08a77486ffb11352e9df
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Mon Dec 21 11:20:11 2015 -0700
-
-    let windows recommend backing store
-
- src/adwm.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-commit a5416561f8e28de5f607ec6193e32b313db4137e
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Sat Nov 14 17:00:00 2015 -0700
-
-    stray h
-
- src/ewmh.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-commit 9fee439c7810ae20ab8fd10e74fef1006b6dd534
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Fri Jul 10 10:36:59 2015 -0600
-
-    updated release files
-
- README | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
-
-commit e665b9c56b4d386ca6dcc43bd27a4c6081572c5d
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Sun Jul 5 19:06:54 2015 -0600
-
-    handle suppression of unmap notify differently
-
- src/adwm.c   | 22 ++++++++++++++++++++--
- src/layout.c | 17 +++++++++++++++--
- 2 files changed, 35 insertions(+), 4 deletions(-)
-
-commit e5b54f87f3cb1279ece4ca4b9a91d75a8e061b41
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Sun Jul 5 16:50:00 2015 -0600
-
-    don't unmanage on real unmap events when shaded
-
- src/adwm.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-commit 8217c8efd8930fff702a4c58ccd757e198e3babb
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Sun Jul 5 14:50:06 2015 -0600
-
-    try not grabbing scrolling buttons
-
- src/adwm.c | 24 +++++++++++++++++++-----
- 1 file changed, 19 insertions(+), 5 deletions(-)
-
-commit b9ce483fd3cf631f6aea6f736c059556d2a652dc
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Sun Jul 5 13:02:35 2015 -0600
-
-    try to avoid using CurrentTime: breaks timing
-
- src/actions.c |  4 ++--
- src/adwm.c    | 28 ++++++++++++++++------------
- src/layout.c  | 22 +++++++++++-----------
- 3 files changed, 29 insertions(+), 25 deletions(-)
-
-commit b20fbcf37dc5c620fe3c2e6c5c5c11a2677c009d
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Fri Jul 3 18:48:52 2015 -0600
-
-    twiddle with backing_store and save_under
-
- src/adwm.c | 10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
-
-commit 04c1484d3672c4d2a834c6c579670ee7984b3541
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Wed Jan 7 16:20:49 2015 -0700
-
-    updated readme
-
- README    | 8 ++++----
- README.in | 2 +-
- 2 files changed, 5 insertions(+), 5 deletions(-)
-
-commit 14f0ca57cddcb1a2f9a082120d15319c3e37b584
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Fri Oct 3 05:20:58 2014 -0600
-
-    better ICCCM 4.1.4 compliance
-
-     - unmap iconified client windows
-     - map uniconified client windows
-     - unmanaged clients on real unmap
-     - try not to respond to our own unmaps
-
- src/adwm.c | 32 ++++++++++++++++++++++++++++----
- 1 file changed, 28 insertions(+), 4 deletions(-)

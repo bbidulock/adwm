@@ -1,11 +1,37 @@
-adwm -- history of user-visible changes.  2018-01-06
+adwm -- history of user-visible changes.  2018-05-27
 
-Release adwm-0.7.2 released 2018-01-06
+Release adwm-0.7.3 released 2018-05-27
 --------------------------------------
 
-git shortlog -e -n -w80,6,8 0.7.2...HEAD
+git shortlog -e -n -w80,6,8 0.7.3...HEAD
 
 
+
+
+Release adwm-0.7.3 released 2018-05-27
+--------------------------------------
+
+git shortlog -e -n -w80,6,8 0.7.2...0.7.3
+
+Brian Bidulock <bidulock@openss7.org> (18):
+      prepare to add X11R6 session management
+      start building up session management
+      more session work
+      working up session management
+      working up session management
+      update view directive manual page
+      add several key binding notes
+      handle per-view settings
+      start writing session state
+      spelling
+      update documentation
+      compile session save
+      additions to save routines
+      use execlp instead of wordexp execvp
+      use execlp and shell instead of wordexp and execvp
+      no exec in sh -c
+      enable debug
+      more output, better process handling
 
 
 Release adwm-0.7.2 released 2018-01-06
@@ -13,7 +39,7 @@ Release adwm-0.7.2 released 2018-01-06
 
 git shortlog -e -n -w80,6,8 0.7.1...0.7.2
 
-Brian Bidulock <bidulock@openss7.org> (33):
+Brian Bidulock <bidulock@openss7.org> (35):
       prepare for use of cairo and libsvg
       prepare to use cairo and libsvg
       prepare to use cairo and libsvg
@@ -47,6 +73,8 @@ Brian Bidulock <bidulock@openss7.org> (33):
       completed TODO item
       add release notes
       distribute release notes
+      update release files
+      add ignores
 
 
 Release adwm-0.7.1 released 2017-12-19
@@ -519,15 +547,5 @@ git shortlog -e -n -w80,6,8 0.6.2...0.6.3
 
 Brian Bidulock <bidulock@openss7.org> (2):
       simplify diestribution
-      update release files
-
-
-Release adwm-0.6.2 released 2016-07-08
---------------------------------------
-
-git shortlog -e -n -w80,6,8 0.6.1...0.6.2
-
-Brian Bidulock <bidulock@openss7.org> (2):
-      fool: you did not remove previous pointer
       update release files
 

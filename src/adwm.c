@@ -5264,21 +5264,7 @@ spawn(const char *arg)
 		return;
 
 	if (fork() == 0) {
-		if (dpy)
-			XCloseDisplay(dpy);
-		if (0) {	// don't think we should do this
-			char *d, *p;
-
-			d = strdup(getenv("DISPLAY"));
-			if (!(p = strrchr(d, '.')) || !strlen(p + 1)
-			    || strspn(p + 1, "0123456789") != strlen(p + 1)) {
-				size_t len = strlen(d) + 12;
-				char *s = calloc(len, sizeof(*s));
-
-				snprintf(s, len, "%s.%d", d, scr->screen);
-				setenv("DISPLAY", s, 1);
-			}
-		}
+		close(ConnectionNumber(dpy));
 		execlp("sh", "sh", "-c", arg, NULL);
 		eprint("Can't exec sh -c \"%s\": %s\n", arg, strerror(errno));
 	}

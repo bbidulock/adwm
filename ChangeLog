@@ -1,5 +1,24 @@
 # created with git log --stat=76 -M -C -500|fmt -sct -w80
 
+commit 07cda47bdd6eb371783b8c228823a907c0cdfc45
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon May 28 02:49:50 2018 -0600
+
+    Big mistake: don't XCloseDisplay() after fork
+
+ src/adwm.c | 16 +---------------
+ 1 file changed, 1 insertion(+), 15 deletions(-)
+
+commit 5289b64d079bb812bf6ba5e2ec7e298d5f004f44
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon May 28 01:43:04 2018 -0600
+
+    update release files
+
+ ChangeLog | 28 ++++++++++++++++------------
+ NEWS      |  3 ++-
+ 2 files changed, 18 insertions(+), 13 deletions(-)
+
 commit 7405053cfa24a02a8e3d70dc1df69b4a4c7235e9
 Author: Brian Bidulock <bidulock@openss7.org>
 Date:   Mon May 28 00:58:45 2018 -0600
@@ -5245,21 +5264,3 @@ Date:   Thu Mar 31 00:11:36 2016 -0600
 
  src/adwm.c | 6 +++---
  1 file changed, 3 insertions(+), 3 deletions(-)
-
-commit 7687232d9fe7baf0aadaaa832211621f95822275
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Sat Mar 19 00:46:00 2016 -0600
-
-    better xsesssions file
-
- data/xsessions/adwm.desktop | 39 ++++++++++++++++++++++++++++++++++++---
- 1 file changed, 36 insertions(+), 3 deletions(-)
-
-commit 3615b11ab59d994c31075e40863923a297db5035
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Sat Mar 5 12:00:00 2016 -0700
-
-    adjust keysrc for issue #1
-
- data/styles/Default/keysrc | 3 ---
- 1 file changed, 3 deletions(-)

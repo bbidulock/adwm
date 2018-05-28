@@ -13,7 +13,7 @@ Release adwm-0.7.3 released 2018-05-28
 
 git shortlog -e -n -w80,6,8 0.7.2...0.7.3
 
-Brian Bidulock <bidulock@openss7.org> (20):
+Brian Bidulock <bidulock@openss7.org> (22):
       prepare to add X11R6 session management
       start building up session management
       more session work
@@ -34,6 +34,8 @@ Brian Bidulock <bidulock@openss7.org> (20):
       more output, better process handling
       update release files
       prctl is linux-specific
+      update release files
+      Big mistake: don't XCloseDisplay() after fork
 
 
 Release adwm-0.7.2 released 2018-01-06

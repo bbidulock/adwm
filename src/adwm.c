@@ -3941,6 +3941,7 @@ quit(const char *arg)
 	if (arg) {
 		XPRINTF("cleanup switching\n");
 		cleanup(CauseSwitching);
+		XCloseDisplay(dpy);
 		execlp("sh", "sh", "-c", arg, NULL);
 		eprint("Can't exec sh -c \"%s\": %s\n", arg, strerror(errno));
 	}
@@ -3953,6 +3954,7 @@ restart(const char *arg)
 	if (arg) {
 		XPRINTF("cleanup switching\n");
 		cleanup(CauseSwitching);
+		XCloseDisplay(dpy);
 		execlp("sh", "sh", "-c", arg, NULL);
 		eprint("Can't exec sh -c \"%s\": %s\n", arg, strerror(errno));
 	} else {
@@ -3966,6 +3968,7 @@ restart(const char *arg)
 
 		XPRINTF("cleanup restarting\n");
 		cleanup(CauseRestarting);
+		XCloseDisplay(dpy);
 		execvp(argv[0], argv);
 		eprint("Can't restart: %s\n", strerror(errno));
 	}
@@ -4089,13 +4092,12 @@ run(void)
 				eprint("%s", "poll error\n");
 			}
 			if (pfd.revents & POLLIN) {
-				while (XPending(dpy) && running) {
+				while (running && XPending(dpy)) {
 					XNextEvent(dpy, &ev);
 					scr = geteventscr(&ev);
-					if (handle_event(&ev))
-						XFlush(dpy);
-					else
-						XPRINTF("WARNING: Event %d not handled\n", ev.type);
+					DPRINTF("Got an event!");
+					if (!handle_event(&ev))
+						DPRINTF("WARNING: Event %d not handled\n", ev.type);
 				}
 			}
 		}
@@ -4182,37 +4184,37 @@ scan(void)
 			if (!wins[i])
 				continue;
 
-			XPRINTF("scan checking window 0x%08lx\n", wins[i]);
+			DPRINTF("scan checking window 0x%08lx\n", wins[i]);
 
 			if ((c = getclient(wins[i], ClientAny))) {
-				XPRINTF("-> deleting 0x%08lx (already managed by %s)\n", wins[i], c->name);
+				DPRINTF("-> deleting 0x%08lx (already managed by %s)\n", wins[i], c->name);
 				wins[i] = None;
 				continue;
 			}
 			if (!XGetWindowAttributes(dpy, wins[i], &wa)) {
-				XPRINTF("-> deleting 0x%08lx (no window attributes)\n", wins[i]);
+				DPRINTF("-> deleting 0x%08lx (no window attributes)\n", wins[i]);
 				wins[i] = None;
 				continue;
 			}
 			if (wa.override_redirect) {
-				XPRINTF("-> deleting 0x%08lx (override redirect set)\n", wins[i]);
+				DPRINTF("-> deleting 0x%08lx (override redirect set)\n", wins[i]);
 				wins[i] = None;
 				continue;
 			}
 			if (issystray(wins[i])) {
-				XPRINTF("-> deleting 0x%08lx (is a system tray icon)\n", wins[i]);
+				DPRINTF("-> deleting 0x%08lx (is a system tray icon)\n", wins[i]);
 				wins[i] = None;
 				continue;
 			}
 			if ((wa.map_state != IsViewable) && ((state = getstate(wins[i])) != IconicState) && (state != NormalState)) {
-				XPRINTF("-> deleting 0x%08lx (not viewable and state = %ld)\n", wins[i], state);
+				DPRINTF("-> deleting 0x%08lx (not viewable and state = %ld)\n", wins[i], state);
 				wins[i] = None;
 				continue;
 			}
 			/* ICCCM 2.0/4.1.9: Window managers will ignore any WM_TRANSIENT_FOR properties
 			   they find on icon windows. */
 			if (XGetTransientForHint(dpy, wins[i], &d1)) {
-				XPRINTF("-> skipping 0x%08lx (transient-for property set)\n", wins[i]);
+				DPRINTF("-> skipping 0x%08lx (transient-for property set)\n", wins[i]);
 				continue;
 			}
 			/* ICCCM 2.0/4.1.9: Window managers will ignore any WM_HINTS properties
@@ -4220,12 +4222,12 @@ scan(void)
 			if (!(wmh = XGetWMHints(dpy, wins[i])) ||
 					((wmh->flags & WindowGroupHint) && (wmh->window_group != wins[i])) ||
 					!(wmh->flags & IconWindowHint)) {
-				XPRINTF("-> skipping 0x%08lx (not group leader)\n", wins[i]);
+				DPRINTF("-> skipping 0x%08lx (not group leader)\n", wins[i]);
 				if (wmh)
 					XFree(wmh);
 				continue;
 			}
-			XPRINTF("-> managing 0x%08lx\n", wins[i]);
+			DPRINTF("-> managing 0x%08lx\n", wins[i]);
 			manage(wins[i], &wa);
 			wins[i] = None;
 			if (wmh)
@@ -4238,17 +4240,17 @@ scan(void)
 				continue;
 			if (!XGetWindowAttributes(dpy, wins[i], &wa))
 				continue;
-			XPRINTF("-> managing 0x%08lx\n", wins[i]);
+			DPRINTF("-> managing 0x%08lx\n", wins[i]);
 			manage(wins[i], &wa);
 			wins[i] = None;
 		}
 	} else
-		XPRINTF("XQueryTree(0x%lx) failed\n", scr->root);
+		DPRINTF("XQueryTree(0x%lx) failed\n", scr->root);
 //	XUngrabServer(dpy);
 	xtrap_pop();
 	if (wins)
 		XFree(wins);
-	XPRINTF("done scanning screen %d\n", scr->screen);
+	DPRINTF("done scanning screen %d\n", scr->screen);
 	focus(sel);
 	ewmh_update_kde_splash_progress();
 }
@@ -5178,38 +5180,58 @@ initialize(const char *conf, AdwmOperations * ops, Bool reload)
 	if (!getcwd(owd, PATH_MAX))
 		strcpy(owd, "/");
 
+	OPRINTF("initializing cursors\n");
 	initcursors(reload);	/* init cursors */
+	OPRINTF("initializing modifier map\n");
 	initmodmap(reload);	/* init modifier map */
+	OPRINTF("initializing event selection\n");
 	initselect(reload);	/* select for events */
+	OPRINTF("initializing startup notification\n");
 	initstartup(reload);	/* init startup notification */
 
+	OPRINTF("initializing home and XDG directories\n");
 	initdirs(reload);	/* init HOME and XDG directories */
+	OPRINTF("initializing location of config file\n");
 	initrcfile(conf, reload);	/* find the configuration file */
+	OPRINTF("initializing client rules\n");
 	initrules(reload);	/* initialize window class.name rules */
+	OPRINTF("initializing configuration\n");
 	initconfig(reload);	/* initialize configuration */
+	OPRINTF("initializing icon theme\n");
 	initicons(reload);	/* initialize icon theme */
 
 	for (scr = screens; scr < screens + nscr; scr++) {
 		if (!scr->managed)
 			continue;
 
+		OPRINTF("initializing screen\n");
 		initscreen(reload);	/* init per-screen configuration */
+		OPRINTF("initializing EWMH atoms and root properties\n");
 		initewmh(ops->name);	/* init EWMH atoms */
+		OPRINTF("initializing tags (desktops)\n");
 		inittags(reload);	/* init tags */
 
 		if (!reload) {
+			OPRINTF("initializing monitor geometry\n");
 			initmonitors(NULL);	/* init geometry */
 			/* I think that we can do this all the time. */
 		}
 
+		OPRINTF("initializing key bindings\n");
 		initkeys(reload);	/* init key bindings */
+		OPRINTF("initializing dock\n");
 		initdock(reload);	/* initialize dock */
+		OPRINTF("initializing layouts and views\n");
 		initviews(reload);	/* initialize layouts */
 
+		OPRINTF("initializing key grabs\n");
 		grabkeys();
 
+		OPRINTF("initializing style\n");
 		initstyle(reload);	/* init appearance */
+		OPRINTF("initializing struts and workareas\n");
 		initstruts(reload);	/* initialize struts and workareas */
+		OPRINTF("initializing icon sizes\n");
 		initsizes(reload);	/* init icon sizes */
 	}
 
@@ -5241,21 +5263,21 @@ spawn(const char *arg)
 	if (!arg)
 		return;
 
-
 	if (fork() == 0) {
-		char *d, *p;
-
 		if (dpy)
-			close(ConnectionNumber(dpy));
-		setsid();
-		d = strdup(getenv("DISPLAY"));
-		if (!(p = strrchr(d, '.')) || !strlen(p + 1)
-		    || strspn(p + 1, "0123456789") != strlen(p + 1)) {
-			size_t len = strlen(d) + 12;
-			char *s = calloc(len, sizeof(*s));
+			XCloseDisplay(dpy);
+		if (0) {	// don't think we should do this
+			char *d, *p;
 
-			snprintf(s, len, "%s.%d", d, scr->screen);
-			setenv("DISPLAY", s, 1);
+			d = strdup(getenv("DISPLAY"));
+			if (!(p = strrchr(d, '.')) || !strlen(p + 1)
+			    || strspn(p + 1, "0123456789") != strlen(p + 1)) {
+				size_t len = strlen(d) + 12;
+				char *s = calloc(len, sizeof(*s));
+
+				snprintf(s, len, "%s.%d", d, scr->screen);
+				setenv("DISPLAY", s, 1);
+			}
 		}
 		execlp("sh", "sh", "-c", arg, NULL);
 		eprint("Can't exec sh -c \"%s\": %s\n", arg, strerror(errno));
@@ -6562,6 +6584,10 @@ main(int argc, char *argv[])
 	cargc = argc;
 	cargv = argv;
 
+	setsid();
+#ifdef PR_SET_CHILD_SUBREAPER
+	prctl(PR_SET_CHILD_SUBREAPER, 1, 0, 0, 0);
+#endif
 	if (!(baseops = get_adwm_ops("adwm")))
 		eprint("%s", "could not load base operations\n");
 
@@ -6572,34 +6598,34 @@ main(int argc, char *argv[])
 	for (i = 0; i < BaseLast; i++) {
 		einfo[i].have = XQueryExtension(dpy, einfo[i].name, &einfo[i].opcode, &einfo[i].event, &einfo[i].error);
 		if (einfo[i].have) {
-			XPRINTF("have %s extension (%d,%d,%d)\n", einfo[i].name, einfo[i].opcode, einfo[i].event, einfo[i].error);
+			OPRINTF("have %s extension (%d,%d,%d)\n", einfo[i].name, einfo[i].opcode, einfo[i].event, einfo[i].error);
 			if (einfo[i].version) {
 				einfo[i].version(dpy, &einfo[i].major, &einfo[i].minor);
 				OPRINTF("have %-10s extension version %d.%d\n", einfo[i].name, einfo[i].major, einfo[i].minor);
 			}
 		} else
-			XPRINTF("%s", "%s extension is not supported\n", einfo[i].name);
+			OPRINTF("%s extension is not supported\n", einfo[i].name);
 	}
 	nscr = ScreenCount(dpy);
-	XPRINTF("there are %u screens\n", nscr);
+	OPRINTF("there are %u screens\n", nscr);
 	screens = calloc(nscr, sizeof(*screens));
 	for (i = 0, scr = screens; i < nscr; i++, scr++) {
 		scr->screen = i;
 		scr->root = RootWindow(dpy, i);
 		XSaveContext(dpy, scr->root, context[ScreenContext], (XPointer) scr);
-		XPRINTF("screen %d has root 0x%lx\n", scr->screen, scr->root);
+		OPRINTF("screen %d has root 0x%lx\n", scr->screen, scr->root);
 		initimage();
 	}
 	if ((p = getenv("DISPLAY")) && (p = strrchr(p, '.')) && strlen(p + 1)
 	    && strspn(p + 1, "0123456789") == strlen(p + 1) && (i = atoi(p + 1)) < nscr) {
-		XPRINTF("managing one screen: %d\n", i);
+		OPRINTF("managing one screen: %d\n", i);
 		screens[i].managed = True;
 	} else
 		for (scr = screens; scr < screens + nscr; scr++)
 			scr->managed = True;
 	for (scr = screens; scr < screens + nscr; scr++)
 		if (scr->managed) {
-			XPRINTF("checking screen %d\n", scr->screen);
+			OPRINTF("checking screen %d\n", scr->screen);
 			checkotherwm();
 		}
 	for (scr = screens; scr < screens + nscr && !scr->managed; scr++) ;
@@ -6608,14 +6634,15 @@ main(int argc, char *argv[])
 	setup(conf, baseops);
 	for (scr = screens; scr < screens + nscr; scr++)
 		if (scr->managed) {
-			XPRINTF("scanning screen %d\n", scr->screen);
+			OPRINTF("scanning screen %d\n", scr->screen);
 			scan();
 		}
-	XPRINTF("%s", "entering main event loop\n");
+	OPRINTF("%s", "entering main event loop\n");
 	run();
-	XPRINTF("cleanup quitting\n");
+	OPRINTF("cleanup quitting\n");
 	cleanup(CauseQuitting);
 
+	OPRINTF("closing display\n");
 	XCloseDisplay(dpy);
 	return 0;
 }

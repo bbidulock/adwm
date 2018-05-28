@@ -25,6 +25,7 @@
 #include <math.h>
 #include <execinfo.h>
 #include <dlfcn.h>
+#include <sys/prctl.h>
 
 #include <X11/cursorfont.h>
 #include <X11/keysym.h>

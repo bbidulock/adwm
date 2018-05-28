@@ -1,5 +1,19 @@
 # created with git log --stat=76 -M -C -500|fmt -sct -w80
 
+commit e5af2381b2d4f397d5c5581ae68d0c4473d6be97
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon May 28 00:25:48 2018 -0600
+
+    update release files
+
+ AUTHORS      |   2 +-
+ ChangeLog    | 413 +++++++++++++++++++++++++++----------------------------
+ NEWS         |  46 +++++--
+ README       |  20 +--
+ README.md    |  20 +--
+ configure.ac |  10 +-
+ 6 files changed, 264 insertions(+), 247 deletions(-)
+
 commit f32eaf6ee2344b5630d94dd1c7da03d0e7f57b8f
 Author: Brian Bidulock <bidulock@openss7.org>
 Date:   Sun May 27 22:36:44 2018 -0600
@@ -5245,12 +5259,3 @@ Date:   Fri Feb 12 14:21:47 2016 -0700
  src/config.c    |  3 +++
  src/layout.c    | 10 +++++++---
  4 files changed, 14 insertions(+), 3 deletions(-)
-
-commit 04c14ae90142dca49b6a4b0ad1accc5f98e904ee
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Thu Feb 11 04:40:51 2016 -0700
-
-    update release files
-
- README | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)

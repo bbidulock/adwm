@@ -6585,8 +6585,10 @@ main(int argc, char *argv[])
 	cargv = argv;
 
 	setsid();
+#ifdef __linux__
 #ifdef PR_SET_CHILD_SUBREAPER
 	prctl(PR_SET_CHILD_SUBREAPER, 1, 0, 0, 0);
+#endif
 #endif
 	if (!(baseops = get_adwm_ops("adwm")))
 		eprint("%s", "could not load base operations\n");

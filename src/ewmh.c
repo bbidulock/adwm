@@ -3179,6 +3179,48 @@ ewmh_update_kde_splash_progress()
 	XSendEvent(dpy, scr->root, False, SubstructureNotifyMask, &ev);
 }
 
+void
+ewmh_update_startup_notification(void)
+{
+	XEvent ev = { 0, };
+	const char *id;
+	size_t len;
+	char *buf, *p;
+	int l;
+
+	if (!(id = getenv("DESKTOP_STARTUP_ID")))
+		return;
+
+	XChangeProperty(dpy, scr->selwin, _XA_NET_STARTUP_ID, _XA_UTF8_STRING, 8,
+			PropModeReplace, (unsigned char *) id, strlen(id) + 1);
+
+	len = strlen(id) + 13;
+	buf = calloc(len + 1, sizeof(*buf));
+	snprintf(buf, len, "remove: ID=%s", id);
+
+	ev.type = ClientMessage;
+	ev.xclient.message_type = _XA_NET_STARTUP_INFO_BEGIN;
+	ev.xclient.display = dpy;
+	ev.xclient.window = scr->selwin;
+	ev.xclient.format = 8;
+
+	p = buf;
+	l = strlen(buf) + 1;
+
+	while (l > 0) {
+		strncpy(ev.xclient.data.b, p, 20);
+		p += 20;
+		l -= 20;
+		/* just PropertyChange mask in the spec doesn't work :( */
+		if (!XSendEvent(dpy, scr->root, False, StructureNotifyMask |
+				SubstructureNotifyMask | SubstructureRedirectMask |
+				PropertyChangeMask, &ev)) ;
+		ev.xclient.message_type = _XA_NET_STARTUP_INFO;
+	}
+	XSync(dpy, False);
+	free(buf);
+}
+
 #define OB_CONTROL_RECONFIG	1
 #define OB_CONTROL_RESTART	2
 #define OB_CONTROL_QUIT		3

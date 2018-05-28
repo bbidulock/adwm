@@ -32,6 +32,7 @@ void ewmh_process_net_number_of_desktops(void);
 void ewmh_process_net_showing_desktop(void);
 void ewmh_process_net_desktop_layout(void);
 void ewmh_update_kde_splash_progress(void);
+void ewmh_update_startup_notification(void);
 void ewmh_update_net_active_window(void);
 void ewmh_update_net_client_list_stacking(void);
 void ewmh_update_net_client_list(void);

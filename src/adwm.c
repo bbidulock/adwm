@@ -4253,6 +4253,7 @@ scan(void)
 	DPRINTF("done scanning screen %d\n", scr->screen);
 	focus(sel);
 	ewmh_update_kde_splash_progress();
+	ewmh_update_startup_notification();
 }
 
 static Bool

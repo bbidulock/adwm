@@ -33,6 +33,7 @@ esac
 	--mandir=/usr/share/man \
 	--disable-imlib2 \
 	--disable-gdk-pixbuf \
+	--enable-debug \
 	CPPFLAGS="$CPPFLAGS" \
 	CFLAGS="$DEBUG_CFLAGS -Wall -Werror $CFLAGS" \
 	CXXFLAGS="$DEBUG_CXXFLAGS -Wall -Werror $CXXFLAGS" \

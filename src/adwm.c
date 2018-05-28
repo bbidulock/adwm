@@ -4173,7 +4173,7 @@ scan(void)
 
 	wins = NULL;
 	xtrap_push(0,NULL);
-//	XGrabServer(dpy);
+	XGrabServer(dpy);
 	if (XQueryTree(dpy, scr->root, &d1, &d2, &wins, &num)) {
 		for (i = 0; i < num; i++) {
 			XWindowAttributes wa = { 0, };
@@ -4246,7 +4246,7 @@ scan(void)
 		}
 	} else
 		DPRINTF("XQueryTree(0x%lx) failed\n", scr->root);
-//	XUngrabServer(dpy);
+	XUngrabServer(dpy);
 	xtrap_pop();
 	if (wins)
 		XFree(wins);

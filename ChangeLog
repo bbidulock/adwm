@@ -1,5 +1,21 @@
 # created with git log --stat=76 -M -C -500|fmt -sct -w80
 
+commit 7405053cfa24a02a8e3d70dc1df69b4a4c7235e9
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon May 28 00:58:45 2018 -0600
+
+    prctl is linux-specific
+
+ AUTHORS      |  2 +-
+ ChangeLog    | 23 ++++++++++++++---------
+ NEWS         |  9 +++++----
+ README       |  6 +++---
+ README.md    |  6 +++---
+ configure.ac |  4 ++--
+ src/adwm.c   |  2 ++
+ src/adwm.h   |  2 ++
+ 8 files changed, 32 insertions(+), 22 deletions(-)
+
 commit e5af2381b2d4f397d5c5581ae68d0c4473d6be97
 Author: Brian Bidulock <bidulock@openss7.org>
 Date:   Mon May 28 00:25:48 2018 -0600
@@ -5247,15 +5263,3 @@ Date:   Sat Mar 5 12:00:00 2016 -0700
 
  data/styles/Default/keysrc | 3 ---
  1 file changed, 3 deletions(-)
-
-commit 2bed8ab9b4d9170b3df2b80fb5f6b4e45f555c89
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Fri Feb 12 14:21:47 2016 -0700
-
-    add option whether to use veil
-
- src/adwm.h      |  1 +
- src/adwm_adwm.c |  3 +++
- src/config.c    |  3 +++
- src/layout.c    | 10 +++++++---
- 4 files changed, 14 insertions(+), 3 deletions(-)

@@ -4060,6 +4060,8 @@ run(void)
 
 			switch (sig) {
 			case SIGHUP:
+				/* in case we missed a SIGCHLD */
+				while (waitpid(-1, &sig, WNOHANG) > 0) ;
 				reload();
 				break;
 			case SIGTERM:
@@ -4068,7 +4070,7 @@ run(void)
 				quit(NULL);
 				break;
 			case SIGCHLD:
-				wait(&sig);
+				while (waitpid(-1, &sig, WNOHANG) > 0) ;
 				break;
 			default:
 				break;
@@ -4963,15 +4965,7 @@ initmonitors(XEvent *e)
 void
 sighandler(int sig)
 {
-	if (sig)
-		signum = sig;
-	if (signum == SIGCHLD) {
-		int status;
-
-		wait(&status);
-		signum = 0;
-	} else if (signum == SIGSEGV || signum == SIGBUS)
-		eprint("fatal: caught signal %d\n", signum);
+	signum = sig;
 }
 
 void

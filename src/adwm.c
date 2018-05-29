@@ -6560,8 +6560,6 @@ main(int argc, char *argv[])
 	signal(SIGTERM, sighandler);
 	signal(SIGQUIT, sighandler);
 	signal(SIGCHLD, sighandler);
-	signal(SIGSEGV, sighandler);
-	signal(SIGBUS, sighandler);
 	cargc = argc;
 	cargv = argv;
 

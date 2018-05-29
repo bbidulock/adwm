@@ -1,11 +1,25 @@
-adwm -- history of user-visible changes.  2018-05-28
+adwm -- history of user-visible changes.  2018-05-29
 
-Release adwm-0.7.3 released 2018-05-28
+Release adwm-0.7.4 released 2018-05-29
 --------------------------------------
 
-git shortlog -e -n -w80,6,8 0.7.3...HEAD
+git shortlog -e -n -w80,6,8 0.7.4...HEAD
 
 
+
+
+Release adwm-0.7.4 released 2018-05-29
+--------------------------------------
+
+git shortlog -e -n -w80,6,8 0.7.3...0.7.4
+
+Brian Bidulock <bidulock@openss7.org> (6):
+      yes, grab server for scan
+      add startup notification completion for wm itself
+      warn when not using prctl
+      never block on wait
+      do not handle core-dumpers
+      unmap dockapp window
 
 
 Release adwm-0.7.3 released 2018-05-28
@@ -13,7 +27,7 @@ Release adwm-0.7.3 released 2018-05-28
 
 git shortlog -e -n -w80,6,8 0.7.2...0.7.3
 
-Brian Bidulock <bidulock@openss7.org> (22):
+Brian Bidulock <bidulock@openss7.org> (23):
       prepare to add X11R6 session management
       start building up session management
       more session work
@@ -36,6 +50,7 @@ Brian Bidulock <bidulock@openss7.org> (22):
       prctl is linux-specific
       update release files
       Big mistake: don't XCloseDisplay() after fork
+      update release files
 
 
 Release adwm-0.7.2 released 2018-01-06
@@ -541,15 +556,5 @@ Brian Bidulock <bidulock@openss7.org> (8):
       better stacking
       remove old restack()
       stacking assertion and no mess with bastards
-      update release files
-
-
-Release adwm-0.6.3 released 2016-07-09
---------------------------------------
-
-git shortlog -e -n -w80,6,8 0.6.2...0.6.3
-
-Brian Bidulock <bidulock@openss7.org> (2):
-      simplify diestribution
       update release files
 

@@ -536,10 +536,9 @@ ban(Client *c)
 		c->is.banned = True;
 		relfocus(c);
 		XUnmapWindow(dpy, c->frame);
-		if (c->is.dockapp)
-			XUnmapWindow(dpy, c->icon ? : c->win);
-		else
-			XUnmapWindow(dpy, c->win);
+		XUnmapWindow(dpy, c->win);
+		if (c->is.dockapp && c->icon && c->icon != c->win)
+			XUnmapWindow(dpy, c->icon);
 		XSync(dpy, False);
 		XCheckIfEvent(dpy, &ev, &check_unmapnotify, (XPointer) c);
 	}

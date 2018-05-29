@@ -27,6 +27,8 @@
 #include <dlfcn.h>
 #ifdef __linux__
 #include <sys/prctl.h>
+#else
+#warn "Not using prctl!"
 #endif
 
 #include <X11/cursorfont.h>

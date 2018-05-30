@@ -15,6 +15,8 @@
 .It
 .Cm ${HOME} Ns Pa /.@PACKAGE@/ Ns Li {, Ns Pa themes/ Ns Cm <themeName> Ns Pa / Ns Li } Ns Pa themerc
 .It
+.Cm ${XDG_CONFIG_DIRS} Ns Pa /@PACKAGE@/ Ns Li {, Ns Pa themes/ Ns Cm <themeName> Ns Pa / Ns Li } Ns Pa themerc
+.It
 .Pa @pkgconfdir@/ Ns Li {, Ns Pa themes/ Ns Cm <themeName> Ns Pa / Ns Li } Ns Pa themerc
 .El
 .Sh DESCRIPTION
@@ -708,13 +710,17 @@ typically,
 .Pa @pkgconfdir@/themes/Default/themerc .
 .Sh FILES
 .Pp
+Following are the locations of the
+.Nm
+file, in the order in which they are searched:
+.Pp
 .Bl -tag -width "XX"
 .It Cm ${ADWMPRIVDIR} Ns Ar / Ns Li {, Ns Ar themes/ Ns Cm <themeName> Ns Ar / Ns Li } Ns Cm <themeFile>
 The location of the private user {,named} theme file
 (where
 .Cm ${ADWMPRIVDIR}
 is the directory containing the
-.Pa adwmrc
+.Ar adwmrc
 file specified on the command line using the
 .Cm -f
 option).
@@ -724,8 +730,10 @@ The location of the user runtime {,named} theme file.
 The location of the user XDG {,named} theme file.
 .It Cm ${HOME} Ns Ar /.@PACKAGE@/ Ns Li {, Ns Ar themes/ Ns Cm <themeName> Ns Ar / Ns Li } Ns Ar themerc
 The location of the user {,named} theme file.
+.It Cm ${XDG_CONFIG_DIRS} Ns Ar /@PACKAGE@/ Ns Li {, Ns Ar themes/ Ns Cm <themeName> Ns Ar / Ns Li } Ns Ar themerc
+The location of the system XDG {,named} theme file.
 .It Ar @pkgconfdir@/ Ns Li {, Ns Ar themes/ Ns Cm <themeName> Ns Ar / Ns Li } Ns Ar themerc
-The location of the system {,named} theme file.
+The location of the default system {,named} theme file.
 .El
 .Sh COMPLIANCE
 .Pp

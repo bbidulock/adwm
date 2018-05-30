@@ -15,6 +15,8 @@
 .It
 .Cm ${HOME} Ns Pa /.@PACKAGE@/ Ns Li {, Ns Pa styles/ Ns Cm <styleName> Ns Pa / Ns Li } Ns Pa stylerc
 .It
+.Cm ${XDG_CONFIG_DIRS} Ns Pa /@PACKAGE@/ Ns Li {, Ns Pa styles/ Ns Cm <styleName> Ns Pa / Ns Li } Ns Pa stylerc
+.It
 .Pa @pkgconfdir@/ Ns Li {, Ns Pa styles/ Ns Cm <styleName> Ns Pa / Ns Li } Ns Pa stylerc
 .El
 .Sh DESCRIPTION
@@ -753,6 +755,10 @@ typically,
 .Pa @pkgconfdir@/styles/Default/stylerc .
 .Sh FILES
 .Pp
+Following are the locations of the
+.Nm
+file, in the order in which they are searched:
+.Pp
 .Bl -tag -width "XX"
 .It Cm ${ADWMPRIVDIR} Ns Ar / Ns Li {, Ns Ar styles/ Ns Cm <styleName> Ns Ar / Ns Li } Ns Cm <styleFile>
 The location of the private user {,named} style file
@@ -769,8 +775,10 @@ The location of the user runtime {,named} style file.
 The location of the user XDG {,named} style file.
 .It Cm ${HOME} Ns Ar /.@PACKAGE@/ Ns Li {, Ns Ar styles/ Ns Cm <styleName> Ns Ar / Ns Li } Ns Ar stylerc
 The location of the user {,named} style file.
+.It Cm ${XDG_CONFIG_DIRS} Ns Ar /@PACKAGE@/ Ns Li {, Ns Ar styles/ Ns Cm <styleName> Ns Ar / Ns Li } Ns Ar stylerc
+The location of the system XDG {,named} style file.
 .It Ar @pkgconfdir@/ Ns Li {, Ns Ar styles/ Ns Cm <styleName> Ns Ar / Ns Li } Ns Ar stylerc
-The location of the system {,named} style file.
+The location of the default system {,named} style file.
 .El
 .Sh SEE ALSO
 .Rs

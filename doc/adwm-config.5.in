@@ -7,7 +7,7 @@
 .Sh SYNOPSIS
 .Bl -item -compact
 .It
-.Cm @PACKAGE@ -f Pa <path>
+.Cm @PACKAGE@ -f Li { Ns Cm ${ADWMPRIVDIR} Ns Pa / Ns Li } Ns Pa @PACKAGE@rc
 .It
 .Cm ${XDG_RUNTIME_DIR} Ns Pa /@PACKAGE@/@PACKAGE@rc
 .It
@@ -1057,24 +1057,37 @@ Adwm*tags.layout3: g
 Adwm*tags.layout4: b
 .Ed
 .Sh FILES
+.Pp
+Following are the locations of the
+.Nm
+configuration files, in the order in which they are searched:
+.Pp
 .Bl -tag -width "XX"
-.It Pa ~/.@PACKAGE@/@PACKAGE@rc
-The location of the default user's configuration file.
-.It Pa ~/.@PACKAGE@/keysrc
-The location of the default user's key bindings file.
-.It Pa ~/.@PACKAGE@/stylerc
-The location of the default user's style file.
-.It Pa ~/.@PACKAGE@/styles/ Ns Cm <theme.name> Ns Pa /stylerc
-The location of the default user's themed style file.
-.It Pa @pkgconfdir@/@PACKAGE@rc
-The location of the system default configuration file.
-.It Pa @pkgconfdir@/keysrc
-The location of the system default key bindings file.
-.It Pa @pkgconfdir@/styles/ Ns Cm <theme.name> Ns Pa /keysrc
-The location of the system default themed key bindings file.
-.It Pa @pkgconfdir@/styles/ Ns Cm <theme.name> Ns Pa /stylerc
-The location of the system default themed style file.
+.It Cm ${ADWMPRIVDIR} Ns Ar /@PACKAGE@rc
+The location of the private user config file (where 
+.Cm ${ADWMPRIVDIR}
+is the directory containing the
+.Ar @PACKAGE@rc
+file specified on the command line using the
+.Cm -f
+option).
+.It Cm ${XDG_RUNTIME_DIR} Ns Ar /@PACKAGE@/@PACKAGE@rc
+The location of the user runtime config file.
+.It Cm ${XDG_CONFIG_HOME} Ns Ar /@PACKAGE@/@PACKAGE@rc
+The location of the user XDG config file.
+.It Cm ${HOME} Ns Ar /.@PACKAGE@/@PACKAGE@rc
+The location of the user config file.
+.It Cm ${XDG_CONFIG_DIRS} Ns Ar /@PACKAGE@/@PACKAGE@rc
+The location of the system XDG config file.
+.It Ar @pkgconfdir@/@PACKAGE@rc
+The location of the default system config file.
 .El
+.Pp
+For the locations of the theme, style and keys files, see
+.Xr @PACKAGE@-theme 5 ,
+.Xr @PACKAGE@-style 5
+and
+.Xr @PACKAGE@-keys 5 .
 .Sh SEE ALSO
 .Rs
 .Xr echinus 1 ,

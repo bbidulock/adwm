@@ -6622,7 +6622,7 @@ help(int argc, char *argv[])
 {
 	if (!options.output && !options.debug)
 		return;
-	(void) fprintf(stderr, "\
+	(void) fprintf(stdout, "\
 Usage:\n\
     %1$s [{-f|--file} {PATH/}RCFILE]\n\
     %1$s {-h|--help}\n\

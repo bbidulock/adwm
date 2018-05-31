@@ -5,11 +5,31 @@
 .Nm @PACKAGE@
 .Nd advanced dynamic window manager for X
 .Sh SYNOPSIS
+.Bl -item -compact
+.It
 .Nm
 .Bk -words
-.Op Fl v
-.Op Fl f Ar conf
+.Op Ar OPTIONS
+.Li [{ Ns Fl f Ns Li | Ns Fl -file Ns Li } Li [ Ns Ar PATH/ Ns Li ] Ns Ar RCFILE Ns Li ]
 .Ek
+.It
+.Nm
+.Bk -words
+.Op Ar OPTIONS
+.Li { Ns Fl h Ns Li | Ns Fl -help Ns Li }
+.Ek
+.Nm
+.Bk -words
+.Op Ar OPTIONS
+.Li { Ns Fl v Ns Li | Ns Fl -version Ns Li }
+.Ek
+.It
+.Nm
+.Bk -words
+.Op Ar OPTIONS
+.Li { Ns Fl C Ns Li | Ns Fl -copying Ns Li }
+.Ek
+.El
 .Sh DESCRIPTION
 .Nm @PACKAGE_NAME@
 is a lightweight window manager for X inspired by
@@ -34,18 +54,79 @@ draws a small border around windows to indicate the focus state and an
 optional title bar and resize grips.
 .Sh OPTIONS
 .Pp
-The options are as follows:
-.Bl -tag -width ".Fl f Ar conf"
-.It Fl v
+The options that are detailed below are recognized by
+.Nm .
+.Nm
+uses
+.Xr getopt_long_only 3 ,
+so unambiguous abbreviations of long options and long options with a
+single dash are also supported.
+.Ss COMMAND OPTIONS
+.Pp
+By default,
+.Nm
+will launch the window manager and search for the default named
+configuration file,
+.Pa @PACKAGE@rc ,
+in the directories listed under section
+.Sx FILES ,
+below.
+The following standard options change this behaviour:
+.Pp
+.Bl -tag -width "XX"
+.It Fl h Ns Li , Ns Fl -help
+Prints usage information to standard output, then exits.
+.It Fl v Ns Li , Ns Fl -version
 Prints version information to standard output, then exits.
-.It Fl f Ar conf
+The first word of the first line of output is consistent with previous
+versions of
+.Nm
+and contains the string "@PACKAGE@-@VERSION@".  However, whereas
+previous versions only output a single line, versions after 0.7.4 output
+multiple lines.
+.It Fl C Ns Li , Ns Fl -copying
+Prints copying permissions to standard output, then exits.
+.El
+.Ss GENERAL OPTIONS
+.Pp
+The following non-standard options can also be supplied:
+.Bl -tag -width "XX"
+.It Fl f Ns Li , Ns Fl -file Li [ Ns Ar PATH/ Ns Li ] Ns Ar RCFILE
 Specifies an alternative configuration file.
 By default,
 .Nm
-loads the configuration file from
-.Pa ~/.@PACKAGE@/@PACKAGE@rc,
-if present, then looks for the system-wide configuration file
-.Pa @pkgconfdir@/@PACKAGE@rc .
+loads the configuration file named
+.Pa @PACKAGE@rc ,
+searching the directories specified under
+.Sx FILES ,
+below.
+When only a file name,
+.Ar RCFILE ,
+is specified as an argument, the same directories are searched for the
+file named
+.Ar RCFILE .
+If a path to the file,
+.Ar PATH ,
+is also specified, the directory corresponding to
+.Ar PATH
+is prepended to the directory search list, and
+.Ar RCFILE
+is sought beginning with that directory.  This is so that
+.Nm
+is consistent with the implementation in previous versions, but includes
+additional directories to search.
+.It Fl D Ns Li , Ns Fl -debug Li [ Ns Ar LEVEL Ns Li ]
+Print detailed diagnostic information to standard error during
+operation.  Increases or sets the debugging level to
+.Ar LEVEL .
+This option can be repeated to further increase the debugging output.
+The default level is zero (0).
+.It Fl V Ns Li , Ns Fl -verbose Li [ Ns Ar LEVEL Ns Li ]
+Print diagnostic information to standard output during operation.
+Increases or sets the verbosity level to
+.Ar LEVEL .
+This option can be repeated to further increase the verbosity of output.
+The default level is one (1).
 .El
 .Sh FEATURES
 Following are some of the features provided by
@@ -1063,6 +1144,29 @@ taketoup
 .\" .Pp
 .\" To show the title centered and the close button on the right:
 .\" .Dl Adwm*titlelayout: -T-C
+.Sh EXIT STATUS
+.Pp
+When not terminated by a signal,
+.Nm
+will exit with one of the following exit statuses, indicating the
+success or failure of the program.
+.Bl -tag -width ".Li 127"
+.It Li 0
+.Li (EXIT_SUCCESS)
+The program ran successfully and completed normally.
+.It Li 1
+.Li (EXIT_FAILURE)
+The program failed due to an unrecoverable error and exited abnormally.
+A diagnostic message is normally printed to standard error before exit.
+.It Li 2
+.Li (EXIT_SYNTAXERR)
+The program detected a syntax error during option processing and exited.
+A diagnostic message is normally printed to standard error before exit.
+.It Li 127
+The program could not execute and was not expecting to return from the
+.Xr execve 3
+instruction, and therefore, exited abnormally.
+.El
 .Sh FILES
 .Bl -tag -width "XX"
 .It Pa ~/.@PACKAGE@/@PACKAGE@rc

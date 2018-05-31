@@ -6537,30 +6537,239 @@ get_adwm_ops(const char *name)
 	return ops;
 }
 
+static void
+copying(int argc, char *argv[])
+{
+	if (!options.output && !options.debug)
+		return;
+	(void) fprintf(stdout, "\
+--------------------------------------------------------------------------------\n\
+%1$s\n\
+--------------------------------------------------------------------------------\n\
+Copyright (c) 2010-2018  Monavacon Limited <http://www.monavacon.com/>\n\
+Copyright (c) 2002-2009  OpenSS7 Corporation <http://www.openss7.com/>\n\
+Copyright (c) 1997-2001  Brian F. G. Bidulock <bidulock@openss7.org>\n\
+\n\
+All Rights Reserved.\n\
+--------------------------------------------------------------------------------\n\
+This program is free software: you can  redistribute it  and/or modify  it under\n\
+the terms of the  GNU  General Public License  as published by the Free Software\n\
+Foundation, version 3 of the license.\n\
+\n\
+This program is distributed in the hope that it will  be useful, but WITHOUT ANY\n\
+WARRANTY; without even  the implied warranty of MERCHANTABILITY or FITNESS FOR A\n\
+PARTICULAR PURPOSE.  See the GNU General Public License for more details.\n\
+\n\
+You should have received  a copy of the  GNU  General Public License  along with\n\
+this program.   If not, see <http://www.gnu.org/licenses/>, or write to the\n\
+Free Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.\n\
+--------------------------------------------------------------------------------\n\
+U.S. GOVERNMENT RESTRICTED RIGHTS.  If you are licensing this Software on behalf\n\
+of the U.S. Government (\"Government\"), the following provisions apply to you. If\n\
+the Software is supplied by the Department of Defense (\"DoD\"), it is classified\n\
+as \"Commercial  Computer  Software\"  under  paragraph  252.227-7014  of the  DoD\n\
+Supplement  to the  Federal Acquisition Regulations  (\"DFARS\") (or any successor\n\
+regulations) and the  Government  is acquiring  only the  license rights granted\n\
+herein (the license rights customarily provided to non-Government users). If the\n\
+Software is supplied to any unit or agency of the Government  other than DoD, it\n\
+is  classified as  \"Restricted Computer Software\" and the Government's rights in\n\
+the Software  are defined  in  paragraph 52.227-19  of the  Federal  Acquisition\n\
+Regulations (\"FAR\")  (or any successor regulations) or, in the cases of NASA, in\n\
+paragraph  18.52.227-86 of  the  NASA  Supplement  to the FAR (or any  successor\n\
+regulations).\n\
+--------------------------------------------------------------------------------\n\
+", NAME " " VERSION);
+}
+
+static void
+version(int argc, char *argv[])
+{
+	if (!options.output && !options.debug)
+		return;
+	(void) fprintf(stdout, "\
+%1$s-%3$s (OpenSS7 %2$s)\n\
+Written by Brian Bidulock.\n\
+\n\
+Copyright (c) 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018  Monavacon Limited.\n\
+Copyright (c) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009  OpenSS7 Corporation.\n\
+Copyright (c) 1997, 1998, 1999, 2000, 2001  Brian F. G. Bidulock.\n\
+This is free software; see the source for copying conditions.  There is NO\n\
+warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\
+\n\
+Distributed by OpenSS7 under GNU General Public License Version 3,\n\
+with conditions, incorporated herein by reference.\n\
+\n\
+See `%1$s --copying' for copying permissions.\n\
+", NAME, PACKAGE, VERSION);
+}
+
+void
+usage(int argc, char *argv[])
+{
+	if (!options.output && !options.debug)
+		return;
+	(void) fprintf(stderr, "\
+Usage:\n\
+    %1$s [{-f|--file} {PATH/}RCFILE]\n\
+    %1$s {-h|--help}\n\
+    %1$s {-V|--version}\n\
+    %1$s {-C|--copying}\n\
+", argv[0]);
+}
+
+void
+help(int argc, char *argv[])
+{
+	if (!options.output && !options.debug)
+		return;
+	(void) fprintf(stderr, "\
+Usage:\n\
+    %1$s [{-f|--file} {PATH/}RCFILE]\n\
+    %1$s {-h|--help}\n\
+    %1$s {-V|--version}\n\
+    %1$s {-C|--copying}\n\
+Options:\n\
+    -f, --file {PATH/}RCFILE [default: 'adwmrc']\n\
+        config file name, RCFILE, or abs path and name, PATH/RCFILE\n\
+    -h, --help, -?, --?\n\
+        print this usage information and exit\n\
+    -v, --version\n\
+        print version and exit\n\
+    -C, --copying\n\
+        print copying permission and exit\n\
+    -D, --debug [LEVEL]\n\
+        increment or set debug LEVEL [default: '%2$d']\n\
+    -V, --verbose [LEVEL]\n\
+        increment or set output verbosity LEVEL [default: '%3$d']\n\
+        this option may be repeated.\n\
+", argv[0], options.debug, options.output);
+}
+
 int
 main(int argc, char *argv[])
 {
-	char conf[256] = "", *p;
+	char conf[PATH_MAX + 1] = { 0, }, *p;
 	int i;
 
-	if (argc == 3 && !strcmp("-f", argv[1]))
-		snprintf(conf, sizeof(conf), "%s", argv[2]);
-	else if (argc == 2 && !strcmp("-v", argv[1])) {
-		fprintf(stdout, "adwm-" VERSION " (c) 2016 Brian Bidulock\n");
-		exit(0);
-	} else if (argc != 1)
-		eprint("%s", "usage: adwm [-v] [-f conf]\n");
+	/* don't care about job control */
+	signal(SIGTTIN, SIG_IGN);
+	signal(SIGTTOU, SIG_IGN);
+	signal(SIGTSTP, SIG_IGN);
 
-	setlocale(LC_CTYPE, "");
-	if (!(dpy = XOpenDisplay(0)))
-		eprint("%s", "adwm: cannot open display\n");
-	signal(SIGHUP, sighandler);
-	signal(SIGINT, sighandler);
+	signal(SIGHUP,  sighandler);
+	signal(SIGINT,  sighandler);
 	signal(SIGTERM, sighandler);
 	signal(SIGQUIT, sighandler);
 	signal(SIGCHLD, sighandler);
+
+	setlocale(LC_CTYPE, "");
+
+	options.debug = 0;
+	options.output = 1;
+
+	while (1) {
+		int c, val;
+		char *endptr = NULL;
+#ifdef _GNU_SOURCE
+		int option_index = 0;
+		/* *INDENT-OFF* */
+		static struct option long_options[] = {
+			{"file",	required_argument,	NULL, 'f'},
+
+			{"debug",	optional_argument,	NULL, 'D'},
+			{"verbose",	optional_argument,	NULL, 'V'},
+			{"help",	no_argument,		NULL, 'h'},
+			{"version",	no_argument,		NULL, 'v'},
+			{"copying",	no_argument,		NULL, 'C'},
+			{ 0, }
+		};
+		/* *INDENT-ON* */
+
+		c = getopt_long_only(argc, argv, "D::V::hvC", long_options, &option_index);
+#else				/* defined _GNU_SOURCE */
+		c = getopt(argc, argv, "DVhvC");
+#endif				/* defined _GNU_SOURCE */
+		if (c == -1) {
+			if (options.debug)
+				fprintf(stderr, "%s: done options processing\n", argv[0]);
+			break;
+		}
+		switch (c) {
+		case 0:
+			goto bad_usage;
+		case 'f':	/* -f, --file {PATH/}FILE */
+			snprintf(conf, sizeof(conf) - 1, optarg);
+			break;
+		case 'D':	/* -D, --debug [level] */
+			if (options.debug)
+				fprintf(stderr, "%s: increasing debug verbosity\n", argv[0]);
+			if (optarg == NULL) {
+				options.debug++;
+				break;
+			}
+			val = strtoul(optarg, &endptr, 0);
+			if (*endptr)
+				goto bad_option;
+			options.debug = val;
+			break;
+		case 'V':	/* -V, --verbose [level] */
+			if (options.debug)
+				fprintf(stderr, "%s: increasing output verbosity\n", argv[0]);
+			if (optarg == NULL) {
+				options.output++;
+				break;
+			}
+			val = strtoul(optarg, &endptr, 0);
+			if (*endptr)
+				goto bad_option;
+			options.output = val;
+			break;
+		case 'h':	/* -h, --help */
+			help(argc, argv);
+			exit(EXIT_SUCCESS);
+		case 'v':	/* -v, --version */
+			version(argc, argv);
+			exit(EXIT_SUCCESS);
+		case 'C':	/* -C, --copying */
+			copying(argc, argv);
+			exit(EXIT_SUCCESS);
+		default:
+		      bad_option:
+			optind--;
+		      bad_nonopt:
+			if (options.output || options.debug) {
+				if (optind < argc) {
+					fprintf(stderr, "%s: syntax error near '", argv[0]);
+					while (optind < argc)
+						fprintf(stderr, "%s ", argv[optind++]);
+					fprintf(stderr, "'\n");
+				} else {
+					fprintf(stderr, "%s: missing option or argument", argv[0]);
+					fprintf(stderr, "\n");
+				}
+				fflush(stderr);
+			      bad_usage:
+				usage(argc, argv);
+			}
+			exit(2);
+		}
+	}
+	if (optind > argc)
+		goto bad_nonopt;
+#if 0
+	if (argc == 3 && !strcmp("-f", argv[1]))
+		snprintf(conf, sizeof(conf), "%s", argv[2]);
+	else if (argc == 2 && !strcmp("-v", argv[1])) {
+		fprintf(stdout, "adwm-" VERSION " (c) 2018 Brian Bidulock\n");
+		exit(0);
+	} else if (argc != 1)
+		eprint("%s", "usage: adwm [-v] [-f conf]\n");
+#endif
 	cargc = argc;
 	cargv = argv;
+
+	if (!(dpy = XOpenDisplay(0)))
+		eprint("%s", "adwm: cannot open display\n");
 
 	setsid();
 #ifdef __linux__

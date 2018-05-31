@@ -13,6 +13,9 @@
 #include <stdlib.h>
 #include <dirent.h>
 #include <fcntl.h>
+#ifdef _GNU_SOURCE
+#include <getopt.h>
+#endif
 #include <errno.h>
 #include <locale.h>
 #include <stdarg.h>
@@ -1366,6 +1369,7 @@ typedef struct {
 
 typedef struct {
 	int debug;
+	int output;
 	Bool useveil;
 	Bool attachaside;
 	Bool dectiled;

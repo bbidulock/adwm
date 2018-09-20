@@ -100,4 +100,20 @@ Behaviour:
 * [ ] support _NET_WM_OPAQUE_REGION
 * [ ] support _NET_WM_BYPASS_COMPOSITOR
 
+Configuration:
+
+* [ ] Provide external mechanism for setting configuration items.
+      Possibly use manager selection: do not set property on the
+      conversion window when getting the configuration item; set
+      the property on the conversion window to set the
+      configuration item.
+      Another possibility is to use RESOURCE_MANAGER.
+* [ ] Provide external mechanism for invoking keyboard actions:
+      at least those that are not supported by EWMH and other
+      extensions.
+      Possibly use client message with action id and up to 4
+      parameters.
+* [ ] Provide external mechanism for redefining key bindings.
+
+
 // vim: set ft=asciidoc tw=72 nocin nosi fo+=tcqlorn spell:

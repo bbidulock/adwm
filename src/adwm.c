@@ -1107,8 +1107,11 @@ installcolormap(AScreen *s, Window w)
 		return;
 	if ((list = listcolormaps(s, &num))) {
 		for (i = 0; i < num && list[i] != wa.colormap; i++) ;
-		if (i == num)
+		if (i == num) {
+			xtrap_push(1, "Installing colormaps");
 			XInstallColormap(dpy, wa.colormap);
+			xtrap_pop();
+		}
 		XFree(list);
 	}
 }

@@ -706,7 +706,8 @@ ximage_drawdockapp(AScreen *ds, Client *c)
 
 	pixel = getpixel(ds, c, ColBG);
 	/* to avoid clearing window, initiallly set to norm[ColBG] */
-	// XSetWindowBackground(dpy, c->frame, pixel);
+	XSetWindowBackground(dpy, c->frame, pixel);
+	XClearWindow(dpy, c->frame);
 	// XClearArea(dpy, c->frame, 0, 0, 0, 0, True);
 
 	ds->dc.x = ds->dc.y = 0;

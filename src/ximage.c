@@ -706,8 +706,8 @@ ximage_drawdockapp(AScreen *ds, Client *c)
 
 	pixel = getpixel(ds, c, ColBG);
 	/* to avoid clearing window, initiallly set to norm[ColBG] */
-	XSetWindowBackground(dpy, c->frame, pixel);
-	XClearWindow(dpy, c->frame);
+	// XSetWindowBackground(dpy, c->frame, pixel);
+	// XClearWindow(dpy, c->frame);
 	// XClearArea(dpy, c->frame, 0, 0, 0, 0, True);
 
 	ds->dc.x = ds->dc.y = 0;
@@ -730,7 +730,7 @@ ximage_drawdockapp(AScreen *ds, Client *c)
 	/* following are quite disruptive - many dockapps ignore expose events and simply
 	   update on timer */
 	// XClearWindow(dpy, c->icon ? : c->win);
-	// XClearArea(dpy, c->icon ? : c->win, 0, 0, 0, 0, True);
+	XClearArea(dpy, c->icon ? : c->win, 0, 0, 0, 0, True);
 }
 
 void

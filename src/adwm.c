@@ -5123,8 +5123,8 @@ initdirs(Bool reload)
 		snprintf(buf, sizeof(buf), "%d", (int)uid);
 		len = strlen("/run/user/") + strlen(buf);
 		xdgdirs.runt = calloc(len + 1, sizeof(*xdgdirs.runt));
-		strncpy(xdgdirs.runt, "/run/user/", len);
-		strncat(xdgdirs.runt, buf, len);
+		strcpy(xdgdirs.runt, "/run/user/");
+		strcat(xdgdirs.runt, buf);
 	}
 	free(xdgdirs.cach);
 	if ((env = getenv("XDG_CACHE_HOME"))) {

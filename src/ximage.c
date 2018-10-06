@@ -720,7 +720,7 @@ ximage_drawdockapp(AScreen *ds, Client *c)
 			   JoinMiter);
 	XSetFillStyle(dpy, ds->gc, FillSolid);
 	status = XFillRectangle(dpy, c->frame, ds->gc,
-			ds->dc.x, ds->dc.y, ds->dc.w, ds->dc.h);
+				ds->dc.x, ds->dc.y, ds->dc.w, ds->dc.h);
 	if (!status)
 		XPRINTF("Could not fill rectangle, error %d\n", status);
 	XPRINTF(c, "Filled dockapp frame %dx%d+%d+%d\n", ds->dc.w, ds->dc.h, ds->dc.x,
@@ -730,7 +730,25 @@ ximage_drawdockapp(AScreen *ds, Client *c)
 	/* following are quite disruptive - many dockapps ignore expose events and simply
 	   update on timer */
 	// XClearWindow(dpy, c->icon ? : c->win);
-	XClearArea(dpy, c->icon ? : c->win, 0, 0, 0, 0, True);
+	// XClearArea(dpy, c->icon ? : c->win, 0, 0, 0, 0, True);
+	/* so, instead of actually clearing the area, just send a synthetic Expose event
+	   to the icon window.  Those docapps that don't response to expose events will
+	   not, and those that do can clear themselves before updating.  */
+	{
+		XEvent xev = { 0, };
+
+		xev.xexpose.type = Expose;
+		xev.xexpose.send_event = False;
+		xev.xexpose.display = dpy;
+		xev.xexpose.window = c->icon ? : c->win;
+		xev.xexpose.x = 0;
+		xev.xexpose.y = 0;
+		xev.xexpose.width = max(c->c.w, 56);
+		xev.xexpose.height = max(c->c.h, 56);
+		xev.xexpose.count = 0;
+
+		XSendEvent(dpy, c->icon ? : c->win, False, ExposureMask, &xev);
+	}
 }
 
 void

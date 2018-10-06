@@ -736,18 +736,22 @@ ximage_drawdockapp(AScreen *ds, Client *c)
 	   not, and those that do can clear themselves before updating.  */
 	{
 		XEvent xev = { 0, };
+		Window icon = c->icon ? : c->win, root;
+		unsigned int w, h, b, d;
+		int x, y;
 
+		XGetGeometry(dpy, icon, &root, &x, &y, &w, &h, &b, &d);
 		xev.xexpose.type = Expose;
 		xev.xexpose.send_event = False;
 		xev.xexpose.display = dpy;
-		xev.xexpose.window = c->icon ? : c->win;
+		xev.xexpose.window = icon;
 		xev.xexpose.x = 0;
 		xev.xexpose.y = 0;
-		xev.xexpose.width = max(c->c.w, 56);
-		xev.xexpose.height = max(c->c.h, 56);
+		xev.xexpose.width = w;
+		xev.xexpose.height = h;
 		xev.xexpose.count = 0;
 
-		XSendEvent(dpy, c->icon ? : c->win, False, ExposureMask, &xev);
+		XSendEvent(dpy, icon, False, ExposureMask, &xev);
 	}
 }
 

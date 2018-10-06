@@ -1,11 +1,30 @@
-adwm -- history of user-visible changes.  2018-05-29
+adwm -- history of user-visible changes.  2018-10-06
 
-Release adwm-0.7.4 released 2018-05-29
+Release adwm-0.7.5 released 2018-10-06
 --------------------------------------
 
-git shortlog -e -n -w80,6,8 0.7.4...HEAD
+git shortlog -e -n -w80,6,8 0.7.5...HEAD
 
 
+
+
+Release adwm-0.7.5 released 2018-10-06
+--------------------------------------
+
+git shortlog -e -n -w80,6,8 0.7.4...0.7.5
+
+Brian Bidulock <bidulock@openss7.org> (11):
+      doc search path for config files: address issue #5
+      add GNU option processing for other half of issue #5
+      now supports GNU std options
+      document standard options and exit status
+      add more todos
+      ignore errors whilst installing colormaps
+      need to clear window when reseting background for dockapps
+      clear icon area and generate expose on bg change
+      only send synthetic expose event
+      get rid of some gcc 8.2 warnings
+      use actual icon width and height
 
 
 Release adwm-0.7.4 released 2018-05-29
@@ -13,13 +32,14 @@ Release adwm-0.7.4 released 2018-05-29
 
 git shortlog -e -n -w80,6,8 0.7.3...0.7.4
 
-Brian Bidulock <bidulock@openss7.org> (6):
+Brian Bidulock <bidulock@openss7.org> (7):
       yes, grab server for scan
       add startup notification completion for wm itself
       warn when not using prctl
       never block on wait
       do not handle core-dumpers
       unmap dockapp window
+      update release files
 
 
 Release adwm-0.7.3 released 2018-05-28
@@ -541,20 +561,4 @@ Brian Bidulock <bidulock@openss7.org> (20):
       add missing grid mode
       document desktop modes
       update relese files
-
-
-Release adwm-0.6.4 released 2016-07-27
---------------------------------------
-
-git shortlog -e -n -w80,6,8 0.6.3...0.6.4
-
-Brian Bidulock <bidulock@openss7.org> (8):
-      no longer necessary
-      git hates trailing space
-      better readme formatting
-      stray period
-      better stacking
-      remove old restack()
-      stacking assertion and no mess with bastards
-      update release files
 

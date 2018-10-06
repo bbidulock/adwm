@@ -1,5 +1,127 @@
 # created with git log --stat=76 -M -C -500|fmt -sct -w80
 
+commit 7682c02e09aeab5bf3de869592beaeee0eba333c
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Oct 6 00:31:05 2018 -0600
+
+    use actual icon width and height
+
+ src/ximage.c | 12 ++++++++----
+ 1 file changed, 8 insertions(+), 4 deletions(-)
+
+commit ca242790ed5ea30d6b3df27e611da0a3d8100e70
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Oct 6 00:25:34 2018 -0600
+
+    get rid of some gcc 8.2 warnings
+
+ src/adwm.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+commit 76a29512c4865097b7e158ba8df7f4026e428aae
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri Oct 5 23:37:37 2018 -0600
+
+    only send synthetic expose event
+
+ src/ximage.c | 22 ++++++++++++++++++++--
+ 1 file changed, 20 insertions(+), 2 deletions(-)
+
+commit 2c34e03606ef763cc28d92183e8255345b38360e
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri Oct 5 22:09:25 2018 -0600
+
+    clear icon area and generate expose on bg change
+
+ src/ximage.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+commit f23956d03921bb46a572ddc55882c5a20306fbf3
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri Oct 5 14:21:26 2018 -0600
+
+    need to clear window when reseting background for dockapps
+
+ src/ximage.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+commit d7ce39c097cc22406418220383623ccd4b10a2b5
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Oct 1 01:24:59 2018 -0600
+
+    ignore errors whilst installing colormaps
+
+ src/adwm.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+commit cf1df0bb13204ce9388422b299a3f61dbdb56fdb
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu Sep 20 03:55:29 2018 -0600
+
+    add more todos
+
+ TODO | 16 ++++++++++++++++
+ 1 file changed, 16 insertions(+)
+
+commit d6a7cf0533f11831895686924b86747dc01c0305
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu May 31 00:14:12 2018 -0600
+
+    document standard options and exit status
+
+ doc/adwm.1.in | 124 +++++++++++++++++++++++++++++++++++++++++++++++++-----
+ 1 file changed, 114 insertions(+), 10 deletions(-)
+
+commit c831ba35c83845982188badb738e14b64c0cebdf
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed May 30 22:36:32 2018 -0600
+
+    now supports GNU std options
+
+    - fully addresses first part of issue #5
+    - need full options processing to handle session management arguments
+      soon (when X11R6 session management is complete)
+
+ src/Makefile.am | 2 --
+ src/adwm.c      | 2 +-
+ 2 files changed, 1 insertion(+), 3 deletions(-)
+
+commit a06e1577493fcbe61d658d9477c573171d6fc753
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed May 30 22:20:58 2018 -0600
+
+    add GNU option processing for other half of issue #5
+
+ src/adwm.c | 229 ++++++++++++++++++++++++++++++++++++++++++++++++++++++---
+ src/adwm.h |   4 +
+ 2 files changed, 223 insertions(+), 10 deletions(-)
+
+commit 05c24f546b43e8109a45b65cc15fa2009eb4531a
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed May 30 10:16:57 2018 -0600
+
+    doc search path for config files: address issue #5
+
+ doc/adwm-config.5.in | 47 ++++++++++++++++++++++++++++++-----------------
+ doc/adwm-keys.5.in   | 24 +++++++++++++++++++++++-
+ doc/adwm-style.5.in  | 10 +++++++++-
+ doc/adwm-theme.5.in  | 12 ++++++++++--
+ 4 files changed, 72 insertions(+), 21 deletions(-)
+
+commit 71622810e7a702696795b487293c21e67a5d1167
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue May 29 17:01:09 2018 -0600
+
+    update release files
+
+ AUTHORS      |   2 +-
+ ChangeLog    | 137 +++++++++++++++++++++++++++++--------------------------
+ NEWS         |  33 ++++++++------
+ README       |  20 ++++----
+ README.md    |  20 ++++----
+ configure.ac |  10 ++--
+ 6 files changed, 118 insertions(+), 104 deletions(-)
+
 commit b85e52da45c2666dec1aef861c600852a52505ff
 Author: Brian Bidulock <bidulock@openss7.org>
 Date:   Tue May 29 16:03:45 2018 -0600
@@ -5147,129 +5269,3 @@ Date:   Sun Jun 19 22:53:08 2016 -0600
 
  src/layout.c | 20 ++++++--------------
  1 file changed, 6 insertions(+), 14 deletions(-)
-
-commit 0ee54dc3fe1c465da0adc86c17227804e3975103
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Sun Jun 19 21:48:56 2016 -0600
-
-    handle auto-hiding of docks and panels
-
- doc/adwm-config.1 |  19 +++++++++
- src/adwm.c        |   3 +-
- src/adwm.h        |   1 +
- src/adwm_adwm.c   |   2 +-
- src/config.c      |   9 ++++-
- src/ewmh.c        |   2 +
- src/layout.c      | 104 ++++++++++++++++++++++++++++++++++++++++++++++----
- src/layout.h      |   1 +
- 8 files changed, 130 insertions(+), 11 deletions(-)
-
-commit 15dc825239e4a77ea78b8458530b1af3bdcfb207
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Sun Jun 19 06:04:44 2016 -0600
-
-    updated documentation
-
- .gitignore        |  22 +-
- doc/Makefile.am   |  12 +-
- doc/adwm-config.1 | 685 ++++++++++++++++++++++++++++++++++++++++++++++++++
- doc/adwm-keys.1   | 112 ++++++---
- doc/adwm-style.1  | 285 +++++++++++++++++++++
- doc/adwm.1        | 141 +++++++++--
- src/config.c      |   4 +-
- 7 files changed, 1200 insertions(+), 61 deletions(-)
-
-commit e109f85598aa9f0f14c9d854b4433d2140f3b3d1
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Fri Jun 17 20:23:21 2016 -0600
-
-    update geometry when screen resizes
-
- src/adwm.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
-
-commit b00f5a167995eba19b54be8fe371b0c38c085a66
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Thu Jun 16 20:31:48 2016 -0600
-
-    screen orientation keys
-
- data/keysrc                |  9 +++++++++
- data/styles/Default/keysrc | 12 ++++++++++++
- 2 files changed, 21 insertions(+)
-
-commit cdc5583b2f4d1f67951b85060eb733a5cbd129b1
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Thu Jun 16 05:02:41 2016 -0600
-
-    fix screen resize and configure requests
-
- src/adwm.c   | 138 +++++++++++++++++++++++++++++++++++++++++++++++++++----
- src/layout.c |  22 +++++++--
- 2 files changed, 147 insertions(+), 13 deletions(-)
-
-commit 3715002a597aaae5e338b71ba9c61e529560aa1b
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Wed Jun 15 18:13:33 2016 -0600
-
-    update release files
-
- NEWS.in | 15 +++++++++++++++
- README  |  6 +++---
- 2 files changed, 18 insertions(+), 3 deletions(-)
-
-commit 992b82c447212d0cf67e0c06f3a4eaff799735d4
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Wed Jun 15 18:06:08 2016 -0600
-
-    avoid signed/unsigned comparisons
-
- src/adwm.c |  8 +++----
- src/adwm.h | 68 +++++++++++++++++++++++++++++-----------------------------
- 2 files changed, 38 insertions(+), 38 deletions(-)
-
-commit 323fa026d886431d933491d5ce1d2968acd4b416
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Wed Jun 15 15:34:46 2016 -0600
-
-    missed header file
-
- src/adwm.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-commit 185b47b279ea0fd810e81badd9943aa824142c77
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Wed Jun 15 14:40:28 2016 -0600
-
-    signed/unsigned comparisons
-
- src/adwm.c | 36 ++++++++++++++++++++++++++++--------
- 1 file changed, 28 insertions(+), 8 deletions(-)
-
-commit 3df46637b76acf3f5e90645158f83349afa960ef
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Wed Jun 15 13:32:49 2016 -0600
-
-    fall back to monitor 0 for dock
-
- src/adwm.c   | 12 ++++++++++++
- src/config.c |  2 +-
- 2 files changed, 13 insertions(+), 1 deletion(-)
-
-commit 10f6f2e441d2fcaa22cdab9b76ad26ba73ed65eb
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Mon Jun 13 22:59:22 2016 -0600
-
-    fix multi-column dockapps
-
- src/layout.c | 4 ++++
- 1 file changed, 4 insertions(+)
-
-commit 91ad3700d7ab07edcbeef848190adee8ba48ae1a
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Wed May 18 19:14:25 2016 -0600
-
-    update release file
-
- README | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)

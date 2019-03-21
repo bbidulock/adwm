@@ -1,5 +1,20 @@
 # created with git log --stat=76 -M -C -500|fmt -sct -w80
 
+commit f20873f1c92f2967b53a147f075e95c3e3efd977
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Mar 20 21:10:37 2019 -0600
+
+    issue #8 instead of #3: update release files
+
+ AUTHORS      |   2 +-
+ ChangeLog    |  64 +++++++++---------
+ NEWS         | 202 +++++++++++++++++++++++++++----------------------------
+ README       |  20 +++---
+ README.md    |  20 +++---
+ RELEASE.md   |  11 ++-
+ configure.ac |  10 +--
+ 7 files changed, 164 insertions(+), 165 deletions(-)
+
 commit 87690f9674d5fe78cae877f2a16fe576d36746a1
 Author: Brian Bidulock <bidulock@openss7.org>
 Date:   Wed Mar 20 19:56:40 2019 -0600
@@ -5264,12 +5279,3 @@ Date:   Mon Jun 27 13:53:20 2016 -0600
  data/keysrc                | 30 +++++++++++++++---------------
  data/styles/Default/keysrc | 30 +++++++++++++++---------------
  2 files changed, 30 insertions(+), 30 deletions(-)
-
-commit b0f99e336a71b817320acce6df12a7f9ce15a8ba
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Wed Jun 22 07:23:08 2016 -0600
-
-    should not select splash screens
-
- src/ewmh.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)

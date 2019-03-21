@@ -24,9 +24,10 @@ git tag -n100 -l 0.7.6
 
 git shortlog -e -n -w80,6,8 0.7.5...0.7.6
 
-Brian Bidulock <bidulock@openss7.org> (2):
+Brian Bidulock <bidulock@openss7.org> (3):
       updated gennews.sh
       attempt to resolve issue #3
+      issue #8 instead of #3: update release files
 
 
 Release adwm-0.7.5 released 2018-10-06

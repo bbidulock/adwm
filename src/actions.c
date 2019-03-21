@@ -185,7 +185,7 @@ k_zoom(XEvent *e, Key *k)
 void
 k_killclient(XEvent *e, Key *k)
 {
-	if (sel)
+	if (sel && sel->can.close)
 		killclient(sel);
 }
 

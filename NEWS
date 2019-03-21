@@ -1,19 +1,64 @@
-adwm -- history of user-visible changes.  2018-10-06
+adwm -- history of user-visible changes.  2019-03-20
+
+Release adwm-0.7.6 released 2019-03-20
+--------------------------------------
+
+git shortlog -e -n -w80,6,8 0.7.6...HEAD
+
+
+
+
+Release adwm-0.7.6 released 2019-03-20
+--------------------------------------
+
+git tag -n100 -l 0.7.6
+
+0.7.6           Maintenance Release 0.7.6
+
+    This is a maintenance release that includes a fix for issue #8: an
+    annoying bug where keyboard actions would close windows that are unable
+    to be closed according to allowed actions.
+
+    As usual, Included is an autoconf tarball for building the package from
+    source. Please report problems to the issues list on github.
+
+git shortlog -e -n -w80,6,8 0.7.5...0.7.6
+
+Brian Bidulock <bidulock@openss7.org> (2):
+      updated gennews.sh
+      attempt to resolve issue #3
+
 
 Release adwm-0.7.5 released 2018-10-06
 --------------------------------------
 
-git shortlog -e -n -w80,6,8 0.7.5...HEAD
+git notes --ref=release show 0.7.5
 
+    Maintenance Release 0.7.5
 
+    This is a maintenance release that includes better configuration file
+    handling, better handling of dockapps that set ParentRelative
+    backgrounds yet handle expose events, avoids bugs in colormap
+    installation, provides GNU standard option processing.
 
+    As usual, Included is an autoconf tarball for building the package from
+    source. Please report problems to the issues list on github.
 
-Release adwm-0.7.5 released 2018-10-06
---------------------------------------
+git tag -n100 -l 0.7.5
+
+0.7.5           Maintenance Release 0.7.5
+
+    This is a maintenance release that includes better configuration file
+    handling, better handling of dockapps that set ParentRelative
+    backgrounds yet handle expose events, avoids bugs in colormap
+    installation, provides GNU standard option processing.
+
+    As usual, Included is an autoconf tarball for building the package from
+    source. Please report problems to the issues list on github.
 
 git shortlog -e -n -w80,6,8 0.7.4...0.7.5
 
-Brian Bidulock <bidulock@openss7.org> (11):
+Brian Bidulock <bidulock@openss7.org> (12):
       doc search path for config files: address issue #5
       add GNU option processing for other half of issue #5
       now supports GNU std options
@@ -25,10 +70,40 @@ Brian Bidulock <bidulock@openss7.org> (11):
       only send synthetic expose event
       get rid of some gcc 8.2 warnings
       use actual icon width and height
+      update release files
 
 
 Release adwm-0.7.4 released 2018-05-29
 --------------------------------------
+
+git tag -n100 -l 0.7.4
+
+0.7.4           Maintenance Release 0.7.4
+
+    This maintenace release fixes a couple of noxious bugs, one that has
+    been hanging around for quite a while (a double blocking wait() on a
+    SIGCHLD: which cause the window manager to some times lock up when an
+    adopted child exited, depending on timing.  This was keeping adwm from
+    starting up properly when other children are coming and going.
+
+    Because this was fixed, adwm now grabs the server when scanning for
+    existing clients on startup.  Not grabbing the server (because of the
+    first bug) caused adwm to crash on xerrors sometimes on startup when
+    windows were appearing and disappearing while scanning (such as during
+    autostart).  The server is now grabbed during initial startup scanning.
+
+    Another was not performing startup notification completion for itself
+    even though it reports StartupNotify=true in its XSession .desktop file.
+
+    Another was that adwm left dockapp top-level windows annoyingly mapped
+    if the dockapp was started before the window manager, or on restart
+    where dockapps toplevel windows would be mapped during the restart.  Now
+    dockapp top-level windows are unmapped whenever they are managed.  (It
+    is the icon-window that needs to be mapped, not the top-level window.)
+
+    With these fixes adwm not starts up nicely under the xdg-launch simple
+    session manager that is about to be released and the soon to be finished
+    xde-session full blown session manager.
 
 git shortlog -e -n -w80,6,8 0.7.3...0.7.4
 
@@ -75,6 +150,26 @@ Brian Bidulock <bidulock@openss7.org> (23):
 
 Release adwm-0.7.2 released 2018-01-06
 --------------------------------------
+
+git tag -n100 -l 0.7.2
+
+0.7.2           Stable Release 0.7.2
+
+    This is a stable release that includes more todo's completed. Yes,
+    there are still some outstanding, but nothing major. This release fixes
+    one obnoxious behaviour: auto-exposing docks and panels when you
+    overshoot browser scrollbars: there is now a default 500 millisecond
+    delay before they are exposed. You need to rub the edge of the monitor
+    with the pointer to get them to expose now.
+
+    There are a lot of preparations in the code now for handling more
+    graphics file formats and advanced rendering, but it is not yet
+    complete. The stable ximage approach works well (if not the most
+    efficient). I wanted to released the other fixes and improvements
+    before working further on the graphics formats and rendering.
+
+    As usual, Included is an autoconf tarball for building the package from
+    source. Please report problems to the issues list on github.
 
 git shortlog -e -n -w80,6,8 0.7.1...0.7.2
 
@@ -462,103 +557,4 @@ Brian Bidulock <bidulock@openss7.org> (109):
       correct defaults
       do not use veil
       update release files
-
-
-Release adwm-0.6.9 released 2017-09-10
---------------------------------------
-
-git shortlog -e -n -w80,6,8 0.6.8...0.6.9
-
-Brian Bidulock <bidulock@openss7.org> (22):
-      don't try to cleanup on poll error
-      show cause of poll error
-      silent now default
-      autoconf upgrade
-      be quieter when building
-      use newer make flags
-      also substitute branch
-      full path
-      suspend gnits until version number shortened
-      exempt for now
-      substitute branch too
-      little x's for markdown task lists
-      convert to markdown
-      better markdown task lists
-      try this
-      try that
-      back to this
-      proper asciidoc comment
-      break lines
-      add several cross-referenced files
-      new defaults, less wordy
-      update release files
-
-
-Release adwm-0.6.8 released 2016-09-10
---------------------------------------
-
-git shortlog -e -n -w80,6,8 0.6.7...0.6.8
-
-Brian Bidulock <bidulock@openss7.org> (4):
-      correct valgrind error invalid read size 1
-      fix memory leaks in invalid access
-      errno leading in and out of xserver
-      update release files
-
-
-Release adwm-0.6.7 released 2016-09-05
---------------------------------------
-
-git shortlog -e -n -w80,6,8 0.6.6...0.6.7
-
-Brian Bidulock <bidulock@openss7.org> (5):
-      handle hidden state properly
-      process MOTIF_WM_HINTS only if no window type
-      try to address splash restart
-      fixed splash handling on restart
-      update release files
-
-
-Release adwm-0.6.6 released 2016-08-31
---------------------------------------
-
-git shortlog -e -n -w80,6,8 0.6.5...0.6.6
-
-Brian Bidulock <bidulock@openss7.org> (8):
-      do not link unnecessary libraries
-      missed one
-      avoid null pointer error in unban() on restart
-      provide more info on XIO error
-      cut and paste error
-      fix application of user capabilitys for WinWM/WMH
-      fix scanning behaviour on restart
-      update release files
-
-
-Release adwm-0.6.5 released 2016-08-16
---------------------------------------
-
-git shortlog -e -n -w80,6,8 0.6.4...0.6.5
-
-Brian Bidulock <bidulock@openss7.org> (20):
-      dockapps do not have type dock set
-      treat dockapps as though _NET_WM_STATE_BELOW set
-      also set below flag on dockapps
-      try shrinking hidden dock apps
-      need to rearrange when dock selected/deselected
-      deselect bastards when pointer leaves
-      do not map hidden dock app clients
-      better hide logic
-      just hide dockapps for now
-      unhide regardless of banned state
-      always map and unmap dock apps on unban
-      moving to root is NotifyInferior
-      let docks move
-      split programatic and user capabilities
-      do not munge too many flags
-      probably munged something up there
-      minor update to enternotify
-      add missing grid mode
-      document desktop modes
-      update relese files
 

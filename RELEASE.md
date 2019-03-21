@@ -1,12 +1,11 @@
-[adwm -- release notes.  2018-10-06]: #
+[adwm -- release notes.  2019-03-21]: #
 
-Maintenance Release 0.7.5
+Maintenance Release 0.7.6
 =========================
 
-This is a maintenance release that includes better configuration file
-handling, better handling of dockapps that set ParentRelative backgrounds yet
-handle expose events, avoids bugs in colormap installation, provides GNU
-standard option processing.
+This is a maintenance release that includes a fix for issue #8: an annoying
+bug where keyboard actions would close windows that are unable to be closed
+according to allowed actions.
 
 As usual, Included is an autoconf tarball for building the package from
 source.  Please report problems to the issues list on github.

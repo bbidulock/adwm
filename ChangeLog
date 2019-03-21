@@ -1,5 +1,39 @@
 # created with git log --stat=76 -M -C -500|fmt -sct -w80
 
+commit 87690f9674d5fe78cae877f2a16fe576d36746a1
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Mar 20 19:56:40 2019 -0600
+
+    attempt to resolve issue #3
+
+ src/actions.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+commit 696cd301b31ff95eba49febf23210d0d7c82e157
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Mar 20 19:41:32 2019 -0600
+
+    updated gennews.sh
+
+ gennews.sh | 24 ++++++++++++++++++++----
+ 1 file changed, 20 insertions(+), 4 deletions(-)
+
+commit 485e37dd5dd5a53296f765e839b35f66d1761c31
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Oct 6 00:41:49 2018 -0600
+
+    update release files
+
+ AUTHORS      |   2 +-
+ ChangeLog    | 248 +++++++++++++++++++++++++++----------------------------
+ Makefile.am  |   6 +-
+ NEWS         |  44 +++++-----
+ README       |  20 ++---
+ README.md    |  20 ++---
+ RELEASE.md   |  23 ++----
+ configure.ac |  10 +--
+ 8 files changed, 182 insertions(+), 191 deletions(-)
+
 commit 7682c02e09aeab5bf3de869592beaeee0eba333c
 Author: Brian Bidulock <bidulock@openss7.org>
 Date:   Sat Oct 6 00:31:05 2018 -0600
@@ -5239,33 +5273,3 @@ Date:   Wed Jun 22 07:23:08 2016 -0600
 
  src/ewmh.c | 3 ++-
  1 file changed, 2 insertions(+), 1 deletion(-)
-
-commit 919d7b613750b92dec1414d81d6f2c9ff54eabcf
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Sun Jun 19 23:35:13 2016 -0600
-
-    rename struts to strutsactive: conflict key bind
-
- doc/adwm-config.1 | 4 ++--
- src/config.c      | 8 ++++----
- 2 files changed, 6 insertions(+), 6 deletions(-)
-
-commit bf17b7f50dcbc464f985211988aa0ea28e088c28
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Sun Jun 19 23:32:09 2016 -0600
-
-    a little debugging
-
- src/adwm.c  | 2 +-
- src/parse.c | 2 +-
- src/parse.h | 1 +
- 3 files changed, 3 insertions(+), 2 deletions(-)
-
-commit b83ca8de50f9db59817def4b39f1d205a7eec1b1
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Sun Jun 19 22:53:08 2016 -0600
-
-    do not initially hide struts and allow recofig
-
- src/layout.c | 20 ++++++--------------
- 1 file changed, 6 insertions(+), 14 deletions(-)

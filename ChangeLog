@@ -1,5 +1,62 @@
 # created with git log --stat=76 -M -C -500|fmt -sct -w80
 
+commit de561feb1f8698bad2d1744787943d9091d428f8
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri Aug 30 05:47:02 2019 -0600
+
+    convert to lzip archive
+
+ configure.ac | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+commit 007d6895d60185958dc506fd41568ea8e36e9be1
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri Aug 30 05:46:37 2019 -0600
+
+    update release notes
+
+ RELEASE.md | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
+
+commit 59b9945ec814f5125192e9deaef5d6a3d4d77b46
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri Aug 30 05:40:42 2019 -0600
+
+    avoid gcc 9.1 silly warnings
+
+ src/draw.c  | 2 +-
+ src/ewmh.c  | 6 +++++-
+ src/parse.c | 6 +++---
+ 3 files changed, 9 insertions(+), 5 deletions(-)
+
+commit dc208be98558dbe0a25d5a995bd3c65d2516a272
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri Aug 30 02:21:47 2019 -0600
+
+    detect release head properly when generating NEWS
+
+ gennews.sh | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+commit d08b3250d22299567c845aa07ae10e116c3acbd6
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Jun 17 22:34:32 2019 -0600
+
+    update sed for gettext 0.20.1
+
+ autogen.sh | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+commit 080d139b94af2196cf744237e4ba10ab9b15ffb3
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Mar 20 21:19:58 2019 -0600
+
+    update release files
+
+ ChangeLog | 24 +++++++++++++++---------
+ NEWS      |  3 ++-
+ 2 files changed, 17 insertions(+), 10 deletions(-)
+
 commit f20873f1c92f2967b53a147f075e95c3e3efd977
 Author: Brian Bidulock <bidulock@openss7.org>
 Date:   Wed Mar 20 21:10:37 2019 -0600
@@ -5204,78 +5261,3 @@ Date:   Thu Jul 7 05:58:55 2016 -0600
 
  src/adwm.c | 10 ++++++----
  1 file changed, 6 insertions(+), 4 deletions(-)
-
-commit 98df536d797b1d49712a7ff8f84444a01b7054cb
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Mon Jul 4 07:25:42 2016 -0600
-
-    big rework of startup notification
-
- src/adwm.c   | 935 +++++++++++++++++++++++++++++++++++++++++++++++--------
- src/adwm.h   |  33 +-
- src/config.c |   2 +-
- src/ewmh.c   | 642 +++++++++++++++++++++++++++-----------
- src/ewmh.h   |   6 +
- src/layout.c |   4 +-
- 6 files changed, 1297 insertions(+), 325 deletions(-)
-
-commit 7f9566ec035c2549e5d2dfeb815f29fa55374c95
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Sat Jul 2 23:43:24 2016 -0600
-
-    document commas in commands
-
- doc/adwm-keys.1 | 22 +++++++++++++---------
- 1 file changed, 13 insertions(+), 9 deletions(-)
-
-commit f4029db385790e72d7214571bfe646cc03e2fe03
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Sat Jul 2 20:51:38 2016 -0600
-
-    xrdb uses backslash as escape too!
-
- data/keysrc                | 6 +++---
- data/styles/Default/keysrc | 6 +++---
- 2 files changed, 6 insertions(+), 6 deletions(-)
-
-commit 55fd6658ff752b039f391697b5ac3a1168482695
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Sat Jul 2 06:34:17 2016 -0600
-
-    perform word expanding on spawned commands
-
-    - to place a comma in a spawn command (key binding) it must be
-      escaped (i.e. '\,'); however, the backslashes are being passed
-      literally
-
-    - it would be nice to do tilde expansion, variable susbtitution,
-      and even command substitution in commands
-
-    So, now we use wordexp() to perform shell-like expansion and
-    substitution on the command.
-
- src/adwm.c | 35 ++++++++++++++++++++++++++++++++---
- 1 file changed, 32 insertions(+), 3 deletions(-)
-
-commit b89d56975ae133ba20d54c0f4da5622a88e4f69e
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Sat Jul 2 05:40:27 2016 -0600
-
-    corrections to key bindings
-
-    - added bindings for controlling backlight on notebooks
-    - commas in commands in key bindings must be escaped
-
- data/keysrc                | 20 +++++++++++---------
- data/styles/Default/keysrc | 20 +++++++++++---------
- 2 files changed, 22 insertions(+), 18 deletions(-)
-
-commit 228499f036ac653c06cc5710799826b1fe270f76
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Mon Jun 27 13:53:20 2016 -0600
-
-    use xdg-launch on key bindings
-
- data/keysrc                | 30 +++++++++++++++---------------
- data/styles/Default/keysrc | 30 +++++++++++++++---------------
- 2 files changed, 30 insertions(+), 30 deletions(-)

@@ -1,11 +1,27 @@
-adwm -- history of user-visible changes.  2019-03-20
+adwm -- history of user-visible changes.  2019-08-30
 
-Release adwm-0.7.6 released 2019-03-20
+Release adwm-0.7.7 released 2019-08-30
 --------------------------------------
 
-git shortlog -e -n -w80,6,8 0.7.6...HEAD
+git tag -n100 -l 0.7.7
 
+0.7.7           Maintenance Release 0.7.7
 
+    This is a maintenance release that includes a fix for gcc 9.1 silly
+    string warnings, gettext parsing, builds a better NEWS file, and
+    converts the release archives to lzip compression.
+
+    As usual, Included is an autoconf tarball for building the package from
+    source. Please report problems to the issues list on github.
+
+git shortlog -e -n -w80,6,8 0.7.6...0.7.7
+
+Brian Bidulock <bidulock@openss7.org> (5):
+      update sed for gettext 0.20.1
+      detect release head properly when generating NEWS
+      avoid gcc 9.1 silly warnings
+      update release notes
+      convert to lzip archive
 
 
 Release adwm-0.7.6 released 2019-03-20
@@ -24,10 +40,11 @@ git tag -n100 -l 0.7.6
 
 git shortlog -e -n -w80,6,8 0.7.5...0.7.6
 
-Brian Bidulock <bidulock@openss7.org> (3):
+Brian Bidulock <bidulock@openss7.org> (4):
       updated gennews.sh
       attempt to resolve issue #3
       issue #8 instead of #3: update release files
+      update release files
 
 
 Release adwm-0.7.5 released 2018-10-06
@@ -441,121 +458,4 @@ Brian Bidulock <bidulock@openss7.org> (223):
       typo in configure.ac
       allow build without imlib2
       want to build without imlib2 or gdk-pixbuf
-
-
-Release adwm-0.7.0 released 2017-10-11
---------------------------------------
-
-git shortlog -e -n -w80,6,8 0.6.9...0.7.0
-
-Brian Bidulock <bidulock@openss7.org> (109):
-      remove a minor warning
-      update readmes
-      some tweaks
-      more tweaks
-      limit changelog
-      add mandir
-      parallel build
-      parallel distcheck
-      Merge branch 'master' of github.com:bbidulock/adwm
-      more substitutions
-      podify manual pages
-      do not do substitutions
-      update manpage
-      document opacity
-      update documentation
-      update adwm-keys manual page
-      spelling
-      restore mdoc man pages
-      move mdoc man pages to correct section
-      mdoc pages need substitutions
-      go back to mdoc formatted manual pages
-      more ignores
-      clean up mdoc a bit
-      building out documentation
-      finalize adwm-config manual page
-      update keys manual page
-      update style manual page
-      correct config manual page
-      finalize config manual page
-      multiple button actions for sticky button
-      better description and added history adwm-style
-      make TODO.html when asked to
-      add TODO.html to ignores
-      update TODO list
-      do not like asciidoctor make asciidoc default
-      proper checklists
-      proper asciidoc comment
-      update README
-      cleanups to adwm-style manual page
-      updates and corrections adwm-keys manual page
-      set MDOCDATE too in autogen.sh
-      substitute MDOCDATE in configure.ac
-      use MDOCDATE in manual pages
-      mark manual page input as nroff
-      correct date conversion autogen.sh
-      add package name and url
-      get package name and date right
-      get rid of extraneous spaces
-      tweak README
-      some substitution changes to man pages
-      more adwm man page updates
-      set up to implement reserved functions
-      work in lhalf and rhalf functions
-      strap in lhalf and rhalf functions some more
-      implement killproc and remove some unused contexts
-      support tiled move Button2
-      m_zoom on button press title bar
-      consider Ctrl state on button2
-      more todos done
-      reset lhalf/rhalf after move
-      correct pixmap name
-      add half toggled pixmaps
-      add close toggled pixmaps
-      install new pixmaps
-      add new pixmaps to default style
-      per button pressed pixmaps
-      update todo
-      use edges for max, lhalf, rhalf changes
-      prohibit max, lhalf, rhalf when moving
-      do not drag max, lhalf, rhalf when Ctrl held
-      update todo
-      add missing lhalf rhalf actions
-      add missing button pixmaps
-      add default key bindings lhalf rhalf
-      rationalize to parse.c
-      document lhalf rhalf key bindings
-      document max lhalf rhalf at edges
-      correct names of xpms
-      reorder a bit
-      update documentation some more
-      more todos
-      debug and fix key chains
-      update TODO
-      must actually reconfigure or window will not fill
-      upgrade to gnits
-      debug and fix snapping while moving
-      update TODO
-      working up adwm manual page
-      now working on mouseresize snaps
-      prepare for mousemove_from
-      determine virtual grips for move
-      rename cursors
-      do fancy moves
-      handle move of really small windows
-      invoke mousemove_from properly
-      rationalize snapping between move and resize
-      resize snap width and height before constraints
-      snap to workspace center line too
-      moves are good resize needs work
-      resize ok when not snapping
-      resize snapping fixed
-      update todo
-      change virtual grip defaults
-      getting autohiding of struts working better
-      get autohiding struts working well, default, document
-      tweaks to default layouts
-      correct defaults
-      do not use veil
-      update release files
 

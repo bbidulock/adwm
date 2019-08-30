@@ -3208,7 +3208,11 @@ ewmh_update_startup_notification(void)
 	l = strlen(buf) + 1;
 
 	while (l > 0) {
-		strncpy(ev.xclient.data.b, p, 20);
+		if (l >= 20) {
+			memcpy(ev.xclient.data.b, p, 20);
+		} else {
+			strncpy(ev.xclient.data.b, p, 19);
+		}
 		p += 20;
 		l -= 20;
 		/* just PropertyChange mask in the spec doesn't work :( */

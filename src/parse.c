@@ -551,10 +551,10 @@ parsekeys(const char *s, Key *spec)
 static void
 initmodkey()
 {
-	char tmp;
+	char tmp[2];
 
-	strncpy(&tmp, getresource("modkey", "A"), 1);
-	switch (tmp) {
+	strncpy(tmp, getresource("modkey", "A"), 1);
+	switch (tmp[0]) {
 	case 'S':
 		modkey = ShiftMask;
 		break;

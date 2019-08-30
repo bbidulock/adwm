@@ -1346,7 +1346,7 @@ initstyle(Bool reload)
 	scr->style.outline = atoi(getscreenres("outline", "0")) ? 1 : 0;
 	scr->style.spacing = atoi(getscreenres("spacing", "1"));
 	strncpy(scr->style.titlelayout, getscreenres("titlelayout", "N  IMC"),
-		LENGTH(scr->style.titlelayout));
+		LENGTH(scr->style.titlelayout)-1);
 	scr->style.gripsheight = atoi(getscreenres("grips", STR(GRIPHEIGHT)));
 	scr->style.titlelayout[LENGTH(scr->style.titlelayout) - 1] = '\0';
 	scr->style.titleheight = atoi(getscreenres("title", STR(TITLEHEIGHT)));

@@ -5,6 +5,14 @@ AC_PREREQ([2.69])
 AC_INIT([ADWM],[0.7.7],[https://github.com/bbidulock/adwm/issues],[adwm],[https://github.com/bbidulock/adwm])
 AC_REVISION([0.7.7])
 
+# set better defaults
+AC_PREFIX_DEFAULT([/usr])
+if test "$prefix" = /usr -o "$prefix" = NONE; then
+	test "$sysconfdir" = '${prefix}/etc' && sysconfdir=/etc
+	test "$sharedstatedir" = '${prefix}/com' && sharedstatedir=/var
+	test "$localstatedir" = '${prefix}/var' && localstatedir=/var
+fi
+
 AC_CONFIG_SRCDIR([src/adwm.h])
 AC_CONFIG_HEADERS([src/autoconf.h])
 AC_CONFIG_MACRO_DIR([m4])
@@ -22,10 +30,9 @@ BRANCH='0.7.7'
 AC_SUBST([BRANCH])
 
 # Initialize Automake
-AM_INIT_AUTOMAKE([gnits 1.16 dist-lzip no-dist-gzip std-options -Wall color-tests silent-rules tar-pax])
+AM_INIT_AUTOMAKE([1.16 dist-lzip no-dist-gzip std-options -Wall color-tests silent-rules tar-pax])
 AM_MAINTAINER_MODE
 AM_SILENT_RULES([yes])
-AC_PREFIX_DEFAULT([/usr])
 
 # Checks for programs.
 AC_PROG_SED
@@ -77,7 +84,6 @@ LT_PATH_LD
 LT_PREREQ([2.4.2])
 LT_INIT([dlopen])
 LT_LANG([C])
-AC_PROG_LIBTOOL
 AC_SUBST([LIBTOOL_DEPS])
 
 PKG_PROG_PKG_CONFIG([0.14.0])
@@ -93,11 +99,13 @@ AC_CHECK_HEADERS([fcntl.h locale.h malloc.h stdlib.h string.h strings.h unistd.h
 
 # Checks for typedefs, structures, and compiler characteristics.
 AS_BOX([Typedefs, Structures, Compiler])
+AC_TYPE_PID_T
 AC_TYPE_SIZE_T
 
 # Checks for library functions.
 AS_BOX([Library Functions])
 AC_FUNC_FORK
+AC_FUNC_LSTAT_FOLLOWS_SLASHED_SYMLINK
 AC_FUNC_MALLOC
 AC_FUNC_REALLOC
 AC_CHECK_FUNCS([getcwd memmove regcomp select setlocale strchr strdup strerror strrchr])

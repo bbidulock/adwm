@@ -1,11 +1,18 @@
-[adwm -- release notes.  2019-08-30]: #
+[adwm -- release notes.  2019-09-05]: #
 
-Maintenance Release 0.7.7
+Maintenance Release 0.7.8
 =========================
 
-This is a maintenance release that includes a fix for gcc 9.1 silly
-string warnings, gettext parsing, builds a better NEWS file, and
-converts the release archives to lzip compression.
+This is another release of the adwm window manager that provdes a fully
+XDG, WindowMaker, WMH (WinWM), MWMH (CDE/Motif), ICCM 2.0 compliant
+tiling/floating window manager.  It borrows concepts from `dwm(1)`,
+`velox(1)`, `awesome(1)`, `spectrwm(1)` and `wmii(1)`.
+
+This is a maintenance release that includes some build improvements and
+provides a better workaround for gcc 9.1's silly string truncation
+warnings.  There are no outstanding issues at the time of release, and
+the next release should include some outstanding development from the
+[TODO](TODO) list.
 
 Included in the release is an autoconf tarball for building the package
 from source.  See the [NEWS](NEWS) and [TODO](TODO) file in the release

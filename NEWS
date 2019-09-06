@@ -1,4 +1,39 @@
-adwm -- history of user-visible changes.  2019-08-30
+adwm -- history of user-visible changes.  2019-09-05
+
+Release adwm-0.7.8 released 2019-09-05
+--------------------------------------
+
+git tag -n100 -l 0.7.8
+
+0.7.8           Maintenance Release 0.7.8
+
+    This is another release of the adwm window manager that provdes a fully
+    XDG, WindowMaker, WMH (WinWM), MWMH (CDE/Motif), ICCM 2.0 compliant
+    tiling/floating window manager. It borrows concepts from dwm(1),
+    velox(1), awesome(1), spectrwm(1) and wmii(1).
+
+    This is a maintenance release that includes some build improvements and
+    provides a better workaround for gcc 9.1's silly string truncation
+    warnings. There are no outstanding issues at the time of release, and
+    the next release should include some outstanding development from the
+    TODO list.
+
+    Included in the release is an autoconf tarball for building the package
+    from source. See the NEWS and TODO file in the release for more
+    information. Please report problems to the issues list on GitHub.
+
+git shortlog -e -n -w80,6,8 0.7.7...0.7.8
+
+Brian Bidulock <bidulock@openss7.org> (8):
+      better fix for gcc 9.1 string truncation stupidity
+      better rlease file build
+      put filename last in sed command
+      update release notes
+      better defaults, deprecated macro
+      better defaults now
+      build release notes with dist
+      update release notes
+
 
 Release adwm-0.7.7 released 2019-08-30
 --------------------------------------
@@ -16,12 +51,13 @@ git tag -n100 -l 0.7.7
 
 git shortlog -e -n -w80,6,8 0.7.6...0.7.7
 
-Brian Bidulock <bidulock@openss7.org> (5):
+Brian Bidulock <bidulock@openss7.org> (6):
       update sed for gettext 0.20.1
       detect release head properly when generating NEWS
       avoid gcc 9.1 silly warnings
       update release notes
       convert to lzip archive
+      update release files
 
 
 Release adwm-0.7.6 released 2019-03-20
@@ -227,235 +263,4 @@ Brian Bidulock <bidulock@openss7.org> (35):
       distribute release notes
       update release files
       add ignores
-
-
-Release adwm-0.7.1 released 2017-12-19
---------------------------------------
-
-git shortlog -e -n -w80,6,8 0.7.0...0.7.1
-
-Brian Bidulock <bidulock@openss7.org> (223):
-      m_spawn on button press instead of release
-      prepare for drag-click separation of mouse actions
-      reset pid after reload
-      add WM_COLORMAP_{WINDOWS,NOTIFY}
-      support WM_COLORMAP_NOTIFY
-      initial support for WM_COLORMAP_WINDOWS
-      install colormaps
-      indicate colormap support
-      show color map notifies
-      add support for more X extensions
-      install new colormaps for focused windows
-      install colormaps better
-      install colormap of window under pointer
-      simplify colormap installation
-      update TODO
-      redate TODO file
-      change property change reporting
-      handle _NET_WM_WINDOW_OPACITY correctly
-      support WM_ICON_SIZE
-      document supported properties
-      added 5 new extension notification events
-      extend X11 extension mechanism
-      even better extension handling
-      move image library includes to adwm.h
-      prepare to use imlib2 for everything
-      view the last selected client when changing views
-      always resize from current geometry
-      fix last selected behaviour
-      rework configuration for reload
-      make loadable modules do same config
-      new install file
-      only build requested modules
-      add image.[ch] to compile
-      better resource parsing and add themeFile resource
-      handle _OB_WM_{ACTION,STATE} props for undec
-      shape frame to match shaped clients
-      first working version of shaped windows
-      rename drawshapes to configureshapes and move
-      simplify check function
-      update TODO file
-      quiet down logs
-      distinguish has from needs
-      a bit better shaping, rest of cleanup
-      change default visual depth and colormap
-      expand compliance
-      always used 32-deep ARGB visuals when available
-      remove trailing spaces
-      document compliance for _OB_WM_{ACTION,STATE}_UNDECORATE[D]
-      do not play with the shape of dock apps
-      dock apps must be default visual and use separate GC
-      do not try to focus docapp window (focus icon instead)
-      draw background on dock app tiles for ParentRelative ones
-      prepare to manage override windows
-      try to split active and focus windows
-      add some more compliance items
-      handle active/focus split for window cycling too
-      Merge branch 'split_sel'
-      support more states, hints and actions
-      get rid of difference between prog and user capabilities
-      can focus and select dockapps
-      careful: some dockapps put basic props only on icon window
-      send messages to correct window
-      set openbox application properties
-      assume dockapps do not take focus update only if managed
-      simple giving back of stolen focus
-      better focus stealing handling
-      ignore focus grab and non-inferior events
-      better focus handling yet
-      improve debugging and add _NET_SN_* properties
-      I think this corrects focus reversion after popup
-      make startup notification work better
-      more startup notification improvements
-      still working up startup notification changes
-      handle popups that grab focus before window activated
-      seems to fix foxus reversion problems
-      handle startup sequence integers better
-      get focus stack functioning
-      redraw when focus gained or lost
-      defaults for new focused titlebar style
-      add documentation for new titlebar style and theme file
-      update adwm manual page for new titlebar styles and theme file
-      update documentation
-      add focused to default style
-      more documentation update
-      add a default theme
-      load HOME and XDG directories
-      straighten out configuration file paths and search
-      simplify screen-based resource lookups
-      styles are screen-based resources
-      more documentation updates
-      expand tags for new tag theme elements
-      fix assertion error
-      provide full backtrace on SIGSEGV or SIGBUS
-      place some assertions in startup notification handling
-      add some more assertions
-      must detach from alist when deleting (crash fix)
-      support _OB_CONTROL message
-      rename _NET_SN_ props to _NET_APP_
-      set icon sizes a little different
-      or maybe this way cause we want them square
-      oops
-      rework drawing of buttons for adding icons
-      set WM_STATE icon to frame for dock apps
-      draw buttons with clip masks better
-      working up drawing routines
-      fully support _NET_WM_VISIBLE{,_ICON}_NAME
-      visible name should appear in titlebar too
-      add KWM_WIN_ICON in prep for reading/setting it
-      full support for KWM_WIN_ICON and _NET_WM_ICON
-      full support for icons now
-      check for gdk-pixbuf too
-      handle multiple _NET_WM_ICON icons
-      little correction to multiple icons
-      need to redraw clients when updating title
-      struts should not have a border
-      update icons better, be sure to update extents
-      forgot to install window.xbm
-      add some proper xerror handling
-      whoops
-      sync before and after trap push/pop inside
-      put icon create way lower in manage
-      more error checking, ensure client managed
-      logic error
-      put messages in trap functions
-      handle focus lock better
-      process startup id way later in manage
-      handle ch.res_name and ch.res_class better
-      startupid after managed
-      delete some more properties when quiting
-      change property direction (does xlib have a bug?)
-      watch out for invalid WM_ICON_SIZE values
-      get rid of startup-notification extensions
-      try treading bitmaps
-      iterate once
-      do not looke for properties on icon windows
-      update size hints propertly
-      draws icons well but not best yet
-      suppress some unnecessary debugs
-      supress a bunch more unnecessary debugs
-      show extensions at startup
-      add some types to indent
-      make some anonymous structures visible
-      start working in use of render for titlebars
-      trap XConfigureWindow errors better
-      beef up ICCCM 2.0/4.1.5 configuration compliance
-      even better configure request handling
-      correct client placement
-      better tearouts of maximized/tiled windows at move
-      getting a null pointer here sometimes
-      start strapping in XRender solution
-      excellent scaling of icons now
-      remove some unused code
-      add code for searching for application icons
-      lookup icons using XDG icon themes
-      prepare to create app icons
-      keep track of appids in preparation for clip
-      do not add missing directories to search list
-      only add necessary directories and themes
-      stop after normal fallbacks
-      need to include dirent
-      do not duplicate directories in search paths
-      remove unused code path
-      add some ADWM-specific properties
-      set properties at the right point
-      split out library-specific drawing functions
-      rationalize ximage and xlib use
-      spelling
-      add capability to handle damage notify events
-      refactor ximage drawing
-      specific functions for finding app icons
-      do not try to create unnecessary icons
-      read bitmaps and pixmaps as ximages
-      factor icon creation code some more
-      factor sele focu norm
-      read and create png icons using libpng
-      factor reading of png files
-      _NET_WM_ICONs scale a bit better than app icons
-      factor bitmap image reading
-      factor include files
-      move file reading functions to image.c
-      minor corrections to bitmap file loading
-      move error status functions to image.c
-      comibine ButtonImage, AdwmPixmap and AdwmBitmap
-      use AllPlanes constant
-      formatting
-      some better ximage scaling
-      remove unused code paths
-      working up xrender rendering
-      rename stuff, cut out non-xrender code
-      all button picture handling except drawnormal and drawdockapp
-      compact a bit
-      allow for creating pictures for various windows
-      first xrender full rendering attempt
-      a little cleanup, starting to work
-      add a type
-      proper xfixes events
-      do not default to svg without capability
-      more svg suppression
-      handle bitmaps a bit better
-      move scaling functions to image.c
-      scale with doubles
-      use app icon last
-      corrections to image croppning and scaling
-      start using just xrender
-      working up xrender only
-      working up just xrender
-      just xrender works well, just need cropping
-      some pngs (firefox) are sticking garbage in RBG when transparent
-      add a type
-      a few (suppressed) debugs
-      a fairly workable xrender-only arrangement
-      specify scale the other way
-      have to stick with ximage
-      rework configurerequest response
-      better handlingh of configure requests
-      reorder when focus given
-      suppress some debugs
-      update TODO
-      update release files
-      further update release files
-      typo in configure.ac
-      allow build without imlib2
-      want to build without imlib2 or gdk-pixbuf
 

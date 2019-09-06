@@ -2,8 +2,8 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.69])
-AC_INIT([ADWM],[0.7.7],[https://github.com/bbidulock/adwm/issues],[adwm],[https://github.com/bbidulock/adwm])
-AC_REVISION([0.7.7])
+AC_INIT([ADWM],[0.7.8],[https://github.com/bbidulock/adwm/issues],[adwm],[https://github.com/bbidulock/adwm])
+AC_REVISION([0.7.8])
 
 # set better defaults
 AC_PREFIX_DEFAULT([/usr])
@@ -20,17 +20,17 @@ AC_CONFIG_AUX_DIR([scripts])
 AC_USE_SYSTEM_EXTENSIONS
 AC_CANONICAL_TARGET
 
-DATE='2019-08-30'
+DATE='2019-09-05'
 AC_SUBST([DATE])
 
-MDOCDATE='August 30, 2019'
+MDOCDATE='September 5, 2019'
 AC_SUBST([MDOCDATE])
 
-BRANCH='0.7.7'
+BRANCH='0.7.8'
 AC_SUBST([BRANCH])
 
 # Initialize Automake
-AM_INIT_AUTOMAKE([1.16 dist-lzip no-dist-gzip std-options -Wall color-tests silent-rules tar-pax])
+AM_INIT_AUTOMAKE([gnits 1.16 dist-lzip no-dist-gzip std-options -Wall color-tests silent-rules tar-pax])
 AM_MAINTAINER_MODE
 AM_SILENT_RULES([yes])
 

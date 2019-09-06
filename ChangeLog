@@ -1,5 +1,91 @@
 # created with git log --stat=76 -M -C -500|fmt -sct -w80
 
+commit af9623e44d8f39550d38bf26676e6d64218c29e4
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu Sep 5 16:42:02 2019 -0600
+
+    update release notes
+
+ RELEASE.md | 17 ++++++++++++-----
+ 1 file changed, 12 insertions(+), 5 deletions(-)
+
+commit 85d496aa7d6b68da32b107ac090236b8b5bc9b59
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu Sep 5 16:16:10 2019 -0600
+
+    build release notes with dist
+
+ dist.sh | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+commit 742d0175c167c612dc9a924ec1e4469d8b4e1d75
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu Sep 5 16:15:52 2019 -0600
+
+    better defaults now
+
+ configure.sh | 3 ---
+ 1 file changed, 3 deletions(-)
+
+commit 5ed48b40b952953b05ae73cffe2b724c7e9f5040
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu Sep 5 16:15:32 2019 -0600
+
+    better defaults, deprecated macro
+
+ configure.ac | 14 +++++++++++---
+ 1 file changed, 11 insertions(+), 3 deletions(-)
+
+commit 05459ddd3aca9651c4b912325f742f5583d7bb6e
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu Sep 5 16:14:05 2019 -0600
+
+    update release notes
+
+ RELEASE.md | 14 ++++++++------
+ 1 file changed, 8 insertions(+), 6 deletions(-)
+
+commit c1b259be505b3acee8d5d241465967df63a1f076
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu Sep 5 16:13:35 2019 -0600
+
+    put filename last in sed command
+
+ autogen.sh | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+commit 766a805a2b27370dd2208f2e118c5f44ace3744c
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu Sep 5 16:13:11 2019 -0600
+
+    better rlease file build
+
+ Makefile.am | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+commit d9ef596b426208d4c3f1d2a790b47ef25f612166
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu Sep 5 10:11:45 2019 -0600
+
+    better fix for gcc 9.1 string truncation stupidity
+
+ src/ewmh.c | 7 ++-----
+ 1 file changed, 2 insertions(+), 5 deletions(-)
+
+commit 1d624e61f3f59dbefe792de65dde78dfa94c1401
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri Aug 30 05:55:06 2019 -0600
+
+    update release files
+
+ AUTHORS      |   2 +-
+ ChangeLog    | 132 ++++++++++++++++++++++-----------------------------
+ NEWS         | 142 ++++++++-----------------------------------------------
+ README       |  20 ++++----
+ README.md    |  20 ++++----
+ configure.ac |  10 ++--
+ 6 files changed, 104 insertions(+), 222 deletions(-)
+
 commit de561feb1f8698bad2d1744787943d9091d428f8
 Author: Brian Bidulock <bidulock@openss7.org>
 Date:   Fri Aug 30 05:47:02 2019 -0600
@@ -5169,95 +5255,3 @@ Date:   Fri Jul 8 16:10:32 2016 -0600
 
  Makefile.am | 8 +-------
  1 file changed, 1 insertion(+), 7 deletions(-)
-
-commit c80f5a358855d6392795096e915c4a482b4eb6f5
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Fri Jul 8 16:02:59 2016 -0600
-
-    oops: lost autconf from autogen.sh
-
- autogen.sh | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-commit d53022e754e2623c736f1c9fe318073db6876f56
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Fri Jul 8 16:00:04 2016 -0600
-
-    autogenerate GNU NEWS file
-
- Makefile.am | 37 ++++++++++++++++++++++++++++++++++++-
- autogen.sh  | 10 +++++++---
- gennews.sh  | 34 ++++++++++++++++++++++++++++++++++
- 3 files changed, 77 insertions(+), 4 deletions(-)
-
-commit ac75d1c25a1053aa49e1f69d8446cd9c52d35a69
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Fri Jul 8 15:58:34 2016 -0600
-
-    remove another assigned flag
-
- src/ewmh.c | 1 -
- 1 file changed, 1 deletion(-)
-
-commit d21bba91d275f115e959122a9e2b37c8c4909cce
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Fri Jul 8 14:18:58 2016 -0600
-
-    really remove assigned flag
-
- src/adwm.h | 1 -
- 1 file changed, 1 deletion(-)
-
-commit 7b30ab960f7e803af85618488dd49fff2b8bf92e
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Fri Jul 8 14:17:13 2016 -0600
-
-    remove complete sequences from list
-
-    - sn-monitor does not see its own client messages nor
-      marks the sequence as complete
-    - remove notifies from the list when they are completed by us
-    - assigned notifies no longer on list, remove flag
-
- src/ewmh.c | 30 +++++-------------------------
- 1 file changed, 5 insertions(+), 25 deletions(-)
-
-commit b3f7c69e255e0c844f518b62c359a15bddc87a83
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Thu Jul 7 09:26:47 2016 -0600
-
-    update TODO file
-
- TODO | 85 +++++++++++++++++++++++++++++++++++++++++-----------------------
- 1 file changed, 54 insertions(+), 31 deletions(-)
-
-commit 5eccd1de5221893c2e7168f1770ce5e85b8938c7
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Thu Jul 7 07:52:10 2016 -0600
-
-    update releae files
-
- NEWS.in | 27 +++++++++++++++++++++++++++
- README  |  6 +++---
- 2 files changed, 30 insertions(+), 3 deletions(-)
-
-commit 4010bd083b2b9ea37f22f91734bf5d8e57f28c4e
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Thu Jul 7 05:59:29 2016 -0600
-
-    minor startup notification tweaks
-
- src/ewmh.c | 11 +++++++----
- 1 file changed, 7 insertions(+), 4 deletions(-)
-
-commit 10f485bf108348459ea0fe5eb7047bd112d03f3b
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Thu Jul 7 05:58:55 2016 -0600
-
-    change focus stealing
-
-    - let windows in the same window group steal focus
-      from each other
-
- src/adwm.c | 10 ++++++----
- 1 file changed, 6 insertions(+), 4 deletions(-)

@@ -138,3 +138,5 @@ if WITH_WMAKER
 adwmmod_LTLIBRARIES += adwm-wmaker.la
 endif
 
+EXTRA_adwm_DEPENDENCIES = $(adwmmod_LTLIBRARIES)
+

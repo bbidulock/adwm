@@ -1,4 +1,32 @@
-adwm -- history of user-visible changes.  2019-09-05
+adwm -- history of user-visible changes.  2019-10-03
+
+Release adwm-0.7.9 released 2019-10-03
+--------------------------------------
+
+git tag -n100 -l 0.7.9
+
+0.7.9           Maintenance Release 0.7.9
+
+    This is another release of the adwm window manager that provdes a fully
+    XDG, WindowMaker, WMH (WinWM), MWMH (CDE/Motif), ICCM 2.0 compliant
+    tiling/floating window manager. It borrows concepts from dwm(1),
+    velox(1), awesome(1), spectrwm(1) and wmii(1).
+
+    This is a maintenance release that includes some build improvements and
+    a fix for issue #7 by forcing a make dependency between adwm-adwm.la
+    and adwm. There are no outstanding issues at the time of release, and
+    the next release should include some outstanding development from the
+    TODO list.
+
+    Included in the release is an autoconf tarball for building the package
+    from source. See the NEWS and TODO file in the release for more
+    information. Please report problems to the issues list on GitHub.
+
+git shortlog -e -n -w80,6,8 0.7.8...0.7.9
+
+Brian Bidulock <bidulock@openss7.org> (1):
+      fix issue #7
+
 
 Release adwm-0.7.8 released 2019-09-05
 --------------------------------------
@@ -24,7 +52,7 @@ git tag -n100 -l 0.7.8
 
 git shortlog -e -n -w80,6,8 0.7.7...0.7.8
 
-Brian Bidulock <bidulock@openss7.org> (8):
+Brian Bidulock <bidulock@openss7.org> (9):
       better fix for gcc 9.1 string truncation stupidity
       better rlease file build
       put filename last in sed command
@@ -33,6 +61,7 @@ Brian Bidulock <bidulock@openss7.org> (8):
       better defaults now
       build release notes with dist
       update release notes
+      update release files
 
 
 Release adwm-0.7.7 released 2019-08-30
@@ -200,67 +229,4 @@ Brian Bidulock <bidulock@openss7.org> (23):
       update release files
       Big mistake: don't XCloseDisplay() after fork
       update release files
-
-
-Release adwm-0.7.2 released 2018-01-06
---------------------------------------
-
-git tag -n100 -l 0.7.2
-
-0.7.2           Stable Release 0.7.2
-
-    This is a stable release that includes more todo's completed. Yes,
-    there are still some outstanding, but nothing major. This release fixes
-    one obnoxious behaviour: auto-exposing docks and panels when you
-    overshoot browser scrollbars: there is now a default 500 millisecond
-    delay before they are exposed. You need to rub the edge of the monitor
-    with the pointer to get them to expose now.
-
-    There are a lot of preparations in the code now for handling more
-    graphics file formats and advanced rendering, but it is not yet
-    complete. The stable ximage approach works well (if not the most
-    efficient). I wanted to released the other fixes and improvements
-    before working further on the graphics formats and rendering.
-
-    As usual, Included is an autoconf tarball for building the package from
-    source. Please report problems to the issues list on github.
-
-git shortlog -e -n -w80,6,8 0.7.1...0.7.2
-
-Brian Bidulock <bidulock@openss7.org> (35):
-      prepare for use of cairo and libsvg
-      prepare to use cairo and libsvg
-      prepare to use cairo and libsvg
-      start xcairo drawing files
-      prepare to use libjpeg
-      prepare to use libjpeg
-      libjpeg includes
-      start strapping in cairo
-      start building cairo draw functions
-      strap in more bitmap for xcairo
-      read xpm files to cairo surface
-      add JPG routines
-      add JPG stub routines
-      add JPG stub routines
-      add JPG stub routines
-      add JPG stub routines
-      building up cairo routines
-      move titleheight to where used by all
-      working up cairo draw routines
-      indentation
-      reorganize structures
-      working up cairo rendering
-      prepare to use pango for font rendering
-      more pango preparations
-      more cairo workup
-      causes problems
-      preliminary autohide delay implementation
-      provide and document strutsdelay option
-      works good with PointerMotionMask on client window
-      set strutsdelay default to 500 milliseconds
-      completed TODO item
-      add release notes
-      distribute release notes
-      update release files
-      add ignores
 

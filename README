@@ -1,9 +1,9 @@
-[adwm -- read me first file.  2019-09-05]: #
+[adwm -- read me first file.  2019-10-03]: #
 
 adwm
 ===============
 
-Package `adwm-0.7.8` was released under GPLv3 license 2019-09-05.
+Package `adwm-0.7.9` was released under GPLv3 license 2019-10-03.
 
 This was originally a fork of Echinus which in turn was a fork of `dwm(1)`, and
 borrows concepts from `velox(1)`, `awesome(1)`, `spectrwm(1)` and `wmii(1)`.
@@ -14,7 +14,7 @@ WMH (WinWM), MWMH (CDE/Motif), ICCCM 2.0 compliance and support.
 Release
 -------
 
-This is the `adwm-0.7.8` package, released 2019-09-05.  This release, and
+This is the `adwm-0.7.9` package, released 2019-10-03.  This release, and
 the latest version, can be obtained from [GitHub][1], using a command such as:
 
     $> git clone https://github.com/bbidulock/adwm.git
@@ -130,12 +130,12 @@ Report issues on GitHub [here][2].
 
 [1]: https://github.com/bbidulock/adwm
 [2]: https://github.com/bbidulock/adwm/issues
-[3]: https://github.com/bbidulock/adwm/blob/0.7.8/NEWS
-[4]: https://github.com/bbidulock/adwm/blob/0.7.8/ChangeLog
-[5]: https://github.com/bbidulock/adwm/blob/0.7.8/TODO
-[6]: https://github.com/bbidulock/adwm/blob/0.7.8/COMPLIANCE
-[7]: https://github.com/bbidulock/adwm/blob/0.7.8/INSTALL
-[8]: https://github.com/bbidulock/adwm/blob/0.7.8/LICENSE
-[9]: https://github.com/bbidulock/adwm/blob/0.7.8/COPYING
+[3]: https://github.com/bbidulock/adwm/blob/0.7.9/NEWS
+[4]: https://github.com/bbidulock/adwm/blob/0.7.9/ChangeLog
+[5]: https://github.com/bbidulock/adwm/blob/0.7.9/TODO
+[6]: https://github.com/bbidulock/adwm/blob/0.7.9/COMPLIANCE
+[7]: https://github.com/bbidulock/adwm/blob/0.7.9/INSTALL
+[8]: https://github.com/bbidulock/adwm/blob/0.7.9/LICENSE
+[9]: https://github.com/bbidulock/adwm/blob/0.7.9/COPYING
 
 [ vim: set ft=markdown sw=4 tw=80 nocin nosi fo+=tcqlorn spell: ]: #

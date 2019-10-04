@@ -1,6 +1,6 @@
-[adwm -- release notes.  2019-09-05]: #
+[adwm -- release notes.  2019-10-03]: #
 
-Maintenance Release 0.7.8
+Maintenance Release 0.7.9
 =========================
 
 This is another release of the adwm window manager that provdes a fully
@@ -9,9 +9,9 @@ tiling/floating window manager.  It borrows concepts from `dwm(1)`,
 `velox(1)`, `awesome(1)`, `spectrwm(1)` and `wmii(1)`.
 
 This is a maintenance release that includes some build improvements and
-provides a better workaround for gcc 9.1's silly string truncation
-warnings.  There are no outstanding issues at the time of release, and
-the next release should include some outstanding development from the
+a fix for issue #7 by forcing a make dependency between adwm-adwm.la and
+adwm.  There are no outstanding issues at the time of release, and the
+next release should include some outstanding development from the
 [TODO](TODO) list.
 
 Included in the release is an autoconf tarball for building the package

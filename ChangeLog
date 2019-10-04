@@ -1,5 +1,30 @@
 # created with git log --stat=76 -M -C -500|fmt -sct -w80
 
+commit 45d7bfd17f442632c98d90e1c805b0cc7d2753d8
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu Oct 3 20:53:34 2019 -0600
+
+    fix issue #7
+
+    - manually force dependency between adwm and adwm-adwm.la
+
+ src/Makefile.am | 2 ++
+ 1 file changed, 2 insertions(+)
+
+commit 800df77d7ac9569966b7204d49a760925388345b
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu Sep 5 18:30:05 2019 -0600
+
+    update release files
+
+ AUTHORS      |   2 +-
+ ChangeLog    | 178 ++++++++++++++++++------------------
+ NEWS         | 271 ++++++++-----------------------------------------------
+ README       |  20 ++--
+ README.md    |  20 ++--
+ configure.ac |  12 +--
+ 6 files changed, 151 insertions(+), 352 deletions(-)
+
 commit af9623e44d8f39550d38bf26676e6d64218c29e4
 Author: Brian Bidulock <bidulock@openss7.org>
 Date:   Thu Sep 5 16:42:02 2019 -0600
@@ -5235,23 +5260,3 @@ Date:   Fri Jul 8 17:49:55 2016 -0600
 
  src/ewmh.c | 7 +++++++
  1 file changed, 7 insertions(+)
-
-commit 74accd5d3412c21bdc8ef665f9b43d2a2b9b2075
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Fri Jul 8 16:14:44 2016 -0600
-
-    update release files
-
- AUTHORS.in | 20 ++++++++---------
- NEWS.in    | 68 +++++++++++++++++++++-------------------------------------
- README     |  6 +++---
- 3 files changed, 37 insertions(+), 57 deletions(-)
-
-commit f2bdefbed43c998a2d9dc4eb68377a9a35f2f64e
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Fri Jul 8 16:10:32 2016 -0600
-
-    remove missing files
-
- Makefile.am | 8 +-------
- 1 file changed, 1 insertion(+), 7 deletions(-)

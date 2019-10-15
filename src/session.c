@@ -105,7 +105,7 @@ save_yourself_phase2_cb(SmcConn conn, SmPointer data)
 
 	/* Step 2: find out where to save, check SM_SAVE_DIR environment variable */
 
-	/* Step 3: figure out he save file name */
+	/* Step 3: figure out the save file name */
 
 	/* Step 4: write the file header */
 
@@ -302,6 +302,9 @@ init_sm_client(void)
 		exit(EXIT_FAILURE);
 	}
 	iceConn = SmcGetIceConnection(smcConn);
+	/*
+	 * Note: If a clientId is set and corresponds to saved state, 
+	 */
 }
 
 void

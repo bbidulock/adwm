@@ -8,6 +8,35 @@
 #include "config.h"
 #include "save.h" /* verification */
 
+/*
+ * Steps involved in saving window manager state in response to SaveYourself Phase 1:
+ *
+ * 1. Create an Xresource configuration database.
+ * 2. Save all current configuration parameters (config, styles, themes, keys, mouse, desktops) to the resource database.
+ * 3. Create a file for client state and write filename to configuration database.
+ * 4. Save the database to a new global or local unique filename.
+ * 5. Issue WM_SAVE_YOURSELF client messages to all X11R5 session management observing clients.
+ * 6. Request SaveYourself Phase 2.
+ *
+ * Steps involved in saving window manager state in response to SaveYourself Phase 2:
+ *
+ * 1. Write all X11R6 SM observing clients to the client state file.
+ * 2. Write all X11R5 SM observing clients to the client state file.  (Noting startup notification
+ *    observance.)
+ * 3. Write all non-SM observing clients with WM_COMMAND set to client state file.  (Noting startup
+ *    notification observance.)
+ * 4. Write all non-SM observing clients with startup notification assistance to client state file
+ *    if WM_COMMAND can be determined or was implied by startup notification.  For example, if
+ *    _NET_WM_PID is specified on a window, the /proc filesystem may be used to determine the
+ *    command that was used to launch the client.
+ * 5. Issue SaveYourselfComplete to session manager.
+ *
+ * Note that when dock applications are saved, they should be saved in the order in which they
+ * appear in the dock and their dock app position saved as well.  Note also that stacking order,
+ * focus order, client order, must be saved in addition to the full state of the clients saved.
+ * Tiled windows must also have their saved floating geometries and positions saved as well.
+ *
+ */
 
 void
 save(void)

@@ -1,5 +1,20 @@
 # created with git log --stat=76 -M -C -500|fmt -sct -w80
 
+commit 6afb774e6dbe66e7885960a7258c5394e6542fd8
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu Oct 3 21:31:04 2019 -0600
+
+    update release files
+
+ AUTHORS      |  2 +-
+ ChangeLog    | 45 ++++++++++++++------------
+ NEWS         | 96 ++++++++++++++++++--------------------------------------
+ README       | 20 ++++++------
+ README.md    | 20 ++++++------
+ RELEASE.md   | 10 +++---
+ configure.ac | 10 +++---
+ 7 files changed, 87 insertions(+), 116 deletions(-)
+
 commit 45d7bfd17f442632c98d90e1c805b0cc7d2753d8
 Author: Brian Bidulock <bidulock@openss7.org>
 Date:   Thu Oct 3 20:53:34 2019 -0600
@@ -5251,12 +5266,3 @@ Date:   Fri Jul 8 18:22:14 2016 -0600
  NEWS.in | 35 ++++++++++-------------------------
  README  |  4 ++--
  2 files changed, 12 insertions(+), 27 deletions(-)
-
-commit f437fbd390f9fc921124727cd7c514fd56abfb55
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Fri Jul 8 17:49:55 2016 -0600
-
-    fool: you did not remove previous pointer
-
- src/ewmh.c | 7 +++++++
- 1 file changed, 7 insertions(+)

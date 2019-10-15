@@ -24,8 +24,9 @@ git tag -n100 -l 0.7.9
 
 git shortlog -e -n -w80,6,8 0.7.8...0.7.9
 
-Brian Bidulock <bidulock@openss7.org> (1):
+Brian Bidulock <bidulock@openss7.org> (2):
       fix issue #7
+      update release files
 
 
 Release adwm-0.7.8 released 2019-09-05

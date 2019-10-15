@@ -1,0 +1,28 @@
+Notes on session management:
+
+* [ ] Need two additional arguments:
+      clientId CLIENTID: the client id to use to register with session manager
+      restore SAVEFILE: the full path and filename (or the filename relative to SM_SAVE_DIR) of
+      the file from which to restore window manager state.
+
+* [ ] When CLIENTID and SAVEFILE are specified, restore the window manager state from the
+      restore file and connect to the session manager with the specified clientId.
+      The restoration step should read the state of all configuration items as well as the saved
+      state of each of the windows.  Whenever a new window is managed, the restored state should be
+      checked and the window placed in the restored state for the window rather than performing the
+      normal actions to place and order the window.  When windows are saved that do not observe
+      X11R6 session management, but have an explicit or inferred WM_COMMAND property, the window
+      manager must launch these in order.  When the windows observed startup notification (they had
+      a _NET_STARTUPID property set), startup notification should also be used when launching them.
+      In this way, the window manager will also act as a session management proxy for X11R5 and
+      other applications that do not support X11R6 session management.
+
+* [ ] When the wm is asked to save itself, the current state of the configuration items for the
+      window manager should be saved and a Phase 2 requested.  When Phase 2 completes, the state of
+      all of the managed windows should be saved.  The WM_COMMAND of windows that do not perform
+      X11R6 session management should be used (or may be derived from startup notification
+      properties associated with the window).
+
+* [ ] The wm should also proxy X11R5 SM windows (e.g. dockapps mostly) using the WM_SAVE_YOURSELF
+      protocol, if available.  This step must be performed in SaveYourself Phase 1 and before
+      SaveYourself Phase2 is requested.

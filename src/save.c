@@ -40,53 +40,77 @@ extern AdwmPlaces config;
  *
  */
 
-void
-save(void)
+XrmDatabase
+save(Bool permanent)
 {
+	XrmDatabase srdb = NULL;
 	AScreen *save_screen = scr;
 	char line[BUFSIZ] = { 0, };
+	const char *str;
 	unsigned i;
 
+#if 0
+	if (srdb) {
+		XrmDestroyDatabase(srdb);
+		srdb = NULL;
+	}
+#endif
+	if (!(srdb = XrmGetStringDatabase(line))) {
+		EPRINTF("could not create Xrm database\n");
+		return (srdb);
+	}
+
 	/* CONFIGURATION DIRECTIVES */
-#if 0
-	/* don't want to do this unless we include entire theme in savefile */
-	if (config.themename) {
-		snprintf(line, sizeof(line), "Adwm*theme.name:\t\t%s\n", config.themename);
-		XrmPutLineResource(&srdb, line);
-	}
-#else
-	if (config.themefile) {
-		snprintf(line, sizeof(line), "Adwm*themeFile:\t\t%s\n", config.themefile);
-		XrmPutLineResource(&srdb, line);
-	}
-	if (config.themename) {
-		snprintf(line, sizeof(line), "Adwm*themeName:\t\t%s\n", config.themename);
-		XrmPutLineResource(&srdb, line);
-	}
-#endif
-#if 0
-	/* don't want to do this unless we include entire style in savefile */
-	if (config.stylename) {
-		snprintf(line, sizeof(line), "Adwm*style.name:\t\t%s\n", config.stylename);
-		XrmPutLineResource(&srdb, line);
-	}
-#else
-	if (config.stylefile) {
-		snprintf(line, sizeof(line), "Adwm*styleFile:\t\t%s\n", config.stylefile);
-		XrmPutLineResource(&srdb, line);
-	}
-	if (config.stylename) {
-		snprintf(line, sizeof(line), "Adwm*styleName:\t\t%s\n", config.stylename);
-		XrmPutLineResource(&srdb, line);
-	}
-#endif
-	if (config.keysfile) {
-		snprintf(line, sizeof(line), "Adwm*keysFile:\t\t%s\n", config.keysfile);
-		XrmPutLineResource(&srdb, line);
-	}
-	if (config.dockfile) {
-		snprintf(line, sizeof(line), "Adwm*dockFile:\t\t%s\n", config.dockfile);
-		XrmPutLineResource(&srdb, line);
+	if (permanent) {
+		if ((str = config.themefile) && strcmp(str, "themerc")) {
+			snprintf(line, sizeof(line), "Adwm*themeFile:\t\t%s\n", str);
+			XrmPutLineResource(&srdb, line);
+		}
+		if ((str = config.themename) && strcmp(str, "Default")) {
+			snprintf(line, sizeof(line), "Adwm*themeName:\t\t%s\n", str);
+			XrmPutLineResource(&srdb, line);
+		}
+		if ((str = config.stylefile) && strcmp(str, "stylerc")) {
+			snprintf(line, sizeof(line), "Adwm*styleFile:\t\t%s\n", str);
+			XrmPutLineResource(&srdb, line);
+		}
+		if ((str = config.stylename) && strcmp(str, "Default")) {
+			snprintf(line, sizeof(line), "Adwm*styleName:\t\t%s\n", str);
+			XrmPutLineResource(&srdb, line);
+		}
+		if ((str = config.keysfile) && strcmp(str, "keysrc")) {
+			snprintf(line, sizeof(line), "Adwm*keysFile:\t\t%s\n", str);
+			XrmPutLineResource(&srdb, line);
+		}
+		if ((str = config.dockfile) && strcmp(str, "dockrc")) {
+			snprintf(line, sizeof(line), "Adwm*dockFile:\t\t%s\n", str);
+			XrmPutLineResource(&srdb, line);
+		}
+	} else {
+		if ((str = getresource("themeFile", NULL)) && strcmp(str, "themerc")) {
+			snprintf(line, sizeof(line), "Adwm*themeFile:\t\t%s\n", str);
+			XrmPutLineResource(&srdb, line);
+		}
+		if ((str = getresource("themeName", NULL)) && strcmp(str, "Default")) {
+			snprintf(line, sizeof(line), "Adwm*themeName:\t\t%s\n", str);
+			XrmPutLineResource(&srdb, line);
+		}
+		if ((str = getresource("styleFile", NULL)) && strcmp(str, "stylerc")) {
+			snprintf(line, sizeof(line), "Adwm*styleFile:\t\t%s\n", str);
+			XrmPutLineResource(&srdb, line);
+		}
+		if ((str = getresource("styleName", NULL)) && strcmp(str, "Default")) {
+			snprintf(line, sizeof(line), "Adwm*styleName:\t\t%s\n", str);
+			XrmPutLineResource(&srdb, line);
+		}
+		if ((str = getresource("keysFile", NULL)) && strcmp(str, "keysrc")) {
+			snprintf(line, sizeof(line), "Adwm*keysFile:\t\t%s\n", str);
+			XrmPutLineResource(&srdb, line);
+		}
+		if ((str = getresource("dockFile", NULL)) && strcmp(str, "dockrc")) {
+			snprintf(line, sizeof(line), "Adwm*dockFile:\t\t%s\n", str);
+			XrmPutLineResource(&srdb, line);
+		}
 	}
 
 	/* GENERAL DIRECTIVES */
@@ -363,5 +387,6 @@ save(void)
 
 
 	scr = save_screen;
+	return (srdb);
 }
 

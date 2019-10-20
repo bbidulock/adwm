@@ -616,7 +616,7 @@ initkeysfile(void)
 static void
 initstylefile(void)
 {
-	XrmDatabase srdb;
+	XrmDatabase yrdb;
 	const char *file, *name;
 	char *path, *p, *q;
 	int len;
@@ -690,12 +690,12 @@ initstylefile(void)
 		*q = '/';
 	}
 	XPRINTF("Reading database file %s\n", config.stylefile);
-	srdb = XrmGetFileDatabase(config.stylefile);
-	if (!srdb) {
+	yrdb = XrmGetFileDatabase(config.stylefile);
+	if (!yrdb) {
 		XPRINTF("Could not read database file '%s'\n", config.stylefile);
 		return;
 	}
-	XrmMergeDatabases(srdb, &xrdb);
+	XrmMergeDatabases(yrdb, &xrdb);
 }
 
 static void

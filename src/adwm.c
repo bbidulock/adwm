@@ -2512,6 +2512,14 @@ manage(Window w, XWindowAttributes *wa)
 	applyrules(c);
 	applyatoms(c);
 
+	/* Somewhere here we want to call the restore function
+	   for the client and decide whether it is to be
+	   restored from session management or not. */
+
+	/* If the client has been restored at this point, we want
+	   to mark it so that it is not changed by some of the later
+	   EWMH and WMH functions. */
+
 	/* do this before transients */
 	wmh_process_win_window_hints(c);
 

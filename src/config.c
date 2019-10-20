@@ -689,7 +689,7 @@ initstylefile(void)
 			config.stylename = strdup(p + 1);
 		*q = '/';
 	}
-	XPRINTF("Reading databse file %s\n", config.stylefile);
+	XPRINTF("Reading database file %s\n", config.stylefile);
 	srdb = XrmGetFileDatabase(config.stylefile);
 	if (!srdb) {
 		XPRINTF("Could not read database file '%s'\n", config.stylefile);

@@ -8,6 +8,8 @@
 #include "config.h"
 #include "save.h" /* verification */
 
+extern AdwmPlaces config;
+
 /*
  * Steps involved in saving window manager state in response to SaveYourself Phase 1:
  *
@@ -43,6 +45,49 @@ save(void)
 {
 	AScreen *save_screen = scr;
 	char line[BUFSIZ] = { 0, };
+	unsigned i;
+
+	/* CONFIGURATION DIRECTIVES */
+#if 0
+	/* don't want to do this unless we include entire theme in savefile */
+	if (config.themename) {
+		snprintf(line, sizeof(line), "Adwm*theme.name:\t\t%s\n", config.themename);
+		XrmPutLineResource(&srdb, line);
+	}
+#else
+	if (config.themefile) {
+		snprintf(line, sizeof(line), "Adwm*themeFile:\t\t%s\n", config.themefile);
+		XrmPutLineResource(&srdb, line);
+	}
+	if (config.themename) {
+		snprintf(line, sizeof(line), "Adwm*themeName:\t\t%s\n", config.themename);
+		XrmPutLineResource(&srdb, line);
+	}
+#endif
+#if 0
+	/* don't want to do this unless we include entire style in savefile */
+	if (config.stylename) {
+		snprintf(line, sizeof(line), "Adwm*style.name:\t\t%s\n", config.stylename);
+		XrmPutLineResource(&srdb, line);
+	}
+#else
+	if (config.stylefile) {
+		snprintf(line, sizeof(line), "Adwm*styleFile:\t\t%s\n", config.stylefile);
+		XrmPutLineResource(&srdb, line);
+	}
+	if (config.stylename) {
+		snprintf(line, sizeof(line), "Adwm*styleName:\t\t%s\n", config.stylename);
+		XrmPutLineResource(&srdb, line);
+	}
+#endif
+	if (config.keysfile) {
+		snprintf(line, sizeof(line), "Adwm*keysFile:\t\t%s\n", config.keysfile);
+		XrmPutLineResource(&srdb, line);
+	}
+	if (config.dockfile) {
+		snprintf(line, sizeof(line), "Adwm*dockFile:\t\t%s\n", config.dockfile);
+		XrmPutLineResource(&srdb, line);
+	}
 
 	/* GENERAL DIRECTIVES */
 	if (options.debug) {
@@ -164,7 +209,6 @@ save(void)
 
 	/* SCREEN DIRECTIVES */
 	for (scr = screens; scr < screens + nscr; scr++) {
-		unsigned i;
 
 		if (!scr->managed)
 			continue;
@@ -307,6 +351,17 @@ save(void)
 		}
 
 	}
+	/* RULE DIRECTIVES */
+	for (i = 0; i < 64; i++) {
+		Rule *r;
+
+		if ((r = rules[i])) {
+			snprintf(line, sizeof(line), "Adwm.rule%u:\t\t%s %s %d %d\n", i, r->prop, r->tags, r->isfloating, r->hastitle);
+			XrmPutLineResource(&srdb, line);
+		}
+	}
+
+
 	scr = save_screen;
 }
 

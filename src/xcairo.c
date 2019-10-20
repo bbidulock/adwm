@@ -204,11 +204,13 @@ xcairo_initsvg(char *path, AdwmPixmap *px)
 Bool
 xcairo_initxpm(char *path, AdwmPixmap *px)
 {
+#ifdef XPM
 	Pixmap draw = None, mask = None;
 	Screen *screen;
 	cairo_surface_t *surf = NULL, *clip = NULL;
 	int status;
 	XRenderPictFormat *format;
+
 	XpmAttributes xa = {
 		.visual = DefaultVisual(dpy, scr->screen),
 		.colormap = DefaultColormap(dpy, scr->screen),
@@ -270,6 +272,9 @@ xcairo_initxpm(char *path, AdwmPixmap *px)
 	if (mask)
 		XFreePixmap(dpy, mask);
 	return (surf ? True : False);
+#else				/* XPM */
+	return (False);
+#endif				/* XPM */
 }
 
 Bool

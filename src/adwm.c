@@ -5660,7 +5660,9 @@ unmanage(Client *c, WithdrawCause cause)
 		}
 	}
 	ewmh_release_user_time_window(c);
+#ifdef STARTUP_NOTIFICATION
 	removeappl(c);
+#endif
 	removeclass(c);
 	removegroup(c, c->leader, ClientGroup);
 	removegroup(c, c->session, ClientSession);
@@ -6338,6 +6340,7 @@ removeclass(Client *c)
 	}
 }
 
+#ifdef STARTUP_NOTIFICATION
 ButtonImage *
 getappbutton(Client *c)
 {
@@ -6347,6 +6350,7 @@ getappbutton(Client *c)
 		return &a->button;
 	return (NULL);
 }
+#endif
 
 ButtonImage *
 getresbutton(Client *c)

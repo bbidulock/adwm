@@ -2076,7 +2076,7 @@ putresource(const char *resource, const char *value)
 {
 	static char clas[256] = { 0, };
 
-	snprintf(clas, sizeof(clas), "%s.%s", RESCLASS, resource);
+	snprintf(clas, sizeof(clas), "%s*%s:\t\t%s\n", RESCLASS, resource, value);
 	XrmPutStringResource(&srdb, clas, value);
 }
 
@@ -2085,8 +2085,79 @@ putscreenres(const char *resource, const char *value)
 {
 	static char clas[256] = { 0, };
 
-	snprintf(clas, sizeof(clas), "%s.screen%d.%s", RESCLASS, scr->screen, resource);
+	snprintf(clas, sizeof(clas), "%s*screen%d.%s", RESCLASS, scr->screen, resource);
 	XrmPutStringResource(&srdb, clas, value);
+}
+
+void
+putintscreenres(const char *resource, int value)
+{
+	static char clas[256] = { 0, };
+
+	snprintf(clas, sizeof(clas), "%d", value);
+	putscreenres(resource, clas);
+}
+
+void
+putcharscreenres(const char *resource, char value)
+{
+	static char clas[256] = { 0, };
+
+	snprintf(clas, sizeof(clas), "%c", value);
+	putscreenres(resource, clas);
+}
+
+void
+putfloatscreenres(const char *resource, double value)
+{
+	static char clas[256] = { 0, };
+
+	snprintf(clas, sizeof(clas), "%f", value);
+	putscreenres(resource, clas);
+}
+
+void
+putviewres(unsigned v, const char *resource, const char *value)
+{
+	static char clas[256] = { 0, };
+
+	snprintf(clas, sizeof(clas), "view%u.%s", v, resource);
+	putscreenres(clas, value);
+}
+
+void
+putintviewres(unsigned v, const char *resource, int value)
+{
+	static char clas[256] = { 0, };
+
+	snprintf(clas, sizeof(clas), "%d", value);
+	putviewres(v, resource, clas);
+}
+
+void
+putcharviewres(unsigned v, const char *resource, char value)
+{
+	static char clas[256] = { 0, };
+
+	snprintf(clas, sizeof(clas), "%c", value);
+	putviewres(v, resource, clas);
+}
+
+void
+putfloatviewres(unsigned v, const char *resource, double value)
+{
+	static char clas[256] = { 0, };
+
+	snprintf(clas, sizeof(clas), "%f", value);
+	putviewres(v, resource, clas);
+}
+
+void
+puttagsres(unsigned t, const char *resource, const char *value)
+{
+	static char clas[256] = { 0, };
+	snprintf(clas, sizeof(clas), "tags.%s%u", resource, t);
+	putresource(clas, value);
 }
 
 void

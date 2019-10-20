@@ -273,7 +273,37 @@ save(void)
 
 		/* VIEW DIRECTIVES */
 		for (i = 0; i < MAXTAGS; i++) {
-			// View *v = scr->views + i;
+			View *v = scr->views + i;
+			Layout *l = v->layout;
+
+			if (l->symbol != scr->options.deflayout) {
+				snprintf(line, sizeof(line), "Adwm.screen%u.tags.layout%u:\t\t%c\n", scr->screen, i, l->symbol);
+				XrmPutLineResource(&srdb, line);
+			}
+			if ((v->barpos == StrutsOn) != !!scr->options.strutsactive) {
+				snprintf(line, sizeof(line), "Adwm.screen%u.view%u.strutsactive:\t\t%d\n", scr->screen, i, (v->barpos == StrutsOn) ?  1 : 0);
+				XrmPutLineResource(&srdb, line);
+			}
+			if (v->dectiled != scr->options.dectiled) {
+				snprintf(line, sizeof(line), "Adwm.screen%u.view%u.decoratetiled:\t\t%d\n", scr->screen, i, v->dectiled);
+				XrmPutLineResource(&srdb, line);
+			}
+			if (v->nmaster != scr->options.nmaster) {
+				snprintf(line, sizeof(line), "Adwm.screen%u.view%u.nmaster:\t\t%d\n", scr->screen, i, v->nmaster);
+				XrmPutLineResource(&srdb, line);
+			}
+			if (v->ncolumns != scr->options.ncolumns) {
+				snprintf(line, sizeof(line), "Adwm.screen%u.view%u.ncolumns:\t\t%d\n", scr->screen, i, v->ncolumns);
+				XrmPutLineResource(&srdb, line);
+			}
+			if (v->mwfact != scr->options.mwfact) {
+				snprintf(line, sizeof(line), "Adwm.screen%u.view%u.mwfact:\t\t%f\n", scr->screen, i, v->mwfact);
+				XrmPutLineResource(&srdb, line);
+			}
+			if (v->mhfact != scr->options.mhfact) {
+				snprintf(line, sizeof(line), "Adwm.screen%u.view%u.mhfact:\t\t%f\n", scr->screen, i, v->mhfact);
+				XrmPutLineResource(&srdb, line);
+			}
 		}
 
 	}

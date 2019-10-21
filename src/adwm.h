@@ -1081,12 +1081,12 @@ struct Client {
 	CanUnion can;
 	View *cview;
 	Leaf *leaves;
-	Client *next;
-	Client *prev;
-	Client *snext;
-	Client *cnext;
-	Client *fnext;
-	Client *anext;
+	Client *next;	/* tiling list order */
+	Client *prev;	/* tiling list order (rev) */
+	Client *snext;	/* stacking list order _NET_CLIENT_LIST_STACKING */
+	Client *cnext;	/* client list order _NET_CLIENT_LIST */
+	Client *fnext;	/* focus list order */
+	Client *anext;	/* select list order */
 	Window win;
 	Window icon;
 	Window title;
@@ -1378,6 +1378,7 @@ typedef struct {
 	Bool hidebastards;
 	Bool strutsactive;
 	Bool autoroll;
+	Bool showdesk;
 	Time strutsdelay;
 	int focus;
 	int snap;
@@ -1414,7 +1415,6 @@ struct AScreen {
 	Client *clist;			/* client list in creation order */
 	Client *flist;			/* client list in last focus order */
 	Client *alist;			/* client list in last active order */
-	Bool showing_desktop;
 	int screen;
 	int ntags;
 	struct {

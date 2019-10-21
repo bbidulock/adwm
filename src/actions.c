@@ -975,11 +975,11 @@ s_setshowing(XEvent *e, Key *k, AScreen *s)
 
 	switch (k->set) {
 	case SetFlagSetting:
-		if (s->showing_desktop)
+		if (s->options.showdesk)
 			return;
 		break;
 	case UnsetFlagSetting:
-		if (!s->showing_desktop)
+		if (!s->options.showdesk)
 			return;
 		break;
 	default:

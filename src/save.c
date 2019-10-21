@@ -182,6 +182,10 @@ save(Bool permanent)
 		snprintf(line, sizeof(line), "Adwm*autoroll:\t\t%d\n", options.autoroll);
 		XrmPutLineResource(&srdb, line);
 	}
+	if (options.showdesk) {
+		snprintf(line, sizeof(line), "Adwm*showdesk:\t\t%d\n", options.showdesk);
+		XrmPutLineResource(&srdb, line);
+	}
 	if (options.strutsdelay != 500) {
 		snprintf(line, sizeof(line), "Adwm*strutsdelay:\t\t%lu\n", options.strutsdelay);
 		XrmPutLineResource(&srdb, line);
@@ -296,6 +300,10 @@ save(Bool permanent)
 			snprintf(line, sizeof(line), "Adwm.screen%u.autoroll:\t\t%d\n", scr->screen, scr->options.autoroll);
 			XrmPutLineResource(&srdb, line);
 		}
+		if (scr->options.showdesk != options.showdesk) {
+			snprintf(line, sizeof(line), "Adwm.screen%u.showdesk:\t\t%d\n", scr->screen, scr->options.showdesk);
+			XrmPutLineResource(&srdb, line);
+		}
 		if (scr->options.strutsdelay != options.strutsdelay) {
 			snprintf(line, sizeof(line), "Adwm.screen%u.strutsdelay:\t\t%lu\n", scr->screen, scr->options.strutsdelay);
 			XrmPutLineResource(&srdb, line);
@@ -407,5 +415,21 @@ save(Bool permanent)
 
 	scr = save_screen;
 	return (srdb);
+}
+
+int
+save_state(FILE *f)
+{
+	AScreen *save_screen = scr;
+	Client *c;
+	int index;
+
+	/* mark an index on each client */
+	for (scr = screens; scr < screens + nscr; scr++)
+		for (index = 0, c = scr->clients; c; c = c->next, index++)
+			c->breadcrumb = index;
+
+	scr = save_screen;
+	return (0);
 }
 

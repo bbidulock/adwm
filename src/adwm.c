@@ -1866,7 +1866,7 @@ togglehidden(Client *c)
 void
 toggleshowing()
 {
-	if ((scr->showing_desktop = scr->showing_desktop ? False : True))
+	if ((scr->options.showdesk = scr->options.showdesk ? False : True))
 		hideall(NULL);
 	else
 		showall(NULL);

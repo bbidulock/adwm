@@ -1213,7 +1213,7 @@ ewmh_process_net_showing_desktop()
 		Bool show = card[0];
 
 		XFree(card);
-		if (!show != !scr->showing_desktop)
+		if (!show != !scr->options.showdesk)
 			toggleshowing();
 	}
 }
@@ -1221,7 +1221,7 @@ ewmh_process_net_showing_desktop()
 void
 ewmh_update_net_showing_desktop()
 {
-	long data = scr->showing_desktop ? 1 : 0;
+	long data = scr->options.showdesk ? 1 : 0;
 
 	XPRINTF("%s\n", "Updating _NET_SHOWING_DESKTOP");
 	XChangeProperty(dpy, scr->root, _XA_NET_SHOWING_DESKTOP, XA_CARDINAL, 32,
@@ -3448,7 +3448,7 @@ clientmessage(XEvent *e)
 			if (0 <= tag && tag < scr->ntags)
 				view(selview(), tag);
 		} else if (message_type == _XA_NET_SHOWING_DESKTOP) {
-			if (!ev->data.l[0] != !scr->showing_desktop)
+			if (!ev->data.l[0] != !scr->options.showdesk)
 				toggleshowing();
 		} else if (message_type == _XA_NET_RELOAD) {
 			reload();

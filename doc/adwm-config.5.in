@@ -502,6 +502,23 @@ automatically unshaded on being selected.
 .Pp
 Default:
 .Li Adwm* Ns Cm autoroll Ns Li : Ar 1
+.It Li [ Ns Li { Ns Cm session Ns Li | Ns Cm screen<s> Ns Li } Ns Li . Ns Li ] Ns Cm showdesk Ar <bool>
+Specifies whether the desktop is showing (i.e. all managed windows other
+than docks and panels are hidden).
+The
+.Ar <bool>
+value can be zero (0), indicating false, or non-zero (1),
+indicating true.
+When true, windows will be hidden to expose the desktop; false, not.
+The default is zero (0): that is, windows will not be hidden to expose
+the desktop.
+.Pp
+Default:
+.Li Adwm* Ns Cm showdesk Ns Li : Ar 0
+.Pp
+.Sy Note:
+This directive is primarily for saving the state for session management
+and is not normally set in a normal configuration file.
 .It Li [ Ns Li { Ns Cm session Ns Li | Ns Cm screen<s> Ns Li } Ns Li . Ns Li ] Ns Cm sloppy Ar <model>
 The default value is zero (0): that is, click to focus.
 The argument,
@@ -687,6 +704,142 @@ The default number is three (3).  Only values between 1 and 10
 .Pp
 Default:
 .Li Adwm* Ns Cm ncolumns Ns Li : Ar 3
+.It Li [ Ns Li { Ns Cm session Ns Li | Ns Cm screen<s> Ns Li [ Ns Li . Ns Cm view<n> Ns Li ] Ns Li } Ns Li . Ns Li ] Ns Cm major Ar <orientation>
+Specifies the major layout orientation for master/slave and grid tiled
+layouts.
+The argument,
+.Ar <orientation> ,
+is an integer value that can be one of the following:
+.Pp
+.Bl -tag -width ".Ar OrientBottom(3)" -compact -offset indent
+.It Ar "OrientLeft(0)"
+master on left or grid columns left to right.
+.It Ar "OrientTop(1)"
+master on top or grid rows top to bottom.
+.It Ar "OrientRight(2)"
+master on right or grid columns right to left.
+.It Ar "OrientBottom(3)"
+master on bottom or grid rows bottom to top.
+.El
+.Pp
+This value is used to override the default for a given layout.  The
+current defaults for master/slave and grid layouts are:
+.Pp
+.Bl -tag -width ".Cm 'm' Ar OrientBottom(3)" -compact -offset indent
+.It Cm 't' Ar OrientLeft(0)
+tiled master on left
+.It Cm 'b' Ar OrientBottom(3)
+tiled master on bottom
+.It Cm 'u' Ar OrientTop(1)
+tiled master on top
+.It Cm 'l' Ar OrientRight(2)
+tiled master on right
+.It Cm 'g' Ar OrientLeft(0)
+grid columns starting at left
+.El
+.Pp
+.Sy Note:
+This directive is primarily for saving the state of rotated views for
+session management and not normally used in configuration files.  It has
+some minor use in configuration files to specify rotated grid layouts.
+Also, it makes little sense to set this directive on a session or screen
+basis: it only makes sense on a screen and view basis.
+.It Li [ Ns Li { Ns Cm session Ns Li | Ns Cm screen<s> Ns Li [ Ns Li . Ns Cm view<n> Ns Li ] Ns Li } Ns Li . Ns Li ] Ns Cm minor Ar <orientation>
+Specifies the minor layout orientation for master/slave and grid tiled
+layouts.
+The argument,
+.Ar <orientation> ,
+is an integer value that can be one of the following:
+.Pp
+.Bl -tag -width ".Ar OrientBottom(3)" -compact -offset indent
+.It Ar "OrientLeft(0)"
+masters/slaves or grid rows filled left to right.
+.It Ar "OrientTop(1)"
+masters/slaves or grid columns filled top to bottom.
+.It Ar "OrientRight(2)"
+masters/slaves or grid rows filled right to left.
+.It Ar "OrientBottom(3)"
+masters/slaves or grid columns filled bottom to top.
+.El
+.Pp
+This value is used to override the default for a given layout.  The
+current defaults for master/slave and grid layouts are:
+.Pp
+.Bl -tag -width ".Cm 'm' Ar OrientBottom(3)" -compact -offset indent
+.It Cm 't' Ar OrientBottom(3)
+tiled master on left (masters/slaves filled bottom to top)
+.It Cm 'b' Ar OrientLeft(0)
+tiled master on bottom (masters/slaves filled left to right)
+.It Cm 'u' Ar OrientRight(2)
+tiled master on top (masters/slaves filled right to left)
+.It Cm 'l' Ar OrientTop(1)
+tiled master on right (masters/slaves filled top to bottom)
+.It Cm 'g' Ar OrientTop(1)
+grid columns starting at left (columns filled top to bottom)
+.El
+.Pp
+.Sy Note:
+This directive is primarily for saving the state of rotated views for
+session management and not normally used in configuration files.  It has
+some minor use in configuration files to specify rotated grid layouts.
+Also, it makes little sense to set this directive on a session or screen
+basis: it only makes sense on a screen and view basis.
+.It Li [ Ns Li { Ns Cm session Ns Li | Ns Cm screen<s> Ns Li [ Ns Li . Ns Cm view<n> Ns Li ] Ns Li } Ns Li . Ns Li ] Ns Cm placement Ar <placement>
+Specifies the window placement strategy used for placing floating
+windows in all layouts.
+The argument
+.Ar <placement> ,
+is an integer value that can be one of the following:
+.Pp
+.Bl -tag -width ".Ar UnderMousePlacement(3)" -compact -offset indent
+.It Ar "ColSmartPlacement(0)"
+column based smart placement strategy.
+.It Ar "RowSmartPlacement(1)"
+row based smart placement strategy.
+.It Ar "MinOverlapPlacement(2)"
+minimum window overlap placement strategy.
+.It Ar "UnderMousePlacement(3)"
+mouse based placement strategy.
+.It Ar "CascadePlacement(4)"
+cascade placement strategy.
+.It Ar "RandomPlacement(5)"
+random placement strategy.
+.El
+.Pp
+The value is used to override the default for a given layout.  Currently
+all layouts default to
+.Ar ColSmartPlacement(0) .
+This directive can be used to override placement strategy on a session,
+screen or view basis.
+.Pp
+With a column based smart placement strategy,
+.Ar ColSmartPlacement(0) ,
+windows will be placed non-overlapping in columns starting left to
+right, filled top to bottom and then cascade back to top left.
+.Pp
+With a row based smart placement strategy,
+.Ar RowSmartPlacement(1) ,
+windows will be placed non-overlapping in rows starting top to bottom,
+filled left to right and then cascade back to top left.
+.Pp
+With a minimum window overlap placement strategy,
+.Ar MinOverlapPlacement(2) ,
+windows will be placed so that they overlap a little as possible with
+existing windows.
+.Pp
+With a mouse based placement strategy,
+.Ar UnderMousePlacement(3) ,
+windows will be placed under the mouse.
+.Pp
+With a cascade placement strategy,
+.Ar CascadePlacement(4) ,
+windows will be placed diagonally top-left to bottom-right with top-left
+window origins shifted down and right by the height of the title bar.
+.Pp
+With a random placement strategy,
+.Ar RandomPlacement(5) ,
+windows will be placed at random, but so that they fit completely within
+the desktop area, if possible.
 .El
 .Pp
 Example:
@@ -696,6 +849,7 @@ Example:
 .Dl Adwm* Ns Cm mhfact Ns Li : Ar 1.0
 .Dl Adwm* Ns Cm nmaster Ns Li : Ar 1
 .Dl Adwm* Ns Cm ncolumns Ns Li : Ar 3
+.Dl Adwm* Ns Cm placement Ns Li : Ar 4
 .Ss TAG DIRECTIVES
 Tag directives affect the number of views (desktops) presented
 by the window manager and names and layouts associated with
@@ -743,9 +897,9 @@ stacking window arrangement;
 .It Cm 't'
 tile arrangement with master on left;
 .It Cm 'b'
-tiled arrangement with mast on bottom;
+tiled arrangement with master on bottom;
 .It Cm 'u'
-tiled arrangement with mast on top;
+tiled arrangement with master on top;
 .It Cm 'l'
 tiled arrangement with master on right;
 .It Cm 'm'
@@ -780,9 +934,9 @@ stacking window arrangement;
 .It Cm 't'
 tile arrangement with master on left;
 .It Cm 'b'
-tiled arrangement with mast on bottom;
+tiled arrangement with master on bottom;
 .It Cm 'u'
-tiled arrangement with mast on top;
+tiled arrangement with master on top;
 .It Cm 'l'
 tiled arrangement with master on right;
 .It Cm 'm'
@@ -796,6 +950,18 @@ grid tiled arrangement with columns.
 Default:
 .Dl Adwm* Ns Cm tags.layout1 Ns Li : Ar m
 .Dl Adwm* Ns Cm tags.layout3 Ns Li : Ar b
+.Pp
+.Sy Note:
+This directive was poorly named: it should have been named
+.Cm view<n>.layout
+instead of
+.Cm tags.layout<n> .
+See also the
+.Cm view<n>.major ,
+.Cm view<n>.minor
+and
+.Cm view<n>.placement
+view directives, above.
 .El
 .Pp
 Example:

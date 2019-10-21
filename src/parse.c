@@ -97,6 +97,20 @@ static const struct {
 	/* *INDENT-ON* */
 };
 
+static const struct {
+	const char *prefix;
+	WindowPlacement plc;
+} plc_prefix[] = {
+	/* *INDENT-OFF* */
+	{ "col",	ColSmartPlacement   },
+	{ "row",	RowSmartPlacement   },
+	{ "min",	MinOverlapPlacement },
+	{ "und",	UnderMousePlacement },
+	{ "cas",	CascadePlacement    },
+	{ "rnd",	RandomPlacement     }
+	/* *INDENT-ON* */
+};
+
 static KeyItem KeyItemsByState[] = {
 	/* *INDENT-OFF* */
 	{ "floating",		k_setfloating	 },
@@ -742,6 +756,24 @@ initkeys(Bool reload)
 				key.cyc = True;
 				parsekeys(res, &key);
 			}
+		}
+	}
+	/* placement setting */
+	for (i = 0; i < LENGTH(plc_prefix); i++) {
+		for (l = 0; l < LENGTH(set_suffix); l++) {
+			Key key = { 0, };
+
+			snprintf(t, sizeof(t), "%splacement%s",
+					plc_prefix[i].prefix,
+					set_suffix[l].suffix);
+			XPRINTF("Check for key item '%s'\n", t);
+			if (!(res = getresource(t, NULL)))
+				continue;
+			key.func = k_setplacement;
+			key.arg = NULL;
+			key.plc = plc_prefix[i].plc;
+			key.any = set_suffix[l].any;
+			parsekeys(res, &key);
 		}
 	}
 	/* layout setting */

@@ -310,6 +310,14 @@ Adwm*dockprev:		ACS + Tab
 Adwm*swapnext:		WS + j
 Adwm*swapprev:		WS + k
 
+! placement		- window placement of view
+Adwm*colplacement:	WA + s
+Adwm*rowplacement:	WA + r
+Adwm*minplacement:	WA + m
+Adwm*undplacement:	WA + u
+Adwm*casplacement:	WA + c
+Adwm*rndplacement:	WA + x
+
 ! layout		- layout of monitor
 Adwm*setlayoutm:	A + m
 Adwm*setlayoutf:	A + f, AS + F4

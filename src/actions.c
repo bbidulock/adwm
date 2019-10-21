@@ -1091,6 +1091,18 @@ k_setdectiled(XEvent *e, Key *k)
 }
 
 static void
+v_setplacement(XEvent *e, Key *k, View *v)
+{
+	v->placement = k->plc;
+}
+
+void
+k_setplacement(XEvent *e, Key *k)
+{
+	return k_setlaygeneric(e, k, &v_setplacement);
+}
+
+static void
 c_setsticky(XEvent *e, Key *k, Client *c)
 {
 	switch (k->set) {

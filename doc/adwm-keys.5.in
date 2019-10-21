@@ -1067,7 +1067,7 @@ Defaults:
 .Dl Adwm* Ns Cm swapprev Ns Li : Ar "WS + k"
 .Pp
 .It Cm setlayout<c>
-Set the monitor layout for the current monintor to the specified layout,
+Set the monitor layout for the current monitor to the specified layout,
 .Cm <c> ,
 where
 .Cm <c>
@@ -1106,6 +1106,55 @@ Defaults:
 .Dl Adwm* Ns Cm setlayoutl Ns : Ar "A + t"
 .Dl Adwm* Ns Cm setlayoutu Ns : Ar "A + u"
 .Dl Adwm* Ns Cm setlayoutg Ns : Ar "A + g"
+.Pp
+.It Cm <strategy>placement[<suffix>]
+Set the window placement strategy,
+.Cm <strategy> ,
+of corresponding layouts, where
+.Cm <strategy>
+is one of the following:
+.Pp
+.Bl -tag -width ".Cm row" -compact
+.It Cm col
+column based smart placement.
+.It Cm row
+row based smart placement.
+.It Cm min
+minimum overlap placement.
+.It Cm und
+under the mouse placement.
+.It Cm cas
+cascading placement.
+.It Cm rnd
+random placement.
+.El
+.Pp
+The optional
+.Cm <suffix>
+indicates which views to affect and is one of the following
+(defaulting to
+.Cm sel ):
+.Pp
+.Bl -tag -width ".Cm every" -compact
+.It Cm Dq
+The current (focused) view.
+.It Cm ptr
+The view under the pointer.
+.It Cm all
+The view on current (selected) monitor.
+.It Cm any
+All views on any monitor.
+.It Cm every
+All views.
+.El
+.Pp
+Defaults:
+.Dl Adwm* Ns Cm colplacement Ns Li : Ar "WA + s"
+.Dl Adwm* Ns Cm rowplacement Ns Li : Ar "WA + r"
+.Dl Adwm* Ns Cm minplacement Ns Li : Ar "WA + m"
+.Dl Adwm* Ns Cm undplacement Ns Li : Ar "WA + u"
+.Dl Adwm* Ns Cm casplacement Ns Li : Ar "WA + c"
+.Dl Adwm* Ns Cm rndplacement Ns Li : Ar "WA + x"
 .Pp
 .It Cm layout Ns Li { Ns Cm next Ns Li | Ns Cm prev Ns Li }
 Cycle the current monitor layout to the next or previous available

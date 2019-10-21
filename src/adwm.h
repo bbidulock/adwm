@@ -1350,6 +1350,7 @@ struct Key {
 	ActionCount act;
 	FlagSetting set;
 	WhichClient any;
+	WindowPlacement plc;
 	IconsIncluded ico;
 	int tag;
 	CycleList *cycle, *where;

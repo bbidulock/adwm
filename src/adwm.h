@@ -1054,25 +1054,25 @@ struct Class {
 };
 
 struct Client {
-	XWMHints wmh;
+	XWMHints wmh;			/* initial state */
 	XClassHint ch;
 	XSizeHints sh;
 	char *name;
 	char *icon_name;
 	int monitor;			/* initial monitor */
-	Extents e;
+	Extents e;			/* copy of _NET_FRAME_EXTENTS */
 	Geometry s, u;			/* static and initial */
 	ClientGeometry c, r;		/* current, restore */
 //	int basew, baseh, incw, inch, maxw, maxh, minw, minh;
 //	int minax, maxax, minay, maxay, gravity;
-	int ignoreunmap;
+//	int ignoreunmap;
 //	long flags;
-	int wintype;
-	int winstate;
-	int breadcrumb;
-	Bool wasfloating;
-	unsigned long long tags;
-	int nonmodal;
+	int wintype;			/* mask of _NET_WM_WINDOW_TYPE */
+	int winstate;			/* copy of WM_STATE */
+	int breadcrumb;			/* holds state during layout */
+	Bool wasfloating;		/* holds state during layout */
+	unsigned long long tags;	/* on which views this client appears */
+	int nonmodal;			/* holds state for modality */
 	SkipUnion skip;
 	IsUnion is;
 	HasUnion has;
@@ -1210,6 +1210,7 @@ typedef enum {
 	SkipUnion skip; \
 	IsUnion is; \
 	HasUnion has; \
+	HasUnion needs; \
 	WithUnion with; \
 	CanUnion can
 

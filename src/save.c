@@ -234,6 +234,10 @@ save(Bool permanent)
 		snprintf(line, sizeof(line), "Adwm*deflayout:\t\t%c\n", options.deflayout);
 		XrmPutLineResource(&srdb, line);
 	}
+	if (options.placement != ColSmartPlacement) {
+		snprintf(line, sizeof(line), "Adwm*placement:\t\t%c\n", options.placement);
+		XrmPutLineResource(&srdb, line);
+	}
 	if (options.ntags != 5) {
 		snprintf(line, sizeof(line), "Adwm*tags.number:\t\t%d\n", options.ntags);
 		XrmPutLineResource(&srdb, line);
@@ -352,6 +356,10 @@ save(Bool permanent)
 			snprintf(line, sizeof(line), "Adwm.screen%u.deflayout:\t\t%c\n", scr->screen, scr->options.deflayout);
 			XrmPutLineResource(&srdb, line);
 		}
+		if (scr->options.placement != options.placement) {
+			snprintf(line, sizeof(line), "Adwm.screen%u.placement:\t\t%c\n", scr->screen, scr->options.placement);
+			XrmPutLineResource(&srdb, line);
+		}
 
 		/* TAG DIRECTIVES */
 		if (options.ntags) {
@@ -372,8 +380,21 @@ save(Bool permanent)
 			View *v = scr->views + i;
 			Layout *l = v->layout;
 
+			/* this one was poorly named */
 			if (l->symbol != scr->options.deflayout) {
 				snprintf(line, sizeof(line), "Adwm.screen%u.tags.layout%u:\t\t%c\n", scr->screen, i, l->symbol);
+				XrmPutLineResource(&srdb, line);
+			}
+			if (v->major != l->major) {
+				snprintf(line, sizeof(line), "Adwm.screen%u.view%u.major:\t\t%d\n", scr->screen, i, v->major);
+				XrmPutLineResource(&srdb, line);
+			}
+			if (v->minor != l->minor) {
+				snprintf(line, sizeof(line), "Adwm.screen%u.view%u.minor:\t\t%d\n", scr->screen, i, v->minor);
+				XrmPutLineResource(&srdb, line);
+			}
+			if (v->placement != scr->options.placement) {
+				snprintf(line, sizeof(line), "Adwm.screen%u.view%u.placement:\t\t%d\n", scr->screen, i, v->placement);
 				XrmPutLineResource(&srdb, line);
 			}
 			if ((v->barpos == StrutsOn) != !!scr->options.strutsactive) {

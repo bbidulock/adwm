@@ -3128,16 +3128,16 @@ Arrangement arrangement_MONO = {
 
 Layout layouts[] = {
 	/* *INDENT-OFF* */
-	/* arrangement		symbol	features				major		minor		placement		*/
-	{  &arrangement_FLOAT,	'i',	OVERLAP,				0,		0,		ColSmartPlacement	},
-	{  &arrangement_TILE,	't',	MWFACT | NMASTER | ZOOM | ROTL | MMOVE,	OrientLeft,	OrientBottom,	ColSmartPlacement	},
-	{  &arrangement_TILE,	'b',	MWFACT | NMASTER | ZOOM | ROTL | MMOVE,	OrientBottom,	OrientLeft,	ColSmartPlacement	},
-	{  &arrangement_TILE,	'u',	MWFACT | NMASTER | ZOOM | ROTL | MMOVE,	OrientTop,	OrientRight,	ColSmartPlacement	},
-	{  &arrangement_TILE,	'l',	MWFACT | NMASTER | ZOOM | ROTL | MMOVE,	OrientRight,	OrientTop,	ColSmartPlacement	},
-	{  &arrangement_MONO,	'm',	0,					0,		0,		ColSmartPlacement	},
-	{  &arrangement_FLOAT,	'f',	OVERLAP,				0,		0,		ColSmartPlacement	},
-	{  &arrangement_GRID,	'g',	NCOLUMNS | ROTL | MMOVE,		OrientLeft,	OrientTop,	ColSmartPlacement	},
-	{  NULL,		'\0',	0,					0,		0,		0			}
+	/* arrangement		symbol	features				major		minor		*/
+	{  &arrangement_FLOAT,	'i',	OVERLAP,				0,		0,		},
+	{  &arrangement_TILE,	't',	MWFACT | NMASTER | ZOOM | ROTL | MMOVE,	OrientLeft,	OrientBottom,	},
+	{  &arrangement_TILE,	'b',	MWFACT | NMASTER | ZOOM | ROTL | MMOVE,	OrientBottom,	OrientLeft,	},
+	{  &arrangement_TILE,	'u',	MWFACT | NMASTER | ZOOM | ROTL | MMOVE,	OrientTop,	OrientRight,	},
+	{  &arrangement_TILE,	'l',	MWFACT | NMASTER | ZOOM | ROTL | MMOVE,	OrientRight,	OrientTop,	},
+	{  &arrangement_MONO,	'm',	0,					0,		0,		},
+	{  &arrangement_FLOAT,	'f',	OVERLAP,				0,		0,		},
+	{  &arrangement_GRID,	'g',	NCOLUMNS | ROTL | MMOVE,		OrientLeft,	OrientTop,	},
+	{  NULL,		'\0',	0,					0,		0,		}
 	/* *INDENT-ON* */
 };
 
@@ -3157,7 +3157,6 @@ setlayout(const char *arg)
 	v->layout = l;
 	v->major = l->major;
 	v->minor = l->minor;
-	v->placement = l->placement;
 	if (l->arrange && l->arrange->initlayout)
 		l->arrange->initlayout(v);
 	arrange(v);

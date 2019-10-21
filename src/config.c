@@ -213,9 +213,21 @@ initviews(Bool reload)
 		snprintf(resource, sizeof(resource), "view%u.mhfact", i);
 		v->mhfact = (res = getscreenres(resource, NULL))
 			? atof(res) : scr->options.mhfact;
-		v->major = l->major;
-		v->minor = l->minor;
-		v->placement = l->placement;
+		snprintf(resource, sizeof(resource), "view%u.major", i);
+		v->major = (res = getscreenres(resource, NULL))
+			? atoi(res) : l->major;
+		if (v->major < OrientLeft || v->major > OrientBottom)
+			v->major = l->major;
+		snprintf(resource, sizeof(resource), "view%u.minor", i);
+		v->minor = (res = getscreenres(resource, NULL))
+			? atoi(res) : l->minor;
+		if (v->minor < OrientLeft || v->minor > OrientBottom)
+			v->minor = l->minor;
+		snprintf(resource, sizeof(resource), "view%u.placement", i);
+		v->placement = (res = getscreenres(resource, NULL))
+			? atoi(res) : scr->options.placement;
+		if (v->placement < ColSmartPlacement || v->placement > RandomPlacement)
+			v->placement = scr->options.placement;
 		v->index = i;
 		v->seltags = (1ULL << i);
 		/* probably unnecessary: will be done by
@@ -307,6 +319,11 @@ initscreen(Bool reload)
 		else
 			scr->options.deflayout = 'i';
 	}
+	if ((res = getscreenres("placement", NULL))) {
+		scr->options.placement = atoi(res);
+		if (scr->options.placement < 0 || scr->options.placement > RandomPlacement)
+			scr->options.placement = options.placement;
+	}
 }
 
 void
@@ -353,6 +370,9 @@ initconfig(Bool reload)
 		options.deflayout = res[0];
 	else
 		options.deflayout = 'i';
+	options.placement = atoi(getsessionres("placement", "0"));
+	if (options.placement < 0 || options.placement > RandomPlacement)
+		options.placement = 0;
 	options.ntags = strtoul(getsessionres("tags.number", "5"), NULL, 0);
 	if (options.ntags < 1 || options.ntags > MAXTAGS)
 		options.ntags = 5;

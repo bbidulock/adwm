@@ -1131,7 +1131,7 @@ initlayouts_ADWM(Bool reload)
 		v->mhfact = scr->options.mhfact;
 		v->major = l->major;
 		v->minor = l->minor;
-		v->placement = l->placement;
+		v->placement = scr->options.placement;
 		v->index = i;
 		v->seltags = (1ULL << i);
 		/* probably unnecessary: will be done by

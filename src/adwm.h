@@ -900,7 +900,6 @@ typedef struct {
 	int features;
 	LayoutOrientation major;	/* overall orientation */
 	LayoutOrientation minor;	/* master area orientation */
-	WindowPlacement placement;	/* float placement policy */
 } Layout;
 
 typedef struct {
@@ -1395,6 +1394,7 @@ typedef struct {
 	int nmaster;
 	int ncolumns;
 	char deflayout;
+	WindowPlacement placement;
 	int ntags;
 	/* the following should probably be in theme file */
 	const char *prependdirs; /* directories to prepend to icon search paths */

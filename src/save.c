@@ -62,6 +62,16 @@ save(Bool permanent)
 
 	/* CONFIGURATION DIRECTIVES */
 	if (permanent) {
+
+		/* The permanent form is used for X11R6 session management and saves the
+		   complete path to ancilliary configuration files, themes, styles, keys
+		   and dock.  Once we provide ability to change key definitions while
+		   running, we should likely store the keys and remove the reference to
+		   the keys file.  Likely we should already be saving the dock
+		   configuration in the main file and remove the reference to the dock
+		   file.  Themes and style, however, are normally loaded on the system and 
+		   should only be referenced. */
+
 		if ((str = config.themefile) && strcmp(str, "themerc")) {
 			snprintf(line, sizeof(line), "Adwm*themeFile:\t\t%s\n", str);
 			XrmPutLineResource(&srdb, line);
@@ -82,11 +92,21 @@ save(Bool permanent)
 			snprintf(line, sizeof(line), "Adwm*keysFile:\t\t%s\n", str);
 			XrmPutLineResource(&srdb, line);
 		}
+
+		/* should probably save the dock definitions in the main file */
+
 		if ((str = config.dockfile) && strcmp(str, "dockrc")) {
 			snprintf(line, sizeof(line), "Adwm*dockFile:\t\t%s\n", str);
 			XrmPutLineResource(&srdb, line);
 		}
 	} else {
+
+		/* The intention of the non-permanent form is to simply save the main
+		   adwmrc file and just link it relatively to the ancilliary files that
+		   it references. This is to simply save the configuration so that each
+		   time adwm boots it uses the saved configuration.  This is not used by
+		   X11R6 session management. */
+
 		if ((str = getresource("themeFile", NULL)) && strcmp(str, "themerc")) {
 			snprintf(line, sizeof(line), "Adwm*themeFile:\t\t%s\n", str);
 			XrmPutLineResource(&srdb, line);
@@ -384,7 +404,6 @@ save(Bool permanent)
 			XrmPutLineResource(&srdb, line);
 		}
 	}
-
 
 	scr = save_screen;
 	return (srdb);

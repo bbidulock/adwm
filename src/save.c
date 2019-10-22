@@ -438,23 +438,57 @@ save(Bool permanent)
 		}
 	}
 
-	scr = save_screen;
-	return (srdb);
-}
+	if (!permanent)
+		goto done;
 
-int
-save_state(FILE *f)
-{
-	AScreen *save_screen = scr;
+	/* CLIENT DIRECTIVES */
 	Client *c;
-	int index;
 
 	/* mark an index on each client */
-	for (scr = screens; scr < screens + nscr; scr++)
-		for (index = 0, c = scr->clients; c; c = c->next, index++)
-			c->breadcrumb = index;
+	for (scr = screens; scr < screens + nscr; scr++) {
+		unsigned n, len;
 
+		for (n = 0, c = scr->clist; c; c = c->cnext, n++)
+			c->index = n;
+		snprintf(line, sizeof(line), "Adwm.screen%u.clients:\t\t%u\n", scr->screen, n);
+
+		/* creation order list */
+		len = snprintf(line, sizeof(line), "Adwm.screen%u.clist:\t\t", scr->screen);
+		for (c = scr->clist; c; c = c->cnext)
+			len += snprintf(line + len, sizeof(line) - len, "%u%s", c->index, c->cnext ? ", " : "");
+		snprintf(line + len, sizeof(line) - len, "\n");
+
+		/* tiling order list */
+		len = snprintf(line, sizeof(line), "Adwm.screen%u.tiles:\t\t", scr->screen);
+		for (c = scr->clients; c; c = c->next)
+			len += snprintf(line + len, sizeof(line) - len, "%u%s", c->index, c->snext ? ", " : "");
+		snprintf(line + len, sizeof(line) - len, "\n");
+
+		/* stacking order list */
+		len = snprintf(line, sizeof(line), "Adwm.screen%u.stack:\t\t", scr->screen);
+		for (c = scr->stack; c; c = c->snext)
+			len += snprintf(line + len, sizeof(line) - len, "%u%s", c->index, c->snext ? ", " : "");
+		snprintf(line + len, sizeof(line) - len, "\n");
+
+		/* focus order list */
+		len = snprintf(line, sizeof(line), "Adwm.screen%u.flist:\t\t", scr->screen);
+		for (c = scr->flist; c; c = c->fnext)
+			len += snprintf(line + len, sizeof(line) - len, "%u%s", c->index, c->fnext ? ", " : "");
+		snprintf(line + len, sizeof(line) - len, "\n");
+
+		/* active order list */
+		len = snprintf(line, sizeof(line), "Adwm.screen%u.alist:\t\t", scr->screen);
+		for (c = scr->alist; c; c = c->anext)
+			len += snprintf(line + len, sizeof(line) - len, "%u%s", c->index, c->anext ? ", " : "");
+		snprintf(line + len, sizeof(line) - len, "\n");
+
+		/* in creation order */
+		for (c = scr->clist; c; c = c->cnext) {
+		}
+	}
+
+done:
 	scr = save_screen;
-	return (0);
+	return (srdb);
 }
 

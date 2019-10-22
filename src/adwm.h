@@ -1068,6 +1068,7 @@ struct Client {
 //	long flags;
 	int wintype;			/* mask of _NET_WM_WINDOW_TYPE */
 	int winstate;			/* copy of WM_STATE */
+	int index;			/* holds index during session management */
 	int breadcrumb;			/* holds state during layout */
 	Bool wasfloating;		/* holds state during layout */
 	unsigned long long tags;	/* on which views this client appears */

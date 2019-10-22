@@ -344,7 +344,7 @@ applyrules(Client *c)
 			}
 		}
 	if (!matched && cm)
-		c->tags = cm->curview->seltags;
+		c->tags = (1ULL << cm->curview->index);
 }
 
 static void
@@ -4573,7 +4573,7 @@ updatemonitors(XEvent *e, int n, Bool size_update, Bool full_update)
 					continue;
 				if (!(m = findmonitor(c)))
 					m = nearmonitor();
-				c->tags = m->curview->seltags;
+				c->tags = (1ULL << m->curview->index);
 				if (c->is.managed)
 					ewmh_update_net_window_desktop(c);
 			}

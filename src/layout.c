@@ -3454,7 +3454,7 @@ reparentclient(Client *c, AScreen *new_scr, int x, int y)
 		XSaveContext(dpy, c->win, context[ScreenContext], (XPointer) scr);
 		if (!(v = getview(x, y)))
 			v = nearview();
-		c->tags = v->seltags;
+		c->tags = (1ULL << v->index);
 		addclient(c, True, True, True);
 		XReparentWindow(dpy, c->frame, scr->root, x, y);
 		XMoveWindow(dpy, c->frame, x, y);
@@ -4218,7 +4218,7 @@ mousemove_from(Client *c, int from, XEvent *e, Bool toggle)
 			if (event_scr != scr)
 				reparentclient(c, event_scr, n.x, n.y);
 			if (nv && v != nv) {
-				c->tags = nv->seltags;
+				c->tags = (1ULL << nv->index);
 				ewmh_update_net_window_desktop(c);
 				drawclient(c);
 				ewmh_update_net_window_extents(c);
@@ -5921,7 +5921,7 @@ addclient(Client *c, Bool choseme, Bool focusme, Bool raiseme)
 		/* put it on the monitor startup notification requested if not already
 		   placed with its group */
 		if (c->monitor && !clientview(c))
-			c->tags = scr->monitors[c->monitor - 1].curview->seltags;
+			c->tags = (1ULL << scr->monitors[c->monitor - 1].curview->index);
 		place(c, ColSmartPlacement);
 	}
 
@@ -5938,14 +5938,13 @@ addclient(Client *c, Bool choseme, Bool focusme, Bool raiseme)
 		int mx, my;
 		View *cv;
 
-		/* wnck task bars figure window is on monitor containing center of window
-		 */
+		/* wnck task bars figure window is on monitor containing center of window */
 		mx = c->s.x + c->s.w / 2 + c->s.b;
 		my = c->s.y + c->s.h / 2 + c->s.b;
 
 		if (!(cv = getview(mx, my)))
 			cv = closestview(mx, my);
-		c->tags = cv->seltags;
+		c->tags = (1ULL << cv->index);
 	}
 
 	attach(c, scr->options.attachaside);

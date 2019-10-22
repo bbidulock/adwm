@@ -362,21 +362,21 @@ save(Bool permanent)
 		}
 
 		/* TAG DIRECTIVES */
-		if (options.ntags) {
-			snprintf(line, sizeof(line), "Adwm*tags.number:\t\t%d\n", options.ntags);
+		if (scr->ntags != options.ntags) {
+			snprintf(line, sizeof(line), "Adwm.screen%u.tags.number:\t\t%d\n", scr->screen, scr->ntags);
 			XrmPutLineResource(&srdb, line);
 		}
-		for (i = 0; i < MAXTAGS; i++) {
+		for (i = 0; i < scr->ntags; i++) {
 			Tag *t = scr->tags + i;
 
 			if (t->name) {
-				snprintf(line, sizeof(line), "Adwm*tags.name%u:\t\t%s\n", i, t->name);
+				snprintf(line, sizeof(line), "Adwm.screen%u.tags.name%u:\t\t%s\n", i, scr->screen, t->name);
 				XrmPutLineResource(&srdb, line);
 			}
 		}
 
 		/* VIEW DIRECTIVES */
-		for (i = 0; i < MAXTAGS; i++) {
+		for (i = 0; i < scr->ntags; i++) {
 			View *v = scr->views + i;
 			Layout *l = v->layout;
 

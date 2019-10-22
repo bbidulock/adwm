@@ -421,6 +421,10 @@ save(Bool permanent)
 				snprintf(line, sizeof(line), "Adwm.screen%u.view%u.mhfact:\t\t%f\n", scr->screen, i, v->mhfact);
 				XrmPutLineResource(&srdb, line);
 			}
+			if (v->seltags != (1ULL << i)) {
+				snprintf(line, sizeof(line), "Adwm.screen%u.view%u.seltags:\t\t0x%llx\n", scr->screen, i, v->seltags);
+				XrmPutLineResource(&srdb, line);
+			}
 		}
 
 	}

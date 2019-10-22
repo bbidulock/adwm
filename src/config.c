@@ -229,7 +229,16 @@ initviews(Bool reload)
 		if (v->placement < ColSmartPlacement || v->placement > RandomPlacement)
 			v->placement = scr->options.placement;
 		v->index = i;
+		/* restore any saved view tags */
 		v->seltags = (1ULL << i);
+		snprintf(resource, sizeof(resource), "view%u.seltags", i);
+		if ((res = getscreenres(resource, NULL))) {
+			unsigned long long tags = 0;
+
+			sscanf(res, "%Lx", &tags);
+			if (tags)
+				v->seltags = tags;
+		}
 		/* probably unnecessary: will be done by
 		   ewmh_process_net_desktop_layout() */
 		if (scr->d.rows && scr->d.cols) {

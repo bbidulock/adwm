@@ -704,7 +704,7 @@ The default number is three (3).  Only values between 1 and 10
 .Pp
 Default:
 .Li Adwm* Ns Cm ncolumns Ns Li : Ar 3
-.It Li [ Ns Li { Ns Cm session Ns Li | Ns Cm screen<s> Ns Li [ Ns Li . Ns Cm view<n> Ns Li ] Ns Li } Ns Li . Ns Li ] Ns Cm major Ar <orientation>
+.It Cm screen<s> Ns Li . Ns Cm view<n> Ns Li . Ns Cm major Ar <orientation>
 Specifies the major layout orientation for master/slave and grid tiled
 layouts.
 The argument,
@@ -742,9 +742,7 @@ grid columns starting at left
 This directive is primarily for saving the state of rotated views for
 session management and not normally used in configuration files.  It has
 some minor use in configuration files to specify rotated grid layouts.
-Also, it makes little sense to set this directive on a session or screen
-basis: it only makes sense on a screen and view basis.
-.It Li [ Ns Li { Ns Cm session Ns Li | Ns Cm screen<s> Ns Li [ Ns Li . Ns Cm view<n> Ns Li ] Ns Li } Ns Li . Ns Li ] Ns Cm minor Ar <orientation>
+.It Cm screen<s> Ns Li . Ns Cm view<n> Ns Li . Ns Cm minor Ar <orientation>
 Specifies the minor layout orientation for master/slave and grid tiled
 layouts.
 The argument,
@@ -782,8 +780,6 @@ grid columns starting at left (columns filled top to bottom)
 This directive is primarily for saving the state of rotated views for
 session management and not normally used in configuration files.  It has
 some minor use in configuration files to specify rotated grid layouts.
-Also, it makes little sense to set this directive on a session or screen
-basis: it only makes sense on a screen and view basis.
 .It Li [ Ns Li { Ns Cm session Ns Li | Ns Cm screen<s> Ns Li [ Ns Li . Ns Cm view<n> Ns Li ] Ns Li } Ns Li . Ns Li ] Ns Cm placement Ar <placement>
 Specifies the window placement strategy used for placing floating
 windows in all layouts.
@@ -840,6 +836,33 @@ With a random placement strategy,
 .Ar RandomPlacement(5) ,
 windows will be placed at random, but so that they fit completely within
 the desktop area, if possible.
+.Pp
+.It Cm screen<s> Ns Li . Ns Cm view<n> Ns Li . Ns Cm seltags Ar <tagmask>
+Specifies the tags for which windows are displayed on the corresponding
+view.
+.Cm <tagmask>
+is a 64-bit hexadecimal number representing the bit-mask of tags
+selected for this view, where tag number zero (0) is the least
+significant bit in the mask; sixty-three (63), the most
+significant bit.  The default value is one (1) shifted left by the view
+number: that is, the mask including only tag number
+.Cm <n> .
+This corresponds to a basic workspace view (although
+.Nm @PACKAGE_NAME@
+is capable of far more complex tagged views).
+.Pp
+Default (example):
+.Dl Adwm* Ns Cm view0.seltags Ns : Ar 0x1
+.Dl Adwm* Ns Cm view1.seltags Ns : Ar 0x2
+.Dl Adwm* Ns Cm view2.seltags Ns : Ar 0x4
+.Dl Adwm* Ns Cm view3.seltags Ns : Ar 0x8
+.Dl Adwm* Ns Cm view4.seltags Ns : Ar 0x10
+.Dl Li ...
+.Dl Adwm* Ns Cm view63.seltags Ns : Ar 0x80000000000000
+.Pp
+.Sy Note:
+This directive is primarily for saving tag selections for views for
+session management and not normally used in configuration files.
 .El
 .Pp
 Example:

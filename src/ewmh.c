@@ -1337,8 +1337,8 @@ islost(Client *c)
 	if (c->is.sticky)
 		return False;
 	if (c->tags & ((1ULL << scr->ntags) - 1))
-		return True;
-	return False;
+		return False;
+	return True;
 }
 
 #define DT_WORKSPACE_HINTS_WSFLAGS	(1<<0)

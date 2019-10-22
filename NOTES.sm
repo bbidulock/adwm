@@ -26,3 +26,5 @@ Notes on session management:
 * [ ] The wm should also proxy X11R5 SM windows (e.g. dockapps mostly) using the WM_SAVE_YOURSELF
       protocol, if available.  This step must be performed in SaveYourself Phase 1 and before
       SaveYourself Phase2 is requested.
+
+// vim: set ft=asciidoc tw=72 nocin nosi fo+=tcqlorn spell:

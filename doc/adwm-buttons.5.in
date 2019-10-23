@@ -1,0 +1,848 @@
+.Dd @MDOCDATE@
+.Dt @PACKAGE_NAME@-BUTTONS \&5 "File Formats"
+.Os @PACKAGE_STRING@
+.Sh NAME
+.Nm @PACKAGE@-buttons
+.Nd advanced dynamic window manager for X: mouse button bindings
+.Sh SYNOPSIS
+.Bl -item -compact
+.It
+.Cm $(dirname <themeFile>) Ns Pa /buttonrc
+.It
+.Cm $(dirname <styleFile>) Ns Pa /buttonrc
+.It
+.Cm ${ADWMPRIVDIR} Ns Pa /buttonrc
+.It
+.Cm ${XDG_RUNTIME_DIR} Ns Pa /@PACKAGE@/buttonrc
+.It
+.Cm ${XDG_CONFIG_HOME} Ns Pa /@PACKAGE@/buttonrc
+.It
+.Cm ${HOME} Ns Pa /.@PACKAGE@/buttonrc
+.It
+.Cm ${XDG_CONFIG_DIRS} Ns Pa /@PACKAGE@/buttonrc
+.It
+.Pa @pkgconfdir@/buttonrc
+.El
+.Sh DESCRIPTION
+.Nm @PACKAGE_NAME@
+is a light-weight, reparenting, dynamic tiling/stacking window
+manager intended on being fully controllable using only the
+keyboard: the objective of all dynamic tiling window managers.
+Nevertheless,
+.Nm @PACKAGE_NAME@
+also supports advanced mouse button actions and is fully operational as
+a stacking window manager.
+Although reasonable defaults are provided, both mouse button press and
+release actions are configurable.
+.Pp
+Mouse button bindings are defined in an X Resource formatted
+configuration file.  Button bindings can either be part of the main
+configuration file, they can be included or referenced from the main
+configuration file: see
+.Cm buttonFile
+directive in
+.Xr @PACKAGE@-config 5 .
+It is typical to place the button bindings in a file named
+.Pa buttonrc
+in the same directory as the main configuration file (e.g. in the
+.Pa "~/.@PACKAGE@/buttonrc"
+file).  See
+.Sx FILES ,
+below.
+.Sh SYNTAX
+.Pp
+The general syntax of button commands, as specified directly in the
+.Nm @PACKAGE_NAME@
+resource file, is as follows:
+.Pp
+.Dl Li "Adwm*" Ns Cm <location>.<condition> Ns Li : Ar <action>
+.Pp
+where the fields are defined as follows:
+.Pp
+.Bl -tag -width "XX"
+.It Cm <location>
+One of the locations (upon which a button is pressed), described under
+.Sx LOCATIONS ,
+below.
+.It Cm <condition>
+One of the conditions (button press or release), described under
+.Sx CONDITIONS ,
+below.
+.It Ar <action>
+One of the actions to perform, described under
+.Sx ACTIONS ,
+below.
+.El
+.Sh LOCATIONS
+Locations for which mouse button bindings can be defined are as follows:
+.Ss ROOT WINDOW
+Root window locations as follows:
+.Pp
+.Bl -tag -width ".Cm button.maximize" -compact -offset indent
+.It Cm root
+The root window.
+.El
+.Pp
+Only general and root actions can be performed at these locations.
+.Pp
+Defaults:
+.Dl Adwm* Ns Cm root.button1.pressed Li : Ar spawn3
+.Dl Adwm* Ns Cm root.button2.pressed Li : Ar spawn2
+.Dl Adwm* Ns Cm root.button3.pressed Li : Ar spawn
+.Dl Adwm* Ns Cm root.button4.pressed Li : Ar nexttag
+.Dl Adwm* Ns Cm root.button5.pressed Li : Ar prevtag
+.Ss CLIENT WINDOW
+Client window locations as follows:
+.Pp
+.Bl -tag -width ".Cm button.maximize" -compact -offset indent
+.It Cm client.title
+The client window title bar (excluding elements).
+.It Cm client.grips
+The client window resize grips.
+.It Cm client.frame
+The client window frame.
+.It Cm client.dock
+The client window dock (for dock applications).
+.It Cm client.window
+Anywhere over the client window.
+.It Cm client.icon
+The client icon.
+.El
+.Pp
+Only general and client actions can be performed at these locations.
+.Pp
+Defaults:
+.Dl Adwm* Ns Cm client.title.button1.pressed Ns Li : Ar move
+.Dl Adwm* Ns Cm client.title.button2.pressed Ns Li : Ar zoom
+.Dl Adwm* Ns Cm client.title.button3.pressed Ns Li : Ar resize
+.Dl Adwm* Ns Cm client.title.button4.pressed Ns Li : Ar unshade
+.Dl Adwm* Ns Cm client.title.button5.pressed Ns Li : Ar shade
+.Pp
+.Dl Adwm* Ns Cm client.grips.button1.pressed Ns Li : Ar resize
+.Pp
+.Dl Adwm* Ns Cm client.frame.button1.pressed Ns Li : Ar resize
+.Dl Adwm* Ns Cm client.frame.button4.pressed Ns Li : Ar unshade
+.Dl Adwm* Ns Cm client.frame.button5.pressed Ns Li : Ar shade
+.Pp
+.Dl Adwm* Ns Cm client.dock.button1.pressed Ns Li : Ar move
+.Pp
+.Dl Adwm* Ns Cm client.window.button1.pressed Ns Li : Ar move
+.Dl Adwm* Ns Cm client.window.button2.pressed Ns Li : Ar zoom
+.Dl Adwm* Ns Cm client.window.button3.pressed Ns Li : Ar resize
+.Dl Adwm* Ns Cm client.window.button4.pressed Ns Li : Ar unshade
+.Dl Adwm* Ns Cm client.window.button5.pressed Ns Li : Ar shade
+.Pp
+.Dl Adwm* Ns Cm client.icon.button1.pressed Ns Li : Ar move
+.Ss TITLE BAR ELEMENTS
+Client window title bar element locations as follows:
+.Pp
+.Bl -tag -width ".Cm button.maximize" -compact -offset indent
+.It Cm button.menu
+The menu button on the title bar.
+.It Cm button.iconify
+The iconify button on the title bar.
+.It Cm button.maximize
+The maximize button on the title bar.
+.It Cm button.close
+The close button on the title bar.
+.It Cm button.shade
+The shade button on the title bar.
+.It Cm button.stick
+The stick button on the title bar.
+.It Cm button.lhalf
+The left half maximus button on the title bar.
+.It Cm button.rhalf
+The right half maximus button on the title bar.
+.It Cm button.fill
+The fill button on the title bar.
+.It Cm button.float
+The float/tile button on the title bar.
+.It Cm button.resize
+The resize button on the title bar.
+.It Cm button.icon
+The icon button on the title bar.
+.It Cm title.tags
+The tags area on the title bar.
+.It Cm title.name
+The name area on the title bar.
+.It Cm title.separator
+The separator area on the title bar.
+.El
+.Pp
+Only general and title bar actions can be performed at these locations.
+.Pp
+Defaults:
+.Dl Adwm* Ns Cm button.menu.button1.release Ns Li : Ar menu
+.Dl Adwm* Ns Cm button.menu.button2.release Ns Li : Ar menu
+.Dl Adwm* Ns Cm button.menu.button3.release Ns Li : Ar menu
+.Pp
+.Dl Adwm* Ns Cm button.iconify.button1.release Ns Li : Ar iconify
+.Dl Adwm* Ns Cm button.iconify.button2.release Ns Li : Ar hide
+.Dl Adwm* Ns Cm button.iconify.button3.release Ns Li : Ar withdraw
+.Pp
+.Dl Adwm* Ns Cm button.maximize.button1.release Ns Li : Ar max
+.Dl Adwm* Ns Cm button.maximize.button2.release Ns Li : Ar maxv
+.Dl Adwm* Ns Cm button.maximize.button3.release Ns Li : Ar maxh
+.Pp
+.Dl Adwm* Ns Cm button.close.button1.release Ns Li : Ar close
+.Dl Adwm* Ns Cm button.close.button2.release Ns Li : Ar kill
+.Dl Adwm* Ns Cm button.close.button3.release Ns Li : Ar xkill
+.Pp
+.Dl Adwm* Ns Cm button.shade.button1.release Ns Li : Ar reshade
+.Dl Adwm* Ns Cm button.shade.button2.release Ns Li : Ar shade
+.Dl Adwm* Ns Cm button.shade.button3.release Ns Li : Ar unshade
+.Pp
+.Dl Adwm* Ns Cm button.stick.button1.release Ns Li : Ar restick
+.Dl Adwm* Ns Cm button.stick.button2.release Ns Li : Ar stick
+.Dl Adwm* Ns Cm button.stick.button3.release Ns Li : Ar unstick
+.Pp
+.Dl Adwm* Ns Cm button.lhalf.button1.release Ns Li : Ar relhalf
+.Dl Adwm* Ns Cm button.lhalf.button2.release Ns Li : Ar lhalf
+.Dl Adwm* Ns Cm button.lhalf.button3.release Ns Li : Ar unlhalf
+.Pp
+.Dl Adwm* Ns Cm button.rhalf.button1.release Ns Li : Ar rerhalf
+.Dl Adwm* Ns Cm button.rhalf.button2.release Ns Li : Ar rhalf
+.Dl Adwm* Ns Cm button.rhalf.button3.release Ns Li : Ar unrhalf
+.Pp
+.Dl Adwm* Ns Cm button.fill.button1.release Ns Li : Ar refill
+.Dl Adwm* Ns Cm button.fill.button2.release Ns Li : Ar fill
+.Dl Adwm* Ns Cm button.fill.button3.release Ns Li : Ar unfill
+.Pp
+.Dl Adwm* Ns Cm button.float.button1.release Ns Li : Ar refloat
+.Dl Adwm* Ns Cm button.float.button2.release Ns Li : Ar float
+.Dl Adwm* Ns Cm button.float.button3.release Ns Li : Ar tile
+.Pp
+.Dl Adwm* Ns Cm button.resize.button1.pressed Ns Li : Ar resize
+.Dl Adwm* Ns Cm button.resize.button2.pressed Ns Li : Ar resize
+.Dl Adwm* Ns Cm button.resize.button3.pressed Ns Li : Ar resize
+.Pp
+.Dl Adwm* Ns Cm button.menu.button1.release Ns Li : Ar menu
+.Dl Adwm* Ns Cm button.menu.button2.release Ns Li : Ar menu
+.Dl Adwm* Ns Cm button.menu.button3.release Ns Li : Ar menu
+.Pp
+.Dl Adwm* Ns Cm title.name.button1.pressed Ns Li : Ar move
+.Dl Adwm* Ns Cm title.name.button3.pressed Ns Li : Ar resize
+
+.Sh CONDITIONS
+Conditions for which mouse bindings can be defined are as follows:
+.Pp
+.Dl Cm <button>.<direction>
+.Pp
+where the fields are defined as follows:
+.Pp
+.Bl -tag -width "XX"
+.It Cm <button>
+Specifies the mouse button pressed or released, and may be one of:
+.Pp
+.Bl -tag -width ".Cm button5" -compact
+.It Cm button1
+The
+.Ar Button1
+button on the mouse: normally the left button on a two- or three-button
+mouse.
+.It Cm button2
+The
+.Ar Button2
+button on the mouse: normally the right button on a two- or three-button
+mouse.
+.It Cm button3
+The
+.Ar Button3
+button on the mouse: normally the center button on a three-button mouse.
+.It Cm button4
+The
+.Ar Button4
+button on the mouse: normally the scroll-wheel down motion on a
+scroll-wheel mouse.
+.It Cm button5
+The
+.Ar Button5
+button on the mouse: normally the scroll-wheel up motion on a
+scroll-wheel mouse.
+.El
+.It Cm <direction>
+Specified the direction in which the mouse button is traveling for which
+to perform the associated action:
+.Pp
+.Bl -tag -width ".Cm pressed" -compact
+.It Cm pressed
+On the event that the mouse button is pressed and held.
+.It Cm release
+On the event that the mouse button is released.
+.It Cm clicked
+On the event that the mouse button is clicked (pressed and released
+without movement nor significant time between the press and release).
+.El
+.El
+.Sh ACTIONS
+Actions that may be performed by the mouse button binding are, described
+briefly, as follows:
+.Ss GENERAL ACTIONS
+The following actions can be performed anywhere:
+.Pp
+.Bl -tag -width ".Cm withdraw" -compact -offset indent
+.It Cm exec Ar <args>
+Execute the command specified by
+.Ar <args> .
+.El
+.Pp
+These actions are described in more detail below:
+.Pp
+.Bl -tag -width "XX"
+.It Cm exec Ar <args>
+.El
+.Ss ROOT ACTIONS
+The following actions can be performed over the root window:
+.Pp
+.Bl -tag -width ".Cm withdraw" -compact -offset indent
+.It Cm spawn3
+Execute the
+.Cm command3
+specified in
+.Xr @PACKAGE@-config 5 .
+.It Cm spawn2
+Execute the
+.Cm command2
+specified in
+.Xr @PACKAGE@-config 5 .
+.It Cm spawn
+Execute the
+.Cm command
+specified in
+.Xr @PACKAGE@-config 5 .
+.It Cm nexttag
+Move to the next tag (desktop/workspace).
+.It Cm prevtag
+Move to the previous tag (desktop/workspace).
+.El
+.Pp
+These actions are described in more detail below:
+.Pp
+.Bl -tag -width "XX"
+.It Cm spawn3
+Execute the
+.Cm command3
+specified in
+.Xr @PACKAGE@-config 5 ,
+if
+.Cm command3
+was defined.
+Normally bound to mouse button #1 over the root window:
+.Pp
+Default:
+.Dl Adwm* Ns Cm root.button1.pressed Li : Ar spawn3
+.It Cm spawn2
+Execute the
+.Cm command2
+specified in
+.Xr @PACKAGE@-config 5 ,
+if
+.Cm command2
+was defined.
+Normally bound to mouse button #2 over the root window.
+.Pp
+Default:
+.Dl Adwm* Ns Cm root.button2.pressed Li : Ar spawn2
+.It Cm spawn
+Execute the
+.Cm command
+specified in
+.Xr @PACKAGE@-config 5 ,
+if
+.Cm command
+was defined.
+Normally bound to mouse button #3 over the root window.
+.Pp
+Default:
+.Dl Adwm* Ns Cm root.button3.pressed Li : Ar spawn
+.It Cm nexttag
+Move to the next tag/view (desktop/workspace).
+Normally bound to mouse button #4 (scroll wheel down) over the root
+window.
+.Pp
+Default:
+.Dl Adwm* Ns Cm root.button4.pressed Li : Ar nexttag
+.It Cm prevtag
+Move to the previous tag/view (desktop/workspace).
+Normally bound to mouse button #5 (scroll wheel up) over the root
+window.
+.Pp
+Default:
+.Dl Adwm* Ns Cm root.button5.pressed Li : Ar prevtag
+.El
+.Ss CLIENT ACTIONS
+The following actions can be performed over the client window.
+.Pp
+.Bl -tag -width ".Cm withdraw" -compact -offset indent
+.It Cm resize
+Begin a mouse resize of the window.
+.It Cm move
+Begin a mouse move of the window.
+.It Cm shade
+Shade the window.
+.It Cm unshade
+Unshade the window.
+.It Cm zoom
+Move (press and hold) or zoom (click) the window.
+.El
+.Pp
+These actions are described in more detail below:
+.Pp
+.Bl -tag -width "XX"
+.It Cm resize
+Begin a mouse resize of the window.
+Normally bound to various mouse buttons over client window elements.
+.Pp
+Default:
+.Dl Adwm* Ns Cm client.title.button3.pressed Ns Li : Ar resize
+.Dl Adwm* Ns Cm client.grips.button1.pressed Ns Li : Ar resize
+.Dl Adwm* Ns Cm client.frame.button1.pressed Ns Li : Ar resize
+.Dl Adwm* Ns Cm client.window.button3.pressed Ns Li : Ar resize
+.It Cm move
+Begin a mouse move of the window.
+Normally bound to various mouse buttons over client window elements.
+.Pp
+Default:
+.Dl Adwm* Ns Cm client.title.button1.pressed Ns Li : Ar move
+.Dl Adwm* Ns Cm client.dock.button1.pressed Ns Li : Ar move
+.Dl Adwm* Ns Cm client.window.button1.pressed Ns Li : Ar move
+.Dl Adwm* Ns Cm client.icon.button1.pressed Ns Li : Ar move
+.It Cm shade
+Shade the window.
+Normally bound to mouse button #5 (scroll wheel up) over client window elements.
+.Pp
+Default:
+.Dl Adwm* Ns Cm client.title.button5.pressed Ns Li : Ar shade
+.Dl Adwm* Ns Cm client.frame.button5.pressed Ns Li : Ar shade
+.Dl Adwm* Ns Cm client.window.button5.pressed Ns Li : Ar shade
+.It Cm unshade
+Unshade the window.
+Normally bound to mouse button #4 (scroll wheel down) over client window elements.
+.Pp
+Default:
+.Dl Adwm* Ns Cm client.title.button4.pressed Ns Li : Ar unshade
+.Dl Adwm* Ns Cm client.frame.button4.pressed Ns Li : Ar unshade
+.Dl Adwm* Ns Cm client.window.button4.pressed Ns Li : Ar unshade
+.It Cm zoom
+Move (press and hold) or zoom (click) the window.
+Normally bound to mouse button #2 over some client window elements.
+.Pp
+Default
+.Dl Adwm* Ns Cm client.title.button2.pressed Ns Li : Ar zoom
+.Dl Adwm* Ns Cm client.window.button2.pressed Ns Li : Ar zoom
+.El
+.Ss TITLE BAR ACTIONS
+The following actions can be performed over elements of the title bar:
+.Pp
+.Bl -tag -width ".Cm withdraw" -compact -offset indent
+.It Cm menu
+Execute the
+.Cm menucommand
+specified in
+.Xr @PACKAGE@-config 5 .
+.It Cm iconify
+Iconify the window.
+.It Cm hide
+Iconify and hide client from the window list.
+.It Cm withdraw
+Withdraw (but do not close) the window.
+.It Cm max
+Toggle maximization (both directions).
+.It Cm maxv
+Toggle maximization (vertically).
+.It Cm maxh
+Toggle maximization (horizontally).
+.It Cm close
+Close client window.
+.It Cm kill
+Kill client process.
+.It Cm xkill
+XKill the client.
+.It Cm reshade
+Toggle shade state of window.
+.It Cm shade
+Shade the window.
+.It Cm unshade
+Unshade the window.
+.It Cm restick
+Toggle sticky state of window.
+.It Cm stick
+Stick the window.
+.It Cm unstick
+Unstick the window.
+.It Cm relhalf
+Toggle left half maximus state.
+.It Cm lhalf
+Left half maximus the window.
+.It Cm unlhalf
+Restore window from left half maximus.
+.It Cm rerhalf
+Toggle right half maximus state.
+.It Cm rhalf
+Right half maximus the window.
+.It Cm unrhalf
+Restore window from right half maximus.
+.It Cm refill
+Toggle fill state of window.
+.It Cm fill
+Fill available space with window.
+.It Cm unfill
+Restore window from filled.
+.It Cm refloat
+Toggle floating/tiled state of window.
+.It Cm float
+Float the window.
+.It Cm tile
+Tile the window.
+.It Cm resize
+Begin a mouse resize (if permitted) of the window.
+.El
+.Pp
+These actions are described in more detail below:
+.Pp
+.Bl -tag -width "XX"
+.It Cm menu
+Launches the window menu command as specified by
+.Cm menucommand
+in
+.Xr @PACKAGE@-config 5 .
+Normally bound to any mouse button released over the menu button in the title bar.
+.Pp
+Default:
+.Dl Adwm* Ns Cm button.menu.button1.release Ns Li : Ar menu
+.Dl Adwm* Ns Cm button.menu.button2.release Ns Li : Ar menu
+.Dl Adwm* Ns Cm button.menu.button3.release Ns Li : Ar menu
+.It Cm iconify
+Iconifies the client window.  Normally bound to mouse button #1 release
+over the iconify button in the title bar.
+.Pp
+Default:
+.Dl Adwm* Ns Cm button.iconify.button1.release Ns Li : Ar iconify
+.It Cm hide
+Hides the client window.  This both iconfies the window and removes it
+from window lists.  Normally bound to mouse button #2 release over the
+iconify button in the title bar.
+.Pp
+Default:
+.Dl Adwm* Ns Cm button.iconify.button2.release Ns Li : Ar hide
+.Pp
+.Sy Note:
+this action is not yet implemented and simply performs the same action
+as
+.Cm iconify
+for the moment.
+.It Cm withdraw
+Withdraws the window.  This basically unmaps and unmanages the client
+window.  Normally bound to mouse button #3 release over the iconify
+button in the title bar.
+.Pp
+Default:
+.Dl Adwm* Ns Cm button.iconify.button3.release Ns Li : Ar withdraw
+.Pp
+.Sy Note:
+this action is not yet implemented and simply performs the same action
+as
+.Cm iconify
+for the moment.
+.It Cm max
+Toggles maximization of the window (both vertically and horizontally).
+Normally bound to mouse button #1 release over the maximize button in
+the title bar.
+.Pp
+Default:
+.Dl Adwm* Ns Cm button.maximize.button1.release Ns Li : Ar max
+.It Cm maxv
+Toggles vertical maximization of the window.
+Normally bound to mouse button #2 release over the maximize button in
+the title bar.
+.Pp
+Default:
+.Dl Adwm* Ns Cm button.maximize.button2.release Ns Li : Ar maxv
+.It Cm maxh
+Toggles horizontal maximization of the window.
+Normally bound to mouse button #3 release over the maximize button in
+the title bar.
+.Pp
+Default:
+.Dl Adwm* Ns Cm button.maximize.button3.release Ns Li : Ar maxh
+.It Cm close
+Performs a normal close action on the client window, using the normal
+.Cm WM_DELETE_WINDOW
+close protocol (but also the
+.Cm _NET_WM_PING
+protocol if available).  If this action is not successful in closing the
+client window and is invoked again, the
+.Cm kill
+action, described next, will be invoked instead.
+.Pp
+Normally bound to mouse button #1 release over the close button in the
+title bar.
+.Pp
+.Dl Adwm* Ns Cm button.close.button1.release Ns Li : Ar close
+.It Cm kill
+Performs a kill close action on the client window when
+.Cm _NET_WM_PID
+and
+.Cm WM_CLIENT_MACHINE
+is present on the window.  The process will be sent
+.Ar SIGTERM
+on the initial invocation, followed by
+.Ar SIGKILL
+on subsequent invocations.  When called from
+.Cm close ,
+.Ar SIGKILL
+is always sent.  When
+.Cm _NET_WM_PID
+or
+.Cm WM_CLIENT_MACHINE
+are not present on the window, the
+.Cm xkill
+action, described next, will be invoked instead.
+.Pp
+Normally bound to mouse button #2 release over the close button in the
+title bar.
+.Pp
+.Dl Adwm* Ns Cm button.close.button2.release Ns Li : Ar kill
+.It Cm xkill
+Issues a request to the X server
+(using
+.Xr XKillClient 3 )
+to kill the client associated with the client window.
+.Pp
+Normally bound to mouse button #3 release over the close button in the
+title bar.
+.Pp
+.Dl Adwm* Ns Cm button.close.button3.release Ns Li : Ar xkill
+.It Cm reshade
+Toggle shade state of window.
+Normally bound to mouse button #1 over the shade button in
+the title bar.
+.Pp
+Default:
+.Dl Adwm* Ns Cm button.shade.button1.release Ns Li : Ar reshade
+.It Cm shade
+Shade the window.
+Normally bound to mouse button #2 over the shade button in
+the title bar.
+.Pp
+Default:
+.Dl Adwm* Ns Cm button.shade.button2.release Ns Li : Ar shade
+.It Cm unshade
+Unshade the window.
+Normally bound to mouse button #3 over the shade button in
+the title bar.
+.Pp
+Default:
+.Dl Adwm* Ns Cm button.shade.button3.release Ns Li : Ar unshade
+.It Cm restick
+Toggle sticky state of window.
+Normally bound to mouse button #1 over the stick button in
+the title bar.
+.Pp
+Default:
+.Dl Adwm* Ns Cm button.stick.button1.release Ns Li : Ar restick
+.It Cm stick
+Stick the window.
+Normally bound to mouse button #2 over the stick button in
+the title bar.
+.Pp
+Default:
+.Dl Adwm* Ns Cm button.stick.button2.release Ns Li : Ar stick
+.It Cm unstick
+Unstick the window.
+Normally bound to mouse button #3 over the stick button in
+the title bar.
+.Pp
+Default:
+.Dl Adwm* Ns Cm button.stick.button3.release Ns Li : Ar unstick
+.It Cm relhalf
+Toggle left half maximus state.
+Normally bound to mouse button #1 over the lhalf button in
+the title bar.
+.Pp
+Default:
+.Dl Adwm* Ns Cm button.lhalf.button1.release Ns Li : Ar relhalf
+.It Cm lhalf
+Left half maximus the window.
+Normally bound to mouse button #2 over the lhalf button in
+the title bar.
+.Pp
+Default:
+.Dl Adwm* Ns Cm button.lhalf.button2.release Ns Li : Ar lhalf
+.It Cm unlhalf
+Restore window from left half maximus.
+Normally bound to mouse button #3 over the lhalf button in
+the title bar.
+.Pp
+Default:
+.Dl Adwm* Ns Cm button.lhalf.button3.release Ns Li : Ar unlhalf
+.It Cm rerhalf
+Toggle right half maximus state.
+Normally bound to mouse button #1 over the rhalf button in
+the title bar.
+.Pp
+Default:
+.Dl Adwm* Ns Cm button.rhalf.button1.release Ns Li : Ar rerhalf
+.It Cm rhalf
+Right half maximus the window.
+Normally bound to mouse button #2 over the rhalf button in
+the title bar.
+.Pp
+Default:
+.Dl Adwm* Ns Cm button.rhalf.button2.release Ns Li : Ar rhalf
+.It Cm unrhalf
+Restore window from right half maximus.
+Normally bound to mouse button #3 over the rhalf button in
+the title bar.
+.Pp
+Default:
+.Dl Adwm* Ns Cm button.rhalf.button3.release Ns Li : Ar unrhalf
+.It Cm refill
+Toggle fill state of window.
+Normally bound to mouse button #1 over the fill button in
+the title bar.
+.Pp
+Default:
+.Dl Adwm* Ns Cm button.fill.button1.release Ns Li : Ar refill
+.It Cm fill
+Fill available space with window.
+Normally bound to mouse button #2 over the fill button in
+the title bar.
+.Pp
+Default:
+.Dl Adwm* Ns Cm button.fill.button2.release Ns Li : Ar fill
+.It Cm unfill
+Restore window from filled.
+Normally bound to mouse button #3 over the fill button in
+the title bar.
+.Pp
+Default:
+.Dl Adwm* Ns Cm button.fill.button3.release Ns Li : Ar unfill
+.It Cm refloat
+Toggle floating/tiled state of window.
+Normally bound to mouse button #1 over the float/tile button in
+the title bar.
+.Pp
+Default:
+.Dl Adwm* Ns Cm button.float.button1.release Ns Li : Ar refloat
+.It Cm float
+Float the window.
+Normally bound to mouse button #2 over the float/tile button in
+the title bar.
+.Pp
+Default:
+.Dl Adwm* Ns Cm button.float.button2.release Ns Li : Ar float
+.It Cm tile
+Tile the window.
+Normally bound to mouse button #3 over the float/tile button in
+the title bar.
+.Pp
+Default:
+.Dl Adwm* Ns Cm button.float.button3.release Ns Li : Ar tile
+.It Cm resize
+Begin a mouse resize (if permitted) of the window.
+Normally bound to mouse buttons #1, #2 and #3 over the resize button in
+the title bar.
+.Pp
+Default:
+.Dl Adwm* Ns Cm button.resize.button1.pressed Ns Li : Ar resize
+.Dl Adwm* Ns Cm button.resize.button2.pressed Ns Li : Ar resize
+.Dl Adwm* Ns Cm button.resize.button3.pressed Ns Li : Ar resize
+.El
+.Sh DEFAULTS
+The default mouse button bindings are provided in the default buttons
+file,
+.Pa @pkgconfdir@/buttonrc ,
+but may be overridden by the style (e.g. the default style located in
+.Pa @pkgconfdir@/styles/Default/buttonrc )
+and ultimately overridden by mouse buttons specified by the user in the
+user file (typically located in
+.Pa ~/.@PACKAGE@/buttonrc).
+.Pp
+The defaults are, in general, typical to light-weight window managers.
+.Pp
+So that users of other window managers and systems do not have problems
+initially using
+.Xr @PACKAGE@ 1
+before they get used to the more advanced key and mouse bindings, a full
+set of Gnome2/Windows95-like key and mouse bindings are also provided.
+Specific default mouse bindings for advanced features provided by some
+window managers (such as
+.Xr openbox 1 ,
+.Xr pekwm 1 ,
+.Xr blackbox 1 ,
+.Xr fluxbox 1 ,
+.Xr icewm 1 )
+are also provided to smooth transition, or to make
+.Xr @PACKAGE@ 1
+immediately usable to these users as well.
+.Pp
+Mouse button binding can be used to override which mouse button is used
+to move a window and which is used to resize a window.  (Note that
+.Xr openbox 1
+window manager reverses these two bindings and are different from the
+rest of the light-weight window manager field.)
+compatible
+necessary
+.Sh FILES
+Following are the locations of the
+.Cm @PACKAGE@-buttons
+file, in the order in which they are searched:
+.Pp
+.Bl -tag -width "XX"
+.It Cm "$(dirname <themeFile>)" Ns Ar /buttonrc
+Default location of the buttons file when a theme is defined.
+.It Cm "$(dirname <styleFile>)" Ns Ar /buttonrc
+Default location of the buttons file when a style is defined.
+.It Cm "${ADWMPRIVDIR}" Ns AAr /buttonrc
+Location of the user private buttons file.
+.It Cm "${XDG_RUNTIME_DIR}" Ns Ar /@PACKAGE@/buttonrc
+Location of the user runtime buttons file.
+.It Cm "${XDG_CONFIG_HOME}" Ns Ar /@PACKAGE@/buttonrc
+Location of the user XDG buttons file.
+.It Cm "${HOME}" Ns Ar /.@PACKAGE@/buttonrc
+Location of the user buttons file.
+.It Cm "${XDG_CONFIG_DIRS}" Ns Ar /@PACKAGE@/buttonrc
+Location of the system XDG file.
+.It Ar @pkgconfdir@/buttonrc
+Location of the default system buttonrc file.
+.El
+.Sh SEE ALSO
+.Rs
+.Xr @PACKAGE@ 1 ,
+.Xr @PACKAGE@-config 5 ,
+.Xr spectrwm 1 ,
+.Xr dwm 1 ,
+.Xr openbox 1 ,
+.Xr pekwm 1 ,
+.Xr blackbox 1 ,
+.Xr fluxbox 1 ,
+.Xr icewm 1 .
+.Re
+.Sh BUGS
+No outstanding bugs.
+.Sh HISTORY
+.Pp
+.Cm @PACKAGE@
+configuration began with the simple X Resource scheme provided by
+.Xr echinus 1
+and quickly grew from there to support the advanced features of
+.Cm @PACKAGE@ .
+The same basic X Resource scheme is supported and an
+.Xr echinus 1
+resource file will work with
+.Cm @PACKAGE@
+(substituting
+.Cm Adwm*
+for
+.Cm Echinus* ).
+.Sh AUTHORS
+.An Brian Bidulock Aq bidulock@openss7.org
+.Sh LICENSE
+.Nm @PACKAGE_NAME@
+is licensed under the GNU General Public License Version 3 or later.
+.sp
+See the
+.Pa COPYING
+file in the distribution.
+.\" vim: set ft=nroff sw=4 et nocin tw=72 spell:

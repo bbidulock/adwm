@@ -37,7 +37,7 @@ response to a single key press.  Key chaining is when an Emacs-like sequence of 
 need to be pressed for the action to be performed.
 .Pp
 Key bindings are defined in an X Resource formatted configuration file.
-Key bindings can either being part of the main configuration file, or
+Key bindings can either be part of the main configuration file, or
 they can be included or referenced from the main configuration file: see the
 .Cm keysFile
 directive in

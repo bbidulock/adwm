@@ -217,6 +217,72 @@ Specifies the height of the resize grips in pixels,
 .Pp
 Example:
 .Li Adwm* Ns Cm grips Ns Li : Ar 3
+.It Cm titlelayout Ar <string>
+Specifies the layout of items on the title bar.
+.Ar <string>
+is a string of characters and spaces that specify the layout of the title
+bar.  The characters may be one of:
+.Pp
+.Bl -tag -width ".Li 'M'" -compact -offset indent
+.It Li 'E'
+.Cm button Ns Li . Ns Cm menu
+element;
+.It Li 'I'
+.Cm button Ns Li . Ns Cm iconify
+element;
+.It Li 'M'
+.Cm button Ns Li . Ns Cm maximize
+element;
+.It Li 'C'
+.Cm button Ns Li . Ns Cm close
+element;
+.It Li 'S'
+.Cm button Ns Li . Ns Cm shade
+element;
+.It Li 'A'
+.Cm button Ns Li . Ns Cm stick
+element;
+.It Li 'L'
+.Cm button Ns Li . Ns Cm lhalf
+element;
+.It Li 'R'
+.Cm button Ns Li . Ns Cm rhalf
+element;
+.It Li 'X'
+.Cm button Ns Li . Ns Cm fill
+element;
+.It Li 'F'
+.Cm button Ns Li . Ns Cm float
+element;
+.It Li 'Z'
+.Cm button Ns Li . Ns Cm resize
+element;
+.It Li 'P'
+.Cm button Ns Li . Ns Cm icon
+element;
+.It Li 'T'
+.Cm title Ns Li . Ns Cm tags
+element;
+.It Li 'N'
+.Cm title Ns Li . Ns Cm name
+element;
+.It Li '|'
+.Cm title Ns Li . Ns Cm separator
+element;
+.It Li "' '"
+separate groupings.
+.El
+.Pp
+Characters are grouped into three groups separated by a single
+white-space (space or tab) character.
+The first group specifies elements that are to be left justified on the
+title  bar and filled from left to right; the second group, 
+centered as a group on the title bar; the third, right justified and
+filled right to left.
+.Pp
+Example:
+.Dl Adwm* Ns Cm titlelayout Ns Li : Ar "EFASLN  RIMC"
+.Pp
 .It Cm <windowstate>.<element> Ar <value>
 Specifies the style elements for the title bar, title, buttons and
 resize grips in one of two possible states (normal and selected).
@@ -318,8 +384,14 @@ window pin button;
 left-half maximus button;
 .It Cm rhalf
 right-half maximus button;
+.It Cm fill
+fill (available space) button;
 .It Cm float
 float/tiled button;
+.It Cm resize
+resize (twm-like) button;
+.It Cm icon
+icon button;
 .It Cm menu
 window menu button.
 .El

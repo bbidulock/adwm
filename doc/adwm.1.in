@@ -151,9 +151,9 @@ three focus models: click-to-focus, sloppy and all-sloppy;
 .It
 soon to come X11R6 session management;
 .It
-very wide array of available key-binding actions;
+very wide array of available button- and key-binding actions;
 .It
-key-binding defaults consistent with a wide array of light-weight and popular window managers.
+button- and key-binding defaults consistent with a wide array of light-weight and popular window managers.
 .El
 .Pp
 .Sy "Views, Workspaces and Desktops:"
@@ -164,7 +164,7 @@ view/tag based workspaces and desktops;
 .It
 scroll wheel support for switching desktops;
 .It
-key bindings for switching desktops observes EMWH desktop layout.
+button and key bindings for switching desktops observes EMWH desktop layout.
 .El
 .Pp
 .Sy "Floating/stacking mode:"
@@ -312,7 +312,7 @@ root window in tiled layouts.  However, this does not work over panels
 or the dock which are above the root window for that one pixel.
 .Ed
 .Pp
-Mouse bindings on the title bar (except on buttons) or anywhere on the
+Default mouse bindings on the title bar (except on buttons) or anywhere on the
 client window with the
 .Ic Alt
 key pressed, are as follows:
@@ -330,7 +330,7 @@ Scroll up rolls up the window.
 Scroll down rolls down the window.
 .El
 .Pp
-Mouse bindings on the resize grips, window border, or title bar margins
+Default mouse bindings on the resize grips, window border, or title bar margins
 are as follows:
 .Pp
 .Bl -tag -width ".Ic M2" -offset indent -compact
@@ -338,7 +338,7 @@ are as follows:
 Resizes the window while dragging.
 .El
 .Pp
-Mouse bindings for click on title bar buttons are as follows:
+Default mouse bindings for click on title bar buttons are as follows:
 .Pp
 .Bl -column ".Ar maximize" ".Sy Button" ".Sy Action" -compact -offset indent
 .It Sy Control Ta Sy Button Ta Sy Action
@@ -1198,6 +1198,24 @@ The location of the system default themed key bindings file.
 .sp 0
 See
 .Xr @PACKAGE@-keys 5
+for a description of this file.
+.It Pa ~/.@PACKAGE@/buttonrc
+The location of the user's default mouse button bindings file.
+.sp 0
+See
+.Xr @PACKAGE@-buttons 5
+for a description of this file.
+.It Pa @pkgconfdir@/buttonrc
+The location of the system default mouse button bindings file.
+.sp 0
+See
+.Xr @PACKAGE@-buttons 5
+for a description of this file.
+.It Pa @pkgconfdir@/styles/Default/buttonrc
+The location of the system default themed mouse button bindings file.
+.sp 0
+See
+.Xr @PACKAGE@-buttons 5
 for a description of this file.
 .It Pa ~/.@PACKAGE@/stylerc
 The location of the user's default style file.

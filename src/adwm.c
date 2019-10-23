@@ -670,7 +670,14 @@ buttonpress(XEvent *e)
 					drawclient(c); /* just for button */
 					/* resize needs to be on button press */
 					if (action) {
-						(*action) (c, (XEvent *) ev);
+						if (!(result = (*action) (c, (XEvent *) ev))) {
+							XPRINTF("ELEMENT %d RELEASED\n", i);
+							ec->pressed &= ~(1 << button);
+							drawclient(c); /* just for button */
+							/* perform release action if pressed action failed */
+							if ((action = scr->element[i].action[button * 2 + 1]))
+								(*action) (c, (XEvent *) ev);
+						}
 						drawclient(c); /* just for button */
 					}
 				} else if (ev->type == ButtonRelease) {

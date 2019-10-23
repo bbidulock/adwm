@@ -1,0 +1,99 @@
+! ADWM default mouse button configuration file
+
+Adwm*root.button1.pressed: spawn3
+Adwm*root.button2.pressed: spawn2
+Adwm*root.button3.pressed: spawn
+Adwm*root.button4.pressed: nexttag
+Adwm*root.button5.pressed: prevtag
+
+Adwm*client.title.button1.pressed: move
+Adwm*client.title.button1.release: restack
+Adwm*client.title.button2.pressed: move
+Adwm*client.title.button2.release: zoom
+Adwm*client.title.button3.pressed: resize
+Adwm*client.title.button3.release: restack
+Adwm*client.title.button4.pressed: shade
+Adwm*client.title.button5.pressed: unshade
+
+Adwm*client.grips.button1.pressed: resize
+Adwm*client.grips.button1.release: restack
+
+Adwm*client.frame.button1.pressed: resize
+Adwm*client.frame.button1.release: restack
+Adwm*client.frame.button4.pressed: shade
+Adwm*client.frame.button5.pressed: unshade
+
+Adwm*client.dock.button1.pressed: move
+Adwm*client.dock.button1.release: restack
+
+Adwm*client.window.button1.pressed: move
+Adwm*client.window.button1.release: restack
+Adwm*client.window.button2.pressed: move
+Adwm*client.window.button2.release: zoom
+Adwm*client.window.button3.pressed: resize
+Adwm*client.window.button3.release: restack
+Adwm*client.window.button4.pressed: shade
+Adwm*client.window.button5.pressed: unshade
+
+Adwm*client.icon.button1.pressed: move
+Adwm*client.icon.button1.release: restack
+
+Adwm*button.menu.button1.release: menu
+Adwm*button.menu.button2.release: menu
+Adwm*button.menu.button3.release: menu
+
+Adwm*button.iconify.button1.release: iconify
+Adwm*button.iconify.button2.release: hide
+Adwm*button.iconify.button3.release: withdraw
+
+Adwm*button.maximize.button1.release: max
+Adwm*button.maximize.button2.release: maxv
+Adwm*button.maximize.button3.release: maxh
+
+Adwm*button.close.button1.release: close
+Adwm*button.close.button2.release: kill
+Adwm*button.close.button3.release: xkill
+
+Adwm*button.shade.button1.release: reshade
+Adwm*button.shade.button2.release: shade
+Adwm*button.shade.button3.release: unshade
+
+Adwm*button.stick.button1.release: restick
+Adwm*button.stick.button2.release: stick
+Adwm*button.stick.button3.release: unstick
+
+Adwm*button.lhalf.button1.release: relhalf
+Adwm*button.lhalf.button2.release: lhalf
+Adwm*button.lhalf.button3.release: unlhalf
+
+Adwm*button.rhalf.button1.release: rerhalf
+Adwm*button.rhalf.button2.release: rhalf
+Adwm*button.rhalf.button3.release: unrhalf
+
+Adwm*button.fill.button1.release: refill
+Adwm*button.fill.button2.release: fill
+Adwm*button.fill.button3.release: unfill
+
+Adwm*button.float.button1.release: refloat
+Adwm*button.float.button2.release: float
+Adwm*button.float.button3.release: tile
+
+Adwm*button.resize.button1.pressed: resize
+Adwm*button.resize.button2.pressed: resize
+Adwm*button.resize.button3.pressed: resize
+
+Adwm*button.icon.button1.release: menu
+Adwm*button.icon.button2.release: menu
+Adwm*button.icon.button3.release: menu
+
+Adwm*title.name.button1.pressed: move
+Adwm*title.name.button1.release: restack
+Adwm*title.name.button2.pressed: move
+Adwm*title.name.button2.release: zoom
+Adwm*title.name.button3.pressed: resize
+Adwm*title.name.button3.release: restack
+Adwm*title.name.button4.pressed: shade
+Adwm*title.name.button5.pressed: unshade
+
+! vim: set ft=xdefaults:
+

@@ -23,6 +23,7 @@ nobase_dist_pkgdata_DATA = \
 	themes/Default/images/penguins_inarow2.jpg \
 	themes/Default/images/penguins_jumping.jpg \
 	styles/Default/keysrc \
+	styles/Default/buttonrc \
 	styles/Default/stylerc \
 	styles/Default/pixmaps/close_focused.xpm \
 	styles/Default/pixmaps/close_hovered.xpm \
@@ -95,13 +96,16 @@ install-data-hook:
 	mkdir -p $(DESTDIR)$(pkgdatadir)
 	rm -f $(DESTDIR)$(pkgdatadir)/style
 	rm -f $(DESTDIR)$(pkgdatadir)/keysrc
+	rm -f $(DESTDIR)$(pkgdatadir)/buttonrc
 	rm -f $(DESTDIR)$(pkgdatadir)/stylerc
 	ln -sf styles/Default $(DESTDIR)$(pkgdatadir)/style
 	ln -sf styles/Default/keysrc $(DESTDIR)$(pkgdatadir)/keysrc
+	ln -sf styles/Default/buttonrc $(DESTDIR)$(pkgdatadir)/buttonrc
 	ln -sf styles/Default/stylerc $(DESTDIR)$(pkgdatadir)/stylerc
 
 uninstall-hook:
 	rm -f $(DESTDIR)$(pkgdatadir)/style
 	rm -f $(DESTDIR)$(pkgdatadir)/keysrc
+	rm -f $(DESTDIR)$(pkgdatadir)/buttonrc
 	rm -f $(DESTDIR)$(pkgdatadir)/stylerc
 

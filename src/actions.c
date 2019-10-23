@@ -9,10 +9,14 @@
 Bool
 m_move(Client *c, XEvent *e)
 {
-	DPRINT;
 	focus(c);
-	if (!mousemove(c, e, (e->xbutton.state & ControlMask) ? False : True))
-		raiselower(c);
+	return (mousemove(c, e, (e->xbutton.state & ControlMask)));
+}
+
+Bool
+m_raiselower(Client *c, XEvent *e)
+{
+	raiselower(c);
 	return True;
 }
 
@@ -34,9 +38,7 @@ Bool
 m_resize(Client *c, XEvent *e)
 {
 	focus(c);
-	if (!mouseresize(c, e, (e->xbutton.state & ControlMask) ? False : True))
-		raiselower(c);
-	return True;
+	return (mouseresize(c, e, (e->xbutton.state & ControlMask)));
 }
 
 Bool
@@ -79,9 +81,237 @@ m_spawn3(Client *c, XEvent *e)
 Bool
 m_zoom(Client *c, XEvent *e)
 {
-	focus(c);
-	if (!mousemove(c, e, (e->xbutton.state & ControlMask) ? True : False))
-		zoomfloat(c);
+	zoomfloat(c);
+	return True;
+}
+
+Bool
+b_menu(Client *c, XEvent *ev)
+{
+	spawn(scr->options.menucommand);
+	return True;
+}
+
+Bool
+b_iconify(Client *c, XEvent *ev)
+{
+	if (c->can.min)
+		iconify(c);
+	return True;
+}
+
+Bool
+b_hide(Client *c, XEvent *ev)
+{
+	if (c->can.min)
+		iconify(c);	/* reserved for hide window */
+	return True;
+}
+
+Bool
+b_withdraw(Client *c, XEvent *ev)
+{
+	if (c->can.min)
+		iconify(c);	/* reserved for withdraw window */
+	return True;
+}
+
+Bool
+b_maxb(Client *c, XEvent *ev)
+{
+	if (c->can.max || (c->can.size && c->can.move))
+		togglemax(c);
+	return True;
+}
+
+Bool
+b_maxv(Client *c, XEvent *ev)
+{
+	if (c->can.maxv || ((c->can.size || c->can.sizev) && c->can.move))
+		togglemaxv(c);
+	return True;
+}
+
+Bool
+b_maxh(Client *c, XEvent *ev)
+{
+	if (c->can.maxh || ((c->can.size || c->can.sizeh) && c->can.move))
+		togglemaxh(c);
+	return True;
+}
+
+Bool
+b_close(Client *c, XEvent *ev)
+{
+	if (c->can.close)
+		killclient(c);
+	return True;
+}
+
+Bool
+b_kill(Client *c, XEvent *ev)
+{
+	if (c->can.close)
+		killproc(c);
+	return True;
+}
+
+Bool
+b_xkill(Client *c, XEvent *ev)
+{
+	if (c->can.close)
+		killxclient(c);
+	return True;
+}
+
+Bool
+b_reshade(Client *c, XEvent *ev)
+{
+	if (c->can.shade)
+		toggleshade(c);
+	return True;
+}
+
+Bool
+b_shade(Client *c, XEvent *ev)
+{
+	if (c->can.shade && !c->is.shaded)
+		toggleshade(c);
+	return True;
+}
+
+Bool
+b_unshade(Client *c, XEvent *ev)
+{
+	if (c->can.shade && c->is.shaded)
+		toggleshade(c);
+	return True;
+}
+
+Bool
+b_restick(Client *c, XEvent *ev)
+{
+	if (c->can.stick)
+		togglesticky(c);
+	return True;
+}
+
+Bool
+b_stick(Client *c, XEvent *ev)
+{
+	if (c->can.stick && !c->is.sticky)
+		togglesticky(c);
+	return True;
+}
+
+Bool
+b_unstick(Client *c, XEvent *ev)
+{
+	if (c->can.stick && c->is.sticky)
+		togglesticky(c);
+	return True;
+}
+
+Bool
+b_relhalf(Client *c, XEvent *ev)
+{
+	if (c->can.move && c->can.size)
+		togglelhalf(c);
+	return True;
+}
+
+Bool
+b_lhalf(Client *c, XEvent *ev)
+{
+	if (c->can.move && c->can.size && !c->is.lhalf)
+		togglelhalf(c);
+	return True;
+}
+
+Bool
+b_unlhalf(Client *c, XEvent *ev)
+{
+	if (c->can.move && c->can.size && c->is.lhalf)
+		togglelhalf(c);
+	return True;
+}
+
+Bool
+b_rerhalf(Client *c, XEvent *ev)
+{
+	if (c->can.move && c->can.size)
+		togglerhalf(c);
+	return True;
+}
+
+Bool
+b_rhalf(Client *c, XEvent *ev)
+{
+	if (c->can.move && c->can.size && !c->is.rhalf)
+		togglerhalf(c);
+	return True;
+}
+
+Bool
+b_unrhalf(Client *c, XEvent *ev)
+{
+	if (c->can.move && c->can.size && c->is.rhalf)
+		togglerhalf(c);
+	return True;
+}
+
+Bool
+b_refill(Client *c, XEvent *ev)
+{
+	if (c->can.fill)
+		togglefill(c);
+	return True;
+}
+
+Bool
+b_fill(Client *c, XEvent *ev)
+{
+	if (c->can.fill && !c->is.fill)
+		togglefill(c);
+	return True;
+}
+
+Bool
+b_unfill(Client *c, XEvent *ev)
+{
+	if (c->can.fill && c->is.fill)
+		togglefill(c);
+	return True;
+}
+
+Bool
+b_refloat(Client *c, XEvent *ev)
+{
+	togglefloating(c);
+	return True;
+}
+
+Bool
+b_float(Client *c, XEvent *ev)
+{
+	if (!c->skip.arrange)
+		togglefloating(c);
+	return True;
+}
+
+Bool
+b_tile(Client *c, XEvent *ev)
+{
+	if (c->skip.arrange)
+		togglefloating(c);
+	return True;
+}
+
+Bool
+b_resize(Client *c, XEvent *ev)
+{
+	if (c->can.size)
+		return m_resize(c, ev);
 	return True;
 }
 

@@ -815,221 +815,6 @@ initpixmap(const char *file, ButtonImage *bi)
 	return False;
 }
 
-static Bool
-b_menu(Client *c, XEvent *ev)
-{
-	spawn(scr->options.menucommand);
-	return True;
-}
-
-static Bool
-b_min(Client *c, XEvent *ev)
-{
-	if (!c->can.min)
-		return False;
-	switch (ev->xbutton.button) {
-	case Button1:
-		iconify(c);
-		break;
-	case Button2:
-		iconify(c);	/* reserved for hide window */
-		break;
-	case Button3:
-		iconify(c);	/* reserved for withdraw window */
-		break;
-	default:
-		return False;
-	}
-	return True;
-}
-
-static Bool
-b_max(Client *c, XEvent *ev)
-{
-	switch (ev->xbutton.button) {
-	case Button1:
-		if (c->can.max || (c->can.size && c->can.move))
-			togglemax(c);
-		break;
-	case Button2:
-		if (c->can.maxv || ((c->can.size || c->can.sizev) && c->can.move))
-			togglemaxv(c);
-		break;
-	case Button3:
-		if (c->can.maxh || ((c->can.size || c->can.sizeh) && c->can.move))
-			togglemaxh(c);
-		break;
-	default:
-		return False;
-	}
-	return True;
-}
-
-static Bool
-b_close(Client *c, XEvent *ev)
-{
-	if (!c->can.close)
-		return False;
-	switch (ev->xbutton.button) {
-	case Button1:
-		killclient(c);
-		break;
-	case Button2:
-		killproc(c);
-		break;
-	case Button3:
-		killxclient(c);
-		break;
-	default:
-		return False;
-	}
-	return True;
-}
-
-static Bool
-b_shade(Client *c, XEvent *ev)
-{
-	if (!c->can.shade)
-		return False;
-	switch (ev->xbutton.button) {
-	case Button1:
-		break;
-	case Button2:
-		if (c->is.shaded)
-			return False;
-		break;
-	case Button3:
-		if (!c->is.shaded)
-			return False;
-		break;
-	default:
-		return False;
-	}
-	toggleshade(c);
-	return True;
-}
-
-static Bool
-b_stick(Client *c, XEvent *ev)
-{
-	if (!c->can.stick)
-		return False;
-	switch (ev->xbutton.button) {
-	case Button1:
-		break;
-	case Button2:
-		if (c->is.sticky)
-			return False;
-		break;
-	case Button3:
-		if (!c->is.sticky)
-			return False;
-		break;
-	default:
-		return False;
-	}
-	togglesticky(c);
-	return True;
-}
-
-static Bool
-b_lhalf(Client *c, XEvent *ev)
-{
-	if (!c->can.move || !c->can.size)
-		return False;
-	switch (ev->xbutton.button) {
-	case Button1:
-		break;
-	case Button2:
-		if (c->is.lhalf)
-			return False;
-		break;
-	case Button3:
-		if (!c->is.lhalf)
-			return False;
-		break;
-	default:
-		return False;
-	}
-	togglelhalf(c);
-	return True;
-}
-
-static Bool
-b_rhalf(Client *c, XEvent *ev)
-{
-	if (!c->can.move || !c->can.size)
-		return False;
-	switch (ev->xbutton.button) {
-	case Button1:
-		break;
-	case Button2:
-		if (c->is.rhalf)
-			return False;
-		break;
-	case Button3:
-		if (!c->is.rhalf)
-			return False;
-		break;
-	default:
-		return False;
-	}
-	togglerhalf(c);
-	return True;
-}
-
-static Bool
-b_fill(Client *c, XEvent *ev)
-{
-	if (!c->can.fill)
-		return False;
-	switch (ev->xbutton.button) {
-	case Button1:
-		break;
-	case Button2:
-		if (c->is.fill)
-			return False;
-		break;
-	case Button3:
-		if (!c->is.fill)
-			return False;
-		break;
-	default:
-		return False;
-	}
-	togglefill(c);
-	return True;
-}
-
-static Bool
-b_float(Client *c, XEvent *ev)
-{
-	switch (ev->xbutton.button) {
-	case Button1:
-		break;
-	case Button2:
-		if (c->skip.arrange)
-			return False;
-		break;
-	case Button3:
-		if (!c->skip.arrange)
-			return False;
-		break;
-	default:
-		return False;
-	}
-	togglefloating(c);
-	return True;
-}
-
-static Bool
-b_resize(Client *c, XEvent *ev)
-{
-	if (!c->can.size)
-		return False;
-	return m_resize(c, ev);
-}
-
 static void
 freeelement(ElementType type)
 {
@@ -1137,65 +922,65 @@ initbuttons()
 		} },
 		[IconifyBtn]	= { "button.iconify",	ICONPIXMAP,	{
 					    /* ButtonPress	ButtonRelease	*/
-			[Button1-Button1] = { NULL,		b_min		},
-			[Button2-Button1] = { NULL,		b_min		},
-			[Button3-Button1] = { NULL,		b_min		},
+			[Button1-Button1] = { NULL,		b_iconify	},
+			[Button2-Button1] = { NULL,		b_hide		},
+			[Button3-Button1] = { NULL,		b_withdraw	},
 			[Button4-Button1] = { NULL,		NULL		},
 			[Button5-Button1] = { NULL,		NULL		},
 		} },
 		[MaximizeBtn]	= { "button.maximize",	MAXPIXMAP,	{
-			[Button1-Button1] = { NULL,		b_max		},
-			[Button2-Button1] = { NULL,		b_max		},
-			[Button3-Button1] = { NULL,		b_max		},
+			[Button1-Button1] = { NULL,		b_maxb		},
+			[Button2-Button1] = { NULL,		b_maxv		},
+			[Button3-Button1] = { NULL,		b_maxh		},
 			[Button4-Button1] = { NULL,		NULL		},
 			[Button5-Button1] = { NULL,		NULL		},
 		} },
 		[CloseBtn]	= { "button.close",	CLOSEPIXMAP,	{
 			[Button1-Button1] = { NULL,		b_close		},
-			[Button2-Button1] = { NULL,		b_close		},
-			[Button3-Button1] = { NULL,		b_close		},
+			[Button2-Button1] = { NULL,		b_kill		},
+			[Button3-Button1] = { NULL,		b_xkill		},
 			[Button4-Button1] = { NULL,		NULL		},
 			[Button5-Button1] = { NULL,		NULL		},
 		} },
 		[ShadeBtn]	= { "button.shade",	SHADEPIXMAP,	{
-			[Button1-Button1] = { NULL,		b_shade		},
+			[Button1-Button1] = { NULL,		b_reshade	},
 			[Button2-Button1] = { NULL,		b_shade		},
-			[Button3-Button1] = { NULL,		b_shade		},
+			[Button3-Button1] = { NULL,		b_unshade	},
 			[Button4-Button1] = { NULL,		NULL		},
 			[Button5-Button1] = { NULL,		NULL		},
 		} },
 		[StickBtn]	= { "button.stick",	STICKPIXMAP,	{
-			[Button1-Button1] = { NULL,		b_stick		},
+			[Button1-Button1] = { NULL,		b_restick	},
 			[Button2-Button1] = { NULL,		b_stick		},
-			[Button3-Button1] = { NULL,		b_stick		},
+			[Button3-Button1] = { NULL,		b_unstick	},
 			[Button4-Button1] = { NULL,		NULL		},
 			[Button5-Button1] = { NULL,		NULL		},
 		} },
 		[LHalfBtn]	= { "button.lhalf",	LHALFPIXMAP,	{
-			[Button1-Button1] = { NULL,		b_lhalf		},
+			[Button1-Button1] = { NULL,		b_relhalf	},
 			[Button2-Button1] = { NULL,		b_lhalf		},
-			[Button3-Button1] = { NULL,		b_lhalf	},
+			[Button3-Button1] = { NULL,		b_unlhalf	},
 			[Button4-Button1] = { NULL,		NULL		},
 			[Button5-Button1] = { NULL,		NULL		},
 		} },
 		[RHalfBtn]	= { "button.rhalf",	RHALFPIXMAP,	{
-			[Button1-Button1] = { NULL,		b_rhalf		},
+			[Button1-Button1] = { NULL,		b_rerhalf	},
 			[Button2-Button1] = { NULL,		b_rhalf		},
-			[Button3-Button1] = { NULL,		b_rhalf		},
+			[Button3-Button1] = { NULL,		b_unrhalf	},
 			[Button4-Button1] = { NULL,		NULL		},
 			[Button5-Button1] = { NULL,		NULL		},
 		} },
 		[FillBtn]	= { "button.fill",	FILLPIXMAP,	{
-			[Button1-Button1] = { NULL,		b_fill		},
+			[Button1-Button1] = { NULL,		b_refill	},
 			[Button2-Button1] = { NULL,		b_fill		},
-			[Button3-Button1] = { NULL,		b_fill		},
+			[Button3-Button1] = { NULL,		b_unfill	},
 			[Button4-Button1] = { NULL,		NULL		},
 			[Button5-Button1] = { NULL,		NULL		},
 		} },
 		[FloatBtn]	= { "button.float",	FLOATPIXMAP,	{
-			[Button1-Button1] = { NULL,		b_float		},
+			[Button1-Button1] = { NULL,		b_refloat	},
 			[Button2-Button1] = { NULL,		b_float		},
-			[Button3-Button1] = { NULL,		b_float		},
+			[Button3-Button1] = { NULL,		b_tile		},
 			[Button4-Button1] = { NULL,		NULL		},
 			[Button5-Button1] = { NULL,		NULL		},
 		} },
@@ -1221,11 +1006,11 @@ initbuttons()
 			[Button5-Button1] = { NULL,		NULL		},
 		} },
 		[TitleName]	= { "title.name",	NULL,		{
-			[Button1-Button1] = { m_move,		NULL		},
-			[Button2-Button1] = { NULL,		NULL		},
-			[Button3-Button1] = { m_resize,	NULL		},
-			[Button4-Button1] = { NULL,		NULL		},
-			[Button5-Button1] = { NULL,		NULL		},
+			[Button1-Button1] = { m_move,		m_raiselower	},
+			[Button2-Button1] = { m_move,		m_zoom		},
+			[Button3-Button1] = { m_resize,		m_raiselower	},
+			[Button4-Button1] = { m_shade,		NULL		},
+			[Button5-Button1] = { m_unshade,	NULL		},
 		} },
 		[TitleSep]	= { "title.separator",	NULL,		{
 			[Button1-Button1] = { NULL,		NULL		},

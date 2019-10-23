@@ -42,18 +42,16 @@ m_resize(Client *c, XEvent *e)
 Bool
 m_shade(Client *c, XEvent *e)
 {
-	switch (e->xbutton.button) {
-	case Button4:
-		/* up */
-		if (!c->is.shaded)
-			toggleshade(c);
-		break;
-	case Button5:
-		/* down */
-		if (c->is.shaded)
-			toggleshade(c);
-		break;
-	}
+	if (!c->is.shaded)
+		toggleshade(c);
+	return True;
+}
+
+Bool
+m_unshade(Client *c, XEvent *e)
+{
+	if (c->is.shaded)
+		toggleshade(c);
 	return True;
 }
 

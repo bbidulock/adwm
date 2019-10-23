@@ -4,10 +4,12 @@
 #define __LOCAL_ACTIONS_H__
 
 Bool m_move(Client *c, XEvent *ev);
+Bool m_raiselower(Client *c, XEvent *ev);
 Bool m_nexttag(Client *c, XEvent *ev);
 Bool m_prevtag(Client *c, XEvent *ev);
 Bool m_resize(Client *c, XEvent *ev);
 Bool m_shade(Client *c, XEvent *ev);
+Bool m_unshade(Client *c, XEvent *ev);
 Bool m_spawn(Client *c, XEvent *ev);
 Bool m_spawn2(Client *c, XEvent *ev);
 Bool m_spawn3(Client *c, XEvent *ev);

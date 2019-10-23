@@ -644,6 +644,64 @@ initkeysfile(void)
 }
 
 static void
+initbtnsfile(void)
+{
+	XrmDatabase brdb;
+	const char *file;
+
+	free(config.btnsfile);
+	config.btnsfile = NULL;
+
+	if (!config.btnsfile && (file = getresource("buttonFile", "buttonrc"))) {
+		if (!(config.btnsfile = findrcfile(file)))
+			XPRINTF("Could not find buttons file for %s\n", file);
+		if (config.btnsfile && access(config.btnsfile, R_OK)) {
+			XPRINTF("Could not access %s: %s\n", config.btnsfile, strerror(errno));
+			free(config.btnsfile);
+			config.btnsfile = NULL;
+		}
+		if (!config.btnsfile && strcmp(file, "buttonrc")) {
+			if (!(config.btnsfile = findrcfile("buttonrc")))
+				XPRINTF("Could not find buttons file for %s\n", "buttonrc");
+		}
+		if (config.btnsfile && access(config.btnsfile, R_OK)) {
+			XPRINTF("Could not access %s: %s\n", config.btnsfile, strerror(errno));
+			free(config.btnsfile);
+			config.btnsfile = NULL;
+		}
+	}
+	if (!config.btnsfile) {
+		if (!(config.btnsfile = findthemepath("buttonrc")))
+			XPRINTF("Could not find buttons file for %s\n", "buttonrc");
+		if (config.btnsfile && access(config.btnsfile, R_OK)) {
+			XPRINTF("Could not access %s: %s\n", config.btnsfile, strerror(errno));
+			free(config.btnsfile);
+			config.btnsfile = NULL;
+		}
+	}
+	if (!config.btnsfile) {
+		if (!(config.btnsfile = findstylepath("buttonrc")))
+			XPRINTF("Could not find buttons file for %s\n", "buttonrc");
+		if (config.btnsfile && access(config.btnsfile, R_OK)) {
+			XPRINTF("Could not access %s: %s\n", config.btnsfile, strerror(errno));
+			free(config.btnsfile);
+			config.btnsfile = NULL;
+		}
+	}
+	if (!config.btnsfile) {
+		XPRINTF("Could not find readable buttons file.\n");
+		return;
+	}
+	XPRINTF("Reading databse file %s\n", config.btnsfile);
+	brdb = XrmGetFileDatabase(config.btnsfile);
+	if (!brdb) {
+		XPRINTF("Could not read database file '%s'\n", config.btnsfile);
+		return;
+	}
+	XrmMergeDatabases(brdb, &xrdb);
+}
+
+static void
 initstylefile(void)
 {
 	XrmDatabase yrdb;
@@ -928,6 +986,7 @@ initrcfile(const char *conf, Bool reload)
 	initthemefile();	/* read theme elements into the database */
 	initstylefile();	/* read style elements into the database */
 	initkeysfile();		/* read key bindings into the database */
+	initbtnsfile();		/* read button bindings into the database */
 	initdockfile();		/* read dock elements into the database */
 
 	/* might want to pass these to above, instead of changing directories */

@@ -89,8 +89,8 @@ Defaults:
 .Dl Adwm* Ns Cm root.button1.pressed Li : Ar spawn3
 .Dl Adwm* Ns Cm root.button2.pressed Li : Ar spawn2
 .Dl Adwm* Ns Cm root.button3.pressed Li : Ar spawn
-.Dl Adwm* Ns Cm root.button4.pressed Li : Ar nexttag
-.Dl Adwm* Ns Cm root.button5.pressed Li : Ar prevtag
+.Dl Adwm* Ns Cm root.button4.pressed Li : Ar prevtag
+.Dl Adwm* Ns Cm root.button5.pressed Li : Ar nexttag
 .Ss CLIENT WINDOW
 Client window locations as follows:
 .Pp
@@ -115,22 +115,22 @@ Defaults:
 .Dl Adwm* Ns Cm client.title.button1.pressed Ns Li : Ar move
 .Dl Adwm* Ns Cm client.title.button2.pressed Ns Li : Ar zoom
 .Dl Adwm* Ns Cm client.title.button3.pressed Ns Li : Ar resize
-.Dl Adwm* Ns Cm client.title.button4.pressed Ns Li : Ar unshade
-.Dl Adwm* Ns Cm client.title.button5.pressed Ns Li : Ar shade
+.Dl Adwm* Ns Cm client.title.button4.pressed Ns Li : Ar shade
+.Dl Adwm* Ns Cm client.title.button5.pressed Ns Li : Ar unshade
 .Pp
 .Dl Adwm* Ns Cm client.grips.button1.pressed Ns Li : Ar resize
 .Pp
 .Dl Adwm* Ns Cm client.frame.button1.pressed Ns Li : Ar resize
-.Dl Adwm* Ns Cm client.frame.button4.pressed Ns Li : Ar unshade
-.Dl Adwm* Ns Cm client.frame.button5.pressed Ns Li : Ar shade
+.Dl Adwm* Ns Cm client.frame.button4.pressed Ns Li : Ar shade
+.Dl Adwm* Ns Cm client.frame.button5.pressed Ns Li : Ar unshade
 .Pp
 .Dl Adwm* Ns Cm client.dock.button1.pressed Ns Li : Ar move
 .Pp
 .Dl Adwm* Ns Cm client.window.button1.pressed Ns Li : Ar move
 .Dl Adwm* Ns Cm client.window.button2.pressed Ns Li : Ar zoom
 .Dl Adwm* Ns Cm client.window.button3.pressed Ns Li : Ar resize
-.Dl Adwm* Ns Cm client.window.button4.pressed Ns Li : Ar unshade
-.Dl Adwm* Ns Cm client.window.button5.pressed Ns Li : Ar shade
+.Dl Adwm* Ns Cm client.window.button4.pressed Ns Li : Ar shade
+.Dl Adwm* Ns Cm client.window.button5.pressed Ns Li : Ar unshade
 .Pp
 .Dl Adwm* Ns Cm client.icon.button1.pressed Ns Li : Ar move
 .Ss TITLE BAR ELEMENTS
@@ -252,12 +252,12 @@ button on the mouse: normally the center button on a three-button mouse.
 .It Cm button4
 The
 .Ar Button4
-button on the mouse: normally the scroll-wheel down motion on a
+button on the mouse: normally the scroll-wheel up motion on a
 scroll-wheel mouse.
 .It Cm button5
 The
 .Ar Button5
-button on the mouse: normally the scroll-wheel up motion on a
+button on the mouse: normally the scroll-wheel down motion on a
 scroll-wheel mouse.
 .El
 .It Cm <direction>
@@ -268,10 +268,13 @@ to perform the associated action:
 .It Cm pressed
 On the event that the mouse button is pressed and held.
 .It Cm release
-On the event that the mouse button is released.
-.It Cm clicked
-On the event that the mouse button is clicked (pressed and released
-without movement nor significant time between the press and release).
+On the event that the mouse button is released.  If an action
+is also defined for the
+.Cm pressed
+direction, and movement failed to be detected before the button was
+released, the action defined for the
+.Cm release
+direction will be invoked.
 .El
 .El
 .Sh ACTIONS
@@ -355,20 +358,20 @@ Normally bound to mouse button #3 over the root window.
 .Pp
 Default:
 .Dl Adwm* Ns Cm root.button3.pressed Li : Ar spawn
-.It Cm nexttag
-Move to the next tag/view (desktop/workspace).
-Normally bound to mouse button #4 (scroll wheel down) over the root
-window.
-.Pp
-Default:
-.Dl Adwm* Ns Cm root.button4.pressed Li : Ar nexttag
 .It Cm prevtag
 Move to the previous tag/view (desktop/workspace).
-Normally bound to mouse button #5 (scroll wheel up) over the root
+Normally bound to mouse button #4 (scroll wheel up) over the root
 window.
 .Pp
 Default:
-.Dl Adwm* Ns Cm root.button5.pressed Li : Ar prevtag
+.Dl Adwm* Ns Cm root.button4.pressed Li : Ar prevtag
+.It Cm nexttag
+Move to the next tag/view (desktop/workspace).
+Normally bound to mouse button #5 (scroll wheel down) over the root
+window.
+.Pp
+Default:
+.Dl Adwm* Ns Cm root.button5.pressed Li : Ar nexttag
 .El
 .Ss CLIENT ACTIONS
 The following actions can be performed over the client window.
@@ -409,20 +412,20 @@ Default:
 .Dl Adwm* Ns Cm client.icon.button1.pressed Ns Li : Ar move
 .It Cm shade
 Shade the window.
-Normally bound to mouse button #5 (scroll wheel up) over client window elements.
+Normally bound to mouse button #4 (scroll wheel up) over client window elements.
 .Pp
 Default:
-.Dl Adwm* Ns Cm client.title.button5.pressed Ns Li : Ar shade
-.Dl Adwm* Ns Cm client.frame.button5.pressed Ns Li : Ar shade
-.Dl Adwm* Ns Cm client.window.button5.pressed Ns Li : Ar shade
+.Dl Adwm* Ns Cm client.title.button4.pressed Ns Li : Ar shade
+.Dl Adwm* Ns Cm client.frame.button4.pressed Ns Li : Ar shade
+.Dl Adwm* Ns Cm client.window.button4.pressed Ns Li : Ar shade
 .It Cm unshade
 Unshade the window.
-Normally bound to mouse button #4 (scroll wheel down) over client window elements.
+Normally bound to mouse button #5 (scroll wheel down) over client window elements.
 .Pp
 Default:
-.Dl Adwm* Ns Cm client.title.button4.pressed Ns Li : Ar unshade
-.Dl Adwm* Ns Cm client.frame.button4.pressed Ns Li : Ar unshade
-.Dl Adwm* Ns Cm client.window.button4.pressed Ns Li : Ar unshade
+.Dl Adwm* Ns Cm client.title.button5.pressed Ns Li : Ar unshade
+.Dl Adwm* Ns Cm client.frame.button5.pressed Ns Li : Ar unshade
+.Dl Adwm* Ns Cm client.window.button5.pressed Ns Li : Ar unshade
 .It Cm zoom
 Move (press and hold) or zoom (click) the window.
 Normally bound to mouse button #2 over some client window elements.

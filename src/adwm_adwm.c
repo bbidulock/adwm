@@ -27,6 +27,7 @@ typedef struct {
 	char *sdir;			/* system directory */
 	char *rcfile;			/* rcfile */
 	char *keysfile;			/* kerysrc file */
+	char *btnsfile;			/* buttonrc file */
 	char *stylefile;		/* stylerc file */
 	char *themefile;		/* themerc file */
 } AdwmConfig;
@@ -37,6 +38,7 @@ static AdwmConfig config;
 
 static XrmDatabase xconfigdb;		/* general configuration */
 static XrmDatabase xkeysdb;		/* key binding configuration */
+static XrmDatabase xbtnsdb;		/* button binding configuration */
 static XrmDatabase xstyledb;		/* current style configuration */
 static XrmDatabase xthemedb;		/* current theme configuration */
 
@@ -111,6 +113,48 @@ initkeysfile_ADWM(void)
 		return;
 	}
 	XrmMergeDatabases(xkeysdb, &xconfigdb);
+}
+/** @} */
+
+/** @brief initbtnsfile_ADWM: locate and load runtime buttons file
+  *
+  * @{ */
+static void
+initbtnsfile_ADWM(void)
+{
+	const char *file;
+	struct stat st;
+	char *path;
+
+	file = getresource("buttonFile", "buttonrc");
+	path = ecalloc(PATH_MAX + 1, sizeof(*path));
+	strncpy(path, file, PATH_MAX);
+	if (!lstat(file, &st) && S_ISLNK(st.st_mode)) {
+		if (readlink(file, path, PATH_MAX) == -1)
+			eprint("%s: %s\n", file, strerror(errno));
+	}
+	free(config.btnsfile);
+	config.btnsfile = strdup(path);
+	if (*config.btnsfile != '/') {
+		strncpy(path, config.rcfile, PATH_MAX);
+		if (strrchr(path, '/'))
+			*strrchr(path, '/') = '\0';
+		strncat(path, "/", PATH_MAX);
+		strncat(path, config.btnsfile, PATH_MAX);
+		free(config.btnsfile);
+		config.btnsfile = strdup(path);
+	}
+	free(path);
+	if (xbtnsdb) {
+		XrmDestroyDatabase(xbtnsdb);
+		xbtnsdb = NULL;
+	}
+	xbtnsdb = XrmGetFileDatabase(config.btnsfile);
+	if (!xbtnsdb) {
+		XPRINTF("Could not find database file '%s'\n", config.btnsfile);
+		return;
+	}
+	XrmMergeDatabases(xbtnsdb, &xconfigdb);
 }
 /** @} */
 
@@ -314,6 +358,7 @@ initrcfile_ADWM(const char *conf, Bool reload)
 			XPRINTF("Could not change directory to %s: %s\n", config.udir, strerror(errno));
 	}
 	initkeysfile_ADWM();
+	initbtnsfile_ADWM();
 	initstylefile_ADWM();
 	initthemefile_ADWM();
 }

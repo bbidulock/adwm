@@ -16,22 +16,23 @@ typedef struct {
 	};
 	union {
 		struct {
-			char *dockfile;	/* dockrc file */
-			char *keysfile;	/* kerysrc file */
-			char *iconfile;	    /* icon index.theme file */
+			char *dockfile;		/* dockrc file */
+			char *keysfile;		/* keysrc file */
+			char *btnsfile;		/* buttonrc file */
+			char *iconfile;		/* icon index.theme file */
 			char *themefile;	/* themerc file */
 			char *stylefile;	/* stylerc file */
-			char *rcfile;	/* rcfile */
+			char *rcfile;		/* rcfile */
 		};
 		char *files[6];
 	};
 	union {
 		struct {
-			char *dockname; /* dock theme name */
-			char *keynames; /* keys theme name */
-			char *iconname; /* icon theme name */
-			char *themename; /* theme name */
-			char *stylename; /* style name */
+			char *dockname;		/* dock theme name */
+			char *keynames;		/* keys theme name */
+			char *iconname;		/* icon theme name */
+			char *themename;	/* theme name */
+			char *stylename;	/* style name */
 		};
 		char *names[5];
 	};

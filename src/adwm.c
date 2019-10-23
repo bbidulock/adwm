@@ -5,6 +5,7 @@
 #include "ewmh.h"
 #include "layout.h"
 #include "parse.h"
+#include "buttons.h"
 #include "tags.h"
 #include "actions.h"
 #include "config.h"
@@ -145,7 +146,7 @@ Bool (*actions[LastOn][Button5-Button1+1][2]) (Client *, XEvent *) = {
 		[Button2-Button1] =	{ m_zoom,	    NULL	    },
 		[Button3-Button1] =	{ m_resize,	    NULL	    },
 		[Button4-Button1] =	{ m_shade,	    NULL	    },
-		[Button5-Button1] =	{ m_shade,	    NULL	    },
+		[Button5-Button1] =	{ m_unshade,	    NULL	    },
 	},
 	[OnClientGrips]  = {
 		[Button1-Button1] =	{ m_resize,	    NULL	    },
@@ -159,7 +160,7 @@ Bool (*actions[LastOn][Button5-Button1+1][2]) (Client *, XEvent *) = {
 		[Button2-Button1] =	{ NULL,		    NULL	    },
 		[Button3-Button1] =	{ NULL,		    NULL	    },
 		[Button4-Button1] =	{ m_shade,	    NULL	    },
-		[Button5-Button1] =	{ m_shade,	    NULL	    },
+		[Button5-Button1] =	{ m_unshade,	    NULL	    },
 	},
 	[OnClientDock]   = {
 		[Button1-Button1] =	{ m_move,	    NULL	    },
@@ -173,7 +174,7 @@ Bool (*actions[LastOn][Button5-Button1+1][2]) (Client *, XEvent *) = {
 		[Button2-Button1] =	{ m_zoom,	    NULL	    },
 		[Button3-Button1] =	{ m_resize,	    NULL	    },
 		[Button4-Button1] =	{ m_shade,	    NULL	    },
-		[Button5-Button1] =	{ m_shade,	    NULL	    },
+		[Button5-Button1] =	{ m_unshade,	    NULL	    },
 	},
 	[OnClientIcon] = {
 		[Button1-Button1] =	{ m_move,	    NULL	    },
@@ -588,7 +589,7 @@ buttonpress(XEvent *e)
 	int i;
 	XButtonPressedEvent *ev = &e->xbutton;
 	static int button_proxy = 0;
-	Bool (*action) (Client *, XEvent *);
+	Bool (*action) (Client *, XEvent *), result;
 	int button, direct, state;
 
 	if (Button1 > ev->button || ev->button > Button5)
@@ -633,7 +634,13 @@ buttonpress(XEvent *e)
 		if ((action = actions[OnRoot][button][direct])) {
 			XPRINTF("Action %p for On=%d, button=%d, direct=%d\n", action,
 				OnRoot, button + Button1, direct);
-			(*action) (NULL, (XEvent *) ev);
+			result = (*action) (NULL, (XEvent *) ev);
+			/* perform release action if pressed action failed */
+			if (!result && !direct && (action = actions[OnRoot][button][1])) {
+				XPRINTF("Action %p for On=%d, button=%d, direct=%d\n", action,
+					OnRoot, button + Button1, 1);
+				result = (*action) (NULL, (XEvent *) ev);
+			}
 		} else
 			XPRINTF("No action for On=%d, button=%d, direct=%d\n", OnRoot,
 				button + Button1, direct);
@@ -689,7 +696,13 @@ buttonpress(XEvent *e)
 		if ((action = actions[OnClientTitle][button][direct])) {
 			XPRINTF("Action %p for On=%d, button=%d, direct=%d\n", action,
 				OnClientTitle, button + Button1, direct);
-			(*action) (c, (XEvent *) ev);
+			result = (*action) (c, (XEvent *) ev);
+			/* perform release action if pressed action failed */
+			if (!result && !direct && (action = actions[OnClientTitle][button][1])) {
+				XPRINTF("Action %p for On=%d, button=%d, direct=%d\n", action,
+					OnClientTitle, button + Button1, 1);
+				result = (*action) (NULL, (XEvent *) ev);
+			}
 		} else
 			XPRINTF("No action for On=%d, button=%d, direct=%d\n",
 				OnClientTitle, button + Button1, direct);
@@ -699,7 +712,13 @@ buttonpress(XEvent *e)
 		if ((action = actions[OnClientGrips][button][direct])) {
 			XPRINTF("Action %p for On=%d, button=%d, direct=%d\n", action,
 				ClientGrips, button + Button1, direct);
-			(*action) (c, (XEvent *) ev);
+			result = (*action) (c, (XEvent *) ev);
+			/* perform release action if pressed action failed */
+			if (!result && !direct && (action = actions[OnClientGrips][button][1])) {
+				XPRINTF("Action %p for On=%d, button=%d, direct=%d\n", action,
+					OnClientGrips, button + Button1, 1);
+				result = (*action) (NULL, (XEvent *) ev);
+			}
 		} else
 			XPRINTF("No action for On=%d, button=%d, direct=%d\n",
 				ClientGrips, button + Button1, direct);
@@ -714,7 +733,13 @@ buttonpress(XEvent *e)
 		if ((action = actions[OnClientIcon][button][direct])) {
 			XPRINTF("Action %p for On=%d, button=%d, direct=%d\n", action,
 				ClientIcon, button + Button1, direct);
-			(*action) (c, (XEvent *) ev);
+			result = (*action) (c, (XEvent *) ev);
+			/* perform release action if pressed action failed */
+			if (!result && !direct && (action = actions[OnClientIcon][button][1])) {
+				XPRINTF("Action %p for On=%d, button=%d, direct=%d\n", action,
+					OnClientIcon, button + Button1, 1);
+				result = (*action) (NULL, (XEvent *) ev);
+			}
 		} else
 			XPRINTF("No action for On=%d, button=%d, direct=%d\n", ClientIcon,
 				button + Button1, direct);
@@ -729,7 +754,13 @@ buttonpress(XEvent *e)
 		if ((action = actions[OnClientWindow][button][direct])) {
 			XPRINTF("Action %p for On=%d, button=%d, direct=%d\n", action,
 				OnClientWindow, button + Button1, direct);
-			(*action) (c, (XEvent *) ev);
+			result = (*action) (c, (XEvent *) ev);
+			/* perform release action if pressed action failed */
+			if (!result && !direct && (action = actions[OnClientWindow][button][1])) {
+				XPRINTF("Action %p for On=%d, button=%d, direct=%d\n", action,
+					OnClientWindow, button + Button1, 1);
+				result = (*action) (NULL, (XEvent *) ev);
+			}
 		} else
 			XPRINTF("No action for On=%d, button=%d, direct=%d\n",
 				OnClientWindow, button + Button1, direct);
@@ -741,7 +772,13 @@ buttonpress(XEvent *e)
 			if ((action = actions[OnClientDock][button][direct])) {
 				XPRINTF("Action %p for On=%d, button=%d, direct=%d\n",
 					action, OnClientDock, button + Button1, direct);
-				(*action) (c, (XEvent *) ev);
+				result = (*action) (c, (XEvent *) ev);
+				/* perform release action if pressed action failed */
+				if (!result && !direct && (action = actions[OnClientDock][button][1])) {
+					XPRINTF("Action %p for On=%d, button=%d, direct=%d\n", action,
+						OnClientDock, button + Button1, 1);
+					result = (*action) (NULL, (XEvent *) ev);
+				}
 			} else
 				XPRINTF("No action for On=%d, button=%d, direct=%d\n",
 					OnClientDock, button + Button1, direct);
@@ -749,7 +786,13 @@ buttonpress(XEvent *e)
 			if ((action = actions[OnClientFrame][button][direct])) {
 				XPRINTF("Action %p for On=%d, button=%d, direct=%d\n",
 					action, OnClientFrame, button + Button1, direct);
-				(*action) (c, (XEvent *) ev);
+				result = (*action) (c, (XEvent *) ev);
+				/* perform release action if pressed action failed */
+				if (!result && !direct && (action = actions[OnClientFrame][button][1])) {
+					XPRINTF("Action %p for On=%d, button=%d, direct=%d\n", action,
+						OnClientFrame, button + Button1, 1);
+					result = (*action) (NULL, (XEvent *) ev);
+				}
 			} else
 				XPRINTF("No action for On=%d, button=%d, direct=%d\n",
 					OnClientFrame, button + Button1, direct);
@@ -5295,6 +5338,8 @@ initialize(const char *conf, AdwmOperations * ops, Bool reload)
 
 		OPRINTF("initializing key bindings\n");
 		initkeys(reload);	/* init key bindings */
+		OPRINTF("initializing button bindings\n");
+		initbuttons(reload);	/* init button bindings */
 		OPRINTF("initializing dock\n");
 		initdock(reload);	/* initialize dock */
 		OPRINTF("initializing layouts and views\n");

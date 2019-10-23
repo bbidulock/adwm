@@ -114,6 +114,7 @@ Configuration:
       Possibly use client message with action id and up to 4
       parameters.
 * [ ] Provide external mechanism for redefining key bindings.
+* [x] Make mouse button action bindings configurable.
 
 
 // vim: set ft=asciidoc tw=72 nocin nosi fo+=tcqlorn spell:

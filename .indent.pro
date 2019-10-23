@@ -270,3 +270,4 @@
 -Tht_link_t
 -Tbfunc_t
 -Tabq_item_t
+-TXClassHint

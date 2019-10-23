@@ -92,6 +92,10 @@ save(Bool permanent)
 			snprintf(line, sizeof(line), "Adwm*keysFile:\t\t%s\n", str);
 			XrmPutLineResource(&srdb, line);
 		}
+		if ((str = config.btnsfile) && strcmp(str, "buttonrc")) {
+			snprintf(line, sizeof(line), "Adwm*buttonFile:\t\t%s\n", str);
+			XrmPutLineResource(&srdb, line);
+		}
 
 		/* should probably save the dock definitions in the main file */
 
@@ -125,6 +129,10 @@ save(Bool permanent)
 		}
 		if ((str = getresource("keysFile", NULL)) && strcmp(str, "keysrc")) {
 			snprintf(line, sizeof(line), "Adwm*keysFile:\t\t%s\n", str);
+			XrmPutLineResource(&srdb, line);
+		}
+		if ((str = getresource("buttonFile", NULL)) && strcmp(str, "buttonrc")) {
+			snprintf(line, sizeof(line), "Adwm*buttonFile:\t\t%s\n", str);
 			XrmPutLineResource(&srdb, line);
 		}
 		if ((str = getresource("dockFile", NULL)) && strcmp(str, "dockrc")) {

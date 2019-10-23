@@ -6,6 +6,8 @@
 enum { Normal, Focused, Selected };
 enum { AlignLeft, AlignCenter, AlignRight };	/* title position */
 
+extern Bool (*buttons[LastElement][Button5-Button1+1][2]) (Client *, XEvent *);
+
 Bool createwmicon(Client *c);
 Bool createkwmicon(Client *c, Pixmap *data, unsigned long n);
 Bool createneticon(Client *c, long *data, unsigned long n);

@@ -14,7 +14,7 @@ m_move(Client *c, XEvent *e)
 }
 
 Bool
-m_raiselower(Client *c, XEvent *e)
+m_restack(Client *c, XEvent *e)
 {
 	raiselower(c);
 	return True;
@@ -313,6 +313,28 @@ b_resize(Client *c, XEvent *ev)
 	if (c->can.size)
 		return m_resize(c, ev);
 	return True;
+}
+
+Bool
+b_move(Client *c, XEvent *ev)
+{
+	if (c->can.move)
+		return m_move(c, ev);
+	return True;
+}
+
+Bool
+b_zoom(Client *c, XEvent *ev)
+{
+	if (c->can.arrange)
+		return m_zoom(c, ev);
+	return True;
+}
+
+Bool
+b_restack(Client *c, XEvent *ev)
+{
+	return m_restack(c, ev);
 }
 
 void

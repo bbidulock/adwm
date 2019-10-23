@@ -903,6 +903,118 @@ freebuttons()
 		freeelement(i);
 }
 
+Bool (*buttons[LastElement][Button5-Button1+1][2]) (Client *, XEvent *) = {
+	/* *INDENT-OFF* */
+	/* ElementType */
+	[MenuBtn]	= {
+				    /* ButtonPress	ButtonRelease	*/
+		[Button1-Button1] = { NULL,		b_menu		},
+		[Button2-Button1] = { NULL,		b_menu		},
+		[Button3-Button1] = { NULL,		b_menu		},
+		[Button4-Button1] = { NULL,		NULL		},
+		[Button5-Button1] = { NULL,		NULL		},
+	},
+	[IconifyBtn]	= {
+		[Button1-Button1] = { NULL,		b_iconify	},
+		[Button2-Button1] = { NULL,		b_hide		},
+		[Button3-Button1] = { NULL,		b_withdraw	},
+		[Button4-Button1] = { NULL,		NULL		},
+		[Button5-Button1] = { NULL,		NULL		},
+	},
+	[MaximizeBtn]	= {
+		[Button1-Button1] = { NULL,		b_maxb		},
+		[Button2-Button1] = { NULL,		b_maxv		},
+		[Button3-Button1] = { NULL,		b_maxh		},
+		[Button4-Button1] = { NULL,		NULL		},
+		[Button5-Button1] = { NULL,		NULL		},
+	},
+	[CloseBtn]	= {
+		[Button1-Button1] = { NULL,		b_close		},
+		[Button2-Button1] = { NULL,		b_kill		},
+		[Button3-Button1] = { NULL,		b_xkill		},
+		[Button4-Button1] = { NULL,		NULL		},
+		[Button5-Button1] = { NULL,		NULL		},
+	},
+	[ShadeBtn]	= {
+		[Button1-Button1] = { NULL,		b_reshade	},
+		[Button2-Button1] = { NULL,		b_shade		},
+		[Button3-Button1] = { NULL,		b_unshade	},
+		[Button4-Button1] = { NULL,		NULL		},
+		[Button5-Button1] = { NULL,		NULL		},
+	},
+	[StickBtn]	= {
+		[Button1-Button1] = { NULL,		b_restick	},
+		[Button2-Button1] = { NULL,		b_stick		},
+		[Button3-Button1] = { NULL,		b_unstick	},
+		[Button4-Button1] = { NULL,		NULL		},
+		[Button5-Button1] = { NULL,		NULL		},
+	},
+	[LHalfBtn]	= {
+		[Button1-Button1] = { NULL,		b_relhalf	},
+		[Button2-Button1] = { NULL,		b_lhalf		},
+		[Button3-Button1] = { NULL,		b_unlhalf	},
+		[Button4-Button1] = { NULL,		NULL		},
+		[Button5-Button1] = { NULL,		NULL		},
+	},
+	[RHalfBtn]	= {
+		[Button1-Button1] = { NULL,		b_rerhalf	},
+		[Button2-Button1] = { NULL,		b_rhalf		},
+		[Button3-Button1] = { NULL,		b_unrhalf	},
+		[Button4-Button1] = { NULL,		NULL		},
+		[Button5-Button1] = { NULL,		NULL		},
+	},
+	[FillBtn]	= {
+		[Button1-Button1] = { NULL,		b_refill	},
+		[Button2-Button1] = { NULL,		b_fill		},
+		[Button3-Button1] = { NULL,		b_unfill	},
+		[Button4-Button1] = { NULL,		NULL		},
+		[Button5-Button1] = { NULL,		NULL		},
+	},
+	[FloatBtn]	= {
+		[Button1-Button1] = { NULL,		b_refloat	},
+		[Button2-Button1] = { NULL,		b_float		},
+		[Button3-Button1] = { NULL,		b_tile		},
+		[Button4-Button1] = { NULL,		NULL		},
+		[Button5-Button1] = { NULL,		NULL		},
+	},
+	[SizeBtn]	= {
+		[Button1-Button1] = { b_resize,		NULL		},
+		[Button2-Button1] = { b_resize,		NULL		},
+		[Button3-Button1] = { b_resize,		NULL		},
+		[Button4-Button1] = { NULL,		NULL		},
+		[Button5-Button1] = { NULL,		NULL		},
+	},
+	[IconBtn]	= {
+		[Button1-Button1] = { NULL,		b_menu		},
+		[Button2-Button1] = { NULL,		b_menu		},
+		[Button3-Button1] = { NULL,		b_menu		},
+		[Button4-Button1] = { NULL,		NULL		},
+		[Button5-Button1] = { NULL,		NULL		},
+	},
+	[TitleTags]	= {
+		[Button1-Button1] = { NULL,		NULL		},
+		[Button2-Button1] = { NULL,		NULL		},
+		[Button3-Button1] = { NULL,		NULL		},
+		[Button4-Button1] = { NULL,		NULL		},
+		[Button5-Button1] = { NULL,		NULL		},
+	},
+	[TitleName]	= {
+		[Button1-Button1] = { b_move,		b_restack	},
+		[Button2-Button1] = { b_move,		b_zoom		},
+		[Button3-Button1] = { b_resize,		b_restack	},
+		[Button4-Button1] = { b_shade,		NULL		},
+		[Button5-Button1] = { b_unshade,	NULL		},
+	},
+	[TitleSep]	= {
+		[Button1-Button1] = { NULL,		NULL		},
+		[Button2-Button1] = { NULL,		NULL		},
+		[Button3-Button1] = { NULL,		NULL		},
+		[Button4-Button1] = { NULL,		NULL		},
+		[Button5-Button1] = { NULL,		NULL		},
+	}
+	/* *INDENT-ON* */
+};
+
 static void
 initbuttons()
 {
@@ -910,115 +1022,23 @@ initbuttons()
 	static struct {
 		const char *name;
 		const char *def;
-		Bool (*action[Button5-Button1+1][2]) (Client *, XEvent *);
 	} setup[LastElement] = {
 		/* *INDENT-OFF* */
-		[MenuBtn]	= { "button.menu",	MENUPIXMAP,	{
-			[Button1-Button1] = { NULL,		b_menu		},
-			[Button2-Button1] = { NULL,		b_menu		},
-			[Button3-Button1] = { NULL,		b_menu		},
-			[Button4-Button1] = { NULL,		NULL		},
-			[Button5-Button1] = { NULL,		NULL		},
-		} },
-		[IconifyBtn]	= { "button.iconify",	ICONPIXMAP,	{
-					    /* ButtonPress	ButtonRelease	*/
-			[Button1-Button1] = { NULL,		b_iconify	},
-			[Button2-Button1] = { NULL,		b_hide		},
-			[Button3-Button1] = { NULL,		b_withdraw	},
-			[Button4-Button1] = { NULL,		NULL		},
-			[Button5-Button1] = { NULL,		NULL		},
-		} },
-		[MaximizeBtn]	= { "button.maximize",	MAXPIXMAP,	{
-			[Button1-Button1] = { NULL,		b_maxb		},
-			[Button2-Button1] = { NULL,		b_maxv		},
-			[Button3-Button1] = { NULL,		b_maxh		},
-			[Button4-Button1] = { NULL,		NULL		},
-			[Button5-Button1] = { NULL,		NULL		},
-		} },
-		[CloseBtn]	= { "button.close",	CLOSEPIXMAP,	{
-			[Button1-Button1] = { NULL,		b_close		},
-			[Button2-Button1] = { NULL,		b_kill		},
-			[Button3-Button1] = { NULL,		b_xkill		},
-			[Button4-Button1] = { NULL,		NULL		},
-			[Button5-Button1] = { NULL,		NULL		},
-		} },
-		[ShadeBtn]	= { "button.shade",	SHADEPIXMAP,	{
-			[Button1-Button1] = { NULL,		b_reshade	},
-			[Button2-Button1] = { NULL,		b_shade		},
-			[Button3-Button1] = { NULL,		b_unshade	},
-			[Button4-Button1] = { NULL,		NULL		},
-			[Button5-Button1] = { NULL,		NULL		},
-		} },
-		[StickBtn]	= { "button.stick",	STICKPIXMAP,	{
-			[Button1-Button1] = { NULL,		b_restick	},
-			[Button2-Button1] = { NULL,		b_stick		},
-			[Button3-Button1] = { NULL,		b_unstick	},
-			[Button4-Button1] = { NULL,		NULL		},
-			[Button5-Button1] = { NULL,		NULL		},
-		} },
-		[LHalfBtn]	= { "button.lhalf",	LHALFPIXMAP,	{
-			[Button1-Button1] = { NULL,		b_relhalf	},
-			[Button2-Button1] = { NULL,		b_lhalf		},
-			[Button3-Button1] = { NULL,		b_unlhalf	},
-			[Button4-Button1] = { NULL,		NULL		},
-			[Button5-Button1] = { NULL,		NULL		},
-		} },
-		[RHalfBtn]	= { "button.rhalf",	RHALFPIXMAP,	{
-			[Button1-Button1] = { NULL,		b_rerhalf	},
-			[Button2-Button1] = { NULL,		b_rhalf		},
-			[Button3-Button1] = { NULL,		b_unrhalf	},
-			[Button4-Button1] = { NULL,		NULL		},
-			[Button5-Button1] = { NULL,		NULL		},
-		} },
-		[FillBtn]	= { "button.fill",	FILLPIXMAP,	{
-			[Button1-Button1] = { NULL,		b_refill	},
-			[Button2-Button1] = { NULL,		b_fill		},
-			[Button3-Button1] = { NULL,		b_unfill	},
-			[Button4-Button1] = { NULL,		NULL		},
-			[Button5-Button1] = { NULL,		NULL		},
-		} },
-		[FloatBtn]	= { "button.float",	FLOATPIXMAP,	{
-			[Button1-Button1] = { NULL,		b_refloat	},
-			[Button2-Button1] = { NULL,		b_float		},
-			[Button3-Button1] = { NULL,		b_tile		},
-			[Button4-Button1] = { NULL,		NULL		},
-			[Button5-Button1] = { NULL,		NULL		},
-		} },
-		[SizeBtn]	= { "button.resize",	SIZEPIXMAP,	{
-			[Button1-Button1] = { b_resize,		NULL		},
-			[Button2-Button1] = { b_resize,		NULL		},
-			[Button3-Button1] = { b_resize,		NULL		},
-			[Button4-Button1] = { NULL,		NULL		},
-			[Button5-Button1] = { NULL,		NULL		},
-		} },
-		[IconBtn]	= { "button.icon",	WINPIXMAP,	{
-			[Button1-Button1] = { NULL,		b_menu		},
-			[Button2-Button1] = { NULL,		b_menu		},
-			[Button3-Button1] = { NULL,		b_menu		},
-			[Button4-Button1] = { NULL,		NULL		},
-			[Button5-Button1] = { NULL,		NULL		},
-		} },
-		[TitleTags]	= { "title.tags",	NULL,		{
-			[Button1-Button1] = { NULL,		NULL		},
-			[Button2-Button1] = { NULL,		NULL		},
-			[Button3-Button1] = { NULL,		NULL		},
-			[Button4-Button1] = { NULL,		NULL		},
-			[Button5-Button1] = { NULL,		NULL		},
-		} },
-		[TitleName]	= { "title.name",	NULL,		{
-			[Button1-Button1] = { m_move,		m_raiselower	},
-			[Button2-Button1] = { m_move,		m_zoom		},
-			[Button3-Button1] = { m_resize,		m_raiselower	},
-			[Button4-Button1] = { m_shade,		NULL		},
-			[Button5-Button1] = { m_unshade,	NULL		},
-		} },
-		[TitleSep]	= { "title.separator",	NULL,		{
-			[Button1-Button1] = { NULL,		NULL		},
-			[Button2-Button1] = { NULL,		NULL		},
-			[Button3-Button1] = { NULL,		NULL		},
-			[Button4-Button1] = { NULL,		NULL		},
-			[Button5-Button1] = { NULL,		NULL		},
-		} },
+		[MenuBtn]	= { "button.menu",	MENUPIXMAP	},
+		[IconifyBtn]	= { "button.iconify",	ICONPIXMAP,	},
+		[MaximizeBtn]	= { "button.maximize",	MAXPIXMAP,	},
+		[CloseBtn]	= { "button.close",	CLOSEPIXMAP,	},
+		[ShadeBtn]	= { "button.shade",	SHADEPIXMAP,	},
+		[StickBtn]	= { "button.stick",	STICKPIXMAP,	},
+		[LHalfBtn]	= { "button.lhalf",	LHALFPIXMAP,	},
+		[RHalfBtn]	= { "button.rhalf",	RHALFPIXMAP,	},
+		[FillBtn]	= { "button.fill",	FILLPIXMAP,	},
+		[FloatBtn]	= { "button.float",	FLOATPIXMAP,	},
+		[SizeBtn]	= { "button.resize",	SIZEPIXMAP,	},
+		[IconBtn]	= { "button.icon",	WINPIXMAP,	},
+		[TitleTags]	= { "title.tags",	NULL,		},
+		[TitleName]	= { "title.name",	NULL,		},
+		[TitleSep]	= { "title.separator",	NULL,		},
 		/* *INDENT-ON* */
 	};
 
@@ -1026,7 +1046,7 @@ initbuttons()
 	XSetBackground(dpy, scr->dc.gc, scr->style.color.norm[ColBG].pixel);
 
 	for (i = 0; i < LastElement; i++)
-		initelement(i, setup[i].name, setup[i].def, &setup[i].action[0][0]);
+		initelement(i, setup[i].name, setup[i].def, &buttons[i][0][0]);
 }
 
 static void

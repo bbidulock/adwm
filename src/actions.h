@@ -4,7 +4,7 @@
 #define __LOCAL_ACTIONS_H__
 
 Bool m_move(Client *c, XEvent *ev);
-Bool m_raiselower(Client *c, XEvent *ev);
+Bool m_restack(Client *c, XEvent *ev);
 Bool m_nexttag(Client *c, XEvent *ev);
 Bool m_prevtag(Client *c, XEvent *ev);
 Bool m_resize(Client *c, XEvent *ev);
@@ -44,6 +44,9 @@ Bool b_refloat(Client *c, XEvent *ev);
 Bool b_float(Client *c, XEvent *ev);
 Bool b_tile(Client *c, XEvent *ev);
 Bool b_resize(Client *c, XEvent *ev);
+Bool b_move(Client *c, XEvent *ev);
+Bool b_zoom(Client *c, XEvent *ev);
+Bool b_restack(Client *c, XEvent *ev);
 
 void k_chain(XEvent *e, Key *k);
 void k_focusmain(XEvent *e, Key *k);

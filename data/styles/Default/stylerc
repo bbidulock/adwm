@@ -42,7 +42,7 @@ Adwm*grips:						3
 !Adwm*button.maximize.pixmap:				max.xpm
 !Adwm*button.close.pixmap:				close.xpm
 
-Adwm*titlelayout: EFASLN  RIMC
+Adwm*titlelayout:					PFASLN  RIMC
 
 Adwm*button.iconify.pixmap:				min_focused.xpm
 Adwm*button.maximize.pixmap:				max_focused.xpm

@@ -451,39 +451,60 @@ save(Bool permanent)
 		for (n = 0, c = scr->clist; c; c = c->cnext, n++)
 			c->index = n;
 		snprintf(line, sizeof(line), "Adwm.screen%u.clients:\t\t%u\n", scr->screen, n);
+		XrmPutLineResource(&srdb, line);
 
 		/* creation order list */
 		len = snprintf(line, sizeof(line), "Adwm.screen%u.clist:\t\t", scr->screen);
 		for (c = scr->clist; c; c = c->cnext)
 			len += snprintf(line + len, sizeof(line) - len, "%u%s", c->index, c->cnext ? ", " : "");
 		snprintf(line + len, sizeof(line) - len, "\n");
+		XrmPutLineResource(&srdb, line);
 
 		/* tiling order list */
 		len = snprintf(line, sizeof(line), "Adwm.screen%u.tiles:\t\t", scr->screen);
 		for (c = scr->clients; c; c = c->next)
 			len += snprintf(line + len, sizeof(line) - len, "%u%s", c->index, c->snext ? ", " : "");
 		snprintf(line + len, sizeof(line) - len, "\n");
+		XrmPutLineResource(&srdb, line);
 
 		/* stacking order list */
 		len = snprintf(line, sizeof(line), "Adwm.screen%u.stack:\t\t", scr->screen);
 		for (c = scr->stack; c; c = c->snext)
 			len += snprintf(line + len, sizeof(line) - len, "%u%s", c->index, c->snext ? ", " : "");
 		snprintf(line + len, sizeof(line) - len, "\n");
+		XrmPutLineResource(&srdb, line);
 
 		/* focus order list */
 		len = snprintf(line, sizeof(line), "Adwm.screen%u.flist:\t\t", scr->screen);
 		for (c = scr->flist; c; c = c->fnext)
 			len += snprintf(line + len, sizeof(line) - len, "%u%s", c->index, c->fnext ? ", " : "");
 		snprintf(line + len, sizeof(line) - len, "\n");
+		XrmPutLineResource(&srdb, line);
 
 		/* active order list */
 		len = snprintf(line, sizeof(line), "Adwm.screen%u.alist:\t\t", scr->screen);
 		for (c = scr->alist; c; c = c->anext)
 			len += snprintf(line + len, sizeof(line) - len, "%u%s", c->index, c->anext ? ", " : "");
 		snprintf(line + len, sizeof(line) - len, "\n");
+		XrmPutLineResource(&srdb, line);
 
 		/* in creation order */
 		for (c = scr->clist; c; c = c->cnext) {
+			/*
+			 * X11R6 Properties to identify client windows: (from ICCCM)
+			 *
+			 * SM_CLIENT_ID :-
+			 * WM_CLIENT_LEADER (or WM_TRANSIENT_FOR) :-
+			 * WM_WINDOW_ROLE (or WM_CLASS and WM_NAME) :- 
+			 *
+			 * X11R5 Properties to identify client windows: (from ICCCM)
+			 *
+			 * WM_HINTS (window_group)
+			 * WM_CLASS
+			 * WM_NAME
+			 * WM_COMMAND (non-zero length)
+			 * WM_CLIENT_MACHINE
+			 */
 		}
 	}
 

@@ -3735,7 +3735,7 @@ getnetpid(Client *c)
 }
 
 Bool
-getgrpclasshint(Client *c, XClassHint * ch)
+getgrpclasshint(Client *c, XClassHint *ch)
 {
 	Window win;
 
@@ -3748,7 +3748,7 @@ getgrpclasshint(Client *c, XClassHint * ch)
 }
 
 Bool
-getclasshint(Client *c, XClassHint * ch)
+getclasshint(Client *c, XClassHint *ch)
 {
 	Window win;
 
@@ -3767,6 +3767,10 @@ getcommand(Client *c, char ***v, int *n)
 
 	/* ICCCM 2.0/4.1.9: Window managers will ignore any WM_COMMAND properties
 	   they find on icon windows. */
+	/* ICCCM 2.0/C.1.1: A client with multiple top-level windows should ensure
+	   that exactly one of them has a WM_COMMAND with nonzero length.  Zero-length
+	   WM_COMMAND properties can be used to reply to WM_SAVE_YOURSELF messages on
+	   other top-level windows but will otherwise be ignored. */
 	if (((win = c->win)     && XGetCommand(dpy, win, v, n)) ||
 	    ((win = c->session) && XGetCommand(dpy, win, v, n)) ||
 	    ((win = c->leader)  && XGetCommand(dpy, win, v, n)))

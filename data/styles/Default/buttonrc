@@ -7,10 +7,12 @@ Adwm*root.button4.pressed: nexttag
 Adwm*root.button5.pressed: prevtag
 
 Adwm*client.title.button1.pressed: move
+!Adwm*client.title.button1.pressed: resize
 Adwm*client.title.button1.release: restack
 Adwm*client.title.button2.pressed: move
 Adwm*client.title.button2.release: zoom
 Adwm*client.title.button3.pressed: resize
+!Adwm*client.title.button3.pressed: move
 Adwm*client.title.button3.release: restack
 Adwm*client.title.button4.pressed: shade
 Adwm*client.title.button5.pressed: unshade
@@ -27,16 +29,20 @@ Adwm*client.dock.button1.pressed: move
 Adwm*client.dock.button1.release: restack
 
 Adwm*client.window.button1.pressed: move
+!Adwm*client.window.button1.pressed: resize
 Adwm*client.window.button1.release: restack
 Adwm*client.window.button2.pressed: move
 Adwm*client.window.button2.release: zoom
 Adwm*client.window.button3.pressed: resize
+!Adwm*client.window.button3.pressed: move
 Adwm*client.window.button3.release: restack
 Adwm*client.window.button4.pressed: shade
 Adwm*client.window.button5.pressed: unshade
 
 Adwm*client.icon.button1.pressed: move
 Adwm*client.icon.button1.release: restack
+!Adwm*client.icon.button3.pressed: move
+!Adwm*client.icon.button3.release: restack
 
 Adwm*button.menu.button1.release: menu
 Adwm*button.menu.button2.release: menu
@@ -91,6 +97,7 @@ Adwm*title.name.button1.release: restack
 Adwm*title.name.button2.pressed: move
 Adwm*title.name.button2.release: zoom
 Adwm*title.name.button3.pressed: resize
+!Adwm*title.name.button3.pressed: move (for openbox)
 Adwm*title.name.button3.release: restack
 Adwm*title.name.button4.pressed: shade
 Adwm*title.name.button5.pressed: unshade

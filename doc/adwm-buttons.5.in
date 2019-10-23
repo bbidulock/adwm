@@ -89,8 +89,8 @@ Defaults:
 .Dl Adwm* Ns Cm root.button1.pressed Li : Ar spawn3
 .Dl Adwm* Ns Cm root.button2.pressed Li : Ar spawn2
 .Dl Adwm* Ns Cm root.button3.pressed Li : Ar spawn
-.Dl Adwm* Ns Cm root.button4.pressed Li : Ar prevtag
-.Dl Adwm* Ns Cm root.button5.pressed Li : Ar nexttag
+.Dl Adwm* Ns Cm root.button4.pressed Li : Ar nexttag
+.Dl Adwm* Ns Cm root.button5.pressed Li : Ar prevtag
 .Ss CLIENT WINDOW
 Client window locations as follows:
 .Pp
@@ -113,26 +113,36 @@ Only general and client actions can be performed at these locations.
 .Pp
 Defaults:
 .Dl Adwm* Ns Cm client.title.button1.pressed Ns Li : Ar move
-.Dl Adwm* Ns Cm client.title.button2.pressed Ns Li : Ar zoom
+.Dl Adwm* Ns Cm client.title.button1.release Ns Li : Ar restack
+.Dl Adwm* Ns Cm client.title.button2.pressed Ns Li : Ar move
+.Dl Adwm* Ns Cm client.title.button2.release Ns Li : Ar zoom
 .Dl Adwm* Ns Cm client.title.button3.pressed Ns Li : Ar resize
+.Dl Adwm* Ns Cm client.title.button3.release Ns Li : Ar restack
 .Dl Adwm* Ns Cm client.title.button4.pressed Ns Li : Ar shade
 .Dl Adwm* Ns Cm client.title.button5.pressed Ns Li : Ar unshade
 .Pp
 .Dl Adwm* Ns Cm client.grips.button1.pressed Ns Li : Ar resize
+.Dl Adwm* Ns Cm client.grips.button1.release Ns Li : Ar restack
 .Pp
 .Dl Adwm* Ns Cm client.frame.button1.pressed Ns Li : Ar resize
+.Dl Adwm* Ns Cm client.frame.button1.release Ns Li : Ar restack
 .Dl Adwm* Ns Cm client.frame.button4.pressed Ns Li : Ar shade
 .Dl Adwm* Ns Cm client.frame.button5.pressed Ns Li : Ar unshade
 .Pp
 .Dl Adwm* Ns Cm client.dock.button1.pressed Ns Li : Ar move
+.Dl Adwm* Ns Cm client.dock.button1.release Ns Li : Ar restack
 .Pp
 .Dl Adwm* Ns Cm client.window.button1.pressed Ns Li : Ar move
-.Dl Adwm* Ns Cm client.window.button2.pressed Ns Li : Ar zoom
+.Dl Adwm* Ns Cm client.window.button1.release Ns Li : Ar restack
+.Dl Adwm* Ns Cm client.window.button2.pressed Ns Li : Ar move
+.Dl Adwm* Ns Cm client.window.button2.release Ns Li : Ar zoom
 .Dl Adwm* Ns Cm client.window.button3.pressed Ns Li : Ar resize
+.Dl Adwm* Ns Cm client.window.button3.release Ns Li : Ar restack
 .Dl Adwm* Ns Cm client.window.button4.pressed Ns Li : Ar shade
 .Dl Adwm* Ns Cm client.window.button5.pressed Ns Li : Ar unshade
 .Pp
 .Dl Adwm* Ns Cm client.icon.button1.pressed Ns Li : Ar move
+.Dl Adwm* Ns Cm client.icon.button1.release Ns Li : Ar restack
 .Ss TITLE BAR ELEMENTS
 Client window title bar element locations as follows:
 .Pp
@@ -168,6 +178,15 @@ The name area on the title bar.
 .It Cm title.separator
 The separator area on the title bar.
 .El
+.Pp
+.Sy Note:
+It is quite normal to give the
+.Cm title.name
+title bar element location the same treatment as the
+.Cm client.title
+location.  Otherwise, the behaviour of the mouse buttons would vary
+depending on whether the mouse is positioned directly on, or just past
+the end of, the title.
 .Pp
 Only general and title bar actions can be performed at these locations.
 .Pp
@@ -221,7 +240,11 @@ Defaults:
 .Dl Adwm* Ns Cm button.menu.button3.release Ns Li : Ar menu
 .Pp
 .Dl Adwm* Ns Cm title.name.button1.pressed Ns Li : Ar move
+.Dl Adwm* Ns Cm title.name.button1.release Ns Li : Ar restack
+.Dl Adwm* Ns Cm title.name.button1.pressed Ns Li : Ar move
+.Dl Adwm* Ns Cm title.name.button1.release Ns Li : Ar zoom
 .Dl Adwm* Ns Cm title.name.button3.pressed Ns Li : Ar resize
+.Dl Adwm* Ns Cm title.name.button3.release Ns Li : Ar restack
 
 .Sh CONDITIONS
 Conditions for which mouse bindings can be defined are as follows:
@@ -358,20 +381,20 @@ Normally bound to mouse button #3 over the root window.
 .Pp
 Default:
 .Dl Adwm* Ns Cm root.button3.pressed Li : Ar spawn
-.It Cm prevtag
+.It Cm nexttag
 Move to the previous tag/view (desktop/workspace).
 Normally bound to mouse button #4 (scroll wheel up) over the root
 window.
 .Pp
 Default:
-.Dl Adwm* Ns Cm root.button4.pressed Li : Ar prevtag
-.It Cm nexttag
+.Dl Adwm* Ns Cm root.button4.pressed Li : Ar nexttag
+.It Cm prevtag
 Move to the next tag/view (desktop/workspace).
 Normally bound to mouse button #5 (scroll wheel down) over the root
 window.
 .Pp
 Default:
-.Dl Adwm* Ns Cm root.button5.pressed Li : Ar nexttag
+.Dl Adwm* Ns Cm root.button5.pressed Li : Ar prevtag
 .El
 .Ss CLIENT ACTIONS
 The following actions can be performed over the client window.
@@ -386,7 +409,9 @@ Shade the window.
 .It Cm unshade
 Unshade the window.
 .It Cm zoom
-Move (press and hold) or zoom (click) the window.
+Zoom the window.
+.It Cm restack
+Raise or lower the window.
 .El
 .Pp
 These actions are described in more detail below:
@@ -407,8 +432,10 @@ Normally bound to various mouse buttons over client window elements.
 .Pp
 Default:
 .Dl Adwm* Ns Cm client.title.button1.pressed Ns Li : Ar move
+.Dl Adwm* Ns Cm client.title.button2.pressed Ns Li : Ar move
 .Dl Adwm* Ns Cm client.dock.button1.pressed Ns Li : Ar move
 .Dl Adwm* Ns Cm client.window.button1.pressed Ns Li : Ar move
+.Dl Adwm* Ns Cm client.window.button2.pressed Ns Li : Ar move
 .Dl Adwm* Ns Cm client.icon.button1.pressed Ns Li : Ar move
 .It Cm shade
 Shade the window.
@@ -430,9 +457,22 @@ Default:
 Move (press and hold) or zoom (click) the window.
 Normally bound to mouse button #2 over some client window elements.
 .Pp
-Default
+Default:
 .Dl Adwm* Ns Cm client.title.button2.pressed Ns Li : Ar zoom
 .Dl Adwm* Ns Cm client.window.button2.pressed Ns Li : Ar zoom
+.It Cm restack
+Raise or lower the window.
+Normally bound to some mouse buttons over some client window elements.
+.Pp
+Default:
+.Dl Adwm* Ns Cm client.title.button1.release Ns Li : Ar restack
+.Dl Adwm* Ns Cm client.title.button3.release Ns Li : Ar restack
+.Dl Adwm* Ns Cm client.grips.button1.release Ns Li : Ar restack
+.Dl Adwm* Ns Cm client.frame.button1.release Ns Li : Ar restack
+.Dl Adwm* Ns Cm client.dock.button1.release Ns Li : Ar restack
+.Dl Adwm* Ns Cm client.window.button1.release Ns Li : Ar restack
+.Dl Adwm* Ns Cm client.window.button3.release Ns Li : Ar restack
+.Dl Adwm* Ns Cm client.icon.button1.release Ns Li : Ar restack
 .El
 .Ss TITLE BAR ACTIONS
 The following actions can be performed over elements of the title bar:
@@ -499,6 +539,12 @@ Float the window.
 Tile the window.
 .It Cm resize
 Begin a mouse resize (if permitted) of the window.
+.It Cm move
+Begin a mouse move (if permitted) of the window.
+.It Cm zoom
+Zoom the window.
+.It Cm restack
+Raise or lower the window.
 .El
 .Pp
 These actions are described in more detail below:
@@ -509,12 +555,15 @@ Launches the window menu command as specified by
 .Cm menucommand
 in
 .Xr @PACKAGE@-config 5 .
-Normally bound to any mouse button released over the menu button in the title bar.
+Normally bound to any mouse button released over the menu or icon button in the title bar.
 .Pp
 Default:
 .Dl Adwm* Ns Cm button.menu.button1.release Ns Li : Ar menu
 .Dl Adwm* Ns Cm button.menu.button2.release Ns Li : Ar menu
 .Dl Adwm* Ns Cm button.menu.button3.release Ns Li : Ar menu
+.Dl Adwm* Ns Cm button.icon.button1.release Ns Li : Ar menu
+.Dl Adwm* Ns Cm button.icon.button2.release Ns Li : Ar menu
+.Dl Adwm* Ns Cm button.icon.button3.release Ns Li : Ar menu
 .It Cm iconify
 Iconifies the client window.  Normally bound to mouse button #1 release
 over the iconify button in the title bar.
@@ -630,6 +679,7 @@ the title bar.
 .Pp
 Default:
 .Dl Adwm* Ns Cm button.shade.button2.release Ns Li : Ar shade
+.Dl Adwm* Ns Cm title.name.button4.pressed Ns Li : Ar shade
 .It Cm unshade
 Unshade the window.
 Normally bound to mouse button #3 over the shade button in
@@ -637,6 +687,7 @@ the title bar.
 .Pp
 Default:
 .Dl Adwm* Ns Cm button.shade.button3.release Ns Li : Ar unshade
+.Dl Adwm* Ns Cm title.name.button5.pressed Ns Li : Ar unshade
 .It Cm restick
 Toggle sticky state of window.
 Normally bound to mouse button #1 over the stick button in
@@ -751,6 +802,23 @@ Default:
 .Dl Adwm* Ns Cm button.resize.button1.pressed Ns Li : Ar resize
 .Dl Adwm* Ns Cm button.resize.button2.pressed Ns Li : Ar resize
 .Dl Adwm* Ns Cm button.resize.button3.pressed Ns Li : Ar resize
+.It Cm move
+Begin a mouse move (if permitted) of the window.
+.Pp
+Default:
+.Dl Adwm* Ns Cm title.name.button1.pressed Ns Li : Ar move
+.Dl Adwm* Ns Cm title.name.button2.pressed Ns Li : Ar move
+.It Cm zoom
+Zoom the window.
+.Pp
+Default:
+.Dl Adwm* Ns Cm title.name.button2.release Ns Li : Ar zoom
+.It Cm restack
+Raise or lower the window.
+.Pp
+Default:
+.Dl Adwm* Ns Cm title.name.button1.release Ns Li : Ar restack
+.Dl Adwm* Ns Cm title.name.button3.release Ns Li : Ar restack
 .El
 .Sh DEFAULTS
 The default mouse button bindings are provided in the default buttons

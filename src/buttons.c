@@ -11,7 +11,7 @@ typedef Bool (*ActionType)(Client *, XEvent *);
 
 typedef struct {
 	char *name;
-	ActionType action;
+	Bool (*action)(Client *,XEvent *);
 } ActionDef;
 
 static ActionDef ActionDefs[] = {
@@ -69,7 +69,7 @@ static ActionDef ButtonDefs[] = {
 	{ NULL,		NULL	    }
 };
 
-static ActionType
+static void *
 findaction(const char *act, ActionDef *def)
 {
 	if (act) {
@@ -77,6 +77,17 @@ findaction(const char *act, ActionDef *def)
 			if (!strcmp(def->name, act)) {
 				return (def->action);
 			}
+		}
+	}
+	return (NULL);
+}
+
+static const char *
+findfunction(void *action, ActionDef * def)
+{
+	for(; def->name; def++) {
+		if (action == def->action) {
+			return (def->name);
 		}
 	}
 	return (NULL);
@@ -297,22 +308,83 @@ void
 initbuttons(Bool reload)
 {
 	unsigned i, j, k;
-	char t[256] = { 0, };
+	char line[256] = { 0, };
 
 	for (i = 0; i < LENGTH(ActionItems); i++) {
 		for (j = 0; j < 5; j++) {
 			for (k = 0; k < 2; k++) {
-				snprintf(t, sizeof(t), "%s.button%u.%s", ActionItems[i].name, j, directions[k]);
-				actions[i][j][k] = findaction(getsessionres(t, ActionItems[i].action[j][k]), ActionDefs);
+				snprintf(line, sizeof(line), "%s.button%u.%s", ActionItems[i].name, (j+1), directions[k]);
+				actions[i][j][k] = findaction(getsessionres(line, ActionItems[i].action[j][k]), ActionDefs);
 			}
 		}
 	}
 	for (i = 0; i < LENGTH(ButtonItems); i++) {
 		for (j = 0; j < 5; j++) {
 			for (k = 0; k < 2; k++) {
-				snprintf(t, sizeof(t), "%s.button%u.%s", ButtonItems[i].name, j, directions[k]);
-				buttons[i][j][k] = findaction(getsessionres(t, ButtonItems[i].action[j][k]), ButtonDefs);
+				snprintf(line, sizeof(line), "%s.button%u.%s", ButtonItems[i].name, (j+1), directions[k]);
+				buttons[i][j][k] = findaction(getsessionres(line, ButtonItems[i].action[j][k]), ButtonDefs);
 			}
 		}
 	}
 }
+
+void
+savebuttons(Bool permanent)
+{
+	unsigned i, j, k;
+	char line[256] = { 0, };
+	const char *act;
+	Bool (*action)(Client *,XEvent *);
+
+	for (i = 0; i < LENGTH(ActionItems); i++) {
+		for (j = 0; j < 5; j++) {
+			for (k = 0; k < 2; k++) {
+				if (!!(action = actions[i][j][k]) && (act = findfunction(action, ActionDefs))) {
+					snprintf(line, sizeof(line), "Adwm*%s.button%u.%s:\t\t%s\n", ActionItems[i].name, (j+1), directions[k], act);
+					XrmPutLineResource(&srdb, line);
+				}
+			}
+		}
+	}
+	for (i = 0; i < LENGTH(ButtonItems); i++) {
+		for (j = 0; j < 5; j++) {
+			for (k = 0; k < 2; k++) {
+				if (!!(action = buttons[i][j][k]) && (act = findfunction(action, ButtonDefs))) {
+					snprintf(line, sizeof(line), "Adwm*%s.button%u.%s:\t\t%s\n", ButtonItems[i].name, (j+1), directions[k], act);
+					XrmPutLineResource(&srdb, line);
+				}
+			}
+		}
+	}
+}
+
+void
+showbuttons(void)
+{
+	unsigned i, j, k;
+	char line[256] = { 0, };
+	const char *act;
+	Bool (*action)(Client *,XEvent *);
+
+	for (i = 0; i < LENGTH(ActionItems); i++) {
+		for (j = 0; j < 5; j++) {
+			for (k = 0; k < 2; k++) {
+				if (!!(action = actions[i][j][k]) && (act = findfunction(action, ActionDefs))) {
+					snprintf(line, sizeof(line), "Adwm*%s.button%u.%s:\t\t%s\n", ActionItems[i].name, (j+1), directions[k], act);
+					fputs(line, stderr);
+				}
+			}
+		}
+	}
+	for (i = 0; i < LENGTH(ButtonItems); i++) {
+		for (j = 0; j < 5; j++) {
+			for (k = 0; k < 2; k++) {
+				if (!!(action = buttons[i][j][k]) && (act = findfunction(action, ButtonDefs))) {
+					snprintf(line, sizeof(line), "Adwm*%s.button%u.%s:\t\t%s\n", ButtonItems[i].name, (j+1), directions[k], act);
+					fputs(line, stderr);
+				}
+			}
+		}
+	}
+}
+

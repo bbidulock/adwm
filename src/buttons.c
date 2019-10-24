@@ -26,6 +26,8 @@ static ActionDef ActionDefs[] = {
 	{ "unshade",	m_unshade   },
 	{ "zoom",	m_zoom	    },
 	{ "restack",	m_restack   },
+	{ "none",	NULL	    },
+	{ "",		NULL	    },
 	{ NULL,		NULL	    }
 };
 
@@ -62,15 +64,21 @@ static ActionDef ButtonDefs[] = {
 	{ "move",	b_move	    },
 	{ "zoom",	b_zoom	    },
 	{ "restack",	b_restack   },
+	{ "none",	NULL	    },
+	{ "",		NULL	    },
 	{ NULL,		NULL	    }
 };
 
 static ActionType
 findaction(const char *act, ActionDef *def)
 {
-	for (; def->name; def++)
-		if (!strcmp(def->name, act))
-			return (def->action);
+	if (act) {
+		for (; def->name; def++) {
+			if (!strcmp(def->name, act)) {
+				return (def->action);
+			}
+		}
+	}
 	return (NULL);
 }
 

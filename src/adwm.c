@@ -708,7 +708,7 @@ buttonpress(XEvent *e)
 			if (!result && !direct && (action = actions[OnClientTitle][button][1])) {
 				XPRINTF("Action %p for On=%d, button=%d, direct=%d\n", action,
 					OnClientTitle, button + Button1, 1);
-				result = (*action) (NULL, (XEvent *) ev);
+				result = (*action) (c, (XEvent *) ev);
 			}
 		} else
 			XPRINTF("No action for On=%d, button=%d, direct=%d\n",
@@ -724,7 +724,7 @@ buttonpress(XEvent *e)
 			if (!result && !direct && (action = actions[OnClientGrips][button][1])) {
 				XPRINTF("Action %p for On=%d, button=%d, direct=%d\n", action,
 					OnClientGrips, button + Button1, 1);
-				result = (*action) (NULL, (XEvent *) ev);
+				result = (*action) (c, (XEvent *) ev);
 			}
 		} else
 			XPRINTF("No action for On=%d, button=%d, direct=%d\n",
@@ -745,7 +745,7 @@ buttonpress(XEvent *e)
 			if (!result && !direct && (action = actions[OnClientIcon][button][1])) {
 				XPRINTF("Action %p for On=%d, button=%d, direct=%d\n", action,
 					OnClientIcon, button + Button1, 1);
-				result = (*action) (NULL, (XEvent *) ev);
+				result = (*action) (c, (XEvent *) ev);
 			}
 		} else
 			XPRINTF("No action for On=%d, button=%d, direct=%d\n", ClientIcon,
@@ -766,7 +766,7 @@ buttonpress(XEvent *e)
 			if (!result && !direct && (action = actions[OnClientWindow][button][1])) {
 				XPRINTF("Action %p for On=%d, button=%d, direct=%d\n", action,
 					OnClientWindow, button + Button1, 1);
-				result = (*action) (NULL, (XEvent *) ev);
+				result = (*action) (c, (XEvent *) ev);
 			}
 		} else
 			XPRINTF("No action for On=%d, button=%d, direct=%d\n",
@@ -784,7 +784,7 @@ buttonpress(XEvent *e)
 				if (!result && !direct && (action = actions[OnClientDock][button][1])) {
 					XPRINTF("Action %p for On=%d, button=%d, direct=%d\n", action,
 						OnClientDock, button + Button1, 1);
-					result = (*action) (NULL, (XEvent *) ev);
+					result = (*action) (c, (XEvent *) ev);
 				}
 			} else
 				XPRINTF("No action for On=%d, button=%d, direct=%d\n",
@@ -798,7 +798,7 @@ buttonpress(XEvent *e)
 				if (!result && !direct && (action = actions[OnClientFrame][button][1])) {
 					XPRINTF("Action %p for On=%d, button=%d, direct=%d\n", action,
 						OnClientFrame, button + Button1, 1);
-					result = (*action) (NULL, (XEvent *) ev);
+					result = (*action) (c, (XEvent *) ev);
 				}
 			} else
 				XPRINTF("No action for On=%d, button=%d, direct=%d\n",

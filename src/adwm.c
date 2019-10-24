@@ -5347,8 +5347,8 @@ initialize(const char *conf, AdwmOperations * ops, Bool reload)
 		initkeys(reload);	/* init key bindings */
 		OPRINTF("initializing button bindings\n");
 		initbuttons(reload);	/* init button bindings */
-//		OPRINTF("showing button bindings\n");
-//		showbuttons();
+		OPRINTF("showing button bindings\n");
+		showbuttons();
 		OPRINTF("initializing dock\n");
 		initdock(reload);	/* initialize dock */
 		OPRINTF("initializing layouts and views\n");

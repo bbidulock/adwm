@@ -576,7 +576,7 @@ initdockfile(void)
 		XPRINTF("Could not find readable dock file.\n");
 		return;
 	}
-	XPRINTF("Reading databse file %s\n", config.dockfile);
+	OPRINTF("Reading databse file %s\n", config.dockfile);
 	drdb = XrmGetFileDatabase(config.dockfile);
 	if (!drdb) {
 		XPRINTF("Could not read database file '%s'\n", config.dockfile);
@@ -634,7 +634,7 @@ initkeysfile(void)
 		XPRINTF("Could not find readable keys file.\n");
 		return;
 	}
-	XPRINTF("Reading databse file %s\n", config.keysfile);
+	OPRINTF("Reading databse file %s\n", config.keysfile);
 	krdb = XrmGetFileDatabase(config.keysfile);
 	if (!krdb) {
 		XPRINTF("Could not read database file '%s'\n", config.keysfile);
@@ -692,7 +692,7 @@ initbtnsfile(void)
 		XPRINTF("Could not find readable buttons file.\n");
 		return;
 	}
-	XPRINTF("Reading databse file %s\n", config.btnsfile);
+	OPRINTF("Reading databse file %s\n", config.btnsfile);
 	brdb = XrmGetFileDatabase(config.btnsfile);
 	if (!brdb) {
 		XPRINTF("Could not read database file '%s'\n", config.btnsfile);
@@ -777,7 +777,7 @@ initstylefile(void)
 			config.stylename = strdup(p + 1);
 		*q = '/';
 	}
-	XPRINTF("Reading database file %s\n", config.stylefile);
+	OPRINTF("Reading database file %s\n", config.stylefile);
 	yrdb = XrmGetFileDatabase(config.stylefile);
 	if (!yrdb) {
 		XPRINTF("Could not read database file '%s'\n", config.stylefile);
@@ -860,7 +860,7 @@ initthemefile(void)
 			config.themename = strdup(p + 1);
 		*q = '/';
 	}
-	XPRINTF("Reading databse file %s\n", config.themefile);
+	OPRINTF("Reading database file %s\n", config.themefile);
 	trdb = XrmGetFileDatabase(config.themefile);
 	if (!trdb) {
 		XPRINTF("Could not read database file '%s'\n", config.themefile);
@@ -964,7 +964,7 @@ initrcfile(const char *conf, Bool reload)
 	rcfile = strdup(config.rcfile);
 	if (chdir(dir))
 		XPRINTF("Could not change directory to %s: %s\n", dir, strerror(errno));
-	XPRINTF("Reading databse file %s\n", rcfile);
+	OPRINTF("Reading databse file %s\n", rcfile);
 	xrdb = XrmGetFileDatabase(rcfile);
 	if (!xrdb) {
 		XPRINTF("Couldn't find database file '%s', using defaults\n", rcfile);
@@ -977,7 +977,7 @@ initrcfile(const char *conf, Bool reload)
 		strncat(rcfile, "adwmrc", len);
 		if (chdir(dir))
 			XPRINTF("Could not change directory to %s: %s\n", dir, strerror(errno));
-		XPRINTF("Reading databse file %s\n", rcfile);
+		OPRINTF("Reading databse file %s\n", rcfile);
 		xrdb = XrmGetFileDatabase(rcfile);
 		if (!xrdb)
 			XPRINTF("Couldn't find database file '%s', using defaults\n", rcfile);

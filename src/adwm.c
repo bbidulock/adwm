@@ -34,6 +34,8 @@ void updateclasshint(Client *c);
 void updatehints(Client *c);
 void updatesizehints(Client *c);
 void updatetitle(Client *c);
+void updatesmname(Client *c);
+void updatesmrole(Client *c);
 void updatetransientfor(Client *c);
 void updatesession(Client *c);
 void updategroup(Client *c, Window leader, int group, int *nonmodal);
@@ -327,9 +329,9 @@ applyrules(Client *c)
 	Monitor *cm = (cv && cv->curmon) ? cv->curmon : nearmonitor(); /* XXX: necessary? */
 
 	/* rule matching */
-	snprintf(buf, sizeof(buf), "%s:%s:%s",
-		 c->ch.res_class ? c->ch.res_class : "", c->ch.res_name ? c->ch.res_name : "",
-		 c->name);
+	snprintf(buf, sizeof(buf), "%s:%s:%s:%s",
+			c->ch.res_class ? : "", c->ch.res_name ? : "",
+			c->sm_role ? : "", c->sm_name ? : "");
 	buf[LENGTH(buf) - 1] = 0;
 	for (i = 0; i < nrules; i++)
 		if (rules[i]->propregex && !regexec(rules[i]->propregex, buf, 1, &tmp, 0)) {
@@ -2630,6 +2632,8 @@ manage(Window w, XWindowAttributes *wa)
 	updatesizehints(c);
 	updatetitle(c);
 	updateiconname(c);
+	updatesmname(c);
+	updatesmrole(c);
 	applyrules(c);
 	applyatoms(c);
 
@@ -3360,71 +3364,93 @@ updatesessionprop(Client *c, Atom prop, int state)
 			goto bad;
 		} else if (prop == _XA_WM_PROTOCOLS) {
 			/* Client leaders are never managed. */
+			/* XXX: In fact some client leaders are managed (e.g. roxterm) */
 			goto bad;
 		} else if (prop == _XA_WM_STATE) {
 			/* Client leaders are never managed. */
+			/* XXX: In fact some client leaders are managed (e.g. roxterm) */
 			goto bad;
 		} else if (prop == _XA_WM_COLORMAP_WINDOWS) {
 			/* Client leaders are never managed. */
+			/* XXX: In fact some client leaders are managed (e.g. roxterm) */
 			goto bad;
 		} else if (prop == _XA_WIN_LAYER) {
 			/* Client leaders are never managed. */
+			/* XXX: In fact some client leaders are managed (e.g. roxterm) */
 			goto bad;
 		} else if (prop == _XA_WIN_STATE) {
 			/* Client leaders are never managed. */
+			/* XXX: In fact some client leaders are managed (e.g. roxterm) */
 			goto bad;
 		} else if (prop == _XA_WIN_HINTS) {
 			/* Client leaders are never managed. */
+			/* XXX: In fact some client leaders are managed (e.g. roxterm) */
 			goto bad;
 		} else if (prop == _XA_WIN_APP_STATE) {
 			/* Client leaders are never managed. */
+			/* XXX: In fact some client leaders are managed (e.g. roxterm) */
 			goto bad;
 		} else if (prop == _XA_WIN_EXPANDED_SIZE) {
 			/* Client leaders are never managed. */
+			/* XXX: In fact some client leaders are managed (e.g. roxterm) */
 			goto bad;
 		} else if (prop == _XA_WIN_ICONS) {
 			/* Client leaders are never managed. */
+			/* XXX: In fact some client leaders are managed (e.g. roxterm) */
 			goto bad;
 		} else if (prop == _XA_WIN_WORKSPACE) {
 			/* Client leaders are never managed. */
+			/* XXX: In fact some client leaders are managed (e.g. roxterm) */
 			goto bad;
 		} else if (prop == _XA_NET_WM_NAME) {
 			/* Client leaders are never managed. */
+			/* XXX: In fact some client leaders are managed (e.g. roxterm) */
 			goto bad;
 		} else if (prop == _XA_NET_WM_VISIBLE_NAME) {
 			/* Client leaders are never managed. */
+			/* XXX: In fact some client leaders are managed (e.g. roxterm) */
 			goto bad;
 		} else if (prop == _XA_NET_WM_ICON_NAME) {
 			/* Client leaders are never managed. */
+			/* XXX: In fact some client leaders are managed (e.g. roxterm) */
 			goto bad;
 		} else if (prop == _XA_NET_WM_VISIBLE_ICON_NAME) {
 			/* Client leaders are never managed. */
+			/* XXX: In fact some client leaders are managed (e.g. roxterm) */
 			goto bad;
 		} else if (prop == _XA_NET_WM_DESKTOP) {
 			/* Client leaders are never managed. */
+			/* XXX: In fact some client leaders are managed (e.g. roxterm) */
 			goto bad;
 		} else if (prop == _XA_NET_WM_WINDOW_TYPE) {
 			/* Client leaders are never managed. */
+			/* XXX: In fact some client leaders are managed (e.g. roxterm) */
 			goto bad;
 		} else if (prop == _XA_NET_WM_STATE) {
 			/* Client leaders are never managed. */
+			/* XXX: In fact some client leaders are managed (e.g. roxterm) */
 			goto bad;
 		} else if (prop == _XA_NET_WM_ALLOWED_ACTIONS) {
 			/* Client leaders are never managed. */
+			/* XXX: In fact some client leaders are managed (e.g. roxterm) */
 			goto bad;
 		} else if (prop == _XA_NET_WM_STRUT) {
 			/* Client leaders are never managed. */
+			/* XXX: In fact some client leaders are managed (e.g. roxterm) */
 			goto bad;
 		} else if (prop == _XA_NET_WM_STRUT_PARTIAL) {
 			/* Client leaders are never managed. */
+			/* XXX: In fact some client leaders are managed (e.g. roxterm) */
 			goto bad;
 #if 0
 		} else if (prop == _XA_NET_WM_ICON_GEOMETRY) {
 			/* Client leaders are never managed. */
+			/* XXX: In fact some client leaders are managed (e.g. roxterm) */
 			goto bad;
 #endif
 		} else if (prop == _XA_NET_WM_ICON) {
 			/* Client leaders are never managed. */
+			/* XXX: In fact some client leaders are managed (e.g. roxterm) */
 			goto bad;
 		} else if (prop == _XA_KWM_WIN_ICON) {
 			goto bad;
@@ -3438,26 +3464,33 @@ updatesessionprop(Client *c, Atom prop, int state)
 			ewmh_process_net_startup_id(c);
 		} else if (prop == _XA_NET_WM_HANDLED_ICONS) {
 			/* Client leaders are never managed. */
+			/* XXX: In fact some client leaders are managed (e.g. roxterm) */
 			goto bad;
 		} else if (prop == _XA_NET_WM_USER_TIME) {
 			/* Client leaders are never managed. */
+			/* XXX: In fact some client leaders are managed (e.g. roxterm) */
 			goto bad;
 		} else if (prop == _XA_NET_WM_USER_TIME_WINDOW) {
 			/* Client leaders are never managed. */
+			/* XXX: In fact some client leaders are managed (e.g. roxterm) */
 			goto bad;
 #if 0
 		} else if (prop == _XA_NET_WM_OPAQUE_REGION) {
 			/* Client leaders are never managed. */
+			/* XXX: In fact some client leaders are managed (e.g. roxterm) */
 			goto bad;
 		} else if (prop == _XA_NET_WM_BYPASS_COMPOSITOR) {
 			/* Client leaders are never managed. */
+			/* XXX: In fact some client leaders are managed (e.g. roxterm) */
 			goto bad;
 #endif
 		} else if (prop == _XA_NET_WM_WINDOW_OPACITY) {
 			/* Client leaders are never managed. */
+			/* XXX: In fact some client leaders are managed (e.g. roxterm) */
 			goto bad;
 		} else if (prop == _XA_NET_WM_SYNC_REQUEST_COUNTER) {
 			/* Client leaders are never managed. */
+			/* XXX: In fact some client leaders are managed (e.g. roxterm) */
 			goto bad;
 		} else if (prop == _XA_NET_STARTUP_ID) {
 			/* Typically set on client leader window.  As with all client
@@ -3778,7 +3811,7 @@ updateclientprop(Client *c, Atom prop, int state)
 			   should only be set on manageable client windows and is meant
 			   for the window manager to identify the window in conjunction
 			   with the SM_CLIENT_ID. */
-			goto bad;
+			updatesmrole(c);
 		} else if (prop == _XA_WM_PROTOCOLS) {
 			/* We tend to test these on a demand basis. */
 		} else if (prop == _XA_WM_STATE) {
@@ -5731,7 +5764,13 @@ unmanage(Client *c, WithdrawCause cause)
 	}
 #endif
 	free(c->name);
+	c->name = NULL;
 	free(c->icon_name);
+	c->icon_name = NULL;
+	free(c->sm_name);
+	c->sm_name = NULL;
+	free(c->sm_role);
+	c->sm_role = NULL;
 	if (c->ch.res_name) {
 		XFree(c->ch.res_name);
 		c->ch.res_name = NULL;
@@ -5893,6 +5932,25 @@ updateclasshint(Client *c)
 	}
 	getclasshint(c, &c->ch);
 	updateclass(c);
+}
+
+void
+remove_spaces(char *str)
+{
+	char *p;
+
+	/* overwrite spaces with underscores */
+	if (str)
+		for (p = str; *p; p++)
+			if (*p == ' ' || *p == '\t')
+				*p = '_';
+}
+
+void
+updatesmrole(Client *c)
+{
+	gettextprop(c->win, _XA_WM_WINDOW_ROLE, &c->sm_role);
+	remove_spaces(c->sm_role);
 }
 
 void
@@ -6082,6 +6140,17 @@ updatetitle(Client *c)
 		return;
 	addprefix(c, &c->name);
 	ewmh_update_net_window_visible_name(c);
+}
+
+void
+updatesmname(Client *c)
+{
+	/* Just use the initial name for rules, session management and dock apps. */
+	const char *sm_name = c->name ? : "Untitled";
+
+	free(c->sm_name); /* safety */
+	c->sm_name = strdup(sm_name);
+	remove_spaces(c->sm_name);
 }
 
 void

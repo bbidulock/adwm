@@ -6755,7 +6755,7 @@ copying(int argc, char *argv[])
 --------------------------------------------------------------------------------\n\
 %1$s\n\
 --------------------------------------------------------------------------------\n\
-Copyright (c) 2010-2018  Monavacon Limited <http://www.monavacon.com/>\n\
+Copyright (c) 2010-2019  Monavacon Limited <http://www.monavacon.com/>\n\
 Copyright (c) 2002-2009  OpenSS7 Corporation <http://www.openss7.com/>\n\
 Copyright (c) 1997-2001  Brian F. G. Bidulock <bidulock@openss7.org>\n\
 \n\
@@ -6799,7 +6799,7 @@ version(int argc, char *argv[])
 %1$s-%3$s (OpenSS7 %2$s)\n\
 Written by Brian Bidulock.\n\
 \n\
-Copyright (c) 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018  Monavacon Limited.\n\
+Copyright (c) 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019  Monavacon Limited.\n\
 Copyright (c) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009  OpenSS7 Corporation.\n\
 Copyright (c) 1997, 1998, 1999, 2000, 2001  Brian F. G. Bidulock.\n\
 This is free software; see the source for copying conditions.  There is NO\n\
@@ -6969,7 +6969,7 @@ main(int argc, char *argv[])
 	if (argc == 3 && !strcmp("-f", argv[1]))
 		snprintf(conf, sizeof(conf), "%s", argv[2]);
 	else if (argc == 2 && !strcmp("-v", argv[1])) {
-		fprintf(stdout, "adwm-" VERSION " (c) 2018 Brian Bidulock\n");
+		fprintf(stdout, "adwm-" VERSION " (c) 2019 Brian Bidulock\n");
 		exit(0);
 	} else if (argc != 1)
 		eprint("%s", "usage: adwm [-v] [-f conf]\n");

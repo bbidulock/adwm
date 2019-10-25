@@ -6834,12 +6834,17 @@ help(int argc, char *argv[])
 	(void) fprintf(stdout, "\
 Usage:\n\
     %1$s [{-f|--file} {PATH/}RCFILE]\n\
+    %1$s {-c|--clientId} ID {-r|--restore} SAVEFILE\n\
     %1$s {-h|--help}\n\
     %1$s {-v|--version}\n\
     %1$s {-C|--copying}\n\
 Options:\n\
     -f, --file {PATH/}RCFILE [default: 'adwmrc']\n\
         config file name, RCFILE, or abs path and name, PATH/RCFILE\n\
+    -c, --clientId ID\n\
+        specifies the session ID used in previous session\n\
+    -r, --restore SAVEFILE\n\
+        specifies the file used to save state from previous session\n\
     -h, --help, -?, --?\n\
         print this usage information and exit\n\
     -v, --version\n\
@@ -6857,7 +6862,7 @@ Options:\n\
 int
 main(int argc, char *argv[])
 {
-	char conf[PATH_MAX + 1] = { 0, }, *p;
+	char conf[PATH_MAX + 1] = { 0, }, *p, *clientid = NULL, *savefile = NULL;
 	int i;
 
 	/* don't care about job control */
@@ -6884,6 +6889,8 @@ main(int argc, char *argv[])
 		/* *INDENT-OFF* */
 		static struct option long_options[] = {
 			{"file",	required_argument,	NULL, 'f'},
+			{"clientId",	required_argument,	NULL, 'c'},
+			{"restore",	required_argument,	NULL, 'r'},
 
 			{"debug",	optional_argument,	NULL, 'D'},
 			{"verbose",	optional_argument,	NULL, 'V'},
@@ -6894,9 +6901,9 @@ main(int argc, char *argv[])
 		};
 		/* *INDENT-ON* */
 
-		c = getopt_long_only(argc, argv, "D::V::hvC", long_options, &option_index);
+		c = getopt_long_only(argc, argv, "f:c:r:D::V::hvC", long_options, &option_index);
 #else				/* defined _GNU_SOURCE */
-		c = getopt(argc, argv, "DVhvC");
+		c = getopt(argc, argv, "f:c:r:DVhvC");
 #endif				/* defined _GNU_SOURCE */
 		if (c == -1) {
 			if (options.debug)
@@ -6908,6 +6915,14 @@ main(int argc, char *argv[])
 			goto bad_usage;
 		case 'f':	/* -f, --file {PATH/}FILE */
 			snprintf(conf, sizeof(conf) - 1, optarg);
+			break;
+		case 'c':	/* -c, --clientId ID */
+			free(clientid);
+			clientid = strdup(optarg);
+			break;
+		case 'r':	/* -r, --restore SAVEFILE */
+			free(savefile);
+			savefile = strdup(optarg);
 			break;
 		case 'D':	/* -D, --debug [level] */
 			if (options.debug)

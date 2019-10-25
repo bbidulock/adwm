@@ -16,6 +16,12 @@
 .Nm
 .Bk -words
 .Op Ar OPTIONS
+.Li { Ns Fl c Ns Li | Ns Fl -clientId Ns Li } Ar CLIENTID Li { Ns Fl r Ns Li | Ns Fl -restore Ns Li } Ar SAVEFILE
+.Ek
+.It
+.Nm
+.Bk -words
+.Op Ar OPTIONS
 .Li { Ns Fl h Ns Li | Ns Fl -help Ns Li }
 .Ek
 .Nm
@@ -127,6 +133,22 @@ Increases or sets the verbosity level to
 .Ar LEVEL .
 This option can be repeated to further increase the verbosity of output.
 The default level is one (1).
+.El
+.Ss SESSION MANAGEMENT OPTIONS
+The following session management options can also be applied and change
+the behaviour to one of session restoration:
+.Pp
+.Bl -tag -width "XX"
+.It Fl c Ns Li , Ns Fl -clientId Ar CLIENTID Fl r Ns Li , Ns Fl -restore Ar SAVEFILE
+Restores window manager state from a previous session.
+.Ar CLIENTID
+is the session ID that was used in the previous session;
+.Ar SAVEFILE
+is the file used to save state form the previous session.
+These options are not specified by the user, but are used by the session
+manager to invoke
+.Nm
+in a way that will restore state from a previous session.
 .El
 .Sh FEATURES
 Following are some of the features provided by
@@ -1144,6 +1166,14 @@ taketoup
 .\" .Pp
 .\" To show the title centered and the close button on the right:
 .\" .Dl Adwm*titlelayout: -T-C
+.Ss SESSION MANAGEMENT
+.Nm
+is soon to support full X11R6 and X11R7 Session Management per ICCCM 2.0
+and the X Session Management Protocol: X Consortium Standard.  It also
+provides session management proxy support for X11R5 session management
+per ICCCM 2.0 Appendix C.  See also
+.Xr "SESSION MANAGEMENT OPTIONS" ,
+above.
 .Sh EXIT STATUS
 .Pp
 When not terminated by a signal,

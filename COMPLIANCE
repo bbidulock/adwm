@@ -41,8 +41,8 @@ Section 5: Session Management
 	WM_WINDOW_ROLE			supported
 
 5.2 Window Manager Support:		NOT supported
-	WM_COMMAND			NOT supported
-	WM_SAVE_YOURSELF		NOT supported
+	WM_COMMAND			NOT supported (todo)
+	WM_SAVE_YOURSELF		NOT supported (todo)
 
 	Adwm does not (yet) support the X11 Session Management
 	Protocol, and as such does not work in such an environment.
@@ -273,6 +273,8 @@ _KDE_NET_WM_SYSTEM_TRAY_WINDOW_FOR:	supported
 _KDE_NET_WM_WINDOW_TYPE_OVERRIDE:	supported
 _KDE_SPLASH_PROGRESS:			supported
 _KDE_WM_CHANGE_STATE:			supported
+_NET_WM_CONTEXT_HELP:			NOT supported (todo)
+WM_CONTEXT_HELP:			NOT supported (todo)
 
 ------------------------------------------------------------------------
 
@@ -429,7 +431,7 @@ _MOTIF_WM_INFO				supported
 WM_STATE				supported
 WM_PROTOCOLS				supported
 WM_CHANGE_STATE				supported
-WM_SAVE_YOURSELF			supported
+WM_SAVE_YOURSELF			NOT supported (todo)
 WM_DELETE_WINDOW			supported
 WM_TAKE_FOCUS				supported
 WM_COLORMAP_WINDOWS			supported

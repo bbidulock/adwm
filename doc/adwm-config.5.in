@@ -1207,6 +1207,64 @@ instead of the main configuration file.  They are not addressed here.
 See
 .Xr @PACKAGE@-keys 5 .
 .Ss WINDOW RULES
+Window rules describe rules that may be applied to newly managed windows
+to alter their behaviour (primarily for tiled layouts).  Their purpose
+is to address clients that are not well-behaved with dynamic window
+managers.
+.Pp
+Rules are formatted as follows:
+.Pp
+.Li Cm rule<n> Ns Li : Ar <propregex> <tagregex> <isfloating> <hastitle>
+.Pp
+Where the fields are defined as follows:
+.Pp
+.Bl -tag -width ".Ar <isfloating>" -compact
+.It Cm rule<n>
+The rule, where
+.Cm <n>
+is a number from zero (0) to sixty-three (63), inclusive.
+.Pp
+.It Ar <propregex>
+A regular expression meant to match the 3-tuple of resource class,
+resource name, and role (which are separated by semicolons (":")):
+.Pp
+.Li Ar <res_class> Ns Li : Ns Ar <res_name> Ns Li : Ns Ar <role>
+.Pp
+Note that none of these fields contain any white space (any white space
+characters will have been replaced by underscores ("_") in the string to
+match.  Also, the regular expression cannot contain any white space
+either or an undefined result will occur.
+The special sequence,
+.Cm NULL ,
+can be used to skip this regular expression.
+.Pp
+.It Ar <tagregex>
+A regular expression meant to match the tag (desktop) name:
+.Pp
+.Li Ar <tagname>
+.Pp
+Note that
+the tag name will not contain any white space (any white space
+characters will have been replaced by underscores ("_") in the string to
+match.  Also, the regular expression cannot contain any white space.
+The special sequence,
+.Cm NULL ,
+can be used to skip this regular expression.
+.Pp
+.It Ar <isfloating>
+An integer which, when zero (0), indicates false; when non-zero, true.
+When true, the client whose rule this matches will be started floating,
+even on tiled layouts.  When false, the client will be started tiled.
+.Pp
+.It Ar <hastitle>
+An integer which, when zero (0), indicates false; when non-zero, true.
+When true, the client whose rule this matches will not be given a
+title bar.  When false, it will be given a title bar.
+.El
+.Pp
+Example:
+.Dl ! Make Mplayer float with a title by default
+.Dl Adwm* Ns Cm rule0 Ns Li : Ar ^Mplayer: NULL 1 1
 .Sh DEFAULTS
 The default configuration is provided in the default
 configuration file, typically,

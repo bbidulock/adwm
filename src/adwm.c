@@ -6835,7 +6835,7 @@ help(int argc, char *argv[])
 Usage:\n\
     %1$s [{-f|--file} {PATH/}RCFILE]\n\
     %1$s {-h|--help}\n\
-    %1$s {-V|--version}\n\
+    %1$s {-v|--version}\n\
     %1$s {-C|--copying}\n\
 Options:\n\
     -f, --file {PATH/}RCFILE [default: 'adwmrc']\n\

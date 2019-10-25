@@ -6841,7 +6841,7 @@ Usage:\n\
 Options:\n\
     -f, --file {PATH/}RCFILE [default: 'adwmrc']\n\
         config file name, RCFILE, or abs path and name, PATH/RCFILE\n\
-    -c, --clientId ID\n\
+    -c, --clientId CLIENTID\n\
         specifies the session ID used in previous session\n\
     -r, --restore SAVEFILE\n\
         specifies the file used to save state from previous session\n\

@@ -817,14 +817,14 @@ compileregs(void)
 	regex_t *reg;
 
 	for (i = 0; i < nrules; i++) {
-		if (rules[i]->prop) {
+		if (rules[i]->prop && strcmp(rules[i]->prop, "NULL")) {
 			reg = emallocz(sizeof(regex_t));
 			if (regcomp(reg, rules[i]->prop, REG_EXTENDED))
 				free(reg);
 			else
 				rules[i]->propregex = reg;
 		}
-		if (rules[i]->tags) {
+		if (rules[i]->tags && strcmp(rules[i]->tags, "NULL")) {
 			reg = emallocz(sizeof(regex_t));
 			if (regcomp(reg, rules[i]->tags, REG_EXTENDED))
 				free(reg);

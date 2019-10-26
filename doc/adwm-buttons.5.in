@@ -37,7 +37,7 @@ release actions are configurable.
 .Pp
 Mouse button bindings are defined in an X Resource formatted
 configuration file.  Button bindings can either be part of the main
-configuration file, they can be included or referenced from the main
+configuration file, or they can be included or referenced from the main
 configuration file: see
 .Cm buttonFile
 directive in
@@ -857,7 +857,7 @@ compatible
 necessary
 .Sh FILES
 Following are the locations of the
-.Cm @PACKAGE@-buttons
+.Xr @PACKAGE@-buttons 5
 file, in the order in which they are searched:
 .Pp
 .Bl -tag -width "XX"
@@ -894,15 +894,15 @@ Location of the default system buttonrc file.
 No outstanding bugs.
 .Sh HISTORY
 .Pp
-.Cm @PACKAGE@
+.Nm @PACKAGE_NAME@
 configuration began with the simple X Resource scheme provided by
 .Xr echinus 1
 and quickly grew from there to support the advanced features of
-.Cm @PACKAGE@ .
+.Nm @PACKAGE_NAME@ .
 The same basic X Resource scheme is supported and an
 .Xr echinus 1
 resource file will work with
-.Cm @PACKAGE@
+.Nm @PACKAGE_NAME@
 (substituting
 .Cm Adwm*
 for

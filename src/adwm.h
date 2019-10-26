@@ -1501,8 +1501,10 @@ typedef struct {
 		CanUnion can;
 		CanUnion set;
 	} can;
-	Bool isfloating;
-	Bool hastitle;
+#if 0
+	Bool isfloating;		/* deprecated */
+	Bool hastitle;			/* deprecated */
+#endif
 	regex_t *propregex;
 	regex_t *tagregex;
 } Rule;					/* window matching rules */

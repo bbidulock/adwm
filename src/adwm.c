@@ -327,22 +327,44 @@ applyrules(Client *c)
 	Bool matched = False;
 	View *cv = c->cview ? : selview();
 	Monitor *cm = (cv && cv->curmon) ? cv->curmon : nearmonitor(); /* XXX: necessary? */
+	Rule *r;
 
 	/* rule matching */
 	snprintf(buf, sizeof(buf), "%s:%s:%s:%s",
 			c->ch.res_class ? : "", c->ch.res_name ? : "",
 			c->wm_role ? : "", c->wm_name ? : "");
 	buf[LENGTH(buf) - 1] = 0;
-	for (i = 0; i < nrules; i++)
-		if (rules[i]->propregex && !regexec(rules[i]->propregex, buf, 1, &tmp, 0)) {
-			c->skip.arrange = rules[i]->isfloating;
-			if (!(c->has.title = rules[i]->hastitle))
+	for (i = 0, r = rules[0]; i < nrules; i++, r = rules[i])
+		if (r->propregex && !regexec(r->propregex, buf, 1, &tmp, 0)) {
+#if 1
+			if (r->is.set.is) {
+				c->is.is |= (r->is.set.is & r->is.is.is);
+				c->is.is &= ~(r->is.set.is & ~r->is.is.is);
+			}
+			if (r->skip.set.skip) {
+				c->skip.skip |= (r->skip.set.skip & r->skip.skip.skip);
+				c->skip.skip &= ~(r->skip.set.skip & ~r->skip.skip.skip);
+			}
+			if (r->has.set.has) {
+				c->has.has |= (r->has.set.has & r->has.has.has);
+				c->has.has &= ~(r->has.set.has & ~r->has.has.has);
+			}
+			if (r->can.set.can) {
+				c->can.can |= (r->can.set.can & r->can.can.can);
+				c->can.can &= ~(r->can.set.can & ~r->can.can.can);
+			}
+#else
+			/* deprecated way of doing it */
+			c->skip.arrange = r->isfloating;
+			if (!(c->has.title = r->hastitle))
 				c->has.grips = False;
-			for (j = 0; rules[i]->tagregex && j < scr->ntags; j++) {
-				if (!regexec
-				    (rules[i]->tagregex, scr->tags[j].name, 1, &tmp, 0)) {
-					matched = True;
-					c->tags |= (1ULL << j);
+#endif
+			if (r->tagregex) {
+				for (j = 0; j < scr->ntags; j++) {
+					if (!regexec(r->tagregex, scr->tags[j].name, 1, &tmp, 0)) {
+						matched = True;
+						c->tags |= (1ULL << j);
+					}
 				}
 			}
 		}

@@ -590,6 +590,7 @@ AC_OUTPUT([Makefile
 	   doc/adwm-config.5
 	   doc/adwm-keys.5
 	   doc/adwm-buttons.5
+	   doc/adwm-rules.5
 	   doc/adwm-style.5
 	   doc/adwm-theme.5
 	   doc/adwm-dock.5

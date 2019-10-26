@@ -11,6 +11,7 @@
 #include "config.h"
 #include "image.h"
 #include "icons.h"
+#include "save.h"
 
 #define EXTRANGE    16		/* all X11 extension event must fit in this range */
 
@@ -7076,8 +7077,12 @@ main(int argc, char *argv[])
 			OPRINTF("scanning screen %d\n", scr->screen);
 			scan();
 		}
+	OPRINTF("%s", "showing scanned configuration\n");
+	save(stderr, True);
 	OPRINTF("%s", "entering main event loop\n");
 	run();
+	OPRINTF("%s", "showing quitting configuration\n");
+	save(stderr, True);
 	OPRINTF("cleanup quitting\n");
 	cleanup(CauseQuitting);
 

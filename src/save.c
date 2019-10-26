@@ -40,6 +40,29 @@ extern AdwmPlaces config;
  *
  */
 
+const char *
+show_geometry(Geometry *g)
+{
+	static char buf[128] = { 0, };
+
+	snprintf(buf, sizeof(buf), "%ux%u%c%u%c%u:%u", (unsigned) g->w, (unsigned) g->h,
+		 g->x >= 0 ? '+' : '-', (unsigned) abs(g->x),
+		 g->y >= 0 ? '+' : '-', (unsigned) abs(g->y), (unsigned) g->b);
+	return (buf);
+}
+
+const char *
+show_client_geometry(ClientGeometry *g)
+{
+	static char buf[128] = { 0, };
+
+	snprintf(buf, sizeof(buf), "%s(%u,%u,%u)", show_geometry((Geometry *)g),
+			(unsigned) g->t,
+			(unsigned) g->g,
+			(unsigned) g->v);
+	return (buf);
+}
+
 void
 save(FILE *file, Bool permanent)
 {
@@ -358,20 +381,35 @@ save(FILE *file, Bool permanent)
 			clientid = getclientid(c);
 			if (clientid)
 				fprintf(file, "Adwm.screen%u.client%u.clientid:\t\t%s\n", scr->screen, c->index, clientid);
-			strings = getclientstrings(c, &res_name, &res_class, &wm_command);
-			if (res_name)
-				fprintf(file, "Adwm.screen%u.client%u.res_name:\t\t%s\n", scr->screen, c->index, res_name);
-			if (res_class)
-				fprintf(file, "Adwm.screen%u.client%u.res_class:\t\t%s\n", scr->screen, c->index, res_class);
-			if (wm_command)
-				fprintf(file, "Adwm.screen%u.client%u.wm_command:\t\t%s\n", scr->screen, c->index, wm_command);
-			if (c->wm_name)
-				fprintf(file, "Adwm.screen%u.client%u.wm_name:\t\t%s\n", scr->screen, c->index, c->wm_name);
-			if (c->wm_role)
-				fprintf(file, "Adwm.screen%u.client%u.wm_role:\t\t%s\n", scr->screen, c->index, c->wm_role);
-
 			/* cannot identify windows without client strings */
-			if (strings) {
+			if ((strings = getclientstrings(c, &res_name, &res_class, &wm_command))) {
+				if (res_name)
+					fprintf(file, "Adwm.screen%u.client%u.res_name:\t\t%s\n", scr->screen, c->index, res_name);
+				if (res_class)
+					fprintf(file, "Adwm.screen%u.client%u.res_class:\t\t%s\n", scr->screen, c->index, res_class);
+				if (wm_command)
+					fprintf(file, "Adwm.screen%u.client%u.wm_command:\t\t%s\n", scr->screen, c->index, wm_command);
+				if (c->wm_name)
+					fprintf(file, "Adwm.screen%u.client%u.wm_name:\t\t%s\n", scr->screen, c->index, c->wm_name);
+				if (c->wm_role)
+					fprintf(file, "Adwm.screen%u.client%u.wm_role:\t\t%s\n", scr->screen, c->index, c->wm_role);
+
+				fprintf(file, "Adwm.screen%u.client%u.monitor:\t\t%d\n", scr->screen, c->index, c->monitor);
+				fprintf(file, "Adwm.screen%u.client%u.geometry.static:\t\t%s\n", scr->screen, c->index, show_geometry(&c->s));
+				fprintf(file, "Adwm.screen%u.client%u.geometry.initial:\t\t%s\n", scr->screen, c->index, show_geometry(&c->u));
+				fprintf(file, "Adwm.screen%u.client%u.geometry.current:\t\t%s\n", scr->screen, c->index, show_client_geometry(&c->c));
+				fprintf(file, "Adwm.screen%u.client%u.geometry.restore:\t\t%s\n", scr->screen, c->index, show_client_geometry(&c->r));
+				fprintf(file, "Adwm.screen%u.client%u.wm_state:\t\t%d\n", scr->screen, c->index, c->winstate);
+				fprintf(file, "Adwm.screen%u.client%u.tags:\t\t0x%llx\n", scr->screen, c->index, c->tags);
+
+				fprintf(file, "Adwm.screen%u.client%u.skip_flags:\t\t0x%x\n", scr->screen, c->index, c->skip.skip & skip_mask.skip);
+				fprintf(file, "Adwm.screen%u.client%u.is_flags:\t\t0x%x\n", scr->screen, c->index, c->is.is & is_mask.is);
+				fprintf(file, "Adwm.screen%u.client%u.has_flags:\t\t0x%x\n", scr->screen, c->index, c->has.has & has_mask.has);
+				fprintf(file, "Adwm.screen%u.client%u.with_flags:\t\t0x%x\n", scr->screen, c->index, c->with.with & with_mask.with);
+				fprintf(file, "Adwm.screen%u.client%u.can_flags:\t\t0x%x\n", scr->screen, c->index, c->can.can & can_mask.can);
+
+				fprintf(file, "Adwm.screen%u.client%u.opacity:\t\t%u\n", scr->screen, c->index, c->opacity);
+
 				if (clientid) {
 					/*
 					 * X11R6,7 Properties to identify client windows: (from ICCCM)

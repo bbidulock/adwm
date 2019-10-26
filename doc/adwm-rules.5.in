@@ -122,14 +122,6 @@ present.
 The special sequence,
 .Cm NULL ,
 can be used to skip this regular expression in the old format.
-.It Cm tags Ns Li : Ar <tagsregex>
-An extended regular expression meant to match the tag (desktop) name:
-.Pp
-.Li Ar <tagname>
-.Pp
-The special sequence,
-.Cm NULL ,
-can be used to skip this regular expression in the old format.
 .El
 .Pp
 All specified criteria must match for the rule to be considered and the
@@ -140,13 +132,22 @@ specified criteria for the rule matches.  Settings can alter almost all
 of the automatic behavior of the window manager with regard to the
 specific client.  Settings are specified as follows:
 .Pp
-.Li Cm <feature>.<field> Ns Li : Ar <value>
+.Li Cm <feature> Ns Li [ Ns Cm .<field> Ns Li ] Ns Li : Ar <value>
 .Pp
-where the fields are as follows:
+where the features are as follows:
 .Pp
-.Bl -tag -width ".Cm skip" -compact
-.It Cm is
+.Bl -tag -width "XX"
+.It Cm tags Ns Li : Ar <tagsregex>
+Specifies on which tags (views/desktops) the client should appear.
+.Ar <tagsregex>
+is an extended regular expression specifying on which tags
+(views/workspaces) the client should appear.  The client will appear on
+all tags (views/workspaces) whose name matches the regular expression.
+.It Cm is.<field> Ns Li : Ar <value>
 Specifies the state of the client.
+.Ar <value>
+is an integer truth value specifying false when zero (0); true,
+non-zero.
 .Cm <field>
 can be one of the followings, specifying the client is to start:
 .Pp
@@ -186,9 +187,59 @@ full screen; and,
 .It Cm dockapp
 as a dock application.
 .El
+.It Cm has.<field> Ns Li : Ar <value>
+Specifies decorations that the client should display.
+.Ar <value>
+is an integer truth value specifying false when zero (0); true,
+non-zero.
+.Cm <field>
+can be one of the following, specifying client decorations:
 .Pp
-.It Cm skip
+.Bl -tag -width ".Cm border" -compact
+.It Cm title
+title bar;
+.It Cm grips
+resize grips;
+.It Cm border
+decorative border; and
+.It Cm button.<button>
+buttons to display where
+.Cm <button>
+may be one of the following:
+.Pp
+.Bl -tag -width ".Cm floats" -compact
+.It Cm menu
+menu button in title bar;
+.It Cm min
+minimize button in title bar;
+.It Cm max
+maximize button in title bar;
+.It Cm close
+close button in title bar;
+.It Cm size
+resize button in title bar;
+.It Cm shade
+shade button in title bar;
+.It Cm stick
+stick button in title bar;
+.It Cm fill
+fill button in title bar;
+.It Cm floats
+float/tile button in title bar; and,
+.It Cm half
+lhalf/rhalf buttons in title bar.
+.El
+.El
+.Pp
+.Sy Note:
+buttons may not be displayed if not enabled by the style or theme and
+will not be displayed when a title bar is not displayed.  Also, buttons
+that correspond to disallowed actions may not be sensitive.
+.It Cm skip.<field> Ns Li : Ar <value>
 Specifies items for which to skip the client.
+.Ar <value>
+is an integer truth value specifying false when zero (0); true,
+non-zero.
 .Cm <field>
 can be one of the following, specifying to skip the client:
 .Pp
@@ -208,9 +259,11 @@ when tiling; and,
 .It Cm sloppy
 performing sloppy mouse focus.
 .El
-.Pp
-.It Cm can
+.It Cm can.<field> Ns Li : Ar <value>
 Specifies the actions that are allowed on the client.
+.Ar <value>
+is an integer truth value specifying false when zero (0); true,
+non-zero.
 .Cm <field>
 can be one of the following, allowing the client to:
 .Pp
@@ -277,12 +330,27 @@ syntax was as follows:
 where the fields were defined as follows:
 .Pp
 .Bl -tag -width "XX"
-.It Ar "<propregex> <tagsregex>"
-These fields were defined as for the newer format (see
+.It Ar <propregex>
+This field was defined as for the current format (see
 .Sx CRITERIA ,
 above); however, because
-they were all specified in the same resource, each field could not
-contain interior white space.
+it is specified with other expressions in the same resource, the
+extended regular expression could not contain interior white space.
+.It Ar <tagsregex>
+An extended regular expression specifying on which tags
+(views/workspaces) the client should appear.  The client will appear on
+all tags (views/workspaces) whose name matches the regular expression.
+.Pp
+This is the equivalent of the current
+.Cm tags
+setting (see
+.Sx SETTINGS ,
+above).  However, because it is specified with other expressions in the
+same resource, the extended regular express could not contain interior
+white space.
+Also, the special sequence,
+.Cm NULL ,
+could be used to skip this regular expression in the old format.
 .It Ar <isfloating>
 An integer which, when zero (0), indicates false; when non-zero,
 true.  When true, the client whose rule this matches will be started
@@ -293,26 +361,27 @@ This is the equivalent of the current
 .Cm is.floater
 setting (see
 .Sx SETTINGS ,
-aboe).
+above).
 .It Ar <hastitle>
 is an integer which, when zero (0), indicates false, when non-zero,
 true.  When true, the client whose rule this matches will not be given a
 title bar.  When false, it will be given a title bar.
 .Pp
-This is equivalent to the logical opposite of the current
-.Cm is.undec
+This is equivalent to the equivalent of the current
+.Cm has.title
 setting (see
 .Sx SETTINGS ,
-aboe).
+above).
 .El
 .Sh EXAMPLE
-Following is an example that makes Mplayer float with a title by
-default, using the current syntax:
+Following is an example that makes Mplayer float with a title bar,
+resize grips by default, using the current syntax:
 .Pp
 Example:
 .Dl Li "Adwm*" Ns Cm rule0.prop Ns Li : Ar ^Mplayer:
 .Dl Li "Adwm*" Ns Cm rule0.is.floater Ns Li : Ar 1
-.Dl Li "Adwm*" Ns Cm rule0.is.undec Ns Li : Ar 0
+.Dl Li "Adwm*" Ns Cm rule0.has.title Ns Li : Ar 1
+.Dl Li "Adwm*" Ns Cm rule0.has.grips Ns Li : Ar 1
 .Pp
 Following is an example that makes Mplayer float with a title by
 default, using the older syntax:

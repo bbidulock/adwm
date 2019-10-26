@@ -28,6 +28,7 @@ typedef struct {
 	char *rcfile;			/* rcfile */
 	char *keysfile;			/* kerysrc file */
 	char *btnsfile;			/* buttonrc file */
+	char *rulefile;			/* rulerc file */
 	char *stylefile;		/* stylerc file */
 	char *themefile;		/* themerc file */
 } AdwmConfig;
@@ -39,6 +40,7 @@ static AdwmConfig config;
 static XrmDatabase xconfigdb;		/* general configuration */
 static XrmDatabase xkeysdb;		/* key binding configuration */
 static XrmDatabase xbtnsdb;		/* button binding configuration */
+static XrmDatabase xruledb;		/* window rule configuration */
 static XrmDatabase xstyledb;		/* current style configuration */
 static XrmDatabase xthemedb;		/* current theme configuration */
 
@@ -155,6 +157,48 @@ initbtnsfile_ADWM(void)
 		return;
 	}
 	XrmMergeDatabases(xbtnsdb, &xconfigdb);
+}
+/** @} */
+
+/** @brief initrulefile_ADWM: locate and load runtime rules file
+  *
+  * @{ */
+static void
+initrulefile_ADWM(void)
+{
+	const char *file;
+	struct stat st;
+	char *path;
+
+	file = getresource("ruleFile", "rulerc");
+	path = ecalloc(PATH_MAX + 1, sizeof(*path));
+	strncpy(path, file, PATH_MAX);
+	if (!lstat(file, &st) && S_ISLNK(st.st_mode)) {
+		if (readlink(file, path, PATH_MAX) == -1)
+			eprint("%s: %s\n", file, strerror(errno));
+	}
+	free(config.rulefile);
+	config.rulefile = strdup(path);
+	if (*config.rulefile != '/') {
+		strncpy(path, config.rcfile, PATH_MAX);
+		if (strrchr(path, '/'))
+			*strrchr(path, '/') = '\0';
+		strncat(path, "/", PATH_MAX);
+		strncat(path, config.rulefile, PATH_MAX);
+		free(config.rulefile);
+		config.rulefile = strdup(path);
+	}
+	free(path);
+	if (xruledb) {
+		XrmDestroyDatabase(xruledb);
+		xruledb = NULL;
+	}
+	xruledb = XrmGetFileDatabase(config.rulefile);
+	if (!xruledb) {
+		XPRINTF("Could not find database file '%s'\n", config.rulefile);
+		return;
+	}
+	XrmMergeDatabases(xruledb, &xconfigdb);
 }
 /** @} */
 
@@ -359,6 +403,7 @@ initrcfile_ADWM(const char *conf, Bool reload)
 	}
 	initkeysfile_ADWM();
 	initbtnsfile_ADWM();
+	initrulefile_ADWM();
 	initstylefile_ADWM();
 	initthemefile_ADWM();
 }

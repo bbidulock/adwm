@@ -975,18 +975,72 @@ initrules(Bool reload)
 {
 	int i;
 	char t[64];
-	const char *tmp;
+	const char *res;
 
 	freerules();
 	rules = ecalloc(64, sizeof(Rule *));
 	for (i = 0; i < 64; i++) {
+		/* old format */
 		snprintf(t, sizeof(t), "rule%d", i);
-		tmp = getresource(t, NULL);
-		if (!tmp)
-			continue;
-		rules[nrules] = emallocz(sizeof(Rule));
-		parserule(tmp, rules[nrules]);
-		nrules++;
+		if ((res = getresource(t, NULL))) {
+			rules[nrules] = emallocz(sizeof(Rule));
+			parserule(res, rules[nrules]);
+			nrules++;
+		} else {
+			snprintf(t, sizeof(t), "rule%d.prop", i);
+			if ((res = getresource(t, NULL))) {
+				unsigned mask;
+				Rule *r;
+				int f;
+
+				r = rules[nrules] = emallocz(sizeof(Rule));
+				r->prop = strdup(res);
+				snprintf(t, sizeof(t), "rule%d.tags", i);
+				if ((res = getresource(t, NULL)))
+					r->tags = strdup(res);
+				for (f = 0, mask = 1; f < 32; f++, mask <<= 1) {
+					if (skip_fields[f]) {
+						snprintf(t, sizeof(t), "rule%d.skip.%s", i, skip_fields[f]);
+						if ((res = getresource(t, NULL))) {
+							r->skip.set.skip |= mask;
+							if (atoi(res))
+								r->skip.skip.skip |= mask;
+						}
+					}
+				}
+				for (f = 0, mask = 1; f < 32; f++, mask <<= 1) {
+					if (has_fields[f]) {
+						snprintf(t, sizeof(t), "rule%d.has.%s", i, has_fields[f]);
+						if ((res = getresource(t, NULL))) {
+							r->has.set.has |= mask;
+							if (atoi(res))
+								r->has.has.has |= mask;
+						}
+					}
+				}
+				for (f = 0, mask = 1; f < 32; f++, mask <<= 1) {
+					if (is_fields[f]) {
+						snprintf(t, sizeof(t), "rule%d.is.%s", i, is_fields[f]);
+						if ((res = getresource(t, NULL))) {
+							r->is.set.is |= mask;
+							if (atoi(res))
+								r->is.is.is |= mask;
+						}
+					}
+				}
+				for (f = 0, mask = 1; f < 32; f++, mask <<= 1) {
+					if (can_fields[f]) {
+						snprintf(t, sizeof(t), "rule%d.can.%s", i, can_fields[f]);
+						if ((res = getresource(t, NULL))) {
+							r->can.set.can |= mask;
+							if (atoi(res))
+								r->can.can.can |= mask;
+						}
+					}
+				}
+				nrules++;
+			}
+		}
 	}
 	// rules = erealloc(rules, nrules * sizeof(Rule *));
 	compileregs();

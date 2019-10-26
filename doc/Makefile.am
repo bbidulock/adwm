@@ -4,6 +4,7 @@ nodist_man_MANS = \
 	adwm-dock.5 \
 	adwm-keys.5 \
 	adwm-buttons.5 \
+	adwm-rules.5 \
 	adwm-style.5 \
 	adwm-theme.5
 
@@ -12,6 +13,7 @@ adwm_pod_files = \
 	adwm-config.pod \
 	adwm-keys.pod \
 	adwm-buttons.pod \
+	adwm-rules.pod \
 	adwm-style.pod \
 	adwm-theme.pod
 
@@ -21,6 +23,7 @@ adwm_man1_files = \
 adwm_man5_files = \
 	adwm-keys.man \
 	adwm-buttons.man \
+	adwm-rules.man \
 	adwm-style.man \
 	adwm-theme.man \
 	adwm-config.man
@@ -45,6 +48,10 @@ adwm-keys.man: adwm-keys.pod
 adwm-buttons.man: TITLE = File Formats
 adwm-buttons.man: SECTION = 5
 adwm-buttons.man: adwm-buttons.pod
+
+adwm-rules.man: TITLE = File Formats
+adwm-rules.man: SECTION = 5
+adwm-rules.man: adwm-rules.pod
 
 adwm-style.man: TITLE = File Formats
 adwm-style.man: SECTION = 5

@@ -96,6 +96,10 @@ save(Bool permanent)
 			snprintf(line, sizeof(line), "Adwm*buttonFile:\t\t%s\n", str);
 			XrmPutLineResource(&srdb, line);
 		}
+		if ((str = config.rulefile) && strcmp(str, "rulerc")) {
+			snprintf(line, sizeof(line), "Adwm*ruleFile:\t\t%s\n", str);
+			XrmPutLineResource(&srdb, line);
+		}
 
 		/* should probably save the dock definitions in the main file */
 
@@ -133,6 +137,10 @@ save(Bool permanent)
 		}
 		if ((str = getresource("buttonFile", NULL)) && strcmp(str, "buttonrc")) {
 			snprintf(line, sizeof(line), "Adwm*buttonFile:\t\t%s\n", str);
+			XrmPutLineResource(&srdb, line);
+		}
+		if ((str = getresource("ruleFile", NULL)) && strcmp(str, "rulerc")) {
+			snprintf(line, sizeof(line), "Adwm*ruleFile:\t\t%s\n", str);
 			XrmPutLineResource(&srdb, line);
 		}
 		if ((str = getresource("dockFile", NULL)) && strcmp(str, "dockrc")) {

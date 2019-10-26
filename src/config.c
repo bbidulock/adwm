@@ -702,6 +702,64 @@ initbtnsfile(void)
 }
 
 static void
+initrulefile(void)
+{
+	XrmDatabase brdb;
+	const char *file;
+
+	free(config.rulefile);
+	config.rulefile = NULL;
+
+	if (!config.rulefile && (file = getresource("ruleFile", "rulerc"))) {
+		if (!(config.rulefile = findrcfile(file)))
+			XPRINTF("Could not find rules file for %s\n", file);
+		if (config.rulefile && access(config.rulefile, R_OK)) {
+			XPRINTF("Could not access %s: %s\n", config.rulefile, strerror(errno));
+			free(config.rulefile);
+			config.rulefile = NULL;
+		}
+		if (!config.rulefile && strcmp(file, "rulerc")) {
+			if (!(config.rulefile = findrcfile("rulerc")))
+				XPRINTF("Could not find rules file for %s\n", "rulerc");
+		}
+		if (config.rulefile && access(config.rulefile, R_OK)) {
+			XPRINTF("Could not access %s: %s\n", config.rulefile, strerror(errno));
+			free(config.rulefile);
+			config.rulefile = NULL;
+		}
+	}
+	if (!config.rulefile) {
+		if (!(config.rulefile = findthemepath("rulerc")))
+			XPRINTF("Could not find rules file for %s\n", "rulerc");
+		if (config.rulefile && access(config.rulefile, R_OK)) {
+			XPRINTF("Could not access %s: %s\n", config.rulefile, strerror(errno));
+			free(config.rulefile);
+			config.rulefile = NULL;
+		}
+	}
+	if (!config.rulefile) {
+		if (!(config.rulefile = findstylepath("rulerc")))
+			XPRINTF("Could not find rules file for %s\n", "rulerc");
+		if (config.rulefile && access(config.rulefile, R_OK)) {
+			XPRINTF("Could not access %s: %s\n", config.rulefile, strerror(errno));
+			free(config.rulefile);
+			config.rulefile = NULL;
+		}
+	}
+	if (!config.rulefile) {
+		XPRINTF("Could not find readable rules file.\n");
+		return;
+	}
+	OPRINTF("Reading database file %s\n", config.rulefile);
+	brdb = XrmGetFileDatabase(config.rulefile);
+	if (!brdb) {
+		XPRINTF("Could not read database file '%s'\n", config.rulefile);
+		return;
+	}
+	XrmMergeDatabases(brdb, &xrdb);
+}
+
+static void
 initstylefile(void)
 {
 	XrmDatabase yrdb;
@@ -987,6 +1045,7 @@ initrcfile(const char *conf, Bool reload)
 	initstylefile();	/* read style elements into the database */
 	initkeysfile();		/* read key bindings into the database */
 	initbtnsfile();		/* read button bindings into the database */
+	initrulefile();		/* read window rules into the database */
 	initdockfile();		/* read dock elements into the database */
 
 	/* might want to pass these to above, instead of changing directories */

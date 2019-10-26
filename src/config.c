@@ -154,9 +154,9 @@ initdock(Bool reload)
 		l->is.dockapp = True;
 		l->client.client = NULL;
 		l->client.next = NULL;
-		l->client.name = res_name;
-		l->client.clas = res_class;
-		l->client.command = wm_command;
+		l->client.res_name = res_name;
+		l->client.res_class = res_class;
+		l->client.wm_command = wm_command;
 		appleaf(n, l, False);
 	}
 }

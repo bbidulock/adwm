@@ -5677,7 +5677,7 @@ place(Client *c, WindowPlacement p)
 	c->r.y = g.y;
 }
 
-static Bool
+Bool
 getclientstrings(Client *c, char **name, char **clas, char **cmd)
 {
 	char **argv = NULL;
@@ -5740,7 +5740,7 @@ getclientstrings(Client *c, char **name, char **clas, char **cmd)
 }
 
 static Leaf *
-findleaf(Container *n, char *name, char *clas, char *cmd)
+findleaf(Container *n, char *res_name, char *res_class, char *wm_command)
 {
 	Leaf *l = NULL;
 	Container *c;
@@ -5749,17 +5749,23 @@ findleaf(Container *n, char *name, char *clas, char *cmd)
 	case TreeTypeNode:
 	case TreeTypeTerm:
 		for (c = n->node.children.head; c; c = c->next)
-			if ((l = findleaf(c, name, clas, cmd)))
+			if ((l = findleaf(c, res_name, res_class, wm_command)))
 				break;
 		break;
 	case TreeTypeLeaf:
 		if (n->leaf.client.client)
 			break;
-		if (n->leaf.client.name && name && strcmp(n->leaf.client.name, name))
+		if (n->leaf.client.res_name && res_name && strcmp(n->leaf.client.res_name, res_name))
 			break;
-		if (n->leaf.client.clas && clas && strcmp(n->leaf.client.clas, clas))
+		if (n->leaf.client.res_class && res_class && strcmp(n->leaf.client.res_class, res_class))
 			break;
-		if (n->leaf.client.command && cmd && strcmp(n->leaf.client.command, cmd))
+#if 0
+		if (n->leaf.client.wm_name && wm_name && strcmp(n->leaf.client.wm_name, wm_name))
+			break;
+		if (n->leaf.client.wm_role && wm_role && strcmp(n->leaf.client.wm_role, wm_role))
+			break;
+#endif
+		if (n->leaf.client.wm_command && wm_command && strcmp(n->leaf.client.wm_command, wm_command))
 			break;
 		l = &n->leaf;
 		break;
@@ -5860,7 +5866,7 @@ adddockapp(Client *c, Bool choseme, Bool focusme, Bool raiseme)
 {
 	Container *t, *n;
 	Leaf *l = NULL;
-	char *name = NULL, *clas = NULL, *cmd = NULL;
+	char *res_name = NULL, *res_class = NULL, *wm_command = NULL;
 
 	if (!(t = scr->dock.tree)) {
 		XPRINTF("WARNING: no dock tree!\n");
@@ -5872,11 +5878,11 @@ adddockapp(Client *c, Bool choseme, Bool focusme, Bool raiseme)
 		n = adddocknode(t);
 	}
 
-	if (getclientstrings(c, &name, &clas, &cmd))
-		l = findleaf((Container *) t, name, clas, cmd);
+	if (getclientstrings(c, &res_name, &res_class, &wm_command))
+		l = findleaf((Container *) t, res_name, res_class, wm_command);
 	if (l) {
-		XPRINTF("found leaf '%s' '%s' '%s'\n", l->client.name ? : "",
-			l->client.clas ? : "", l->client.command ? : "");
+		XPRINTF("found leaf '%s' '%s' '%s'\n", l->client.res_name ? : "",
+			l->client.res_class ? : "", l->client.wm_command ? : "");
 	} else {
 		XPRINTF("creating leaf\n");
 		l = ecalloc(1, sizeof(*l));
@@ -5889,17 +5895,25 @@ adddockapp(Client *c, Bool choseme, Bool focusme, Bool raiseme)
 	l->client.client = c;
 	l->client.next = c->leaves;
 	c->leaves = l;
-	if (name) {
-		free(l->client.name);
-		l->client.name = name;
+	if (res_name) {
+		free(l->client.res_name);
+		l->client.res_name = res_name;
 	}
-	if (clas) {
-		free(l->client.clas);
-		l->client.clas = clas;
+	if (res_class) {
+		free(l->client.res_class);
+		l->client.res_class = res_class;
 	}
-	if (cmd) {
-		free(l->client.command);
-		l->client.command = cmd;
+	if (c->wm_name) {
+		free(l->client.wm_name);
+		l->client.wm_name = strdup(c->wm_name);
+	}
+	if (c->wm_role) {
+		free(l->client.wm_role);
+		l->client.wm_role = strdup(c->wm_role);
+	}
+	if (wm_command) {
+		free(l->client.wm_command);
+		l->client.wm_command = wm_command;
 	}
 }
 

@@ -1058,8 +1058,8 @@ struct Client {
 	XSizeHints sh;
 	char *name;
 	char *icon_name;
-	char *sm_name;			/* name for session management */
-	char *sm_role;			/* role for session management */
+	char *wm_name;			/* name for session management */
+	char *wm_role;			/* role for session management */
 	int monitor;			/* initial monitor */
 	Extents e;			/* copy of _NET_FRAME_EXTENTS */
 	Geometry s, u;			/* static and initial */
@@ -1264,9 +1264,12 @@ struct Leaf {
 	struct {
 		Leaf *next;			/* next leaf for same client */
 		Client *client;
-		char *name;
-		char *clas;
-		char *command;
+		char *clientid;
+		char *res_name;
+		char *res_class;
+		char *wm_name;
+		char *wm_role;
+		char *wm_command;
 	} client;
 };
 

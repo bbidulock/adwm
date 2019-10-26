@@ -331,7 +331,7 @@ applyrules(Client *c)
 	/* rule matching */
 	snprintf(buf, sizeof(buf), "%s:%s:%s:%s",
 			c->ch.res_class ? : "", c->ch.res_name ? : "",
-			c->sm_role ? : "", c->sm_name ? : "");
+			c->wm_role ? : "", c->wm_name ? : "");
 	buf[LENGTH(buf) - 1] = 0;
 	for (i = 0; i < nrules; i++)
 		if (rules[i]->propregex && !regexec(rules[i]->propregex, buf, 1, &tmp, 0)) {
@@ -5767,10 +5767,10 @@ unmanage(Client *c, WithdrawCause cause)
 	c->name = NULL;
 	free(c->icon_name);
 	c->icon_name = NULL;
-	free(c->sm_name);
-	c->sm_name = NULL;
-	free(c->sm_role);
-	c->sm_role = NULL;
+	free(c->wm_name);
+	c->wm_name = NULL;
+	free(c->wm_role);
+	c->wm_role = NULL;
 	if (c->ch.res_name) {
 		XFree(c->ch.res_name);
 		c->ch.res_name = NULL;
@@ -5949,8 +5949,8 @@ remove_spaces(char *str)
 void
 updatesmrole(Client *c)
 {
-	gettextprop(c->win, _XA_WM_WINDOW_ROLE, &c->sm_role);
-	remove_spaces(c->sm_role);
+	gettextprop(c->win, _XA_WM_WINDOW_ROLE, &c->wm_role);
+	remove_spaces(c->wm_role);
 }
 
 void
@@ -6146,11 +6146,11 @@ void
 updatesmname(Client *c)
 {
 	/* Just use the initial name for rules, session management and dock apps. */
-	const char *sm_name = c->name ? : "Untitled";
+	const char *wm_name = c->name ? : "Untitled";
 
-	free(c->sm_name); /* safety */
-	c->sm_name = strdup(sm_name);
-	remove_spaces(c->sm_name);
+	free(c->wm_name); /* safety */
+	c->wm_name = strdup(wm_name);
+	remove_spaces(c->wm_name);
 }
 
 void

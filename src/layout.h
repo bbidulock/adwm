@@ -129,6 +129,7 @@ void insleaf(Container *cp, Leaf *l, Bool active);
 void delnode(Container *cc);
 void appnode(Container *cp, Container *cc);
 void insnode(Container *cp, Container *cc);
+Bool getclientstrings(Client *c, char **name, char **clas, char **cmd);
 Container *adddocknode(Container *t);
 
 extern Layout layouts[];

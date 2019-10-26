@@ -19,6 +19,7 @@ typedef struct {
 			char *dockfile;		/* dockrc file */
 			char *keysfile;		/* keysrc file */
 			char *btnsfile;		/* buttonrc file */
+			char *rulefile;		/* rulerc file */
 			char *iconfile;		/* icon index.theme file */
 			char *themefile;	/* themerc file */
 			char *stylefile;	/* stylerc file */

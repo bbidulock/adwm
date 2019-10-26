@@ -464,19 +464,22 @@ save(Bool permanent)
 	for (scr = screens; scr < screens + nscr; scr++) {
 		unsigned n, len;
 
-		for (n = 0, c = scr->clist; c; c = c->cnext, n++)
+		for (n = 0, c = scr->clients; c; c = c->next, n++)
 			c->index = n;
 		snprintf(line, sizeof(line), "Adwm.screen%u.clients:\t\t%u\n", scr->screen, n);
 		XrmPutLineResource(&srdb, line);
 
 		/* creation order list */
+		/* We want to restore creation order: this is window list order for panels */
 		len = snprintf(line, sizeof(line), "Adwm.screen%u.clist:\t\t", scr->screen);
 		for (c = scr->clist; c; c = c->cnext)
 			len += snprintf(line + len, sizeof(line) - len, "%u%s", c->index, c->cnext ? ", " : "");
 		snprintf(line + len, sizeof(line) - len, "\n");
 		XrmPutLineResource(&srdb, line);
 
+		/* this one should just be 0..(n-1) */
 		/* tiling order list */
+		/* We want to restore tiling order: this determines layout for tiling mode views */
 		len = snprintf(line, sizeof(line), "Adwm.screen%u.tiles:\t\t", scr->screen);
 		for (c = scr->clients; c; c = c->next)
 			len += snprintf(line + len, sizeof(line) - len, "%u%s", c->index, c->snext ? ", " : "");
@@ -484,6 +487,7 @@ save(Bool permanent)
 		XrmPutLineResource(&srdb, line);
 
 		/* stacking order list */
+		/* We want to restore stacking order: this determines layout for stacking mode views */
 		len = snprintf(line, sizeof(line), "Adwm.screen%u.stack:\t\t", scr->screen);
 		for (c = scr->stack; c; c = c->snext)
 			len += snprintf(line + len, sizeof(line) - len, "%u%s", c->index, c->snext ? ", " : "");
@@ -491,6 +495,8 @@ save(Bool permanent)
 		XrmPutLineResource(&srdb, line);
 
 		/* focus order list */
+		/* It might not be necessary to restore focus order; but, then, it does determine
+		   last focussed window for a view. */
 		len = snprintf(line, sizeof(line), "Adwm.screen%u.flist:\t\t", scr->screen);
 		for (c = scr->flist; c; c = c->fnext)
 			len += snprintf(line + len, sizeof(line) - len, "%u%s", c->index, c->fnext ? ", " : "");
@@ -498,6 +504,8 @@ save(Bool permanent)
 		XrmPutLineResource(&srdb, line);
 
 		/* active order list */
+		/* It might not be necessary to restore active order; but, then, it does determine
+		   last active window for a view. */
 		len = snprintf(line, sizeof(line), "Adwm.screen%u.alist:\t\t", scr->screen);
 		for (c = scr->alist; c; c = c->anext)
 			len += snprintf(line + len, sizeof(line) - len, "%u%s", c->index, c->anext ? ", " : "");
@@ -506,21 +514,62 @@ save(Bool permanent)
 
 		/* in creation order */
 		for (c = scr->clist; c; c = c->cnext) {
-			/*
-			 * X11R6 Properties to identify client windows: (from ICCCM)
-			 *
-			 * SM_CLIENT_ID :-
-			 * WM_CLIENT_LEADER (or WM_TRANSIENT_FOR) :-
-			 * WM_WINDOW_ROLE (or WM_CLASS and WM_NAME) :- 
-			 *
-			 * X11R5 Properties to identify client windows: (from ICCCM)
-			 *
-			 * WM_HINTS (window_group)
-			 * WM_CLASS
-			 * WM_NAME
-			 * WM_COMMAND (non-zero length)
-			 * WM_CLIENT_MACHINE
-			 */
+			char *clientid, *res_name = NULL, *res_class = NULL, *wm_command = NULL;
+			Bool strings;
+
+			clientid = getclientid(c);
+			if (clientid) {
+				len = snprintf(line, sizeof(line), "Adwm.screen%u.client%u.clientid:\t\t%s\n", scr->screen, c->index, clientid);
+				XrmPutLineResource(&srdb, line);
+			}
+			strings = getclientstrings(c, &res_name, &res_class, &wm_command);
+			if (res_name) {
+				len = snprintf(line, sizeof(line), "Adwm.screen%u.client%u.res_name:\t\t%s\n", scr->screen, c->index, res_name);
+				XrmPutLineResource(&srdb, line);
+			}
+			if (res_class) {
+				len = snprintf(line, sizeof(line), "Adwm.screen%u.client%u.res_class:\t\t%s\n", scr->screen, c->index, res_class);
+				XrmPutLineResource(&srdb, line);
+			}
+			if (wm_command) {
+				len = snprintf(line, sizeof(line), "Adwm.screen%u.client%u.wm_command:\t\t%s\n", scr->screen, c->index, wm_command);
+				XrmPutLineResource(&srdb, line);
+			}
+			if (c->wm_name) {
+				len = snprintf(line, sizeof(line), "Adwm.screen%u.client%u.wm_name:\t\t%s\n", scr->screen, c->index, c->wm_name);
+				XrmPutLineResource(&srdb, line);
+			}
+			if (c->wm_role) {
+				len = snprintf(line, sizeof(line), "Adwm.screen%u.client%u.wm_role:\t\t%s\n", scr->screen, c->index, c->wm_role);
+				XrmPutLineResource(&srdb, line);
+			}
+
+			/* cannot identify windows without client strings */
+			if (strings) {
+				if (clientid) {
+					/*
+					 * X11R6,7 Properties to identify client windows: (from ICCCM)
+					 *
+					 * SM_CLIENT_ID :-
+					 * WM_CLIENT_LEADER (or WM_TRANSIENT_FOR) :-
+					 * WM_WINDOW_ROLE (or WM_CLASS and WM_NAME) :- 
+					 *
+					 * Identify windows with WM_CLASS, WM_NAME and possibly
+					 * WM_WINDOW_ROLE.
+					 */
+				} else {
+					/*
+					 * X11R5 Properties to identify client windows: (from ICCCM)
+					 *
+					 * WM_HINTS (window_group)
+					 * WM_CLASS
+					 * WM_NAME
+					 * WM_COMMAND (non-zero length)
+					 * WM_CLIENT_MACHINE
+					 */
+				}
+			}
+
 		}
 	}
 

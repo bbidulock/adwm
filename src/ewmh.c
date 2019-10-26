@@ -3771,12 +3771,24 @@ getcommand(Client *c, char ***v, int *n)
 	   that exactly one of them has a WM_COMMAND with nonzero length.  Zero-length
 	   WM_COMMAND properties can be used to reply to WM_SAVE_YOURSELF messages on
 	   other top-level windows but will otherwise be ignored. */
-	if (((win = c->win)     && XGetCommand(dpy, win, v, n)) ||
-	    ((win = c->session) && XGetCommand(dpy, win, v, n)) ||
-	    ((win = c->leader)  && XGetCommand(dpy, win, v, n)))
+	if (((win = c->win)     && XGetCommand(dpy, win, v, n) && *n != 0) ||
+	    ((win = c->session) && XGetCommand(dpy, win, v, n) && *n != 0) ||
+	    ((win = c->leader)  && XGetCommand(dpy, win, v, n) && *n != 0))
 		return True;
 
 	return False;
+}
+
+char *
+getclientid(Client *c)
+{
+	Window win;
+	char *id = NULL;
+
+	if (((win = c->session) && gettextprop(win, _XA_SM_CLIENT_ID, &id)) ||
+	    ((win = c->transfor) && gettextprop(win, _XA_SM_CLIENT_ID, &id)) ||
+	    ((win = c->win) && gettextprop(win, _XA_SM_CLIENT_ID, &id))) ;
+	return (id);
 }
 
 char *
@@ -3790,10 +3802,7 @@ getstartupid(Client *c)
 	    ((win = c->leader) && win != c->win &&
 	     gettextprop(win, _XA_NET_STARTUP_ID, &id)) ||
 	    ((win = c->session) && win != c->win &&
-	     gettextprop(win, _XA_NET_STARTUP_ID, &id))
-	    ) {
-		return (id);
-	}
+	     gettextprop(win, _XA_NET_STARTUP_ID, &id))) ;
 	return (id);
 }
 
@@ -3822,10 +3831,12 @@ getclientmachine(Client *c)
 	   they find * on icon windows. */
 	if (((win = c->win)     && gettextprop(win, XA_WM_CLIENT_MACHINE, &host)) ||
 	    ((win = c->session) && gettextprop(win, XA_WM_CLIENT_MACHINE, &host)) ||
-	    ((win = c->leader)  && gettextprop(win, XA_WM_CLIENT_MACHINE, &host)))
+	    ((win = c->leader)  && gettextprop(win, XA_WM_CLIENT_MACHINE, &host)) ||
+	    ((win = c->win)     && gettextprop(win, _XA_NET_APP_HOSTNAME, &host)) ||
+	    ((win = c->session) && gettextprop(win, _XA_NET_APP_HOSTNAME, &host)) ||
+	    ((win = c->leader)  && gettextprop(win, _XA_NET_APP_HOSTNAME, &host)))
 		return (host);
-
-	return (host);
+	return (NULL);
 }
 
 Window

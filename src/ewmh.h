@@ -22,6 +22,7 @@ pid_t getnetpid(Client *c);
 Bool getclasshint(Client *c, XClassHint *ch);
 Bool getgrpclasshint(Client *c, XClassHint * ch);
 Bool getcommand(Client *c, char ***argvp, int *argcp);
+char *getclientid(Client *c);
 char *getstartupid(Client *c);
 void setstartupid(Client *c, const char *id);
 char *getclientmachine(Client *c);

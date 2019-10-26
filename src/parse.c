@@ -813,6 +813,16 @@ char *skip_fields[32] = {
 	NULL,
 };
 
+SkipUnion skip_mask = {
+	.taskbar = 1,
+	.pager = 1,
+	.winlist = 1,
+	.cycle = 1,
+	.focus = 1,
+	.arrange = 1,
+	.sloppy = 1,
+};
+
 char *has_fields[32] = {
 	"border",
 	"grips",
@@ -830,10 +840,28 @@ char *has_fields[32] = {
 	NULL,
 };
 
+HasUnion has_mask = {
+	.border = 1,
+	.grips = 1,
+	.title = 1,
+	.but = {
+		.menu = 1,
+		.min = 1,
+		.max = 1,
+		.close = 1,
+		.size = 1,
+		.shade = 1,
+		.stick = 1,
+		.fill = 1,
+		.floats = 1,
+		.half = 1,
+	},
+};
+
 char *is_fields[32] = {
-	NULL /* "transient" */,
-	NULL /* "grptrans" */,
-	NULL /* "banned" */,
+	"transient",
+	"grptrans",
+	"banned",
 	"max",
 	"floater",
 	"maxv",
@@ -843,25 +871,58 @@ char *is_fields[32] = {
 	"shaded",
 	"icon",
 	"fill",
-	NULL /* "modal" */,
+	"modal",
 	"above",
 	"below",
-	NULL /* "attn" */,
+	"attn",
 	"sticky",
 	"undec",
-	NULL /* "closing" */,
-	NULL /* "killing" */,
-	NULL /* "pinging" */,
+	"closing",
+	"killing",
+	"pinging",
 	"hidden",
 	"bastard",
 	"full",
-	NULL /* "focused" */,
-	NULL /* "selected" */,
+	"focused",
+	"selected",
 	"dockapp",
-	NULL /* "moveresize" */,
-	NULL /* "managed" */,
-	NULL /* "saving" */,
+	"moveresize",
+	"managed",
+	"saving",
 	NULL,
+};
+
+IsUnion is_mask = {
+	.transient = 0,
+	.grptrans = 0,
+	.banned = 0,
+	.max = 1,
+	.floater = 1,
+	.maxv = 1,
+	.maxh = 1,
+	.lhalf = 1,
+	.rhalf = 1,
+	.shaded = 1,
+	.icon = 1,
+	.fill = 1,
+	.modal = 0,
+	.above = 1,
+	.below = 1,
+	.attn = 0,
+	.sticky = 1,
+	.undec = 1,
+	.closing = 0,
+	.killing = 0,
+	.pinging = 0,
+	.hidden = 1,
+	.bastard = 1,
+	.full = 1,
+	.focused = 0,
+	.selected = 0,
+	.dockapp = 1,
+	.moveresize = 0,
+	.managed = 0,
+	.saving = 0,
 };
 
 char *can_fields[32] = {
@@ -892,14 +953,50 @@ char *can_fields[32] = {
 	NULL,
 };
 
+CanUnion can_mask = {
+	.move = 1,
+	.size = 1,
+	.sizev = 1,
+	.sizeh = 1,
+	.min = 1,
+	.max = 1,
+	.maxv = 1,
+	.maxh = 1,
+	.close = 1,
+	.shade = 1,
+	.stick = 1,
+	.full = 1,
+	.above = 1,
+	.below = 1,
+	.fill = 1,
+	.fillh = 1,
+	.fillv = 1,
+	.floats = 1,
+	.hide = 1,
+	.tag = 1,
+	.arrange = 1,
+	.undec = 1,
+	.select = 1,
+	.focus = 1,
+};
+
 char *with_fields[32] = {
-	NULL /* "struts" */,
-	NULL /* "time" */,
-	NULL /* "boundary" */,
-	NULL /* "clipping" */,
-	NULL /* "wshape" */,
-	NULL /* "bshape" */,
+	"struts",
+	"time",
+	"boundary",
+	"clipping",
+	"wshape",
+	"bshape",
 	NULL,
+};
+
+WithUnion with_mask = {
+	.struts = 0,
+	.time = 0,
+	.boundary = 0,
+	.clipping = 0,
+	.wshape = 0,
+	.bshape = 0,
 };
 
 static void
@@ -999,7 +1096,7 @@ initrules(Bool reload)
 				if ((res = getresource(t, NULL)))
 					r->tags = strdup(res);
 				for (f = 0, mask = 1; f < 32; f++, mask <<= 1) {
-					if (skip_fields[f]) {
+					if ((skip_mask.skip & mask) && !!skip_fields[f]) {
 						snprintf(t, sizeof(t), "rule%d.skip.%s", i, skip_fields[f]);
 						if ((res = getresource(t, NULL))) {
 							r->skip.set.skip |= mask;
@@ -1009,7 +1106,7 @@ initrules(Bool reload)
 					}
 				}
 				for (f = 0, mask = 1; f < 32; f++, mask <<= 1) {
-					if (has_fields[f]) {
+					if ((has_mask.has & mask) && !!has_fields[f]) {
 						snprintf(t, sizeof(t), "rule%d.has.%s", i, has_fields[f]);
 						if ((res = getresource(t, NULL))) {
 							r->has.set.has |= mask;
@@ -1019,7 +1116,7 @@ initrules(Bool reload)
 					}
 				}
 				for (f = 0, mask = 1; f < 32; f++, mask <<= 1) {
-					if (is_fields[f]) {
+					if ((is_mask.is & mask) && !!is_fields[f]) {
 						snprintf(t, sizeof(t), "rule%d.is.%s", i, is_fields[f]);
 						if ((res = getresource(t, NULL))) {
 							r->is.set.is |= mask;
@@ -1029,7 +1126,7 @@ initrules(Bool reload)
 					}
 				}
 				for (f = 0, mask = 1; f < 32; f++, mask <<= 1) {
-					if (can_fields[f]) {
+					if ((can_mask.can & mask) && !!can_fields[f]) {
 						snprintf(t, sizeof(t), "rule%d.can.%s", i, can_fields[f]);
 						if ((res = getresource(t, NULL))) {
 							r->can.set.can |= mask;

@@ -280,19 +280,19 @@ save(FILE *file, Bool permanent)
 				fprintf(file, "Adwm.rule%u.tags:\t\t%s\n", i, r->tags);
 			if (r->is.set.is)
 				for (f = 0, mask = 1; f < 32; f++, mask <<= 1)
-					if ((r->is.set.is & mask) && is_fields[f])
+					if ((r->is.set.is & is_mask.is & mask) && is_fields[f])
 						fprintf(file, "Adwm.rule%u.is.%s:\t\t%d\n", i, is_fields[f], (r->is.is.is & mask) ?  1 : 0);
 			if (r->skip.set.skip)
 				for (f = 0, mask = 1; f < 32; f++, mask <<= 1)
-					if ((r->skip.set.skip & mask) && skip_fields[f])
+					if ((r->skip.set.skip & skip_mask.skip & mask) && skip_fields[f])
 						fprintf(file, "Adwm.rule%u.skip.%s:\t\t%d\n", i, skip_fields[f], (r->skip.skip.skip & mask) ?  1 : 0);
 			if (r->has.set.has)
 				for (f = 0, mask = 1; f < 32; f++, mask <<= 1)
-					if ((r->has.set.has & mask) && has_fields[f])
+					if ((r->has.set.has & has_mask.has & mask) && has_fields[f])
 						fprintf(file, "Adwm.rule%u.has.%s:\t\t%d\n", i, has_fields[f], (r->has.has.has & mask) ?  1 : 0);
 			if (r->can.set.can)
 				for (f = 0, mask = 1; f < 32; f++, mask <<= 1)
-					if ((r->can.set.can & mask) && can_fields[f])
+					if ((r->can.set.can & can_mask.can & mask) && can_fields[f])
 						fprintf(file, "Adwm.rule%u.can.%s:\t\t%d\n", i, can_fields[f], (r->can.can.can & mask) ?  1 : 0);
 #endif
 		}

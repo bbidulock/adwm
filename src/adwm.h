@@ -933,6 +933,7 @@ typedef union {
 } SkipUnion;
 
 extern char *skip_fields[32];		/* see parse.h */
+extern SkipUnion skip_mask;
 
 typedef union {
 	struct {
@@ -956,6 +957,7 @@ typedef union {
 } HasUnion;
 
 extern char *has_fields[32];		/* see parse.h */
+extern HasUnion has_mask;
 
 typedef union {
 	struct {
@@ -994,6 +996,7 @@ typedef union {
 } IsUnion;
 
 extern char *is_fields[32];		/* see parse.h */
+extern IsUnion is_mask;
 
 typedef union {
 	struct {
@@ -1026,6 +1029,7 @@ typedef union {
 } CanUnion;
 
 extern char *can_fields[32];		/* see parse.h */
+extern CanUnion can_mask;
 
 typedef union {
 	struct {
@@ -1040,6 +1044,7 @@ typedef union {
 } WithUnion;
 
 extern char *with_fields[32];		/* see parse.h */
+extern WithUnion with_mask;
 
 struct Appl {
 	Appl *next;			/* next in list */

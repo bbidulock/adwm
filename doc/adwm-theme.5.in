@@ -779,7 +779,7 @@ resource when setting its own background pixmap.
 .Sh BUGS
 No outstanding bugs.
 .Sh HISTORY
-.Cm @PACKAGE@
+.Nm @PACKAGE_NAME@
 configuration began with the simple X Resource scheme
 provided by
 .Xr echinus 1

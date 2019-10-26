@@ -1,0 +1,383 @@
+.Dd @MDOCDATE@
+.Dt @PACKAGE_NAME@-RULES \&5 "File Formats"
+.Os @PACKAGE_STRING@
+.Sh NAME
+.Nm @PACKAGE@-rules
+.Nd advanced dynamic window manager for X: window rules
+.Sh SYNOPSIS
+.Bl -item -compact
+.It
+.Cm @PACKAGE@ -f Li { Ns Cm ${ADWMPRIVDIR} Ns Pa / Ns Li } Ns Pa rulerc
+.It
+.Cm ${XDG_RUNTIME_DIR} Ns Pa /@PACKAGE@/rulerc
+.It
+.Cm ${XDG_CONFIG_HOME} Ns Pa /@PACKAGE@/rulerc
+.It
+.Cm ${HOME} Ns Pa /.@PACKAGE@/rulerc
+.It
+.Cm ${XDG_CONFIG_DIRS} Ns Pa /@PACKAGE@/rulerc
+.It
+.Pa @pkgconfdir@/rulerc
+.El
+.Sh DESCRIPTION
+.Nm @PACKAGE_NAME@
+is a light-weight, reparenting, dynamic tiling/stacking window
+manager intended on being fully controllable using only the
+keyboard: the objective of all dynamic tiling window managers.
+.Pp
+However, some clients are not well-behaved under tiling modes (or,
+sometimes, even under floating modes).  Therefore, it is sometimes
+necessary to override the default behaviour of the window manager to
+accommodate these poorly behaved clients.
+.Pp
+A number of window managers (e.g.
+.Xr icewm 1 Ns ),
+support overriding the behavior of clients specified by resource name
+and class to accommodate poorly behaved clients, or just to allow user
+preferences.
+.Nm @PACKAGE_NAME@
+also supports this using window rules.
+Window rules describe rules that may be applied to newly managed windows
+to alter their behavior (primarily for tiled layouts).  Their purpose is
+to address clients that are not well-behaved with dynamic window
+managers.
+.Pp
+Window rules are defined in an X Resource formatted configuration file.
+Window rules can either be part of the main configuration file, or they
+can be included or referenced from the main configuration file: see
+.Cm ruleFile
+directive in
+.Xr @PACKAGE@-config 5 .
+It is typical to place the window rules in a file named
+.Pa rulerc
+in the same directory as the main configuration file (e.g. in the
+.Pa "~/.@PACKAGE@/rulerc"
+file).  See
+.Sx FILES ,
+below.
+.Sh SYNTAX
+.Pp
+The general syntax of window rule commands, as specified directly in the
+.Nm @PACKAGE_NAME@
+resource file, is as follows:
+.Pp
+.Dl Li "Adwm*" Ns Cm rule<n>.<criteria> Ns Li : Ar <regex>
+.Dl Li "Adwm*" Ns Cm rule<n>.<settings> Ns Li : Ar <value>
+.Pp
+where the fields are defined as follows:
+.Pp
+.Bl -tag -width "XX"
+.It Cm rule<n>
+Specifies a rule, where
+.Cm <n>
+is the number of the rule, which can be an integer between zero (0) and
+sixty-three (63) inclusive.  That is, there can be a maximum of 64 rules defined.
+.It Cm <criteria> Ns Li : Ar <regex>
+One of the criteria (regular expressions), described under
+.Sx CRITERIA ,
+below.
+.It Cm <settings> Ns Li : Ar <value>
+One of the settings to override, described under
+.Sx SETTINGS ,
+below.
+.El
+.Ss CRITERIA
+Criteria for window rules are extended regular expressions that match
+some property of the client.  There are several criteria that may be
+specified.  At least one criteria must be specified for the rule to be
+effective.  The available criteria are as follows:
+.Pp
+.Bl -tag -width "XX"
+.It Cm prop Ns Li : Ar <propregex>
+A extended regular expression meant to match the 3-tuple of resource
+class, resource name, and window role (that are separated by colons
+(":"):
+.Pp
+.Li Ar <res_class> Ns Li : Ns Ar <res_name> Ns Li : Ns Ar <role>
+.Pp
+where the components of the 3-tuple are as follows:
+.Pp
+.Bl -tag -width ".Ar <res_class>" -compact
+.It Ar <res_class>
+Contains the resource class from the
+.Cm WM_CLASS
+property on the client, or a zero-length string when not present.
+.Pp
+.It Ar <res_name>
+Contains the resource name from the
+.Cm WM_CLASS
+property on the client, or a zero-length string when not present.
+.Pp
+.It Ar <res_role>
+Contains the window role from the
+.Cm WM_WINDOW_ROLE
+property on the client, or, when
+.Cm WM_WINDOW_ROLE
+is not present, the name from the initial
+.Cm WM_NAME
+property on the client, or a zero-length string when neither are
+present.
+.El
+.Pp
+The special sequence,
+.Cm NULL ,
+can be used to skip this regular expression in the old format.
+.It Cm tags Ns Li : Ar <tagsregex>
+An extended regular expression meant to match the tag (desktop) name:
+.Pp
+.Li Ar <tagname>
+.Pp
+The special sequence,
+.Cm NULL ,
+can be used to skip this regular expression in the old format.
+.El
+.Pp
+All specified criteria must match for the rule to be considered and the
+corresponding settings applied.
+.Ss SETTINGS
+Settings specify which behaviors to change and override when the
+specified criteria for the rule matches.  Settings can alter almost all
+of the automatic behavior of the window manager with regard to the
+specific client.  Settings are specified as follows:
+.Pp
+.Li Cm <feature>.<field> Ns Li : Ar <value>
+.Pp
+where the fields are as follows:
+.Pp
+.Bl -tag -width ".Cm skip" -compact
+.It Cm is
+Specifies the state of the client.
+.Cm <field>
+can be one of the followings, specifying the client is to start:
+.Pp
+.Bl -tag -width ".Cm bastard" -compact
+.It Cm floater
+floating;
+.It Cm max
+maximized;
+.It Cm maxv
+maximized vertically;
+.It Cm maxh
+maximized horizontally;
+.It Cm lhalf
+on left half of screen;
+.It Cm rhalf
+on right half of screen;
+.It Cm shaded
+shaded;
+.It Cm icon
+minimized (iconified);
+.It Cm fill
+filling available area;
+.It Cm above
+above other windows;
+.It Cm below
+below other windows;
+.It Cm sticky
+on all views (workspaces);
+.It Cm undec
+undecorated;
+.It Cm hidden
+hidden;
+.It Cm bastard
+as a dock or panel;
+.It Cm full
+full screen; and,
+.It Cm dockapp
+as a dock application.
+.El
+.Pp
+.It Cm skip
+Specifies items for which to skip the client.
+.Cm <field>
+can be one of the following, specifying to skip the client:
+.Pp
+.Bl -tag -width ".Cm winlist" -compact
+.It Cm taskbar
+on the taskbar;
+.It Cm pager
+in the pager;
+.It Cm winlist
+in the window list;
+.It Cm cycle
+when tab cycling;
+.It Cm focus
+when focusing;
+.It Cm arrange
+when tiling; and,
+.It Cm sloppy
+performing sloppy mouse focus.
+.El
+.Pp
+.It Cm can
+Specifies the actions that are allowed on the client.
+.Cm <field>
+can be one of the following, allowing the client to:
+.Pp
+.Bl -tag -width ".Cm arrange" -compact
+.It Cm move
+move;
+.It Cm size
+resize in any direction;
+.It Cm sizev
+resize vertically;
+.It Cm sizeh
+resize horizontally;
+.It Cm min
+minimize (iconify);
+.It Cm max
+maximize in both directions;
+.It Cm maxv
+maximize vertically;
+.It Cm maxh
+maximize horizontally;
+.It Cm close
+close;
+.It Cm shade
+shade;
+.It Cm stick
+stick;
+.It Cm full
+full-screen;
+.It Cm above
+be placed above other windows;
+.It Cm below
+be placed below other windows;
+.It Cm fill
+fill available space;
+.It Cm fillh
+fill available space horizontally;
+.It Cm fillv
+fill available space vertically;
+.It Cm floats
+float in tiling layouts;
+.It Cm hide
+be hidden;
+.It Cm tag
+change workspaces;
+.It Cm arrange
+be tiled;
+.It Cm undec
+be undecorated;
+.It Cm select
+be selected; and,
+.It Cm focus
+be focused.
+.El
+.El
+.Ss OLD SYNTAX
+.Pp
+Window rules used to have an older format that is now deprecated.
+.Nm @PACKAGE@
+still supports this syntax; however, it has some restriction.  The old
+syntax was as follows:
+.Pp
+.Dl Li "Adwm*" Ns Cm rule<n> Ns Li : Ar "<propregex> <tagsregex> <isfloating> <hastitle>"
+.Pp
+where the fields were defined as follows:
+.Pp
+.Bl -tag -width "XX"
+.It Ar "<propregex> <tagsregex>"
+These fields were defined as for the newer format (see
+.Sx CRITERIA ,
+above); however, because
+they were all specified in the same resource, each field could not
+contain interior white space.
+.It Ar <isfloating>
+An integer which, when zero (0), indicates false; when non-zero,
+true.  When true, the client whose rule this matches will be started
+floating, even on tiled layouts.  When false, the client will be started
+tiled.
+.Pp
+This is the equivalent of the current
+.Cm is.floater
+setting (see
+.Sx SETTINGS ,
+aboe).
+.It Ar <hastitle>
+is an integer which, when zero (0), indicates false, when non-zero,
+true.  When true, the client whose rule this matches will not be given a
+title bar.  When false, it will be given a title bar.
+.Pp
+This is equivalent to the logical opposite of the current
+.Cm is.undec
+setting (see
+.Sx SETTINGS ,
+aboe).
+.El
+.Sh EXAMPLE
+Following is an example that makes Mplayer float with a title by
+default, using the current syntax:
+.Pp
+Example:
+.Dl Li "Adwm*" Ns Cm rule0.prop Ns Li : Ar ^Mplayer:
+.Dl Li "Adwm*" Ns Cm rule0.is.floater Ns Li : Ar 1
+.Dl Li "Adwm*" Ns Cm rule0.is.undec Ns Li : Ar 0
+.Pp
+Following is an example that makes Mplayer float with a title by
+default, using the older syntax:
+.Pp
+Example:
+.Dl Li "Adwm*" Ns Cm rule0 Ns Li : Ar ^Mplayer: NULL 1 1
+.Sh DEFAULTS
+For the most part,
+.Nm @PACKAGE@
+does a good job of accommodating most clients.  Therefore, there are no
+default rules.
+.Sh FILES
+Following are the locations of the
+.Xr @PACKAGE@-buttons 5
+file, in the order in which they are searched:
+.Pp
+.Bl -tag -width "XX"
+.It Cm "$(dirname <themeFile>)" Ns Ar /rulerc
+Default location of the rules file when a theme is defined.
+.It Cm "$(dirname <styleFile>)" Ns Ar /rulerc
+Default location of the rules file when a style is defined.
+.It Cm "${ADWMPRIVDIR}" Ns AAr /rulerc
+Location of the user private rules file.
+.It Cm "${XDG_RUNTIME_DIR}" Ns Ar /@PACKAGE@/rulerc
+Location of the user runtime rules file.
+.It Cm "${XDG_CONFIG_HOME}" Ns Ar /@PACKAGE@/rulerc
+Location of the user XDG rules file.
+.It Cm "${HOME}" Ns Ar /.@PACKAGE@/rulerc
+Location of the user rules file.
+.It Cm "${XDG_CONFIG_DIRS}" Ns Ar /@PACKAGE@/rulerc
+Location of the system XDG file.
+.It Ar @pkgconfdir@/rulerc
+Location of the default system rulerc file.
+.El
+.Sh SEE ALSO
+.Rs
+.Re
+.Xr @PACKAGE@ 1 ,
+.Xr @PACKAGE@-config 5 ,
+.Xr icewm 1 ,
+.Xr echinus 1 .
+.Sh BUGS
+No outstanding bugs.
+.Sh HISTORY
+.Pp
+.Nm @PACKAGE_NAME@
+configuration began with the simple X Resource scheme provided by
+.Xr echinus 1
+and quickly grew from there to support the advanced features of
+.Nm @PACKAGE_NAME@ .
+The same basic X Resource scheme is supported and an
+.Xr echinus 1
+resource file will work with
+.Nm @PACKAGE_NAME@
+(substituting
+.Cm Adwm*
+for
+.Cm Echinus* ).
+.Sh AUTHORS
+.An Brian Bidulock Aq bidulock@openss7.org
+.Sh LICENSE
+.Nm @PACKAGE_NAME@
+is licensed under the GNU General Public License Version 3 or later.
+.sp
+See the
+.Pa COPYING
+file in the distribution.
+.\" vim: set ft=nroff sw=4 et nocin tw=72 spell:

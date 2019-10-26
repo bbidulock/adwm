@@ -47,6 +47,8 @@ are described below under
 Key and button bindings are typically placed in a separate file, as
 described in
 .Xr @PACKAGE@-keys 5 .
+Window rules are typically placed in a separate file as described in
+.Xr @PACKAGE@-rules 5 .
 Theme elements (for backgrounds), dock applications (dock apps), and
 style elements (for decorative borders and the dock) are normally placed
 in separate files, also, as described in
@@ -209,7 +211,7 @@ Specifies the path and filename,
 .Pa <path> ,
 of a file from which to read key bindings.
 The path may be absolute or relative: when relative, the path
-is considered relative to the directory which contains the
+is considered relative to the directory that contains the
 configuration file in which the declaration resides.
 The default is
 .Pa keysrc ,
@@ -227,7 +229,7 @@ file to which it is associated, or included by one of those files.  When
 a
 .Pa themerc
 file is specified, the file will normally specify or include the
-.Pa keysFile .
+.Cm keysFile .
 .Pp
 See
 .Xr @PACKAGE@-keys 5
@@ -235,6 +237,60 @@ for more information on the format and contents of this file.
 .Pp
 Default:
 .Li Adwm* Ns Cm keysFile Ns Li : Pa keysrc
+.It Cm buttonFile Pa <path>
+Specifies the path and filename,
+.Pa <path> ,
+of a file from which to read mouse button bindings.  The path may be
+absolute or relative: when relative, the path is considered relative to
+the directory that contains the configuration file in which the
+declaration resides.  The default is
+.Pa buttonrc ,
+that is, the file named
+.Pa buttonrc
+in the same directory as the main configuration file.
+.Pp
+The
+.Pa buttonrc
+file is normally placed in the same directory as the
+.Pa themerc
+or
+.Pa stylerc
+file to which it is associated, or included by one of those files.  When
+a
+.Pa themerc
+file is specified, the file will normally specify or include the
+.Cm buttonFile .
+.Pp
+See
+.Xr @PACKAGE@-buttons 5
+for more information on the format and contents of this file.
+.Pp
+Default:
+.Li "Adwm*" Ns Cm buttonFile Ns Li : Pa buttonrc
+.It Cm ruleFile Pa <path>
+Specifies the path and filename,
+.Pa <path> ,
+of a file from which to read window rules.  The path may be absolute or
+relative: when relative, the path is considered relative to the
+directory that contains the configuration file in which the declaration
+resides.  The default is
+.Pa rulerc ,
+that is, the file named
+.Pa rulerc
+in the same directory as the main configuration file.
+.Pp
+The
+.Pa rulerc
+file is normally placed in the same directory as the main configuration
+file to which it is associated, or included by the main configuration
+file.
+.Pp
+See
+.Xr @PACKAGE@-rules 5
+for more information on the format and contents of this file.
+.Pp
+Default:
+.Li "Adwm*" Cm ruleFile Ns Li : Ar rulerc
 .It Cm styleName Pa <directory>
 Specifies the name of a style directory under which
 to look for the
@@ -290,7 +346,7 @@ file is normally placed in the same directory as the
 file to which it corresponds, or included by that file.  When a
 .Pa themerc
 file is specified, the file will normally specify or include the
-.Pa styleFile
+.Cm styleFile
 file.
 If the
 .Pa stylerc
@@ -336,7 +392,7 @@ file is normally placed in the same directory as the
 file to which it corresponds, or included by that file.  When a
 .Pa themerc
 file is specified, the file will normally specify or include the
-.Pa dockFile
+.Cm dockFile
 file.
 If the
 .Pa dockrc
@@ -601,7 +657,7 @@ startup.  Each value can be changed during the session using the key
 binding specified in the detail, below.
 .Pp
 These directives should normally be specified in the
-.Pa styleFile
+.Cm styleFile
 instead of the main configuration file: see
 .Xr @PACKAGE@-style 5 ;
 however, they are also addressed here.
@@ -878,7 +934,7 @@ Tag directives affect the number of views (desktops) presented
 by the window manager and names and layouts associated with
 those views.
 These directives should normally be specified in the
-.Pa styleFile
+.Cm styleFile
 instead of the main configuration file: see
 .Xr @PACKAGE@-style 5 ;
 however, they are also addressed here.
@@ -1123,14 +1179,16 @@ Example:
 No defaults are provided in the default
 .Pa @PACKAGE@rc
 file.  These resources, if defined at all, should likely be defined in the
-.Pa styleFile
+.Cm styleFile
 associated with the current style, as it is a themed item.
 .El
 .Ss MOUSE DIRECTIVES
 Mouse directives affect the actions of button clicks on the
 root window, or on the menu button in the title bar of client
 windows.  These directives are normally specified in the
-.Pa keysFile
+.Cm keysFile
+or
+.Cm buttonFile
 instead of the main configuration file: see
 .Xr @PACKAGE@-keys 5 ;
 however, they are also addressed here.
@@ -1156,7 +1214,7 @@ support a root menu.)
 See
 .Xr xde-menu 1
 for a suitable root window menu for
-.Cm @PACKAGE@ .
+.Nm @PACKAGE_NAME@ .
 .Pp
 Default:
 .Li Adwm* Ns Cm command Ns Li : Ar "xde-menu -P -b 3"
@@ -1167,7 +1225,7 @@ The default is to not execute a shell command.
 See
 .Xr xde-wkspmenu 1
 for a suitable workspace menu for
-.Cm @PACKAGE@ .
+.Nm @PACKAGE_NAME@ .
 .Pp
 Default:
 .Li Adwm* Ns Cm command2 Ns Li : Ar "xde-wkspmenu -p -b 2"
@@ -1178,14 +1236,14 @@ The default is to not execute a shell command.
 See
 .Xr xde-winlist 1
 for a suitable window list menu for
-.Cm @PACKAGE@ .
+.Nm @PACKAGE_NAME@ .
 .Pp
 Default:
 .Li "! Adwm*" Ns Cm command3 Ns Li : Ar "xde-winlist -p -b 1 --hidden"
 .Pp
 .Sy Note:
 This command is commented out in the default
-.Pa keysFile
+.Cm keysFile
 because it can be quite annoying to bind button 1 on the root window.
 .It Li [ Ns Li { Ns Cm session Ns Li | Ns Cm screen<s> Ns Li } Ns Li . Ns Li ] Ns Cm menucommand Ar <shell-command>
 Specifies the shell command to execute when a button is
@@ -1194,7 +1252,7 @@ The default is to not execute a shell command.
 See
 .Xr xde-winmenu 1
 for a suitable window menu for
-.Cm @PACKAGE@ .
+.Nm @PACKAGE_NAME@ .
 .Pp
 Default:
 .Li Adwm* Ns Cm menucommand Ns Li : Ar "xde-winmenu -p -b 1"
@@ -1202,7 +1260,7 @@ Default:
 .Ss KEY BINDINGS
 Key bindings describe the binding of key presses to various functions.
 These directives are normally specified in the
-.Pa keysFile
+.Cm keysFile
 instead of the main configuration file.  They are not addressed here.
 See
 .Xr @PACKAGE@-keys 5 .
@@ -1212,59 +1270,11 @@ to alter their behaviour (primarily for tiled layouts).  Their purpose
 is to address clients that are not well-behaved with dynamic window
 managers.
 .Pp
-Rules are formatted as follows:
-.Pp
-.Li Cm rule<n> Ns Li : Ar <propregex> <tagregex> <isfloating> <hastitle>
-.Pp
-Where the fields are defined as follows:
-.Pp
-.Bl -tag -width ".Ar <isfloating>" -compact
-.It Cm rule<n>
-The rule, where
-.Cm <n>
-is a number from zero (0) to sixty-three (63), inclusive.
-.Pp
-.It Ar <propregex>
-A regular expression meant to match the 3-tuple of resource class,
-resource name, and role (which are separated by semicolons (":")):
-.Pp
-.Li Ar <res_class> Ns Li : Ns Ar <res_name> Ns Li : Ns Ar <role>
-.Pp
-Note that none of these fields contain any white space (any white space
-characters will have been replaced by underscores ("_") in the string to
-match.  Also, the regular expression cannot contain any white space
-either or an undefined result will occur.
-The special sequence,
-.Cm NULL ,
-can be used to skip this regular expression.
-.Pp
-.It Ar <tagregex>
-A regular expression meant to match the tag (desktop) name:
-.Pp
-.Li Ar <tagname>
-.Pp
-Note that
-the tag name will not contain any white space (any white space
-characters will have been replaced by underscores ("_") in the string to
-match.  Also, the regular expression cannot contain any white space.
-The special sequence,
-.Cm NULL ,
-can be used to skip this regular expression.
-.Pp
-.It Ar <isfloating>
-An integer which, when zero (0), indicates false; when non-zero, true.
-When true, the client whose rule this matches will be started floating,
-even on tiled layouts.  When false, the client will be started tiled.
-.Pp
-.It Ar <hastitle>
-An integer which, when zero (0), indicates false; when non-zero, true.
-When true, the client whose rule this matches will not be given a
-title bar.  When false, it will be given a title bar.
-.El
-.Pp
-Example:
-.Dl ! Make Mplayer float with a title by default
-.Dl Adwm* Ns Cm rule0 Ns Li : Ar ^Mplayer: NULL 1 1
+These directives are normally specified in the
+.Cm ruleFile
+instead of the main configuration file.  They are not addressed here.
+See
+.Xr @PACKAGE@-rules 5 .
 .Sh DEFAULTS
 The default configuration is provided in the default
 configuration file, typically,
@@ -1339,6 +1349,8 @@ and
 .Rs
 .Xr echinus 1 ,
 .Xr @PACKAGE@-keys 5 ,
+.Xr @PACKAGE@-buttons 5 ,
+.Xr @PACKAGE@-rules 5 ,
 .Xr @PACKAGE@-theme 5 ,
 .Xr @PACKAGE@-dock 5 ,
 .Xr @PACKAGE@-style 5 ,
@@ -1360,7 +1372,7 @@ and
 .Sh BUGS
 No outstanding bugs.
 .Sh HISTORY
-.Cm @PACKAGE@
+.Nm @PACKAGE_NAME@
 configuration began with the simple X Resource scheme
 provided by
 .Xr echinus 1

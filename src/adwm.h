@@ -932,6 +932,8 @@ typedef union {
 	unsigned skip;
 } SkipUnion;
 
+extern char *skip_fields[32];		/* see parse.h */
+
 typedef union {
 	struct {
 		unsigned border:1;
@@ -952,6 +954,8 @@ typedef union {
 	};
 	unsigned has;
 } HasUnion;
+
+extern char *has_fields[32];		/* see parse.h */
 
 typedef union {
 	struct {
@@ -989,6 +993,8 @@ typedef union {
 	unsigned is;
 } IsUnion;
 
+extern char *is_fields[32];		/* see parse.h */
+
 typedef union {
 	struct {
 		unsigned move:1;
@@ -1019,6 +1025,8 @@ typedef union {
 	unsigned can;
 } CanUnion;
 
+extern char *can_fields[32];		/* see parse.h */
+
 typedef union {
 	struct {
 		unsigned struts:1;
@@ -1030,6 +1038,8 @@ typedef union {
 	};
 	unsigned with;
 } WithUnion;
+
+extern char *with_fields[32];		/* see parse.h */
 
 struct Appl {
 	Appl *next;			/* next in list */
@@ -1475,6 +1485,22 @@ struct AScreen {
 typedef struct {
 	char *prop;
 	char *tags;
+	struct {
+		IsUnion is;
+		IsUnion set;
+	} is;
+	struct {
+		SkipUnion skip;
+		SkipUnion set;
+	} skip;
+	struct {
+		HasUnion has;
+		HasUnion set;
+	} has;
+	struct {
+		CanUnion can;
+		CanUnion set;
+	} can;
 	Bool isfloating;
 	Bool hastitle;
 	regex_t *propregex;

@@ -3,6 +3,12 @@
 #ifndef __LOCAL_PARSE_H__
 #define __LOCAL_PARSE_H__
 
+extern char *skip_fields[32];
+extern char *has_fields[32];
+extern char *is_fields[32];
+extern char *can_fields[32];
+extern char *with_fields[32];
+
 void initrules(Bool reload);
 void initkeys(Bool reload);
 void freekeys(void);

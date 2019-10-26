@@ -802,12 +802,123 @@ initkeys(Bool reload)
 	}
 }
 
+char *skip_fields[32] = {
+	"taskbar",
+	"pager",
+	"winlist",
+	"cycle",
+	"focus",
+	"arrange",
+	"sloppy",
+	NULL,
+};
+
+char *has_fields[32] = {
+	"border",
+	"grips",
+	"title",
+	"but.menu",
+	"but.min",
+	"but.max",
+	"but.close",
+	"but.size",
+	"but.shade",
+	"but.stick",
+	"but.fill",
+	"but.floats",
+	"but.half",
+	NULL,
+};
+
+char *is_fields[32] = {
+	NULL /* "transient" */,
+	NULL /* "grptrans" */,
+	NULL /* "banned" */,
+	"max",
+	"floater",
+	"maxv",
+	"maxh",
+	"lhalf",
+	"rhalf",
+	"shaded",
+	"icon",
+	"fill",
+	NULL /* "modal" */,
+	"above",
+	"below",
+	NULL /* "attn" */,
+	"sticky",
+	"undec",
+	NULL /* "closing" */,
+	NULL /* "killing" */,
+	NULL /* "pinging" */,
+	"hidden",
+	"bastard",
+	"full",
+	NULL /* "focused" */,
+	NULL /* "selected" */,
+	"dockapp",
+	NULL /* "moveresize" */,
+	NULL /* "managed" */,
+	NULL /* "saving" */,
+	NULL,
+};
+
+char *can_fields[32] = {
+	"move",
+	"size",
+	"sizev",
+	"sizeh",
+	"min",
+	"max",
+	"maxv",
+	"maxh",
+	"close",
+	"shade",
+	"stick",
+	"full",
+	"above",
+	"below",
+	"fill",
+	"fillh",
+	"fillv",
+	"floats",
+	"hide",
+	"tag",
+	"arrange",
+	"undec",
+	"select",
+	"focus",
+	NULL,
+};
+
+char *with_fields[32] = {
+	NULL /* "struts" */,
+	NULL /* "time" */,
+	NULL /* "boundary" */,
+	NULL /* "clipping" */,
+	NULL /* "wshape" */,
+	NULL /* "bshape" */,
+	NULL,
+};
+
 static void
-parserule(const char *s, Rule * r)
+parserule(const char *s, Rule *r)
 {
+	Bool isfloating = False;
+	Bool hastitle = False;
+
 	r->prop = emallocz(128);
 	r->tags = emallocz(64);
-	sscanf(s, "%s %s %d %d", r->prop, r->tags, &r->isfloating, &r->hastitle);
+	sscanf(s, "%s %s %d %d", r->prop, r->tags, &isfloating, &hastitle);
+
+	/* set current equivalents to old format */
+	r->skip.skip.arrange = isfloating;
+	r->skip.set.arrange = 1;
+	r->has.has.title = hastitle;
+	r->has.has.grips = hastitle;
+	r->has.set.title = 1;
+	r->has.set.grips = 1;
 }
 
 static void

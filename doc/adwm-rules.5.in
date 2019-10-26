@@ -202,7 +202,7 @@ title bar;
 resize grips;
 .It Cm border
 decorative border; and
-.It Cm button.<button>
+.It Cm but.<button>
 buttons to display where
 .Cm <button>
 may be one of the following:
@@ -358,7 +358,7 @@ floating, even on tiled layouts.  When false, the client will be started
 tiled.
 .Pp
 This is the equivalent of the current
-.Cm is.floater
+.Cm skip.arrange
 setting (see
 .Sx SETTINGS ,
 above).
@@ -379,7 +379,7 @@ resize grips by default, using the current syntax:
 .Pp
 Example:
 .Dl Li "Adwm*" Ns Cm rule0.prop Ns Li : Ar ^Mplayer:
-.Dl Li "Adwm*" Ns Cm rule0.is.floater Ns Li : Ar 1
+.Dl Li "Adwm*" Ns Cm rule0.skip.arrange Ns Li : Ar 1
 .Dl Li "Adwm*" Ns Cm rule0.has.title Ns Li : Ar 1
 .Dl Li "Adwm*" Ns Cm rule0.has.grips Ns Li : Ar 1
 .Pp

@@ -55,35 +55,35 @@ The general syntax of key commands, as specified directly in the
 .Nm @PACKAGE_NAME@
 resource file, is as follows:
 .Pp
-.Dl Li "Adwm*" Ns Cm command Ns Li : Ar <list>
+.Dl Li "Adwm*" Ns Cm <command> Ns Li : Ar <list>
 .Pp
 where the fields are defined as follows:
 .Pp
 .Bl -tag -width Ds
-.It Cm command
+.It Cm <command>
 One of the commands described under
 .Sx COMMANDS .
 .It Ar <list> Li = Ar <binding> Op Li , Ar ...
 A list of one or more key values, separated by commas.
 The list represents the list of key bindings associated with the
-.Cm command .
+.Cm <command> .
 Each
 .Ar <binding>
 in the list represents a single key binding to the
-.Cm command
+.Cm <command>
 with arguments.
 .It Ar <binding> Li = Ar <chain> Op Li = Ar <args>
 A key chain followed by an optional equal-sign and key arguments list.
 The
 .Ar <chain>
 specifies the sequence of key presses necessary to invoke the
-.Cm command ,
+.Cm <command> ,
 and the
 .Ar <args>
 specify the arguments to
-.Cm command
+.Cm <command>
 that are associated with this key binding, described for each
-.Cm command ,
+.Cm <command> ,
 below, under
 .Sx COMMANDS .
 .It Ar <args> Li = Ar <arg> Ns Op Li " " Ar ...
@@ -93,7 +93,7 @@ the comma, colon nor space characters.
 A list of one or more key specifications, separated by colons.  Each
 .Ar <spec>
 specifies a keypress combination that must be performed in sequence to cause the
-.Cm command
+.Cm <command>
 action to be performed.
 .Pp
 Example:
@@ -220,7 +220,7 @@ support a root menu.)
 See
 .Xr xde-menu 1
 for a suitable root window menu for
-.Cm @PACKAGE@ .
+.Nm @PACKAGE_NAME@ .
 .Pp
 Default:
 .Li Adwm* Ns Cm command Ns Li : Ar "xde-menu -P -b 3"
@@ -231,7 +231,7 @@ The default is to not execute a shell command.
 See
 .Xr xde-wkspmenu 1
 for a suitable workspace menu for
-.Cm @PACKAGE@ .
+.Nm @PACKAGE_NAME@ .
 .Pp
 Default:
 .Li Adwm* Ns Cm command2 Ns Li : Ar "xde-wkspmenu -p -b 2"
@@ -242,7 +242,7 @@ The default is to not execute a shell command.
 See
 .Xr xde-winlist 1
 for a suitable window list menu for
-.Cm @PACKAGE@ .
+.Nm @PACKAGE_NAME@ .
 .Pp
 Default:
 .Li "! Adwm*" Ns Cm command3 Ns Li : Ar "xde-winlist -p -b 1 --hidden"
@@ -258,7 +258,7 @@ The default is to not execute a shell command.
 See
 .Xr xde-winmenu 1
 for a suitable window menu for
-.Cm @PACKAGE@ .
+.Nm @PACKAGE_NAME@ .
 .Pp
 Default:
 .Li Adwm* Ns Cm menucommand Ns Li : Ar "xde-winmenu -p -b 1"
@@ -1177,7 +1177,7 @@ These functions are not currently implemented.
 Rearranges windows in floating modes (or icons, when specified). This is
 for compatibility with
 .Xr icewm 1 .
-.Nm @PACKAGE@
+.Nm @PACKAGE_NAME@
 does not support icons on the desktop directly, so the
 .Cm arrangeicons
 function is not implemented.
@@ -1250,20 +1250,6 @@ Defaults:
 .Dl Adwm* Ns Cm spawn42 Ns Li : Ar "CWA + Right = xrandr -o right"
 .Dl Adwm* Ns Cm spawn43 Ns Li : Ar "CWA + Down = xrandr -o inverted"
 .Dl Adwm* Ns Cm spawn44 Ns Li : Ar "CWA + Up = xrandr -o normal"
-.Pp
-.It Cm command Ar shell-command
-This is not a key binding.  It specifies a command, 
-.Ar shell-command ,
-to execute when a mouse button is pressed on the root window.  The default pops an
-XDG root menu.
-.Pp
-Note that additional keybindings with commands can be specified on the
-same line following a comma, commas in commands must be escaped with
-two backslashes (one for xrdb and one for @PACKAGE@).
-.Pp
-Default:
-.Li Adwm* Ns Cm command Ns : Ar "xdg-traymenu -p -b 1"
-.El
 .Sh DEFAULTS
 The default key bindings are provided in the default key file,
 .Pa @pkgconfdir@/keysrc ,
@@ -1333,15 +1319,15 @@ Location of the default system keys file.
 No outstanding bugs.
 .Sh HISTORY
 .Pp
-.Cm @PACKAGE@
+.Nm @PACKAGE_NAME@
 configuration began with the simple X Resource scheme provided by
 .Xr echinus 1
 and quickly grew from there to support the advanced features of
-.Cm @PACKAGE@ .
+.Nm @PACKAGE_NAME@ .
 The same basic X Resource scheme is supported and an
 .Xr echinus 1
 resource file will work with
-.Cm @PACKAGE@
+.Nm @PACKAGE_NAME@
 (substituting
 .Cm Adwm*
 for

@@ -1765,7 +1765,7 @@ void _xtrap_pop(int canary);
 #define CLIENTNOPROPAGATEMASK 	(BUTTONMASK | ButtonMotionMask)
 #define FRAMEMASK               (MOUSEMASK | WINDOWMASK | SubstructureRedirectMask | SubstructureNotifyMask | FocusChangeMask)
 #define MAPPINGMASK		(StructureNotifyMask | SubstructureRedirectMask | SubstructureNotifyMask | EnterWindowMask)
-#define ROOTMASK		(BUTTONMASK | WINDOWMASK | MAPPINGMASK | FocusChangeMask | ColormapChangeMask)
+#define ROOTMASK		(PropertyChangeMask | BUTTONMASK | WINDOWMASK | MAPPINGMASK | FocusChangeMask | ColormapChangeMask)
 
 /* globals */
 extern XdgDirs xdgdirs;

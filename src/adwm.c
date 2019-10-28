@@ -4304,7 +4304,7 @@ run(void)
 				while (running && XPending(dpy)) {
 					XNextEvent(dpy, &ev);
 					scr = geteventscr(&ev);
-					DPRINTF("Got an event!");
+					DPRINTF("Got an event!\n");
 					if (!handle_event(&ev))
 						DPRINTF("WARNING: Event %d not handled\n", ev.type);
 				}

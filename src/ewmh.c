@@ -1085,7 +1085,7 @@ ewmh_update_net_desktop_names()
 	long *data;
 	Atom dt;
 
-	DPRINTF("%s\n", "Updating _NET_DESKTOP_NAMES");
+	XPRINTF("%s\n", "Updating _NET_DESKTOP_NAMES");
 	/* When we set it, we only set it for the names of the current number of desktops. */
 	for (len = 0, i = 0; i < scr->ntags; i++)
 		len += strlen(scr->tags[i].name) + 1;
@@ -1627,10 +1627,9 @@ ewmh_process_net_desktop_names(void)
 {
 	int format, status;
 	Atom real;
-	unsigned long nitems = 0, extra = 0, bytes = 1;
+	unsigned long nitems = 0, extra = 0, num = 1;
 	char *ret = NULL, *pos;
 	unsigned int i;
-	Bool need_write = False;
 
 	/* The names of all virtual desktops.  This is a list of NULL-terminated strings
 	   in UTF-8 encoding [UTF8].  This property MAY be changed by a Pager or the
@@ -1647,45 +1646,48 @@ ewmh_process_net_desktop_names(void)
 	   functionality.  Since names are set by users and users are likely to preset
 	   names for a fixed number of desktops, it doesn't make sense to shrink or grow
 	   this list when the number of available desktops changes. */
-	DPRINTF("Processing _NET_DESKTOP_NAMES\n");
-	do {
-		if (ret)
-			XFree((unsigned char *) ret);
-		bytes += 4 * extra;
-		status = XGetWindowProperty(dpy, scr->root, _XA_NET_DESKTOP_NAMES, 0L,
-					    bytes, False, _XA_UTF8_STRING, &real, &format,
-					    &nitems, &extra, (unsigned char **) &ret);
-		if (status != Success) {
-			need_write = True;
-			break;
+	XPRINTF("Processing _NET_DESKTOP_NAMES\n");
+      try_harder:
+	XPRINTF("Getting _NET_DESKTOP_NAMES, num = %lu\n", num);
+	status = XGetWindowProperty(dpy, scr->root, _XA_NET_DESKTOP_NAMES, 0L,
+				    num, False, _XA_UTF8_STRING, &real, &format,
+				    &nitems, &extra, (unsigned char **) &ret);
+	if (status != Success) {
+		XPRINTF("XGetWindowProperty failed!\n");
+		ewmh_update_net_desktop_names();
+		return;
+	}
+	if (extra) {
+		XPRINTF("Getting _NET_DESKTOP_NAMES, extra = %lu: trying harder\n", extra);
+		num += ((extra + 3) >> 2);
+		extra = 0;
+		if (ret) {
+			XFree(ret);
+			ret = NULL;
 		}
-	} while (extra && bytes == 1);
-	if (status == Success) {
-		for (pos = ret, i = 0; nitems && i < MAXTAGS; i++) {
-			int len = strnlen(pos, nitems);
-			int nlen = min(len, sizeof(scr->tags[i].name) - 1);
+		goto try_harder;
+	}
+	for (pos = ret, i = 0; pos && nitems && i < MAXTAGS; i++) {
+		int len = strnlen(pos, nitems);
+		int nlen = min(len, sizeof(scr->tags[i].name) - 1);
 
-			memcpy(scr->tags[i].name, pos, nlen);
-			scr->tags[i].name[nlen] = '\0';
-			DPRINTF("Assigning name '%s' to tag %u\n", scr->tags[i].name, i);
-			/* all this to handle trailing \0 or not */
-			nitems -= len;
-			pos += len;
-			if (nitems) {
-				--nitems;
-				++pos;
-			}
+		memcpy(scr->tags[i].name, pos, nlen);
+		scr->tags[i].name[nlen] = '\0';
+		XPRINTF("Assigning name '%s' to tag %u\n", scr->tags[i].name, i);
+		/* all this to handle trailing \0 or not */
+		nitems -= len;
+		pos += len;
+		if (nitems) {
+			--nitems;
+			++pos;
 		}
-		if (i < scr->ntags)
-			need_write = True;
 	}
 	if (ret) {
 		XFree(ret);
 		ret = NULL;
 	}
-	if (need_write)
+	if (i < scr->ntags)
 		ewmh_update_net_desktop_names();
-	return;
 }
 
 void
@@ -3617,7 +3619,8 @@ getatom(Window win, Atom atom, unsigned long *nitems)
 		return NULL;
 	}
 	if (extra) {
-		num += ((extra + 1) >> 2);
+		num += ((extra + 3) >> 2);
+		extra = 0;
 		if (ret) {
 			XFree(ret);
 			ret = NULL;
@@ -3651,7 +3654,8 @@ getcard(Window win, Atom atom, unsigned long *nitems)
 		return NULL;
 	}
 	if (extra) {
-		num += ((extra + 1) >> 2);
+		num += ((extra + 3) >> 2);
+		extra = 0;
 		if (ret) {
 			XFree(ret);
 			ret = NULL;
@@ -3685,7 +3689,8 @@ getpixmaps(Window win, Atom atom, unsigned long *nitems)
 		return NULL;
 	}
 	if (extra) {
-		num += ((extra + 1) >> 2);
+		num += ((extra + 3) >> 2);
+		extra = 0;
 		if (ret) {
 			XFree(ret);
 			ret = NULL;
@@ -3719,7 +3724,8 @@ getwind(Window win, Atom atom, unsigned long *nitems)
 		return NULL;
 	}
 	if (extra) {
-		num += ((extra + 1) >> 2);
+		num += ((extra + 3) >> 2);
+		extra = 0;
 		if (ret) {
 			XFree(ret);
 			ret = NULL;

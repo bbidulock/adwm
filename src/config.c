@@ -21,10 +21,11 @@ inittags(Bool reload)
 		char resource[256], def[8];
 		Tag *t = scr->tags + i;
 
-		snprintf(def, sizeof(def), " %u ", i);
+		snprintf(def, sizeof(def), " %u ", i + 1);
 		snprintf(resource, sizeof(resource), "tags.name%u", i);
 		res = getscreenres(resource, def);
 		snprintf(t->name, sizeof(t->name), res);
+		XPRINTF("initialized tag %u to %s\n", i, res);
 	}
 	scr->ntags = scr->options.ntags;
 

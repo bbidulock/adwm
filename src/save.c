@@ -266,10 +266,10 @@ save(FILE *file, Bool permanent)
 		/* TAG DIRECTIVES */
 		if (scr->ntags != options.ntags)
 			fprintf(file, "Adwm.screen%u.tags.number:\t\t%d\n", scr->screen, scr->ntags);
-		for (i = 0; i < scr->ntags; i++) {
+		for (i = 0; i < MAXTAGS; i++) {
 			Tag *t = scr->tags + i;
 
-			if (t->name)
+			if (t->name[0] != '\0')
 				fprintf(file, "Adwm.screen%u.tags.name%u:\t\t%s\n", scr->screen, i, t->name);
 		}
 
@@ -349,7 +349,7 @@ save(FILE *file, Bool permanent)
 	for (scr = screens; scr < screens + nscr; scr++) {
 		unsigned n;
 
-		for (n = 0, c = scr->clients; c; c = c->next, n++)
+		for (n = 0, c = scr->clist; c; c = c->cnext, n++)
 			c->index = n;
 		fprintf(file, "Adwm.screen%u.clients:\t\t%u\n", scr->screen, n);
 
@@ -360,7 +360,6 @@ save(FILE *file, Bool permanent)
 			fprintf(file, "%u%s", c->index, c->cnext ? ", " : "");
 		fputc('\n', file);
 
-		/* this one should just be 0..(n-1) */
 		/* tiling order list */
 		/* We want to restore tiling order: this determines layout for tiling mode views */
 		fprintf(file, "Adwm.screen%u.tiles:\t\t", scr->screen);

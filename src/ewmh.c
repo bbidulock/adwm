@@ -1083,7 +1083,7 @@ void
 ewmh_update_net_desktop_names()
 {
 	char *buf, *pos;
-	unsigned int i, len, slen;
+	unsigned int i, len;
 	long *data;
 	Atom dt;
 
@@ -1093,17 +1093,11 @@ ewmh_update_net_desktop_names()
 	}
 	XPRINTF("%s\n", "Updating _NET_DESKTOP_NAMES");
 	for (len = 0, i = 0; i < scr->ntags; i++)
-		if (scr->tags[i].name)
-			len += strlen(scr->tags[i].name);
-	len += scr->ntags;
+		len += strlen(scr->tags[i].name) + 1;
 	pos = buf = ecalloc(len, sizeof(*buf));
 	for (i = 0; i < scr->ntags; i++) {
-		if (scr->tags[i].name) {
-			slen = strlen(scr->tags[i].name);
-			memcpy(pos, scr->tags[i].name, slen);
-			pos += slen;
-		}
-		*pos++ = '\0';
+		strcpy(pos, scr->tags[i].name);
+		pos += strlen(scr->tags[i].name) + 1;
 	}
 	XChangeProperty(dpy, scr->root, _XA_NET_DESKTOP_NAMES, _XA_UTF8_STRING, 8,
 			PropModeReplace, (unsigned char *) buf, len);
@@ -1660,7 +1654,10 @@ ewmh_process_net_desktop_names()
 
 	for (pos = ret, i = 0; nitems && i < scr->ntags; i++) {
 		if ((len = strnlen(pos, nitems))) {
-			strncpy(scr->tags[i].name, pos, nitems);
+			int nlen = min(len, sizeof(scr->tags[i].name) - 1);
+
+			memcpy(scr->tags[i].name, pos, nlen);
+			scr->tags[i].name[nlen] = '\0';
 			XPRINTF("Assigning name '%s' to tag %u\n", scr->tags[i].name, i);
 		} else
 			names_synced = False;

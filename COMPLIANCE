@@ -36,12 +36,12 @@ Section 4: Client to Window Manager Communication
 Section 5: Session Management
 
 5.1 Client Support:
-	SM_CLIENT_ID			NOT supported
+	SM_CLIENT_ID			supported
 	WM_CLIENT_LEADER		supported
 	WM_WINDOW_ROLE			supported
 
-5.2 Window Manager Support:		NOT supported
-	WM_COMMAND			NOT supported (todo)
+5.2 Window Manager Support:	supported
+	WM_COMMAND			supported
 	WM_SAVE_YOURSELF		NOT supported (todo)
 
 	Adwm does not (yet) support the X11 Session Management
@@ -71,12 +71,14 @@ _NET_VIRTUAL_ROOTS:			supported (trivial)
 _NET_DESKTOP_LAYOUT:			supported
 _NET_SHOWING_DESKTOP:			supported
 
- Extensions:
+ Extensions:*
 
+_NET_VISIBLE_DESKTOPS:*			supported
+_NET_MONITOR_GEOMETRY:*			supported
 _NET_DESKTOP_MODES:*			supported
 	_NET_DESKTOP_MODE_FLOATING:*	    supported
 	_NET_DESKTOP_MODE_TILED:*	    supported
-	_NET_DESKTOP_MODE_BOTTOM_TILE:*	    supported
+	_NET_DESKTOP_MODE_BOTTOM_TILED:*    supported
 	_NET_DESKTOP_MODE_MONOCLE:*	    supported
 	_NET_DESKTOP_MODE_TOP_TILED:*	    supported
 	_NET_DESKTOP_MODE_LEFT_TILED:*	    supported
@@ -91,6 +93,12 @@ _NET_WM_MOVERESIZE:			supported
 _NET_RESTACK_WINDOW:			supported
 _NET_REQUEST_FRAME_EXTENTS:		supported
 
+ Extensions:*
+
+_NET_RELOAD:*				supported
+_NET_RESTART:*				supported
+_NET_SHUTDOWN:*				supported
+
 
 Section 5: Application Window Properties
 
@@ -99,6 +107,7 @@ _NET_WM_VISIBLE_NAME:			supported (full)
 _NET_WM_ICON_NAME:			supported
 _NET_WM_VISIBLE_ICON_NAME:		supported (full)
 _NET_WM_DESKTOP:			supported
+_NET_WM_DESKTOP_MASK:*			supported
 _NET_WM_WINDOW_TYPE:			supported
 	_NET_WM_WINDOW_TYPE_DESKTOP:	    supported
 	_NET_WM_WINDOW_TYPE_DOCK:	    supported
@@ -208,6 +217,33 @@ _NET_WM_WINDOW_OPACITY:			supported
 
 ------------------------------------------------------------------------
 
+Echinus Specific:
+
+_ECHINUS_LAYOUT:			supported
+_ECHINUS_SELTAGS:			supported
+
+------------------------------------------------------------------------
+
+ADWM Specific:
+
+_ADWM_RCFILE:				supported
+_ADWM_PRVDIR:				supported
+_ADWM_RUNDIR:				supported
+_ADWM_USRDIR:				supported
+_ADWM_XDGDIR:				supported
+_ADWM_SYSDIR:				supported
+_ADWM_STYLE_NAME:			supported
+_ADWM_THEME_NAME:			supported
+_ADWM_ICON_THEME_NAME:			supported
+_ADWM_CURSOR_THEME_NAME:		supported
+_ADWM_STYLE:				supported
+_ADWM_THEME:				supported
+_ADWM_ICON_THEME:			supported
+_ADWM_CURSOR_THEME:			supported
+_ADWM_CHECK:				supported
+
+------------------------------------------------------------------------
+
 I3 Specific:
 
 I3_CONFIG_PATH:				NOT supported
@@ -226,9 +262,12 @@ _BB_THEME:				supported
 
 OpenBox Specific:
 
+* Note that we do not pretend to be OpenBox
+  for obvious reasons.
+
 1. Client Messages
 
-_OPENBOX_PID:				supported (but not set)
+_OPENBOX_PID:			      * supported (but not set)
 
 _OB_CONTROL:				supported
 	OB_CONTROL_RECONFIG(1)		    supported
@@ -237,9 +276,9 @@ _OB_CONTROL:				supported
 
 2. Root Window Properties
 
-_OB_CONFIG_FILE				supported (but not set)
-_OB_THEME				supported (but not set)
-_OB_VERSION:				supported (but not set)
+_OB_CONFIG_FILE			      * supported (but not set)
+_OB_THEME			      * supported (but not set)
+_OB_VERSION:			      * supported (but not set)
 
 3. Client Properties
 
@@ -312,8 +351,8 @@ _WIN_LAYER				supported
 	WIN_LAYER_DOCK(8):		    supported
 	WIN_LAYER_ABOVE_DOCK(10):	    supported
 	WIN_LAYER_MENU(12):		    supported
-	WIN_LAYER_FULLSCREEN(14):	**  NOT supported (indirectly)
-	WIN_LAYER_ABOVE_ALL(15):	**  NOT supported (indirectly)
+	WIN_LAYER_FULLSCREEN(14):	**  supported (indirectly)
+	WIN_LAYER_ABOVE_ALL(15):	**  supported (indirectly)
 _WIN_STATE				supported
 	WIN_STATE_STICKY:		    supported
 	WIN_STATE_MINIMIZED:		    supported
@@ -361,8 +400,8 @@ _WIN_LAYER				supported
 	WIN_LAYER_DOCK(8):		    supported
 	WIN_LAYER_ABOVE_DOCK(10):	    supported
 	WIN_LAYER_MENU(12):		    supported
-	WIN_LAYER_FULLSCREEN(14):	**  NOT supported (indirectly)
-	WIN_LAYER_ABOVE_ALL(15):	**  NOT supported (indirectly)
+	WIN_LAYER_FULLSCREEN(14):	**  supported (indirectly)
+	WIN_LAYER_ABOVE_ALL(15):	**  supported (indirectly)
 _WIN_STATE				supported
 	WIN_STATE_STICKY:		    supported
 	WIN_STATE_MINIMIZED:		    supported
@@ -425,6 +464,8 @@ OSF/Motif CDE MWM/DTWM Compliance
 
 WM_DESKTOP				supported
 _MOTIF_WM_INFO				supported
+_MOTIF_DEFAULT_LOCALE			NOT supported
+_MOTIF_CURRENT_TIME			NOT supported
 
 2. MWM client messages:
 
@@ -456,11 +497,16 @@ _MOTIF_WM_MESSAGES			NOT supported
 _MOTIF_BINDINGS				NOT supported (n/a)
 _MOTIF_DEFAULT_BINDINGS			NOT supported (n/a)
 
+_MOTIF_SM_CLIENT_ID			NOT supported
+_MOTIF_WM_WINDOW_ROLE			NOT supported
+
 4. MOTIF query targets:
 
+_MOTIF_WM_QUERY				NOT supported
 _MOTIF_WM_CLIENT_WINDOW			NOT supported
 _MOTIF_WM_POINTER_WINDOW		NOT supported
 _MOTIF_WM_ALL_CLIENTS			NOT supported
+_MOTIF_LOSE_SELECTION			NOT supported
 
 5. MOTIF menu command interface support:
 
@@ -490,9 +536,13 @@ _MOTIF_WSM_WM_WINDOWS			NOT supported
 _MOTIF_WSM_WM_FOCUS			NOT supported
 _MOTIF_WSM_WM_POINTER			NOT supported
 
+_MOTIF_WM_PAN				NOT supported
+_MOTIF_WM_GOTO				NOT supported
+_MOTIF_WM_PAN_POSITION			NOT supported
+
 7. DTWM window manager properties:
 
-_DT_SESSION_HINTS			NOT supported
+_DT_SESSION_HINTS			NOT supported (todo)
 
 _DT_WORKSPACE_LIST			supported
 _DT_WORKSPACE_CURRENT			supported
@@ -501,27 +551,58 @@ _DT_WORKSPACE_INFO_<name>		NOT supported
 
 8. DTWM client properties:
 
+_DT_WM_HINTS				supported
+_DT_MARQUEE_SELECTION			NOT supported
+_DT_WORKSPACE_EMBEDDED_CLIENTS		NOT supported
+_DT_WM_REQUEST				NOT supported
 _DT_WORKSPACE_HINTS			supported
 _DT_WORKSPACE_PRESENCE			supported
-
-_DT_WM_HINTS				supported
-_DT_WM_REQUEST				NOT supported
-_DT_WORKSPACE_EMBEDDED_CLIENTS		NOT supported
 _DT_WMSAVE_HINT				NOT supported
 
 9. DTWM session management properties:
 
+
 _DT_WMSAVE_HINT				NOT supported
 _DT_EMBEDDED_CLIENTS			NOT supported
-_DT_SESSION_HINTS			NOT supported
-_DT_SM_START_ACK_WINDOWS		NOT supported
-_DT_SM_STOP_ACK_WINDOS			NOT supported
+
+_DT_SESSION_HINTS			NOT supported (totod)
+_DT_SAVE_MODE				NOT supported
+_DT_RESTORE_MODE			NOT supported
+_DT_RESTORE_DIR				NOT supported
 _DT_SM_WM_PROTOCOL			NOT supported
+_DT_SM_START_ACK_WINDOWS		NOT supported
+_DT_SM_STOP_ACK_WINDOWS			NOT supported
+_DT_WM_WINDOW_ACK			NOT supported
 _DT_WM_EXIT_SESSION			NOT supported
 _DT_WM_LOCK_DISPLAY			NOT supported
 _DT_WM_READY				NOT supported
+
 _DT_WM_REQUEST				NOT supported
-_DT_WM_WINDOW_ACK			NOT supported
+
+10. DTWM session manager window properties
+
+_DT_SM_WINDOW_INFO			NOT supported
+_DT_SM_STATE_INFO			NOT supported
+	SM_STATE_NONE			    NOT supported
+	SM_STATE_START			    NOT supported
+	SM_STATE_CONFIRM		    NOT supported
+	SM_STATE_COMPAT			    NOT supported
+	SM_STATE_SEND			    NOT supported
+	SM_STATE_COVER			    NOT supported
+	SM_STATE_LOTOUT			    NOT supported
+	SM_STATE_LOTOUTSTAT		    NOT supported
+	SM_STATE_CYCLETIMEOUT		    NOT supported
+	SM_STATE_LOCKTIMEOUT		    NOT supported
+	SM_STATE_SAVERTIMEOUT		    NOT supported
+	SM_STATE_RANDOM			    NOT supported
+	SM_STATE_DISP_SESSION		    NOT supported
+_DT_SM_SAVER_INFO			NOT supported
+_DT_SM_SCREEN_INFO			NOT supported
+_DT_SM_AUDIO_INFO			NOT supported
+_DT_SM_KEYBOARD_INFO			NOT supported
+_DT_SM_FONT_INFO			NOT supported
+_DT_SM_POINTER_INFO			NOT supported
+_DT_SM_PREEDIT_INFO			NOT supported
 
 ------------------------------------------------------------------------
 
@@ -544,5 +625,11 @@ _OL_PIN_IN				NOT supported
 _OL_PIN_OUT				NOT supported
 _OL_MENU_LIMITED			NOT supported
 _OL_MENU_FULL				NOT supported
+
+------------------------------------------------------------------------
+
+Other Specific
+
+_SWM_VROOT:				supported
 
 ------------------------------------------------------------------------

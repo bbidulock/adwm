@@ -56,6 +56,17 @@ char *atomnames[NATOMS] = {
 	"_MOTIF_WM_HINTS",
 	"_MOTIF_WM_MENU",
 	"_MOTIF_WM_INFO",
+	/* "_MOTIF_WM_CLIENT_WINDOW", */	/* (TODO) */
+	/* "_MOTIF_WM_POINTER_WINDOW", */	/* (TODO) */
+	/* "_MOTIF_WM_ALL_CLIENTS", */		/* (TODO) */
+	/* "_MOTIF_DRAG_RECEIVER_INFO", */	/* (TODO) */
+
+	/* "_MWM_HINTS", */			/* (TODO) */
+	/* "_MWM_MESSAGES", */			/* (TODO) */
+	/* "_MWM_MENU", */			/* (TODO) */
+	/* "_MWM_INFO", */			/* (TODO) */
+	/* "_MWM_OFFSET", */			/* (TODO) */
+
 	"_DT_WORKSPACE_HINTS",
 	"_DT_WORKSPACE_PRESENCE",
 	"_DT_WORKSPACE_LIST",
@@ -65,6 +76,19 @@ char *atomnames[NATOMS] = {
 	"_DT_WM_REQUEST",
 	"_DT_WORKSPACE_EMBEDDED_CLIENTS",
 	"_DT_WMSAVE_HINT",
+	/* "_DT_EMBEDDED_CLIENTS", */		/* (TODO) */
+	/* "_DT_SESSION_HINTS", */		/* (TODO) */
+	/* "_DT_SAVE_MODE", */			/* (TODO) */
+	/* "_DT_RESTORE_MODE", */		/* (TODO) */
+	/* "_DT_RESTORE_DIR", */		/* (TODO) */
+	/* "_DT_SM_WM_PROTOCOL", */		/* (TODO) */
+	/* "_DT_SM_START_ACK_WINDOWS", */	/* (TODO) */
+	/* "_DT_SM_STOP_ACK_WINDOWS", */	/* (TODO) */
+	/* "_DT_WM_WINDOW_ACK", */		/* (TODO) */
+	/* "_DT_WM_EXIT_SESSION", */		/* (TODO) */
+	/* "_DT_WM_LOCK_DISPLAY", */		/* (TODO) */
+	/* "_DT_WM_READY", */			/* (TODO) */
+
 	/* _WIN_PROTOCOLS following */
 	"_WIN_APP_STATE",
 	"_WIN_AREA_COUNT",
@@ -193,6 +217,16 @@ char *atomnames[NATOMS] = {
 	"_NET_WM_ACTION_MAXIMUS_LEFT",
 	"_NET_WM_ACTION_MAXIMUS_RIGHT",
 
+	/* "_NET_WM_ICON_GEOMETRY", */		/* (TODO) */
+	/* "_NET_WM_OPAQUE_REGION", */		/* (TODO) */
+	/* "_NET_WM_BYPASS_COMPOSITOR", */	/* (TODO) */
+	/* "_NET_WM_FULL_PLACEMENT", */		/* (TODO) */
+
+	/* "_NET_SYSTEM_TRAY_MESSAGE_DATA", */	/* (TODO) */
+	/* "_NET_SYSTEM_TRAY_OPCODE", */	/* (TODO) */
+	/* "_NET_SYSTEM_TRAY_ORIENTATION", */	/* (TODO) */
+	/* "_NET_SYSTEM_TRAY_VISUAL", */	/* (TODO) */
+
 	"_NET_SUPPORTING_WM_CHECK",
 	"_NET_CLOSE_WINDOW",
 	"_NET_WM_PING",
@@ -205,6 +239,11 @@ char *atomnames[NATOMS] = {
 	"_KDE_NET_WM_WINDOW_TYPE_OVERRIDE",
 	"_KDE_SPLASH_PROGRESS",
 	"_KDE_WM_CHANGE_STATE",
+	/* "_NET_WM_CONTEXT_HELP", */		/* (TODO) */
+	/* "WM_CONTEXT_HELP", */		/* (TODO) */
+
+	/* "_BLACKBOX_PID", */			/* (XXX) */
+	/* "_BB_THEME", */			/* (XXX) */
 
 	"_OPENBOX_PID",
 	"_OB_CONTROL",
@@ -223,6 +262,8 @@ char *atomnames[NATOMS] = {
 
 	"_OB_WM_STATE_UNDECORATED",
 	"_OB_WM_ACTION_UNDECORATE",
+
+	/* "_ICEWMBG_QUIT", */			/* (XXX) */
 
 	"_NET_APP_APPLICATION_ID",
 	"_NET_APP_LAUNCHER",
@@ -593,7 +634,7 @@ initewmh(char *name)
 
 	XChangeProperty(dpy, root, _XA_OPENBOX_PID, XA_CARDINAL, 32,
 			PropModeReplace, (unsigned char *) data, 1);
-	XChangePropertY(dpy, root, _XA_OB_VERSION, _XA_UTF8_STRING, 8,
+	XChangeProperty(dpy, root, _XA_OB_VERSION, _XA_UTF8_STRING, 8,
 			PropModeReplace, (unsigned char *) version, strlen(version));
 #endif
 	XChangeProperty(dpy, root, _XA_NET_SUPPORTING_WM_CHECK, XA_WINDOW, 32,

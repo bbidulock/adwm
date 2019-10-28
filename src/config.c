@@ -28,7 +28,7 @@ inittags(Bool reload)
 	}
 	scr->ntags = scr->options.ntags;
 
-	ewmh_update_net_number_of_desktops();
+	ewmh_update_net_desktop_names();
 }
 
 static Bool

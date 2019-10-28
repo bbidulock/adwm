@@ -41,6 +41,7 @@ void ewmh_update_net_client_lists(void);
 void ewmh_update_net_current_desktop(void);
 void ewmh_update_net_desktop_geometry(void);
 void ewmh_update_net_desktop_modes(void);
+void ewmh_update_net_desktop_names(void);
 void ewmh_update_net_number_of_desktops(void);
 void ewmh_update_net_showing_desktop(void);
 void ewmh_update_net_virtual_roots(void);

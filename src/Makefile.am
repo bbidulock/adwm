@@ -26,7 +26,7 @@ AM_CPPFLAGS = -include autoconf.h
 bin_PROGRAMS = adwm
 
 adwm_SOURCES = adwm.h actions.h config.h draw.h imlib.h pixbuf.h xcairo.h render.h ximage.h xlib.h \
-	       ewmh.h image.h layout.h parse.h buttons.h resource.h tags.h texture.h icons.h util.h session.h save.h restore.h \
+	       ewmh.h image.h layout.h parse.h buttons.h resource.h tags.h texture.h icons.h session.h save.h restore.h \
 	       adwm.c actions.c config.c draw.c imlib.c pixbuf.c xcairo.c render.c ximage.c xlib.c \
 	       ewmh.c image.c layout.c parse.c buttons.c resource.c tags.c texture.c icons.c session.c save.c restore.c
 adwm_LDADD = \

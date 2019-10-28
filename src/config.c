@@ -21,27 +21,14 @@ inittags(Bool reload)
 		char resource[256], def[8];
 		Tag *t = scr->tags + i;
 
-		snprintf(def, sizeof(def), "%u", i);
+		snprintf(def, sizeof(def), " %u ", i);
 		snprintf(resource, sizeof(resource), "tags.name%u", i);
 		res = getscreenres(resource, def);
 		snprintf(t->name, sizeof(t->name), res);
 	}
 	scr->ntags = scr->options.ntags;
 
-	ewmh_process_net_number_of_desktops();
-	ewmh_process_net_desktop_names();
-
-	if (reload) {
-		int ntags = scr->ntags;
-
-		for (; ntags > scr->ntags; ntags--)
-			deltag();
-		for (; ntags < scr->ntags; ntags++)
-			addtag();
-
-		ewmh_process_net_desktop_names();
-		ewmh_update_net_number_of_desktops();
-	}
+	ewmh_update_net_number_of_desktops();
 }
 
 static Bool

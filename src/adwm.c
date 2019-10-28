@@ -2146,6 +2146,16 @@ getsessionres(const char *resource, const char *defval)
 	return defval;
 }
 
+const char *
+getmonitorres(int num, const char *resource, const char *defval)
+{
+	static char monitor[256];
+
+	snprintf(monitor, sizeof(monitor), "monitor%d.%s", num, resource);
+	return getsessionres(monitor, defval);
+}
+
+
 void
 putresource(const char *resource, const char *value)
 {
@@ -4036,17 +4046,27 @@ updaterootprop(Window root, Atom prop, int state)
 		} else if (prop == _XA_WIN_ICONS) {
 		} else if (prop == _XA_WIN_WORKSPACE) {
 		} else if (prop == _XA_WIN_WORKSPACE_COUNT) {
+			/* Only set on the root window by the window manager.  There is
+			   no way in WinWM/WMH to request a change to the number of
+			   workspaces. */
 		} else if (prop == _XA_WIN_WORKSPACE_NAMES) {
+			/* Only set on the root window by the window manager under
+			   WinWM/WMH, so we ignore changes to the property. */
 		} else if (prop == _XA_WIN_AREA) {
 		} else if (prop == _XA_WIN_AREA_COUNT) {
 		} else if (prop == _XA_WIN_CLIENT_LIST) {
 		} else if (prop == _XA_NET_SUPPORTED) {
 		} else if (prop == _XA_NET_CLIENT_LIST) {
 		} else if (prop == _XA_NET_NUMBER_OF_DESKTOPS) {
+			/* Only set on the root window by the window manager.  A pager
+			   can request a change by sending a _NET_NUMBER_OF_DESKTOPS
+			   client message to the root window. */
 		} else if (prop == _XA_NET_DESKTOP_GEOMETRY) {
 		} else if (prop == _XA_NET_DESKTOP_VIEWPORT) {
 		} else if (prop == _XA_NET_CURRENT_DESKTOP) {
 		} else if (prop == _XA_NET_DESKTOP_NAMES) {
+			/* This property MAY be changed by a Pager or the Window Manager
+			   at any time. */
 			ewmh_process_net_desktop_names();
 			return True;
 		} else if (prop == _XA_NET_ACTIVE_WINDOW) {
@@ -4062,8 +4082,8 @@ updaterootprop(Window root, Atom prop, int state)
 
 		name = XGetAtomName(dpy, prop);
 		EPRINTF("%s WM property %s\n",
-			 state == PropertyDelete ? "deletion of" : "change to",
-			 (name = XGetAtomName(dpy, prop)));
+			state == PropertyDelete ? "deletion of" : "change to",
+			(name = XGetAtomName(dpy, prop)));
 		if (name)
 			XFree(name);
 		return False;
@@ -4649,6 +4669,22 @@ updatebarriers(void)
 	}
 }
 
+static void
+setmonitorviews(XEvent *e, Monitor *m)
+{
+	const char *res;
+
+	if (e || !(res = getmonitorres(m->num, "curview", NULL)))
+		m->curview = scr->views + (m->num % scr->ntags);
+	else
+		m->curview = scr->views + (atoi(res) % scr->ntags);
+
+	if (e || !(res = getmonitorres(m->num, "preview", NULL)))
+		m->preview = NULL;
+	else
+		m->preview = scr->views + (atoi(res) % scr->ntags);
+}
+
 void
 updatemonitors(XEvent *e, int n, Bool size_update, Bool full_update)
 {
@@ -4685,7 +4721,7 @@ updatemonitors(XEvent *e, int n, Bool size_update, Bool full_update)
 			}
 			for (i = 0; i < scr->nmons; i++) {
 				m = scr->monitors + i;
-				m->curview = scr->views + (i % scr->ntags);
+				setmonitorviews(e, m);
 			}
 		}
 		if (size_update) {
@@ -4860,7 +4896,7 @@ initmonitors(XEvent *e)
 				m->mx = m->sc.x + m->sc.w / 2;
 				m->my = m->sc.y + m->sc.h / 2;
 				m->num = si[i].screen_number;
-				m->curview = scr->views + (m->num % scr->ntags);
+				setmonitorviews(e, m);
 				m->veil =
 				    XCreateSimpleWindow(dpy, scr->root, m->sc.x, m->sc.y,
 							m->sc.w, m->sc.h, 0, 0, 0);
@@ -5004,7 +5040,7 @@ initmonitors(XEvent *e)
 				m->mx = m->sc.x + m->sc.w / 2;
 				m->my = m->sc.y + m->sc.h / 2;
 				m->num = i;
-				m->curview = scr->views + (m->num % scr->ntags);
+				setmonitorviews(e, m);
 				m->veil =
 				    XCreateSimpleWindow(dpy, scr->root, m->sc.x, m->sc.y,
 							m->sc.w, m->sc.h, 0, 0, 0);
@@ -5110,7 +5146,7 @@ initmonitors(XEvent *e)
 		m->mx = m->sc.x + m->sc.w / 2;
 		m->my = m->sc.y + m->sc.h / 2;
 		m->num = 0;
-		m->curview = scr->views + (m->num % scr->ntags);
+		setmonitorviews(e, m);
 		m->veil = XCreateSimpleWindow(dpy, scr->root, m->sc.x, m->sc.y,
 					      m->sc.w, m->sc.h, 0, 0, 0);
 		wa.background_pixmap = None;
@@ -5396,7 +5432,7 @@ initialize(const char *conf, AdwmOperations * ops, Bool reload)
 		if (!reload) {
 			OPRINTF("initializing monitor geometry\n");
 			initmonitors(NULL);	/* init geometry */
-			/* I think that we can do this all the time. */
+			/* Cannot do this on reload: it resets current views. */
 		}
 
 		OPRINTF("initializing key bindings\n");

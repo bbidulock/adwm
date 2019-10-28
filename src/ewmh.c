@@ -1077,8 +1077,6 @@ ewmh_update_net_desktop_viewport()
 	free(data);
 }
 
-Bool names_synced = False;
-
 void
 ewmh_update_net_desktop_names()
 {
@@ -1087,11 +1085,8 @@ ewmh_update_net_desktop_names()
 	long *data;
 	Atom dt;
 
-	if (names_synced) {
-		XPRINTF("%s\n", "Updating _NET_DESKTOP_NAMES: NOT!");
-		return;
-	}
-	XPRINTF("%s\n", "Updating _NET_DESKTOP_NAMES");
+	DPRINTF("%s\n", "Updating _NET_DESKTOP_NAMES");
+	/* When we set it, we only set it for the names of the current number of desktops. */
 	for (len = 0, i = 0; i < scr->ntags; i++)
 		len += strlen(scr->tags[i].name) + 1;
 	pos = buf = ecalloc(len, sizeof(*buf));
@@ -1116,7 +1111,6 @@ ewmh_update_net_desktop_names()
 			PropModeReplace, (unsigned char *) data, scr->ntags);
 	free(data);
 	free(buf);
-	names_synced = True;
 }
 
 void
@@ -1629,50 +1623,69 @@ ewmh_update_net_work_area()
 }
 
 void
-ewmh_process_net_desktop_names()
+ewmh_process_net_desktop_names(void)
 {
 	int format, status;
 	Atom real;
 	unsigned long nitems = 0, extra = 0, bytes = 1;
 	char *ret = NULL, *pos;
-	unsigned int i, len;
+	unsigned int i;
+	Bool need_write = False;
 
-	names_synced = True;
+	/* The names of all virtual desktops.  This is a list of NULL-terminated strings
+	   in UTF-8 encoding [UTF8].  This property MAY be changed by a Pager or the
+	   Window Manager at any time. */
+
+	/* Note: the number of names could be different from _NET_NUMBER_OF_DESKTOPS.  If 
+	   it is less than _NET_NUMBER_OF_DESKTOPS, then the desktops with high numbers
+	   are unnamed.  If it is larger than _NET_NUMBER_OF_DESKTOPS, then the excess
+	   names outside of the _NET_NUMBER_OF_DESKTOPS are considered to be reserved in
+	   case the number of desktops is increased. */
+
+	/* Rationale: The name is not a necessary attribute of a virtual desktop.  Thus
+	   the availability or unavailability of names has no impact on virtual desktop
+	   functionality.  Since names are set by users and users are likely to preset
+	   names for a fixed number of desktops, it doesn't make sense to shrink or grow
+	   this list when the number of available desktops changes. */
+	DPRINTF("Processing _NET_DESKTOP_NAMES\n");
 	do {
 		if (ret)
 			XFree((unsigned char *) ret);
 		bytes += 4 * extra;
-		status =
-		    XGetWindowProperty(dpy, scr->root, _XA_NET_DESKTOP_NAMES, 0L, bytes,
-				       False, _XA_UTF8_STRING, &real, &format, &nitems,
-				       &extra, (unsigned char **) &ret);
+		status = XGetWindowProperty(dpy, scr->root, _XA_NET_DESKTOP_NAMES, 0L,
+					    bytes, False, _XA_UTF8_STRING, &real, &format,
+					    &nitems, &extra, (unsigned char **) &ret);
 		if (status != Success) {
-			names_synced = False;
+			need_write = True;
 			break;
 		}
 	} while (extra && bytes == 1);
-
-	for (pos = ret, i = 0; nitems && i < scr->ntags; i++) {
-		if ((len = strnlen(pos, nitems))) {
+	if (status == Success) {
+		for (pos = ret, i = 0; nitems && i < MAXTAGS; i++) {
+			int len = strnlen(pos, nitems);
 			int nlen = min(len, sizeof(scr->tags[i].name) - 1);
 
 			memcpy(scr->tags[i].name, pos, nlen);
 			scr->tags[i].name[nlen] = '\0';
-			XPRINTF("Assigning name '%s' to tag %u\n", scr->tags[i].name, i);
-		} else
-			names_synced = False;
-		nitems -= len;
-		pos += len;
-		if (nitems) {
-			--nitems;
-			++pos;
+			DPRINTF("Assigning name '%s' to tag %u\n", scr->tags[i].name, i);
+			/* all this to handle trailing \0 or not */
+			nitems -= len;
+			pos += len;
+			if (nitems) {
+				--nitems;
+				++pos;
+			}
 		}
+		if (i < scr->ntags)
+			need_write = True;
 	}
-	if (i < scr->ntags)
-		names_synced = False;
-	if (ret)
+	if (ret) {
 		XFree(ret);
-	ewmh_update_net_desktop_names();
+		ret = NULL;
+	}
+	if (need_write)
+		ewmh_update_net_desktop_names();
+	return;
 }
 
 void

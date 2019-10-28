@@ -245,6 +245,24 @@ save(FILE *file, Bool permanent)
 		if (scr->options.placement != options.placement)
 			fprintf(file, "Adwm.screen%u.placement:\t\t%c\n", scr->screen, scr->options.placement);
 
+		/* Note: we should only save monitor information in display/home or display/current
+		   save files.  The only information that can be restored, really, is which view was
+		   active or previously active on which monitors.  When restoring, this information
+		   can be set for the monitors that are present. */
+
+		/* MONITOR DIRECTIVES */
+		fprintf(file, "Adwm.screen%u.monitors:\t\t%d\n", scr->screen, scr->nmons);
+		for (i = 0; i < scr->nmons; i++) {
+			Monitor *m = scr->monitors + i;
+
+			fprintf(file, "Adwm.screen%u.monitor%u.col:\t\t%d\n", scr->screen, i, m->col); /* XXX: calculated? */
+			fprintf(file, "Adwm.screen%u.monitor%u.row:\t\t%d\n", scr->screen, i, m->row); /* XXX: calculated? */
+			if (m->curview)
+				fprintf(file, "Adwm.screen%u.monitor%u.curview:\t\t%d\n", scr->screen, i, m->curview->index);
+			if (m->preview)
+				fprintf(file, "Adwm.screen%u.monitor%u.preview:\t\t%d\n", scr->screen, i, m->preview->index);
+		}
+
 		/* TAG DIRECTIVES */
 		if (scr->ntags != options.ntags)
 			fprintf(file, "Adwm.screen%u.tags.number:\t\t%d\n", scr->screen, scr->ntags);
@@ -252,7 +270,7 @@ save(FILE *file, Bool permanent)
 			Tag *t = scr->tags + i;
 
 			if (t->name)
-				fprintf(file, "Adwm.screen%u.tags.name%u:\t\t%s\n", i, scr->screen, t->name);
+				fprintf(file, "Adwm.screen%u.tags.name%u:\t\t%s\n", scr->screen, i, t->name);
 		}
 
 		/* VIEW DIRECTIVES */

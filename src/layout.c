@@ -5159,7 +5159,7 @@ configureclient(Client *c, XEvent *e, int gravity)
 		    || c->is.moveresize)
 			may &= ~(CWX | CWY | CWWidth | CWHeight);
 		if (c->is.maxv)
-			may &= ~(CWY | CWWidth);
+			may &= ~(CWY | CWHeight);
 		if (c->is.maxh)
 			may &= ~(CWX | CWWidth);
 

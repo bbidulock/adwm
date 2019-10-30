@@ -5213,14 +5213,24 @@ configureclient(Client *c, XEvent *e, int gravity)
 			setframereference(c, xr, yr, &g, &n, gravity);
 			XPRINTF(&n, "after setframereference\n");
 			reconfigure(c, &n, notify);
-			return True;
 		} else {
 			XPRINTF(&c->c, "before putframereference\n");
 			putframereference(c, xr, yr, &g, &n, gravity);
 			XPRINTF(&n, "after putframereference\n");
 			reconfigure(c, &n, notify);
-			return True;
 		}
+		/* need to set for restore geometries that were changed */
+		if (will & CWX)
+			c->r.x = n.x;
+		if (will & CWY)
+			c->r.y = n.y;
+		if (will & CWWidth)
+			c->r.w = n.w;
+		if (will & CWHeight)
+			c->r.h = n.h;
+		if (will & CWBorderWidth)
+			c->r.b = n.b;
+		return True;
 	}
 	if (notify) {
 		if (ev->value_mask & CWBorderWidth)

@@ -1014,11 +1014,6 @@ cleanup(WithdrawCause cause)
 	XSync(dpy, False);
 }
 
-void
-getclientgeometry(Client *c, Geometry *g, Geometry *x)
-{
-}
-
 static Bool
 configurenotify(XEvent *e)
 {
@@ -6934,6 +6929,11 @@ main(int argc, char *argv[])
 	signal(SIGTERM, sighandler);
 	signal(SIGQUIT, sighandler);
 	signal(SIGCHLD, sighandler);
+#if 0
+	/* consider adding more signal handlers */
+	signal(SIGUSR1, sighandler);
+	signal(SIGUSR2, sighandler);
+#endif
 
 	setlocale(LC_CTYPE, "");
 

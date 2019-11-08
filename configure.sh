@@ -31,8 +31,8 @@ esac
 	--disable-imlib2 \
 	--disable-gdk-pixbuf \
 	CPPFLAGS="$CPPFLAGS" \
-	CFLAGS="$DEBUG_CFLAGS -Wall -Werror $CFLAGS" \
-	CXXFLAGS="$DEBUG_CXXFLAGS -Wall -Werror $CXXFLAGS" \
+	CFLAGS="$DEBUG_CFLAGS -Wall -Wextra -Werror -Wno-clobbered $CFLAGS" \
+	CXXFLAGS="$DEBUG_CXXFLAGS -Wall -Wextra -Werror -Wno-clobbered $CXXFLAGS" \
 	LDFLAGS="$LDFLAGS" \
 	DEBUG_CFLAGS="$DEBUG_CFLAGS" \
 	DEBUG_CXXFLAGS="$DEBUG_CXXFLAGS"

@@ -152,8 +152,6 @@ XImage *
 png_read_file_to_ximage(Display *display, Visual *visual, const char *file)
 {
 	XImage *xicon = NULL;
-	volatile void *vol_png_pixels = NULL, *vol_row_pointers = NULL;
-	volatile void *vol_xicon = NULL;
 	png_structp png_ptr;
 	png_infop info_ptr;
 	png_byte buf[8];
@@ -177,9 +175,7 @@ png_read_file_to_ximage(Display *display, Visual *visual, const char *file)
 		goto pngerr;
 
 	png_uint_32 width, height, row_bytes;
-	png_byte *png_pixels = NULL, **row_pointers = NULL, *p;
-	int bit_depth, color_type, channels, i, j;
-	unsigned long pixel; unsigned long A, R, G, B;
+	int bit_depth, color_type, channels;
 
 	png_init_io(png_ptr, f);
 	png_set_sig_bytes(png_ptr, 8);
@@ -208,46 +204,53 @@ png_read_file_to_ximage(Display *display, Visual *visual, const char *file)
 	else
 		channels = 0;	/* should never happen */
 	row_bytes = png_get_rowbytes(png_ptr, info_ptr);
-	png_pixels = ecalloc(row_bytes * height, sizeof(*png_pixels));
-	vol_png_pixels = png_pixels;
-	row_pointers = ecalloc(height, sizeof(*row_pointers));
-	vol_row_pointers = row_pointers;
-	for (i = 0; i < ((int) height); i++)
+	png_byte *png_pixels = ecalloc(row_bytes * height, sizeof(*png_pixels));
+	volatile void *vol_png_pixels = png_pixels;
+	png_byte **row_pointers = ecalloc(height, sizeof(*row_pointers));
+	volatile void *vol_row_pointers = row_pointers;
+	unsigned int i;
+	for (i = 0; i < height; i++)
 		row_pointers[i] = png_pixels + i * row_bytes;
 	png_read_image(png_ptr, row_pointers);
 	png_read_end(png_ptr, info_ptr);
 	if (!(xicon = XCreateImage(display, visual, 32, ZPixmap, 0, NULL, width, height, 32, 0)))
 		goto pngerr;
-	vol_xicon = xicon;
+	volatile void *vol_xicon = xicon;
 	xicon->data = ecalloc(xicon->bytes_per_line, xicon->height);
-	for (p = png_pixels, j = 0; j < height; j++) {
-		for (i = 0; i < width; i++, p += channels) {
-			switch(color_type) {
-			case PNG_COLOR_TYPE_GRAY:
-				R = G = B = p[0];
-				A = 255;
-				break;
-			case PNG_COLOR_TYPE_GRAY_ALPHA:
-				R = G = B = p[0];
-				A = p[1];
-				break;
-			case PNG_COLOR_TYPE_RGB:
-				R = p[0];
-				G = p[1];
-				B = p[2];
-				A = 255;
-				break;
-			case PNG_COLOR_TYPE_RGB_ALPHA:
-				R = p[0];
-				G = p[1];
-				B = p[2];
-				A = p[3];
-				break;
+	{
+		unsigned int j = 0;
+
+		(void) j;
+		for (png_byte *p = png_pixels, j = 0; j < height; j++) {
+			for (i = 0; i < width; i++, p += channels) {
+				unsigned long A, R, G, B;
+				switch(color_type) {
+				case PNG_COLOR_TYPE_GRAY:
+					R = G = B = p[0];
+					A = 255;
+					break;
+				case PNG_COLOR_TYPE_GRAY_ALPHA:
+					R = G = B = p[0];
+					A = p[1];
+					break;
+				case PNG_COLOR_TYPE_RGB:
+					R = p[0];
+					G = p[1];
+					B = p[2];
+					A = 255;
+					break;
+				case PNG_COLOR_TYPE_RGB_ALPHA:
+					R = p[0];
+					G = p[1];
+					B = p[2];
+					A = p[3];
+					break;
+				}
+				if (!A)
+					R = G = B = 0;
+				unsigned long pixel = (A << 24)|(R <<16)|(G<<8)|(B<<0);
+				XPutPixel(xicon, i, j, pixel);
 			}
-			if (!A)
-				R = G = B = 0;
-			pixel = (A << 24)|(R <<16)|(G<<8)|(B<<0);
-			XPutPixel(xicon, i, j, pixel);
 		}
 	}
       pngerr:
@@ -729,13 +732,15 @@ XImage *
 crop_image(AScreen *ds, XImage *ximage)
 {
 	XImage *xcrop;
-	unsigned i, j;
+	int i, j;
 	XRectangle r = { 0, };
 	Bool opacity = False;
-	unsigned xmin = ximage->width;
-	unsigned ymin = ximage->height;;
-	unsigned xmax = 0;
-	unsigned ymax = 0;
+	int xmin = ximage->width;
+	int ymin = ximage->height;;
+	int xmax = 0;
+	int ymax = 0;
+
+	(void) ds;	/* XXX */
 
 	for (j = 0; j < ximage->height; j++) {
 		for (i = 0; i < ximage->width; i++) {
@@ -1025,7 +1030,7 @@ initimage(void)
 
 	if ((pmv = XListPixmapFormats(dpy, &count))) {
 		for (i = 0; i < count; i++) {
-			if (pmv[i].depth == scr->depth) {
+			if (pmv[i].depth == (int) scr->depth) {
 				scr->bpp = pmv[i].bits_per_pixel;
 				break;
 			}

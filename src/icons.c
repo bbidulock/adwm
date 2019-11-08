@@ -228,7 +228,7 @@ _FindAnyIconHelper(char **files, const char *iconname, int size, const char *ext
 #endif
 #endif
 	if (!best) {
-		size_t max = 0;
+		off_t max = 0;
 
 		/* just pick the bigest (st_size) one */
 		for (maybe = good; maybe && *maybe; maybe++) {
@@ -323,7 +323,7 @@ _LookupAnyIcon(const char *iconname, int size, const char **fexts)
 }
 
 static Bool
-DirectoryMatchesSize(IconTheme *theme, IconDirectory *subdir, int iconsize)
+DirectoryMatchesSize(IconDirectory *subdir, int iconsize)
 {
 	if (!subdir->minsize)
 		subdir->minsize = subdir->size;
@@ -342,7 +342,7 @@ DirectoryMatchesSize(IconTheme *theme, IconDirectory *subdir, int iconsize)
 }
 
 static int
-DirectorySizeDistance(IconTheme *theme, IconDirectory *subdir, int iconsize)
+DirectorySizeDistance(IconDirectory *subdir, int iconsize)
 {
 	if (!subdir->minsize)
 		subdir->minsize = subdir->size;
@@ -380,7 +380,7 @@ _LookupIcon(const char *iconname, int size, IconTheme *theme, const char **fexts
 	if (!fexts)
 		fexts = (const char **) exts;
 	for (id = theme->dirs; id; id = id->next) {
-		if (DirectoryMatchesSize(theme, id, size)) {
+		if (DirectoryMatchesSize(id, size)) {
 			for (xdg = xdgs; xdg && *xdg; xdg++) {
 				for (ext = exts; ext && *ext; ext++) {
 					snprintf(buf, sizeof(buf), "%s/%s/%s/%s.%s", *xdg, theme->name, id->subdir, iconname, *ext);
@@ -408,7 +408,7 @@ _LookupIcon(const char *iconname, int size, IconTheme *theme, const char **fexts
 						*p = tolower(*p);
 					missing = access(buf, R_OK);
 				}
-				if (!missing && (dist = DirectorySizeDistance(theme, id, size)) < minimal_size) {
+				if (!missing && (dist = DirectorySizeDistance(id, size)) < minimal_size) {
 					free(closest);
 					closest = strdup(buf);
 					minimal_size = dist;
@@ -839,7 +839,7 @@ already(char **list, char *item)
 }
 
 void
-initicons(Bool reload)
+initicons(Bool reload __attribute__((unused)))
 {
 	const char *p, *q, *env;
 	char *l, *e;

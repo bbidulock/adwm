@@ -598,6 +598,8 @@ delayedfocus(Client *c, Time t)
 	case StrutsDown:
 		if (VFEATURES(v, OVERLAP))
 			break;
+		/* fall through */
+		__attribute__((fallthrough));
 	case StrutsHide:
 		if (!v->strut_time)
 			v->strut_time = t;
@@ -851,7 +853,7 @@ reconfigure_dockapp(Client *c, const ClientGeometry *n, Bool force)
 }
 
 static Bool
-check_unmapnotify(Display *dpy, XEvent *ev, XPointer arg)
+check_unmapnotify(Display *dpy __attribute__((unused)), XEvent *ev, XPointer arg)
 {
 	Client *c = (typeof(c)) arg;
 
@@ -1262,15 +1264,15 @@ calc_fill(Client *c, View *v, Workarea *wa, ClientGeometry *g)
 			continue;
 		if (o->c.y + o->c.h > g->y && o->c.y < g->y + g->h) {
 			if (o->c.x < g->x)
-				x1 = max(x1, o->c.x + o->c.w + scr->style.border);
+				x1 = max(x1, (int) (o->c.x + o->c.w + scr->style.border));
 			else
-				x2 = min(x2, o->c.x - scr->style.border);
+				x2 = min(x2, (int) (o->c.x - scr->style.border));
 		}
 		if (o->c.x + o->c.w > g->x && o->c.x < g->x + g->w) {
 			if (o->c.y < g->y)
-				y1 = max(y1, o->c.y + o->c.h + scr->style.border);
+				y1 = max(y1, (int) (o->c.y + o->c.h + scr->style.border));
 			else
-				y2 = max(y2, o->c.y - scr->style.border);
+				y2 = max(y2, (int) (o->c.y - scr->style.border));
 		}
 		XPRINTF("x1 = %d x2 = %d y1 = %d y2 = %d\n", x1, x2, y1, y2);
 	}
@@ -1290,7 +1292,7 @@ calc_fill(Client *c, View *v, Workarea *wa, ClientGeometry *g)
 }
 
 static void
-calc_lhalf(Client *c, Workarea *wa, ClientGeometry *g)
+calc_lhalf(Workarea *wa, ClientGeometry *g)
 {
 	g->x = wa->x;
 	g->y = wa->y;
@@ -1300,7 +1302,7 @@ calc_lhalf(Client *c, Workarea *wa, ClientGeometry *g)
 }
 
 static void
-calc_rhalf(Client *c, Workarea *wa, ClientGeometry *g)
+calc_rhalf(Workarea *wa, ClientGeometry *g)
 {
 	g->x = wa->x + (wa->w >> 1);
 	g->y = wa->y;
@@ -1310,7 +1312,7 @@ calc_rhalf(Client *c, Workarea *wa, ClientGeometry *g)
 }
 
 static void
-calc_max(Client *c, Workarea *wa, ClientGeometry *g)
+calc_max(Workarea *wa, ClientGeometry *g)
 {
 	g->x = wa->x;
 	g->y = wa->y;
@@ -1322,7 +1324,7 @@ calc_max(Client *c, Workarea *wa, ClientGeometry *g)
 }
 
 static void
-calc_maxv(Client *c, Workarea *wa, ClientGeometry *g)
+calc_maxv(Workarea *wa, ClientGeometry *g)
 {
 	g->y = wa->y;
 	g->h = wa->h;
@@ -1330,7 +1332,7 @@ calc_maxv(Client *c, Workarea *wa, ClientGeometry *g)
 }
 
 static void
-calc_maxh(Client *c, Workarea *wa, ClientGeometry *g)
+calc_maxh(Workarea *wa, ClientGeometry *g)
 {
 	g->x = wa->x;
 	g->w = wa->w;
@@ -1433,19 +1435,19 @@ updatefloat(Client *c, View *v)
 		calc_full(c, v, &g);
 	} else {
 		if (c->is.max) {
-			calc_max(c, &wa, &g);
+			calc_max(&wa, &g);
 		} else if (c->is.lhalf) {
-			calc_lhalf(c, &wa, &g);
+			calc_lhalf(&wa, &g);
 		} else if (c->is.rhalf) {
-			calc_rhalf(c, &wa, &g);
+			calc_rhalf(&wa, &g);
 		} else if (c->is.fill) {
 			calc_fill(c, v, &wa, &g);
 		} else {
 			if (c->is.maxv) {
-				calc_maxv(c, &wa, &g);
+				calc_maxv(&wa, &g);
 			}
 			if (c->is.maxh) {
-				calc_maxh(c, &wa, &g);
+				calc_maxh(&wa, &g);
 			}
 		}
 	}
@@ -1935,7 +1937,7 @@ tile(View *v)
 	ClientGeometry n = { 0, }, m = { 0, }, s = { 0, }, g = { 0, };
 	Client *c, *mc;
 	Monitor *cm = v->curmon;
-	int i, overlap, th, gh, hh, mg;
+	unsigned i, overlap, th, gh, hh, mg;
 	Bool mtdec, stdec, mgdec, sgdec, mvdec, svdec;
 
 	if (!(c = nexttiled(scr->clients, v)))
@@ -2297,11 +2299,13 @@ arrange_tile(View *v)
 static void
 create_tile(View *v)
 {
+	(void) v;	/* XXX */
 }
 
 static void
 convert_tile(View *v)
 {
+	(void) v;	/* XXX */
 }
 
 static void
@@ -2318,9 +2322,9 @@ grid(View *v)
 {
 	Client *c;
 	Workarea wa;
-	int rows, cols, n, i, *rc, *rh, col, row;
-	int cw, cl, *rl;
-	int gap;
+	unsigned rows, cols, n, i, *rc, *rh, col, row;
+	unsigned cw, cl, *rl;
+	unsigned gap;
 
 	if (!(c = nexttiled(scr->clients, v)))
 		return;
@@ -2405,11 +2409,13 @@ arrange_grid(View *v)
 static void
 create_grid(View *v)
 {
+	(void) v;	/* XXX */
 }
 
 static void
 convert_grid(View *v)
 {
+	(void) v;	/* XXX */
 }
 
 static void
@@ -2459,11 +2465,13 @@ arrange_monocle(View *v)
 static void
 create_monocle(View *v)
 {
+	(void) v;	/* XXX */
 }
 
 static void
 convert_monocle(View *v)
 {
+	(void) v;	/* XXX */
 }
 
 static void
@@ -2485,11 +2493,13 @@ arrange_float(View *v)
 static void
 create_float(View *v)
 {
+	(void) v;	/* XXX */
 }
 
 static void
 convert_float(View *v)
 {
+	(void) v;	/* XXX */
 }
 
 static void
@@ -2540,9 +2550,9 @@ isfloater(Client *c)
 }
 
 typedef struct StackContext {
-	int n;				/* number of clients in stack */
-	int i;				/* current client being considered */
-	int j;				/* current stack position */
+	unsigned n;			/* number of clients in stack */
+	unsigned i;			/* current client being considered */
+	unsigned j;			/* current stack position */
 	Window *wl;			/* frame window list */
 	Client **ol;			/* original client list */
 	Client **cl;			/* unstacked client list */
@@ -2579,7 +2589,7 @@ stack_clients(StackContext * s, Client *c)
 	Client *m;
 	Group *g;
 	Window w;
-	int k;
+	unsigned k;
 
 	/* always stack modal windows */
 	if (c->is.modal)
@@ -3224,6 +3234,8 @@ lowertiled(Client *c)
 		XPRINTF(c, "lowering non-floating client on loss of focus\n");
 		lowerclient(c);
 	}
+#else
+	(void) c;
 #endif
 }
 
@@ -3242,9 +3254,9 @@ setmwfact(View *v, double factor)
 }
 
 void
-setnmaster(View *v, int n)
+setnmaster(View *v, unsigned n)
 {
-	int length;
+	unsigned length;
 	Monitor *m;
 
 	if (!VFEATURES(v, NMASTER))
@@ -3290,7 +3302,7 @@ setnmaster(View *v, int n)
 }
 
 void
-decnmaster(View *v, int n)
+decnmaster(View *v, unsigned n)
 {
 	if (!VFEATURES(v, NMASTER))
 		return;
@@ -3298,7 +3310,7 @@ decnmaster(View *v, int n)
 }
 
 void
-incnmaster(View *v, int n)
+incnmaster(View *v, unsigned n)
 {
 	if (!VFEATURES(v, NMASTER))
 		return;
@@ -3306,7 +3318,7 @@ incnmaster(View *v, int n)
 }
 
 void
-setncolumns(View *v, int n)
+setncolumns(View *v, unsigned n)
 {
 	int length;
 	Monitor *m;
@@ -3338,7 +3350,7 @@ setncolumns(View *v, int n)
 }
 
 void
-decncolumns(View *v, int n)
+decncolumns(View *v, unsigned n)
 {
 	if (!VFEATURES(v, NCOLUMNS))
 		return;
@@ -3346,7 +3358,7 @@ decncolumns(View *v, int n)
 }
 
 void
-incncolumns(View *v, int n)
+incncolumns(View *v, unsigned n)
 {
 	if (!VFEATURES(v, NCOLUMNS))
 		return;
@@ -3686,7 +3698,7 @@ findcorner_move(Client *c, int x_root, int y_root)
 }
 
 static Bool
-ismoveevent(Display *display, XEvent *event, XPointer arg)
+ismoveevent(Display *display __attribute__((unused)), XEvent *event, XPointer arg __attribute__((unused)))
 {
 	switch (event->type) {
 	case ButtonPress:
@@ -4256,7 +4268,7 @@ mousemove(Client *c, XEvent *e, Bool toggle)
 }
 
 static Bool
-isresizeevent(Display *display, XEvent *event, XPointer arg)
+isresizeevent(Display *display __attribute__((unused)), XEvent *event, XPointer arg __attribute__((unused)))
 {
 	switch (event->type) {
 	case ButtonPress:
@@ -4292,7 +4304,7 @@ isresizeevent(Display *display, XEvent *event, XPointer arg)
 }
 
 static Bool
-resize_begin(Client *c, View *v, Bool toggle, int from, IsUnion * was, int x_root, int y_root)
+resize_begin(Client *c, View *v, Bool toggle, int from, IsUnion * was)
 {
 	Bool isfloater;
 
@@ -4496,7 +4508,7 @@ mouseresize_from(Client *c, int from, XEvent *e, Bool toggle)
 				if (abs(dx) < scr->options.dragdist
 				    && abs(dy) < scr->options.dragdist)
 					continue;
-				if (!(resized = resize_begin(c, v, toggle, from, &was, x_root, y_root)))
+				if (!(resized = resize_begin(c, v, toggle, from, &was)))
 					break;
 				o = c->c;
 				n = c->c;
@@ -5588,10 +5600,15 @@ static void
 place_minoverlap(Client *c, WindowPlacement p, ClientGeometry *g, View *v, Workarea *w)
 {
 	/* TODO: write this */
+	(void) c;
+	(void) p;
+	(void) g;
+	(void) v;
+	(void) w;
 }
 
 static void
-place_undermouse(Client *c, WindowPlacement p, ClientGeometry *g, View *v, Workarea *w)
+place_undermouse(Client *c, ClientGeometry *g, View *v, Workarea *w)
 {
 	int mx, my;
 
@@ -5623,7 +5640,7 @@ place_undermouse(Client *c, WindowPlacement p, ClientGeometry *g, View *v, Worka
 }
 
 static void
-place_random(Client *c, WindowPlacement p, ClientGeometry *g, View *v, Workarea *w)
+place_random(ClientGeometry *g, Workarea *w)
 {
 	int x_min, x_max, y_min, y_max, x_off, y_off;
 	int d = scr->style.titleheight;
@@ -5674,13 +5691,13 @@ place(Client *c, WindowPlacement p)
 		place_minoverlap(c, p, &g, v, &w);
 		break;
 	case UnderMousePlacement:
-		place_undermouse(c, p, &g, v, &w);
+		place_undermouse(c, &g, v, &w);
 		break;
 	case CascadePlacement:
 		place_smart(c, p, &g, v, &w);
 		break;
 	case RandomPlacement:
-		place_random(c, p, &g, v, &w);
+		place_random(&g, &w);
 		break;
 	}
 	c->r.x = g.x;
@@ -5872,7 +5889,7 @@ adddocknode(Container *t)
 }
 
 static void
-adddockapp(Client *c, Bool choseme, Bool focusme, Bool raiseme)
+adddockapp(Client *c)
 {
 	Container *t, *n;
 	Leaf *l = NULL;
@@ -5982,7 +5999,7 @@ addclient(Client *c, Bool choseme, Bool focusme, Bool raiseme)
 	if (c->is.bastard)
 		return;
 	if (c->is.dockapp) {
-		adddockapp(c, choseme, focusme, raiseme);
+		adddockapp(c);
 		return;
 	}
 	if (!(v = c->cview) && !(v = clientview(c)) && !(v = onview(c)))
@@ -6582,6 +6599,7 @@ void
 flipwins(Client *c)
 {
 	/* FIXME: make this do something */
+	(void) c;
 }
 
 void

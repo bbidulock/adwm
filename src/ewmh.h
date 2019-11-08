@@ -36,17 +36,18 @@ void ewmh_update_kde_splash_progress(void);
 void ewmh_update_startup_notification(void);
 void ewmh_update_net_active_window(void);
 void ewmh_update_net_client_list_stacking(void);
-void ewmh_update_net_client_list(void);
 void ewmh_update_net_client_lists(void);
+void ewmh_update_net_client_list(void);
 void ewmh_update_net_current_desktop(void);
 void ewmh_update_net_desktop_geometry(void);
+void ewmh_update_net_desktop_layout(void);
 void ewmh_update_net_desktop_modes(void);
 void ewmh_update_net_desktop_names(void);
+void ewmh_update_net_monitor_geometry(void);
 void ewmh_update_net_number_of_desktops(void);
 void ewmh_update_net_showing_desktop(void);
 void ewmh_update_net_virtual_roots(void);
 void ewmh_update_net_work_area(void);
-void ewmh_update_net_desktop_layout(void);
 
 void mwmh_process_motif_wm_hints(Client *);
 

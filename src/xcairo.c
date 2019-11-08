@@ -43,6 +43,12 @@ static Bool
 xcairo_createicon(AScreen *ds, Client *c, cairo_surface_t **surf, cairo_surface_t **clip, Bool cropscale)
 {
 	/* for now */
+	(void) ds;
+	(void) c;
+	(void) surf;
+	(void) clip;
+	(void) cropscale;
+
 	return (False);
 }
 
@@ -86,7 +92,7 @@ xcairo_createbitmapicon(AScreen *ds, Client *c, Pixmap icon, Pixmap mask, unsign
 }
 
 Bool
-xcairo_createpixmapicon(AScreen *ds, Client *c, Pixmap icon, Pixmap mask, unsigned w, unsigned h, unsigned d)
+xcairo_createpixmapicon(AScreen *ds, Client *c, Pixmap icon, Pixmap mask, unsigned w, unsigned h, unsigned d __attribute__((unused)))
 {
 	Screen *screen;
 	XRenderPictFormat *format;
@@ -129,6 +135,12 @@ Bool
 xcairo_createdataicon(AScreen *ds, Client *c, unsigned w, unsigned h, long *data)
 {
 	/* for now */
+	(void) ds;
+	(void) c;
+	(void) w;
+	(void) h;
+	(void) data;
+
 	return (False);
 }
 
@@ -171,8 +183,10 @@ xcairo_drawnormal(AScreen *ds, Client *c)
 Bool
 xcairo_initpng(char *path, AdwmPixmap *px)
 {
-#ifdef LIBPNG
 	/* for now */
+	(void) path;
+	(void) px;
+#ifdef LIBPNG
 	return (False);
 #else				/* LIBPNG */
 	return (False);
@@ -182,8 +196,10 @@ xcairo_initpng(char *path, AdwmPixmap *px)
 Bool
 xcairo_initjpg(char *path, AdwmPixmap *px)
 {
-#ifdef LIBJPEG
 	/* for now */
+	(void) path;
+	(void) px;
+#ifdef LIBJPEG
 	return (False);
 #else				/* LIBJPEG */
 	return (False);
@@ -193,8 +209,10 @@ xcairo_initjpg(char *path, AdwmPixmap *px)
 Bool
 xcairo_initsvg(char *path, AdwmPixmap *px)
 {
-#ifdef LIBSVG
 	/* for now */
+	(void) path;
+	(void) px;
+#ifdef LIBSVG
 	return (False);
 #else				/* LIBSVG */
 	return (False);

@@ -24,7 +24,7 @@ long getstate(Window w);
 void incmodal(Client *c, Group *g);
 void decmodal(Client *c, Group *g);
 void freemonitors(void);
-void updatemonitors(XEvent *e, int n, Bool size, Bool full);
+void updatemonitors(XEvent *e, unsigned n, Bool size, Bool full);
 void manage(Window w, XWindowAttributes *wa);
 void restack_belowif(Client *c, Client *sibling);
 void run(void);
@@ -109,31 +109,31 @@ char *clientId = NULL;
 ExtensionInfo einfo[BaseLast] = {
 	/* *INDENT-OFF* */
 #if 1
-	[XkbBase]	 = { "XKEYBOARD", &XkbUseExtension,		},
+	[XkbBase]	 = { .name = "XKEYBOARD", .version = &XkbUseExtension,		},
 #endif
 #if 1
-	[XfixesBase]	 = { "XFIXES",	  &XFixesQueryVersion,		},
+	[XfixesBase]	 = { .name = "XFIXES",	  .version = &XFixesQueryVersion,	},
 #endif
 #ifdef XRANDR
-	[XrandrBase]	 = { "RANDR",	  &XRRQueryVersion,		},
+	[XrandrBase]	 = { .name = "RANDR",	  .version = &XRRQueryVersion,		},
 #endif
 #ifdef XINERAMA
-	[XineramaBase]	 = { "XINERAMA",  &XineramaQueryVersion,	},
+	[XineramaBase]	 = { .name = "XINERAMA",  .version = &XineramaQueryVersion,	},
 #endif
 #ifdef SYNC
-	[XsyncBase]	 = { "SYNC",	  &XSyncInitialize,		},
+	[XsyncBase]	 = { .name = "SYNC",	  .version = &XSyncInitialize,		},
 #endif
 #ifdef RENDER
-	[XrenderBase]	 = { "RENDER",	  &XRenderQueryVersion,		},
+	[XrenderBase]	 = { .name = "RENDER",	  .version = &XRenderQueryVersion,	},
 #endif
 #ifdef XCOMPOSITE
-	[XcompositeBase] = { "Composite", &XCompositeQueryVersion,	},
+	[XcompositeBase] = { .name = "Composite", .version = &XCompositeQueryVersion,	},
 #endif
 #ifdef DAMAGE
-	[XdamageBase]	 = { "DAMAGE",	  &XDamageQueryVersion,		},
+	[XdamageBase]	 = { .name = "DAMAGE",	  .version = &XDamageQueryVersion,	},
 #endif
 #ifdef SHAPE
-	[XshapeBase]	 = { "SHAPE",	  &XShapeQueryVersion,		},
+	[XshapeBase]	 = { .name = "SHAPE",	  .version = &XShapeQueryVersion,	},
 #endif
 	/* *INDENT-ON* */
 };
@@ -199,6 +199,7 @@ Bool (*actions[LastOn][Button5-Button1+1][2]) (Client *, XEvent *) = {
 static Bool
 IGNOREEVENT(XEvent *e)
 {
+	(void) e;
 	XPRINTF("Got ignored event %d\n", e->type);
 	return False;
 }
@@ -323,7 +324,8 @@ static void
 applyrules(Client *c)
 {
 	static char buf[512];
-	unsigned int i, j;
+	int i;
+	unsigned j;
 	regmatch_t tmp;
 	Bool matched = False;
 	View *cv = c->cview ? : selview();
@@ -546,6 +548,7 @@ check_unmapnotify(Display *dpy, XEvent *ev, XPointer arg)
 {
 	Client *c = (typeof(c)) arg;
 
+	(void) dpy;
 	return (ev->type == UnmapNotify && !ev->xunmap.send_event
 		&& ev->xunmap.window == c->win && ev->xunmap.event == c->frame);
 }
@@ -839,6 +842,7 @@ buttonpress(XEvent *e)
 static Bool
 selectionreleased(Display *display, XEvent *event, XPointer arg)
 {
+	(void) display;
 	if (event->type == DestroyNotify) {
 		if (event->xdestroywindow.window == (Window) arg) {
 			return True;
@@ -1751,7 +1755,7 @@ with_transients(Client *c, Bool (*each) (Client *, int), int data)
 }
 
 static Bool
-_iconify(Client *c, int dummy)
+_iconify(Client *c, int dummy __attribute__((unused)))
 {
 	if (c->is.icon)
 		return False;
@@ -1794,7 +1798,7 @@ iconifyall(View *v)
 }
 
 static Bool
-_deiconify(Client *c, int dummy)
+_deiconify(Client *c, int dummy __attribute__((unused)))
 {
 	if (!c->is.icon)
 		return False;
@@ -1837,7 +1841,7 @@ deiconifyall(View *v)
 }
 
 static Bool
-_hide(Client *c, int dummy)
+_hide(Client *c, int dummy __attribute__((unused)))
 {
 	if (c->is.hidden)
 		return False;
@@ -1880,7 +1884,7 @@ hideall(View *v)
 }
 
 static Bool
-_show(Client *c, int dummy)
+_show(Client *c, int dummy __attribute__((unused)))
 {
 	if (!c->is.hidden)
 		return False;
@@ -1944,13 +1948,11 @@ toggleshowing()
 }
 
 void
-setborder(int px)
+setborder(unsigned px)
 {
-	int border = scr->style.border;
+	unsigned border = scr->style.border;
 
 	border = px;
-	if (border < 0)
-		border = 0;
 	if (border > scr->style.titleheight / 2)
 		border = scr->style.titleheight / 2;
 	if (scr->style.border != border) {
@@ -1960,25 +1962,23 @@ setborder(int px)
 }
 
 void
-incborder(int px)
+incborder(unsigned px)
 {
 	setborder(scr->style.border + px);
 }
 
 void
-decborder(int px)
+decborder(unsigned px)
 {
 	setborder(scr->style.border - px);
 }
 
 void
-setmargin(int px)
+setmargin(unsigned px)
 {
-	int margin = scr->style.margin;
+	unsigned margin = scr->style.margin;
 
 	margin = px;
-	if (margin < 0)
-		margin = 0;
 	if (margin > scr->style.titleheight)
 		margin = scr->style.titleheight;
 	if (scr->style.margin != margin) {
@@ -1988,13 +1988,13 @@ setmargin(int px)
 }
 
 void
-incmargin(int px)
+incmargin(unsigned px)
 {
 	setmargin(scr->style.margin + px);
 }
 
 void
-decmargin(int px)
+decmargin(unsigned px)
 {
 	setmargin(scr->style.margin - px);
 }
@@ -2515,6 +2515,7 @@ leavenotify(XEvent *e)
 void
 show_client_state(Client *c)
 {
+	(void) c;
 	XPRINTF(c, "%-20s: 0x%08x\n", "wintype", c->wintype);
 	XPRINTF(c, "%-20s: 0x%08x\n", "skip.skip", c->skip.skip);
 	XPRINTF(c, "%-20s: 0x%08x\n", "is.is", c->is.is);
@@ -2547,8 +2548,8 @@ checkshaped(Client *c)
 
 		if ((boundary) &&
 		    ((be.x > -wa.border_width) || (be.y > -wa.border_width) ||
-		     (be.x + be.w < wa.width + wa.border_width) ||
-		     (be.y + be.h < wa.height + wa.border_width))) {
+		     (be.x + be.w < (unsigned) (wa.width + wa.border_width)) ||
+		     (be.y + be.h < (unsigned) (wa.height + wa.border_width)))) {
 			/* boundary extents are partially or fully contained within
 			   window */
 			c->with.wshape = True;
@@ -3197,7 +3198,7 @@ sync_request(Client *c, Time time)
 	int overflow = 0;
 	XEvent ce;
 	XSyncValue inc;
-	XSyncAlarmAttributes aa = { { 0, }, };
+	XSyncAlarmAttributes aa = { .trigger = { .counter = 0, }, };
 
 	XSyncIntToValue(&inc, 1);
 	XSyncValueAdd(&c->sync.val, c->sync.val, inc, &overflow);
@@ -3320,6 +3321,7 @@ updatesessionprop(Client *c, Atom prop, int state)
 {
 	char *name = NULL;
 
+	(void) state;
 	if (prop <= XA_LAST_PREDEFINED) {
 		switch (prop) {
 		case XA_WM_NAME:
@@ -3547,6 +3549,7 @@ updateleaderprop(Client *c, Atom prop, int state)
 {
 	char *name = NULL;
 
+	(void) state;
 	if (prop <= XA_LAST_PREDEFINED) {
 		switch (prop) {
 		case XA_WM_NAME:
@@ -3774,6 +3777,7 @@ updateclientprop(Client *c, Atom prop, int state)
 {
 	char *name = NULL;
 
+	(void) state;
 	if (prop <= XA_LAST_PREDEFINED) {
 		switch (prop) {
 		case XA_WM_NAME:
@@ -3997,6 +4001,7 @@ updateclientprop(Client *c, Atom prop, int state)
 static Bool
 updateclienttime(Client *c, Atom prop, int state)
 {
+	(void) state;
 	if (prop <= XA_LAST_PREDEFINED) {
 		return False;
 	} else {
@@ -4014,6 +4019,8 @@ updateclienttime(Client *c, Atom prop, int state)
 static Bool
 updaterootprop(Window root, Atom prop, int state)
 {
+	(void) root;
+	(void) state;
 	if (prop <= XA_LAST_PREDEFINED) {
 		switch (prop) {
 		case XA_WM_NAME:
@@ -4367,6 +4374,8 @@ void
 manageoverride(Window win, XWindowAttributes *wa)
 {
 	/* for when we want to manage opacity on override windows */
+	(void) win;
+	(void) wa;
 }
 
 void
@@ -4475,7 +4484,7 @@ isomni(Client *c)
 void
 freemonitors()
 {
-	int i;
+	unsigned i;
 
 	for (i = 0; i < scr->nmons; i++)
 		XDestroyWindow(dpy, scr->monitors[i].veil);
@@ -4511,7 +4520,8 @@ static void
 updatedock(void)
 {
 	Monitor *m;
-	int i, dockmon;
+	unsigned i;
+	int dockmon;
 
 	XPRINTF("Number of dock monitors is %d\n", scr->nmons);
 	for (m = scr->monitors, i = 0; i < scr->nmons; i++, m++) {
@@ -4522,7 +4532,7 @@ updatedock(void)
 	XPRINTF("Dock monitor option is %d\n", scr->options.dockmon);
 	dockmon = (int) scr->options.dockmon - 1;
 	XPRINTF("Dock monitor chosen is %d\n", dockmon);
-	if (dockmon > scr->nmons - 1)
+	if (dockmon > (int) scr->nmons - 1)
 		dockmon = scr->nmons - 1;
 	XPRINTF("Dock monitor adjusted is %d\n", dockmon);
 	/* find the monitor if dock position is screen relative */
@@ -4534,6 +4544,7 @@ updatedock(void)
 		switch (pos) {
 		default:
 			pos = DockNone;
+			__attribute__((fallthrough));
 		case DockNone:
 			row = 0;
 			col = 0;
@@ -4681,9 +4692,9 @@ setmonitorviews(XEvent *e, Monitor *m)
 }
 
 void
-updatemonitors(XEvent *e, int n, Bool size_update, Bool full_update)
+updatemonitors(XEvent *e, unsigned n, Bool size_update, Bool full_update)
 {
-	int i, j;
+	unsigned i, j;
 	Client *c;
 	Monitor *m;
 	int w, h;
@@ -4794,12 +4805,13 @@ updatemonitors(XEvent *e, int n, Bool size_update, Bool full_update)
 	updatedock();
 	updatestruts();
 	ewmh_update_net_desktop_geometry();
+	ewmh_update_net_monitor_geometry();
 }
 
 static Bool
 initmonitors(XEvent *e)
 {
-	int n;
+	unsigned n = 0;
 	Monitor *m;
 	Bool size_update = False, full_update = False;
 
@@ -4812,7 +4824,8 @@ initmonitors(XEvent *e)
 
 #ifdef XINERAMA
 	if (einfo[XineramaBase].have) {
-		int i;
+		unsigned i;
+		int numb;
 		XineramaScreenInfo *si;
 
 		XPRINTF("XINERAMA extension supported\n");
@@ -4821,12 +4834,13 @@ initmonitors(XEvent *e)
 			goto no_xinerama;
 		}
 		XPRINTF("XINERAMA is active for screen %d\n", scr->screen);
-		si = XineramaQueryScreens(dpy, &n);
+		si = XineramaQueryScreens(dpy, &numb);
 		if (!si) {
 			XPRINTF("XINERAMA defines no monitors for screen %d\n",
 				scr->screen);
 			goto no_xinerama;
 		}
+		n = numb;
 		XPRINTF("XINERAMA defines %d monitors for screen %d\n", n, scr->screen);
 		if (n < 2) {
 			XFree(si);
@@ -4941,7 +4955,8 @@ initmonitors(XEvent *e)
 #ifdef XRANDR
 	if (einfo[XrandrBase].have) {
 		XRRScreenResources *sr;
-		int i, j;
+		int i;
+		unsigned j;
 
 		XPRINTF("RANDR extension supported\n");
 		if (!(sr = XRRGetScreenResources(dpy, scr->root))) {
@@ -4994,14 +5009,14 @@ initmonitors(XEvent *e)
 					m->my = m->sc.y + m->sc.h / 2;
 					full_update = True;
 				}
-				if (m->sc.w != ci->width) {
+				if (m->sc.w != (int) ci->width) {
 					XPRINTF("Monitor %d width changed from %d to %d\n",
 							m->index, m->sc.w, ci->width);
 					m->sc.w = m->wa.w = m->dock.wa.w = ci->width;
 					m->mx = m->sc.x + m->sc.w / 2;
 					size_update = True;
 				}
-				if (m->sc.h != ci->height) {
+				if (m->sc.h != (int) ci->height) {
 					XPRINTF("Monitor %d height changed from %d to %d\n",
 							m->index, m->sc.h, ci->height);
 					m->sc.h = m->wa.h = m->dock.wa.h = ci->height;
@@ -5187,7 +5202,7 @@ sighandler(int sig)
 }
 
 void
-initcursors(Bool reload)
+initcursors(Bool reload __attribute__((unused)))
 {
 	/* init cursors */
 	/* *INDENT-OFF* */
@@ -5215,7 +5230,7 @@ initcursors(Bool reload)
 }
 
 void
-initmodmap(Bool reload)
+initmodmap(Bool reload __attribute__((unused)))
 {
 	const KeyCode numcode = XKeysymToKeycode(dpy, XK_Num_Lock);
 	const KeyCode scrcode = XKeysymToKeycode(dpy, XK_Scroll_Lock);
@@ -5240,7 +5255,7 @@ initmodmap(Bool reload)
 }
 
 void
-initselect(Bool reload)
+initselect(Bool reload __attribute__((unused)))
 {
 	unsigned long event_mask;
 
@@ -5252,7 +5267,7 @@ initselect(Bool reload)
 }
 
 void
-initstartup(Bool reload)
+initstartup(Bool reload __attribute__((unused)))
 {
 #ifdef STARTUP_NOTIFICATION
 	if (!sn_dpy)
@@ -5261,7 +5276,7 @@ initstartup(Bool reload)
 }
 
 void
-initstruts(Bool reload)
+initstruts(Bool reload __attribute__((unused)))
 {
 	Monitor *m;
 
@@ -5287,7 +5302,7 @@ initstruts(Bool reload)
  * should be the most desired one for now, which is the titlebar icon.
  */
 static void
-initsizes(Bool reload)
+initsizes(Bool reload __attribute__((unused)))
 {
 	int h = scr->style.titleheight;
 
@@ -5306,7 +5321,7 @@ initsizes(Bool reload)
 }
 
 static void
-findscreen(Bool reload)
+findscreen(Bool reload __attribute__((unused)))
 {
 	int d = 0;
 	unsigned int mask = 0;
@@ -5318,7 +5333,7 @@ findscreen(Bool reload)
 }
 
 static void
-initdirs(Bool reload)
+initdirs(Bool reload __attribute__((unused)))
 {
 	const char *env;
 	int len;
@@ -5384,7 +5399,7 @@ initdirs(Bool reload)
 }
 
 void
-initialize(const char *conf, AdwmOperations * ops, Bool reload)
+initialize(const char *conf, AdwmOperations * ops, Bool reload __attribute__((unused)))
 {
 	char *owd;
 
@@ -6166,13 +6181,13 @@ addprefix(Client *c, char **name)
 
 	if ((r = getclass(c)) && r->count > 1) {
 		char buf[16] = { 0, };
-		int i, len;
+		unsigned i, len;
 
 		for (i = 0; i < r->count; i++)
 			if (r->members[i] == c->win)
 				break;
 		/* TODO: add this format string to style */
-		snprintf(buf, sizeof(buf), "[%d] ", i + 1);
+		snprintf(buf, sizeof(buf), "[%u] ", i + 1);
 		len = strlen(buf) + strlen(*name);
 		if ((vname = calloc(len + 1, sizeof(*vname)))) {
 			strncpy(vname, buf, len);
@@ -6675,7 +6690,7 @@ _xtrap_push(Bool ignore, const char *time, const char *file, int line, const cha
 }
 
 void
-_xtrap_pop(int canary)
+_xtrap_pop(int canary __attribute__((unused)))
 {
 	XErrorTrap *trap;
 
@@ -6695,6 +6710,8 @@ xerror_critical(Display *dsply, XErrorEvent *ee, XErrorTrap *trap)
 {
 	Bool critical = True;
 
+	(void) dsply;
+	(void) trap;
 	if (ee->error_code == BadWindow
 	    || (ee->request_code == X_SetInputFocus && ee->error_code == BadMatch)
 	    || (ee->request_code == X_PolyText8 && ee->error_code == BadDrawable)
@@ -6758,7 +6775,7 @@ xerror(Display *dsply, XErrorEvent *ee)
 }
 
 int
-xerrordummy(Display *dsply, XErrorEvent *ee)
+xerrordummy(Display *dsply __attribute__((unused)), XErrorEvent *ee __attribute__((unused)))
 {
 	return 0;
 }
@@ -6768,6 +6785,8 @@ xerrordummy(Display *dsply, XErrorEvent *ee)
 int
 xerrorstart(Display *dsply, XErrorEvent *ee)
 {
+	(void) dsply;
+	(void) ee;
 	otherwm = True;
 	return -1;
 }
@@ -6801,7 +6820,7 @@ get_adwm_ops(const char *name)
 }
 
 static void
-copying(int argc, char *argv[])
+copying(int argc __attribute__((unused)), char *argv[] __attribute__((unused)))
 {
 	if (!options.output && !options.debug)
 		return;
@@ -6845,7 +6864,7 @@ regulations).\n\
 }
 
 static void
-version(int argc, char *argv[])
+version(int argc __attribute__((unused)), char *argv[] __attribute__((unused)))
 {
 	if (!options.output && !options.debug)
 		return;
@@ -6867,7 +6886,7 @@ See `%1$s --copying' for copying permissions.\n\
 }
 
 void
-usage(int argc, char *argv[])
+usage(int argc __attribute__((unused)), char *argv[])
 {
 	if (!options.output && !options.debug)
 		return;
@@ -6881,7 +6900,7 @@ Usage:\n\
 }
 
 void
-help(int argc, char *argv[])
+help(int argc __attribute__((unused)), char *argv[])
 {
 	if (!options.output && !options.debug)
 		return;

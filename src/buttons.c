@@ -305,7 +305,7 @@ static ActionItem ButtonItems[] = {
 char *directions[] = { "pressed", "release" };
 
 void
-initbuttons(Bool reload)
+initbuttons(Bool reload __attribute__((unused)))
 {
 	unsigned i, j, k;
 	char line[256] = { 0, };
@@ -329,7 +329,7 @@ initbuttons(Bool reload)
 }
 
 void
-savebuttons(Bool permanent)
+savebuttons(Bool permanent __attribute__((unused)))
 {
 	unsigned i, j, k;
 	char line[256] = { 0, };

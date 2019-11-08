@@ -249,7 +249,7 @@ ximage_createicon(AScreen *ds, Client *c, XImage **xicon, XImage **xmask, Bool c
 {
 	XImage *ximage = NULL;
 	ButtonImage **bis;
-	unsigned th = ds->style.titleheight;
+	int th = ds->style.titleheight;
 	Bool ispixmap = ((*xicon)->depth > 1) ? True : False;
 
 	if (ds->style.outline)
@@ -334,6 +334,8 @@ ximage_createpixmapicon(AScreen *ds, Client *c, Pixmap icon, Pixmap mask, unsign
 	XImage *xicon = NULL, *xmask = NULL;
 	Bool result = False;
 
+	(void) d;	/* XXX */
+
 	if (!(xicon = XGetImage(dpy, icon, 0, 0, w, h, AllPlanes, ZPixmap))) {
 		EPRINTF("could not get bitmap 0x%lx %ux%u\n", icon, w, h);
 		goto error;
@@ -404,6 +406,9 @@ ximage_createjpgicon(AScreen *ds, Client *c, const char *file)
 {
 	EPRINTF("would use XIMAGE to create JPG icon %s\n", file);
 	/* for now */
+	(void) ds;
+	(void) c;
+	(void) file;
 	return (False);
 }
 
@@ -412,6 +417,9 @@ ximage_createsvgicon(AScreen *ds, Client *c, const char *file)
 {
 	EPRINTF("would use XIMAGE to create SVG icon %s\n", file);
 	/* for now */
+	(void) ds;
+	(void) c;
+	(void) file;
 	return (False);
 }
 
@@ -472,8 +480,10 @@ ximage_createxbmicon(AScreen *ds, Client *c, const char *file)
 
 #ifdef DAMAGE
 Bool
-ximage_drawdamage(Client *c, XDamageNotifyEvent * ev)
+ximage_drawdamage(Client *c, XDamageNotifyEvent *ev)
 {
+	(void) c;
+	(void) ev;
 	return (False);
 }
 #endif
@@ -498,7 +508,7 @@ ximage_drawbutton(AScreen *ds, Client *c, ElementType type, XftColor *col, int x
 	/* geometry of the container */
 	g.x = x;
 	g.y = 0;
-	g.w = max(th, px->w);
+	g.w = max(th, (int) px->w);
 	g.h = th;
 
 	/* element client geometry used to detect element under pointer */
@@ -626,6 +636,11 @@ ximage_drawsep(AScreen *ds, const char *text, Drawable drawable, XftDraw *xftdra
 {
 	int th;
 	Geometry g;
+
+	(void) text;		/* XXX */
+	(void) xftdraw;		/* XXX */
+	(void) hilite;		/* XXX */
+	(void) y;		/* XXX */
 
 	th = ds->dc.h;
 	if (ds->style.outline)
@@ -793,7 +808,7 @@ ximage_drawnormal(AScreen *ds, Client *c)
 	}
 
 	/* Don't know about this... */
-	if (ds->dc.w < textw(ds, c->name, gethilite(c))) {
+	if (ds->dc.w < (int) textw(ds, c->name, gethilite(c))) {
 		ds->dc.w -= elementw(ds, c, CloseBtn);
 		ximage_drawtext(ds, c->name, ds->dc.draw.pixmap, ds->dc.draw.xft, gethues(ds, c), gethilite(c), ds->dc.x, ds->dc.y, ds->dc.w);
 		ximage_drawbutton(ds, c, CloseBtn, gethues(ds, c), ds->dc.w);
@@ -875,8 +890,10 @@ ximage_drawnormal(AScreen *ds, Client *c)
 Bool
 ximage_initpng(char *path, AdwmPixmap *px)
 {
-#ifdef LIBPNG
 	/* for now */
+	(void) path;
+	(void) px;
+#ifdef LIBPNG
 	return (False);
 #else				/* LIBPNG */
 	return (False);
@@ -886,8 +903,10 @@ ximage_initpng(char *path, AdwmPixmap *px)
 Bool
 ximage_initjpg(char *path, AdwmPixmap *px)
 {
-#ifdef LIBJPEG
 	/* for now */
+	(void) path;
+	(void) px;
+#ifdef LIBJPEG
 	return (False);
 #else				/* LIBJPEG */
 	return (False);
@@ -897,6 +916,9 @@ ximage_initjpg(char *path, AdwmPixmap *px)
 Bool
 ximage_initsvg(char *path, AdwmPixmap *px)
 {
+	/* for now */
+	(void) path;
+	(void) px;
 	return (False);
 }
 

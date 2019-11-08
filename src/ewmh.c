@@ -478,7 +478,7 @@ n_new_notify(SnStartupSequence *seq)
 	parse_startup_id(n->id, &n->launcher, &n->launchee, &n->hostname,
 			 &n->pid, &n->sequence, &n->timestamp);
 	if (!n->timestamp)
-		if ((timestamp = sn_startup_sequence_get_timestamp(seq)) != -1)
+		if ((timestamp = sn_startup_sequence_get_timestamp(seq)) != -1UL)
 			n->timestamp = timestamp;
 	XPRINTF("NOTIFY: NEW: %s\n", n->id);
 	n->next = notifies;
@@ -570,7 +570,7 @@ n_set_notify(Notify *n, Client *c)
 }
 
 static void
-sn_handler(SnMonitorEvent * event, void *dummy)
+sn_handler(SnMonitorEvent * event, void *dummy __attribute__((unused)))
 {
 	SnStartupSequence *seq = NULL;
 
@@ -784,6 +784,7 @@ exitewmh(WithdrawCause cause)
 		for (i = 0; props[i]; i++)
 			XDeleteProperty(dpy, scr->root, props[i]);
 		/* fall through */
+		__attribute__((fallthrough));
 	}
 	case CauseSwitching:
 	{
@@ -805,6 +806,7 @@ exitewmh(WithdrawCause cause)
 		for (i = 0; props[i]; i++)
 			XDeleteProperty(dpy, scr->root, props[i]);
 		/* fall through */
+		__attribute__((fallthrough));
 	}
 	case CauseRestarting:
 	{
@@ -827,6 +829,7 @@ exitewmh(WithdrawCause cause)
 void
 ewmh_add_client(Client *c)
 {
+	(void) c;	/* XXX */
 }
 
 void
@@ -849,6 +852,7 @@ ewmh_del_client(Client *c, WithdrawCause cause)
 			ewmh_update_net_active_window();
 		}
 		/* fall through */
+		__attribute__((fallthrough));
 	}
 	case CauseQuitting:
 	{
@@ -874,6 +878,7 @@ ewmh_del_client(Client *c, WithdrawCause cause)
 		for (i = 0; props[i]; i++)
 			XDeleteProperty(dpy, c->win, props[i]);
 		/* fall through */
+		__attribute__((fallthrough));
 	}
 	case CauseSwitching:
 	{
@@ -897,6 +902,7 @@ ewmh_del_client(Client *c, WithdrawCause cause)
 		for (i = 0; props[i]; i++)
 			XDeleteProperty(dpy, c->win, props[i]);
 		/* fall through */
+		__attribute__((fallthrough));
 	}
 	case CauseRestarting:
 	{
@@ -1081,7 +1087,7 @@ void
 ewmh_update_net_desktop_names()
 {
 	char *buf, *pos;
-	unsigned int i, len;
+	unsigned i, len;
 	long *data;
 	Atom dt;
 
@@ -1119,7 +1125,7 @@ ewmh_update_echinus_seltags()
 	unsigned long long tags;
 	Monitor *m;
 	long *seltags;
-	unsigned int i;
+	unsigned i;
 
 	XPRINTF("%s\n", "Updating _ECHINUS_SELTAGS");
 	seltags = ecalloc(scr->ntags, sizeof(*seltags));
@@ -1142,7 +1148,7 @@ ewmh_process_net_desktop_layout()
 {
 	long *card, start = _NET_WM_TOPLEFT;
 	unsigned long n = 0;
-	int i, r, c;
+	unsigned i, r, c;
 
 	XPRINTF("Processing _NET_DESKTOP_LAYOUT\n");
 	card = getcard(scr->root, _XA_NET_DESKTOP_LAYOUT, &n);
@@ -1274,7 +1280,7 @@ ewmh_update_net_desktop_geometry()
 }
 
 void
-ewmh_update_net_monitor_geometry(Client *c)
+ewmh_update_net_monitor_geometry()
 {
 	Monitor *m;
 	unsigned int i, n;
@@ -1379,8 +1385,9 @@ Bool
 ewmh_process_net_window_desktop(Client *c)
 {
 	long desktop, *desktops = NULL;
-	unsigned long n = 0, j, k;
+	unsigned long n = 0, j;
 	unsigned int i;
+	unsigned k;
 	Bool goodone;
 
 	desktops = getcard(c->win, _XA_NET_WM_DESKTOP, &n);
@@ -1442,7 +1449,7 @@ ewmh_process_net_window_desktop(Client *c)
 			return True;
 		} else
 		    if ((desktops[1] & DT_WORKSPACE_HINTS_WORKSPACES) &&
-			(n >= 4 + desktops[3])) {
+			(n >= 4UL + desktops[3])) {
 			/* don't intern more than we need */
 			for (k = 0; k < scr->ntags; k++)
 				if (!scr->tags[k].dt)
@@ -1450,13 +1457,13 @@ ewmh_process_net_window_desktop(Client *c)
 					    XInternAtom(dpy, scr->tags[k].name, False);
 			for (goodone = False, i = 4; !goodone && i < desktops[3] + 4; i++)
 				for (k = 0; !goodone && k < scr->ntags; k++)
-					if (scr->tags[k].dt == desktops[i])
+					if (scr->tags[k].dt == (unsigned long) desktops[i])
 						goodone = True;
 			if (goodone) {
 				c->tags = 0;
-				for (j = 4; j < desktops[3] + 4; j++)
+				for (j = 4; j < 4UL + desktops[3]; j++)
 					for (k = 0; k < scr->ntags; k++)
-						if (scr->tags[k].dt == desktops[j])
+						if (scr->tags[k].dt == (unsigned long) desktops[j])
 							c->tags |= (1ULL << k);
 				XFree(desktops);
 				return True;
@@ -1500,7 +1507,7 @@ ewmh_update_net_window_desktop(Client *c)
 		XChangeProperty(dpy, c->win, _XA_WM_DESKTOP, _XA_WM_DESKTOP, 32,
 				PropModeReplace, (unsigned char *) &i, 1);
 	} else {
-		unsigned int i, j, n;
+		unsigned i, j, n;
 		long *data;
 
 		for (n = 0, i = 0; i < scr->ntags; i++)
@@ -1519,7 +1526,7 @@ ewmh_update_net_window_desktop(Client *c)
 		free(data);
 	}
 	{
-		unsigned int i, j, n;
+		unsigned i, j, n;
 		long *data;
 		Atom dt;
 
@@ -1588,7 +1595,8 @@ void
 ewmh_update_net_work_area()
 {
 	long *geoms, longs = scr->ntags * 4;
-	int i, j, x, y, w, h, l = 0, r = 0, t = 0, b = 0;
+	int x, y, w, h, l = 0, r = 0, t = 0, b = 0;
+	unsigned int i, j;
 	Monitor *m;
 	long workarea[4];
 
@@ -1596,10 +1604,10 @@ ewmh_update_net_work_area()
 	geoms = ecalloc(longs, sizeof(*geoms));
 
 	for (m = scr->monitors; m; m = m->next) {
-		l = max(l, m->struts[LeftStrut]);
-		r = max(r, m->struts[RightStrut]);
-		t = max(t, m->struts[TopStrut]);
-		b = max(b, m->struts[BotStrut]);
+		l = max(l, (int) m->struts[LeftStrut]);
+		r = max(r, (int) m->struts[RightStrut]);
+		t = max(t, (int) m->struts[TopStrut]);
+		b = max(b, (int) m->struts[BotStrut]);
 	}
 	x = l;
 	y = t;
@@ -1629,7 +1637,7 @@ ewmh_process_net_desktop_names(void)
 	Atom real;
 	unsigned long nitems = 0, extra = 0, num = 1;
 	char *ret = NULL, *pos;
-	unsigned int i;
+	unsigned i;
 
 	/* The names of all virtual desktops.  This is a list of NULL-terminated strings
 	   in UTF-8 encoding [UTF8].  This property MAY be changed by a Pager or the
@@ -1668,8 +1676,8 @@ ewmh_process_net_desktop_names(void)
 		goto try_harder;
 	}
 	for (pos = ret, i = 0; pos && nitems && i < MAXTAGS; i++) {
-		int len = strnlen(pos, nitems);
-		int nlen = min(len, sizeof(scr->tags[i].name) - 1);
+		unsigned len = strnlen(pos, nitems);
+		unsigned nlen = min(len, sizeof(scr->tags[i].name) - 1);
 
 		memcpy(scr->tags[i].name, pos, nlen);
 		scr->tags[i].name[nlen] = '\0';
@@ -1708,7 +1716,7 @@ void
 ewmh_update_net_desktop_modes()
 {
 	long *data;
-	unsigned int i;
+	unsigned i;
 
 	XPRINTF("%s\n", "Updating _NET_DESKTOP_MODES");
 	data = ecalloc(scr->ntags, sizeof(*data));
@@ -2586,7 +2594,7 @@ ewmh_update_sn_app_props(Client *c, Notify *n)
 				(unsigned char *) &data, 1);
 	} else
 		XPRINTF(c, "%s sequence has no sequence!\n", n->id);
-	if (n->timestamp != -1) {
+	if (n->timestamp != -1UL) {
 		data = n->timestamp;
 		XChangeProperty(dpy, win, _XA_NET_APP_TIMESTAMP,
 				XA_CARDINAL, 32, PropModeReplace,
@@ -2799,7 +2807,7 @@ find_startup_seq(Client *c)
 		if (strstr(n->id, "xdg-launch") == n->id)
 			if (0 <= n->sequence && n->sequence < scr->nmons)
 				c->monitor = n->sequence + 1;
-		if (n->timestamp && n->timestamp != -1)
+		if (n->timestamp && n->timestamp != -1UL)
 			push_client_time(c, n->timestamp);
 		ewmh_update_sn_app_props(c, n);
 		seq = n_set_notify(n, c);
@@ -2926,7 +2934,7 @@ ewmh_process_net_window_icon(Client *c)
 	if ((bi = getbutton(c)))
 		return;
 	if ((card = getcard(c->win, _XA_NET_WM_ICON, &n))) {
-		if (n < 2 || n < 2 + card[0] * card[1])
+		if (n < 2 || n < 2UL + card[0] * card[1])
 			XFree(card);
 		else if (createneticon(c, card, n)) {
 			XPRINTF(c, "using _NET_WM_ICON for icon\n");
@@ -3268,7 +3276,7 @@ ewmh_update_startup_notification(void)
 		/* just PropertyChange mask in the spec doesn't work :( */
 		if (!XSendEvent(dpy, scr->root, False, StructureNotifyMask |
 				SubstructureNotifyMask | SubstructureRedirectMask |
-				PropertyChangeMask, &ev)) ;
+				PropertyChangeMask, &ev)) { };
 		ev.xclient.message_type = _XA_NET_STARTUP_INFO;
 	}
 	XSync(dpy, False);
@@ -3318,9 +3326,9 @@ clientmessage(XEvent *e)
 				iconify(c);
 		} else if (message_type == _XA_NET_WM_DESKTOP ||
 			   message_type == _XA_WIN_WORKSPACE) {
-			int index = ev->data.l[0];
+			unsigned index = ev->data.l[0];
 
-			if (-1 <= index && index < scr->ntags)
+			if (index < scr->ntags)
 				if (c->can.tag)
 					tagonly(c, index);
 		} else if (message_type == _XA_NET_WM_DESKTOP_MASK ||
@@ -3332,7 +3340,7 @@ clientmessage(XEvent *e)
 
 			if (!c->can.tag)
 				return False;
-			if (0 > index || index >= num)
+			if (index >= num)
 				return False;
 			for (i = 0, j = index << 5; j < scr->ntags; i++, j++) {
 				if (c->tags & (1ULL << j))
@@ -3496,9 +3504,9 @@ clientmessage(XEvent *e)
 			ewmh_update_net_desktop_viewport();
 		} else if (message_type == _XA_NET_CURRENT_DESKTOP ||
 			   message_type == _XA_WIN_WORKSPACE) {
-			int tag = ev->data.l[0];
+			unsigned tag = ev->data.l[0];
 
-			if (0 <= tag && tag < scr->ntags)
+			if (tag < scr->ntags)
 				view(selview(), tag);
 		} else if (message_type == _XA_NET_SHOWING_DESKTOP) {
 			if (!ev->data.l[0] != !scr->options.showdesk)
@@ -3513,7 +3521,7 @@ clientmessage(XEvent *e)
 			/* TODO */
 		} else if (message_type == _XA_WM_PROTOCOLS) {
 			if (0) {
-			} else if (ev->data.l[0] == _XA_NET_WM_PING) {
+			} else if ((Atom) ev->data.l[0] == _XA_NET_WM_PING) {
 				if ((c = getmanaged(ev->data.l[2], ClientWindow))) {
 					c->is.pinging = 0;
 					c->is.killing = 0;
@@ -3521,7 +3529,7 @@ clientmessage(XEvent *e)
 			}
 		} else if (message_type == _XA_WM_COLORMAP_NOTIFY) {
 			if (ev->data.l[0])
-				; /* need timestamp, really */
+				{}; /* need timestamp, really */
 			if (ev->data.l[1] == 1)
 				scr->colormapnotified = True;
 			if (ev->data.l[1] == 0)
@@ -3844,7 +3852,7 @@ getclientid(Client *c)
 
 	if (((win = c->session) && gettextprop(win, _XA_SM_CLIENT_ID, &id)) ||
 	    ((win = c->transfor) && gettextprop(win, _XA_SM_CLIENT_ID, &id)) ||
-	    ((win = c->win) && gettextprop(win, _XA_SM_CLIENT_ID, &id))) ;
+	    ((win = c->win) && gettextprop(win, _XA_SM_CLIENT_ID, &id))) {};
 	return (id);
 }
 
@@ -3859,7 +3867,7 @@ getstartupid(Client *c)
 	    ((win = c->leader) && win != c->win &&
 	     gettextprop(win, _XA_NET_STARTUP_ID, &id)) ||
 	    ((win = c->session) && win != c->win &&
-	     gettextprop(win, _XA_NET_STARTUP_ID, &id))) ;
+	     gettextprop(win, _XA_NET_STARTUP_ID, &id))) {};
 	return (id);
 }
 
@@ -4108,7 +4116,8 @@ strut_overlap(long min1, long max1, long min2, long max2)
 int
 getstrut(Client *c, Atom atom)
 {
-	long *prop, dw, dh, strut;
+	long *prop, dw, dh;
+	unsigned long strut;
 	Monitor *m;
 	unsigned long n = 0;
 	struct {

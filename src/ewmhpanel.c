@@ -23,7 +23,7 @@ enum { Left, Right, Top, Bottom, LeftStartY, LeftEndY, RightStartY, RightEndY, T
 	    TopEndX, BotStartX, BotEndX };
 
 void
-setstruts(Bool autohide)
+setstruts()
 {
 	long *struts;
 	int x, y;
@@ -62,7 +62,7 @@ setstruts(Bool autohide)
 void
 setup()
 {
-	unsigned int i, j;
+	int i, j;
 	XModifierKeymap *modmap;
 	XSetWindowAttributes wa;
 
@@ -90,7 +90,7 @@ setup()
 			    DefaultDepth(dpy, screen), CopyFromParent,
 			    DefaultVisual(dpy, screen),
 			    CWOverrideRedirect | CWBackPixmap | CWEventMask, &wa);
-	setstruts(0);
+	setstruts();
 	XMapRaised(dpy, win);
 	XMoveWindow(dpy, win, mx, my);
 }
@@ -105,7 +105,7 @@ drawme()
 	XSetForeground(dpy, gc, BlackPixel(dpy, screen));
 	XSetBackground(dpy, gc, WhitePixel(dpy, screen));
 	XFillRectangles(dpy, win, gc, &r, 1);
-	setstruts(0);
+	setstruts();
 }
 
 void

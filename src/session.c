@@ -13,11 +13,16 @@ static Status
 new_client_cb(SmsConn smsConn, SmPointer data, unsigned long *mask, SmsCallbacks *cb, char **reason)
 {
 	/* FIXME: write this function */
+	(void) smsConn;
+	(void) data;
+	(void) mask;
+	(void) cb;
+	(void) reason;
 	return (0);
 }
 
 Bool
-hostbased_auth_cb(char *hostname)
+hostbased_auth_cb(char *hostname __attribute__((unused)))
 {
 	return (False);		/* refuse host based authentication */
 }
@@ -86,11 +91,13 @@ save_wmstate(void)
 static void
 save_client(AScreen *s, Client *c)
 {
+	(void) s;
+	(void) c;
 }
 
 /** @brief save yourself phase 2 callback
   *
-  * This is where all the work is donw in saving the state of the windows.  It
+  * This is where all the work is done in saving the state of the windows.  It
   * is not done in phase 1 because phase 1 is used for the other clients to make
   * sure that all the property information on their windows is correct and up to
   * date.
@@ -101,6 +108,7 @@ save_yourself_phase2_cb(SmcConn conn, SmPointer data)
 	AScreen *save_screen = scr;
 	Client *c;
 
+	(void) data;
 	/* Step 1: set all the of the WM's session management client properties */
 
 	/* Step 2: find out where to save, check SM_SAVE_DIR environment variable */
@@ -206,6 +214,12 @@ save_yourself_cb(SmcConn conn, SmPointer data, int saveType, Bool shutdown, int 
 	Client *c;
 	int i, saving_clients = 0;
 
+	(void) data;
+	(void) saveType;	/* XXX */
+	(void) shutdown;	/* XXX */
+	(void) interactStyle;	/* XXX */
+	(void) fast;		/* XXX */
+
 	for (i = 0, s = screens; i < nscr; i++, s++) {
 		for (c = s->clients; c; c = c->next) {
 			Atom *atoms;
@@ -248,6 +262,7 @@ save_yourself_cb(SmcConn conn, SmPointer data, int saveType, Bool shutdown, int 
 void
 die_cb(SmcConn conn, SmPointer data)
 {
+	(void) data;
 	SmcCloseConnection(conn, 0, NULL);
 	exit(EXIT_SUCCESS);
 }
@@ -256,11 +271,14 @@ void
 save_complete_cb(SmcConn conn, SmPointer data)
 {
 	/* doesn't really do anything */
+	(void) conn;
+	(void) data;
 }
 
 void
 shutdown_cancelled_cb(SmcConn conn, SmPointer data)
 {
+	(void) data;
 	if (!sent_save_done) {
 		SmcSaveYourselfDone(conn, False);
 		sent_save_done = True;

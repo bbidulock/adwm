@@ -61,11 +61,11 @@ static const struct {
 
 static KeyItem KeyItemsByAmt[] = {
 	/* *INDENT-OFF* */
-	{ "mwfact",		k_setmwfactor	 },
-	{ "nmaster",		k_setnmaster	 },
-	{ "ncolumns",		k_setncolumns	 },
-	{ "margin",		k_setmargin	 },
-	{ "border",		k_setborder	 }
+	{ "mwfact",	k_setmwfactor,		NULL },
+	{ "nmaster",	k_setnmaster,		NULL },
+	{ "ncolumns",	k_setncolumns,		NULL },
+	{ "margin",	k_setmargin,		NULL },
+	{ "border",	k_setborder,		NULL }
 	/* *INDENT-ON* */
 };
 
@@ -75,7 +75,7 @@ static const struct {
 } set_prefix[] = {
 	/* *INDENT-OFF* */
 	{ "",		SetFlagSetting	    },
-	{ "set",	SetFlagSetting	    },
+	{ "set",	SetFlagSetting,	    },
 	{ "un",		UnsetFlagSetting    },
 	{ "de",		UnsetFlagSetting    },
 	{ "unset",	UnsetFlagSetting    },
@@ -113,28 +113,28 @@ static const struct {
 
 static KeyItem KeyItemsByState[] = {
 	/* *INDENT-OFF* */
-	{ "floating",		k_setfloating	 },
-	{ "fill",		k_setfill	 },
-	{ "full",		k_setfull	 },
-	{ "max",		k_setmax	 },
-	{ "maxv",		k_setmaxv	 },
-	{ "maxh",		k_setmaxh	 },
-	{ "lhalf",		k_setlhalf	 },
-	{ "rhalf",		k_setrhalf	 },
-	{ "shade",		k_setshade	 },
-	{ "shaded",		k_setshade	 },
-	{ "hide",		k_sethidden	 },
-	{ "hidden",		k_sethidden	 },
-	{ "iconify",		k_setmin	 },
-	{ "min",		k_setmin	 },
-	{ "above",		k_setabove	 },
-	{ "below",		k_setbelow	 },
-	{ "pager",		k_setpager	 },
-	{ "taskbar",		k_settaskbar	 },
-	{ "showing",		k_setshowing	 },
-	{ "struts",		k_setstruts	 },
-	{ "dectiled",		k_setdectiled	 },
-	{ "sticky",		k_setsticky	 }
+	{ "floating",	k_setfloating,	NULL },
+	{ "fill",	k_setfill,	NULL },
+	{ "full",	k_setfull,	NULL },
+	{ "max",	k_setmax,	NULL },
+	{ "maxv",	k_setmaxv,	NULL },
+	{ "maxh",	k_setmaxh,	NULL },
+	{ "lhalf",	k_setlhalf,	NULL },
+	{ "rhalf",	k_setrhalf,	NULL },
+	{ "shade",	k_setshade,	NULL },
+	{ "shaded",	k_setshade,	NULL },
+	{ "hide",	k_sethidden,	NULL },
+	{ "hidden",	k_sethidden,	NULL },
+	{ "iconify",	k_setmin,	NULL },
+	{ "min",	k_setmin,	NULL },
+	{ "above",	k_setabove,	NULL },
+	{ "below",	k_setbelow,	NULL },
+	{ "pager",	k_setpager,	NULL },
+	{ "taskbar",	k_settaskbar,	NULL },
+	{ "showing",	k_setshowing,	NULL },
+	{ "struts",	k_setstruts,	NULL },
+	{ "dectiled",	k_setdectiled,	NULL },
+	{ "sticky",	k_setsticky,	NULL }
 	/* *INDENT-ON* */
 };
 
@@ -159,10 +159,10 @@ static const struct {
 
 static KeyItem KeyItemsByDir[] = {
 	/* *INDENT-OFF* */
-	{ "moveto",		k_moveto	}, /* arg is position */
-	{ "snapto",		k_snapto	}, /* arg is direction */
-	{ "edgeto",		k_edgeto	}, /* arg is direction */
-	{ "moveby",		k_moveby	}  /* arg is direction and amount */
+	{ "moveto",	k_moveto,	NULL }, /* arg is position */
+	{ "snapto",	k_snapto,	NULL }, /* arg is direction */
+	{ "edgeto",	k_edgeto,	NULL }, /* arg is direction */
+	{ "moveby",	k_moveby,	NULL }  /* arg is direction and amount */
 	/* *INDENT-ON* */
 };
 
@@ -217,14 +217,14 @@ static const struct {
 
 static KeyItem KeyItemsByList[] = {
 	/* *INDENT-OFF* */
-	{ "focus",	k_focus		},
-	{ "client",	k_client	},
-	{ "stack",	k_stack		},
-	{ "group",	k_group		},
-	{ "tab",	k_tab		},
-	{ "panel",	k_panel		},
-	{ "dock",	k_dock		},
-	{ "swap",	k_swap		}
+	{ "focus",	k_focus,	NULL },
+	{ "client",	k_client,	NULL },
+	{ "stack",	k_stack,	NULL },
+	{ "group",	k_group,	NULL },
+	{ "tab",	k_tab,		NULL },
+	{ "panel",	k_panel,	NULL },
+	{ "dock",	k_dock,		NULL },
+	{ "swap",	k_swap,		NULL }
 	/* *INDENT-ON* */
 };
 
@@ -255,13 +255,13 @@ static const struct {
 
 static KeyItem KeyItemsByTag[] = {
 	/* *INDENT-OFF* */
-	{"view",	k_view		},
-	{"toggleview",	k_toggleview	},
-	{"focusview",	k_focusview	},
-	{"tag",		k_tag		},
-	{"toggletag",	k_toggletag	},
-	{"taketo",	k_taketo	},
-	{"sendto",	k_sendto	}
+	{"view",	k_view,		NULL },
+	{"toggleview",	k_toggleview,	NULL },
+	{"focusview",	k_focusview,	NULL },
+	{"tag",		k_tag,		NULL },
+	{"toggletag",	k_toggletag,	NULL },
+	{"taketo",	k_taketo,	NULL },
+	{"sendto",	k_sendto,	NULL }
 	/* *INDENT-ON* */
 };
 
@@ -599,7 +599,7 @@ freekeys(void)
 }
 
 void
-initkeys(Bool reload)
+initkeys(Bool reload __attribute__((unused)))
 {
 	unsigned int i, j, l;
 	const char *res;
@@ -1021,7 +1021,7 @@ parserule(const char *s, Rule *r)
 static void
 compileregs(void)
 {
-	unsigned int i;
+	int i;
 	regex_t *reg;
 
 	for (i = 0; i < nrules; i++) {
@@ -1068,7 +1068,7 @@ freerules(void)
 }
 
 void
-initrules(Bool reload)
+initrules(Bool reload __attribute__((unused)))
 {
 	int i;
 	char t[64];

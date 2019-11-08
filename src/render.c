@@ -40,7 +40,7 @@ render_removepixmap(AdwmPixmap *p)
 
 #ifdef JUSTRENDER
 static Bool
-createicon_bitmap(AScreen *ds, Client *c, Pixmap draw, Pixmap mask, unsigned w, unsigned h, Bool cropscale)
+createicon_bitmap(AScreen *ds, Client *c, Pixmap draw, Pixmap mask, unsigned w, unsigned h, Bool cropscale __attribute__((unused)))
 {
 	ButtonImage **bis, *bi;
 	AdwmPixmap *px;
@@ -201,7 +201,7 @@ createicon_bitmap(AScreen *ds, Client *c, XImage *xdraw, XImage *xmask, Bool cro
 
 #ifdef JUSTRENDER
 static Bool
-createicon_pixmap(AScreen *ds, Client *c, Pixmap draw, Pixmap mask, unsigned w, unsigned h, unsigned d, Bool cropscale)
+createicon_pixmap(AScreen *ds, Client *c, Pixmap draw, Pixmap mask, unsigned w, unsigned h, unsigned d, Bool cropscale __attribute__((unused)))
 {
 	ButtonImage **bis, *bi;
 	AdwmPixmap *px;
@@ -301,7 +301,7 @@ createicon_pixmap(AScreen *ds, Client *c, Pixmap draw, Pixmap mask, unsigned w, 
 }
 #else				/* JUSTRENDER */
 static Bool
-createicon_pixmap(AScreen *ds, Client *c, XImage *xdraw, XImage *xmask, Bool cropscale)
+createicon_pixmap(AScreen *ds, Client *c, XImage *xdraw, XImage *xmask, Bool cropscale __attribute__((unused)))
 {
 	XImage *ximage = NULL;
 	ButtonImage **bis, *bi;
@@ -606,7 +606,7 @@ render_createdataicon(AScreen *ds, Client *c, unsigned w, unsigned h, long *data
 	XImage *ximage = NULL;
 	ButtonImage *bi, **bis;
 	AdwmPixmap *px;
-	unsigned i, j, th = titleheight(ds);
+	int i, j, th = titleheight(ds);
 	long *p;
 	Pixmap draw = None;
 	Picture pict = None;
@@ -792,6 +792,9 @@ render_createjpgicon(AScreen *ds, Client *c, const char *file)
 {
 	EPRINTF("would use RENDER to create JPG icon %s\n", file);
 	/* for now */
+	(void) ds;
+	(void) c;
+	(void) file;
 	return (False);
 }
 
@@ -800,6 +803,9 @@ render_createsvgicon(AScreen *ds, Client *c, const char *file)
 {
 	EPRINTF("would use RENDER to create SVG icon %s\n", file);
 	/* for now */
+	(void) ds;
+	(void) c;
+	(void) file;
 	return (False);
 }
 
@@ -919,8 +925,10 @@ render_createxbmicon(AScreen *ds, Client *c, const char *file)
 
 #ifdef DAMAGE
 Bool
-render_drawdamage(Client *c, XDamageNotifyEvent * ev)
+render_drawdamage(Client *c, XDamageNotifyEvent *ev)
 {
+	(void) c;
+	(void) ev;
 	return (False);
 }
 #endif
@@ -945,7 +953,7 @@ render_drawbutton(AScreen *ds, Client *c, ElementType type, XftColor *col, int x
 	/* geometry of the container */
 	g.x = x;
 	g.y = 0;
-	g.w = max(th, px->w);
+	g.w = max(th, (int) px->w);
 	g.h = th;
 
 	/* element client geometry used to detect element under pointer */
@@ -997,6 +1005,7 @@ render_drawtext(AScreen *ds, const char *text, Drawable drawable, XftDraw *xftdr
 	int drop = ds->style.drop[hilite];
 	Picture src, dst;
 
+	(void) drawable;	/* XXX */
 	if (!text)
 		return 0;
 	olen = len = strlen(text);
@@ -1048,6 +1057,12 @@ render_drawsep(AScreen *ds, const char *text, Drawable drawable, XftDraw *xftdra
 {
 	Geometry g;
 	int b, th = titleheight(ds);
+
+	(void) text;		/* XXX */
+	(void) drawable;	/* XXX */
+	(void) xftdraw;		/* XXX */
+	(void) hilite;		/* XXX */
+	(void) y;		/* XXX */
 
 	g.x = x + th / 4;
 	g.y = 0;
@@ -1158,7 +1173,7 @@ render_drawnormal(AScreen *ds, Client *c)
 	}
 
 	/* Don't know about this... */
-	if (ds->dc.w < textw(ds, c->name, gethilite(c))) {
+	if (ds->dc.w < (int) textw(ds, c->name, gethilite(c))) {
 		ds->dc.w -= elementw(ds, c, CloseBtn);
 		render_drawtext(ds, c->name, dst, ds->dc.draw.xft, gethues(ds, c), gethilite(c), ds->dc.x, ds->dc.y, ds->dc.w);
 		render_drawbutton(ds, c, CloseBtn, gethues(ds, c), ds->dc.w);
@@ -1307,12 +1322,16 @@ render_initpng(char *path, AdwmPixmap *px)
 Bool
 render_initjpg(char *path, AdwmPixmap *px)
 {
+	(void) path;
+	(void) px;
 	return (False);
 }
 
 Bool
 render_initsvg(char *path, AdwmPixmap *px)
 {
+	(void) path;
+	(void) px;
 	return (False);
 }
 

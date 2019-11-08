@@ -762,6 +762,9 @@ xlib_createpngicon(AScreen *ds, Client *c, const char *file)
 {
 	EPRINTF("would use XLIB to create PNG icon %s\n", file);
 	/* for now */
+	(void) ds;
+	(void) c;
+	(void) file;
 	return (False);
 }
 
@@ -770,6 +773,9 @@ xlib_createjpgicon(AScreen *ds, Client *c, const char *file)
 {
 	EPRINTF("would use XLIB to create JPG icon %s\n", file);
 	/* for now */
+	(void) ds;
+	(void) c;
+	(void) file;
 	return (False);
 }
 
@@ -778,6 +784,9 @@ xlib_createsvgicon(AScreen *ds, Client *c, const char *file)
 {
 	EPRINTF("would use XLIB to create SVG icon %s\n", file);
 	/* for now */
+	(void) ds;
+	(void) c;
+	(void) file;
 	return (False);
 }
 
@@ -786,6 +795,9 @@ xlib_createxpmicon(AScreen *ds, Client *c, const char *file)
 {
 	EPRINTF("would use XLIB to create XPM icon %s\n", file);
 	/* for now */
+	(void) ds;
+	(void) c;
+	(void) file;
 	return (False);
 }
 
@@ -794,13 +806,18 @@ xlib_createxbmicon(AScreen *ds, Client *c, const char *file)
 {
 	EPRINTF("would use XLIB to create XBM icon %s\n", file);
 	/* for now */
+	(void) ds;
+	(void) c;
+	(void) file;
 	return (False);
 }
 
 #ifdef DAMAGE
 Bool
-xlib_drawdamage(Client *c, XDamageNotifyEvent * ev)
+xlib_drawdamage(Client *c, XDamageNotifyEvent *ev)
 {
+	(void) c;
+	(void) ev;
 	return (False);
 }
 #endif
@@ -828,7 +845,7 @@ xlib_drawbutton(AScreen *ds, Client *c, ElementType type, XftColor *col, int x)
 	/* geometry of the container */
 	g.x = x;
 	g.y = 0;
-	g.w = max(th, px->w);
+	g.w = max(th, (int) px->w);
 	g.h = th;
 
 	/* element client geometry used to detect element under pointer */
@@ -1060,6 +1077,12 @@ xlib_drawsep(AScreen *ds, const char *text, Drawable drawable, XftDraw *xftdraw,
 	int th;
 	Geometry g;
 
+	(void) text;		/* XXX */
+	(void) xftdraw;		/* XXX */
+	(void) hilite;		/* XXX */
+	(void) y;		/* XXX */
+	(void) mw;		/* XXX */
+
 	th = ds->dc.h;
 	if (ds->style.outline)
 		th--;
@@ -1189,7 +1212,7 @@ xlib_drawnormal(AScreen *ds, Client *c)
 	if (!status)
 		XPRINTF("Could not fill rectangle, error %d\n", status);
 	/* Don't know about this... */
-	if (ds->dc.w < textw(ds, c->name, gethilite(c))) {
+	if (ds->dc.w < (int) textw(ds, c->name, gethilite(c))) {
 		ds->dc.w -= elementw(ds, c, CloseBtn);
 		xlib_drawtext(ds, c->name, ds->dc.draw.pixmap, ds->dc.draw.xft,
 				gethues(ds, c), gethilite(c), ds->dc.x, ds->dc.y, ds->dc.w);
@@ -1273,18 +1296,24 @@ xlib_drawnormal(AScreen *ds, Client *c)
 Bool
 xlib_initpng(char *path, AdwmPixmap *px)
 {
+	(void) path;
+	(void) px;
 	return (False);
 }
 
 Bool
 xlib_initjpg(char *path, AdwmPixmap *px)
 {
+	(void) path;
+	(void) px;
 	return (False);
 }
 
 Bool
 xlib_initsvg(char *path, AdwmPixmap *px)
 {
+	(void) path;
+	(void) px;
 	return (False);
 }
 
@@ -1328,7 +1357,7 @@ xlib_initxpm(char *path, AdwmPixmap *px)
 	px->w = w;
 	px->h = h;
 	XPRINTF("%s pixmap geometry is %dx%dx%d+%d+%d\n", path, px->w, px->h, scr->depth, px->x, px->y);
-	if (px->h > scr->style.titleheight) {
+	if (px->h > (unsigned) scr->style.titleheight) {
 		/* read lower down into image to clip top and bottom by same amount */
 		px->y += (px->h - scr->style.titleheight) / 2;
 		px->h = scr->style.titleheight;
@@ -1368,7 +1397,7 @@ xlib_initxbm(char *path, AdwmPixmap *px)
 	px->bitmap.mask = None;
 	/* don't care about hostspot: not a cursor */
 	px->x = px->y = px->b = 0;
-	if (px->h > scr->style.titleheight) {
+	if (px->h > (unsigned) scr->style.titleheight) {
 		/* read lower down into image to clip top and bottom by same amount */
 		px->y += (px->h - scr->style.titleheight) / 2;
 		px->h = scr->style.titleheight;
@@ -1400,7 +1429,7 @@ xlib_initxbmdata(const unsigned char *bits, int w, int h, AdwmPixmap *px)
 	px->x = px->y = px->b = 0;
 	px->w = w;
 	px->h = h;
-	if (px->h > scr->style.titleheight) {
+	if (px->h > (unsigned) scr->style.titleheight) {
 		/* read lower down into image to clip top and bottom by same amount */
 		px->y += (px->h - scr->style.titleheight) / 2;
 		px->h = scr->style.titleheight;

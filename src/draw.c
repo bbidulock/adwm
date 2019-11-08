@@ -247,7 +247,7 @@ createkwmicon(Client *c, Pixmap *data, unsigned long n)
 			break;
 	}
 	for (hdiff = -1U, dbest = 0, best = NULL, i = 0; i < m; i++) {
-		if (icons[i].h <= scr->style.titleheight)
+		if (icons[i].h <= (unsigned) scr->style.titleheight)
 			b = scr->style.titleheight - icons[i].h;
 		else
 			b = icons[i].h - scr->style.titleheight;
@@ -302,7 +302,7 @@ createneticon(Client *c, long *data, unsigned long n)
 		icons[m].icon = icon + 2;
 	}
 	for (hdiff = -1U, best = NULL, i = 0; i < m; i++) {
-		if (icons[i].h <= scr->style.titleheight)
+		if (icons[i].h <= (unsigned) scr->style.titleheight)
 			d = scr->style.titleheight - icons[i].h;
 		else
 			d = icons[i].h - scr->style.titleheight;
@@ -666,7 +666,7 @@ elementw(AScreen *ds, Client *c, char which)
 		return 0;
 
 	switch (type) {
-		unsigned int j;
+		unsigned j;
 
 	case TitleTags:
 		for (j = 0; j < ds->ntags; j++) {
@@ -706,6 +706,9 @@ drawelement(AScreen *ds, char which, int x, int position, Client *c)
 	ElementType type = elementtype(which);
 	ElementClient *ec = &c->element[type];
 
+	(void) x;		/* XXX */
+	(void) position;	/* XXX */
+
 	if (0 > type || type >= LastElement)
 		return 0;
 
@@ -720,8 +723,8 @@ drawelement(AScreen *ds, char which, int x, int position, Client *c)
 	ec->eg.b = 0;		/* later */
 
 	switch (type) {
-		unsigned int j;
 		int x, tw;
+		unsigned j;
 
 	case TitleTags:
 		for (j = 0, x = ds->dc.x; j < ds->ntags; j++, w += tw, x += tw)
@@ -767,7 +770,7 @@ drawclient(Client *c)
 	}
 	if (c == sel && !ds->colormapnotified)
 		installcolormaps(ds, c, c->cmapwins);
-	setopacity(c, (c == sel) ? OPAQUE : ds->style.opacity);
+	setopacity(c, (c == sel) ? OPAQUE : (unsigned) ds->style.opacity);
 	if (!isvisible(c, NULL))
 		return;
 	if (c->is.dockapp)
@@ -1114,7 +1117,7 @@ freestyle()
 }
 
 void
-initstyle(Bool reload)
+initstyle(Bool reload __attribute__((unused)))
 {
 	Client *c;
 

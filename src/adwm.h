@@ -851,7 +851,8 @@ typedef struct {
 
 /* typedefs */
 typedef struct {
-	int x, y, w, h, b, g, n, s, th;
+	int x, y;
+	unsigned w, h, b, g, n, s, th;
 } LayoutArgs;
 
 typedef struct {
@@ -889,7 +890,7 @@ struct Monitor {
 		DockPosition position;
 		DockOrient orient;
 	} dock;
-	int row, col;			/* row and column in monitor layout */
+	unsigned row, col;		/* row and column in monitor layout */
 	PointerBarrier bars[8];
 };
 
@@ -1177,8 +1178,8 @@ struct Group {
 struct View {
 	StrutsPosition barpos;		/* show struts? */
 	Bool dectiled;			/* decorate tiled? */
-	int nmaster;
-	int ncolumns;
+	unsigned nmaster;
+	unsigned ncolumns;
 	double mwfact;			/* master width factor */
 	double mhfact;			/* master height factor */
 	LayoutOrientation major;	/* overall orientation */
@@ -1189,7 +1190,7 @@ struct View {
 	Node *tree;			/* layout tree */
 	int index;
 	unsigned long long seltags;	/* tags selected for this view */
-	int row, col;			/* row and column in desktop layout */
+	unsigned row, col;		/* row and column in desktop layout */
 	Bool needarrange;		/* need to be rearranged */
 	Client *lastsel;		/* last selected client for view */
 	Time strut_time;		/* time that we entered a strut */
@@ -1330,13 +1331,13 @@ typedef struct {
 } DC;					/* draw context */
 
 typedef struct {
-	int border;
-	int margin;
-	int outline;
-	int spacing;
-	int titleheight;
-	int gripsheight;
-	int gripswidth;
+	unsigned border;
+	unsigned margin;
+	unsigned outline;
+	unsigned spacing;
+	unsigned titleheight;
+	unsigned gripsheight;
+	unsigned gripswidth;
 	Bool fullgrips;
 	int opacity;
 	char titlelayout[32];
@@ -1413,11 +1414,11 @@ typedef struct {
 	int dragdist;
 	double mwfact;
 	double mhfact;
-	int nmaster;
-	int ncolumns;
+	unsigned nmaster;
+	unsigned ncolumns;
 	char deflayout;
 	WindowPlacement placement;
-	int ntags;
+	unsigned ntags;
 	/* the following should probably be in theme file */
 	const char *prependdirs; /* directories to prepend to icon search paths */
 	const char *appenddirs;	 /* directories to append to icon search paths */
@@ -1431,14 +1432,14 @@ struct AScreen {
 	Window selwin;
 	Client *clients;
 	Monitor *monitors;
-	int last;
-	int nmons;
+	unsigned last;
+	unsigned nmons;
 	Client *stack;
 	Client *clist;			/* client list in creation order */
 	Client *flist;			/* client list in last focus order */
 	Client *alist;			/* client list in last active order */
 	int screen;
-	int ntags;
+	unsigned ntags;
 	struct {
 		Container *tree;	/* only one dock per screen for now... */
 		Monitor *monitor;	/* monitor on which dock appears */
@@ -1448,11 +1449,11 @@ struct AScreen {
 	Key *keylist;
 	struct {
 		int orient;		/* orientation */
-		int rows, cols;		/* rows and cols (one can be zero) */
+		unsigned rows, cols;		/* rows and cols (one can be zero) */
 		int start;		/* starting corner */
 	} layout;
 	struct {
-		int rows, cols;		/* rows and cols in desk/monitor layout */
+		unsigned rows, cols;	/* rows and cols in desk/monitor layout */
 	} d, m;
 	int sh, sw;
 	Bool colormapnotified;
@@ -1582,12 +1583,12 @@ void hideall(View *v);
 void iconify(Client *c);
 void iconifyall(View *v);
 
-void setborder(int px);
-void incborder(int px);
-void decborder(int px);
-void setmargin(int px);
-void incmargin(int px);
-void decmargin(int px);
+void setborder(unsigned px);
+void incborder(unsigned px);
+void decborder(unsigned px);
+void setmargin(unsigned px);
+void incmargin(unsigned px);
+void decmargin(unsigned px);
 Client *findfocus(Client *not);
 Client *findselect(Client *not);
 void focus(Client *c);

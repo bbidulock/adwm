@@ -12,7 +12,7 @@ Options options;
 AdwmPlaces config = { NULL, };
 
 void
-inittags(Bool reload)
+inittags(Bool reload __attribute__((unused)))
 {
 	unsigned i;
 
@@ -191,10 +191,10 @@ initviews(Bool reload)
 			?  atoi(res) : scr->options.dectiled;
 		snprintf(resource, sizeof(resource), "view%u.nmaster", i);
 		v->nmaster = (res = getscreenres(resource, NULL))
-			? atoi(res) : scr->options.nmaster;
+			? (unsigned) atoi(res) : scr->options.nmaster;
 		snprintf(resource, sizeof(resource), "view%u.ncolumns", i);
 		v->ncolumns = (res = getscreenres(resource, NULL))
-			? atoi(res) : scr->options.ncolumns;
+			? (unsigned) atoi(res) : scr->options.ncolumns;
 		snprintf(resource, sizeof(resource), "view%u.mwfact", i);
 		v->mwfact = (res = getscreenres(resource, NULL))
 			? atof(res) : scr->options.mwfact;
@@ -203,17 +203,17 @@ initviews(Bool reload)
 			? atof(res) : scr->options.mhfact;
 		snprintf(resource, sizeof(resource), "view%u.major", i);
 		v->major = (res = getscreenres(resource, NULL))
-			? atoi(res) : l->major;
+			? (LayoutOrientation) atoi(res) : l->major;
 		if (v->major < OrientLeft || v->major > OrientBottom)
 			v->major = l->major;
 		snprintf(resource, sizeof(resource), "view%u.minor", i);
 		v->minor = (res = getscreenres(resource, NULL))
-			? atoi(res) : l->minor;
+			? (LayoutOrientation) atoi(res) : l->minor;
 		if (v->minor < OrientLeft || v->minor > OrientBottom)
 			v->minor = l->minor;
 		snprintf(resource, sizeof(resource), "view%u.placement", i);
 		v->placement = (res = getscreenres(resource, NULL))
-			? atoi(res) : scr->options.placement;
+			? (WindowPlacement) atoi(res) : scr->options.placement;
 		if (v->placement < ColSmartPlacement || v->placement > RandomPlacement)
 			v->placement = scr->options.placement;
 		v->index = i;
@@ -250,7 +250,7 @@ initviews(Bool reload)
 }
 
 void
-initscreen(Bool reload)
+initscreen(Bool reload __attribute__((unused)))
 {
 	const char *res;
 
@@ -324,7 +324,7 @@ initscreen(Bool reload)
 }
 
 void
-initconfig(Bool reload)
+initconfig(Bool reload __attribute__((unused)))
 {
 	const char *res;
 
@@ -916,7 +916,7 @@ initthemefile(void)
 }
 
 static void
-initrcdirs(const char *conf, Bool reload)
+initrcdirs(const char *conf, Bool reload __attribute__((unused)))
 {
 	int i, len;
 
@@ -986,7 +986,7 @@ initrcdirs(const char *conf, Bool reload)
 }
 
 void
-initrcfile(const char *conf, Bool reload)
+initrcfile(const char *conf __attribute__((unused)), Bool reload)
 {
 	const char *file = NULL;
 	char *rcfile, *dir;

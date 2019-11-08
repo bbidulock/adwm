@@ -25,13 +25,12 @@ static void pgradient(const Texture *t, const unsigned width, const unsigned hei
 static void rgradient(const Texture *t, const unsigned width, const unsigned height,
 		      ARGB *data, unsigned char alpha);
 static void pcgradient(const Texture *t, const unsigned width, const unsigned height,
-		       ARGB *data, unsigned char alpha);
+		       ARGB *data);
 static void egradient(const Texture *t, const unsigned width, const unsigned height,
 		      ARGB *data, unsigned char alpha);
 
 #if !defined(IMLIB2) || !defined(USE_IMLIB2)
-static void interlace(const Texture *t, const unsigned width, const unsigned height,
-		      ARGB *data);
+static void interlace(const unsigned width, const unsigned height, ARGB *data);
 static void border(const Texture *t, const unsigned width, const unsigned height,
 		   ARGB *data);
 static void raised(const Texture *t, const unsigned width, const unsigned height,
@@ -50,7 +49,7 @@ static void sunken(const Texture *t, const unsigned width, const unsigned height
  */
 
 static void
-mirrorpoints(ARGB *data, const unsigned h, const unsigned width, const unsigned height)
+mirrorpoints(ARGB *data, const unsigned h, const unsigned width)
 {
 	register unsigned x;
 	register ARGB *xp, *p;
@@ -66,7 +65,7 @@ mirrorpoints(ARGB *data, const unsigned h, const unsigned width, const unsigned 
 }
 
 static void
-reflectpoints(ARGB *data, const unsigned w, const unsigned width, const unsigned height)
+reflectpoints(ARGB *data, const unsigned width, const unsigned height)
 {
 	register unsigned y;
 	register const ARGB *yp;
@@ -85,9 +84,9 @@ static void
 wheelpoints(ARGB *data, const unsigned width, const unsigned height)
 {
 	/* mirror quadrant I into IV */
-	mirrorpoints(data, (height + 1) / 2, width, height);
+	mirrorpoints(data, (height + 1) / 2, width);
 	/* reflect top half into bottom half */
-	reflectpoints(data, width, width, height);
+	reflectpoints(data, width, height);
 }
 
 #if !defined(IMLIB2) || !defined(USE_IMLIB2)
@@ -106,7 +105,7 @@ solid(const Texture *t, const unsigned width, const unsigned height, ARGB *data,
       const unsigned char alpha)
 {
 	ARGB *p = data;
-	int i, j;
+	unsigned i, j;
 
 	const unsigned char r = t->color.red;
 	const unsigned char g = t->color.green;
@@ -699,8 +698,7 @@ rgradient(const Texture *t, const unsigned width, const unsigned height, ARGB *d
 }
 
 static void
-pcgradient(const Texture *t, const unsigned width, const unsigned height, ARGB *data,
-	   unsigned char alpha)
+pcgradient(const Texture *t, const unsigned width, const unsigned height, ARGB *data)
 {
 	/* pipe cross gradient - based on original dgradient, written by Mosfet
 	   (mosfet@kde.org) adapted from kde sources for Blackbox by Brad Hughes */
@@ -992,7 +990,7 @@ render(AScreen *ds, Drawable d, Texture *t, int x, int y, unsigned w, unsigned h
 		cdgradient(t, w, h, data, alpha);
 		break;
 	case GradientPipeCross:
-		pcgradient(t, w, h, data, alpha);
+		pcgradient(t, w, h, data);
 		break;
 	case GradientSplitVertical:
 		svgradient(t, w, h, data, alpha);
@@ -1075,7 +1073,7 @@ lowerpoint(ARGB *p)
 }
 
 static void
-interlace(const Texture *t, const unsigned width, const unsigned height, ARGB *data)
+interlace(const unsigned width, const unsigned height, ARGB *data)
 {
 	register unsigned i, j;
 	register ARGB *p;
@@ -1088,7 +1086,8 @@ interlace(const Texture *t, const unsigned width, const unsigned height, ARGB *d
 static void
 border(const Texture *t, const unsigned width, const unsigned height, ARGB *data)
 {
-	int i, j, x, y, w, h, l;
+	unsigned i, j, w, h, l;
+	int x, y;
 
 	const unsigned char r = t->borderColor.red;
 	const unsigned char g = t->borderColor.green;
@@ -1132,7 +1131,8 @@ border(const Texture *t, const unsigned width, const unsigned height, ARGB *data
 static void
 raised(const Texture *t, const unsigned width, const unsigned height, ARGB *data)
 {
-	int i, j, x, y, w, h, l;
+	unsigned i, j, w, h, l;
+	int x, y;
 
 	switch (t->appearance.bevel) {
 	case Bevel1:
@@ -1174,7 +1174,8 @@ raised(const Texture *t, const unsigned width, const unsigned height, ARGB *data
 static void
 sunken(const Texture *t, const unsigned width, const unsigned height, ARGB *data)
 {
-	int i, j, x, y, w, h, l;
+	unsigned i, j, w, h, l;
+	int x, y;
 
 	switch (t->appearance.bevel) {
 	case Bevel1:
@@ -1369,7 +1370,7 @@ drawpipecross(const Texture *t, const unsigned width, const unsigned height,
 	ARGB *data;
 
 	data = ecalloc(width * height, sizeof(*data));
-	pcgradient(t, width, height, data, alpha);
+	pcgradient(t, width, height, data);
 	buffer = imlib_create_image_using_data(width, height, (DATA32 *) data);
 	imlib_context_set_operation(IMLIB_OP_COPY);
 	imlib_blend_image_onto_image(buffer, False, 0, 0, width, height, 0, 0, width,
@@ -1721,7 +1722,7 @@ drawpattern(const Texture *t, unsigned width, unsigned height, const unsigned ch
 			pgradient(t, width, height, data, alpha);
 			break;
 		case GradientPipeCross:
-			pcgradient(t, width, height, data, alpha);
+			pcgradient(t, width, height, data);
 			break;
 		case GradientElliptic:
 			egradient(t, width, height, data, alpha);
@@ -1744,7 +1745,7 @@ drawpattern(const Texture *t, unsigned width, unsigned height, const unsigned ch
 	}
 
 	if (t->appearance.interlaced)
-		interlace(t, width, height, data);
+		interlace(width, height, data);
 
 	switch (t->appearance.relief) {
 	case ReliefFlat:
@@ -1833,7 +1834,7 @@ drawpattern(const Texture *t, const unsigned width, const unsigned height, ARGB 
 			pgradient(t, width, height, data, alpha);
 			break;
 		case GradientPipeCross:
-			pcgradient(t, width, height, data, alpha);
+			pcgradient(t, width, height, data);
 			break;
 		case GradientElliptic:
 			egradient(t, width, height, data, alpha);
@@ -1855,7 +1856,7 @@ drawpattern(const Texture *t, const unsigned width, const unsigned height, ARGB 
 	}
 
 	if (t->appearance.interlaced)
-		interlace(t, width, height, data);
+		interlace(width, height, data);
 
 	switch (t->appearance.relief) {
 	case ReliefFlat:
@@ -1876,6 +1877,14 @@ void
 rendertexture(const AScreen *ds, const Texture *t, const Drawable d, const int x,
 	      const int y, const unsigned width, const unsigned height)
 {
+	/* for now */
+	(void) ds;
+	(void) t;
+	(void) d;
+	(void) x;
+	(void) y;
+	(void) width;
+	(void) height;
 }
 
 void

@@ -149,7 +149,7 @@ toggleview(View *cv, int index)
 	   this has now been moved to the view.  We don't care if there exists views that
 	   have no selected tag because they can still be assigned to a monitor and tags
 	   toggled from there. */
-	if (-1 > index || index >= scr->ntags)
+	if (-1 > index || index >= (int) scr->ntags)
 		return;
 	tags = (index == -1) ? ((1ULL << scr->ntags) - 1) : (1ULL << index);
 	cv->seltags ^= tags;
@@ -169,7 +169,7 @@ focusview(View *v, int index)
 	unsigned long long tags;
 	Client *c;
 
-	if (-1 > index || index >= scr->ntags)
+	if (-1 > index || index >= (int) scr->ntags)
 		return;
 	tags = (index == -1) ? ((1ULL << scr->ntags) - 1) : (1ULL << index);
 	if (!(v->seltags & tags))
@@ -192,7 +192,7 @@ view(View *ov, int index)
 		EPRINTF("Null view pointer.\n");
 		return;
 	}
-	if (0 > index || index >= scr->ntags) {
+	if (0 > index || index >= (int) scr->ntags) {
 		XPRINTF("WARNING: bad index %d\n", index);
 		return;
 	}
@@ -279,7 +279,7 @@ static void
 viewright(View *v)
 {
 	/* wrap around: TODO: do full _NET_DESKTOP_LAYOUT */
-	if (v->index == scr->ntags - 1)
+	if (v->index == (int) scr->ntags - 1)
 		view(v, 0);
 	else
 		view(v, v->index + 1);
@@ -354,7 +354,7 @@ deltag(void)
 {
 	Client *c;
 	unsigned long long tags;
-	unsigned int last;
+	int last;
 	View *v;
 
 	if (!(v = selview()) || !v->curmon)

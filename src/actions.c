@@ -14,21 +14,21 @@ m_move(Client *c, XEvent *e)
 }
 
 Bool
-m_restack(Client *c, XEvent *e)
+m_restack(Client *c, XEvent *e __attribute__((unused)))
 {
 	raiselower(c);
 	return True;
 }
 
 Bool
-m_nexttag(Client *c, XEvent *e)
+m_nexttag(Client *c __attribute__((unused)), XEvent *e __attribute__((unused)))
 {
 	viewrighttag();
 	return True;
 }
 
 Bool
-m_prevtag(Client *c, XEvent *e)
+m_prevtag(Client *c __attribute__((unused)), XEvent *e __attribute__((unused)))
 {
 	viewlefttag();
 	return True;
@@ -42,7 +42,7 @@ m_resize(Client *c, XEvent *e)
 }
 
 Bool
-m_shade(Client *c, XEvent *e)
+m_shade(Client *c, XEvent *e __attribute__((unused)))
 {
 	if (!c->is.shaded)
 		toggleshade(c);
@@ -50,7 +50,7 @@ m_shade(Client *c, XEvent *e)
 }
 
 Bool
-m_unshade(Client *c, XEvent *e)
+m_unshade(Client *c, XEvent *e __attribute__((unused)))
 {
 	if (c->is.shaded)
 		toggleshade(c);
@@ -58,42 +58,42 @@ m_unshade(Client *c, XEvent *e)
 }
 
 Bool
-m_spawn(Client *c, XEvent *e)
+m_spawn(Client *c __attribute__((unused)), XEvent *e __attribute__((unused)))
 {
 	spawn(scr->options.command);
 	return True;
 }
 
 Bool
-m_spawn2(Client *c, XEvent *e)
+m_spawn2(Client *c __attribute__((unused)), XEvent *e __attribute__((unused)))
 {
 	spawn(scr->options.command2);
 	return True;
 }
 
 Bool
-m_spawn3(Client *c, XEvent *e)
+m_spawn3(Client *c __attribute__((unused)), XEvent *e __attribute__((unused)))
 {
 	spawn(scr->options.command3);
 	return True;
 }
 
 Bool
-m_zoom(Client *c, XEvent *e)
+m_zoom(Client *c, XEvent *e __attribute__((unused)))
 {
 	zoomfloat(c);
 	return True;
 }
 
 Bool
-b_menu(Client *c, XEvent *ev)
+b_menu(Client *c __attribute__((unused)), XEvent *ev __attribute__((unused)))
 {
 	spawn(scr->options.menucommand);
 	return True;
 }
 
 Bool
-b_iconify(Client *c, XEvent *ev)
+b_iconify(Client *c, XEvent *ev __attribute__((unused)))
 {
 	if (c->can.min)
 		iconify(c);
@@ -101,7 +101,7 @@ b_iconify(Client *c, XEvent *ev)
 }
 
 Bool
-b_hide(Client *c, XEvent *ev)
+b_hide(Client *c, XEvent *ev __attribute__((unused)))
 {
 	if (c->can.min)
 		iconify(c);	/* reserved for hide window */
@@ -109,7 +109,7 @@ b_hide(Client *c, XEvent *ev)
 }
 
 Bool
-b_withdraw(Client *c, XEvent *ev)
+b_withdraw(Client *c, XEvent *ev __attribute__((unused)))
 {
 	if (c->can.min)
 		iconify(c);	/* reserved for withdraw window */
@@ -117,7 +117,7 @@ b_withdraw(Client *c, XEvent *ev)
 }
 
 Bool
-b_maxb(Client *c, XEvent *ev)
+b_maxb(Client *c, XEvent *ev __attribute__((unused)))
 {
 	if (c->can.max || (c->can.size && c->can.move))
 		togglemax(c);
@@ -125,7 +125,7 @@ b_maxb(Client *c, XEvent *ev)
 }
 
 Bool
-b_maxv(Client *c, XEvent *ev)
+b_maxv(Client *c, XEvent *ev __attribute__((unused)))
 {
 	if (c->can.maxv || ((c->can.size || c->can.sizev) && c->can.move))
 		togglemaxv(c);
@@ -133,7 +133,7 @@ b_maxv(Client *c, XEvent *ev)
 }
 
 Bool
-b_maxh(Client *c, XEvent *ev)
+b_maxh(Client *c, XEvent *ev __attribute__((unused)))
 {
 	if (c->can.maxh || ((c->can.size || c->can.sizeh) && c->can.move))
 		togglemaxh(c);
@@ -141,7 +141,7 @@ b_maxh(Client *c, XEvent *ev)
 }
 
 Bool
-b_close(Client *c, XEvent *ev)
+b_close(Client *c, XEvent *ev __attribute__((unused)))
 {
 	if (c->can.close)
 		killclient(c);
@@ -149,7 +149,7 @@ b_close(Client *c, XEvent *ev)
 }
 
 Bool
-b_kill(Client *c, XEvent *ev)
+b_kill(Client *c, XEvent *ev __attribute__((unused)))
 {
 	if (c->can.close)
 		killproc(c);
@@ -157,7 +157,7 @@ b_kill(Client *c, XEvent *ev)
 }
 
 Bool
-b_xkill(Client *c, XEvent *ev)
+b_xkill(Client *c, XEvent *ev __attribute__((unused)))
 {
 	if (c->can.close)
 		killxclient(c);
@@ -165,7 +165,7 @@ b_xkill(Client *c, XEvent *ev)
 }
 
 Bool
-b_reshade(Client *c, XEvent *ev)
+b_reshade(Client *c, XEvent *ev __attribute__((unused)))
 {
 	if (c->can.shade)
 		toggleshade(c);
@@ -173,7 +173,7 @@ b_reshade(Client *c, XEvent *ev)
 }
 
 Bool
-b_shade(Client *c, XEvent *ev)
+b_shade(Client *c, XEvent *ev __attribute__((unused)))
 {
 	if (c->can.shade && !c->is.shaded)
 		toggleshade(c);
@@ -181,7 +181,7 @@ b_shade(Client *c, XEvent *ev)
 }
 
 Bool
-b_unshade(Client *c, XEvent *ev)
+b_unshade(Client *c, XEvent *ev __attribute__((unused)))
 {
 	if (c->can.shade && c->is.shaded)
 		toggleshade(c);
@@ -189,7 +189,7 @@ b_unshade(Client *c, XEvent *ev)
 }
 
 Bool
-b_restick(Client *c, XEvent *ev)
+b_restick(Client *c, XEvent *ev __attribute__((unused)))
 {
 	if (c->can.stick)
 		togglesticky(c);
@@ -197,7 +197,7 @@ b_restick(Client *c, XEvent *ev)
 }
 
 Bool
-b_stick(Client *c, XEvent *ev)
+b_stick(Client *c, XEvent *ev __attribute__((unused)))
 {
 	if (c->can.stick && !c->is.sticky)
 		togglesticky(c);
@@ -205,7 +205,7 @@ b_stick(Client *c, XEvent *ev)
 }
 
 Bool
-b_unstick(Client *c, XEvent *ev)
+b_unstick(Client *c, XEvent *ev __attribute__((unused)))
 {
 	if (c->can.stick && c->is.sticky)
 		togglesticky(c);
@@ -213,7 +213,7 @@ b_unstick(Client *c, XEvent *ev)
 }
 
 Bool
-b_relhalf(Client *c, XEvent *ev)
+b_relhalf(Client *c, XEvent *ev __attribute__((unused)))
 {
 	if (c->can.move && c->can.size)
 		togglelhalf(c);
@@ -221,7 +221,7 @@ b_relhalf(Client *c, XEvent *ev)
 }
 
 Bool
-b_lhalf(Client *c, XEvent *ev)
+b_lhalf(Client *c, XEvent *ev __attribute__((unused)))
 {
 	if (c->can.move && c->can.size && !c->is.lhalf)
 		togglelhalf(c);
@@ -229,7 +229,7 @@ b_lhalf(Client *c, XEvent *ev)
 }
 
 Bool
-b_unlhalf(Client *c, XEvent *ev)
+b_unlhalf(Client *c, XEvent *ev __attribute__((unused)))
 {
 	if (c->can.move && c->can.size && c->is.lhalf)
 		togglelhalf(c);
@@ -237,7 +237,7 @@ b_unlhalf(Client *c, XEvent *ev)
 }
 
 Bool
-b_rerhalf(Client *c, XEvent *ev)
+b_rerhalf(Client *c, XEvent *ev __attribute__((unused)))
 {
 	if (c->can.move && c->can.size)
 		togglerhalf(c);
@@ -245,7 +245,7 @@ b_rerhalf(Client *c, XEvent *ev)
 }
 
 Bool
-b_rhalf(Client *c, XEvent *ev)
+b_rhalf(Client *c, XEvent *ev __attribute__((unused)))
 {
 	if (c->can.move && c->can.size && !c->is.rhalf)
 		togglerhalf(c);
@@ -253,7 +253,7 @@ b_rhalf(Client *c, XEvent *ev)
 }
 
 Bool
-b_unrhalf(Client *c, XEvent *ev)
+b_unrhalf(Client *c, XEvent *ev __attribute__((unused)))
 {
 	if (c->can.move && c->can.size && c->is.rhalf)
 		togglerhalf(c);
@@ -261,7 +261,7 @@ b_unrhalf(Client *c, XEvent *ev)
 }
 
 Bool
-b_refill(Client *c, XEvent *ev)
+b_refill(Client *c, XEvent *ev __attribute__((unused)))
 {
 	if (c->can.fill)
 		togglefill(c);
@@ -269,7 +269,7 @@ b_refill(Client *c, XEvent *ev)
 }
 
 Bool
-b_fill(Client *c, XEvent *ev)
+b_fill(Client *c, XEvent *ev __attribute__((unused)))
 {
 	if (c->can.fill && !c->is.fill)
 		togglefill(c);
@@ -277,7 +277,7 @@ b_fill(Client *c, XEvent *ev)
 }
 
 Bool
-b_unfill(Client *c, XEvent *ev)
+b_unfill(Client *c, XEvent *ev __attribute__((unused)))
 {
 	if (c->can.fill && c->is.fill)
 		togglefill(c);
@@ -285,14 +285,14 @@ b_unfill(Client *c, XEvent *ev)
 }
 
 Bool
-b_refloat(Client *c, XEvent *ev)
+b_refloat(Client *c, XEvent *ev __attribute__((unused)))
 {
 	togglefloating(c);
 	return True;
 }
 
 Bool
-b_float(Client *c, XEvent *ev)
+b_float(Client *c, XEvent *ev __attribute__((unused)))
 {
 	if (!c->skip.arrange)
 		togglefloating(c);
@@ -300,7 +300,7 @@ b_float(Client *c, XEvent *ev)
 }
 
 Bool
-b_tile(Client *c, XEvent *ev)
+b_tile(Client *c, XEvent *ev __attribute__((unused)))
 {
 	if (c->skip.arrange)
 		togglefloating(c);
@@ -412,35 +412,35 @@ k_chain(XEvent *e, Key *key)
 }
 
 void
-k_focusmain(XEvent *e, Key *k)
+k_focusmain(XEvent *e __attribute__((unused)), Key *k __attribute__((unused)))
 {
 	if (sel)
 		focusmain(sel);
 }
 
 void
-k_focusurgent(XEvent *e, Key *k)
+k_focusurgent(XEvent *e __attribute__((unused)), Key *k __attribute__((unused)))
 {
 	if (sel)
 		focusurgent(sel);
 }
 
 void
-k_zoom(XEvent *e, Key *k)
+k_zoom(XEvent *e __attribute__((unused)), Key *k __attribute__((unused)))
 {
 	if (sel)
 		zoom(sel);
 }
 
 void
-k_killclient(XEvent *e, Key *k)
+k_killclient(XEvent *e __attribute__((unused)), Key *k __attribute__((unused)))
 {
 	if (sel && sel->can.close)
 		killclient(sel);
 }
 
 void
-k_moveresizekb(XEvent *e, Key *k)
+k_moveresizekb(XEvent *e __attribute__((unused)), Key *k)
 {
 	if (sel) {
 		int dw = 0, dh = 0, dx = 0, dy = 0;
@@ -451,124 +451,124 @@ k_moveresizekb(XEvent *e, Key *k)
 }
 
 void
-k_flipview(XEvent *e, Key *k)
+k_flipview(XEvent *e __attribute__((unused)), Key *k __attribute__((unused)))
 {
 	flipview(sel);
 }
 
 void
-k_rotateview(XEvent *e, Key *k)
+k_rotateview(XEvent *e __attribute__((unused)), Key *k __attribute__((unused)))
 {
 	rotateview(sel);
 }
 
 void
-k_unrotateview(XEvent *e, Key *k)
+k_unrotateview(XEvent *e __attribute__((unused)), Key *k __attribute__((unused)))
 {
 	unrotateview(sel);
 }
 
 void
-k_flipzone(XEvent *e, Key *k)
+k_flipzone(XEvent *e __attribute__((unused)), Key *k __attribute__((unused)))
 {
 	flipzone(sel);
 }
 
 void
-k_rotatezone(XEvent *e, Key *k)
+k_rotatezone(XEvent *e __attribute__((unused)), Key *k __attribute__((unused)))
 {
 	rotatezone(sel);
 }
 
 void
-k_unrotatezone(XEvent *e, Key *k)
+k_unrotatezone(XEvent *e __attribute__((unused)), Key *k __attribute__((unused)))
 {
 	unrotatezone(sel);
 }
 
 void
-k_flipwins(XEvent *e, Key *k)
+k_flipwins(XEvent *e __attribute__((unused)), Key *k __attribute__((unused)))
 {
 	flipwins(sel);
 }
 
 void
-k_rotatewins(XEvent *e, Key *k)
+k_rotatewins(XEvent *e __attribute__((unused)), Key *k __attribute__((unused)))
 {
 	rotatewins(sel);
 }
 
 void
-k_unrotatewins(XEvent *e, Key *k)
+k_unrotatewins(XEvent *e __attribute__((unused)), Key *k __attribute__((unused)))
 {
 	unrotatewins(sel);
 }
 
 void
-k_viewprevtag(XEvent *e, Key *k)
+k_viewprevtag(XEvent *e __attribute__((unused)), Key *k __attribute__((unused)))
 {
 	viewprevtag();
 }
 
 void
-k_togglemonitor(XEvent *e, Key *k)
+k_togglemonitor(XEvent *e __attribute__((unused)), Key *k __attribute__((unused)))
 {
 	togglemonitor();
 }
 
 void
-k_appendtag(XEvent *e, Key *k)
+k_appendtag(XEvent *e __attribute__((unused)), Key *k __attribute__((unused)))
 {
 	appendtag();
 }
 
 void
-k_rmlasttag(XEvent *e, Key *k)
+k_rmlasttag(XEvent *e __attribute__((unused)), Key *k __attribute__((unused)))
 {
 	rmlasttag();
 }
 
 void
-k_raise(XEvent *e, Key *k)
+k_raise(XEvent *e __attribute__((unused)), Key *k __attribute__((unused)))
 {
 	if (sel)
 		raiseclient(sel);
 }
 
 void
-k_lower(XEvent *e, Key *k)
+k_lower(XEvent *e __attribute__((unused)), Key *k __attribute__((unused)))
 {
 	if (sel)
 		lowerclient(sel);
 }
 
 void
-k_raiselower(XEvent *e, Key *k)
+k_raiselower(XEvent *e __attribute__((unused)), Key *k __attribute__((unused)))
 {
 	if (sel)
 		raiselower(sel);
 }
 
 void
-k_quit(XEvent *e, Key *k)
+k_quit(XEvent *e __attribute__((unused)), Key *k)
 {
 	quit(k->arg);
 }
 
 void
-k_restart(XEvent *e, Key *k)
+k_restart(XEvent *e __attribute__((unused)), Key *k)
 {
 	restart(k->arg);
 }
 
 void
-k_reload(XEvent *e, Key *k)
+k_reload(XEvent *e __attribute__((unused)), Key *k __attribute__((unused)))
 {
 	reload();
 }
 
 void
-k_setmwfactor(XEvent *e, Key *k)
+k_setmwfactor(XEvent *e __attribute__((unused)), Key *k)
 {
 	View *v;
 	const char *arg;
@@ -615,7 +615,7 @@ k_setmwfactor(XEvent *e, Key *k)
 }
 
 void
-k_setnmaster(XEvent *e, Key *k)
+k_setnmaster(XEvent *e __attribute__((unused)), Key *k)
 {
 	const char *arg;
 	View *v;
@@ -648,7 +648,7 @@ k_setnmaster(XEvent *e, Key *k)
 }
 
 void
-k_setncolumns(XEvent *e, Key *k)
+k_setncolumns(XEvent *e __attribute__((unused)), Key *k)
 {
 	const char *arg;
 	View *v;
@@ -681,7 +681,7 @@ k_setncolumns(XEvent *e, Key *k)
 }
 
 void
-k_setmargin(XEvent *e, Key *k)
+k_setmargin(XEvent *e __attribute__((unused)), Key *k)
 {
 	const char *arg;
 	int num;
@@ -710,7 +710,7 @@ k_setmargin(XEvent *e, Key *k)
 }
 
 void
-k_setborder(XEvent *e, Key *k)
+k_setborder(XEvent *e __attribute__((unused)), Key *k)
 {
 	const char *arg;
 	int num;
@@ -812,7 +812,7 @@ k_setgeneric(XEvent *e, Key *k, void (*func) (XEvent *, Key *, Client *))
 }
 
 static void
-c_setfloating(XEvent *e, Key *k, Client *c)
+c_setfloating(XEvent *e __attribute__((unused)), Key *k, Client *c)
 {
 	switch (k->set) {
 	case SetFlagSetting:
@@ -837,7 +837,7 @@ k_setfloating(XEvent *e, Key *k)
 }
 
 static void
-c_setfill(XEvent *e, Key *k, Client *c)
+c_setfill(XEvent *e __attribute__((unused)), Key *k, Client *c)
 {
 	switch (k->set) {
 	case SetFlagSetting:
@@ -862,7 +862,7 @@ k_setfill(XEvent *e, Key *k)
 }
 
 static void
-c_setfull(XEvent *e, Key *k, Client *c)
+c_setfull(XEvent *e __attribute__((unused)), Key *k, Client *c)
 {
 	switch (k->set) {
 	case SetFlagSetting:
@@ -887,7 +887,7 @@ k_setfull(XEvent *e, Key *k)
 }
 
 static void
-c_setmax(XEvent *e, Key *k, Client *c)
+c_setmax(XEvent *e __attribute__((unused)), Key *k, Client *c)
 {
 	switch (k->set) {
 	case SetFlagSetting:
@@ -912,7 +912,7 @@ k_setmax(XEvent *e, Key *k)
 }
 
 static void
-c_setmaxv(XEvent *e, Key *k, Client *c)
+c_setmaxv(XEvent *e __attribute__((unused)), Key *k, Client *c)
 {
 	switch (k->set) {
 	case SetFlagSetting:
@@ -937,7 +937,7 @@ k_setmaxv(XEvent *e, Key *k)
 }
 
 static void
-c_setmaxh(XEvent *e, Key *k, Client *c)
+c_setmaxh(XEvent *e __attribute__((unused)), Key *k, Client *c)
 {
 	switch (k->set) {
 	case SetFlagSetting:
@@ -962,7 +962,7 @@ k_setmaxh(XEvent *e, Key *k)
 }
 
 static void
-c_setlhalf(XEvent *e, Key *k, Client *c)
+c_setlhalf(XEvent *e __attribute__((unused)), Key *k, Client *c)
 {
 	switch (k->set) {
 	case SetFlagSetting:
@@ -987,7 +987,7 @@ k_setlhalf(XEvent *e, Key *k)
 }
 
 static void
-c_setrhalf(XEvent *e, Key *k, Client *c)
+c_setrhalf(XEvent *e __attribute__((unused)), Key *k, Client *c)
 {
 	switch (k->set) {
 	case SetFlagSetting:
@@ -1012,7 +1012,7 @@ k_setrhalf(XEvent *e, Key *k)
 }
 
 static void
-c_setshade(XEvent *e, Key *k, Client *c)
+c_setshade(XEvent *e __attribute__((unused)), Key *k, Client *c)
 {
 	switch (k->set) {
 	case SetFlagSetting:
@@ -1037,7 +1037,7 @@ k_setshade(XEvent *e, Key *k)
 }
 
 static void
-c_sethidden(XEvent *e, Key *k, Client *c)
+c_sethidden(XEvent *e __attribute__((unused)), Key *k, Client *c)
 {
 	switch (k->set) {
 	case SetFlagSetting:
@@ -1062,7 +1062,7 @@ k_sethidden(XEvent *e, Key *k)
 }
 
 static void
-c_setmin(XEvent *e, Key *k, Client *c)
+c_setmin(XEvent *e __attribute__((unused)), Key *k, Client *c)
 {
 	switch (k->set) {
 	case SetFlagSetting:
@@ -1087,7 +1087,7 @@ k_setmin(XEvent *e, Key *k)
 }
 
 static void
-c_setabove(XEvent *e, Key *k, Client *c)
+c_setabove(XEvent *e __attribute__((unused)), Key *k, Client *c)
 {
 	switch (k->set) {
 	case SetFlagSetting:
@@ -1112,7 +1112,7 @@ k_setabove(XEvent *e, Key *k)
 }
 
 static void
-c_setbelow(XEvent *e, Key *k, Client *c)
+c_setbelow(XEvent *e __attribute__((unused)), Key *k, Client *c)
 {
 	switch (k->set) {
 	case SetFlagSetting:
@@ -1137,7 +1137,7 @@ k_setbelow(XEvent *e, Key *k)
 }
 
 static void
-c_setpager(XEvent *e, Key *k, Client *c)
+c_setpager(XEvent *e __attribute__((unused)), Key *k, Client *c)
 {
 	switch (k->set) {
 	case SetFlagSetting:
@@ -1162,7 +1162,7 @@ k_setpager(XEvent *e, Key *k)
 }
 
 static void
-c_settaskbar(XEvent *e, Key *k, Client *c)
+c_settaskbar(XEvent *e __attribute__((unused)), Key *k, Client *c)
 {
 	switch (k->set) {
 	case SetFlagSetting:
@@ -1219,7 +1219,7 @@ k_setscrgeneric(XEvent *e, Key *k, void (*func) (XEvent *, Key *, AScreen *))
 }
 
 static void
-s_setshowing(XEvent *e, Key *k, AScreen *s)
+s_setshowing(XEvent *e __attribute__((unused)), Key *k, AScreen *s)
 {
 	AScreen *old;
 
@@ -1291,7 +1291,7 @@ k_setlaygeneric(XEvent *e, Key *k, void (*func) (XEvent *, Key *, View *))
 }
 
 static void
-v_setstruts(XEvent *e, Key *k, View *v)
+v_setstruts(XEvent *e __attribute__((unused)), Key *k, View *v)
 {
 	switch (k->set) {
 	case SetFlagSetting:
@@ -1316,7 +1316,7 @@ k_setstruts(XEvent *e, Key *k)
 }
 
 static void
-v_setdectiled(XEvent *e, Key *k, View *v)
+v_setdectiled(XEvent *e __attribute__((unused)), Key *k, View *v)
 {
 	switch (k->set) {
 	case SetFlagSetting:
@@ -1341,7 +1341,7 @@ k_setdectiled(XEvent *e, Key *k)
 }
 
 static void
-v_setplacement(XEvent *e, Key *k, View *v)
+v_setplacement(XEvent *e __attribute__((unused)), Key *k, View *v)
 {
 	v->placement = k->plc;
 }
@@ -1353,7 +1353,7 @@ k_setplacement(XEvent *e, Key *k)
 }
 
 static void
-c_setsticky(XEvent *e, Key *k, Client *c)
+c_setsticky(XEvent *e __attribute__((unused)), Key *k, Client *c)
 {
 	switch (k->set) {
 	case SetFlagSetting:
@@ -1379,28 +1379,28 @@ k_setsticky(XEvent *e, Key *k)
 
 
 void
-k_moveto(XEvent *e, Key *k)
+k_moveto(XEvent *e __attribute__((unused)), Key *k)
 {
 	if (sel)
 		moveto(sel, k->dir);
 }
 
 void
-k_snapto(XEvent *e, Key *k)
+k_snapto(XEvent *e __attribute__((unused)), Key *k)
 {
 	if (sel)
 		snapto(sel, k->dir);
 }
 
 void
-k_edgeto(XEvent *e, Key *k)
+k_edgeto(XEvent *e __attribute__((unused)), Key *k)
 {
 	if (sel)
 		edgeto(sel, k->dir);
 }
 
 void
-k_moveby(XEvent *e, Key *k)
+k_moveby(XEvent *e __attribute__((unused)), Key *k)
 {
 	if (sel) {
 		int amount = 1;
@@ -1508,7 +1508,7 @@ k_focusable(Client *c, View *v, WhichClient any, RelativeDirection dir,
 }
 
 void
-k_stop(XEvent *e, Key *k)
+k_stop(XEvent *e __attribute__((unused)), Key *k)
 {
 	free(k->cycle);
 	k->cycle = k->where = NULL;
@@ -1716,7 +1716,7 @@ k_select(View *v, Key *k)
 }
 
 void
-k_focus(XEvent *e, Key *k)
+k_focus(XEvent *e __attribute__((unused)), Key *k)
 {
 	View *v;
 
@@ -1754,7 +1754,7 @@ k_focus(XEvent *e, Key *k)
 }
 
 void
-k_client(XEvent *e, Key *k)
+k_client(XEvent *e __attribute__((unused)), Key *k)
 {
 	View *v;
 
@@ -1792,7 +1792,7 @@ k_client(XEvent *e, Key *k)
 }
 
 void
-k_stack(XEvent *e, Key *k)
+k_stack(XEvent *e __attribute__((unused)), Key *k)
 {
 	View *v;
 
@@ -1830,7 +1830,7 @@ k_stack(XEvent *e, Key *k)
 }
 
 void
-k_group(XEvent *e, Key *k)
+k_group(XEvent *e __attribute__((unused)), Key *k)
 {
 	View *v;
 
@@ -1869,7 +1869,7 @@ k_group(XEvent *e, Key *k)
 }
 
 void
-k_tab(XEvent *e, Key *k)
+k_tab(XEvent *e __attribute__((unused)), Key *k __attribute__((unused)))
 {
 	/* tag within tab group */
 	/* TODO */
@@ -1877,7 +1877,7 @@ k_tab(XEvent *e, Key *k)
 }
 
 void
-k_panel(XEvent *e, Key *k)
+k_panel(XEvent *e __attribute__((unused)), Key *k)
 {
 	View *v;
 
@@ -1918,7 +1918,7 @@ k_panel(XEvent *e, Key *k)
 }
 
 void
-k_dock(XEvent *e, Key *k)
+k_dock(XEvent *e __attribute__((unused)), Key *k)
 {
 	View *v;
 
@@ -1959,16 +1959,16 @@ k_dock(XEvent *e, Key *k)
 }
 
 void
-k_swap(XEvent *e, Key *k)
+k_swap(XEvent *e __attribute__((unused)), Key *k __attribute__((unused)))
 {
 	/* TODO: swap windows */
 	return;
 }
 
 static View *
-getviewrandc(int r, int c)
+getviewrandc(unsigned r, unsigned c)
 {
-	int idx;
+	unsigned idx;
 	View *v;
 
 	for (v = scr->views, idx = 0; idx < scr->ntags; idx++, v++)
@@ -1982,7 +1982,8 @@ getviewrandc(int r, int c)
 static int
 _getviewrandc(View *v, Key *k, int dr, int dc)
 {
-	int r, c, idx, iter;
+	unsigned r, c, idx;
+	unsigned iter;
 
 	r = v->row;
 	c = v->col;
@@ -1993,23 +1994,15 @@ _getviewrandc(View *v, Key *k, int dr, int dc)
 	do {
 		r += dr;
 		if (k->wrap) {
-			while (r < 0)
-				r += scr->d.rows;
 			r = r % scr->d.rows;
 		} else {
-			if (r < 0)
-				r = 0;
 			if (r >= scr->d.rows)
 				r = scr->d.rows - 1;
 		}
 		c += dc;
 		if (k->wrap) {
-			while (c < 0)
-				c += scr->d.rows;
 			c = c % scr->d.cols;
 		} else {
-			if (c < 0)
-				c = 0;
 			if (c > scr->d.cols)
 				c = scr->d.cols - 1;
 		}
@@ -2052,7 +2045,7 @@ idxoftag(View *v, Key *k)
 		idx -= d;
 		goto done;
 	case RelativeLast:
-		if (0 <= scr->last && scr->last < scr->ntags)
+		if (scr->last < scr->ntags)
 			idx = scr->last;
 		goto done;
 	case RelativeNorthWest:
@@ -2211,14 +2204,14 @@ idxoftag(View *v, Key *k)
 	} else {
 		if (idx < 0)
 			idx = 0;
-		if (idx >= scr->ntags)
+		if (idx >= (int) scr->ntags)
 			idx = scr->ntags - 1;
 	}
 	return idx;
 }
 
 void
-k_toggletag(XEvent *e, Key *k)
+k_toggletag(XEvent *e __attribute__((unused)), Key *k)
 {
 	if (sel)
 		toggletag(sel, idxoftag(sel->cview, k));
@@ -2227,7 +2220,7 @@ k_toggletag(XEvent *e, Key *k)
 }
 
 void
-k_tag(XEvent *e, Key *k)
+k_tag(XEvent *e __attribute__((unused)), Key *k)
 {
 	if (sel)
 		tag(sel, idxoftag(sel->cview, k));
@@ -2236,7 +2229,7 @@ k_tag(XEvent *e, Key *k)
 }
 
 void
-k_focusview(XEvent *e, Key *k)
+k_focusview(XEvent *e __attribute__((unused)), Key *k)
 {
 	View *v;
 
@@ -2247,7 +2240,7 @@ k_focusview(XEvent *e, Key *k)
 }
 
 void
-k_toggleview(XEvent *e, Key *k)
+k_toggleview(XEvent *e __attribute__((unused)), Key *k)
 {
 	View *v;
 
@@ -2258,7 +2251,7 @@ k_toggleview(XEvent *e, Key *k)
 }
 
 void
-k_view(XEvent *e, Key *k)
+k_view(XEvent *e __attribute__((unused)), Key *k)
 {
 	View *v;
 
@@ -2269,27 +2262,27 @@ k_view(XEvent *e, Key *k)
 }
 
 void
-k_taketo(XEvent *e, Key *k)
+k_taketo(XEvent *e __attribute__((unused)), Key *k)
 {
 	if (sel)
 		taketo(sel, idxoftag(sel->cview, k));
 }
 
 void
-k_sendto(XEvent *e, Key *k)
+k_sendto(XEvent *e __attribute__((unused)), Key *k)
 {
 	if (sel)
 		tagonly(sel, idxoftag(sel->cview, k));
 }
 
 void
-k_setlayout(XEvent *e, Key *k)
+k_setlayout(XEvent *e __attribute__((unused)), Key *k)
 {
 	setlayout(k->arg);
 }
 
 void
-k_spawn(XEvent *e, Key *k)
+k_spawn(XEvent *e __attribute__((unused)), Key *k)
 {
 	spawn(k->arg);
 }

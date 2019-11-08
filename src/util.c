@@ -20,7 +20,7 @@ estrdup(const char *str)
 }
 
 int
-xerrordummy(Display *dpy, XErrorEvent *ee)
+xerrordummy(Display *dpy __attribute__((unused)), XErrorEvent *ee __attribute__((unused)))
 {
 	return 0;
 }

@@ -288,7 +288,7 @@ initthemefile_ADWM(void)
   *
   * @{ */
 static void
-initrcfile_ADWM(const char *conf, Bool reload)
+initrcfile_ADWM(const char *conf __attribute__((unused)), Bool reload __attribute__((unused)))
 {
 	const char *home = getenv("HOME") ? : ".";
 	const char *file = NULL;
@@ -414,7 +414,7 @@ initrcfile_ADWM(const char *conf, Bool reload)
   *
   * @{ */
 static void
-initconfig_ADWM(Bool reload)
+initconfig_ADWM(Bool reload __attribute__((unused)))
 {
 	const char *res;
 	char name[256], clas[256], *n, *c;
@@ -528,7 +528,7 @@ initconfig_ADWM(Bool reload)
   *
   * @{ */
 static void
-initscreen_ADWM(Bool reload)
+initscreen_ADWM(Bool reload __attribute__((unused)))
 {
 	const char *res;
 	char name[256], clas[256], *n, *c;
@@ -680,7 +680,7 @@ inittags_ADWM(Bool reload)
 	ewmh_process_net_desktop_names();
 
 	if (reload) {
-		int ntags = scr->ntags;
+		unsigned ntags = scr->ntags;
 
 		for (; ntags > scr->ntags; ntags--)
 			deltag();
@@ -748,11 +748,11 @@ static const struct {
 
 static KeyItem KeyItemsByAmt[] = {
 	/* *INDENT-OFF* */
-	{ "mwfact",		k_setmwfactor	 },
-	{ "nmaster",		k_setnmaster	 },
-	{ "ncolumns",		k_setncolumns	 },
-	{ "margin",		k_setmargin	 },
-	{ "border",		k_setborder	 }
+	{ "mwfact",	k_setmwfactor,	NULL },
+	{ "nmaster",	k_setnmaster,	NULL },
+	{ "ncolumns",	k_setncolumns,	NULL },
+	{ "margin",	k_setmargin,	NULL },
+	{ "border",	k_setborder,	NULL }
 	/* *INDENT-ON* */
 };
 
@@ -786,28 +786,28 @@ static const struct {
 
 static KeyItem KeyItemsByState[] = {
 	/* *INDENT-OFF* */
-	{ "floating",		k_setfloating	 },
-	{ "fill",		k_setfill	 },
-	{ "full",		k_setfull	 },
-	{ "max",		k_setmax	 },
-	{ "maxv",		k_setmaxv	 },
-	{ "maxh",		k_setmaxh	 },
-	{ "lhalf",		k_setlhalf	 },
-	{ "rhalf",		k_setrhalf	 },
-	{ "shade",		k_setshade	 },
-	{ "shaded",		k_setshade	 },
-	{ "hide",		k_sethidden	 },
-	{ "hidden",		k_sethidden	 },
-	{ "iconify",		k_setmin	 },
-	{ "min",		k_setmin	 },
-	{ "above",		k_setabove	 },
-	{ "below",		k_setbelow	 },
-	{ "pager",		k_setpager	 },
-	{ "taskbar",		k_settaskbar	 },
-	{ "showing",		k_setshowing	 },
-	{ "struts",		k_setstruts	 },
-	{ "dectiled",		k_setdectiled	 },
-	{ "sticky",		k_setsticky	 }
+	{ "floating",	k_setfloating,	NULL },
+	{ "fill",	k_setfill,	NULL },
+	{ "full",	k_setfull,	NULL },
+	{ "max",	k_setmax,	NULL },
+	{ "maxv",	k_setmaxv,	NULL },
+	{ "maxh",	k_setmaxh,	NULL },
+	{ "lhalf",	k_setlhalf,	NULL },
+	{ "rhalf",	k_setrhalf,	NULL },
+	{ "shade",	k_setshade,	NULL },
+	{ "shaded",	k_setshade,	NULL },
+	{ "hide",	k_sethidden,	NULL },
+	{ "hidden",	k_sethidden,	NULL },
+	{ "iconify",	k_setmin,	NULL },
+	{ "min",	k_setmin,	NULL },
+	{ "above",	k_setabove,	NULL },
+	{ "below",	k_setbelow,	NULL },
+	{ "pager",	k_setpager,	NULL },
+	{ "taskbar",	k_settaskbar,	NULL },
+	{ "showing",	k_setshowing,	NULL },
+	{ "struts",	k_setstruts,	NULL },
+	{ "dectiled",	k_setdectiled,	NULL },
+	{ "sticky",	k_setsticky,	NULL }
 	/* *INDENT-ON* */
 };
 
@@ -832,10 +832,10 @@ static const struct {
 
 static KeyItem KeyItemsByDir[] = {
 	/* *INDENT-OFF* */
-	{ "moveto",		k_moveto	}, /* arg is position */
-	{ "snapto",		k_snapto	}, /* arg is direction */
-	{ "edgeto",		k_edgeto	}, /* arg is direction */
-	{ "moveby",		k_moveby	}  /* arg is direction and amount */
+	{ "moveto",	k_moveto,	NULL }, /* arg is position */
+	{ "snapto",	k_snapto,	NULL }, /* arg is direction */
+	{ "edgeto",	k_edgeto,	NULL }, /* arg is direction */
+	{ "moveby",	k_moveby,	NULL }  /* arg is direction and amount */
 	/* *INDENT-ON* */
 };
 
@@ -890,14 +890,14 @@ static const struct {
 
 static KeyItem KeyItemsByList[] = {
 	/* *INDENT-OFF* */
-	{ "focus",	k_focus		},
-	{ "client",	k_client	},
-	{ "stack",	k_stack		},
-	{ "group",	k_group		},
-	{ "tab",	k_tab		},
-	{ "panel",	k_panel		},
-	{ "dock",	k_dock		},
-	{ "swap",	k_swap		}
+	{ "focus",	k_focus,	NULL },
+	{ "client",	k_client,	NULL },
+	{ "stack",	k_stack,	NULL },
+	{ "group",	k_group,	NULL },
+	{ "tab",	k_tab,		NULL },
+	{ "panel",	k_panel,	NULL },
+	{ "dock",	k_dock,		NULL },
+	{ "swap",	k_swap,		NULL }
 	/* *INDENT-ON* */
 };
 
@@ -928,13 +928,13 @@ static const struct {
 
 static KeyItem KeyItemsByTag[] = {
 	/* *INDENT-OFF* */
-	{"view",	k_view		},
-	{"toggleview",	k_toggleview	},
-	{"focusview",	k_focusview	},
-	{"tag",		k_tag		},
-	{"toggletag",	k_toggletag	},
-	{"taketo",	k_taketo	},
-	{"sendto",	k_sendto	}
+	{"view",	k_view,		NULL },
+	{"toggleview",	k_toggleview,	NULL },
+	{"focusview",	k_focusview,	NULL },
+	{"tag",		k_tag,		NULL },
+	{"toggletag",	k_toggletag,	NULL },
+	{"taketo",	k_taketo,	NULL },
+	{"sendto",	k_sendto,	NULL }
 	/* *INDENT-ON* */
 };
 
@@ -970,7 +970,7 @@ capclass(char *clas)
 }
 
 static void
-initkeys_ADWM(Bool reload)
+initkeys_ADWM(Bool reload __attribute__((unused)))
 {
 	unsigned int i, j, l;
 	const char *res;
@@ -1181,7 +1181,7 @@ initkeys_ADWM(Bool reload)
   *
   * @{ */
 static void
-initlayouts_ADWM(Bool reload)
+initlayouts_ADWM(Bool reload __attribute__((unused)))
 {
 	unsigned i, s = scr->screen;
 
@@ -1248,7 +1248,7 @@ initlayouts_ADWM(Bool reload)
 /** @} */
 
 static void
-initbuttons_ADWM(AdwmStyle *style, Bool reload)
+initbuttons_ADWM(AdwmStyle *style, Bool reload __attribute__((unused)))
 {
 	static const struct {
 		const char *name;
@@ -1256,21 +1256,21 @@ initbuttons_ADWM(AdwmStyle *style, Bool reload)
 		const char *def;
 	} elements[LastElement] = {
 		/* *INDENT-OFF* */
-		[MenuBtn]	= { "button.menu",	MENUPIXMAP  },
-		[IconifyBtn]	= { "button.iconify",	ICONPIXMAP  },
-		[MaximizeBtn]	= { "button.maximize",	MAXPIXMAP   },
-		[CloseBtn]	= { "button.close",	CLOSEPIXMAP },
-		[ShadeBtn]	= { "button.shade",	SHADEPIXMAP },
-		[StickBtn]	= { "button.stick",	STICKPIXMAP },
-		[LHalfBtn]	= { "button.lhalf",	LHALFPIXMAP },
-		[RHalfBtn]	= { "button.rhalf",	RHALFPIXMAP },
-		[FillBtn]	= { "button.fill",	FILLPIXMAP  },
-		[FloatBtn]	= { "button.float",	FLOATPIXMAP },
-		[SizeBtn]	= { "button.resize",	SIZEPIXMAP  },
-		[IconBtn]	= { "button.icon",	WINPIXMAP   },
-		[TitleTags]	= { "title.tags",	NULL	    },
-		[TitleName]	= { "title.name",	NULL	    },
-		[TitleSep]	= { "title.sep",	NULL	    },
+		[MenuBtn]	= { "button.menu",	MENUPIXMAP,	NULL },
+		[IconifyBtn]	= { "button.iconify",	ICONPIXMAP,	NULL },
+		[MaximizeBtn]	= { "button.maximize",	MAXPIXMAP,	NULL },
+		[CloseBtn]	= { "button.close",	CLOSEPIXMAP,	NULL },
+		[ShadeBtn]	= { "button.shade",	SHADEPIXMAP,	NULL },
+		[StickBtn]	= { "button.stick",	STICKPIXMAP,	NULL },
+		[LHalfBtn]	= { "button.lhalf",	LHALFPIXMAP,	NULL },
+		[RHalfBtn]	= { "button.rhalf",	RHALFPIXMAP,	NULL },
+		[FillBtn]	= { "button.fill",	FILLPIXMAP,	NULL },
+		[FloatBtn]	= { "button.float",	FLOATPIXMAP,	NULL },
+		[SizeBtn]	= { "button.resize",	SIZEPIXMAP,	NULL },
+		[IconBtn]	= { "button.icon",	WINPIXMAP,	NULL },
+		[TitleTags]	= { "title.tags",	NULL,		NULL },
+		[TitleName]	= { "title.name",	NULL,		NULL },
+		[TitleSep]	= { "title.sep",	NULL,		NULL },
 		/* *INDENT-ON* */
 	};
 	static const struct {
@@ -1397,7 +1397,7 @@ initstyle_ADWM(Bool reload)
 }
 
 static void
-inittheme_ADWM(Bool reload)
+inittheme_ADWM(Bool reload __attribute__((unused)))
 {
 	const char *res;
 	AdwmTheme *theme;
@@ -1422,6 +1422,7 @@ deinitstyle_ADWM(void)
 static void
 drawclient_ADWM(Client *c)
 {
+	(void) c;
 }
 
 AdwmOperations adwm_ops = {

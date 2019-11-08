@@ -272,3 +272,4 @@
 -Tabq_item_t
 -TXClassHint
 -TRule
+-TXDamageNotifyEvent

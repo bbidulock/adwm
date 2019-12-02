@@ -199,13 +199,13 @@ save(FILE *file, Bool permanent)
 		if (scr->options.attachaside != options.attachaside)
 			fprintf(file, "Adwm.screen%u.attachaside:\t\t%d\n", scr->screen, scr->options.attachaside);
 		if (scr->options.command && options.command && strcmp(scr->options.command, options.command))
-			fprintf(file, "Adwm.screen%u.command:\t\t%d\n", scr->screen, scr->options.attachaside);
+			fprintf(file, "Adwm.screen%u.command:\t\t%s\n", scr->screen, scr->options.command);
 		if (scr->options.command2 && options.command2 && strcmp(scr->options.command2, options.command2))
-			fprintf(file, "Adwm.screen%u.command2:\t\t%d\n", scr->screen, scr->options.attachaside);
+			fprintf(file, "Adwm.screen%u.command2:\t\t%s\n", scr->screen, scr->options.command2);
 		if (scr->options.command3 && options.command3 && strcmp(scr->options.command3, options.command3))
-			fprintf(file, "Adwm.screen%u.command3:\t\t%d\n", scr->screen, scr->options.attachaside);
+			fprintf(file, "Adwm.screen%u.command3:\t\t%s\n", scr->screen, scr->options.command3);
 		if (scr->options.menucommand && options.menucommand && strcmp(scr->options.menucommand, options.menucommand))
-			fprintf(file, "Adwm.screen%u.menucommand:\t\t%d\n", scr->screen, scr->options.attachaside);
+			fprintf(file, "Adwm.screen%u.menucommand:\t\t%s\n", scr->screen, scr->options.menucommand);
 		if (scr->options.dectiled != options.dectiled)
 			fprintf(file, "Adwm.screen%u.decoratetiled:\t\t%d\n", scr->screen, scr->options.dectiled);
 		if (scr->options.decmax != options.decmax)

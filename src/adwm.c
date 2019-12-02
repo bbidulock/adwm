@@ -2636,6 +2636,7 @@ manage(Window w, XWindowAttributes *wa)
 	if (c->is.dockapp)
 		c->wintype = WTFLAG(WindowTypeDock);
 	else {
+		/* will set c->is.modal, but not fully handle */
 		ewmh_process_net_window_type(c);
 		ewmh_process_kde_net_window_type_override(c);
 	}
@@ -2719,6 +2720,26 @@ manage(Window w, XWindowAttributes *wa)
 		c->is.floater = True;
 	} else
 		c->is.transient = False;
+
+	if (c->is.modal) {
+		/* fixup motif modality now that we have leader and transient for */
+		switch ((Modality) c->is.modal) {
+			Group *g;
+		case ModalModeless:
+			break;
+		case ModalGroup:
+			if ((g = getleader(c->leader, ClientLeader)))
+				incmodal(c, g);
+			break;
+		case ModalSystem:
+			incmodal(c, &window_stack);
+			break;
+		case ModalPrimary:
+			if ((g = getleader(c->transfor, ClientTransFor)))
+				incmodal(c, g);
+			break;
+		}
+	}
 
 	updatesession(c);
 
@@ -2918,6 +2939,7 @@ manage(Window w, XWindowAttributes *wa)
 	ewmh_process_net_window_desktop(c);
 	ewmh_process_net_window_desktop_mask(c);
 	ewmh_process_net_window_sync_request_counter(c);
+	/* will properly establish c->is.modal if not already done */
 	ewmh_process_net_window_state(c);
 	ewmh_process_net_window_opacity(c);
 	c->is.managed = True;

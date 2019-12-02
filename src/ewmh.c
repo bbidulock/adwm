@@ -1855,14 +1855,14 @@ mwmh_process_motif_wm_hints(Client *c)
 		if ((hints[0] & MWM_HINTS_INPUT_MODE) && n >= 4 && (hint = hints[3])) {
 			/* handled by ICCCM 2.0 */
 			if (hint & MWM_INPUT_MODELESS) {
-				// c->is.modal = ModalModeless;
+				c->is.modal = ModalModeless;
 			} else if (hint & MWM_INPUT_APPLICATION_MODAL) {
-				// c->is.modal = ModalPrimary;
+				c->is.modal = ModalPrimary;
 			} else if (hint & MWM_INPUT_SYSTEM_MODAL) {
-				// c->is.modal = ModalSystem;
+				c->is.modal = ModalSystem;
 			} else if (hint & MWM_INPUT_FULL_APPLICATION_MODAL) {
-				// c->is.modal = ModalGroup;
-				c->is.grptrans = True;
+				c->is.modal = ModalGroup;
+				// c->is.grptrans = True;
 			}
 
 		}

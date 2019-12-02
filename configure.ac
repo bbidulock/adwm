@@ -580,7 +580,7 @@ AC_DEFINE([DECORATEMAX],[1],[Set to 1 to draw titles (by default) on maximized w
 AC_DEFINE([VGRIPMAX],[40],[Virtual grip maximum size in pixels.])
 AC_DEFINE([VGRIPMIN],[20],[Virtual grip minimum size in pixels.])
 
-AC_DEFINE_UNQUOTED([MAXTAGS],[((sizeof(unsigned long long) * 8) - 1)],[Maximum number of tags.])
+AC_DEFINE_UNQUOTED([MAXTAGS],[(int)((sizeof(unsigned long long) * 8) - 1)],[Maximum number of tags.])
 AC_DEFINE_UNQUOTED([SYSCONFPATH],["$pkgconfdir"],[System configuration path.])
 
 AC_OUTPUT([Makefile

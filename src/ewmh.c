@@ -3252,6 +3252,9 @@ ewmh_update_startup_notification(void)
 	if (!(id = getenv("DESKTOP_STARTUP_ID")))
 		return;
 
+	/* must unset so it does not propagate to children */
+	unsetenv("DESKTOP_STARTUP_ID");
+
 	XChangeProperty(dpy, scr->selwin, _XA_NET_STARTUP_ID, _XA_UTF8_STRING, 8,
 			PropModeReplace, (unsigned char *) id, strlen(id) + 1);
 

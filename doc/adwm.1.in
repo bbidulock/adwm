@@ -1197,6 +1197,112 @@ The program could not execute and was not expecting to return from the
 .Xr execve 3
 instruction, and therefore, exited abnormally.
 .El
+.Sh ENVIRONMENT
+The following environment variables are observed by
+.Nm @PACKAGE_NAME@ :
+.Pp
+.Bl -tag -width "XX"
+.It Cm DESKTOP_STARTUP_ID
+.Nm @PACKAGE_NAME@
+has been configured to automatically perform startup notification
+completion on startup.
+.It Cm DISPLAY
+Used to determine X Display.  When the
+.Fl -display
+options is specified, this environment variable will be set to the
+specified value.
+.It Cm HOME
+Will be used to determine the user's home directory for the purpose of
+calculating the default value for
+.Cm XDG_CONFIG_HOME
+and
+.Cm XDG_DATA_HOME
+when required.  When unspecified, the home directory for the current
+local user is determined from the password file.  Failing that, the
+current directory is used.
+.It Cm HOSTNAME
+Will be used to determine the local host name.  When unspecified, the
+name will be determined from the
+.Xr gethostname 3
+call.  This value is used to determine the host for which to save
+session files.  Also, will be used to determine the default directory
+for some configuration and commands.
+.It Cm USER
+Will be used to determine the name of the local user.  When unspecified,
+the user name for the current pid will be determined from the password
+file and this environment variable will be set.  Failing that, it will
+not be set.
+.It Cm XDG_RUNTIME_DIR
+
+.It Cm XDG_CACHE_HOME
+
+.It Cm XDG_CONFIG_DIRS
+When set, the subdirectories
+.Pa $DIRECTORY/@PACKAGE@
+will be examined for each
+.Pa $DIRECTORY
+in the colon separated list of directories contained in
+.Cm XDG_CONFIG_DIRS .
+The variable defaults to
+.Pa /etc/xdg .
+When the
+.Fl -vendor
+option is specified, or defaults,
+.Pa /etc/xdg/$VENDOR
+is prefixed to the normal default.
+.Pa /etc/xdg/xde
+will always be prefixed to the result.
+.It Cm XDG_CONFIG_HOME
+.It Cm XDG_DATA_DIRS
+.It Cm XDG_DATA_HOME
+.It Cm XDG_ICON_THEME
+.It Cm SESSION_MANAGER
+.It Cm SM_SAVE_DIR
+.El
+.Sh SIGNALS
+The following signals are handled by
+.Nm @PACKAGE_NAME@ :
+.Pp
+.Bl -tag -width "XX" -compact
+.It Ar SIGTERM
+.Nm @PACKAGE_NAME@
+will quit when it receives a
+.Ar SIGTERM
+signal.
+.It Ar SIGINT
+.Nm @PACKAGE_NAME@
+will quit when it receives a
+.Ar SIGINT
+signal.
+.It Ar SIGQUIT
+.Nm @PACKAGE_NAME@
+will quit when it receives a
+.Ar SIGQUIT
+signal.
+.It Ar SIGHUP
+.Nm @PACKAGE_NAME@
+will reload when it receives a
+.Ar SIGHUP
+signal.
+.It Ar SIGCHLD
+.Nm @PACKAGE_NAME@
+respects
+.Ar SIGCHLD
+and reaps children after they exit.
+.It Ar SIGUSR1
+(Reserved for additional function or feature.)
+.It Ar SIGUSR2
+(Reserved for additional function or feature.)
+.It Ar SIGTTIN
+.Nm @PACKAGE_NAME@
+ignores job control signals.
+.It Ar SIGTTOU
+.Nm @PACKAGE_NAME@
+ignores job control signals.
+.It Ar SIGTSTP
+.Nm @PACKAGE_NAME@
+ignores job control signals.
+.El
 .Sh FILES
 .Bl -tag -width "XX"
 .It Pa ~/.@PACKAGE@/@PACKAGE@rc

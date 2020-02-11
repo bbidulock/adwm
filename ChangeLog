@@ -1,5 +1,19 @@
 # created with git log --stat=76 -M -C -500|fmt -sct -w80
 
+commit 6a16a26d042474938f516a145374417efdd850fa
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Feb 11 04:34:41 2020 -0700
+
+    update release files
+
+ AUTHORS      |  2 +-
+ ChangeLog    | 24 +++++++++++++++---------
+ NEWS         |  7 ++++---
+ README       |  6 +++---
+ README.md    |  6 +++---
+ configure.ac |  4 ++--
+ 6 files changed, 28 insertions(+), 21 deletions(-)
+
 commit ac4c74d99c5386635bb72ef129d73e8d55e3c900
 Author: Brian Bidulock <bidulock@openss7.org>
 Date:   Tue Feb 11 04:33:28 2020 -0700
@@ -5293,12 +5307,3 @@ Date:   Thu Sep 28 20:22:48 2017 -0600
 
  doc/adwm-style.5.in | 327 +++++++++++++++++++++++++++++++++++++-----------
  1 file changed, 253 insertions(+), 74 deletions(-)
-
-commit 47f2e284cf1b47f48f51202d95df1e6166c3d8a2
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Thu Sep 28 20:22:36 2017 -0600
-
-    update keys manual page
-
- doc/adwm-keys.5.in | 472 +++++++++++++++++++++++++++++++++++--------------
- 1 file changed, 341 insertions(+), 131 deletions(-)

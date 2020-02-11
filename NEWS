@@ -1,4 +1,128 @@
-adwm -- history of user-visible changes.  2019-10-03
+adwm -- history of user-visible changes.  2020-02-08
+
+Release adwm-0.7.10 released 2020-02-08
+---------------------------------------
+
+git tag -n100 -l 0.7.10
+
+0.7.10          Maintenance Release 0.7.10
+
+    This is another release of the adwm window manager that provdes a fully
+    XDG, WindowMaker, WMH (WinWM), MWMH (CDE/Motif), ICCM 2.0 compliant
+    tiling/floating window manager. It borrows concepts from dwm(1),
+    velox(1), awesome(1), spectrwm(1) and wmii(1).
+
+    This is a maintenance release that fixes a number of issues, provides
+    full support for compilation with -Wextra flag. Although this release
+    provides some significant development of X11R6 session management
+    capabilities, those capabilities are not yet used. There are no
+    outstanding issues at the time of release, and the next release should
+    include some outstanding development from the TODO list.
+
+    Included in the release is an autoconf tarball for building the package
+    from source. See the NEWS and TODO file in the release for more
+    information. Please report problems to the issues list on GitHub.
+
+git shortlog -e -n -w80,6,8 0.7.9...0.7.10
+
+Brian Bidulock <bidulock@openss7.org> (93):
+      post release update
+      document session support
+      add notes on session management
+      start session restore functions
+      address issue #9
+      include restore file in compile
+      save views
+      more savefile configuration
+      more putresource functions
+      address another issue #9 item
+      rename style database
+      rework save function
+      add some notes for session management
+      add some notes
+      add showing_desktop to state
+      save and restore layout orient and win placement
+      update man pages for new configuration directives
+      provide key actions for win placement strategy
+      save and restore tags selected for each view
+      mark NOTES.sm file as asciidoc
+      use actual number of tags per screen
+      correct logic error in islost
+      avoid overflow on shifts
+      don't assign seltags to tags
+      save client lists
+      document button bindings and titlelayout
+      add type
+      create button manual page
+      get ready to save clients for session management
+      start working configurable buttons
+      handle multiple actions for buttons
+      rework button functions
+      default buttonrc file
+      some corrections
+      support loadable mouse button defs
+      updated TODO
+      use pixmaps for menus in titlebar
+      do not pass NULL to strcmp
+      do not pass NULL to client events
+      get offsets right
+      print more info in logs
+      spelling corrections
+      add and track sm_role and sm_name for session mgmt
+      update compliance items
+      skip regex on special "NULL" sequence
+      document window rules
+      typo in help message
+      update copyright dates
+      add and document session mgmt options
+      cosmetic
+      Merge branch 'master' of github.com:bbidulock/adwm
+      remove gh-pages artifact
+      add rules file documentation
+      ignore rule doc artifacts
+      create rules manpage
+      install rules manpage
+      minor cleanup
+      document buttons and rules files
+      minor cleanup of dock manpage
+      minor cleanup of keys manpage
+      minor cleanup of manpages
+      read rules file
+      read rules file
+      save rules file
+      building up session management
+      document rules better
+      save rules in current format
+      parse new rule format
+      apply rules with current format
+      save directly to file (simpler)
+      use mask of restorable bits
+      save more session fields
+      show initial and final configuration for testing
+      documnet compliance items
+      rework tag naming
+      fix tag names and current view restoration
+      do not update desktop number too early
+      do not debug
+      extra include not used
+      get tag names working properly
+      remove unused function
+      fix error in configure logic
+      potential fix for issue #10
+      turn on extra warnings
+      handle extra warnings
+      add missing type
+      undo some changes in image.c
+      fixup for -Wextra
+      honor modality set by MOTIF_WM_HINTS
+      correct saving screen directives
+      unset DESKTOP_STARTUP_ID in environment
+      some additional documentation
+      simpler MDOCDATE and cscope
+
+Brian Bidulock <bidulock@openss7.com> (1):
+      Set theme jekyll-theme-minimal
+
 
 Release adwm-0.7.9 released 2019-10-03
 --------------------------------------
@@ -198,36 +322,5 @@ Brian Bidulock <bidulock@openss7.org> (7):
       never block on wait
       do not handle core-dumpers
       unmap dockapp window
-      update release files
-
-
-Release adwm-0.7.3 released 2018-05-28
---------------------------------------
-
-git shortlog -e -n -w80,6,8 0.7.2...0.7.3
-
-Brian Bidulock <bidulock@openss7.org> (23):
-      prepare to add X11R6 session management
-      start building up session management
-      more session work
-      working up session management
-      working up session management
-      update view directive manual page
-      add several key binding notes
-      handle per-view settings
-      start writing session state
-      spelling
-      update documentation
-      compile session save
-      additions to save routines
-      use execlp instead of wordexp execvp
-      use execlp and shell instead of wordexp and execvp
-      no exec in sh -c
-      enable debug
-      more output, better process handling
-      update release files
-      prctl is linux-specific
-      update release files
-      Big mistake: don't XCloseDisplay() after fork
       update release files
 

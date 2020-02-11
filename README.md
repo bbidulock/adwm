@@ -1,9 +1,9 @@
-[adwm -- read me first file.  2020-02-08]: #
+[adwm -- read me first file.  2020-02-11]: #
 
 adwm
 ===============
 
-Package `adwm-0.7.10` was released under GPLv3 license 2020-02-08.
+Package `adwm-0.7.10` was released under GPLv3 license 2020-02-11.
 
 This was originally a fork of Echinus which in turn was a fork of `dwm(1)`, and
 borrows concepts from `velox(1)`, `awesome(1)`, `spectrwm(1)` and `wmii(1)`.
@@ -14,7 +14,7 @@ WMH (WinWM), MWMH (CDE/Motif), ICCCM 2.0 compliance and support.
 Release
 -------
 
-This is the `adwm-0.7.10` package, released 2020-02-08.  This release, and
+This is the `adwm-0.7.10` package, released 2020-02-11.  This release, and
 the latest version, can be obtained from [GitHub][1], using a command such as:
 
     $> git clone https://github.com/bbidulock/adwm.git

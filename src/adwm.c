@@ -4063,8 +4063,6 @@ updaterootprop(Window root, Atom prop, int state)
 			return False;
 		}
 	} else {
-		char *name;
-
 		if (0) {
 		} else if (prop == _XA_WIN_PROTOCOLS) {
 		} else if (prop == _XA_WIN_ICONS) {
@@ -4103,13 +4101,17 @@ updaterootprop(Window root, Atom prop, int state)
 		} else if (prop == _XA_NET_SHOWING_DESKTOP) {
 		} else
 			return False;
+		/* Unfortunately we see our own changes here.  So, no need to fill the
+		   logs with error statements for normal events.  */
+		if (0) {
+			char *name = XGetAtomName(dpy, prop);
 
-		name = XGetAtomName(dpy, prop);
-		EPRINTF("%s WM property %s\n",
-			state == PropertyDelete ? "deletion of" : "change to",
-			(name = XGetAtomName(dpy, prop)));
-		if (name)
-			XFree(name);
+			EPRINTF("%s WM property %s\n",
+				state == PropertyDelete ? "deletion of" : "change to",
+				(name = XGetAtomName(dpy, prop)));
+			if (name)
+				XFree(name);
+		}
 		return False;
 	}
 }

@@ -3864,7 +3864,7 @@ mousemove_from(Client *c, int from, XEvent *e, Bool toggle)
 	int x_root, y_root;
 	View *v, *nv;
 	ClientGeometry n = { 0, }, o = { 0, };
-	Bool moved = False, snapped = False, isfloater;
+	Bool moved = False, x_snapped = False, y_snapped = False, isfloater;
 	IsUnion was = {.is = 0 };
 	long data[5] = { 0, };
 
@@ -4121,8 +4121,10 @@ mousemove_from(Client *c, int from, XEvent *e, Bool toggle)
 							Bool x_snapping = False;
 							Bool y_snapping = False;
 
-							data[0] = n.x + n.w / 2 + c->c.b;
-							data[1] = n.y + n.h / 2 + c->c.b;
+							if (!x_snapped)
+								data[0] = n.x + n.w / 2 + c->c.b;
+							if (!y_snapped)
+								data[1] = n.y + n.h / 2 + c->c.b;
 
 							if ((x_snapping = (sl && (abs(n.x - wa.x) < snap)))) {
 								XPRINTF("snapping left edge to workspace left edge\n");
@@ -4265,11 +4267,18 @@ mousemove_from(Client *c, int from, XEvent *e, Bool toggle)
 								}
 							}
 							data[4] &= ~0x6;
-							if (!snapped && (x_snapping || y_snapping)) {
-								snapped = True;
+							if (!x_snapped && x_snapping) {
+								x_snapped = True;
 								data[4] |= 0x2; /* snapped */
-							} else if (snapped && (!x_snapping && !y_snapping)) {
-								snapped = False;
+							} else if (x_snapped && !x_snapping) {
+								x_snapped = False;
+								data[4] |= 0x4; /* unsnapped */
+							}
+							if (!y_snapped && y_snapping) {
+								y_snapped = True;
+								data[4] |= 0x2; /* snapped */
+							} else if (y_snapped && !y_snapping) {
+								y_snapped = False;
 								data[4] |= 0x4; /* unsnapped */
 							}
 							if (data[4] & 0x6)
@@ -4493,7 +4502,7 @@ mouseresize_from(Client *c, int from, XEvent *e, Bool toggle)
 	int x_root, y_root;
 	View *v, *nv;
 	ClientGeometry n = { 0, }, o = { 0, };
-	Bool resized = False, snapped = False;
+	Bool resized = False, x_snapped = False, y_snapped = False;
 	IsUnion was = {.is = 0 };
 	long data[5] = { 0, };
 
@@ -4689,8 +4698,10 @@ mouseresize_from(Client *c, int from, XEvent *e, Bool toggle)
 						Bool x_snapping = False;
 						Bool y_snapping = False;
 
-						data[0] = n.x + n.w / 2 + c->c.b;
-						data[1] = n.y + n.h / 2 + c->c.b;
+						if (!x_snapped)
+							data[0] = n.x + n.w / 2 + c->c.b;
+						if (!y_snapped)
+							data[1] = n.y + n.h / 2 + c->c.b;
 
 						if ((x_snapping = (sl && (abs(n.x - wa.x) < snap)))) {
 							XPRINTF("snapping left edge to workspace left edge\n");
@@ -4833,11 +4844,18 @@ mouseresize_from(Client *c, int from, XEvent *e, Bool toggle)
 							}
 						}
 						data[4] &= ~0x6;
-						if (!snapped && (x_snapping || y_snapping)) {
-							snapped = True;
+						if (!x_snapped && x_snapping) {
+							x_snapped = True;
 							data[4] |= 0x2; /* snapped */
-						} else if (snapped && (!x_snapping && !y_snapping)) {
-							snapped = False;
+						} else if (x_snapped && !x_snapping) {
+							x_snapped = False;
+							data[4] |= 0x4; /* unsnapped */
+						}
+						if (!y_snapped && y_snapping) {
+							y_snapped = True;
+							data[4] |= 0x2; /* snapped */
+						} else if (y_snapped && !y_snapping) {
+							y_snapped = False;
 							data[4] |= 0x4; /* unsnapped */
 						}
 						if (data[4] & 0x6)

@@ -3941,7 +3941,6 @@ mousemove_from(Client *c, int from, XEvent *e, Bool toggle)
 				if (ev.xclient.data.l[2] == 11) {
 					/* _NET_WM_MOVERESIZE_CANCEL */
 					XPRINTF(c, "Move cancelled!\n");
-					ev.xclient.data.l[2] = from;
 					ev.xclient.data.l[4] = 1; /* moving */
 					XChangeProperty(dpy, c->win, _XA_NET_WM_MOVERESIZE, XA_CARDINAL, 32,
 							PropModeReplace, (unsigned char *) ev.xclient.data.l, 5);
@@ -4523,7 +4522,6 @@ mouseresize_from(Client *c, int from, XEvent *e, Bool toggle)
 			if (ev.xclient.message_type == _XA_NET_WM_MOVERESIZE) {
 				if (ev.xclient.data.l[2] == 11) {
 					/* _NET_WM_MOVERESIZE_CANCEL */
-					ev.xclient.data.l[2] = from;
 					ev.xclient.data.l[4] = 0; /* resizing */
 					XChangeProperty(dpy, c->win, _XA_NET_WM_MOVERESIZE, XA_CARDINAL, 32,
 							PropModeReplace, (unsigned char *) ev.xclient.data.l, 5);

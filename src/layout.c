@@ -3866,6 +3866,7 @@ mousemove_from(Client *c, int from, XEvent *e, Bool toggle)
 	ClientGeometry n = { 0, }, o = { 0, };
 	Bool moved = False, isfloater;
 	IsUnion was = {.is = 0 };
+	long data[5] = { 0, };
 
 	x_root = e->xbutton.x_root;
 	y_root = e->xbutton.y_root;
@@ -3903,6 +3904,22 @@ mousemove_from(Client *c, int from, XEvent *e, Bool toggle)
 	n = c->c;
 	o = c->c;
 
+	/* Like _NET_WM_MOVERESIZE client message, but [2] is full "from",
+	   and [5] indicates move or resize instead of source. */
+
+	data[0] = e->xbutton.x_root;
+	data[1] = e->xbutton.y_root;
+	data[2] = from;
+	data[3] = e->xbutton.button;
+	data[4] = 1; /* moving */
+
+	/* We place _NET_WM_MOVERESIZE property on window while moving so that
+	   other programs can tell that the window manager is in the process of
+	   moving the window. */
+
+	XChangeProperty(dpy, c->win, _XA_NET_WM_MOVERESIZE, XA_CARDINAL, 32,
+			PropModeReplace, (unsigned char *) data, 5);
+
 	for (;;) {
 		Bool sl, sr, st, sb;
 		int snap;
@@ -3924,6 +3941,10 @@ mousemove_from(Client *c, int from, XEvent *e, Bool toggle)
 				if (ev.xclient.data.l[2] == 11) {
 					/* _NET_WM_MOVERESIZE_CANCEL */
 					XPRINTF(c, "Move cancelled!\n");
+					ev.xclient.data.l[2] = from;
+					ev.xclient.data.l[4] = 1; /* moving */
+					XChangeProperty(dpy, c->win, _XA_NET_WM_MOVERESIZE, XA_CARDINAL, 32,
+							PropModeReplace, (unsigned char *) ev.xclient.data.l, 5);
 					moved = move_cancel(c, v, &o, &was);
 					break;
 				}
@@ -4251,6 +4272,7 @@ mousemove_from(Client *c, int from, XEvent *e, Bool toggle)
 		moved = True;
 	focuslockclient(c);
 	ewmh_update_net_window_state(c);
+	XDeleteProperty(dpy, c->win, _XA_NET_WM_MOVERESIZE);
 	return moved;
 }
 
@@ -4442,6 +4464,7 @@ mouseresize_from(Client *c, int from, XEvent *e, Bool toggle)
 	ClientGeometry n = { 0, }, o = { 0, };
 	Bool resized = False;
 	IsUnion was = {.is = 0 };
+	long data[5] = { 0, };
 
 	x_root = e->xbutton.x_root;
 	y_root = e->xbutton.y_root;
@@ -4464,6 +4487,22 @@ mouseresize_from(Client *c, int from, XEvent *e, Bool toggle)
 	o = c->c;
 	n = c->c;
 
+	/* Like _NET_WM_MOVERESIZE client message, but [2] is full "from",
+	   and [5] indicates move or resize instead of source. */
+
+	data[0] = e->xbutton.x_root;
+	data[1] = e->xbutton.y_root;
+	data[2] = from;
+	data[3] = e->xbutton.button;
+	data[4] = 0; /* resizing */
+
+	/* We place _NET_WM_MOVERESIZE property on window while resizing so that
+	   other programs can tell that the window manager is in the process of
+	   resizing the window. */
+
+	XChangeProperty(dpy, c->win, _XA_NET_WM_MOVERESIZE, XA_CARDINAL, 32,
+			PropModeReplace, (unsigned char *) data, 5);
+
 	for (;;) {
 		Bool sl, st, sr, sb;
 		int snap;
@@ -4484,6 +4523,10 @@ mouseresize_from(Client *c, int from, XEvent *e, Bool toggle)
 			if (ev.xclient.message_type == _XA_NET_WM_MOVERESIZE) {
 				if (ev.xclient.data.l[2] == 11) {
 					/* _NET_WM_MOVERESIZE_CANCEL */
+					ev.xclient.data.l[2] = from;
+					ev.xclient.data.l[4] = 0; /* resizing */
+					XChangeProperty(dpy, c->win, _XA_NET_WM_MOVERESIZE, XA_CARDINAL, 32,
+							PropModeReplace, (unsigned char *) ev.xclient.data.l, 5);
 					resized = resize_cancel(c, v, &o, &was);
 					break;
 				}
@@ -4803,6 +4846,7 @@ mouseresize_from(Client *c, int from, XEvent *e, Bool toggle)
 		resized = True;
 	focuslockclient(c);
 	ewmh_update_net_window_state(c);
+	XDeleteProperty(dpy, c->win, _XA_NET_WM_MOVERESIZE);
 	return resized;
 }
 

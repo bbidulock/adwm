@@ -4121,24 +4121,33 @@ mousemove_from(Client *c, int from, XEvent *e, Bool toggle)
 							Bool x_snapping = False;
 							Bool y_snapping = False;
 
+							data[0] = n.x + n.w / 2 + c->c.b;
+							data[1] = n.y + n.h / 2 + c->c.b;
+
 							if ((x_snapping = (sl && (abs(n.x - wa.x) < snap)))) {
 								XPRINTF("snapping left edge to workspace left edge\n");
 								n.x += wa.x - n.x;
+								data[0] = wa.x;
 							} else if ((x_snapping = (sr && (abs(nx2 - wax2) < snap)))) {
 								XPRINTF("snapping right edge to workspace right edge\n");
 								n.x += wax2 - nx2;
+								data[0] = wax2;
 							} else if ((x_snapping = (sl && (abs(n.x - sc.x) < snap)))) {
 								XPRINTF("snapping left edge to screen left edge\n");
 								n.x += sc.x - n.x;
+								data[0] = sc.x;
 							} else if ((x_snapping = (sr && (abs(nx2 - scx2) < snap)))) {
 								XPRINTF("snapping right edge to screen right edge\n");
 								n.x += scx2 - nx2;
+								data[0] = scx2;
 							} else if ((x_snapping = (sl && (abs(n.x - waxc) < snap)))) {
 								XPRINTF("snapping left edge to workspace center line\n");
 								n.x += waxc - n.x;
+								data[0] = waxc;
 							} else if ((x_snapping = (sr && (abs(nx2 - waxc) < snap)))) {
 								XPRINTF("snapping right edge to workspace center line\n");
 								n.x += waxc - nx2;
+								data[0] = waxc;
 							} else {
 								for (s = event_scr->stack; s && !x_snapping; s = s->snext) {
 									int sx2 = s->c.x + s->c.w + 2 * s->c.b;
@@ -4150,10 +4159,12 @@ mousemove_from(Client *c, int from, XEvent *e, Bool toggle)
 										if (sl && (abs(n.x - sx2) < snap)) {
 											XPRINTF(s, "snapping left edge to other window right edge");
 											n.x = sx2;
+											data[0] = sx2;
 											x_snapping = True;
 										} else if (sr && (abs(nx2 - s->c.x) < snap)) {
 											XPRINTF(s, "snapping right edge to other window left edge");
 											n.x = s->c.x - (n.w + 2 * n.b);
+											data[0] = s->c.x;
 											x_snapping = True;
 										} else
 											continue;
@@ -4170,10 +4181,12 @@ mousemove_from(Client *c, int from, XEvent *e, Bool toggle)
 										if (sl && (abs(n.x - s->c.x) < snap)) {
 											XPRINTF(s, "snapping left edge to other window left edge");
 											n.x = s->c.x;
+											data[0] = s->c.x;
 											x_snapping = True;
 										} else if (sr && (abs(nx2 - sx2) < snap)) {
 											XPRINTF(s, "snapping right edge to other window right edge");
 											n.x = sx2 - (n.w + 2 * n.b);
+											data[0] = sx2;
 											x_snapping = True;
 										} else
 											continue;
@@ -4184,21 +4197,27 @@ mousemove_from(Client *c, int from, XEvent *e, Bool toggle)
 							if ((y_snapping = (st && (abs(n.y - wa.y) < snap)))) {
 								XPRINTF("snapping top edge to workspace top edge\n");
 								n.y += wa.y - n.y;
+								data[1] = wa.y;
 							} else if ((y_snapping = (sb && (abs(ny2 - way2) < snap)))) {
 								XPRINTF("snapping bottom edge to workspace bottom edge\n");
 								n.y += way2 - ny2;
+								data[1] = way2;
 							} else if ((y_snapping = (st && (abs(n.y - sc.y) < snap)))) {
 								XPRINTF("snapping top edge to screen top edge\n");
 								n.y += sc.y - n.y;
+								data[1] = sc.y;
 							} else if ((y_snapping = (sb && (abs(ny2 - scy2) < snap)))) {
 								XPRINTF("snapping bottom edge to screen bottom edge\n");
 								n.y += scy2 - ny2;
+								data[1] = scy2;
 							} else if ((y_snapping = (st && (abs(n.y - wayc) < snap)))) {
 								XPRINTF("snapping left edge to workspace center line\n");
 								n.y += wayc - n.y;
+								data[1] = wayc;
 							} else if ((y_snapping = (sb && (abs(ny2 - wayc) < snap)))) {
 								XPRINTF("snapping right edge to workspace center line\n");
 								n.y += wayc - ny2;
+								data[1] = wayc;
 							} else {
 								for (s = event_scr->stack; s && !y_snapping; s = s->snext) {
 									int sx2 = s->c.x + s->c.w + 2 * s->c.b;
@@ -4210,10 +4229,12 @@ mousemove_from(Client *c, int from, XEvent *e, Bool toggle)
 										if (st && (abs(n.y - sy2) < snap)) {
 											XPRINTF(s, "snapping top edge to other window bottom edge");
 											n.y = sy2;
+											data[1] = sy2;
 											y_snapping = True;
 										} else if (sb && (abs(ny2 - s->c.y) < snap)) {
 											XPRINTF(s, "snapping bottom edge to other window top edge");
 											n.y += s->c.y - ny2;
+											data[1] = s->c.y;
 											y_snapping = True;
 										} else
 											continue;
@@ -4230,10 +4251,12 @@ mousemove_from(Client *c, int from, XEvent *e, Bool toggle)
 										if (st && (abs(n.y - s->c.y) < snap)) {
 											XPRINTF(s, "snapping top edge to other window top edge");
 											n.y = s->c.y;
+											data[1] = s->c.y;
 											y_snapping = True;
 										} else if (sb && (abs(ny2 - sy2) < snap)) {
 											XPRINTF(s, "snapping bottom edge to other window bottom edge");
 											n.y += sy2 - ny2;
+											data[1] = sy2;
 											y_snapping = True;
 										} else
 											continue;
@@ -4241,19 +4264,17 @@ mousemove_from(Client *c, int from, XEvent *e, Bool toggle)
 									}
 								}
 							}
+							data[4] &= ~0x6;
 							if (!snapped && (x_snapping || y_snapping)) {
 								snapped = True;
 								data[4] |= 0x2; /* snapped */
-								data[4] &= ~0x4;
-								XChangeProperty(dpy, c->win, _XA_NET_WM_MOVERESIZE, XA_CARDINAL, 32,
-										PropModeReplace, (unsigned char *) data, 5);
 							} else if (snapped && (!x_snapping && !y_snapping)) {
 								snapped = False;
-								data[4] &= ~0x2;
 								data[4] |= 0x4; /* unsnapped */
+							}
+							if (data[4] & 0x6)
 								XChangeProperty(dpy, c->win, _XA_NET_WM_MOVERESIZE, XA_CARDINAL, 32,
 										PropModeReplace, (unsigned char *) data, 5);
-							}
 						}
 					}
 				}
@@ -4668,24 +4689,33 @@ mouseresize_from(Client *c, int from, XEvent *e, Bool toggle)
 						Bool x_snapping = False;
 						Bool y_snapping = False;
 
+						data[0] = n.x + n.w / 2 + c->c.b;
+						data[1] = n.y + n.h / 2 + c->c.b;
+
 						if ((x_snapping = (sl && (abs(n.x - wa.x) < snap)))) {
 							XPRINTF("snapping left edge to workspace left edge\n");
 							n.w += n.x - wa.x;
+							data[0] = wa.x;
 						} else if ((x_snapping = (sr && (abs(nx2 - wax2) < snap)))) {
 							XPRINTF("snapping right edge to workspace right edge\n");
 							n.w += wax2 - nx2;
+							data[0] = wax2;
 						} else if ((x_snapping = (sl && (abs(n.x - sc.x) < snap)))) {
 							XPRINTF("snapping left edge to screen left edge\n");
 							n.w += n.x - sc.x;
+							data[0] = sc.x;
 						} else if ((x_snapping = (sr && (abs(nx2 - scx2) < snap)))) {
 							XPRINTF("snapping right edge to screen right edge\n");
 							n.w += scx2 - nx2;
+							data[0] = scx2;
 						} else if ((x_snapping = (sl && (abs(n.x - waxc) < snap)))) {
 							XPRINTF("snapping left edge to workspace center line\n");
 							n.w += n.x - waxc;
+							data[0] = waxc;
 						} else if ((x_snapping = (sr && (abs(nx2 - waxc) < snap)))) {
 							XPRINTF("snapping right edge to workspace center line\n");
 							n.w += waxc - nx2;
+							data[0] = waxc;
 						} else {
 							for (s = event_scr->stack; s && !x_snapping; s = s->next) {
 								int sx2 = s->c.x + s->c.w + 2 * s->c.b;
@@ -4697,10 +4727,12 @@ mouseresize_from(Client *c, int from, XEvent *e, Bool toggle)
 									if (sl && (abs(n.x - sx2) < snap)) {
 										XPRINTF(s, "snapping left edge to other window right edge");
 										n.w += n.x - sx2;
+										data[0] = sx2;
 										x_snapping = True;
 									} else if (sr && (abs(nx2 - s->c.x) < snap)) {
 										XPRINTF(s, "snapping right edge to other window left edge");
 										n.w += s->c.x - nx2;
+										data[0] = s->c.x;
 										x_snapping = True;
 									} else
 										continue;
@@ -4717,10 +4749,12 @@ mouseresize_from(Client *c, int from, XEvent *e, Bool toggle)
 									if (sl && (abs(n.x - s->c.x) < snap)) {
 										XPRINTF(s, "snapping left edge to other window left edge");
 										n.w += n.x - s->c.x;
+										data[0] = s->c.x;
 										x_snapping = True;
 									} else if (sr && (abs(nx2 - sx2) < snap)) {
 										XPRINTF(s, "snapping right edge to other window right edge");
 										n.w += sx2 - nx2;
+										data[0] = sx2;
 										x_snapping = True;
 									} else
 										continue;
@@ -4731,21 +4765,27 @@ mouseresize_from(Client *c, int from, XEvent *e, Bool toggle)
 						if ((y_snapping = (st && (abs(n.y - wa.y) < snap)))) {
 							XPRINTF("snapping top edge to workspace top edge\n");
 							n.h += n.y - wa.y;
+							data[1] = wa.y;
 						} else if ((y_snapping = (sb && (abs(ny2 - way2) < snap)))) {
 							XPRINTF("snapping bottom edge to workspace bottom edge\n");
 							n.h += way2 - ny2;
+							data[1] = way2;
 						} else if ((y_snapping = (st && (abs(n.y - sc.y) < snap)))) {
 							XPRINTF("snapping top edge to screen top edge\n");
 							n.h += n.y - sc.y;
+							data[1] = sc.y;
 						} else if ((y_snapping = (sb && (abs(ny2 - scy2) < snap)))) {
 							XPRINTF("snapping bottom edge to screen bottom edge\n");
 							n.h += scy2 - ny2;
+							data[1] = scy2;
 						} else if ((y_snapping = (st && (abs(n.y - wayc) < snap)))) {
 							XPRINTF("snapping top edge to workspace center line\n");
 							n.h += n.y - wayc;
+							data[1] = wayc;
 						} else if ((y_snapping = (sb && (abs(ny2 - wayc) < snap)))) {
 							XPRINTF("snapping bottom edge to workspace center line\n");
 							n.h += wayc - ny2;
+							data[1] = wayc;
 						} else {
 							for (s = event_scr->stack; s && !y_snapping; s = s->snext) {
 								int sx2 = s->c.x + s->c.w + 2 * s->c.b;
@@ -4757,10 +4797,12 @@ mouseresize_from(Client *c, int from, XEvent *e, Bool toggle)
 									if (st && (abs(n.y - sy2) < snap)) {
 										XPRINTF(s, "snapping top edge to other window bottom edge");
 										n.h += n.y - sy2;
+										data[1] = sy2;
 										y_snapping = True;
 									} else if (sb && (abs(ny2 - s->c.y) < snap)) {
 										XPRINTF(s, "snapping bottom edge to other window top edge");
 										n.h += s->c.y - ny2;
+										data[1] = s->c.y;
 										y_snapping = True;
 									} else
 										continue;
@@ -4777,10 +4819,12 @@ mouseresize_from(Client *c, int from, XEvent *e, Bool toggle)
 									if (st && (abs(n.y - s->c.y) < snap)) {
 										XPRINTF(s, "snapping top edge to other window top edge");
 										n.h += n.y - s->c.y;
+										data[1] = s->c.y;
 										y_snapping = True;
 									} else if (sb && (abs(ny2 - sy2) < snap)) {
 										XPRINTF(s, "snapping bottom edge to other window bottom edge");
 										n.h += sy2 - ny2;
+										data[1] = sy2;
 										y_snapping = True;
 									} else
 										continue;
@@ -4788,19 +4832,17 @@ mouseresize_from(Client *c, int from, XEvent *e, Bool toggle)
 								}
 							}
 						}
+						data[4] &= ~0x6;
 						if (!snapped && (x_snapping || y_snapping)) {
 							snapped = True;
 							data[4] |= 0x2; /* snapped */
-							data[4] &= ~0x4;
-							XChangeProperty(dpy, c->win, _XA_NET_WM_MOVERESIZE, XA_CARDINAL, 32,
-									PropModeReplace, (unsigned char *) data, 5);
 						} else if (snapped && (!x_snapping && !y_snapping)) {
 							snapped = False;
-							data[4] &= ~0x2;
 							data[4] |= 0x4; /* unsnapped */
+						}
+						if (data[4] & 0x6)
 							XChangeProperty(dpy, c->win, _XA_NET_WM_MOVERESIZE, XA_CARDINAL, 32,
 									PropModeReplace, (unsigned char *) data, 5);
-						}
 					}
 				}
 			}

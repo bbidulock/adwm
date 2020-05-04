@@ -135,7 +135,8 @@ enum {
 	DeskModeBottomTiled, DeskModeMonocle, DeskModeTopTiled, DeskModeLeftTiled,
 	DeskModeGrid,
 	ClientListStacking, WindowOpacity, MoveResizeWindow, RestackWindow,
-	WindowMoveResize, WindowExtents, HandledIcons, RequestFrameExt, VirtualRoots,
+	WindowMoveResize, WindowMoving, WindowResizing,
+	WindowExtents, HandledIcons, RequestFrameExt, VirtualRoots,
 	WindowType, WindowTypeDesk, WindowTypeDock, WindowTypeToolbar, WindowTypeMenu,
 	WindowTypeUtil, WindowTypeSplash, WindowTypeDialog, WindowTypeDrop,
 	WindowTypePopup, WindowTypeTooltip, WindowTypeNotify, WindowTypeCombo,
@@ -276,6 +277,8 @@ enum {
 #define _XA_NET_MOVERESIZE_WINDOW		atom[MoveResizeWindow]
 #define _XA_NET_RESTACK_WINDOW			atom[RestackWindow]
 #define _XA_NET_WM_MOVERESIZE			atom[WindowMoveResize]
+#define _XA_NET_WM_MOVING			atom[WindowMoving]
+#define _XA_NET_WM_RESIZING			atom[WindowResizing]
 #define _XA_NET_FRAME_EXTENTS			atom[WindowExtents]
 #define _XA_NET_WM_HANDLED_ICONS		atom[HandledIcons]
 #define _XA_NET_REQUEST_FRAME_EXTENTS		atom[RequestFrameExt]

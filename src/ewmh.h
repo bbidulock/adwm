@@ -46,6 +46,9 @@ void ewmh_update_net_desktop_names(void);
 void ewmh_update_net_monitor_geometry(void);
 void ewmh_update_net_number_of_desktops(void);
 void ewmh_update_net_showing_desktop(void);
+void ewmh_update_net_desktop_showing(void);
+void ewmh_update_net_desktop_border(void);
+void ewmh_update_net_desktop_margin(void);
 void ewmh_update_net_virtual_roots(void);
 void ewmh_update_net_work_area(void);
 

@@ -123,6 +123,9 @@ char *atomnames[NATOMS] = {
 	"_NET_WORKAREA",
 	"_NET_DESKTOP_VIEWPORT",
 	"_NET_SHOWING_DESKTOP",
+	"_NET_DESKTOP_SHOWING",
+	"_NET_DESKTOP_BORDER",
+	"_NET_DESKTOP_MARGIN",
 	"_NET_DESKTOP_GEOMETRY",
 	"_NET_VISIBLE_DESKTOPS",
 	"_NET_MONITOR_GEOMETRY",
@@ -1712,6 +1715,45 @@ ewmh_update_net_active_window()
 			PropModeReplace, (unsigned char *) &win, 1);
 	XChangeProperty(dpy, scr->root, _XA_WIN_FOCUS, XA_CARDINAL, 32,
 			PropModeReplace, (unsigned char *) &win, 1);
+}
+
+void
+ewmh_update_net_desktop_showing()
+{
+	long *data;
+	unsigned i;
+
+	XPRINTF("%s\n", "Updating _NET_DESKTOP_SHOWING");
+	data = ecalloc(scr->ntags, sizeof(*data));
+	for (i = 0; i < scr->ntags; i++) {
+		if (scr->views[i].dectiled)
+			data[i] |= 0x2;
+		if (scr->views[i].barpos == StrutsOn)
+			data[i] |= 0x1;
+	}
+	XChangeProperty(dpy, scr->root, _XA_NET_DESKTOP_SHOWING, XA_CARDINAL, 32,
+			PropModeReplace, (unsigned char *) data, scr->ntags);
+	free(data);
+}
+
+void
+ewmh_update_net_desktop_border()
+{
+	long data = scr->style.border;
+
+	XPRINTF("%s\n", "Updating _NET_DESKTOP_BORDER");
+	XChangeProperty(dpy, scr->root, _XA_NET_DESKTOP_BORDER, XA_CARDINAL, 32,
+			PropModeReplace, (unsigned char *) &data, 1);
+}
+
+void
+ewmh_update_net_desktop_margin()
+{
+	long data = scr->style.margin;
+
+	XPRINTF("%s\n", "Updating _NET_DESKTOP_MARGIN");
+	XChangeProperty(dpy, scr->root, _XA_NET_DESKTOP_MARGIN, XA_CARDINAL, 32,
+			PropModeReplace, (unsigned char *) &data, 1);
 }
 
 void

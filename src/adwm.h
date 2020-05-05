@@ -130,7 +130,8 @@ enum {
 	WinWorkCount, WinWorkNames, WinWorkspace, WinWorkspaces, SwmVroot,
 	/* _NET_SUPPORTED following */
 	ClientList, ActiveWindow, WindowDesk, WindowDeskMask, NumberOfDesk, DeskNames,
-	CurDesk, WorkArea, DeskViewport, ShowingDesktop, DeskGeometry, DesksVisible,
+	CurDesk, WorkArea, DeskViewport, ShowingDesktop, DesktopShowing, DesktopBorder,
+	DesktopMargin, DeskGeometry, DesksVisible,
 	MonitorGeometry, DeskModes, DeskModeFloating, DeskModeTiled,
 	DeskModeBottomTiled, DeskModeMonocle, DeskModeTopTiled, DeskModeLeftTiled,
 	DeskModeGrid,
@@ -259,6 +260,9 @@ enum {
 #define _XA_NET_WORKAREA			atom[WorkArea]
 #define _XA_NET_DESKTOP_VIEWPORT		atom[DeskViewport]
 #define _XA_NET_SHOWING_DESKTOP			atom[ShowingDesktop]
+#define _XA_NET_DESKTOP_SHOWING			atom[DesktopShowing]
+#define _XA_NET_DESKTOP_BORDER			atom[DesktopBorder]
+#define _XA_NET_DESKTOP_MARGIN			atom[DesktopMargin]
 #define _XA_NET_DESKTOP_GEOMETRY		atom[DeskGeometry]
 #define _XA_NET_VISIBLE_DESKTOPS		atom[DesksVisible]
 #define _XA_NET_MONITOR_GEOMETRY		atom[MonitorGeometry]

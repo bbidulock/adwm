@@ -1957,6 +1957,7 @@ setborder(unsigned px)
 		border = scr->style.titleheight / 2;
 	if (scr->style.border != border) {
 		scr->style.border = border;
+		ewmh_update_net_desktop_border();
 		arrange(NULL);
 	}
 }
@@ -1983,6 +1984,7 @@ setmargin(unsigned px)
 		margin = scr->style.titleheight;
 	if (scr->style.margin != margin) {
 		scr->style.margin = margin;
+		ewmh_update_net_desktop_margin();
 		arrange(NULL);
 	}
 }

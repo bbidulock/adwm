@@ -1175,6 +1175,8 @@ initstyle(Bool reload __attribute__((unused)))
 				  scr->visual,
 				  scr->colormap);
 	}
+	ewmh_update_net_desktop_border();
+	ewmh_update_net_desktop_margin();
 	/* GC for dock apps */
 	scr->gc = XCreateGC(dpy, scr->root, 0, 0);
 	initbuttons();

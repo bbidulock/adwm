@@ -241,6 +241,7 @@ initviews(Bool reload)
 	}
 
 	ewmh_update_net_desktop_modes();
+	ewmh_update_net_desktop_showing();
 
 	ewmh_process_net_desktop_layout();
 	ewmh_update_net_desktop_layout();

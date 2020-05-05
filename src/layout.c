@@ -6931,6 +6931,7 @@ void
 toggledectiled(View *v)
 {
 	v->dectiled = v->dectiled ? False : True;
+	ewmh_update_net_desktop_showing();
 	arrange(v);
 }
 

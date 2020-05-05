@@ -311,12 +311,12 @@ Adwm*swapnext:		WS + j
 Adwm*swapprev:		WS + k
 
 ! placement		- window placement of view
-Adwm*colplacement:	WA + s
-Adwm*rowplacement:	WA + r
-Adwm*minplacement:	WA + m
-Adwm*undplacement:	WA + u
-Adwm*casplacement:	WA + c
-Adwm*rndplacement:	WA + x
+Adwm*colplacement:	CWA + s
+Adwm*rowplacement:	CWA + r
+Adwm*minplacement:	CWA + m
+Adwm*undplacement:	CWA + u
+Adwm*casplacement:	CWA + c
+Adwm*rndplacement:	CWA + x
 
 ! layout		- layout of monitor
 Adwm*setlayoutm:	A + m

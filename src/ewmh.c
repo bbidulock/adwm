@@ -1771,7 +1771,7 @@ ewmh_update_net_desktop_modes()
 			data[i] = _XA_NET_DESKTOP_MODE_FLOATING;
 			break;
 		case 't':
-			data[i] = _XA_NET_DESKTOP_MODE_TILED;
+			data[i] = _XA_NET_DESKTOP_MODE_LEFT_TILED;
 			break;
 		case 'b':
 			data[i] = _XA_NET_DESKTOP_MODE_BOTTOM_TILED;
@@ -1783,7 +1783,7 @@ ewmh_update_net_desktop_modes()
 			data[i] = _XA_NET_DESKTOP_MODE_TOP_TILED;
 			break;
 		case 'l':
-			data[i] = _XA_NET_DESKTOP_MODE_LEFT_TILED;
+			data[i] = _XA_NET_DESKTOP_MODE_TILED;
 			break;
 		case 'g':
 			data[i] = _XA_NET_DESKTOP_MODE_GRID;

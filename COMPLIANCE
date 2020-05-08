@@ -173,6 +173,9 @@ _NET_FRAME_EXTENTS:			supported
 _NET_WM_OPAQUE_REGION:			NOT supported
 _NET_WM_BYPASS_COMPOSITOR:		NOT supported
 
+_NET_WM_MOVING:*			supported
+_NET_WM_RESIZING:*			supported
+
 _NET_APP_APPLICATION_ID:*		supported
 _NET_APP_LAUNCHER:*			supported
 _NET_APP_LAUNCHEE:*			supported

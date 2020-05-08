@@ -88,8 +88,8 @@ _NET_DESKTOP_MODES:*			supported
 Section 4: Other Root Window Messages
 
 _NET_CLOSE_WINDOW:			supported
-_NET_MOVERESIZE_WINDOW:			supported
-_NET_WM_MOVERESIZE:			supported
+_NET_MOVERESIZE_WINDOW:			supported (???)
+_NET_WM_MOVERESIZE:			supported (keyboard todo)
 _NET_RESTACK_WINDOW:			supported
 _NET_REQUEST_FRAME_EXTENTS:		supported
 

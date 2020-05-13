@@ -2623,6 +2623,7 @@ manage(Window w, XWindowAttributes *wa)
 		return;
 	}
 	XPRINTF("managing window 0x%lx\n", w);
+	adding_client = True;
 	xtrap_push(0,NULL);
 	c = emallocz(sizeof(Client));
 	c->win = w;
@@ -3002,6 +3003,9 @@ manage(Window w, XWindowAttributes *wa)
 		focus(sel);
 	}
 	xtrap_pop();
+	adding_client = False;
+	/* don't add to client lists till fully configured (confuses libwnck and friends otherwise) */
+	ewmh_update_net_client_lists();
 }
 
 static Bool

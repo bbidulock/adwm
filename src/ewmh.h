@@ -2,6 +2,7 @@
 #define __LOCAL_EWMH_H__
 
 /* ewmh.c */
+Bool adding_client;
 Bool checkatom(Window win, Atom bigatom, Atom smallatom);
 unsigned getwintype(Window win);
 Bool checkwintype(Window win, int wintype);

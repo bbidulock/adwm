@@ -1025,6 +1025,8 @@ ewmh_update_echinus_layout_name()
 			(const unsigned char *) &v->layout->symbol, 1L);
 }
 
+Bool adding_client = False;
+
 void
 ewmh_update_net_client_list_stacking()
 {
@@ -1032,6 +1034,8 @@ ewmh_update_net_client_list_stacking()
 	Window *wl = NULL;
 	int i, n;
 
+	if (adding_client)
+		return;
 	XPRINTF("%s\n", "Updating _NET_CLIENT_LIST_STACKING");
 	for (n = 0, c = scr->stack; c; n++, c = c->snext) ;
 	if (n && (wl = ecalloc(n, sizeof(Window)))) {
@@ -1052,6 +1056,8 @@ ewmh_update_net_client_list()
 	Window *wl = NULL;
 	int i, n;
 
+	if (adding_client)
+		return;
 	XPRINTF("%s\n", "Updating _NET_CLIENT_LIST");
 	for (n = 0, c = scr->clist; c; n++, c = c->cnext) ;
 	if (n && (wl = calloc(n, sizeof(Window)))) {
@@ -1070,6 +1076,8 @@ ewmh_update_net_client_list()
 void
 ewmh_update_net_client_lists()
 {
+	if (adding_client)
+		return;
 	ewmh_update_net_client_list();
 	ewmh_update_net_client_list_stacking();
 	XFlush(dpy);		/* XXX: caller's responsibility */

@@ -2156,7 +2156,7 @@ getmonitorres(int num, const char *resource, const char *defval)
 void
 putresource(const char *resource, const char *value)
 {
-	static char clas[256] = { 0, };
+	static char clas[280] = { 0, };
 
 	snprintf(clas, sizeof(clas), "%s*%s:\t\t%s\n", RESCLASS, resource, value);
 	XrmPutStringResource(&srdb, clas, value);
@@ -2165,7 +2165,7 @@ putresource(const char *resource, const char *value)
 void
 putscreenres(const char *resource, const char *value)
 {
-	static char clas[256] = { 0, };
+	static char clas[280] = { 0, };
 
 	snprintf(clas, sizeof(clas), "%s*screen%d.%s", RESCLASS, scr->screen, resource);
 	XrmPutStringResource(&srdb, clas, value);

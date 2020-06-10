@@ -1,5 +1,19 @@
 # created with git log --stat=76 -M -C -500|fmt -sct -w80
 
+commit 82eaefc15c9e8c76c675041c3168ca1e716763bf
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Jun 10 00:20:37 2020 -0600
+
+    update release files
+
+ AUTHORS      |   2 +-
+ ChangeLog    | 334 +++++++++++++++++++++++++++++--------------------------
+ NEWS         |  90 +++++++--------
+ README       |  20 ++--
+ README.md    |  20 ++--
+ configure.ac |  10 +-
+ 6 files changed, 248 insertions(+), 228 deletions(-)
+
 commit 89e68ad1d265953b18649134edfc8b96a667f718
 Author: Brian Bidulock <bidulock@openss7.org>
 Date:   Wed Jun 10 00:18:03 2020 -0600
@@ -5315,15 +5329,3 @@ Date:   Sun Oct 1 02:01:09 2017 -0600
 
  autogen.sh | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
-
-commit 2182a1b19eacb2ccc78d740eb38acf76890185e3
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Sun Oct 1 01:22:31 2017 -0600
-
-    mark manual page input as nroff
-
- doc/adwm-config.5.in | 2 +-
- doc/adwm-keys.5.in   | 2 +-
- doc/adwm-style.5.in  | 2 +-
- doc/adwm.1.in        | 2 +-
- 4 files changed, 4 insertions(+), 4 deletions(-)

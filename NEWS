@@ -24,7 +24,7 @@ git tag -n100 -l 0.7.11
 
 git shortlog -e -n -w80,6,8 0.7.10...0.7.11
 
-Brian Bidulock <bidulock@openss7.org> (17):
+Brian Bidulock <bidulock@openss7.org> (18):
       post-release update
       whoops
       better SNR in logs
@@ -42,6 +42,7 @@ Brian Bidulock <bidulock@openss7.org> (17):
       do not add new window to lists till configured
       changes for gcc 10.1 compiler
       update release notes
+      update release files
 
 
 Release adwm-0.7.10 released 2020-02-11

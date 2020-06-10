@@ -1,5 +1,182 @@
 # created with git log --stat=76 -M -C -500|fmt -sct -w80
 
+commit 89e68ad1d265953b18649134edfc8b96a667f718
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Jun 10 00:18:03 2020 -0600
+
+    update release notes
+
+ RELEASE.md | 17 ++++++++---------
+ 1 file changed, 8 insertions(+), 9 deletions(-)
+
+commit d843a4adf78aea1befe0d3bb3f08d0da1c0dccb3
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Jun 10 00:15:13 2020 -0600
+
+    changes for gcc 10.1 compiler
+
+ src/adwm.c | 4 ++--
+ src/ewmh.h | 2 +-
+ 2 files changed, 3 insertions(+), 3 deletions(-)
+
+commit abe6cb51225a7b6952694275222aec0359db14e9
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue May 12 21:45:50 2020 -0600
+
+    do not add new window to lists till configured
+
+    - do not add a newly managed window to _NET_WM_CLIENT_LIST or
+      _NET_WM_CLIENT_LIST_STACKING until it is fully configured
+
+    - otherwise, libwnck reports the window with non-final geometry
+      and zero desktop and other incorrect values
+
+    - in general, it is good practice to not add to client lists
+      until all other EWMH/NetWM properties are properly set on the
+      newly managed window.
+
+    - this does not apply to moving windows from screen to screen.
+
+ src/adwm.c | 4 ++++
+ src/ewmh.c | 8 ++++++++
+ src/ewmh.h | 1 +
+ 3 files changed, 13 insertions(+)
+
+commit 545a966b87ecd5360ccf33611f7c5e7c6f578175
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri May 8 11:59:26 2020 -0600
+
+    note some deficiencies
+
+ COMPLIANCE | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+commit 75ee8584e130876e8fcb9bd9b9e320b921960e43
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri May 8 11:57:41 2020 -0600
+
+    note compliance to _NET_WM_{MOVING,RESIZING}
+
+ COMPLIANCE | 3 +++
+ 1 file changed, 3 insertions(+)
+
+commit fd759e5ebb86a05bfef67067434ae64c079d6332
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed May 6 04:16:48 2020 -0600
+
+    cannot believe these have been reversed so long
+
+ src/ewmh.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+commit acd312320f9203988bc7164ae8005902ed716f8d
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon May 4 20:59:41 2020 -0600
+
+    a few more custom properties for xde-sound
+
+ src/adwm.c   |  2 ++
+ src/adwm.h   |  6 +++++-
+ src/config.c |  1 +
+ src/draw.c   |  2 ++
+ src/ewmh.c   | 42 ++++++++++++++++++++++++++++++++++++++++++
+ src/ewmh.h   |  3 +++
+ src/layout.c |  1 +
+ 7 files changed, 56 insertions(+), 1 deletion(-)
+
+commit 3367ab75e5dcb1c9a8db615b400f7764ba267195
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon May 4 20:20:44 2020 -0600
+
+    correct key conflict
+
+ data/styles/Default/keysrc | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
+
+commit 8169d45468d049196e614d1fd9ab32c20098d629
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon May 4 03:00:11 2020 -0600
+
+    use _NET_WM_{MOVING,RESIZING} instead of MOVERESIZE
+
+ src/adwm.h   |  5 ++++-
+ src/ewmh.c   |  2 ++
+ src/layout.c | 20 ++++++++++----------
+ 3 files changed, 16 insertions(+), 11 deletions(-)
+
+commit 92ebf66bb9273914c1a25e5c8f22602617146de3
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat May 2 03:36:53 2020 -0600
+
+    do better job guessing snap position
+
+ src/layout.c | 46 ++++++++++++++++++++++++++++++++--------------
+ 1 file changed, 32 insertions(+), 14 deletions(-)
+
+commit 2567d174fbfd879547c06e4edaf18d257256f2a4
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat May 2 03:27:53 2020 -0600
+
+    try to mark location of snap/unsnap
+
+ src/layout.c | 62 +++++++++++++++++++++++++++++++++++++++++++++++---------
+ 1 file changed, 52 insertions(+), 10 deletions(-)
+
+commit 2d77c10b22f99685b1613edca2eb75c937ffb0fe
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat May 2 02:54:07 2020 -0600
+
+    tell others when move or resize snaps or unsnaps
+
+ src/layout.c | 138 ++++++++++++++++++++++++++++++++-----------------------
+ 1 file changed, 80 insertions(+), 58 deletions(-)
+
+commit c69acaafa5e34c1b270fe239781f3dbb74c87794
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat May 2 01:38:33 2020 -0600
+
+    do not overwrite _NET_WM_MOVERESIZE_CANCEL
+
+ src/layout.c | 2 --
+ 1 file changed, 2 deletions(-)
+
+commit 118005e1a6b9038d8ad7ae3d1469be1340244a9d
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat May 2 01:20:13 2020 -0600
+
+    add _NET_WM_MOVERESIZE to win on move or resize
+
+ src/layout.c | 44 ++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 44 insertions(+)
+
+commit 49c01a930dfd6676f7639cce7dfb34ffe1d5d973
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Apr 5 01:00:07 2020 -0600
+
+    better SNR in logs
+
+ src/adwm.c | 18 ++++++++++--------
+ 1 file changed, 10 insertions(+), 8 deletions(-)
+
+commit bfb5317deae23ab11ffa839a213fb9e20f150047
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Feb 11 08:25:50 2020 -0700
+
+    whoops
+
+ autogen.sh | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+commit 224d56b4d36011a262069aeb8868e496ea6f774c
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Feb 11 04:36:04 2020 -0700
+
+    post-release update
+
+ ChangeLog | 23 ++++++++++++++---------
+ NEWS      |  3 ++-
+ 2 files changed, 16 insertions(+), 10 deletions(-)
+
 commit 6a16a26d042474938f516a145374417efdd850fa
 Author: Brian Bidulock <bidulock@openss7.org>
 Date:   Tue Feb 11 04:34:41 2020 -0700
@@ -5150,160 +5327,3 @@ Date:   Sun Oct 1 01:22:31 2017 -0600
  doc/adwm-style.5.in  | 2 +-
  doc/adwm.1.in        | 2 +-
  4 files changed, 4 insertions(+), 4 deletions(-)
-
-commit 2cec8b0de48f32ffcb9bc34943ad23b0e22c84e8
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Sun Oct 1 01:20:09 2017 -0600
-
-    use MDOCDATE in manual pages
-
- doc/adwm-config.5.in |  27 ++--
- doc/adwm-keys.5.in   |   2 +-
- doc/adwm-style.5.in  |   2 +-
- doc/adwm.1.in        | 329 ++++++++++++++++++++++++++++++++++++-----------
- 4 files changed, 271 insertions(+), 89 deletions(-)
-
-commit 0a008814b562ff27e91592e44676363f43334006
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Sun Oct 1 01:19:25 2017 -0600
-
-    substitute MDOCDATE in configure.ac
-
- configure.ac | 3 +++
- 1 file changed, 3 insertions(+)
-
-commit 1b5a9f0d855a70a3d9ec3e4d806579e61037e4c3
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Sun Oct 1 01:19:05 2017 -0600
-
-    set MDOCDATE too in autogen.sh
-
- autogen.sh | 3 +++
- 1 file changed, 3 insertions(+)
-
-commit 120523e53688a79d335632369ab3116b8235b717
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Sun Oct 1 00:40:28 2017 -0600
-
-    updates and corrections adwm-keys manual page
-
- doc/adwm-keys.5.in | 114 ++++++++++++++++++++++++++++++++-----------------
- 1 file changed, 75 insertions(+), 39 deletions(-)
-
-commit bd5ca13ef6c948dce74b7629ae0bd35e64775b6c
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Sun Oct 1 00:39:32 2017 -0600
-
-    cleanups to adwm-style manual page
-
- doc/adwm-style.5.in | 60 +++++++++++++++++++++++++++++++++++--------------
- 1 file changed, 43 insertions(+), 17 deletions(-)
-
-commit f4b0411b87ab96a700fb6508d1c48d22bc4d07e9
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Sun Oct 1 00:38:53 2017 -0600
-
-    update README
-
- README.md    | 58 +++++++++++++++++++++++++++++++++++++++++++++++++++++---
- README.md.in | 58 +++++++++++++++++++++++++++++++++++++++++++++++++++++---
- 2 files changed, 110 insertions(+), 6 deletions(-)
-
-commit fa0a6ef1540036f46583bb868af2273b6b052661
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Sat Sep 30 23:44:44 2017 -0600
-
-    proper asciidoc comment
-
- NOTES | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-commit cf0aaa79c2635fc272ed6ba7e66ff94b64f128d4
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Sat Sep 30 16:33:14 2017 -0600
-
-    proper checklists
-
- TODO | 78 ++++++++++++++++++++++++++++++++--------------------------------
- 1 file changed, 39 insertions(+), 39 deletions(-)
-
-commit a549bb8514b56c38593dd93c985c6e5c42683c1e
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Sat Sep 30 16:18:20 2017 -0600
-
-    do not like asciidoctor make asciidoc default
-
- configure.ac | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
-
-commit 9812f8b18fc7f5d317847cdd28292d34d5faab16
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Sat Sep 30 16:01:22 2017 -0600
-
-    update TODO list
-
- TODO | 36 ++++++++++++++++++++++++++++++++----
- 1 file changed, 32 insertions(+), 4 deletions(-)
-
-commit 960aff94602179cd5f69a33e5d3815d6b6fb00b1
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Sat Sep 30 16:01:09 2017 -0600
-
-    add TODO.html to ignores
-
- .gitignore | 7 ++++---
- 1 file changed, 4 insertions(+), 3 deletions(-)
-
-commit f3182a5ac0d7ab5c1dafa9b09f1965b88f5fe312
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Sat Sep 30 15:47:13 2017 -0600
-
-    make TODO.html when asked to
-
- Makefile.am | 3 +++
- 1 file changed, 3 insertions(+)
-
-commit 4c0afe0a5e9e2273bc097b5ec297f3602427435b
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Sat Sep 30 13:36:21 2017 -0600
-
-    better description and added history adwm-style
-
- doc/adwm-style.5.in | 55 +++++++++++++++++++++++++++++++++++++------------
- 1 file changed, 42 insertions(+), 13 deletions(-)
-
-commit 2d7fc3366eac8a24985e0ed23681129c073dd952
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Sat Sep 30 06:22:43 2017 -0600
-
-    multiple button actions for sticky button
-
- src/draw.c | 16 ++++++++++++++--
- 1 file changed, 14 insertions(+), 2 deletions(-)
-
-commit 539cc0b7da22f3378bdbe988f5e1617147456239
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Thu Sep 28 23:42:03 2017 -0600
-
-    finalize config manual page
-
- doc/adwm-config.5.in | 58 ++++++++++++++++++++++++------------------------
- 1 file changed, 29 insertions(+), 29 deletions(-)
-
-commit f74339f123a79febbcff4567c7c090b3353d6eaa
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Thu Sep 28 20:23:09 2017 -0600
-
-    correct config manual page
-
- doc/adwm-config.5.in | 67 ++++++++++++++++++++++++------------------------
- 1 file changed, 34 insertions(+), 33 deletions(-)
-
-commit 81db188d12920a2b022d87d7398f75fa8255e827
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Thu Sep 28 20:22:48 2017 -0600
-
-    update style manual page
-
- doc/adwm-style.5.in | 327 +++++++++++++++++++++++++++++++++++++-----------
- 1 file changed, 253 insertions(+), 74 deletions(-)

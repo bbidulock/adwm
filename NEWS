@@ -1,4 +1,48 @@
-adwm -- history of user-visible changes.  2020-02-11
+adwm -- history of user-visible changes.  2020-06-10
+
+Release adwm-0.7.11 released 2020-06-10
+---------------------------------------
+
+git tag -n100 -l 0.7.11
+
+0.7.11          Maintenance Release 0.7.11
+
+    This is another release of the adwm window manager that provides a
+    fully XDG, WindowMaker, WMH (WinWM), MWMH (CDE/Motif), ICCM 2.0
+    compliant tiling/floating window manager. It borrows concepts from
+    dwm(1), velox(1), awesome(1), spectrwm(1) and wmii(1).
+
+    This is a maintenance release that fixes a number of issues, support
+    compilation with GCC 10.1, and provides some enhanced sound support.
+    Session management has not progressed since the last release. There are
+    no outstanding issues at the time of release, and the next release
+    should include some outstanding development from the TODO list.
+
+    Included in the release is an autoconf tarball for building the package
+    from source. See the NEWS and TODO file in the release for more
+    information. Please report problems to the issues list on GitHub.
+
+git shortlog -e -n -w80,6,8 0.7.10...0.7.11
+
+Brian Bidulock <bidulock@openss7.org> (17):
+      post-release update
+      whoops
+      better SNR in logs
+      add _NET_WM_MOVERESIZE to win on move or resize
+      do not overwrite _NET_WM_MOVERESIZE_CANCEL
+      tell others when move or resize snaps or unsnaps
+      try to mark location of snap/unsnap
+      do better job guessing snap position
+      use _NET_WM_{MOVING,RESIZING} instead of MOVERESIZE
+      correct key conflict
+      a few more custom properties for xde-sound
+      cannot believe these have been reversed so long
+      note compliance to _NET_WM_{MOVING,RESIZING}
+      note some deficiencies
+      do not add new window to lists till configured
+      changes for gcc 10.1 compiler
+      update release notes
+
 
 Release adwm-0.7.10 released 2020-02-11
 ---------------------------------------
@@ -280,49 +324,5 @@ Brian Bidulock <bidulock@openss7.org> (12):
       only send synthetic expose event
       get rid of some gcc 8.2 warnings
       use actual icon width and height
-      update release files
-
-
-Release adwm-0.7.4 released 2018-05-29
---------------------------------------
-
-git tag -n100 -l 0.7.4
-
-0.7.4           Maintenance Release 0.7.4
-
-    This maintenace release fixes a couple of noxious bugs, one that has
-    been hanging around for quite a while (a double blocking wait() on a
-    SIGCHLD: which cause the window manager to some times lock up when an
-    adopted child exited, depending on timing.  This was keeping adwm from
-    starting up properly when other children are coming and going.
-
-    Because this was fixed, adwm now grabs the server when scanning for
-    existing clients on startup.  Not grabbing the server (because of the
-    first bug) caused adwm to crash on xerrors sometimes on startup when
-    windows were appearing and disappearing while scanning (such as during
-    autostart).  The server is now grabbed during initial startup scanning.
-
-    Another was not performing startup notification completion for itself
-    even though it reports StartupNotify=true in its XSession .desktop file.
-
-    Another was that adwm left dockapp top-level windows annoyingly mapped
-    if the dockapp was started before the window manager, or on restart
-    where dockapps toplevel windows would be mapped during the restart.  Now
-    dockapp top-level windows are unmapped whenever they are managed.  (It
-    is the icon-window that needs to be mapped, not the top-level window.)
-
-    With these fixes adwm not starts up nicely under the xdg-launch simple
-    session manager that is about to be released and the soon to be finished
-    xde-session full blown session manager.
-
-git shortlog -e -n -w80,6,8 0.7.3...0.7.4
-
-Brian Bidulock <bidulock@openss7.org> (7):
-      yes, grab server for scan
-      add startup notification completion for wm itself
-      warn when not using prctl
-      never block on wait
-      do not handle core-dumpers
-      unmap dockapp window
       update release files
 

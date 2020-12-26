@@ -368,10 +368,10 @@ Adwm*spawn30:		WS + Delete = xdg-launch xde-xlock
 Adwm*spawn31:		WS + Return = xdg-launch uxterm
 Adwm*spawn32:		WS + s = scrot -s
 Adwm*spawn33:		WS + slash = xde-namews
-Adwm*spawn34:		XF86MonBrightnessUp = xbrightness +4096
-Adwm*spawn35:		XF86MonBrightnessDown = xbrightness -4096
-Adwm*spawn36:		C + XF86MonBrightnessUp = xbacklight -inc 5
-Adwm*spawn37:		C + XF86MonBrightnessDown = xbacklight -dec 5
+Adwm*spawn34:		C + XF86MonBrightnessUp = xbrightness +4096
+Adwm*spawn35:		C + XF86MonBrightnessDown = xbrightness -4096
+Adwm*spawn36:		XF86MonBrightnessUp = xbacklight -inc 5
+Adwm*spawn37:		XF86MonBrightnessDown = xbacklight -dec 5
 Adwm*spawn38:		XF86AudioRaiseVolume = amixer sset Master\\,0 5%+
 Adwm*spawn39:		XF86AudioLowerVolume = amixer sset Master\\,0 5%-
 Adwm*spawn40:		XF86AudioMute = amixer sset Master\\,0 toggle
@@ -379,6 +379,10 @@ Adwm*spawn41:		CWA + Left = xrandr -o left
 Adwm*spawn42:		CWA + Right = xrandr -o right
 Adwm*spawn43:		CWA + Down = xrandr -o inverted
 Adwm*spawn44:		CWA + Up = xrandr -o normal
+Adwm*spawn45:		XF86AudioMicMute = amixer sset Capture\\,0 toggle
+Adwm*spawn46:		C + XF86AudioRaiseVolume = amixer sset Capture\\,0 5%+
+Adwm*spawn47:		C + XF86AudioLowerVolume = amixer sset Capture\\,0 5%-
+Adwm*spawn48:		C + XF86AudioMute = amixer sset Capture\\,0 toggle
 !Adwm*spawn45:		XF86Display
 !Adwm*spawn46:		XF86Sleep
 

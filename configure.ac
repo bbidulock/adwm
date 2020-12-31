@@ -1,7 +1,7 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
 
-AC_PREREQ([2.69])
+AC_PREREQ([2.70])
 AC_INIT([ADWM],[0.7.11],[https://github.com/bbidulock/adwm/issues],[adwm],[https://github.com/bbidulock/adwm])
 AC_REVISION([0.7.11])
 
@@ -92,7 +92,9 @@ PKG_PROG_PKG_CONFIG([0.14.0])
 
 # Checks for header files.
 AS_BOX([Header Files])
-AC_HEADER_STDC
+AC_CHECK_INCLUDES_DEFAULT
+AC_PROG_EGREP
+
 AC_PATH_X
 AC_PATH_XTRA
 AC_CHECK_HEADERS([fcntl.h locale.h malloc.h stdlib.h string.h strings.h unistd.h])
@@ -117,8 +119,7 @@ PKG_CHECK_MODULES([XFIXES],[xfixes])
 dnl PKG_CHECK_MODULES([SYSTEMD],[libsystemd])
 
 AC_ARG_ENABLE([xdamage],
-	AC_HELP_STRING([--disable-xdamage],
-		[Disable DAMAGE support @<:@default=auto@:>@]))
+	AS_HELP_STRING([--disable-xdamage],[Disable DAMAGE support @<:@default=auto@:>@]))
 if test "x$enable_xdamage" != xno ; then
 	PKG_CHECK_MODULES([XDAMAGE],[xdamage],
 		[AC_DEFINE([DAMAGE],[1], [Define to 1 to support DAMAGE extension.])],
@@ -130,8 +131,7 @@ fi
 AM_CONDITIONAL([HAVE_DAMAGE],[test  "x$enable_xdamage" != "xno"])
 
 AC_ARG_ENABLE([xcomposite],
-	AC_HELP_STRING([--disable-xcomposite],
-		[Disable Composite support @<:@default=auto@:>@]))
+	AS_HELP_STRING([--disable-xcomposite],[Disable Composite support @<:@default=auto@:>@]))
 if test "x$enable_xcomposite" != xno ; then
 	PKG_CHECK_MODULES([XCOMPOSITE],[xcomposite],
 		[AC_DEFINE([XCOMPOSITE],[1], [Define to 1 to support Composite extension.])],
@@ -143,8 +143,7 @@ fi
 AM_CONDITIONAL([HAVE_XCOMPOSITE],[test  "x$enable_xcomposite" != "xno"])
 
 AC_ARG_ENABLE([xrandr],
-	AC_HELP_STRING([--disable-xrandr],
-		[Disable XRANDR support @<:@default=auto@:>@]))
+	AS_HELP_STRING([--disable-xrandr],[Disable XRANDR support @<:@default=auto@:>@]))
 if test "x$enable_xrandr" != xno ; then
 	PKG_CHECK_MODULES([XRANDR],[xrandr],
 		[AC_DEFINE([XRANDR],[1], [Define to 1 to support XRANDR extension.])],
@@ -156,8 +155,7 @@ fi
 AM_CONDITIONAL([HAVE_XRANDR],[test  "x$enable_xrandr" != "xno"])
 
 AC_ARG_ENABLE([xinerama],
-	AC_HELP_STRING([--disable-xinerama],
-		[Disable XINERAMA support @<:@default=auto@:>@]))
+	AS_HELP_STRING([--disable-xinerama],[Disable XINERAMA support @<:@default=auto@:>@]))
 if test "x$enable_xinerama" != xno ; then
 	PKG_CHECK_MODULES([XINERAMA],[xinerama],
 		[AC_DEFINE([XINERAMA],[1], [Define to 1 to support XINERAMA extension.])],
@@ -169,8 +167,7 @@ fi
 AM_CONDITIONAL([HAVE_XINERAMA],[test  "x$enable_xinerama" != "xno"])
 
 AC_ARG_ENABLE([xsync],
-	AC_HELP_STRING([--disable-xsync],
-		[Disable XSYNC support @<:@default=auto@:>@]))
+	AS_HELP_STRING([--disable-xsync],[Disable XSYNC support @<:@default=auto@:>@]))
 if test "x$enable_xsync" != xno ; then
 	PKG_CHECK_MODULES([XSYNC],[xext],
 		[AC_DEFINE([SYNC],[1], [Define to 1 to support XSYNC extension.])],
@@ -181,8 +178,7 @@ else
 fi
 
 AC_ARG_ENABLE([xshape],
-	AC_HELP_STRING([--disable-xshape],
-		[Disable SHAPE support @<:@default=auto@:>@]))
+	AS_HELP_STRING([--disable-xshape],[Disable SHAPE support @<:@default=auto@:>@]))
 if test "x$enable_xshape" != xno ; then
 	PKG_CHECK_MODULES([XSHAPE],[xext],
 		[AC_DEFINE([SHAPE],[1], [Define to 1 to support SHAPE extension.])],
@@ -193,8 +189,7 @@ else
 fi
 
 AC_ARG_ENABLE([sm],
-	AC_HELP_STRING([--disable-sm],
-		[Disable session management support @<:@default=auto@:>@]))
+	AS_HELP_STRING([--disable-sm],[Disable session management support @<:@default=auto@:>@]))
 if test "x$enable_sm" != xno ; then
 	PKG_CHECK_MODULES([SMLIB],[ice sm],
 		[AC_DEFINE([SMLIB],[1],[Default to 1 to support SM library.])],
@@ -205,8 +200,7 @@ else
 fi
 
 AC_ARG_ENABLE([startup-notification],
-	AC_HELP_STRING([--disable-startup-notification],
-		[Disable startup notification support @<:@default=auto@:>@]))
+	AS_HELP_STRING([--disable-startup-notification],[Disable startup notification support @<:@default=auto@:>@]))
 if test "x$enable_startup_notification" != xno ; then
 	PKG_CHECK_MODULES([SN],[libstartup-notification-1.0],
 		[AC_DEFINE([STARTUP_NOTIFICATION],[1], [Define to 1 to support startup notification.])],
@@ -219,8 +213,7 @@ fi
 AS_BOX([Rendering Libraries])
 
 AC_ARG_ENABLE([xrender],
-	AC_HELP_STRING([--disable-xrender],
-		[Disable RENDER support @<:@default=auto@:>@]))
+	AS_HELP_STRING([--disable-xrender],[Disable RENDER support @<:@default=auto@:>@]))
 if test "x$enable_xrender" != xno ; then
 	PKG_CHECK_MODULES([XRENDER],[xrender],
 		[AC_DEFINE([RENDER],[1], [Define to 1 to support RENDER extension.])],
@@ -232,8 +225,7 @@ fi
 AM_CONDITIONAL([HAVE_RENDER],[test  "x$enable_xrender" != "xno"])
 
 AC_ARG_ENABLE([use-xrender],
-	AC_HELP_STRING([--enable-use-xrender],
-		[Enable use of xrender for drawing @<:@default=auto@:>@]))
+	AS_HELP_STRING([--enable-use-xrender],[Enable use of xrender for drawing @<:@default=auto@:>@]))
 if test "x$enable_xrender" != xno -a "x$enable_use_xrender" = xyes ; then
 	AC_DEFINE([USE_RENDER],[1],[Define to 1 to use RENDER for rendering pixmaps.])
 	enable_use_pango_cairo=no
@@ -244,8 +236,7 @@ AC_MSG_CHECKING([for xrender use])
 AC_MSG_RESULT([${enable_use_xrender:-no}])
 
 AC_ARG_ENABLE([gdk-pixbuf],
-	AC_HELP_STRING([--disable-gdk-pixbuf],
-		[Disable gdk-pixbuf library @<:@default=auto@:>@]))
+	AS_HELP_STRING([--disable-gdk-pixbuf],[Disable gdk-pixbuf library @<:@default=auto@:>@]))
 if test "x$enable_gdk_pixbuf" != xno ; then
 	PKG_CHECK_MODULES([PIXBUF],[gdk-pixbuf-xlib-2.0],
 		[AC_DEFINE([PIXBUF],[1],[Define to 1 to support GDK PIXBUF X11 graphics support.])],
@@ -256,8 +247,7 @@ else
 fi
 
 AC_ARG_ENABLE([use-gdk-pixbuf],
-	AC_HELP_STRING([--enable-use-gdk-pixbuf],
-		[Enable use of gdk-pixbuf for drawing @<:@default=no@:>@]))
+	AS_HELP_STRING([--enable-use-gdk-pixbuf],[Enable use of gdk-pixbuf for drawing @<:@default=no@:>@]))
 if test "x$enable_gdk_pixbuf" != xno -a "x$enable_use_gdk_pixbuf" = xyes ; then
 	AC_DEFINE([USE_PIXBUF],[1],[Define to 1 to use GDK PIXBUF X11 for rendering pixmaps.])
 else
@@ -267,8 +257,7 @@ AC_MSG_CHECKING([for gdk-pixbuf use])
 AC_MSG_RESULT([${enable_use_gdk_pixbuf:-no}])
 
 AC_ARG_ENABLE([imlib2],
-	AC_HELP_STRING([--disable-imlib2],
-		[Disable imlib2 library @<:@default=auto@:>@]))
+	AS_HELP_STRING([--disable-imlib2],[Disable imlib2 library @<:@default=auto@:>@]))
 if test "x$enable_imlib2" != xno ; then
 	PKG_CHECK_MODULES([IMLIB2],[imlib2],
 		[AC_DEFINE([IMLIB2],[1],[Define to 1 to support IMLIB2 advanced graphics support.])],
@@ -279,8 +268,7 @@ else
 fi
 
 AC_ARG_ENABLE([use-imlib2],
-	AC_HELP_STRING([--enable-use-imlib2],
-		[Enable use of imlib2 for drawing textures @<:@default=no@:>@]))
+	AS_HELP_STRING([--enable-use-imlib2],[Enable use of imlib2 for drawing textures @<:@default=no@:>@]))
 if test "x$enable_imlib2" != xno -a "x$enable_use_imlib2" = xyes ; then
 	AC_DEFINE([USE_IMLIB2],[1],[Define to 1 to use IMLIB2 for rendering pixmaps and textures.])
 else
@@ -290,8 +278,7 @@ AC_MSG_CHECKING([for imlib2 use])
 AC_MSG_RESULT([${enable_use_imlib2:-no}])
 
 AC_ARG_ENABLE([xcairo],
-	AC_HELP_STRING([--disable-xcairo],
-		[Disable cairo-xlib-xrender library @<:@default=auto@:>@]))
+	AS_HELP_STRING([--disable-xcairo],[Disable cairo-xlib-xrender library @<:@default=auto@:>@]))
 if test "x$enable_xcairo" != xno ; then
 	PKG_CHECK_MODULES([XCAIRO],[cairo-xlib-xrender],
 		[AC_DEFINE([XCAIRO],[1],[Define to 1 to support CAIRO XLIB XRENDER graphics support.])],
@@ -302,8 +289,7 @@ else
 fi
 
 AC_ARG_ENABLE([use-xcairo],
-	AC_HELP_STRING([--enable-use-xcairo],
-		[Enable use of cairo-xlib-xrender to drawing @<:@default=no@:>@]))
+	AS_HELP_STRING([--enable-use-xcairo],[Enable use of cairo-xlib-xrender to drawing @<:@default=no@:>@]))
 if test "x$enable_xcairo" != xno -a "x$enable_use_xcairo" = xyes ; then
 	AC_DEFINE([USE_XCAIRO],[1],[Define to 1 to use CAIRO for rendering pixmaps.])
 	enable_use_xft=no
@@ -318,8 +304,7 @@ AC_MSG_RESULT([${enable_use_xcairo:-no}])
 AS_BOX([Image Loading Libraries])
 
 AC_ARG_ENABLE([xpm],
-	AC_HELP_STRING([--disable-libxpm],
-		[Disable xpm library @<:@default=auto@:>@]))
+	AS_HELP_STRING([--disable-libxpm],[Disable xpm library @<:@default=auto@:>@]))
 if test "x$enable_xpm" != xno ; then
 	PKG_CHECK_MODULES([XPM],[xpm],
 		[AC_DEFINE([XPM],[1],[Define to 1 for XPM library support.])],
@@ -330,8 +315,7 @@ else
 fi
 
 AC_ARG_ENABLE([libpng],
-	AC_HELP_STRING([--disable-libpng],
-		[Disable png library @<:@default=auto@:>@]))
+	AS_HELP_STRING([--disable-libpng],[Disable png library @<:@default=auto@:>@]))
 if test "x$enable_libpng" != xno; then
 	PKG_CHECK_MODULES([LIBPNG],[libpng >= 1.6],
 		[AC_DEFINE([LIBPNG],[1],[Define to 1 for LIBPNG library support.])],
@@ -342,8 +326,7 @@ else
 fi
 
 AC_ARG_ENABLE([libjpeg],
-	AC_HELP_STRING([--disable-libjpeg],
-		[Disable jpeg library @<:@default=auto@:>@]))
+	AS_HELP_STRING([--disable-libjpeg],[Disable jpeg library @<:@default=auto@:>@]))
 if test "x$enable_libjpeg" != xno; then
 	PKG_CHECK_MODULES([LIBJPEG],[libjpeg >= 1.5],
 		[AC_DEFINE([LIBJPEG],[1],[Define to 1 for LIBJPEG library support.])],
@@ -354,8 +337,7 @@ else
 fi
 
 AC_ARG_ENABLE([libsvg],
-	AC_HELP_STRING([--disable-libsvg],
-		[Disable svg library @<:@default=auto@:>@]))
+	AS_HELP_STRING([--disable-libsvg],[Disable svg library @<:@default=auto@:>@]))
 if test "x$enable_svg" != xno; then
 	PKG_CHECK_MODULES([LIBSVG],[libsvg-cairo],
 		[AC_DEFINE([LIBSVG],[1],[Define to 1 for LIBSVG library support.])],
@@ -368,8 +350,7 @@ fi
 AS_BOX([Font Rendering])
 
 AC_ARG_ENABLE([xft],
-	AC_HELP_STRING([--disable-xft],
-		[Disable XFT support @<:@default=auto@:>@]))
+	AS_HELP_STRING([--disable-xft],[Disable XFT support @<:@default=auto@:>@]))
 if test "x$enable_xft" != xno ; then
 	PKG_CHECK_MODULES([XFT],[xft],
 		[AC_DEFINE([XFT],[1],[Define to 1 to support XFT.])],
@@ -380,8 +361,7 @@ else
 fi
 
 AC_ARG_ENABLE([use-xft],
-	AC_HELP_STRING([--disable-use-xft],
-		[Disable use of XFT for drawing glyphs @<:@default=true@:>@]))
+	AS_HELP_STRING([--disable-use-xft],[Disable use of XFT for drawing glyphs @<:@default=true@:>@]))
 if test "x$enable_xft" != xno -a "x$enable_use_xft" != xno ; then
 	AC_DEFINE([USE_XFT],[1],[Define to 1 to use XFT for rendering glyphs.])
 else
@@ -398,8 +378,7 @@ AH_TEMPLATE([PANGO],[Define to 1 when PANGO is supported.])
 AH_TEMPLATE([USE_PANGO],[Define to 1 to use PANGO for rendering glyphs.])
 
 AC_ARG_ENABLE([pango-xft],
-	AC_HELP_STRING([--disable-pango-xft],
-		[Disable PANGO XFT support @<:@default=auto@:>@]))
+	AS_HELP_STRING([--disable-pango-xft],[Disable PANGO XFT support @<:@default=auto@:>@]))
 if test "x$enable_pango_xft" != xno ; then
 	PKG_CHECK_MODULES([PANGOXFT],[pangoxft],
 		[AC_DEFINE([PANGO],[1])
@@ -411,8 +390,7 @@ else
 fi
 
 AC_ARG_ENABLE([use-pango-xft],
-	AC_HELP_STRING([--enable-use-pango-xft],
-		[Enable use of PANGO-XFT for drawing glyphs @<:@default=false@:>@]))
+	AS_HELP_STRING([--enable-use-pango-xft],[Enable use of PANGO-XFT for drawing glyphs @<:@default=false@:>@]))
 if test "x$enable_pango_xft" = xyes -a "x$enable_use_pango_xft" = xyes ; then
 	AC_DEFINE([USE_PANGO],[1])
 	AC_DEFINE([USE_PANGO_XFT],[1],[Define to 1 to use PANGO XFT backend for rendering glyphs.])
@@ -423,8 +401,7 @@ AC_MSG_CHECKING([for pango xft use])
 AC_MSG_RESULT([${enable_use_pango_xft:-no}])
 
 AC_ARG_ENABLE([pango-cairo],
-	AC_HELP_STRING([--disable-pango-cairo],
-		[Disable PANGO CAIRO support @<:@default=auto@:>@]))
+	AS_HELP_STRING([--disable-pango-cairo],[Disable PANGO CAIRO support @<:@default=auto@:>@]))
 if test "x$enable_pango_cairo" != xno ; then
 	PKG_CHECK_MODULES([PANGOCAIRO],[pangocairo],
 		[AC_DEFINE([PANGO],[1])
@@ -436,8 +413,7 @@ else
 fi
 
 AC_ARG_ENABLE([use-pango-cairo],
-	AC_HELP_STRING([--enable-use-pango-cairo],
-		[Enable use of PANGO-CAIRO for drawing glyphs @<:@default=false@:>@]))
+	AS_HELP_STRING([--enable-use-pango-cairo],[Enable use of PANGO-CAIRO for drawing glyphs @<:@default=false@:>@]))
 if test "x$enable_pango_cairo" = xyes -a "x$enable_use_pango_cairo" = xyes ; then
 	AC_DEFINE([USE_PANGO],[1])
 	AC_DEFINE([USE_PANGO_CAIRO],[1],[Define to 1 to use PANGO CAIRO backend for rendering glyphs.])
@@ -452,8 +428,7 @@ AC_MSG_CHECKING([for pango cairo use])
 AC_MSG_RESULT([${enable_use_pango_cairo:-no}])
 
 AC_ARG_ENABLE([debug],
-	AC_HELP_STRING([--enable-debug],
-		[Enable debugging support @<:@default=disabled@:>@]))
+	AS_HELP_STRING([--enable-debug],[Enable debugging support @<:@default=disabled@:>@]))
 if test "x$enable_debug" = xyes ; then
 	AC_DEFINE_UNQUOTED([DEBUG],[],[Define to enable debugging])
 fi
@@ -463,56 +438,47 @@ AC_MSG_RESULT([${enable_debug:-no}])
 AS_BOX([Foreign Window Manager Support])
 
 AC_ARG_WITH([blackbox],
-	AC_HELP_STRING([--with-blackbox],
-		[Enable blackbox support @<:@default=disabled@:>@]))
+	AS_HELP_STRING([--with-blackbox],[Enable blackbox support @<:@default=disabled@:>@]))
 AM_CONDITIONAL([WITH_BLACKBOX],[test  "x$with_blackbox" = "xyes"])
 AC_MSG_CHECKING([for blackbox support])
 AC_MSG_RESULT([${with_blackbox:-no}])
 AC_ARG_WITH([fluxbox],
-	AC_HELP_STRING([--with-fluxbox],
-		[Enable fluxbox support @<:@default=disabled@:>@]))
+	AS_HELP_STRING([--with-fluxbox],[Enable fluxbox support @<:@default=disabled@:>@]))
 AM_CONDITIONAL([WITH_FLUXBOX], [test  "x$with_fluxbox"  = "xyes"])
 AC_MSG_CHECKING([for fluxbox support])
 AC_MSG_RESULT([${with_fluxbox:-no}])
 AC_ARG_WITH([icewm],
-	AC_HELP_STRING([--with-icewm],
-		[Enable icewm support @<:@default=disabled@:>@]))
+	AS_HELP_STRING([--with-icewm],[Enable icewm support @<:@default=disabled@:>@]))
 AM_CONDITIONAL([WITH_ICEWM],   [test  "x$with_icewm"    = "xyes"])
 AC_MSG_CHECKING([for icewm support])
 AC_MSG_RESULT([${with_icewm:-no}])
 AC_ARG_WITH([openbox],
-	AC_HELP_STRING([--with-openbox],
-		[Enable openbox support @<:@default=disabled@:>@]))
+	AS_HELP_STRING([--with-openbox],[Enable openbox support @<:@default=disabled@:>@]))
 AM_CONDITIONAL([WITH_OPENBOX], [test  "x$with_openbox"  = "xyes"])
 AC_MSG_CHECKING([for openbox support])
 AC_MSG_RESULT([${with_openbox:-no}])
 AC_ARG_WITH([metacity],
-	AC_HELP_STRING([--with-metacity],
-		[Enable metacity support @<:@default=disabled@:>@]))
+	AS_HELP_STRING([--with-metacity],[Enable metacity support @<:@default=disabled@:>@]))
 AM_CONDITIONAL([WITH_METACITY],[test  "x$with_metacity" = "xyes"])
 AC_MSG_CHECKING([for metacity support])
 AC_MSG_RESULT([${with_metacity:-no}])
 AC_ARG_WITH([mutter],
-	AC_HELP_STRING([--with-mutter],
-		[Enable mutter support @<:@default=disabled@:>@]))
+	AS_HELP_STRING([--with-mutter],[Enable mutter support @<:@default=disabled@:>@]))
 AM_CONDITIONAL([WITH_MUTTER],  [test  "x$with_mutter"   = "xyes"])
 AC_MSG_CHECKING([for mutter support])
 AC_MSG_RESULT([${with_mutter:-no}])
 AC_ARG_WITH([pekwm],
-	AC_HELP_STRING([--with-pekwm],
-		[Enable pekwm support @<:@default=disabled@:>@]))
+	AS_HELP_STRING([--with-pekwm],[Enable pekwm support @<:@default=disabled@:>@]))
 AM_CONDITIONAL([WITH_PEKWM],   [test  "x$with_pekwm"    = "xyes"])
 AC_MSG_CHECKING([for pekwm support])
 AC_MSG_RESULT([${with_pekwm:-no}])
 AC_ARG_WITH([waimea],
-	AC_HELP_STRING([--with-waimea],
-		[Enable waimea support @<:@default=disabled@:>@]))
+	AS_HELP_STRING([--with-waimea],[Enable waimea support @<:@default=disabled@:>@]))
 AM_CONDITIONAL([WITH_WAIMEA],  [test  "x$with_waimea"   = "xyes"])
 AC_MSG_CHECKING([for waimea support])
 AC_MSG_RESULT([${with_waimea:-no}])
 AC_ARG_WITH([wmaker],
-	AC_HELP_STRING([--with-wmaker],
-		[Enable wmaker support @<:@default=disabled@:>@]))
+	AS_HELP_STRING([--with-wmaker],[Enable wmaker support @<:@default=disabled@:>@]))
 AM_CONDITIONAL([WITH_WMAKER],  [test  "x$with_wmaker"   = "xyes"])
 AC_MSG_CHECKING([for wmaker support])
 AC_MSG_RESULT([${with_wmaker:-no}])
@@ -583,7 +549,7 @@ AC_DEFINE([VGRIPMIN],[20],[Virtual grip minimum size in pixels.])
 AC_DEFINE_UNQUOTED([MAXTAGS],[(int)((sizeof(unsigned long long) * 8) - 1)],[Maximum number of tags.])
 AC_DEFINE_UNQUOTED([SYSCONFPATH],["$pkgconfdir"],[System configuration path.])
 
-AC_OUTPUT([Makefile
+AC_CONFIG_FILES([Makefile
 	   src/Makefile
 	   doc/Makefile
 	   doc/adwm.1
@@ -595,5 +561,6 @@ AC_OUTPUT([Makefile
 	   doc/adwm-theme.5
 	   doc/adwm-dock.5
 	   data/Makefile])
+AC_OUTPUT
 
 # vim: set ft=config:

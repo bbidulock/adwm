@@ -1,4 +1,37 @@
-adwm -- history of user-visible changes.  2020-06-10
+adwm -- history of user-visible changes.  2021-05-08
+
+Release adwm-0.7.12 released 2021-05-08
+---------------------------------------
+
+git tag -n100 -l 0.7.12
+
+0.7.12          Maintenance Release 0.7.12
+
+    This is another release of the adwm window manager that provides a
+    fully XDG, WindowMaker, WMH (WinWM), MWMH (CDE/Motif), ICCM 2.0
+    compliant tiling/floating window manager. It borrows concepts from
+    dwm(1), velox(1), awesome(1), spectrwm(1) and wmii(1).
+
+    This is a maintenance release that fixes a number of issues, support
+    compilation with GCC 10.2 and current autoconf tool chain. Session
+    management has not progressed since the last release. There are no
+    outstanding issues at the time of release, and the next release should
+    include some outstanding development from the TODO list.
+
+    Included in the release is an autoconf tarball for building the package
+    from source. See the NEWS and TODO file in the release for more
+    information. Please report problems to the issues list on GitHub.
+
+git shortlog -e -n -w80,6,8 0.7.11...0.7.12
+
+Brian Bidulock <bidulock@openss7.org> (6):
+      post release update
+      update copyright date
+      swap brightness keys, add audio mic control keys
+      update configure.ac for autoconf 2.70
+      update copyright dates
+      updates for autoconf 2.71
+
 
 Release adwm-0.7.11 released 2020-06-10
 ---------------------------------------
@@ -281,49 +314,5 @@ Brian Bidulock <bidulock@openss7.org> (4):
       updated gennews.sh
       attempt to resolve issue #3
       issue #8 instead of #3: update release files
-      update release files
-
-
-Release adwm-0.7.5 released 2018-10-06
---------------------------------------
-
-git notes --ref=release show 0.7.5
-
-    Maintenance Release 0.7.5
-
-    This is a maintenance release that includes better configuration file
-    handling, better handling of dockapps that set ParentRelative
-    backgrounds yet handle expose events, avoids bugs in colormap
-    installation, provides GNU standard option processing.
-
-    As usual, Included is an autoconf tarball for building the package from
-    source. Please report problems to the issues list on github.
-
-git tag -n100 -l 0.7.5
-
-0.7.5           Maintenance Release 0.7.5
-
-    This is a maintenance release that includes better configuration file
-    handling, better handling of dockapps that set ParentRelative
-    backgrounds yet handle expose events, avoids bugs in colormap
-    installation, provides GNU standard option processing.
-
-    As usual, Included is an autoconf tarball for building the package from
-    source. Please report problems to the issues list on github.
-
-git shortlog -e -n -w80,6,8 0.7.4...0.7.5
-
-Brian Bidulock <bidulock@openss7.org> (12):
-      doc search path for config files: address issue #5
-      add GNU option processing for other half of issue #5
-      now supports GNU std options
-      document standard options and exit status
-      add more todos
-      ignore errors whilst installing colormaps
-      need to clear window when reseting background for dockapps
-      clear icon area and generate expose on bg change
-      only send synthetic expose event
-      get rid of some gcc 8.2 warnings
-      use actual icon width and height
       update release files
 

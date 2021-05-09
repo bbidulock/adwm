@@ -2,8 +2,8 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.71])
-AC_INIT([ADWM],[0.7.11],[https://github.com/bbidulock/adwm/issues],[adwm],[https://github.com/bbidulock/adwm])
-AC_REVISION([0.7.11])
+AC_INIT([ADWM],[0.7.12],[https://github.com/bbidulock/adwm/issues],[adwm],[https://github.com/bbidulock/adwm])
+AC_REVISION([0.7.12])
 
 # set better defaults
 AC_PREFIX_DEFAULT([/usr])
@@ -20,13 +20,13 @@ AC_CONFIG_AUX_DIR([scripts])
 AC_USE_SYSTEM_EXTENSIONS
 AC_CANONICAL_TARGET
 
-DATE='2020-06-10'
+DATE='2021-05-08'
 AC_SUBST([DATE])
 
-MDOCDATE='June 10, 2020'
+MDOCDATE='May 8, 2021'
 AC_SUBST([MDOCDATE])
 
-BRANCH='0.7.11'
+BRANCH='0.7.12'
 AC_SUBST([BRANCH])
 
 # Initialize Automake

@@ -1,5 +1,61 @@
 # created with git log --stat=76 -M -C -500|fmt -sct -w80
 
+commit 20f616826f34d030a08e63626145e0dee634ba5c
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat May 8 22:21:23 2021 -0600
+
+    updates for autoconf 2.71
+
+ configure.ac | 12 +++++++++---
+ 1 file changed, 9 insertions(+), 3 deletions(-)
+
+commit 4d930dcf681d99f7ce0bb4a33a02bdac211cdc7d
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Apr 27 00:59:47 2021 -0600
+
+    update copyright dates
+
+ LICENSE    | 2 +-
+ src/adwm.c | 4 ++--
+ 2 files changed, 3 insertions(+), 3 deletions(-)
+
+commit 03441ce017da116ca607d87ad8669a72326c7065
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Dec 30 19:06:32 2020 -0700
+
+    update configure.ac for autoconf 2.70
+
+ configure.ac | 117 ++++++++++++++++++++-----------------------------------
+ 1 file changed, 42 insertions(+), 75 deletions(-)
+
+commit 1591805efe392b54efde196b318d13f01fec1f13
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Dec 26 12:49:58 2020 -0700
+
+    swap brightness keys, add audio mic control keys
+
+ data/styles/Default/keysrc | 12 ++++++++----
+ 1 file changed, 8 insertions(+), 4 deletions(-)
+
+commit 99eb8dd530cf61d177db414a9e5bb7ee2467bf4e
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Jun 10 00:29:29 2020 -0600
+
+    update copyright date
+
+ LICENSE | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+commit c4b08e8c32c200e6e6f5aef3002df5c977a49349
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Jun 10 00:22:19 2020 -0600
+
+    post release update
+
+ ChangeLog | 26 ++++++++++++++------------
+ NEWS      |  3 ++-
+ 2 files changed, 16 insertions(+), 13 deletions(-)
+
 commit 82eaefc15c9e8c76c675041c3168ca1e716763bf
 Author: Brian Bidulock <bidulock@openss7.org>
 Date:   Wed Jun 10 00:20:37 2020 -0600
@@ -5269,63 +5325,3 @@ Date:   Sun Oct 1 17:23:24 2017 -0600
 
  doc/adwm.1.in | 115 ++++++++++++++++++++++++++++++++++++++++++++++++------
  1 file changed, 102 insertions(+), 13 deletions(-)
-
-commit 2f3c9a1205f836253c56b99cf09217149c6c0fb4
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Sun Oct 1 04:27:21 2017 -0600
-
-    some substitution changes to man pages
-
- doc/adwm-config.5.in |  62 +++++++++++---------
- doc/adwm-keys.5.in   |  22 +++----
- doc/adwm-style.5.in  |  20 +++----
- doc/adwm.1.in        | 149 ++++++++++++++++++++++++++++++++++++++++++++---
- 4 files changed, 196 insertions(+), 57 deletions(-)
-
-commit a5c9b2c58be8fbaddc6d36040857a1b783ccb613
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Sun Oct 1 04:26:35 2017 -0600
-
-    tweak README
-
- README.md.in | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-commit 1a0054785be2e4efdda240cf3020f5787c375a88
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Sun Oct 1 02:05:04 2017 -0600
-
-    get rid of extraneous spaces
-
- autogen.sh | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-commit 87a00b427413671a1008b7ad9a1b5fb4bd32526b
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Sun Oct 1 02:02:54 2017 -0600
-
-    get package name and date right
-
- doc/adwm-config.5.in |  16 +-
- doc/adwm-keys.5.in   |  18 +-
- doc/adwm-style.5.in  |  14 +-
- doc/adwm.1.in        | 926 ++++++++++++++++++++++++-----------------------
- 4 files changed, 488 insertions(+), 486 deletions(-)
-
-commit d21a2c41e46474152d1f82597761c745562e7c3f
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Sun Oct 1 02:02:10 2017 -0600
-
-    add package name and url
-
- configure.ac | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-commit 7671f80c90cbf239145d5cb111a3a86c8d9f95c9
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Sun Oct 1 02:01:09 2017 -0600
-
-    correct date conversion autogen.sh
-
- autogen.sh | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)

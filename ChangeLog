@@ -1,5 +1,20 @@
 # created with git log --stat=76 -M -C -500|fmt -sct -w80
 
+commit 8d3fb079abcd2ef6e37232cf817b66a650819ec9
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat May 8 22:26:11 2021 -0600
+
+    update release files
+
+ AUTHORS      |   2 +-
+ ChangeLog    | 116 +++++++++++++++++++++++++++----------------------------
+ NEWS         |  79 ++++++++++++++++---------------------
+ README       |  20 +++++-----
+ README.md    |  20 +++++-----
+ RELEASE.md   |   8 ++--
+ configure.ac |  10 ++---
+ 7 files changed, 120 insertions(+), 135 deletions(-)
+
 commit 20f616826f34d030a08e63626145e0dee634ba5c
 Author: Brian Bidulock <bidulock@openss7.org>
 Date:   Sat May 8 22:21:23 2021 -0600
@@ -5316,12 +5331,3 @@ Date:   Sun Oct 1 17:27:22 2017 -0600
  src/draw.c | 88 +++++++++++++++++++++++++++++++++++++++++++++-------------
  src/ewmh.c |  4 +++
  4 files changed, 91 insertions(+), 20 deletions(-)
-
-commit e791128be872aeb1e515777cc41a94a45350e909
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Sun Oct 1 17:23:24 2017 -0600
-
-    more adwm man page updates
-
- doc/adwm.1.in | 115 ++++++++++++++++++++++++++++++++++++++++++++++++------
- 1 file changed, 102 insertions(+), 13 deletions(-)

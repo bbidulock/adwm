@@ -24,13 +24,14 @@ git tag -n100 -l 0.7.12
 
 git shortlog -e -n -w80,6,8 0.7.11...0.7.12
 
-Brian Bidulock <bidulock@openss7.org> (6):
+Brian Bidulock <bidulock@openss7.org> (7):
       post release update
       update copyright date
       swap brightness keys, add audio mic control keys
       update configure.ac for autoconf 2.70
       update copyright dates
       updates for autoconf 2.71
+      update release files
 
 
 Release adwm-0.7.11 released 2020-06-10

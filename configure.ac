@@ -1,7 +1,7 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
 
-AC_PREREQ([2.70])
+AC_PREREQ([2.71])
 AC_INIT([ADWM],[0.7.11],[https://github.com/bbidulock/adwm/issues],[adwm],[https://github.com/bbidulock/adwm])
 AC_REVISION([0.7.11])
 
@@ -93,16 +93,20 @@ PKG_PROG_PKG_CONFIG([0.14.0])
 # Checks for header files.
 AS_BOX([Header Files])
 AC_CHECK_INCLUDES_DEFAULT
+AC_PROG_CXX
 AC_PROG_EGREP
 
 AC_PATH_X
 AC_PATH_XTRA
-AC_CHECK_HEADERS([fcntl.h locale.h malloc.h stdlib.h string.h strings.h unistd.h])
+AC_CHECK_HEADERS([fcntl.h locale.h malloc.h stdlib.h string.h strings.h unistd.h sys/time.h])
+AC_CHECK_HEADER_STDBOOL
 
 # Checks for typedefs, structures, and compiler characteristics.
 AS_BOX([Typedefs, Structures, Compiler])
 AC_TYPE_PID_T
 AC_TYPE_SIZE_T
+AC_TYPE_OFF_T
+AC_TYPE_UID_T
 
 # Checks for library functions.
 AS_BOX([Library Functions])
@@ -110,7 +114,9 @@ AC_FUNC_FORK
 AC_FUNC_LSTAT_FOLLOWS_SLASHED_SYMLINK
 AC_FUNC_MALLOC
 AC_FUNC_REALLOC
-AC_CHECK_FUNCS([getcwd memmove regcomp select setlocale strchr strdup strerror strrchr])
+AC_CHECK_FUNCS([getcwd memmove regcomp select setlocale strchr strdup strerror strrchr atexit floor gethostname gettimeofday memset sqrt strcasecmp strncasecmp strndup strspn strstr strtol strtoul])
+AC_FUNC_STRNLEN
+AC_FUNC_STRTOD
 
 AS_BOX([X11 Extension Libraries])
 

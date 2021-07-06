@@ -1933,7 +1933,7 @@ prevtiled(Client *c, View *v)
 static void
 tile(View *v)
 {
-	LayoutArgs wa, ma, sa;
+	LayoutArgs wa = {}, ma, sa;
 	ClientGeometry n = { 0, }, m = { 0, }, s = { 0, }, g = { 0, };
 	Client *c, *mc;
 	Monitor *cm = v->curmon;

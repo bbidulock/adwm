@@ -1,6 +1,6 @@
-[adwm -- release notes.  2021-05-08]: #
+[adwm -- release notes.  2021-12-03]: #
 
-Maintenance Release 0.7.12
+Maintenance Release 0.7.13
 ==========================
 
 This is another release of the adwm window manager that provides a fully
@@ -8,9 +8,9 @@ XDG, WindowMaker, WMH (WinWM), MWMH (CDE/Motif), ICCM 2.0 compliant
 tiling/floating window manager.  It borrows concepts from `dwm(1)`,
 `velox(1)`, `awesome(1)`, `spectrwm(1)` and `wmii(1)`.
 
-This is a maintenance release that fixes a number of issues, support
-compilation with GCC 10.2 and current autoconf tool chain.  Session
-management has not progressed since the last release.  There are
+This is a maintenance release that supports compilation with new
+makepkg.conf Arch Linux CFLAGS that include -Werror-format-security.
+Session management has not progressed since the last release.  There are
 no outstanding issues at the time of release, and the next release
 should include some outstanding development from the [TODO](TODO) list.
 

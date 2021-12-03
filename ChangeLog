@@ -1,5 +1,81 @@
 # created with git log --stat=76 -M -C -500|fmt -sct -w80
 
+commit a02b5e431c74fef1a2b608a3bcd3389866352673
+Merge: 92b29d9 ffc97df
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri Dec 3 01:59:51 2021 -0700
+
+    Merge branch 'master' of github.com:bbidulock/adwm
+
+commit 92b29d9832d649ae812148903a8053e264c0a3f1
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri Dec 3 01:59:14 2021 -0700
+
+    new gnu install file
+
+ INSTALL | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+commit 8c2eb43347a1647fc776e7dfa1c7dc09ee51a411
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri Dec 3 01:58:44 2021 -0700
+
+    handle -Werror=format-security
+
+ src/adwm.c      | 2 +-
+ src/adwm_adwm.c | 2 +-
+ src/config.c    | 2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
+
+commit 438f18c2830d50f00616ddb0584c06d555eb4640
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri Dec 3 01:58:06 2021 -0700
+
+    test builds for new Arch Linux cflags
+
+ configure.sh | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+commit ffc97df5d9cdf11d28dc75619ddb0a818bcfbf06
+Merge: d269f02 8f92e61
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Aug 7 18:07:03 2021 -0600
+
+    Merge pull request #16 from LittleSOiLent999/patch-1
+
+    Let users compile it even faster
+
+commit 8f92e610d8a4eb27b47019c64e291d8d1816a330
+Author: LittleSOiLent999 <87983064+LittleSOiLent999@users.noreply.github.com>
+Date:   Sat Jul 31 16:49:46 2021 +0300
+
+    Update README.md
+
+    Making compiling faster
+
+ README.md | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+commit d269f021675a9f8082718ee18267026e0faeac66
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Jul 5 19:29:21 2021 -0600
+
+    fix a few compile issues
+
+ src/adwm.c   | 6 ++++--
+ src/layout.c | 2 +-
+ 2 files changed, 5 insertions(+), 3 deletions(-)
+
+commit bec9879aefb4cdebae3ff3eaa8a1899d472d5f0a
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat May 8 22:27:46 2021 -0600
+
+    post-release update
+
+ ChangeLog | 24 +++++++++++++++---------
+ NEWS      |  3 ++-
+ 2 files changed, 17 insertions(+), 10 deletions(-)
+
 commit 8d3fb079abcd2ef6e37232cf817b66a650819ec9
 Author: Brian Bidulock <bidulock@openss7.org>
 Date:   Sat May 8 22:26:11 2021 -0600
@@ -5243,91 +5319,3 @@ Date:   Sun Oct 1 22:59:48 2017 -0600
 
  src/layout.c | 2 --
  1 file changed, 2 deletions(-)
-
-commit 8f64b91ceecb23e98b11ed8c9267f654f4030c2f
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Sun Oct 1 22:52:05 2017 -0600
-
-    more todos done
-
- TODO | 7 ++++---
- 1 file changed, 4 insertions(+), 3 deletions(-)
-
-commit fcf0f7137a980ad9cbae7d843dbf2a4482b7d610
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Sun Oct 1 22:06:41 2017 -0600
-
-    consider Ctrl state on button2
-
- src/actions.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-commit 6fbacd6b144ecefbacbc68a1eb8609cff5329f42
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Sun Oct 1 21:58:15 2017 -0600
-
-    m_zoom on button press title bar
-
- src/adwm.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-commit fa708fb37d333b166e513812065e079f1c9cbcfc
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Sun Oct 1 21:36:43 2017 -0600
-
-    support tiled move Button2
-
- src/actions.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
-
-commit ead3d5273906fda52ded0477185fc51603566c61
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Sun Oct 1 21:24:42 2017 -0600
-
-    implement killproc and remove some unused contexts
-
- src/adwm.c | 72 ++++++++++++++++++++++++++--------------------------------
- src/adwm.h |  3 ---
- src/draw.c |  2 --
- src/ewmh.c |  6 -----
- 4 files changed, 32 insertions(+), 51 deletions(-)
-
-commit 5c11f65f8ff716ec67ae1df205b21e1787a522d9
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Sun Oct 1 21:06:45 2017 -0600
-
-    strap in lhalf and rhalf functions some more
-
- src/adwm.h   |  9 +++++--
- src/draw.c   | 81 ++++++++++++++++++++++++++++++++++----------------------
- src/ewmh.c   | 70 +++++++++++++++++++++++++++++++++++++++---------
- src/layout.c |  6 +++--
- 4 files changed, 118 insertions(+), 48 deletions(-)
-
-commit 9cfbc7b5290d369d8f26abad63f8ab68414f0ce5
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Mon Oct 2 02:28:26 2017 +0000
-
-    work in lhalf and rhalf functions
-
- src/actions.c   | 50 ++++++++++++++++++++++++++++++++++++
- src/actions.h   |  2 ++
- src/adwm.c      |  6 +++++
- src/adwm.h      |  4 +--
- src/adwm_adwm.c |  2 ++
- src/adwm_tile.c | 20 +++++++++++++++
- src/layout.c    | 73 ++++++++++++++++++++++++++++++++++++++++++++++++++++-
- src/layout.h    |  4 +++
- 8 files changed, 158 insertions(+), 3 deletions(-)
-
-commit ad5f35cec07a173ac33b1bf636cfc4cf4c3b3713
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Sun Oct 1 17:27:22 2017 -0600
-
-    set up to implement reserved functions
-
- src/adwm.c | 12 ++++++++
- src/adwm.h |  7 +++++
- src/draw.c | 88 +++++++++++++++++++++++++++++++++++++++++++++-------------
- src/ewmh.c |  4 +++
- 4 files changed, 91 insertions(+), 20 deletions(-)

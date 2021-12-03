@@ -6790,14 +6790,12 @@ xerror(Display *dsply, XErrorEvent *ee)
 	EPRINTF("X error %s(0x%lx): %s\n", req, ee->resourceid, msg);
 	EPRINTF("\tResource id 0x%lx\n", ee->resourceid);
 	EPRINTF("\tFailed request %lu\n", ee->serial);
-	if (trap) {
+	if (trap)
 		EPRINTF("\tNext request trap %lu\n", trap->trap_next);
-		EPRINTF("\tNext request now  %lu\n", NextRequest(dsply));
-	}
-	if (trap) {
+	EPRINTF("\tNext request now  %lu\n", NextRequest(dsply));
+	if (trap)
 		EPRINTF("\tLast known processed request trap %lu\n", trap->trap_last);
-		EPRINTF("\tLast known processed request now  %lu\n", LastKnownRequestProcessed(dsply));
-	}
+	EPRINTF("\tLast known processed request now  %lu\n", LastKnownRequestProcessed(dsply));
 	if (critical || ignore)
 		dumpstack(__FILE__, __LINE__, __func__);
 	if (!critical || ignore) {

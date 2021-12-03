@@ -7024,7 +7024,7 @@ main(int argc, char *argv[])
 		case 0:
 			goto bad_usage;
 		case 'f':	/* -f, --file {PATH/}FILE */
-			snprintf(conf, sizeof(conf) - 1, "%s\0", optarg);
+			strncpy(conf, optarg, sizeof(conf) - 1);
 			break;
 		case 'c':	/* -c, --clientId ID */
 			free(clientid);

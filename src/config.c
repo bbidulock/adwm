@@ -24,7 +24,7 @@ inittags(Bool reload __attribute__((unused)))
 		snprintf(def, sizeof(def), " %u ", i + 1);
 		snprintf(resource, sizeof(resource), "tags.name%u", i);
 		res = getscreenres(resource, def);
-		snprintf(t->name, sizeof(t->name), "%s\0", res);
+		strncpy(t->name, res, sizeof(t->name) - 1);
 		XPRINTF("initialized tag %u to %s\n", i, res);
 	}
 	scr->ntags = scr->options.ntags;

@@ -24,7 +24,7 @@ git tag -n100 -l 0.7.13
 
 git shortlog -e -n -w80,6,8 0.7.12...0.7.13
 
-Brian Bidulock <bidulock@openss7.org> (7):
+Brian Bidulock <bidulock@openss7.org> (8):
       post-release update
       fix a few compile issues
       Merge pull request #16 from LittleSOiLent999/patch-1
@@ -32,6 +32,7 @@ Brian Bidulock <bidulock@openss7.org> (7):
       handle -Werror=format-security
       new gnu install file
       Merge branch 'master' of github.com:bbidulock/adwm
+      update release files
 
 LittleSOiLent999 <87983064+LittleSOiLent999@users.noreply.github.com> (1):
       Update README.md

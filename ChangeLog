@@ -1,5 +1,20 @@
 # created with git log --stat=76 -M -C -500|fmt -sct -w80
 
+commit e566469493d0099b2c971eb4952e953494009f10
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri Dec 3 02:12:38 2021 -0700
+
+    update release files
+
+ AUTHORS      |   3 +-
+ ChangeLog    | 164 ++++++++++++++++++++++++++-----------------------------
+ NEWS         |  62 +++++++++++++--------
+ README       |  20 +++----
+ README.md    |  22 ++++----
+ RELEASE.md   |  10 ++--
+ configure.ac |  10 ++--
+ 7 files changed, 147 insertions(+), 144 deletions(-)
+
 commit a02b5e431c74fef1a2b608a3bcd3389866352673
 Merge: 92b29d9 ffc97df
 Author: Brian Bidulock <bidulock@openss7.org>
@@ -5310,12 +5325,3 @@ Date:   Mon Oct 2 00:08:44 2017 -0600
  data/styles/Default/pixmaps/lhalf_hovered.xpm | 2 +-
  data/styles/Default/pixmaps/rhalf_hovered.xpm | 2 +-
  2 files changed, 2 insertions(+), 2 deletions(-)
-
-commit c2f11a7ca1b9149d8db50244b09ff155dbc3b992
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Sun Oct 1 22:59:48 2017 -0600
-
-    reset lhalf/rhalf after move
-
- src/layout.c | 2 --
- 1 file changed, 2 deletions(-)

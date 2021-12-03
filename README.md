@@ -49,7 +49,7 @@ following commands:
     $> cd adwm
     $> ./autogen.sh
     $> ./configure
-    $> make
+    $> make -j $(nproc)
     $> make DESTDIR="$pkgdir" install
 
 This will configure, compile and install `adwm` the quickest.  For those who

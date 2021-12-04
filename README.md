@@ -1,9 +1,9 @@
-[adwm -- read me first file.  2021-12-03]: #
+[adwm -- read me first file.  2021-12-04]: #
 
 adwm
 ===============
 
-Package `adwm-0.7.13` was released under GPLv3 license 2021-12-03.
+Package `adwm-0.7.13.5` was released under GPLv3 license 2021-12-04.
 
 This was originally a fork of Echinus which in turn was a fork of `dwm(1)`, and
 borrows concepts from `velox(1)`, `awesome(1)`, `spectrwm(1)` and `wmii(1)`.
@@ -14,7 +14,7 @@ WMH (WinWM), MWMH (CDE/Motif), ICCCM 2.0 compliance and support.
 Release
 -------
 
-This is the `adwm-0.7.13` package, released 2021-12-03.  This release, and
+This is the `adwm-0.7.13.5` package, released 2021-12-04.  This release, and
 the latest version, can be obtained from [GitHub][1], using a command such as:
 
     $> git clone https://github.com/bbidulock/adwm.git
@@ -37,6 +37,8 @@ file lines have been supplied or replaced and the remaining 10% is not subject
 to copyright.
 This release is published under GPLv3.  Please see the license
 in the file [COPYING][9].
+
+{% include_relative RELEASE.md %}
 
 
 Quick Start
@@ -129,12 +131,12 @@ Report issues on GitHub [here][2].
 
 [1]: https://github.com/bbidulock/adwm
 [2]: https://github.com/bbidulock/adwm/issues
-[3]: https://github.com/bbidulock/adwm/blob/0.7.13/NEWS
-[4]: https://github.com/bbidulock/adwm/blob/0.7.13/ChangeLog
-[5]: https://github.com/bbidulock/adwm/blob/0.7.13/TODO
-[6]: https://github.com/bbidulock/adwm/blob/0.7.13/COMPLIANCE
-[7]: https://github.com/bbidulock/adwm/blob/0.7.13/INSTALL
-[8]: https://github.com/bbidulock/adwm/blob/0.7.13/LICENSE
-[9]: https://github.com/bbidulock/adwm/blob/0.7.13/COPYING
+[3]: https://github.com/bbidulock/adwm/blob/master/NEWS
+[4]: https://github.com/bbidulock/adwm/blob/master/ChangeLog
+[5]: https://github.com/bbidulock/adwm/blob/master/TODO
+[6]: https://github.com/bbidulock/adwm/blob/master/COMPLIANCE
+[7]: https://github.com/bbidulock/adwm/blob/master/INSTALL
+[8]: https://github.com/bbidulock/adwm/blob/master/LICENSE
+[9]: https://github.com/bbidulock/adwm/blob/master/COPYING
 
 [ vim: set ft=markdown sw=4 tw=80 nocin nosi fo+=tcqlorn spell: ]: #

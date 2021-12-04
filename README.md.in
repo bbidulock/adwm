@@ -38,6 +38,8 @@ to copyright.
 This release is published under GPLv3.  Please see the license
 in the file [COPYING][9].
 
+{% include_relative RELEASE.md %}
+
 
 Quick Start
 -----------

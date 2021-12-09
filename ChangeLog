@@ -1,5 +1,203 @@
 # created with git log --stat=76 -M -C -500|fmt -sct -w80
 
+commit 8c10112f02c629162bff1df35082daa8e045d15b
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu Dec 9 02:04:40 2021 -0700
+
+    Revert "don't know why it has to be this way"
+
+    This reverts commit 72c9b7423b35212a94738ddbb2f47cf309cd98af.
+
+    It doesn't have to be this way.
+
+ src/adwm.c      | 6 +++---
+ src/adwm_adwm.c | 2 +-
+ src/config.c    | 2 +-
+ 3 files changed, 5 insertions(+), 5 deletions(-)
+
+commit f888feffa4d0662d892bce97c974f1e6b70e04d0
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu Dec 9 02:00:51 2021 -0700
+
+    is this the issue???
+
+ src/layout.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+commit 72c9b7423b35212a94738ddbb2f47cf309cd98af
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu Dec 9 01:25:45 2021 -0700
+
+    don't know why it has to be this way
+
+ src/adwm.c      | 6 +++---
+ src/adwm_adwm.c | 2 +-
+ src/config.c    | 2 +-
+ 3 files changed, 5 insertions(+), 5 deletions(-)
+
+commit 9c7b6928f0e899102179a5790d346417809b4f40
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu Dec 9 01:10:48 2021 -0700
+
+    cannot use divs for some reason
+
+ README       | 36 +++++++++---------------------------
+ README.md    | 36 +++++++++---------------------------
+ README.md.in | 36 +++++++++---------------------------
+ index.md     | 36 +++++++++---------------------------
+ 4 files changed, 36 insertions(+), 108 deletions(-)
+
+commit 583fb3d5bae4d660204c75f7df1407b5831e61f9
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu Dec 9 01:06:59 2021 -0700
+
+    describe screenshots
+
+ README       | 35 +++++++++++++++++++++++++++++++++++
+ README.md    | 35 +++++++++++++++++++++++++++++++++++
+ README.md.in | 35 +++++++++++++++++++++++++++++++++++
+ index.md     | 35 +++++++++++++++++++++++++++++++++++
+ 4 files changed, 140 insertions(+)
+
+commit 21d7df0e83dd9bf1c06b54d3dbc485a6babbb0f5
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu Dec 9 01:00:43 2021 -0700
+
+    correct image path
+
+ README       | 21 ++++++++++-----------
+ README.md    | 18 +++++++++---------
+ README.md.in | 18 +++++++++---------
+ index.md     | 18 +++++++++---------
+ 4 files changed, 37 insertions(+), 38 deletions(-)
+
+commit fc268ace0f9e89c57a68ba8876669e68b74853e4
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu Dec 9 00:58:22 2021 -0700
+
+    add some sample screenshots
+
+ .gitignore                     |   3 +
+ README                         |  66 +++++++++++++-------
+ README.md                      |  64 ++++++++++++-------
+ README.md.in                   |  64 ++++++++++++-------
+ index.md                       | 125 +++++++++++++++++++++++--------------
+ scrot/airforce_theme.jpg       | Bin 0 -> 322707 bytes
+ scrot/airforce_theme_xeyes.jpg | Bin 0 -> 331169 bytes
+ scrot/floating.jpg             | Bin 0 -> 430645 bytes
+ scrot/floating_menus.jpg       | Bin 0 -> 418168 bytes
+ scrot/floating_winmenu.jpg     | Bin 0 -> 413768 bytes
+ scrot/tiled.jpg                | Bin 0 -> 370681 bytes
+ scrot/tiled_bar.jpg            | Bin 0 -> 379413 bytes
+ scrot/tiled_decorated.jpg      | Bin 0 -> 380951 bytes
+ scrot/tiled_master_left.jpg    | Bin 0 -> 371608 bytes
+ 14 files changed, 211 insertions(+), 111 deletions(-)
+
+commit 7ff4141a58b683a6ab4291caee614264e5bd7bc6
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Dec 4 16:28:03 2021 -0700
+
+    update README with release file
+
+ README       | 89 ++++++++++++++++++++++++++++++--------------------------
+ README.md    | 88 +++++++++++++++++++++++++++++--------------------------
+ README.md.in | 88 +++++++++++++++++++++++++++++--------------------------
+ 3 files changed, 141 insertions(+), 124 deletions(-)
+
+commit 36d969c5f7d310a1ed039d8caa686ccdd94cc60d
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Dec 4 16:16:04 2021 -0700
+
+    add RELEASE file to repo
+
+ RELEASE | 22 ++++++++++++++++++++++
+ 1 file changed, 22 insertions(+)
+
+commit c01329384baa5abffef648017a56dfdcdedf8173
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Dec 4 16:10:34 2021 -0700
+
+    remove test
+
+ README       | 2 --
+ README.md    | 2 --
+ README.md.in | 2 --
+ 3 files changed, 6 deletions(-)
+
+commit d96a524e5d3254468dd55656e7590a1d0f936295
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Dec 4 02:47:14 2021 -0700
+
+    github looks here first
+
+ README | 22 ++++++++++++----------
+ 1 file changed, 12 insertions(+), 10 deletions(-)
+
+commit c332d64045d2da15b99801c61e4e99ff45d6a6dc
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Dec 4 02:44:32 2021 -0700
+
+    try a few things with gh-pages
+
+ README.md    | 22 ++++++++++++----------
+ README.md.in |  2 ++
+ _config.yml  |  2 +-
+ index.md     |  2 ++
+ 4 files changed, 17 insertions(+), 11 deletions(-)
+
+commit 52a5f9a675950bc8b3a450e6fa407c659d0a4cbc
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Dec 4 02:15:58 2021 -0700
+
+    add gh-pages
+
+ _config.yml |   4 +
+ adwm.svg    | 682 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ index.md    | 140 ++++++++++++
+ logo.png    | Bin 0 -> 10554 bytes
+ 4 files changed, 826 insertions(+)
+
+commit fb32ed30d8b169a14dbf3b23b2fc5f172c807e82
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri Dec 3 04:25:23 2021 -0700
+
+    put traps back
+
+ src/adwm.c | 10 ++++------
+ 1 file changed, 4 insertions(+), 6 deletions(-)
+
+commit a18bc8bce29d60ee2e72da7d6ff7f37467928737
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri Dec 3 04:22:13 2021 -0700
+
+    even better corrections for format-security
+
+ src/adwm.c      | 2 +-
+ src/adwm_adwm.c | 2 +-
+ src/config.c    | 2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
+
+commit 7025b460f2508065f42b8b20309cf396d18490bc
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri Dec 3 04:00:14 2021 -0700
+
+    better corrections to format-security
+
+ src/adwm.c      | 2 +-
+ src/adwm_adwm.c | 2 +-
+ src/config.c    | 2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
+
+commit 7f33587f5bedd9ec50a9db0071ba8afbc3d794cf
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri Dec 3 02:15:50 2021 -0700
+
+    post-release update
+
+ ChangeLog | 24 +++++++++++++++---------
+ NEWS      |  3 ++-
+ 2 files changed, 17 insertions(+), 10 deletions(-)
+
 commit e566469493d0099b2c971eb4952e953494009f10
 Author: Brian Bidulock <bidulock@openss7.org>
 Date:   Fri Dec 3 02:12:38 2021 -0700
@@ -5158,170 +5356,3 @@ Date:   Mon Oct 2 07:44:59 2017 -0600
  data/styles/Default/pixmaps/xkill_pressed.xpm | 2 +-
  data/styles/Default/pixmaps/xkill_unfocus.xpm | 2 +-
  4 files changed, 4 insertions(+), 4 deletions(-)
-
-commit 521ffb8f7476ecb6c132933c88609c4888cd76ac
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Mon Oct 2 06:35:27 2017 -0600
-
-    document max lhalf rhalf at edges
-
- doc/adwm.1.in | 84 +++++++++++++++++++------------------------------------
- 1 file changed, 28 insertions(+), 56 deletions(-)
-
-commit 7649a84b475809e6e0bd3f3e34bf02a8af30684e
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Mon Oct 2 06:35:10 2017 -0600
-
-    document lhalf rhalf key bindings
-
- doc/adwm-keys.5.in | 10 ++++++++--
- 1 file changed, 8 insertions(+), 2 deletions(-)
-
-commit a7e5241ebaec0af5061bc9c29a369b2df19daf9d
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Mon Oct 2 06:34:27 2017 -0600
-
-    rationalize to parse.c
-
- src/adwm_adwm.c | 115 ++++++++++++++++++++++++++++------------------------
- 1 file changed, 61 insertions(+), 54 deletions(-)
-
-commit 8c06135bca03ab4312f1f709119326c4a46b51e8
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Mon Oct 2 06:33:49 2017 -0600
-
-    add default key bindings lhalf rhalf
-
- data/keysrc | 8 ++++++--
- 1 file changed, 6 insertions(+), 2 deletions(-)
-
-commit 84e4b822ddea538525d0458247707bf413620b81
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Mon Oct 2 06:33:19 2017 -0600
-
-    add missing button pixmaps
-
- src/draw.c | 12 +++++++++---
- 1 file changed, 9 insertions(+), 3 deletions(-)
-
-commit 93a717df5b5cc75fe3b44982251f2e87d01ca9fc
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Mon Oct 2 06:32:51 2017 -0600
-
-    add missing lhalf rhalf actions
-
- src/parse.c | 26 ++++++++++++++------------
- 1 file changed, 14 insertions(+), 12 deletions(-)
-
-commit 2be4b18c5894126cb2fa1d631d478e029e34c1a4
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Mon Oct 2 05:34:44 2017 -0600
-
-    update todo
-
- TODO | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-commit c136d3b0376bd4e781e2073121888ce26d5468a4
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Mon Oct 2 05:33:51 2017 -0600
-
-    do not drag max, lhalf, rhalf when Ctrl held
-
- src/layout.c | 185 ++++++++++++++++++++++++++++---------------------------
- 1 file changed, 93 insertions(+), 92 deletions(-)
-
-commit 09bfa9fabcd29e4a8091ebd5cd536371c80a246a
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Mon Oct 2 05:25:14 2017 -0600
-
-    prohibit max, lhalf, rhalf when moving
-
- src/layout.c | 72 ++++++++++++++++++++++++++++++++++++--------------------
- 1 file changed, 46 insertions(+), 26 deletions(-)
-
-commit 8268b2ba60142bbd39ed57da26a3e3b1c6db509b
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Mon Oct 2 04:53:04 2017 -0600
-
-    use edges for max, lhalf, rhalf changes
-
- TODO         |   2 +-
- src/layout.c | 192 ++++++++++++++++++++++++++++++++++---------------------
- 2 files changed, 121 insertions(+), 73 deletions(-)
-
-commit aaf51132cb6901281f9f7b7b42b1281af3995293
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Mon Oct 2 00:36:23 2017 -0600
-
-    update todo
-
- TODO | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-commit 916b837930770fc847b5257915cb7047f70e3691
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Mon Oct 2 00:35:30 2017 -0600
-
-    per button pressed pixmaps
-
- src/adwm.h      |  6 ++++++
- src/adwm_adwm.c |  6 ++++++
- src/draw.c      | 26 +++++++++++++++++++++++++-
- 3 files changed, 37 insertions(+), 1 deletion(-)
-
-commit 0b21f5cc3cdfdd5b8348b2f5dc30659f219d5dd8
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Mon Oct 2 00:11:37 2017 -0600
-
-    add new pixmaps to default style
-
- data/styles/Default/stylerc | 75 +++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 75 insertions(+)
-
-commit 9fe27ca377b28e98da0aedb35cd98444fbe6f71a
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Mon Oct 2 00:11:23 2017 -0600
-
-    install new pixmaps
-
- data/Makefile.am | 12 ++++++++++++
- 1 file changed, 12 insertions(+)
-
-commit 640499e8f1b95994a133b8e6177d9188f48738e7
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Mon Oct 2 00:10:46 2017 -0600
-
-    add close toggled pixmaps
-
- data/styles/Default/pixmaps/xkill_focused.xpm | 22 ++++++++++++++++++++++
- data/styles/Default/pixmaps/xkill_hovered.xpm | 22 ++++++++++++++++++++++
- data/styles/Default/pixmaps/xkill_pressed.xpm | 22 ++++++++++++++++++++++
- data/styles/Default/pixmaps/xkill_unfocus.xpm | 22 ++++++++++++++++++++++
- 4 files changed, 88 insertions(+)
-
-commit 1a4ccfa7f959a92c98f4adfc7f67431785b7bd39
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Mon Oct 2 00:09:54 2017 -0600
-
-    add half toggled pixmaps
-
- data/styles/Default/pixmaps/lback_focused.xpm | 20 ++++++++++++++++++++
- data/styles/Default/pixmaps/lback_hovered.xpm | 20 ++++++++++++++++++++
- data/styles/Default/pixmaps/lback_pressed.xpm | 20 ++++++++++++++++++++
- data/styles/Default/pixmaps/lback_unfocus.xpm | 20 ++++++++++++++++++++
- data/styles/Default/pixmaps/rback_focused.xpm | 20 ++++++++++++++++++++
- data/styles/Default/pixmaps/rback_hovered.xpm | 20 ++++++++++++++++++++
- data/styles/Default/pixmaps/rback_pressed.xpm | 20 ++++++++++++++++++++
- data/styles/Default/pixmaps/rback_unfocus.xpm | 20 ++++++++++++++++++++
- 8 files changed, 160 insertions(+)
-
-commit fbdd04ee2b962b86c51436339ce8e7fb3ab93299
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Mon Oct 2 00:08:44 2017 -0600
-
-    correct pixmap name
-
- data/styles/Default/pixmaps/lhalf_hovered.xpm | 2 +-
- data/styles/Default/pixmaps/rhalf_hovered.xpm | 2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)

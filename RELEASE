@@ -1,6 +1,6 @@
-[adwm -- release notes.  2021-12-03]: #
+[adwm -- release notes.  2021-12-09]: #
 
-Maintenance Release 0.7.13
+Maintenance Release 0.7.14
 ==========================
 
 This is another release of the adwm window manager that provides a fully
@@ -10,6 +10,7 @@ tiling/floating window manager.  It borrows concepts from `dwm(1)`,
 
 This is a maintenance release that supports compilation with new
 makepkg.conf Arch Linux CFLAGS that include -Werror-format-security.
+A harmful bug that worked its way into the last release has been fixed.
 Session management has not progressed since the last release.  There are
 no outstanding issues at the time of release, and the next release
 should include some outstanding development from the [TODO](TODO) list.

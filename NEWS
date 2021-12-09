@@ -1,4 +1,49 @@
-adwm -- history of user-visible changes.  2021-12-03
+adwm -- history of user-visible changes.  2021-12-09
+
+Release adwm-0.7.14 released 2021-12-09
+---------------------------------------
+
+git tag -n100 -l 0.7.14
+
+0.7.14          Maintenance Release 0.7.14
+
+    This is another release of the adwm window manager that provides a
+    fully XDG, WindowMaker, WMH (WinWM), MWMH (CDE/Motif), ICCM 2.0
+    compliant tiling/floating window manager. It borrows concepts from
+    dwm(1), velox(1), awesome(1), spectrwm(1) and wmii(1).
+
+    This is a maintenance release that supports compilation with new
+    makepkg.conf Arch Linux CFLAGS that include -Werror-format-security. A
+    harmful bug that worked its way into the last release has been fixed.
+    Session management has not progressed since the last release. There are
+    no outstanding issues at the time of release, and the next release
+    should include some outstanding development from the TODO list.
+
+    Included in the release is an autoconf tarball for building the package
+    from source. See the NEWS and TODO file in the release for more
+    information. Please report problems to the issues list on GitHub.
+
+git shortlog -e -n -w80,6,8 0.7.13...0.7.14
+
+Brian Bidulock <bidulock@openss7.org> (17):
+      post-release update
+      better corrections to format-security
+      even better corrections for format-security
+      put traps back
+      add gh-pages
+      try a few things with gh-pages
+      github looks here first
+      remove test
+      add RELEASE file to repo
+      update README with release file
+      add some sample screenshots
+      correct image path
+      describe screenshots
+      cannot use divs for some reason
+      don't know why it has to be this way
+      is this the issue???
+      Revert "don't know why it has to be this way"
+
 
 Release adwm-0.7.13 released 2021-12-03
 ---------------------------------------
@@ -305,30 +350,5 @@ Brian Bidulock <bidulock@openss7.org> (9):
       better defaults now
       build release notes with dist
       update release notes
-      update release files
-
-
-Release adwm-0.7.7 released 2019-08-30
---------------------------------------
-
-git tag -n100 -l 0.7.7
-
-0.7.7           Maintenance Release 0.7.7
-
-    This is a maintenance release that includes a fix for gcc 9.1 silly
-    string warnings, gettext parsing, builds a better NEWS file, and
-    converts the release archives to lzip compression.
-
-    As usual, Included is an autoconf tarball for building the package from
-    source. Please report problems to the issues list on github.
-
-git shortlog -e -n -w80,6,8 0.7.6...0.7.7
-
-Brian Bidulock <bidulock@openss7.org> (6):
-      update sed for gettext 0.20.1
-      detect release head properly when generating NEWS
-      avoid gcc 9.1 silly warnings
-      update release notes
-      convert to lzip archive
       update release files
 

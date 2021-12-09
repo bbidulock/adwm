@@ -34,6 +34,10 @@
 #warn "Not using prctl!"
 #endif
 
+#ifdef JSONC
+#include <json-c/json.h>
+#endif
+
 #include <X11/cursorfont.h>
 #include <X11/keysym.h>
 #include <X11/XKBlib.h>

@@ -2,8 +2,8 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.71])
-AC_INIT([ADWM],[0.7.14],[https://github.com/bbidulock/adwm/issues],[adwm],[https://github.com/bbidulock/adwm])
-AC_REVISION([0.7.14])
+AC_INIT([ADWM],[0.7.14.3],[https://github.com/bbidulock/adwm/issues],[adwm],[https://github.com/bbidulock/adwm])
+AC_REVISION([0.7.14.3])
 
 # set better defaults
 AC_PREFIX_DEFAULT([/usr])
@@ -26,11 +26,11 @@ AC_SUBST([DATE])
 MDOCDATE='December 9, 2021'
 AC_SUBST([MDOCDATE])
 
-BRANCH='0.7.14'
+BRANCH='master'
 AC_SUBST([BRANCH])
 
 # Initialize Automake
-AM_INIT_AUTOMAKE([gnits 1.16 dist-lzip no-dist-gzip std-options -Wall color-tests silent-rules tar-pax])
+AM_INIT_AUTOMAKE([1.16 dist-lzip no-dist-gzip std-options -Wall color-tests silent-rules tar-pax])
 AM_MAINTAINER_MODE
 AM_SILENT_RULES([yes])
 
@@ -118,6 +118,19 @@ AC_CHECK_FUNCS([getcwd memmove regcomp select setlocale strchr strdup strerror s
 AC_FUNC_STRNLEN
 AC_FUNC_STRTOD
 
+AS_BOX([Configuration Libraries])
+
+AC_ARG_ENABLE([json],
+	AS_HELP_STRING([--enable-json],[Enable JSON support @<:@default=auto@:>@]))
+if test "x$enable_json" = xyes ; then
+	PKG_CHECK_MODULES([JSONC],[json-c],
+		[AC_DEFINE([JSONC],[1],[Default to 1 to support JSONC library.])],
+		[enable_json=no])
+else
+	AC_MSG_CHECKING([for json-c])
+	AC_MSG_RESULT([disabled])
+fi
+
 AS_BOX([X11 Extension Libraries])
 
 PKG_CHECK_MODULES([X11],[x11])
@@ -199,7 +212,7 @@ AC_ARG_ENABLE([sm],
 if test "x$enable_sm" != xno ; then
 	PKG_CHECK_MODULES([SMLIB],[ice sm],
 		[AC_DEFINE([SMLIB],[1],[Default to 1 to support SM library.])],
-		[enable_smlib=no])
+		[enable_sm=no])
 else
 	AC_MSG_CHECKING([for smlib])
 	AC_MSG_RESULT([disabled])

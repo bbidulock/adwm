@@ -3,29 +3,32 @@
 adwm
 ===============
 
-Package `adwm-0.7.13.5` was released under GPLv3 license 2021-12-04.
+Package `adwm-0.7.13.10` was released under GPLv3 license
+2021-12-04.
 
 This was originally a fork of Echinus which in turn was a fork of `dwm(1)`,
 and borrows concepts from `velox(1)`, `awesome(1)`, `spectrwm(1)` and
-`wmii(1)`.  The source for `adwm` is hosted on [GitHub][1].  What it
-includes is a full rewrite with significant updates and additions resulting
-in full EWMH (NetwM), WMH (WinWM), MWMH (CDE/Motif), ICCCM 2.0 compliance
-and support.
+`wmii(1)`.  What it includes is a full rewrite with significant updates and
+additions resulting in full EWMH (NetwM), WMH (WinWM), MWMH (CDE/Motif),
+ICCCM 2.0 compliance and support.
+
+The source for `adwm` is hosted on [GitHub][1].
+
 
 Release
 -------
 
-This is the `adwm-0.7.13.5` package, released 2021-12-04.  This release,
-and the latest version, can be obtained from [GitHub][1], using a command
-such as:
+This is the `adwm-0.7.13.10` package, released 2021-12-04.
+This release, and the latest version, can be obtained from [GitHub][1],
+using a command such as:
 
     $> git clone https://github.com/bbidulock/adwm.git
 
 Please see the [RELEASE][3] and [NEWS][4] files for release notes and
 history of user visible changes for the current version, and the
-[ChangeLog][5] file for a more detailed history of implementation changes.
-The [TODO][6] file lists features not yet implemented and other outstanding
-items.
+[ChangeLog][5] file for a more detailed history of implementation
+changes.  The [TODO][6] file lists features not yet implemented and
+other outstanding items.
 
 The file [COMPLIANCE][7] lists the current state of EWMH/ICCCM compliance.
 
@@ -37,15 +40,16 @@ installation procedure that works for most applications appears below.
 `echinus(1)` and `dwm(1)` were published under the MIT/X Consortium License
 that can be found in the file [LICENSE][9].  As over 90% of the source file
 lines have been supplied or replaced and the remaining 10% is not subject
-to copyright.  This release is published under GPLv3.  Please see the
-license in the file [COPYING][10].
+to copyright,
+this release is published under GPLv3.  Please see the license in the
+file [COPYING][10].
 
 
 Quick Start
 -----------
 
-The quickest and easiest way to get `adwm` up and running is to run
-the following commands:
+The quickest and easiest way to get `adwm` up and
+running is to run the following commands:
 
     $> git clone https://github.com/bbidulock/adwm.git
     $> cd adwm
@@ -54,11 +58,13 @@ the following commands:
     $> make
     $> make DESTDIR="$pkgdir" install
 
-This will configure, compile and install `adwm` the quickest.  For
-those who like to spend the extra 15 seconds reading `./configure --help`,
-some compile time options can be turned on and off before the build.
+This will configure, compile and install `adwm` the
+quickest.  For those who like to spend the extra 15 seconds reading
+`./configure --help`, some compile time options can be turned on and off
+before the build.
 
-For general information on GNU's `./configure`, see the file [INSTALL][8].
+For general information on GNU's `./configure`, see the file
+[INSTALL][8].
 
 
 Running
@@ -66,7 +72,7 @@ Running
 
 Read the manual page after installation:
 
-    man adwm
+    $> man adwm
 
 
 Features
@@ -131,6 +137,24 @@ Issues
 Report issues on GitHub [here][2].
 
 
+Samples
+-------
+
+Following are some sample screenshots:
+
+![tiled.jpg](images/tiled.jpg "Tiled")
+![tiled_bar.jpg](images/tiled_bar.jpg "Tiled with bar exposed")
+![tiled_master_left.jpg](images/tiled_master_left.jpg "Tiled w/ master
+on left")
+![tiled_decorated.jpg](images/tiled_decorated.jpg "Tiled w/ decorated windows")
+![floating.jpg](images/floating.jpg "Floating")
+![floating_menus.jpg](images/floating_menus.jpg "Floating w/ root menu")
+![floating_winmenu.jpg](images/floating_winmenu.jpg "Floating w/ window menu")
+![airforce_theme.jpg](images/airforce_theme.jpg "Airforce theme")
+![airforce_theme_xeyes.jpg](images/airforce_theme_xeyes.jpg "Airforce
+theme w/ proper Xeyes")
+
+
 
 [1]: https://github.com/bbidulock/adwm
 [2]: https://github.com/bbidulock/adwm/issues
@@ -143,4 +167,4 @@ Report issues on GitHub [here][2].
 [9]: https://github.com/bbidulock/adwm/blob/master/LICENSE
 [10]: https://github.com/bbidulock/adwm/blob/master/COPYING
 
-[ vim: set ft=markdown sw=4 tw=80 nocin nosi fo+=tcqlorn spell: ]: #
+[ vim: set ft=markdown sw=4 tw=72 nocin nosi fo+=tcqlorn spell: ]: #

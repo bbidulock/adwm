@@ -85,3 +85,6 @@ tags
 _test/
 *.tmp
 TODO.html
+.jekyll-cache/
+.jekyll-metadata
+_site/

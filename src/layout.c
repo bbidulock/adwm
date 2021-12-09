@@ -1933,11 +1933,12 @@ prevtiled(Client *c, View *v)
 static void
 tile(View *v)
 {
-	LayoutArgs wa, ma, sa;
+	Workarea wa;
+	LayoutArgs ma, sa;
 	ClientGeometry n = { 0, }, m = { 0, }, s = { 0, }, g = { 0, };
 	Client *c, *mc;
 	Monitor *cm = v->curmon;
-	unsigned i, overlap, th, gh, hh, mg;
+	unsigned i, overlap, th, gh, hh, mg, wan, was;
 	Bool mtdec, stdec, mgdec, sgdec, mvdec, svdec;
 
 	if (!(c = nexttiled(scr->clients, v)))
@@ -1948,12 +1949,12 @@ tile(View *v)
 	hh = scr->style.fullgrips ? gh : 0;
 	mg = scr->style.margin;
 
-	getworkarea(cm, (Workarea *) &wa);
-	for (wa.n = wa.s = ma.s = sa.s = 0, c = nexttiled(scr->clients, v);
-	     c; c = nexttiled(c->next, v), wa.n++) {
+	getworkarea(cm, &wa);
+	for (wan = was = ma.s = sa.s = 0, c = nexttiled(scr->clients, v);
+	     c; c = nexttiled(c->next, v), wan++) {
 		if (c->is.shaded && (c != sel || !scr->options.autoroll)) {
-			wa.s++;
-			if (wa.n < v->nmaster)
+			was++;
+			if (wan < v->nmaster)
 				ma.s++;
 			else
 				sa.s++;
@@ -1963,8 +1964,8 @@ tile(View *v)
 	/* window geoms */
 
 	/* master & slave number */
-	ma.n = (wa.n > v->nmaster) ? v->nmaster : wa.n;
-	sa.n = (ma.n < wa.n) ? wa.n - ma.n : 0;
+	ma.n = (wan > v->nmaster) ? v->nmaster : wan;
+	sa.n = (ma.n < wan) ? wan - ma.n : 0;
 	XPRINTF("there are %d masters\n", ma.n);
 	XPRINTF("there are %d slaves\n", sa.n);
 
@@ -2216,7 +2217,7 @@ tile(View *v)
 	/* lay out the slave area - always top->bot, left->right */
 	n = s;
 
-	for (; c && i < wa.n; c = nexttiled(c->next, v)) {
+	for (; c && i < wan; c = nexttiled(c->next, v)) {
 		IsUnion is = {.is = 0 };
 
 		if (c->is.max) {
@@ -2253,13 +2254,13 @@ tile(View *v)
 		case OrientTop:
 			/* left to right */
 			n.x += n.w - n.b;
-			if (i == wa.n - 1)
+			if (i == wan - 1)
 				n.w = sa.w - (n.x - sa.x);
 			break;
 		case OrientBottom:
 			/* right to left */
 			n.x -= n.w - n.b;
-			if (i == wa.n - 1) {
+			if (i == wan - 1) {
 				n.w += (n.x - sa.x);
 				n.x = sa.x;
 			}
@@ -2267,7 +2268,7 @@ tile(View *v)
 		case OrientLeft:
 			/* bottom to top */
 			n.y -= n.h - n.b;
-			if (i == wa.n - 1) {
+			if (i == wan - 1) {
 				n.h += (n.y - sa.y);
 				n.y = sa.y;
 			}
@@ -2276,7 +2277,7 @@ tile(View *v)
 		default:
 			/* top to bottom */
 			n.y += n.h - n.b;
-			if (i == wa.n - 1)
+			if (i == wan - 1)
 				n.h = sa.h - (n.y - sa.y);
 			break;
 		}

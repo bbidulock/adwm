@@ -66,6 +66,58 @@ before the build.
 For general information on GNU's `./configure`, see the file
 [INSTALL][8].
 
+Dependencies
+------------
+
+Install the following X Libraries to build and load `adwm`:
+
+- `libxft`
+- `libxrandr`
+- `libxinerama`
+- `libxpm`
+- `startup-notification`
+- `libxcomposite`
+- `libxdamage`
+- `libpng`
+
+To support default key and mouse bindings, build and install the
+following packages:
+
+- [xdg-launch][11]: for application launching default key bindings
+- [xde-ctools][12]: for `xde-run`, `xde-winmenu`, `xde-winlist` and
+  `xde-wkspmenu` default bindings
+- [xde-menu][13]: for `xde-menu` root menu default bindings
+- [xde-session][14]: for `xde-logout` and `xde-xlock` default bindings
+
+To support default key bindings, the following applications must be
+installed:
+
+- `uxterm`: to be able to launch a terminal at all
+- `roxterm`: for terminal application launching
+- `firefox`: for browser application launching
+- `pcmanfm`: for file manager application launching
+- `gvim`: for editor application launching
+- `scrot`: to support screenshot key bindings
+- `xbrightness` and `xbacklight` or `acpibacklight`: to support
+  brightness keys
+- `amixer`: to support audio control keys
+- `xrandr`: to support screen rotation key bindings
+
+For a more full-featured desktop environment, build and install the
+following packages:
+
+- [xde-styles][17]: for a small, consistent set of styles for ADWM and
+  other light-weight window managers
+- [xde-panel][15]: for a panel that works well with ADWM
+- [xde-applets][16]: for various WindowMaker dock applications and systray
+  applets
+- [xde-theme][18]: for various desktop themes and theme packs
+- [xde-sounds][19]: for base sound themes
+
+Of course for a minimal desktop, lemon-bar and dmenu will suffice
+([xde-menu][13] supports a version of dmenu that supports
+freedesktop.org desktop files).
+
 
 Running
 -------
@@ -91,10 +143,10 @@ General:
   modes;
 - window manager based auto-hide for panels and docks (struts);
 - three focus models: click-to-focus, sloppy and all-sloppy;
-- soon to come X11R6 session management;
+- soon to come: full X11R6 session management;
 - very wide array of available key-binding actions;
 - key-binding defaults consistent with a wide array of light-weight and
-  popular window managers.
+  popular window managers (see [NOTES](NOTES.html)).
 
 Views, Workspaces and Desktops:
 
@@ -106,13 +158,13 @@ Floating/stacking mode:
 
 - smart cascading placement algorithm;
 - window decorations: title bar, resize grips, wide array of configurable
-  buttons.;
+  buttons;
 - themed buttons include hovered, toggled, pressed, focused and unfocused
-  pixmaps.;
+  pixmaps;
 - multiple mouse actions per title bar button based on mouse button
-  pressed.;
-- separate click and click-drag actions for title bar, borders and grips.;
-- windows can snap to other windows and workspace/monitor boundaries.;
+  pressed;
+- separate click and click-drag actions for title bar, borders and grips;
+- windows can snap to other windows and workspace/monitor boundaries;
 - key bindings for moving and resizing windows without using the mouse.
 - drop shadowed XFT text in title bars, with separate color selection for
   active and inactive windows;
@@ -181,5 +233,14 @@ ___Figure 9:___ Airforce XDE Theme (Xeyes properly rendered)
 [8]: https://github.com/bbidulock/@PACKAGE@/blob/@BRANCH@/INSTALL
 [9]: https://github.com/bbidulock/@PACKAGE@/blob/@BRANCH@/LICENSE
 [10]: https://github.com/bbidulock/@PACKAGE@/blob/@BRANCH@/COPYING
+[11]: https://github.com/bbidulock/xdg-launch
+[12]: https://bbidulock.github.io/xde-ctools
+[13]: https://github.com/bbidulock/xde-menu
+[14]: https://github.com/bbidulock/xde-session
+[15]: https://github.com/bbidulock/xde-panel
+[16]: https://github.com/bbidulock/xde-applets
+[17]: https://github.com/bbidulock/xde-styles
+[18]: https://github.com/bbidulock?tab=repositories&q=xde-theme-&type=&language=&sort=name
+[19]: https://github.com/bbidulock/xde-sounds
 
 [ vim: set ft=markdown sw=4 tw=72 nocin nosi fo+=tcqlorn spell: ]: #

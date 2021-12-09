@@ -115,6 +115,12 @@ Configuration:
       parameters.
 * [ ] Provide external mechanism for redefining key bindings.
 * [x] Make mouse button action bindings configurable.
+* [ ] Have default key bindings invoke xde-preferred for default
+      terminal, browser, file manager and editor.
+* [ ] Consider using xde-preferred for screenshot, brighness and
+      backlight controls, and audio controls.  Either have defined
+      defaults, or use smart scripts (debian way) to find something
+      usable.
 
 
 // vim: set ft=asciidoc tw=72 nocin nosi fo+=tcqlorn spell:

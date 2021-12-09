@@ -6792,10 +6792,10 @@ xerror(Display *dsply, XErrorEvent *ee)
 	EPRINTF("\tFailed request %lu\n", ee->serial);
 	if (trap)
 		EPRINTF("\tNext request trap %lu\n", trap->trap_next);
-		EPRINTF("\tNext request now  %lu\n", NextRequest(dsply));
+	EPRINTF("\tNext request now  %lu\n", NextRequest(dsply));
 	if (trap)
 		EPRINTF("\tLast known processed request trap %lu\n", trap->trap_last);
-		EPRINTF("\tLast known processed request now  %lu\n", LastKnownRequestProcessed(dsply));
+	EPRINTF("\tLast known processed request now  %lu\n", LastKnownRequestProcessed(dsply));
 	if (critical || ignore)
 		dumpstack(__FILE__, __LINE__, __func__);
 	if (!critical || ignore) {
@@ -7022,7 +7022,7 @@ main(int argc, char *argv[])
 		case 0:
 			goto bad_usage;
 		case 'f':	/* -f, --file {PATH/}FILE */
-			snprintf(conf, sizeof(conf) - 1, optarg);
+			strncpy(conf, optarg, sizeof(conf) - 1);
 			break;
 		case 'c':	/* -c, --clientId ID */
 			free(clientid);

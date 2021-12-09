@@ -145,15 +145,15 @@ Samples
 
 Following are some sample screenshots:
 
-![tiled.jpg](images/tiled.jpg "Tiled")
-![tiled_bar.jpg](images/tiled_bar.jpg "Tiled with bar exposed")
-![tiled_master_left.jpg](images/tiled_master_left.jpg "Tiled w/ master on left")
-![tiled_decorated.jpg](images/tiled_decorated.jpg "Tiled w/ decorated windows")
-![floating.jpg](images/floating.jpg "Floating")
-![floating_menus.jpg](images/floating_menus.jpg "Floating w/ root menu")
-![floating_winmenu.jpg](images/floating_winmenu.jpg "Floating w/ window menu")
-![airforce_theme.jpg](images/airforce_theme.jpg "Airforce theme")
-![airforce_theme_xeyes.jpg](images/airforce_theme_xeyes.jpg "Airforce theme w/ proper Xeyes")
+![tiled.jpg](scrot/tiled.jpg "Tiled")
+![tiled_bar.jpg](scrot/tiled_bar.jpg "Tiled with bar exposed")
+![tiled_master_left.jpg](scrot/tiled_master_left.jpg "Tiled w/ master on left")
+![tiled_decorated.jpg](scrot/tiled_decorated.jpg "Tiled w/ decorated windows")
+![floating.jpg](scrot/floating.jpg "Floating")
+![floating_menus.jpg](scrot/floating_menus.jpg "Floating w/ root menu")
+![floating_winmenu.jpg](scrot/floating_winmenu.jpg "Floating w/ window menu")
+![airforce_theme.jpg](scrot/airforce_theme.jpg "Airforce theme")
+![airforce_theme_xeyes.jpg](scrot/airforce_theme_xeyes.jpg "Airforce theme w/ proper Xeyes")
 
 
 

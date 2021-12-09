@@ -145,50 +145,32 @@ Samples
 
 Following are some sample screenshots:
 
-<div style="text-align: center;" markdown="1">
-![tiled.jpg](scrot/tiled.jpg "Tiled")
 ___Figure 1:___ Tiled layout (master right)
-</div>
+![tiled.jpg](scrot/tiled.jpg "Tiled")
 
-<div style="text-align: center;" markdown="1">
-![tiled_bar.jpg](scrot/tiled_bar.jpg "Tiled with bar exposed")
 ___Figure 2:___ Tiled layout (bar exposed)
-</div>
+![tiled_bar.jpg](scrot/tiled_bar.jpg "Tiled with bar exposed")
 
-<div style="text-align: center;" markdown="1">
-![tiled_master_left.jpg](scrot/tiled_master_left.jpg "Tiled w/ master on left")
 ___Figure 3:___ Tiled layout (master left)
-</div>
+![tiled_master_left.jpg](scrot/tiled_master_left.jpg "Tiled w/ master on left")
 
-<div style="text-align: center;" markdown="1">
-![tiled_decorated.jpg](scrot/tiled_decorated.jpg "Tiled w/ decorated windows")
 ___Figure 4:___ Tiled layout (windows decorated)
-</div>
+![tiled_decorated.jpg](scrot/tiled_decorated.jpg "Tiled w/ decorated windows")
 
-<div style="text-align: center;" markdown="1">
-![floating.jpg](scrot/floating.jpg "Floating")
 ___Figure 5:___ Floating layout
-</div>
+![floating.jpg](scrot/floating.jpg "Floating")
 
-<div style="text-align: center;" markdown="1">
-![floating_menus.jpg](scrot/floating_menus.jpg "Floating w/ root menu")
 ___Figure 6:___ Floating layout (root menu)
-</div>
+![floating_menus.jpg](scrot/floating_menus.jpg "Floating w/ root menu")
 
-<div style="text-align: center;" markdown="1">
-![floating_winmenu.jpg](scrot/floating_winmenu.jpg "Floating w/ window menu")
 ___Figure 7:___ Floating layout (window menu)
-</div>
+![floating_winmenu.jpg](scrot/floating_winmenu.jpg "Floating w/ window menu")
 
-<div style="text-align: center;" markdown="1">
+___Figure 8:___ Airforce XDE Theme
 ![airforce_theme.jpg](scrot/airforce_theme.jpg "Airforce theme")
-___Figure 7:___ Airforce XDE Theme
-</div>
 
-<div style="text-align: center;" markdown="1">
+___Figure 9:___ Airforce XDE Theme (Xeyes properly rendered)
 ![airforce_theme_xeyes.jpg](scrot/airforce_theme_xeyes.jpg "Airforce theme w/ proper Xeyes")
-___Figure 8:___ Airforce XDE Theme (Xeyes properly rendered)
-</div>
 
 
 

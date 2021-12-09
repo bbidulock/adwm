@@ -672,7 +672,7 @@ inittags_ADWM(Bool reload)
 		snprintf(name, sizeof(name), "adwm.screen%u.tags.name%u", s, i);
 		snprintf(clas, sizeof(clas), "Adwm.Screen%u.Tags.Name%u", s, i);
 		res = readres(name, clas, def);
-		strncpy(t->name, res, sizeof(t->name) - 1);
+		snprintf(t->name, sizeof(t->name), res);
 	}
 	scr->ntags = scr->options.ntags;
 

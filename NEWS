@@ -25,7 +25,7 @@ git tag -n100 -l 0.7.14
 
 git shortlog -e -n -w80,6,8 0.7.13...0.7.14
 
-Brian Bidulock <bidulock@openss7.org> (17):
+Brian Bidulock <bidulock@openss7.org> (18):
       post-release update
       better corrections to format-security
       even better corrections for format-security
@@ -43,6 +43,7 @@ Brian Bidulock <bidulock@openss7.org> (17):
       don't know why it has to be this way
       is this the issue???
       Revert "don't know why it has to be this way"
+      update release files
 
 
 Release adwm-0.7.13 released 2021-12-03

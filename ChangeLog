@@ -1,5 +1,21 @@
 # created with git log --stat=76 -M -C -500|fmt -sct -w80
 
+commit 062e3049f30f0e13ac9d6bb7e94396338506d312
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu Dec 9 02:13:10 2021 -0700
+
+    update release files
+
+ AUTHORS      |   2 +-
+ ChangeLog    | 365 ++++++++++++++++++++++++++++++-------------------------
+ NEWS         |  72 +++++++----
+ README       |  24 ++--
+ README.md    |  24 ++--
+ RELEASE      |   5 +-
+ RELEASE.md   |   5 +-
+ configure.ac |  10 +-
+ 8 files changed, 280 insertions(+), 227 deletions(-)
+
 commit 8c10112f02c629162bff1df35082daa8e045d15b
 Author: Brian Bidulock <bidulock@openss7.org>
 Date:   Thu Dec 9 02:04:40 2021 -0700
@@ -5344,15 +5360,3 @@ Date:   Tue Oct 3 08:12:49 2017 -0600
 
  data/keysrc | 6 +++---
  1 file changed, 3 insertions(+), 3 deletions(-)
-
-commit f27fda39ba760c569c25e438b7a46da43b12f7c8
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Mon Oct 2 07:44:59 2017 -0600
-
-    correct names of xpms
-
- data/styles/Default/pixmaps/xkill_focused.xpm | 2 +-
- data/styles/Default/pixmaps/xkill_hovered.xpm | 2 +-
- data/styles/Default/pixmaps/xkill_pressed.xpm | 2 +-
- data/styles/Default/pixmaps/xkill_unfocus.xpm | 2 +-
- 4 files changed, 4 insertions(+), 4 deletions(-)

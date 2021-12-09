@@ -55,6 +55,9 @@ NEWS:
 		)>$@ ; \
 	else touch $@ ; fi
 
+index.md: README.md
+	$(AM_V_GEN)(echo -e "---\nlayout: default\n---"; cat $<) >$@
+
 README.md: README.md.in
 	$(AM_V_GEN)sed -r -e 's:\@PACKAGE\@:$(PACKAGE):g;s:\@VERSION\@:$(VERSION):g;s:\@DATE\@:$(DATE):g;s:\@BRANCH\@:$(BRANCH):g' $< >$@
 

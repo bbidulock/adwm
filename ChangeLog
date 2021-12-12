@@ -1,5 +1,67 @@
 # created with git log --stat=76 -M -C -500|fmt -sct -w80
 
+commit f433118b67814d1e2142a8f538cf3e87f8cd1916
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Dec 11 23:42:51 2021 -0700
+
+    add index.md to distribution script
+
+ dist.sh | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+commit 0b35c709e911c9720f932d574b6b559169ed37bc
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu Dec 9 15:50:24 2021 -0700
+
+    add dependencies
+
+ README       | 96 ++++++++++++++++++++++++++++++++++++++++++++++----------
+ README.md    | 95 +++++++++++++++++++++++++++++++++++++++++++++----------
+ README.md.in | 75 ++++++++++++++++++++++++++++++++++++++-----
+ TODO         |  6 ++++
+ index.md     | 95 +++++++++++++++++++++++++++++++++++++++++++++----------
+ 5 files changed, 309 insertions(+), 58 deletions(-)
+
+commit 4758fd7dab6e09d0f37937bae21c141156fca291
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu Dec 9 14:45:00 2021 -0700
+
+    prepare to use JSON-C library
+
+ configure.ac    | 23 ++++++++++++++++++-----
+ src/Makefile.am |  4 +++-
+ src/adwm.h      |  4 ++++
+ 3 files changed, 25 insertions(+), 6 deletions(-)
+
+commit 491c0a9d567eb22a9dbafe8f0560da7793713d22
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu Dec 9 14:26:06 2021 -0700
+
+    get rid of type punning
+
+ src/layout.c | 29 +++++++++++++++--------------
+ 1 file changed, 15 insertions(+), 14 deletions(-)
+
+commit 057dbe0fb950afb47342cc318f79a9a1764caa14
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu Dec 9 03:46:16 2021 -0700
+
+    build index.md
+
+ Makefile.am |  3 +++
+ index.md    | 24 ++++++++++++------------
+ 2 files changed, 15 insertions(+), 12 deletions(-)
+
+commit 11b22886f471d8ef866b5cbbfcef3a3c51621db1
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu Dec 9 02:14:30 2021 -0700
+
+    post-release update
+
+ ChangeLog | 28 ++++++++++++++++------------
+ NEWS      |  3 ++-
+ 2 files changed, 18 insertions(+), 13 deletions(-)
+
 commit 062e3049f30f0e13ac9d6bb7e94396338506d312
 Author: Brian Bidulock <bidulock@openss7.org>
 Date:   Thu Dec 9 02:13:10 2021 -0700
@@ -5304,59 +5366,3 @@ Date:   Tue Oct 3 17:00:09 2017 -0600
  autogen.sh   | 7 +++++--
  configure.ac | 2 +-
  2 files changed, 6 insertions(+), 3 deletions(-)
-
-commit 0d39a959a2005473fc671ec54739796f02cc407d
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Tue Oct 3 16:56:57 2017 -0600
-
-    must actually reconfigure or window will not fill
-
- src/layout.c | 18 ++++++++++--------
- 1 file changed, 10 insertions(+), 8 deletions(-)
-
-commit a3c2818812734dc71c7a1fe72f5f15c852c9cd4b
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Tue Oct 3 10:21:04 2017 -0600
-
-    update TODO
-
- TODO | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
-
-commit 3f873e2e0ef617871ecfcf88125e4da1ffad708f
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Tue Oct 3 10:19:16 2017 -0600
-
-    debug and fix key chains
-
- src/actions.c | 22 +++++++++++++++++-----
- 1 file changed, 17 insertions(+), 5 deletions(-)
-
-commit 00edc56c61cb7e765a5e53c54886376131cf907d
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Tue Oct 3 08:58:24 2017 -0600
-
-    more todos
-
- TODO | 1 +
- 1 file changed, 1 insertion(+)
-
-commit 8ecb3dacc9db8cc1288a0ecb940a8af74873e6e4
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Tue Oct 3 08:13:05 2017 -0600
-
-    update documentation some more
-
- doc/adwm-config.5.in | 350 ++++++++++++++++++++++++-----------------------
- doc/adwm-keys.5.in   | 104 ++++++++++++--
- doc/adwm-style.5.in  | 239 +++++++++++++++++++++++++++++++-
- 3 files changed, 511 insertions(+), 182 deletions(-)
-
-commit 857c84ad7ae96dce7238686a4fa2391c858550da
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Tue Oct 3 08:12:49 2017 -0600
-
-    reorder a bit
-
- data/keysrc | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)

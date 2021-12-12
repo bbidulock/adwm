@@ -1,10 +1,10 @@
-[adwm -- read me first file.  2021-12-09]: #
+[adwm -- read me first file.  2021-12-11]: #
 
 adwm
 ===============
 
-Package `adwm-0.7.14.3` was released under GPLv3 license
-2021-12-09.
+Package `adwm-0.7.15` was released under GPLv3 license
+2021-12-11.
 
 This was originally a fork of Echinus which in turn was a fork of `dwm(1)`,
 and borrows concepts from `velox(1)`, `awesome(1)`, `spectrwm(1)` and
@@ -18,7 +18,7 @@ The source for `adwm` is hosted on [GitHub][1].
 Release
 -------
 
-This is the `adwm-0.7.14.3` package, released 2021-12-09.
+This is the `adwm-0.7.15` package, released 2021-12-11.
 This release, and the latest version, can be obtained from [GitHub][1],
 using a command such as:
 
@@ -225,14 +225,14 @@ ___Figure 9:___ Airforce XDE Theme (Xeyes properly rendered)
 
 [1]: https://github.com/bbidulock/adwm
 [2]: https://github.com/bbidulock/adwm/issues
-[3]: https://github.com/bbidulock/adwm/blob/master/RELEASE
-[4]: https://github.com/bbidulock/adwm/blob/master/NEWS
-[5]: https://github.com/bbidulock/adwm/blob/master/ChangeLog
-[6]: https://github.com/bbidulock/adwm/blob/master/TODO
-[7]: https://github.com/bbidulock/adwm/blob/master/COMPLIANCE
-[8]: https://github.com/bbidulock/adwm/blob/master/INSTALL
-[9]: https://github.com/bbidulock/adwm/blob/master/LICENSE
-[10]: https://github.com/bbidulock/adwm/blob/master/COPYING
+[3]: https://github.com/bbidulock/adwm/blob/0.7.15/RELEASE
+[4]: https://github.com/bbidulock/adwm/blob/0.7.15/NEWS
+[5]: https://github.com/bbidulock/adwm/blob/0.7.15/ChangeLog
+[6]: https://github.com/bbidulock/adwm/blob/0.7.15/TODO
+[7]: https://github.com/bbidulock/adwm/blob/0.7.15/COMPLIANCE
+[8]: https://github.com/bbidulock/adwm/blob/0.7.15/INSTALL
+[9]: https://github.com/bbidulock/adwm/blob/0.7.15/LICENSE
+[10]: https://github.com/bbidulock/adwm/blob/0.7.15/COPYING
 [11]: https://github.com/bbidulock/xdg-launch
 [12]: https://bbidulock.github.io/xde-ctools
 [13]: https://github.com/bbidulock/xde-menu

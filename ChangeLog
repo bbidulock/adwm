@@ -1,5 +1,22 @@
 # created with git log --stat=76 -M -C -500|fmt -sct -w80
 
+commit a300930287689b3a269a5ec48e8c4e42e88b2d30
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Dec 11 23:48:48 2021 -0700
+
+    update release files
+
+ AUTHORS      |   2 +-
+ ChangeLog    | 118 +++++++++++++++++++++++++++++--------------------------
+ NEWS         |  71 ++++++++++++++++-----------------
+ README       |  24 +++++------
+ README.md    |  24 +++++------
+ RELEASE      |   9 ++---
+ RELEASE.md   |   9 ++---
+ configure.ac |  12 +++---
+ index.md     |  24 +++++------
+ 9 files changed, 147 insertions(+), 146 deletions(-)
+
 commit f433118b67814d1e2142a8f538cf3e87f8cd1916
 Author: Brian Bidulock <bidulock@openss7.org>
 Date:   Sat Dec 11 23:42:51 2021 -0700
@@ -5356,13 +5373,3 @@ Date:   Thu Oct 5 01:59:55 2017 -0600
 
  src/layout.c | 130 ++++++++++++++++++++++++++++++++++++++++---------------
  1 file changed, 96 insertions(+), 34 deletions(-)
-
-commit 6dbf9552378256748cfba770d6bd5bebe198ecd9
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Tue Oct 3 17:00:09 2017 -0600
-
-    upgrade to gnits
-
- autogen.sh   | 7 +++++--
- configure.ac | 2 +-
- 2 files changed, 6 insertions(+), 3 deletions(-)

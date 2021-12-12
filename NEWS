@@ -24,13 +24,14 @@ git tag -n100 -l 0.7.15
 
 git shortlog -e -n -w80,6,8 0.7.14...0.7.15
 
-Brian Bidulock <bidulock@openss7.org> (6):
+Brian Bidulock <bidulock@openss7.org> (7):
       post-release update
       build index.md
       get rid of type punning
       prepare to use JSON-C library
       add dependencies
       add index.md to distribution script
+      update release files
 
 
 Release adwm-0.7.14 released 2021-12-09

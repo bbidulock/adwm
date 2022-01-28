@@ -1,5 +1,21 @@
 # created with git log --stat=76 -M -C -500|fmt -sct -w80
 
+commit 35e488c185cf2fb9d6a71e316f7fd6cd82240eee
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri Jan 28 03:28:03 2022 -0700
+
+    update release files
+
+ AUTHORS      |   2 +-
+ ChangeLog    | 156 +++++++++++++++++++++++++++++--------------------------
+ NEWS         |  70 ++++++++++++++-----------
+ README       |  24 ++++-----
+ README.md    |  24 ++++-----
+ RELEASE      |  18 ++++---
+ configure.ac |  10 ++--
+ index.md     |  24 ++++-----
+ 8 files changed, 175 insertions(+), 153 deletions(-)
+
 commit aacfee40b992ae836c12b0777c503fb528ce5ff6
 Author: Brian Bidulock <bidulock@openss7.org>
 Date:   Fri Jan 28 03:25:43 2022 -0700
@@ -5372,12 +5388,3 @@ Date:   Fri Oct 6 04:24:06 2017 -0600
  src/ewmh.c   | 4 ++--
  src/layout.h | 1 +
  2 files changed, 3 insertions(+), 2 deletions(-)
-
-commit 97ea367d3c76cc4c5956f17affbfa1a102d38f2b
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Fri Oct 6 04:19:36 2017 -0600
-
-    handle move of really small windows
-
- src/layout.c | 87 +++++++++++++++++++++++++++++---------------------------
- 1 file changed, 45 insertions(+), 42 deletions(-)

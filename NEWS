@@ -28,7 +28,7 @@ git tag -n100 -l 0.7.16
 
 git shortlog -e -n -w80,6,8 0.7.15...0.7.16
 
-Brian Bidulock <bidulock@openss7.org> (8):
+Brian Bidulock <bidulock@openss7.org> (9):
       post-release update
       update build flags
       use preferred applications
@@ -37,6 +37,7 @@ Brian Bidulock <bidulock@openss7.org> (8):
       reverse scroll wheel on root
       update release notes
       update copyright dates
+      update release files
 
 
 Release adwm-0.7.15 released 2021-12-11

@@ -310,6 +310,14 @@ Adwm*dockprev:		ACS + Tab
 Adwm*swapnext:		WS + j
 Adwm*swapprev:		WS + k
 
+! placement		- window placement of view
+Adwm*colplacement:	CWA + s
+Adwm*rowplacement:	CWA + r
+Adwm*minplacement:	CWA + m
+Adwm*undplacement:	CWA + u
+Adwm*casplacement:	CWA + c
+Adwm*rndplacement:	CWA + x
+
 ! layout		- layout of monitor
 Adwm*setlayoutm:	A + m
 Adwm*setlayoutf:	A + f, AS + F4
@@ -326,44 +334,44 @@ Adwm*arrangeicons:	AS + F8
 Adwm*togglefocus:	W + g
 
 ! spawn			- spawn a command
-Adwm*spawn0:		AC + t = xdg-launch roxterm
-Adwm*spawn1:		AC + w = xdg-launch firefox
-Adwm*spawn2:		AC + f = xdg-launch pcmanfm
-Adwm*spawn3:		AC + r = xde-run
-Adwm*spawn4:		AC + v = xdg-launch gvim
-Adwm*spawn5:		AC + n = xdg-launch uxterm
+Adwm*spawn0:		AC + t = xdg-launch TerminalEmulator
+Adwm*spawn1:		AC + w = xdg-launch WebBrowser
+Adwm*spawn2:		AC + f = xdg-launch FileManager
+Adwm*spawn3:		AC + r = xdg-launch Launcher
+Adwm*spawn4:		AC + v = xdg-launch TextEditor
+Adwm*spawn5:		AC + n = xdg-launch TerminalEmulator
 Adwm*spawn6:		AC + m = xde-menu -P
 Adwm*spawn7:		A + space = xde-winmenu -w active -W center
-Adwm*spawn8:		A + F1 = xdg-launch uxterm
-Adwm*spawn9:		A + F2 = xde-run
+Adwm*spawn8:		A + F1 = xdg-launch TerminalEmulator
+Adwm*spawn9:		A + F2 = xdg-launch Launcher
 Adwm*spawn10:		A + Print = scrot -s
-Adwm*spawn11:		A + x = xdg-launch uxterm
+Adwm*spawn11:		A + x = xdg-launch TerminalEmulator
 Adwm*spawn12:		AC + Delete = xde-logout
-Adwm*spawn13:		AC + Return = xdg-launch uxterm
-Adwm*spawn14:		AC + e : c = xde-run
-Adwm*spawn15:		AC + e : e = xdg-launch uxterm
+Adwm*spawn13:		AC + Return = xdg-launch TerminalEmulator
+Adwm*spawn14:		AC + e : c = xdg-launch Launcher
+Adwm*spawn15:		AC + e : e = xdg-launch TerminalEmulator
 Adwm*spawn16:		AC + e : l = xdg-launch xde-xlock
 Adwm*spawn17:		AC + e : s = scrot -s
-Adwm*spawn18:		AC + p : d = xde-run
-Adwm*spawn19:		AC + x = xdg-launch uxterm
-Adwm*spawn20:		AS + Return = xdg-launch uxterm
+Adwm*spawn18:		AC + p : d = xdg-launch Launcher
+Adwm*spawn19:		AC + x = xdg-launch TerminalEmulator
+Adwm*spawn20:		AS + Return = xdg-launch TerminalEmulator
 Adwm*spawn21:		C + Escape = xde-menu -P
 Adwm*spawn22:		F11 = xde-winlist
 Adwm*spawn23:		F12 = xde-menu -P
 Adwm*spawn24:		S + Escape = xde-winmenu -w active -W center
-Adwm*spawn25:		W + e = xdg-launch pcmanfm
+Adwm*spawn25:		W + e = xdg-launch FileManager
 Adwm*spawn26:		W + p = xde-menu -P
-Adwm*spawn27:		W + r = xde-run
+Adwm*spawn27:		W + r = xdg-launch Launcher
 Adwm*spawn28:		W + s = scrot
 Adwm*spawn29:		W + slash = xde-findws
 Adwm*spawn30:		WS + Delete = xdg-launch xde-xlock
-Adwm*spawn31:		WS + Return = xdg-launch uxterm
+Adwm*spawn31:		WS + Return = xdg-launch TerminalEmulator
 Adwm*spawn32:		WS + s = scrot -s
 Adwm*spawn33:		WS + slash = xde-namews
-Adwm*spawn34:		XF86MonBrightnessUp = xbrightness +4096
-Adwm*spawn35:		XF86MonBrightnessDown = xbrightness -4096
-Adwm*spawn36:		C + XF86MonBrightnessUp = xbacklight -inc 5
-Adwm*spawn37:		C + XF86MonBrightnessDown = xbacklight -dec 5
+Adwm*spawn34:		C + XF86MonBrightnessUp = xbrightness +4096
+Adwm*spawn35:		C + XF86MonBrightnessDown = xbrightness -4096
+Adwm*spawn36:		XF86MonBrightnessUp = xbacklight -inc 5
+Adwm*spawn37:		XF86MonBrightnessDown = xbacklight -dec 5
 Adwm*spawn38:		XF86AudioRaiseVolume = amixer sset Master\\,0 5%+
 Adwm*spawn39:		XF86AudioLowerVolume = amixer sset Master\\,0 5%-
 Adwm*spawn40:		XF86AudioMute = amixer sset Master\\,0 toggle
@@ -371,6 +379,10 @@ Adwm*spawn41:		CWA + Left = xrandr -o left
 Adwm*spawn42:		CWA + Right = xrandr -o right
 Adwm*spawn43:		CWA + Down = xrandr -o inverted
 Adwm*spawn44:		CWA + Up = xrandr -o normal
+Adwm*spawn45:		XF86AudioMicMute = amixer sset Capture\\,0 toggle
+Adwm*spawn46:		C + XF86AudioRaiseVolume = amixer sset Capture\\,0 5%+
+Adwm*spawn47:		C + XF86AudioLowerVolume = amixer sset Capture\\,0 5%-
+Adwm*spawn48:		C + XF86AudioMute = amixer sset Capture\\,0 toggle
 !Adwm*spawn45:		XF86Display
 !Adwm*spawn46:		XF86Sleep
 
@@ -385,7 +397,7 @@ Adwm*button2:		W + v
 ! command		- command for button press on root window
 Adwm*command:		xde-menu -P -b 3
 Adwm*command2:		xde-wkspmenu -p -b 2
-Adwm*command3:		xde-winlist -p -b 1 --hidden
+! Adwm*command3:		xde-winlist -p -b 1 --hidden
 Adwm*menucommand:	xde-winmenu -p -b 1
 
 

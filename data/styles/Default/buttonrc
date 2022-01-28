@@ -3,8 +3,8 @@
 Adwm*root.button1.pressed: spawn3
 Adwm*root.button2.pressed: spawn2
 Adwm*root.button3.pressed: spawn
-Adwm*root.button4.pressed: nexttag
-Adwm*root.button5.pressed: prevtag
+Adwm*root.button4.pressed: prevtag
+Adwm*root.button5.pressed: nexttag
 
 Adwm*client.title.button1.pressed: move
 !Adwm*client.title.button1.pressed: resize

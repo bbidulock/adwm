@@ -190,8 +190,8 @@ Bool (*actions[LastOn][Button5-Button1+1][2]) (Client *, XEvent *) = {
 		[Button1-Button1] =	{ m_spawn3,	    NULL	    },
 		[Button2-Button1] =	{ m_spawn2,	    NULL	    },
 		[Button3-Button1] =	{ m_spawn,	    NULL	    },
-		[Button4-Button1] =	{ m_nexttag,	    NULL	    },
-		[Button5-Button1] =	{ m_prevtag,	    NULL	    },
+		[Button4-Button1] =	{ m_prevtag,	    NULL	    },
+		[Button5-Button1] =	{ m_nexttag,	    NULL	    },
 	},
 	/* *INDENT-ON* */
 };

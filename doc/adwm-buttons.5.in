@@ -89,8 +89,8 @@ Defaults:
 .Dl Adwm* Ns Cm root.button1.pressed Li : Ar spawn3
 .Dl Adwm* Ns Cm root.button2.pressed Li : Ar spawn2
 .Dl Adwm* Ns Cm root.button3.pressed Li : Ar spawn
-.Dl Adwm* Ns Cm root.button4.pressed Li : Ar nexttag
-.Dl Adwm* Ns Cm root.button5.pressed Li : Ar prevtag
+.Dl Adwm* Ns Cm root.button4.pressed Li : Ar prevtag
+.Dl Adwm* Ns Cm root.button5.pressed Li : Ar nexttag
 .Ss CLIENT WINDOW
 Client window locations as follows:
 .Pp
@@ -336,10 +336,10 @@ Execute the
 .Cm command
 specified in
 .Xr @PACKAGE@-config 5 .
-.It Cm nexttag
-Move to the next tag (desktop/workspace).
 .It Cm prevtag
 Move to the previous tag (desktop/workspace).
+.It Cm nexttag
+Move to the next tag (desktop/workspace).
 .El
 .Pp
 These actions are described in more detail below:
@@ -381,20 +381,20 @@ Normally bound to mouse button #3 over the root window.
 .Pp
 Default:
 .Dl Adwm* Ns Cm root.button3.pressed Li : Ar spawn
-.It Cm nexttag
-Move to the previous tag/view (desktop/workspace).
-Normally bound to mouse button #4 (scroll wheel up) over the root
-window.
-.Pp
-Default:
-.Dl Adwm* Ns Cm root.button4.pressed Li : Ar nexttag
 .It Cm prevtag
 Move to the next tag/view (desktop/workspace).
 Normally bound to mouse button #5 (scroll wheel down) over the root
 window.
 .Pp
 Default:
-.Dl Adwm* Ns Cm root.button5.pressed Li : Ar prevtag
+.Dl Adwm* Ns Cm root.button4.pressed Li : Ar prevtag
+.It Cm nexttag
+Move to the previous tag/view (desktop/workspace).
+Normally bound to mouse button #4 (scroll wheel up) over the root
+window.
+.Pp
+Default:
+.Dl Adwm* Ns Cm root.button5.pressed Li : Ar nexttag
 .El
 .Ss CLIENT ACTIONS
 The following actions can be performed over the client window.
@@ -853,8 +853,6 @@ to move a window and which is used to resize a window.  (Note that
 .Xr openbox 1
 window manager reverses these two bindings and are different from the
 rest of the light-weight window manager field.)
-compatible
-necessary
 .Sh FILES
 Following are the locations of the
 .Xr @PACKAGE@-buttons 5

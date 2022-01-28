@@ -18,8 +18,8 @@ static ActionDef ActionDefs[] = {
 	{ "spawn3",	m_spawn3    },
 	{ "spawn2",	m_spawn2    },
 	{ "spawn",	m_spawn	    },
-	{ "nexttag",	m_nexttag   },
 	{ "prevtag",	m_prevtag   },
+	{ "nexttag",	m_nexttag   },
 	{ "resize",	m_resize    },
 	{ "move",	m_move	    },
 	{ "shade",	m_shade	    },
@@ -158,8 +158,8 @@ static ActionItem ActionItems[] = {
 			{   "spawn3",	 NULL		},
 			{   "spawn2",	 NULL		},
 			{   "spawn",	 NULL		},
-			{   "nexttag",	 NULL		},
-			{   "prevtag",	 NULL		}
+			{   "prevtag",	 NULL		},
+			{   "nexttag",	 NULL		}
 		}
 	}
 };

@@ -1,5 +1,87 @@
 # created with git log --stat=76 -M -C -500|fmt -sct -w80
 
+commit aacfee40b992ae836c12b0777c503fb528ce5ff6
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri Jan 28 03:25:43 2022 -0700
+
+    update copyright dates
+
+ LICENSE    | 2 +-
+ src/adwm.c | 4 ++--
+ 2 files changed, 3 insertions(+), 3 deletions(-)
+
+commit b7f376e9d98b51a17cc1e5315c32ce4db03837e1
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri Jan 28 03:12:41 2022 -0700
+
+    update release notes
+
+ RELEASE.md | 18 +++++++++++-------
+ 1 file changed, 11 insertions(+), 7 deletions(-)
+
+commit c0f0ca5b2e131264c451a3ae6be3b2eb0c9d1463
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri Jan 28 02:41:41 2022 -0700
+
+    reverse scroll wheel on root
+
+ data/styles/Default/buttonrc |  4 ++--
+ doc/adwm-buttons.5.in        | 26 ++++++++++++--------------
+ src/adwm.c                   |  4 ++--
+ src/buttons.c                |  6 +++---
+ 4 files changed, 19 insertions(+), 21 deletions(-)
+
+commit 24f065acda02abafb5c7767d8686b17c549fe73e
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri Jan 28 01:35:28 2022 -0700
+
+    update build flags
+
+ configure.sh | 2 ++
+ 1 file changed, 2 insertions(+)
+
+commit d5844d9c1d495d733b999797d259d727d3aa394f
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu Jan 27 21:41:57 2022 -0700
+
+    updates to adwm keysrc file
+
+    - fix key conflicts
+    - add preferred application support
+    - swap brightness/contrast controls
+    - add microphone volume and muting controls
+
+ data/keysrc | 58 ++++++++++++++++++++++++++++++++++-----------------------
+ 1 file changed, 35 insertions(+), 23 deletions(-)
+
+commit 563ab035c4b36651f3ea158643dcd435e7951866
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu Jan 27 21:41:39 2022 -0700
+
+    use preferred applications
+
+ data/styles/Default/keysrc | 36 ++++++++++++++++++------------------
+ 1 file changed, 18 insertions(+), 18 deletions(-)
+
+commit 5ce84d017dc23537f3d481de20e30d99f5ef8d20
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu Jan 27 19:41:40 2022 -0700
+
+    update build flags
+
+ configure.sh | 9 +++------
+ 1 file changed, 3 insertions(+), 6 deletions(-)
+
+commit 48f9f60c832926d152cba9797a1bbea859e858e0
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Dec 11 23:51:23 2021 -0700
+
+    post-release update
+
+ ChangeLog | 27 +++++++++++++++++----------
+ NEWS      |  3 ++-
+ 2 files changed, 19 insertions(+), 11 deletions(-)
+
 commit a300930287689b3a269a5ec48e8c4e42e88b2d30
 Author: Brian Bidulock <bidulock@openss7.org>
 Date:   Sat Dec 11 23:48:48 2021 -0700
@@ -5299,77 +5381,3 @@ Date:   Fri Oct 6 04:19:36 2017 -0600
 
  src/layout.c | 87 +++++++++++++++++++++++++++++---------------------------
  1 file changed, 45 insertions(+), 42 deletions(-)
-
-commit c08846d4b49c076883bc52e4d2562fa638b73705
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Fri Oct 6 03:50:14 2017 -0600
-
-    do fancy moves
-
- src/layout.c | 104 +++++++++++++++++++++++++++++++++++++++++++------------
- 1 file changed, 81 insertions(+), 23 deletions(-)
-
-commit f44deaf924af8aeaff4a5f16dc71732aa030dcfe
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Fri Oct 6 03:31:39 2017 -0600
-
-    rename cursors
-
- src/adwm.c   | 44 +++++++++++++--------------
- src/adwm.h   | 24 +++++++--------
- src/layout.c | 92 ++++++++++++++++++++++++++++----------------------------
- 3 files changed, 80 insertions(+), 80 deletions(-)
-
-commit 9fd023b4df6f89e022ae0975480fff68722f1d39
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Fri Oct 6 03:24:23 2017 -0600
-
-    determine virtual grips for move
-
- src/layout.c | 101 +++++++++++++++++++++++++++++++++++++++++++++++++++++--
- 1 file changed, 98 insertions(+), 3 deletions(-)
-
-commit 894387e02a1b9b96a9165c95707cc00a42453874
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Fri Oct 6 02:34:41 2017 -0600
-
-    prepare for mousemove_from
-
- src/layout.c | 169 ++++++++++++++++++++++++++++++-------------------------
- 1 file changed, 91 insertions(+), 78 deletions(-)
-
-commit afcc41a00e2fc28bf1b798edb9df0f0810fff05e
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Thu Oct 5 05:05:38 2017 -0600
-
-    now working on mouseresize snaps
-
- src/layout.c | 52 ++++++++++++++++++++++++++++------------------------
- 1 file changed, 28 insertions(+), 24 deletions(-)
-
-commit e3f3790dd3b8670fbc0e551733cc9964e27749ce
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Thu Oct 5 02:02:24 2017 -0600
-
-    working up adwm manual page
-
- doc/adwm.1.in | 91 +++++++++++++++++++++++++++++++++++++++++++++++++------
- 1 file changed, 81 insertions(+), 10 deletions(-)
-
-commit e77b71532a0378770900a608ce26c56f888d1566
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Thu Oct 5 02:01:57 2017 -0600
-
-    update TODO
-
- TODO | 2 ++
- 1 file changed, 2 insertions(+)
-
-commit 71a37a50beb1b082191d5b97983100b1c7880df0
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Thu Oct 5 01:59:55 2017 -0600
-
-    debug and fix snapping while moving
-
- src/layout.c | 130 ++++++++++++++++++++++++++++++++++++++++---------------
- 1 file changed, 96 insertions(+), 34 deletions(-)

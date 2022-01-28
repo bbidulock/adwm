@@ -1,6 +1,6 @@
-[adwm -- release notes.  2021-12-11]: #
+[adwm -- release notes.  2022-01-28]: #
 
-Maintenance Release 0.7.15
+Maintenance Release 0.7.16
 ==========================
 
 This is another release of the adwm window manager that provides a fully
@@ -8,11 +8,15 @@ XDG, WindowMaker, WMH (WinWM), MWMH (CDE/Motif), ICCM 2.0 compliant
 tiling/floating window manager.  It borrows concepts from `dwm(1)`,
 `velox(1)`, `awesome(1)`, `spectrwm(1)` and `wmii(1)`.
 
-This is a maintenance release that updates gh-pages support and removes
-a harmful type punning that was leading to indeterminate behaviour.
-Session management has not progressed since the last release.  There are
-no outstanding issues at the time of release, and the next release
-should include some outstanding development from the [TODO](TODO) list.
+This is a maintenance release that corrects and supplements some key
+bindings: removes a conflict, uses preferred applications (thanks to
+xdg-launch), provides controls for microphone volume and muting, and
+switches scroll-wheel bindings on the root window (this was really
+bothering me).  Consistent build flags and support for GCC 11.1.0 is
+also provided.  Session management has not progressed since the last
+release.  There are no outstanding issues at the time of release, and
+the next release should include some outstanding development from the
+[TODO](TODO) list.
 
 Included in the release is an autoconf tarball for building the package
 from source.  See the [NEWS](NEWS) and [TODO](TODO) file in the release

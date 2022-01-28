@@ -1,4 +1,43 @@
-adwm -- history of user-visible changes.  2021-12-11
+adwm -- history of user-visible changes.  2022-01-28
+
+Release adwm-0.7.16 released 2022-01-28
+---------------------------------------
+
+git tag -n100 -l 0.7.16
+
+0.7.16          Maintenance Release 0.7.16
+
+    This is another release of the adwm window manager that provides a
+    fully XDG, WindowMaker, WMH (WinWM), MWMH (CDE/Motif), ICCM 2.0
+    compliant tiling/floating window manager. It borrows concepts from
+    dwm(1), velox(1), awesome(1), spectrwm(1) and wmii(1).
+
+    This is a maintenance release that corrects and supplements some key
+    bindings: removes a conflict, uses preferred applications (thanks to
+    xdg-launch), provides controls for microphone volume and muting, and
+    switches scroll-wheel bindings on the root window (this was really
+    bothering me). Consistent build flags and support for GCC 11.1.0 is
+    also provided. Session management has not progressed since the last
+    release. There are no outstanding issues at the time of release, and
+    the next release should include some outstanding development from the
+    TODO list.
+
+    Included in the release is an autoconf tarball for building the package
+    from source. See the NEWS and TODO file in the release for more
+    information. Please report problems to the issues list on GitHub.
+
+git shortlog -e -n -w80,6,8 0.7.15...0.7.16
+
+Brian Bidulock <bidulock@openss7.org> (8):
+      post-release update
+      update build flags
+      use preferred applications
+      updates to adwm keysrc file
+      update build flags
+      reverse scroll wheel on root
+      update release notes
+      update copyright dates
+
 
 Release adwm-0.7.15 released 2021-12-11
 ---------------------------------------
@@ -321,33 +360,4 @@ Brian Bidulock <bidulock@openss7.org> (95):
 
 Brian Bidulock <bidulock@openss7.com> (1):
       Set theme jekyll-theme-minimal
-
-
-Release adwm-0.7.9 released 2019-10-03
---------------------------------------
-
-git tag -n100 -l 0.7.9
-
-0.7.9           Maintenance Release 0.7.9
-
-    This is another release of the adwm window manager that provdes a fully
-    XDG, WindowMaker, WMH (WinWM), MWMH (CDE/Motif), ICCM 2.0 compliant
-    tiling/floating window manager. It borrows concepts from dwm(1),
-    velox(1), awesome(1), spectrwm(1) and wmii(1).
-
-    This is a maintenance release that includes some build improvements and
-    a fix for issue #7 by forcing a make dependency between adwm-adwm.la
-    and adwm. There are no outstanding issues at the time of release, and
-    the next release should include some outstanding development from the
-    TODO list.
-
-    Included in the release is an autoconf tarball for building the package
-    from source. See the NEWS and TODO file in the release for more
-    information. Please report problems to the issues list on GitHub.
-
-git shortlog -e -n -w80,6,8 0.7.8...0.7.9
-
-Brian Bidulock <bidulock@openss7.org> (2):
-      fix issue #7
-      update release files
 

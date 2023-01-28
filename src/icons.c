@@ -627,11 +627,12 @@ issubdir(const char *path, const char *subdir)
 		free(dir);
 		return (False);
 	}
-	free(dir);
 	if (!S_ISDIR(st.st_mode)) {
 		EPRINTF("%s: not a directory\n", dir);
+		free(dir);
 		return (False);
 	}
+	free(dir);
 	return (True);
 }
 

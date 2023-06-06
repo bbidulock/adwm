@@ -40,7 +40,7 @@ esac
 	DEBUG_CXXFLAGS="$DEBUG_CXXFLAGS"
 
 # Fight unused direct deps
-sed -i -e "s| -shared | $LDFLAGS\0 |g" libtool
+[ -f libtool ] && sed -i -e "s| -shared | $LDFLAGS\0 |g" libtool
 
 # cscope target won't work without this
 #

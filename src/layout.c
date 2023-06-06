@@ -5314,11 +5314,11 @@ configureclient(Client *c, XEvent *e, int gravity)
 			move = True;
 		}
 		if (will & CWWidth) {
-			g.w = ev->width;
+			g.w = ev->width ? : 1;
 			resize = True;
 		}
 		if (will & CWHeight) {
-			g.h = ev->height;
+			g.h = ev->height ? : 1;
 			resize = True;
 		}
 		if (will & CWBorderWidth) {

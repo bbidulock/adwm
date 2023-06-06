@@ -1047,8 +1047,8 @@ configurerequest(XEvent *e)
 
 		wc.x = ev->x;
 		wc.y = ev->y;
-		wc.width = ev->width;
-		wc.height = ev->height;
+		wc.width = ev->width ? : 1;
+		wc.height = ev->height ? : 1;
 		wc.border_width = ev->border_width;
 		wc.sibling = ev->above;
 		wc.stack_mode = ev->detail;

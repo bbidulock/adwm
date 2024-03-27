@@ -1,4 +1,4 @@
-[adwm -- release notes.  2024-03-26]: #
+[adwm -- release notes.  2024-03-27]: #
 
 Maintenance Release 0.7.17
 ===========================

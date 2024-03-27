@@ -1,5 +1,24 @@
 # created with git log --stat=76 -M -C -500|fmt -sct -w80
 
+commit 6a4d0f14f197e654de508c888ab6b08e479fd095
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Mar 27 00:18:09 2024 -0600
+
+    update release files
+
+ AUTHORS       |   2 +-
+ ChangeLog     | 129 +++++++++++++++++++++---------------------
+ Makefile.am   |  19 +++++--
+ NEWS          | 164 ++++++++++++------------------------------------------
+ README        |  24 ++++----
+ README.md     |  24 ++++----
+ RELEASE       |  32 +++++++----
+ RELEASE.md    |  32 +++++++----
+ RELEASE.md.in |  34 +++++++++++
+ configure.ac  |  10 ++--
+ index.md      |  24 ++++----
+ 11 files changed, 233 insertions(+), 261 deletions(-)
+
 commit 0381d5b4410ea97d2623ad0f6c492d333f886741
 Author: Brian Bidulock <bidulock@openss7.org>
 Date:   Tue Mar 26 23:06:00 2024 -0600
@@ -5380,12 +5399,3 @@ Date:   Fri Oct 6 09:46:17 2017 -0600
  configure.ac |  2 ++
  src/layout.c | 20 ++++++++++----------
  2 files changed, 12 insertions(+), 10 deletions(-)
-
-commit fc39f44fc7709c6f1ed8d1db69d993483c306bda
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Fri Oct 6 08:05:06 2017 -0600
-
-    update todo
-
- TODO | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)

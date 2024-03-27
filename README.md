@@ -1,10 +1,10 @@
-[adwm -- read me first file.  2024-03-26]: #
+[adwm -- read me first file.  2024-03-27]: #
 
 adwm
 ===============
 
 Package `adwm-0.7.17` was released under GPLv3 license
-2024-03-26.
+2024-03-27.
 
 This was originally a fork of Echinus which in turn was a fork of `dwm(1)`,
 and borrows concepts from `velox(1)`, `awesome(1)`, `spectrwm(1)` and
@@ -18,7 +18,7 @@ The source for `adwm` is hosted on [GitHub][1].
 Release
 -------
 
-This is the `adwm-0.7.17` package, released 2024-03-26.
+This is the `adwm-0.7.17` package, released 2024-03-27.
 This release, and the latest version, can be obtained from [GitHub][1],
 using a command such as:
 

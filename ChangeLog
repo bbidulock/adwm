@@ -1,5 +1,22 @@
 # created with git log --stat=76 -M -C -500|fmt -sct -w80
 
+commit ce95a180da34d7fd128bf6672b3ad16a9963c466
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Mar 27 00:21:54 2024 -0600
+
+    update release files for date change
+
+ AUTHORS      |  2 +-
+ ChangeLog    | 28 +++++++++++++++++++---------
+ NEWS         |  9 +++++----
+ README       |  6 +++---
+ README.md    |  6 +++---
+ RELEASE      |  2 +-
+ RELEASE.md   |  2 +-
+ configure.ac |  4 ++--
+ index.md     |  6 +++---
+ 9 files changed, 38 insertions(+), 27 deletions(-)
+
 commit 6a4d0f14f197e654de508c888ab6b08e479fd095
 Author: Brian Bidulock <bidulock@openss7.org>
 Date:   Wed Mar 27 00:18:09 2024 -0600
@@ -5389,13 +5406,3 @@ Date:   Fri Oct 6 19:39:41 2017 -0600
  src/config.c    | 19 ++++++++++++++-----
  src/layout.c    |  7 +++----
  5 files changed, 47 insertions(+), 17 deletions(-)
-
-commit a53281de5d5c1befd67d056c85d4cf6ecf01e483
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Fri Oct 6 09:46:17 2017 -0600
-
-    change virtual grip defaults
-
- configure.ac |  2 ++
- src/layout.c | 20 ++++++++++----------
- 2 files changed, 12 insertions(+), 10 deletions(-)

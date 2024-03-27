@@ -26,7 +26,7 @@ git tag -n100 -l 0.7.17
 
 git shortlog -e -n -w80,6,8 0.7.16...0.7.17
 
-Brian Bidulock <bidulock@openss7.org> (8):
+Brian Bidulock <bidulock@openss7.org> (9):
       post-release update
       minor fix for error detected by gcc
       add some XF86 keysyms commented out
@@ -35,6 +35,7 @@ Brian Bidulock <bidulock@openss7.org> (8):
       do not set zero width or height
       new cflags
       update release files
+      update release files for date change
 
 
 Release adwm-0.7.16 released 2022-01-28

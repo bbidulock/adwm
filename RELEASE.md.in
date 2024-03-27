@@ -1,6 +1,6 @@
-[adwm -- release notes.  2024-03-26]: #
+[@PACKAGE@ -- release notes.  @DATE@]: #
 
-Maintenance Release 0.7.17
+Maintenance Release @VERSION@
 ===========================
 
 This is another release of the adwm window manager that provides a fully
@@ -21,14 +21,14 @@ from source.  See the [NEWS][3] and [TODO][5] file in the release
 for more information.  Please report problems to the issues list on
 [GitHub][2].
 
-[1]: https://github.com/openss7/adwm
-[2]: https://github.com/openss7/adwm/issues
-[3]: https://github.com/openss7/adwm/blob/0.7.17/NEWS
-[4]: https://github.com/openss7/adwm/blob/0.7.17/ChangeLog
-[5]: https://github.com/openss7/adwm/blob/0.7.17/TODO
-[6]: https://github.com/openss7/adwm/blob/0.7.17/COMPLIANCE
-[7]: https://github.com/openss7/adwm/blob/0.7.17/INSTALL
-[8]: https://github.com/openss7/adwm/blob/0.7.17/LICENSE
-[9]: https://github.com/openss7/adwm/blob/0.7.17/COPYING
+[1]: https://github.com/openss7/@PACKAGE@
+[2]: https://github.com/openss7/@PACKAGE@/issues
+[3]: https://github.com/openss7/@PACKAGE@/blob/@BRANCH@/NEWS
+[4]: https://github.com/openss7/@PACKAGE@/blob/@BRANCH@/ChangeLog
+[5]: https://github.com/openss7/@PACKAGE@/blob/@BRANCH@/TODO
+[6]: https://github.com/openss7/@PACKAGE@/blob/@BRANCH@/COMPLIANCE
+[7]: https://github.com/openss7/@PACKAGE@/blob/@BRANCH@/INSTALL
+[8]: https://github.com/openss7/@PACKAGE@/blob/@BRANCH@/LICENSE
+[9]: https://github.com/openss7/@PACKAGE@/blob/@BRANCH@/COPYING
 
 [ vim: set ft=markdown sw=4 tw=72 nocin nosi fo+=tcqlorn spell: ]: #

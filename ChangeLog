@@ -1,5 +1,70 @@
 # created with git log --stat=76 -M -C -500|fmt -sct -w80
 
+commit 0381d5b4410ea97d2623ad0f6c492d333f886741
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Mar 26 23:06:00 2024 -0600
+
+    new cflags
+
+ configure.sh | 15 +++++++++------
+ 1 file changed, 9 insertions(+), 6 deletions(-)
+
+commit f29742822c17591fbbbed44b4a47f6b6e5dc2e03
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Jun 6 10:49:10 2023 -0600
+
+    do not set zero width or height
+
+ src/adwm.c   | 4 ++--
+ src/layout.c | 4 ++--
+ 2 files changed, 4 insertions(+), 4 deletions(-)
+
+commit 89b3b60660320aaa6cb9a59d17cb0578bbbe5357
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Jun 6 10:41:07 2023 -0600
+
+    update configure.sh
+
+ configure.sh | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+commit 4d230293cc479590fb9bafa5a5bfb7534f37e7eb
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri Feb 17 19:41:21 2023 -0700
+
+    fight unused direct deps
+
+ configure.sh | 3 +++
+ 1 file changed, 3 insertions(+)
+
+commit 6ce9257e739114ac38b74adaac57642dafd0755a
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri Jan 27 22:21:19 2023 -0700
+
+    add some XF86 keysyms commented out
+
+ data/styles/Default/keysrc | 202 +++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 202 insertions(+)
+
+commit 0a15a4f978b46a6d9a6eae949d7f9b98635b899e
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri Jan 27 22:20:37 2023 -0700
+
+    minor fix for error detected by gcc
+
+ src/icons.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+commit fcfb1ffec64033cb7f17fd160e7a987c5c5bfb5e
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri Jan 28 03:30:08 2022 -0700
+
+    post-release update
+
+ ChangeLog | 25 ++++++++++++++++---------
+ NEWS      |  3 ++-
+ 2 files changed, 18 insertions(+), 10 deletions(-)
+
 commit 35e488c185cf2fb9d6a71e316f7fd6cd82240eee
 Author: Brian Bidulock <bidulock@openss7.org>
 Date:   Fri Jan 28 03:28:03 2022 -0700
@@ -5324,67 +5389,3 @@ Date:   Fri Oct 6 08:05:06 2017 -0600
 
  TODO | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
-
-commit 25ea73fb4e94f27ec97c7751c028a9f483d67b7e
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Fri Oct 6 08:03:19 2017 -0600
-
-    resize snapping fixed
-
- src/layout.c | 28 ++++++++++++++--------------
- 1 file changed, 14 insertions(+), 14 deletions(-)
-
-commit 63f7966f734268ba0600cb34f360a9fed68a5f7f
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Fri Oct 6 07:06:08 2017 -0600
-
-    resize ok when not snapping
-
- src/layout.c | 197 +++++++++++++++++++++----------------------------------
- 1 file changed, 74 insertions(+), 123 deletions(-)
-
-commit db65670071cce9007d922f142a88359008c0256c
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Fri Oct 6 06:23:52 2017 -0600
-
-    moves are good resize needs work
-
- src/layout.c | 88 ++++++++++++++++++++++++++++++++------------------------
- 1 file changed, 50 insertions(+), 38 deletions(-)
-
-commit b19d1a1d74046cd08386557517c33952d76f5407
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Fri Oct 6 05:57:10 2017 -0600
-
-    snap to workspace center line too
-
- src/layout.c | 24 ++++++++++++++++++++++++
- 1 file changed, 24 insertions(+)
-
-commit 0c2ae11c6d92ab3245b798c67fe2fecfa18438cf
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Fri Oct 6 05:47:17 2017 -0600
-
-    resize snap width and height before constraints
-
- src/layout.c | 93 +++++++++++++++++++++++++++++++++++++++++---------------
- 1 file changed, 69 insertions(+), 24 deletions(-)
-
-commit 743579a4e41521664ac17dd91aaf4475bcf95301
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Fri Oct 6 05:22:23 2017 -0600
-
-    rationalize snapping between move and resize
-
- src/layout.c | 363 +++++++++++++++++++++++++++++++++++++------------------
- 1 file changed, 244 insertions(+), 119 deletions(-)
-
-commit d71353883d022479b8378919d5be5a5d87717b6d
-Author: Brian Bidulock <bidulock@openss7.org>
-Date:   Fri Oct 6 04:24:06 2017 -0600
-
-    invoke mousemove_from properly
-
- src/ewmh.c   | 4 ++--
- src/layout.h | 1 +
- 2 files changed, 3 insertions(+), 2 deletions(-)

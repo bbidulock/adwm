@@ -3,11 +3,11 @@ ACLOCAL_AMFLAGS = -I m4
 
 SUBDIRS = src doc data
 
-EXTRA_DIST = INSTALL COPYING AUTHORS NEWS README README.md README.md.in THANKS TODO ChangeLog RELEASE RELEASE.md COMPLIANCE
+EXTRA_DIST = INSTALL COPYING AUTHORS NEWS index.md README README.md README.md.in THANKS TODO ChangeLog RELEASE RELEASE.md RELEASE.md.in
 
 dist_noinst_SCRIPTS = gennews.sh autogen.sh configure.sh rebuild.sh dist.sh
 
-DISTCLEANFILES = ChangeLog AUTHORS NEWS README README.md README.html README.txt RELEASE RELEASE.html RELEASE.txt
+DISTCLEANFILES = ChangeLog AUTHORS NEWS index.md README README.md README.html README.txt RELEASE RELEASE.md RELEASE.html RELEASE.txt
 
 dist-hook:
 	$(AM_V_GEN)if test -x "`which git 2>/dev/null`" -a -d "$(srcdir)/.git" ; then \
@@ -27,8 +27,11 @@ dist-hook:
 		)>$(distdir)/NEWS ; \
 	fi ; \
 	chmod u+w $(distdir)/{README.md,README} ; \
+	chmod u+w $(distdir)/{RELEASE.md,RELEASE} ; \
 	sed -r -e 's:\@PACKAGE\@:$(PACKAGE):g;s:\@VERSION\@:$(VERSION):g;s:\@DATE\@:$(DATE):g;s:\@BRANCH\@:$(BRANCH):g' $(distdir)/README.md.in >$(distdir)/README.md ; \
-	cat $(distdir)/README.md | fmt -sct -w80 -g72 >$(distdir)/README
+	sed -r -e 's:\@PACKAGE\@:$(PACKAGE):g;s:\@VERSION\@:$(VERSION):g;s:\@DATE\@:$(DATE):g;s:\@BRANCH\@:$(BRANCH):g' $(distdir)/RELEASE.md.in >$(distdir)/RELEASE.md ; \
+	cat $(distdir)/README.md | fmt -sct -w80 -g72 >$(distdir)/README \
+	cat $(distdir)/RELEASE.md | fmt -sct -w80 -g72 >$(distdir)/RELEASE
 
 ChangeLog:
 	$(AM_V_GEN)if test -x "`which git 2>/dev/null`" -a -d "$(srcdir)/.git" ; then \
@@ -70,6 +73,9 @@ README.html: README.md
 README.txt: README.html
 	$(AM_V_GEN)$(LINKS) -dump -width 80 -nolist $< | sed -r -e 's,^[[:space:]]*,,' >$@
 
+RELEASE.md: RELEASE.md.in
+	$(AM_V_GEN)sed -r -e 's:\@PACKAGE\@:$(PACKAGE):g;s:\@VERSION\@:$(VERSION):g;s:\@DATE\@:$(DATE):g;s:\@BRANCH\@:$(BRANCH):g' $< >$@
+
 RELEASE: RELEASE.md
 	$(AM_V_GEN)cat $< | fmt -sct -w80 -g72 >$@
 
@@ -85,5 +91,10 @@ NOTES.html: NOTES
 TODO.html: TODO
 	$(AM_V_GEN)$(ASCIIDOC) -o - $< >$@
 
-EXTRA_DIST += README.echinus LICENSE
+release-files: $(DISTCLEANFILES)
+
+release-clean:
+	-test -z "$(DISTCLEANFILES)" || rm -f $(DISTCLEANFILES)
+
+EXTRA_DIST += README.echinus LICENSE COMPLIANCE
 

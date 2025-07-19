@@ -139,7 +139,7 @@ main(int argc, char *argv[])
 	screen = DefaultScreen(dpy);
 	root = RootWindow(dpy, screen);
 
-	setup(bottom);
+	setup();
 	XSync(dpy, False);
 	run();
 	XCloseDisplay(dpy);
